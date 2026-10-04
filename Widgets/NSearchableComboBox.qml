@@ -174,7 +174,9 @@ RowLayout {
 
     opacity: enabled ? 1.0 : 0.6
     Layout.margins: Style.borderS
-    Layout.minimumWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
+    // In narrow contexts (the 352 px module view, §3.5.3) the fixed minimum
+    // would starve the label column; cap it at half the row's width.
+    Layout.minimumWidth: Math.min(Math.round(root.minimumWidth * Style.uiScaleRatio), Math.max(120, Math.round(root.width * 0.5)))
     Layout.preferredHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
     implicitWidth: Layout.minimumWidth
     model: root.activeModel

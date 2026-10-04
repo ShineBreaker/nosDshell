@@ -365,7 +365,7 @@ Singleton {
       property real panelBackgroundOpacity: 0.4
       property bool translucentWidgets: false
       property bool panelsAttachedToBar: false
-      property string settingsPanelMode: "attached" // "centered", "attached", "window"
+      property string settingsPanelMode: "controlCenter" // "controlCenter", "centered", "attached", "window"
       property bool settingsPanelSideBarCardStyle: false
     }
 
