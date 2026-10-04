@@ -131,10 +131,10 @@ fi
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion:63 skips the v0->63 migration chain (no-op for real users,
+# settingsVersion:64 skips the v0->64 migration chain (no-op for real users,
 # just noise in verify logs). dock.displayMode gates the fashion dock's
 # auto-hide; efficient (taskbar) mode uses dock.hideMode instead.
-SEED='{"settingsVersion":63,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":64,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'

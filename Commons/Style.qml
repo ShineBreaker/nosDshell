@@ -433,6 +433,29 @@ Singleton {
   // Detail list rows are 36 px tall (wifilistmodel.cpp:95)
   readonly property int detailRowHeight: Math.round(36 * uiScaleRatio)
 
+  // Settings pages inside the control center (DESIGN §3.5.3–3.5.4)
+  // 56 px icon rail, spacing 20; content 352 (frame mode) / 640 (window mode)
+  readonly property int settingsRailWidth: Math.round(56 * uiScaleRatio)
+  readonly property int settingsRailSpacing: Math.round(20 * uiScaleRatio)
+  readonly property int settingsModuleContentWidth: Math.round(352 * uiScaleRatio)
+  readonly property int settingsWindowContentWidth: Math.round(640 * uiScaleRatio)
+  // Content header: back button, centred title 14/500, separator 15 px below
+  readonly property int settingsModuleTitleSize: Math.round(14 * uiScaleRatio)
+  readonly property int settingsModuleSeparatorGap: Math.round(15 * uiScaleRatio)
+  // SettingsGroup: 1 px row gap, outer corners radiusItem; SettingsHead 24 high
+  readonly property int settingsGroupGap: Math.round(1 * uiScaleRatio)
+  readonly property int settingsHeadHeight: Math.round(24 * uiScaleRatio)
+  readonly property real settingsHeadAlpha: 0.15
+  // SettingsItem (DESIGN §3.5.4): row 36, padding (20, 10)
+  readonly property int settingsRowHeight: detailRowHeight
+  readonly property int settingsRowPaddingH: Math.round(20 * uiScaleRatio)
+  readonly property int settingsRowPaddingV: Math.round(10 * uiScaleRatio)
+  // DSwitchButton: 40x22 capsule, 18 px knob, 150 ms (only capsule-type control)
+  readonly property int switchWidth: Math.round(40 * uiScaleRatio)
+  readonly property int switchHeight: Math.round(22 * uiScaleRatio)
+  readonly property int switchKnob: Math.round(18 * uiScaleRatio)
+  readonly property int switchDuration: 150
+
   // Dock icon size presets
   readonly property int dockIconSmall: 30
   readonly property int dockIconMedium: 36

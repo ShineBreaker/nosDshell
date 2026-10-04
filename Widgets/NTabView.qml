@@ -8,6 +8,11 @@ Item {
 
   property int currentIndex: 0
 
+  // DDE settings mode (DESIGN §3.5.3): every sub-tab is visible at once as its
+  // own SettingsGroup, stacked vertically on one scrollable page. Switching to
+  // a hidden sub-tab scrolls it into view instead of playing a slide transition.
+  property bool stacked: false
+
   // Private
   property int previousIndex: 0
   property bool initialized: false
@@ -23,7 +28,16 @@ Item {
   Layout.fillWidth: true
 
   // During animation, use max height to prevent clipping. Otherwise use current item height.
-  implicitHeight: animating ? animatingHeight : (contentItems[currentIndex] ? contentItems[currentIndex].implicitHeight : 0)
+  implicitHeight: {
+    if (animating)
+      return animatingHeight;
+    if (!stacked)
+      return contentItems[currentIndex] ? contentItems[currentIndex].implicitHeight : 0;
+    let h = 0;
+    for (let i = 0; i < contentItems.length; i++)
+      h += contentItems[i].implicitHeight;
+    return h;
+  }
 
   Item {
     id: container
@@ -41,7 +55,7 @@ Item {
     animating = false;
     previousIndex = idx;
     for (let i = 0; i < contentItems.length; i++) {
-      if (i === idx) {
+      if (stacked || i === idx) {
         contentItems[i].x = 0;
         contentItems[i].visible = true;
         contentItems[i].opacity = 1.0;
@@ -55,6 +69,21 @@ Item {
 
   Component.onCompleted: {
     _initializeItems();
+  }
+
+  // Position every sub-tab so they stack vertically. Each y is a binding so the
+  // stack re-flows when an earlier page changes height.
+  function _layoutStacked() {
+    for (let i = 0; i < contentItems.length; i++) {
+      const child = contentItems[i];
+      child.y = Qt.binding(() => {
+        let off = 0;
+        for (let j = 0; j < i; j++)
+          off += contentItems[j].implicitHeight;
+        return off;
+      });
+      child.visible = true;
+    }
   }
 
   function _initializeItems() {
@@ -72,11 +101,26 @@ Item {
         child.visible = false;
       }
     }
+    if (stacked) {
+      setIndexWithoutAnimation(currentIndex);
+      _layoutStacked();
+    }
     initialized = true;
+  }
+
+  onStackedChanged: {
+    if (!initialized)
+      return;
+    if (stacked) {
+      setIndexWithoutAnimation(currentIndex);
+      _layoutStacked();
+    }
   }
 
   onCurrentIndexChanged: {
     if (!initialized || contentItems.length === 0)
+      return;
+    if (stacked)
       return;
     if (previousIndex === currentIndex)
       return;

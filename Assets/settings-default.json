@@ -155,7 +155,7 @@
     "panelBackgroundOpacity": 0.4,
     "translucentWidgets": false,
     "panelsAttachedToBar": false,
-    "settingsPanelMode": "attached",
+    "settingsPanelMode": "controlCenter",
     "settingsPanelSideBarCardStyle": false
   },
   "location": {

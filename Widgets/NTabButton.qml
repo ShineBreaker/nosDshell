@@ -18,6 +18,11 @@ Rectangle {
   property bool isFirst: false
   property bool isLast: false
 
+  // SettingsGroup header mode (DDE §3.5.4): no pill background, no side
+  // radii — a DemiBold label sitting above its group.
+  property bool isTabButton: true
+  property bool plain: false
+
   // Internal state
   property bool isHovered: false
 
@@ -26,13 +31,14 @@ Rectangle {
   // Sizing
   Layout.fillHeight: true
   implicitWidth: contentLayout.implicitWidth + Style.margin2M
+  implicitHeight: plain ? Style.settingsHeadHeight : Style.baseWidgetSize
 
-  topLeftRadius: isFirst ? Style.radiusItem : Style.radiusXXXS
-  bottomLeftRadius: isFirst ? Style.radiusItem : Style.radiusXXXS
-  topRightRadius: isLast ? Style.radiusItem : Style.radiusXXXS
-  bottomRightRadius: isLast ? Style.radiusItem : Style.radiusXXXS
+  topLeftRadius: plain ? 0 : (isFirst ? Style.radiusItem : Style.radiusXXXS)
+  bottomLeftRadius: plain ? 0 : (isFirst ? Style.radiusItem : Style.radiusXXXS)
+  topRightRadius: plain ? 0 : (isLast ? Style.radiusItem : Style.radiusXXXS)
+  bottomRightRadius: plain ? 0 : (isLast ? Style.radiusItem : Style.radiusXXXS)
 
-  color: root.isHovered ? Color.overlay("hover") : (root.checked ? Color.overlay("checked") : "transparent")
+  color: plain ? "transparent" : (root.isHovered ? Color.overlay("hover") : (root.checked ? Color.overlay("checked") : "transparent"))
   border.color: "transparent"
   border.width: Style.borderS
 
@@ -72,8 +78,8 @@ Rectangle {
       visible: root.text !== ""
       Layout.alignment: Qt.AlignVCenter
       text: root.text
-      pointSize: root.pointSize
-      font.weight: root.checked ? Style.fontWeightMedium : Style.fontWeightRegular
+      pointSize: root.plain ? Style.fontSizeTitle : root.pointSize
+      font.weight: root.plain ? Style.fontWeightMedium : (root.checked ? Style.fontWeightMedium : Style.fontWeightRegular)
       color: Color.onShell
       horizontalAlignment: Text.AlignHCenter
       verticalAlignment: Text.AlignVCenter
