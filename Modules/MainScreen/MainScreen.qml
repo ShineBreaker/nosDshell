@@ -21,7 +21,6 @@ import qs.Modules.Panels.Dock
 import qs.Modules.Panels.Launcher
 import qs.Modules.Panels.Media
 import qs.Modules.Panels.Network
-import qs.Modules.Panels.NotificationHistory
 import qs.Modules.Panels.Plugins
 import qs.Modules.Panels.SessionMenu
 import qs.Modules.Panels.Settings
