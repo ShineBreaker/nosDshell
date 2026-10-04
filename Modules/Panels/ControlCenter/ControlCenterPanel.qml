@@ -36,9 +36,24 @@ SmartPanel {
   // Which middle page the bell shows
   property bool notificationPage: false
 
+  // Which module the middle area shows (null = home page, DESIGN §3.5.3)
+  property var activeModule: null
+
   // Quick-control page requested from IPC (applied when the frame opens, or
   // immediately when it is already open)
   property string pendingQuickPage: ""
+
+  // Module requested from IPC (applied when the frame opens)
+  property var pendingModule: null
+
+  // Open a module in the module view (DESIGN §3.5.3, from the home grid, IPC
+  // "settings openTab", or the header settings button).
+  function openModule(module) {
+    if (!module)
+      return;
+    notificationPage = false;
+    activeModule = module;
+  }
 
   // Positioning: flush right edge, full height, square corners.
   panelAnchorRight: true
@@ -75,10 +90,20 @@ SmartPanel {
       function onOpened() {
         Qt.callLater(() => frameContent.forceActiveFocus());
         MediaService.autoSwitchingPaused = true;
+        // A module requested while closed (IPC) is applied on open.
+        if (root.pendingModule) {
+          root.openModule(root.pendingModule);
+          root.pendingModule = null;
+        }
       }
       function onClosed() {
         MediaService.autoSwitchingPaused = false;
         root.notificationPage = false;
+        root.activeModule = null;
+      }
+      function onNotificationPageChanged() {
+        if (root.notificationPage)
+          root.activeModule = null;
       }
     }
 
@@ -101,8 +126,8 @@ SmartPanel {
         notificationPage: root.notificationPage
         onNotificationToggled: root.notificationPage = !root.notificationPage
         onSettingsRequested: {
-          root.close();
-          SettingsPanelService.openToTab(SettingsPanel.Tab.General, -1, root.screen);
+          // Open the accounts module inside the frame (DESIGN §3.5.3)
+          openModule(ControlCenterModules.moduleForTab(SettingsPanel.Tab.General, 1) ?? ControlCenterModules.moduleByName("accounts"));
         }
         onSessionRequested: {
           PanelService.getPanel("sessionMenuPanel", root.screen)?.open();
@@ -164,10 +189,8 @@ SmartPanel {
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
           onClicked: {
-            root.close();
-            var panel = PanelService.getPanel("settingsPanel", root.screen);
-            panel.requestedTab = SettingsPanel.Tab.About;
-            panel.open();
+            // About module inside the frame (DESIGN §3.5.3)
+            openModule(ControlCenterModules.moduleByName("systeminfo"));
           }
         }
 
@@ -179,24 +202,76 @@ SmartPanel {
         }
       }
 
-      // 3. Middle area: modules page or notification page
+      // 3. Middle area: home page / module view / notification page.
+      // The home content slides out left while the module view slides in from
+      // the right (DESIGN §3.5.3, Style.motionPanel), fading with travel.
       Item {
+        id: middleArea
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.topMargin: Style.marginS
+        clip: true
 
+        readonly property bool moduleShown: root.activeModule !== null
+        // The module view spans the full frame width (56 rail + 352 content);
+        // the home page keeps its side margins.
+        readonly property real travel: root.width
+
+        // Home: cards + module grid
         ControlCenterModulesPage {
           id: modulesPage
           anchors.fill: parent
           anchors.leftMargin: Style.marginS
           anchors.rightMargin: Style.marginS
           screen: root.screen
-          opacity: root.notificationPage ? 0 : 1
+          opacity: root.notificationPage || middleArea.moduleShown ? 0 : 1
           visible: opacity > 0
+          x: middleArea.moduleShown ? -middleArea.travel : 0
+          onModuleSelected: function (module) {
+            root.notificationPage = false;
+            root.activeModule = module;
+          }
+
+          Behavior on x {
+            enabled: !Color.isTransitioning
+            NumberAnimation {
+              duration: Style.motionPanel
+              easing.type: Easing.InOutCubic
+            }
+          }
 
           Behavior on opacity {
             NumberAnimation {
-              duration: Style.animationFast
+              duration: Style.motionPanel
+              easing.type: Easing.InOutCubic
+            }
+          }
+        }
+
+        // Module view (rail + settings content)
+        SettingsModuleView {
+          id: moduleView
+          anchors.fill: parent
+          contentWidth: Style.settingsModuleContentWidth
+          module: root.activeModule
+          opacity: middleArea.moduleShown ? 1 : 0
+          visible: opacity > 0
+          enabled: middleArea.moduleShown
+          x: middleArea.moduleShown ? 0 : middleArea.travel
+          onBackRequested: root.activeModule = null
+
+          Behavior on x {
+            enabled: !Color.isTransitioning
+            NumberAnimation {
+              duration: Style.motionPanel
+              easing.type: Easing.InOutCubic
+            }
+          }
+
+          Behavior on opacity {
+            NumberAnimation {
+              duration: Style.motionPanel
+              easing.type: Easing.InOutCubic
             }
           }
         }
@@ -205,8 +280,9 @@ SmartPanel {
           id: notificationPageItem
           anchors.fill: parent
           screen: root.screen
-          opacity: root.notificationPage ? 1 : 0
+          opacity: root.notificationPage && !middleArea.moduleShown ? 1 : 0
           visible: opacity > 0
+          enabled: root.notificationPage && !middleArea.moduleShown
           closeOnAction: () => root.close()
 
           Behavior on opacity {

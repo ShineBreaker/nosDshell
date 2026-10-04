@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import qs.Commons
+import qs.Modules.Panels.ControlCenter
 import qs.Services.UI
 import qs.Widgets
 
@@ -11,8 +12,9 @@ FloatingWindow {
   id: root
 
   title: "Noctalia"
-  minimumSize: Qt.size(840 * Style.uiScaleRatio, 910 * Style.uiScaleRatio)
-  implicitWidth: Math.round(840 * Style.uiScaleRatio)
+  // 56 px rail + 640 px content (DESIGN §3.5.3), plus the DDE window padding.
+  minimumSize: Qt.size((Style.settingsRailWidth + Style.settingsWindowContentWidth + Style.margin2M) * 1, 910 * Style.uiScaleRatio)
+  implicitWidth: Math.round(Style.settingsRailWidth + Style.settingsWindowContentWidth + Style.margin2M)
   implicitHeight: Math.round(910 * Style.uiScaleRatio)
   color: "transparent"
 
@@ -23,49 +25,30 @@ FloatingWindow {
     SettingsPanelService.settingsWindow = root;
   }
 
-  property bool isInitialized: false
+  // The module shown in the two-column view (null = first module)
+  property var activeModule: null
 
   // Navigate to a specific tab and optional subtab.
   // Works whether the window is already visible or just becoming visible.
   function navigateTo(tab, subTab) {
     const tabId = tab !== undefined ? tab : 0;
     const subTabId = (subTab !== undefined && subTab !== null && subTab >= 0) ? subTab : -1;
-    if (isInitialized) {
-      settingsContent.navigateToTab(tabId, subTabId);
-    } else {
-      settingsContent.requestedTab = tabId;
-      if (subTabId >= 0)
-        settingsContent._pendingSubTab = subTabId;
-      settingsContent.initialize();
-      isInitialized = true;
-      // Tab content persists in window mode; if no subtab specified and the
-      // tab content is still loaded (same tab), reset to first subtab
-      if (subTabId < 0 && settingsContent.activeTabContent)
-        settingsContent.setSubTabIndex(0);
-    }
+    const module = ControlCenterModules.moduleForTab(tabId, subTabId);
+    if (module)
+      activeModule = module;
   }
 
   // Navigate to a search result entry.
-  // Works whether the window is already visible or just becoming visible.
+  // The two-column view has no per-entry journal, so entries land on their
+  // module; the group the row lives in stays expanded on the page.
   function navigateToEntry(entry) {
-    if (isInitialized) {
-      Qt.callLater(() => settingsContent.navigateToResult(entry));
-    } else {
-      settingsContent.requestedTab = entry.tab;
-      settingsContent.initialize();
-      Qt.callLater(() => settingsContent.navigateToResult(entry));
-      isInitialized = true;
-    }
+    if (entry && entry.tab !== undefined)
+      navigateTo(entry.tab, entry.subTab);
   }
 
   // Sync visibility with service
   onVisibleChanged: {
-    if (visible) {
-      SettingsPanelService.isWindowOpen = true;
-    } else {
-      isInitialized = false;
-      SettingsPanelService.isWindowOpen = false;
-    }
+    SettingsPanelService.isWindowOpen = visible;
   }
 
   // Keyboard shortcuts
@@ -78,41 +61,19 @@ FloatingWindow {
   Shortcut {
     sequence: "Tab"
     enabled: !PanelService.isKeybindRecording
-    onActivated: settingsContent.selectNextTab()
+    onActivated: settingsModuleView.selectNextModule()
   }
 
   Shortcut {
     sequence: "Backtab"
     enabled: !PanelService.isKeybindRecording
-    onActivated: settingsContent.selectPreviousTab()
+    onActivated: settingsModuleView.selectPreviousModule()
   }
 
-  Instantiator {
-    model: Settings.data.general.keybinds.keyUp || []
-    Shortcut {
-      sequence: modelData
-      enabled: !PanelService.isKeybindRecording
-      onActivated: {
-        if (settingsContent.searchText.trim() !== "")
-          settingsContent.searchSelectPrevious();
-        else
-          settingsContent.scrollUp();
-      }
-    }
-  }
-
-  Instantiator {
-    model: Settings.data.general.keybinds.keyDown || []
-    Shortcut {
-      sequence: modelData
-      enabled: !PanelService.isKeybindRecording
-      onActivated: {
-        if (settingsContent.searchText.trim() !== "")
-          settingsContent.searchSelectNext();
-        else
-          settingsContent.scrollDown();
-      }
-    }
+  Shortcut {
+    sequence: "Backspace"
+    enabled: !PanelService.isKeybindRecording
+    onActivated: SettingsPanelService.closeWindow()
   }
 
   // Main content
@@ -121,10 +82,14 @@ FloatingWindow {
     color: Qt.alpha(Color.mSurface, Settings.data.ui.panelBackgroundOpacity)
     radius: Style.radiusL
 
-    SettingsContent {
-      id: settingsContent
+    SettingsModuleView {
+      id: settingsModuleView
       anchors.fill: parent
-      onCloseRequested: SettingsPanelService.closeWindow()
+      anchors.margins: Style.marginS
+      contentWidth: Style.settingsWindowContentWidth
+      module: root.activeModule
+      // The window has no home page to go back to; Esc closes it instead.
+      onBackRequested: SettingsPanelService.closeWindow()
     }
   }
 }

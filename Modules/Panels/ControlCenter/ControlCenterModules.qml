@@ -7,13 +7,18 @@ import qs.Services.Networking
 import qs.Commons
 
 /**
-* ControlCenterModules - the DDE 15 module grid model (DESIGN §3.5.2).
+* ControlCenterModules - the DDE 15 module model (DESIGN §3.5.2–3.5.3).
 *
-* Ordering follows DDE's own navigation bar (gxde-control-center
-* navigationbar.cpp:39-85); each entry maps to the Noctalia settings tab it
-* opens in this phase (5b embeds the settings pages inside the frame).
-* `visible` is a predicate evaluated per screen, so optional entries (e.g.
-* 蓝牙 without an adapter) disappear instead of showing a dead cell.
+* Ordering follows DDE's own navigation bar; each entry maps to the Noctalia
+* settings tab(s) it opens inside the control center frame. `tabs` holds every
+* tab a module shows, so multi-tab modules (个性化, 任务栏, 电源 …) render their
+* tabs as stacked SettingsGroups on one page. `subTab` preselects the sub-tab
+* when the entry is a single tab with one.
+*
+* This list is the single source of truth for the home grid, the module view's
+* rail and `settings openTab` routing.
+* `visible` is evaluated per screen, so optional entries (e.g. 蓝牙 without an
+* adapter) disappear instead of showing a dead cell.
 */
 Singleton {
   id: root
@@ -27,120 +32,223 @@ Singleton {
       "id": "accounts",
       "label": "control-center.module.accounts",
       "icon": "person",
-      "tab": SettingsPanel.Tab.General,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.General,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "display",
       "label": "control-center.module.display",
       "icon": "settings-display",
-      "tab": SettingsPanel.Tab.Display,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Display,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "personalization",
       "label": "control-center.module.personalization",
       "icon": "palette",
-      "tab": SettingsPanel.Tab.ColorScheme,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.ColorScheme,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.Wallpaper,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.UserInterface,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "dock",
       "label": "control-center.module.taskbar",
       "icon": "layout-bottombar",
-      "tab": SettingsPanel.Tab.Dock,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Bar,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.Dock,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "launcher",
       "label": "control-center.module.launcher",
       "icon": "rocket",
-      "tab": SettingsPanel.Tab.Launcher,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Launcher,
+          "subTab": -1
+        }
+      ]
+    },
+    {
+      "id": "controlcenter",
+      "label": "control-center.module.control-center",
+      "icon": "settings-control-center",
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.ControlCenter,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "network",
       "label": "control-center.module.network",
       "icon": "wifi",
-      "tab": SettingsPanel.Tab.Connections,
-      "subTab": 0
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Connections,
+          "subTab": 0
+        }
+      ]
     },
     {
       "id": "bluetooth",
       "label": "control-center.module.bluetooth",
       "icon": "bluetooth",
-      "tab": SettingsPanel.Tab.Connections,
-      "subTab": 1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Connections,
+          "subTab": 1
+        }
+      ]
     },
     {
       "id": "sound",
       "label": "control-center.module.sound",
       "icon": "device-speaker",
-      "tab": SettingsPanel.Tab.Audio,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Audio,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.OSD,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "notifications",
       "label": "control-center.module.notifications",
       "icon": "bell",
-      "tab": SettingsPanel.Tab.Notifications,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Notifications,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "datetime",
       "label": "control-center.module.datetime",
       "icon": "clock",
-      "tab": SettingsPanel.Tab.Location,
-      "subTab": 1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Location,
+          "subTab": 1
+        }
+      ]
     },
     {
       "id": "power",
       "label": "control-center.module.power",
       "icon": "moon",
-      "tab": SettingsPanel.Tab.Idle,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Idle,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.SessionMenu,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.LockScreen,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "keyboard",
       "label": "control-center.module.keyboard",
       "icon": "keyboard",
-      "tab": SettingsPanel.Tab.General,
-      "subTab": 1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.General,
+          "subTab": 1
+        }
+      ]
     },
     {
       "id": "desktopwidgets",
       "label": "control-center.module.desktop-widget",
       "icon": "layout-board",
-      "tab": SettingsPanel.Tab.DesktopWidgets,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.DesktopWidgets,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "systemmonitor",
       "label": "control-center.module.system-monitor",
       "icon": "activity",
-      "tab": SettingsPanel.Tab.System,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.System,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "plugins",
       "label": "control-center.module.plugins",
       "icon": "plug-connected",
-      "tab": SettingsPanel.Tab.Plugins,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Plugins,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "advanced",
       "label": "control-center.module.advanced",
       "icon": "link",
-      "tab": SettingsPanel.Tab.Hooks,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.Hooks,
+          "subTab": -1
+        }
+      ]
     },
     {
       "id": "systeminfo",
       "label": "control-center.module.system-info",
       "icon": "info-square-rounded",
-      "tab": SettingsPanel.Tab.About,
-      "subTab": -1
+      "tabs": [
+        {
+          "tab": SettingsPanel.Tab.About,
+          "subTab": -1
+        }
+      ]
     }
   ]
 
@@ -150,10 +258,56 @@ Singleton {
     return true;
   }
 
-  function open(module, screen) {
-    if (!module)
-      return;
-    Logger.d("ControlCenterModules", "Opening", module.id, "-> tab", module.tab);
-    SettingsPanelService.openToTab(module.tab, module.subTab, screen);
+  // First module carrying `tab`, optionally on the given sub-tab. Used by
+  // `settings openTab` routing so IPC lands on the right module.
+  function moduleForTab(tab, subTab) {
+    for (var i = 0; i < modules.length; i++) {
+      const tabs = modules[i].tabs ?? [];
+      for (var j = 0; j < tabs.length; j++) {
+        if (tabs[j].tab !== tab)
+          continue;
+        if (subTab === undefined || subTab < 0 || tabs[j].subTab === subTab)
+          return modules[i];
+      }
+    }
+    return null;
+  }
+
+  // ipc-friendly name -> module id (same strings verify.sh's settings-* use)
+  readonly property var aliasMap: ({
+                                   "about": "systeminfo",
+                                   "audio": "sound",
+                                   "bar": "dock",
+                                   "colorscheme": "personalization",
+                                   "connections": "network",
+                                   "controlcenter": "controlcenter",
+                                   "desktopwidgets": "desktopwidgets",
+                                   "display": "display",
+                                   "dock": "dock",
+                                   "general": "accounts",
+                                   "hooks": "advanced",
+                                   "idle": "power",
+                                   "launcher": "launcher",
+                                   "location": "datetime",
+                                   "lockscreen": "power",
+                                   "notifications": "notifications",
+                                   "osd": "sound",
+                                   "plugins": "plugins",
+                                   "sessionmenu": "power",
+                                   "system": "systemmonitor",
+                                   "systemmonitor": "systemmonitor",
+                                   "userinterface": "personalization",
+                                   "wallpaper": "personalization"
+                                 })
+
+  function moduleByName(name) {
+    const id = aliasMap[name];
+    if (id === undefined)
+      return null;
+    for (var i = 0; i < modules.length; i++) {
+      if (modules[i].id === id)
+        return modules[i];
+    }
+    return null;
   }
 }

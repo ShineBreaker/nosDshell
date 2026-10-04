@@ -16,11 +16,17 @@ import qs.Widgets
 * radiusItem, restyled from the Noctalia card look; then the module grid:
 * 3 columns, cells inset 5, radiusItem, overlay("idle") / overlay("hover"),
 * 24 px glyph plus label below (to the right when the cell is too short).
+*
+* Since Phase 5b a click opens the module view inside the frame (DESIGN §3.5.3)
+* via `moduleSelected` instead of leaving the control center.
 */
 Item {
   id: root
 
   property var screen: null
+
+  // The module the home grid last pushed into the module view.
+  signal moduleSelected(var module)
 
   readonly property real contentWidth: Math.max(1, root.width - Style.margin2M)
   readonly property var cards: Settings.data.controlCenter.cards ?? []
@@ -33,11 +39,6 @@ Item {
   readonly property real cellHeight: Math.round(80 * Style.uiScaleRatio)
 
   implicitHeight: content.implicitHeight
-
-  function openModule(module) {
-    PanelService.getPanel("controlCenterPanel", screen)?.close();
-    ControlCenterModules.open(module, screen);
-  }
 
   NScrollView {
     id: scroll
@@ -137,7 +138,7 @@ Item {
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               enabled: !parent.spacerCell
-              onClicked: root.openModule(modelData)
+              onClicked: root.moduleSelected(modelData)
             }
           }
         }

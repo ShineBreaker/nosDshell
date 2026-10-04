@@ -16,8 +16,32 @@ Rectangle {
   property bool distributeEvenly: false
   default property alias content: tabRow.children
 
+  // DDE settings mode (DESIGN §3.5.3–3.5.4): the sub-tab strip becomes the
+  // SettingsGroup headers of a stacked NTabView — one DemiBold 24 px label per
+  // group instead of a pill strip. Pair with `NTabView.stacked`.
+  property bool groupMode: false
+
+  onGroupModeChanged: _updateGroupMode()
   onDistributeEvenlyChanged: _applyDistribution()
-  Component.onCompleted: _applyDistribution()
+  Component.onCompleted: {
+    _updateGroupMode();
+    _applyDistribution();
+  }
+
+  function _updateGroupMode() {
+    if (!tabRow)
+      return;
+    color = groupMode ? "transparent" : Color.overlay("strong");
+    for (let i = 0; i < tabRow.children.length; i++) {
+      const child = tabRow.children[i];
+      if (child.isTabButton === true) {
+        child.plain = groupMode;
+        child.isFirst = false;
+        child.isLast = false;
+      }
+    }
+    tabRow.spacing = groupMode ? Style.marginS : root.spacing;
+  }
 
   function _updateFirstLast() {
     // Defensive check for QML initialization timing
