@@ -92,10 +92,21 @@ Item {
         }
       }
 
-      // Apply shadow to the unified backgrounds
+      // Apply shadow to the unified backgrounds. A panel may carry its own
+      // descriptor (edge sheets use Style.shadowControlCenter, DESIGN §3.5.1);
+      // `shadow: null` falls back to the general shadow settings.
       NDropShadow {
         anchors.fill: parent
         source: unifiedBackgroundsShape
+
+        readonly property var shadow: {
+          var p = PanelService.backgroundSlotAssignments[0];
+          var c = PanelService.backgroundSlotAssignments[1];
+          var own = (p && p.screen === root.windowRoot.screen) ? p.panelShadow : undefined;
+          if (own === undefined)
+            own = (c && c.screen === root.windowRoot.screen) ? c.panelShadow : undefined;
+          return own !== undefined ? own : null;
+        }
       }
     }
 
@@ -146,10 +157,22 @@ Item {
           }
         }
 
-        // Apply shadow to the panel backgrounds
+        // Apply shadow to the panel backgrounds. A panel may carry its own
+        // descriptor (edge sheets use Style.shadowControlCenter, DESIGN
+        // §3.5.1) so it gets a dedicated shadow pass, because a MultiEffect
+        // shadow applies to the whole source layer.
         NDropShadow {
           anchors.fill: parent
           source: panelBackgroundsShape
+
+          readonly property var shadow: {
+            var p = PanelService.backgroundSlotAssignments[0];
+            var c = PanelService.backgroundSlotAssignments[1];
+            var own = (p && p.screen === root.windowRoot.screen) ? p.panelShadow : undefined;
+            if (own === undefined)
+              own = (c && c.screen === root.windowRoot.screen) ? c.panelShadow : undefined;
+            return own !== undefined ? own : null;
+          }
         }
       }
 

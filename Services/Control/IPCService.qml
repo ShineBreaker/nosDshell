@@ -185,10 +185,17 @@ Singleton {
   IpcHandler {
     target: "notifications"
     function toggleHistory() {
-      // Will attempt to open the panel next to the bar button if any.
+      // DDE: the bell page inside the control center (DESIGN §3.5.2).
       root.screenDetector.withCurrentScreen(screen => {
-                                              var notificationHistoryPanel = PanelService.getPanel("notificationHistoryPanel", screen);
-                                              notificationHistoryPanel.toggle(null, "NotificationHistory");
+                                              var cc = PanelService.getPanel("controlCenterPanel", screen);
+                                              if (!cc)
+                                                return;
+                                              if (cc.isPanelOpen) {
+                                                cc.notificationPage = !cc.notificationPage;
+                                              } else {
+                                                cc.notificationPage = true;
+                                                cc.open();
+                                              }
                                             });
     }
     function toggleDND() {
@@ -586,12 +593,37 @@ Singleton {
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
                                               var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
-                                              if (Settings.data.controlCenter.position === "close_to_bar_button") {
-                                                // Will attempt to open the panel next to the bar button if any.
-                                                controlCenterPanel?.toggle(null, "ControlCenter");
-                                              } else {
-                                                controlCenterPanel?.toggle();
-                                              }
+                                              controlCenterPanel?.toggle();
+                                            });
+    }
+
+    function open() {
+      root.screenDetector.withCurrentScreen(screen => {
+                                              var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
+                                              controlCenterPanel?.open();
+                                            });
+    }
+
+    function notifications() {
+      root.screenDetector.withCurrentScreen(screen => {
+                                              var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
+                                              if (!controlCenterPanel)
+                                                return;
+                                              controlCenterPanel.notificationPage = true;
+                                              if (!controlCenterPanel.isPanelOpen)
+                                                controlCenterPanel.open();
+                                            });
+    }
+
+    // Select a quick-control page: wifi | bluetooth | display | vpn | basic
+    function quickPage(page: string) {
+      root.screenDetector.withCurrentScreen(screen => {
+                                              var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
+                                              if (!controlCenterPanel)
+                                                return;
+                                              controlCenterPanel.pendingQuickPage = page;
+                                              if (!controlCenterPanel.isPanelOpen)
+                                                controlCenterPanel.open();
                                             });
     }
   }

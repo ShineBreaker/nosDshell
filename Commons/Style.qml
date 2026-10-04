@@ -290,9 +290,10 @@ Singleton {
                                         "y": 2,
                                         "color": Qt.rgba(0, 0, 0, 0.5)
                                       })
+  // Control centre frame: shadow cast to the left side only (DESIGN §3.5.1)
   readonly property var shadowControlCenter: ({
                                                 "blur": 20,
-                                                "x": 0,
+                                                "x": -20,
                                                 "y": 0,
                                                 "color": Qt.rgba(0, 0, 0, 0.5)
                                               })
@@ -345,6 +346,34 @@ Singleton {
   readonly property real fontSizeSubtitle: 12
   readonly property real fontSizeClockCC: 34.5
   readonly property real fontSizeClockLock: 51
+
+  // Control center home (DESIGN §3.5.1–3.5.2)
+  // 408 px frame, flush right edge, full screen height (gxde-control-center frame.h:53)
+  readonly property int controlCenterWidth: Math.round(408 * uiScaleRatio)
+  readonly property int controlCenterHeaderHeight: Math.round(140 * uiScaleRatio)
+  readonly property int controlCenterHeaderMarginLeft: Math.round(40 * uiScaleRatio)
+  readonly property int controlCenterHeaderMarginTop: Math.round(10 * uiScaleRatio)
+  // Module grid cell inset (navdelegate.cpp:41-57) and icon 24 px
+  readonly property int moduleCellInset: Math.round(5 * uiScaleRatio)
+  readonly property int moduleCellIcon: Math.round(24 * uiScaleRatio)
+  // QuickSwitchButton: 70x60, glyph bottom-aligned 20 px above the bottom
+  // (quickswitchbutton.cpp:41-46), on-state block radiusPopup + 5 px bottom margin
+  readonly property int quickSwitchWidth: Math.round(70 * uiScaleRatio)
+  readonly property int quickSwitchHeight: Math.round(60 * uiScaleRatio)
+  // Basic page slider track height (gxde-control-center basicsettingspage.cpp)
+  readonly property int sliderBasicHeight: Math.round(35 * uiScaleRatio)
+  // Quick-control basic page height: volume + brightness sliders + switch row
+  readonly property int quickControlPanelHeight: sliderBasicHeight * 3 + Style.marginM * 2
+  readonly property int quickSwitchIconBottomMargin: Math.round(20 * uiScaleRatio)
+  readonly property int quickSwitchBlockBottomMargin: Math.round(5 * uiScaleRatio)
+  // Page indicator: height 40, dot alphas from DESIGN §3.5.2
+  readonly property int pageIndicatorHeight: Math.round(40 * uiScaleRatio)
+  readonly property real pageDotCurrent: 0.8
+  readonly property real pageDotOther: 0.3
+  // Wheel page switching is debounced by 200 ms (indicatorwidget.cpp:72-74)
+  readonly property int pageSwitchDebounce: 200
+  // Detail list rows are 36 px tall (wifilistmodel.cpp:95)
+  readonly property int detailRowHeight: Math.round(36 * uiScaleRatio)
 
   // Dock icon size presets
   readonly property int dockIconSmall: 30

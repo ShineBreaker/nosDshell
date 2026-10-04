@@ -14,6 +14,10 @@ Item {
   property string section: widgetProps && widgetProps.section || ""
   property int sectionIndex: widgetProps && widgetProps.sectionWidgetIndex || 0
 
+  // The loaded widget instance, exposed for callers that reuse its behaviour
+  // behind their own visuals (e.g. the quick switch buttons).
+  readonly property var loadedItem: loader.item
+
   // Don't reserve space unless the loaded widget is really visible
   implicitWidth: getImplicitSize(loader.item, "implicitWidth")
   implicitHeight: getImplicitSize(loader.item, "implicitHeight")

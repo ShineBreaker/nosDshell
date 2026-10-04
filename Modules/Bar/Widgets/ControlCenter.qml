@@ -106,12 +106,7 @@ NIconButton {
 
   onClicked: {
     var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
-    if (Settings.data.controlCenter.position === "close_to_bar_button") {
-      // Will open the panel next to the bar button.
-      controlCenterPanel?.toggle(this);
-    } else {
-      controlCenterPanel?.toggle();
-    }
+    controlCenterPanel?.toggle();
   }
   onRightClicked: {
     PanelService.showContextMenu(contextMenu, root, screen);

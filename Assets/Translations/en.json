@@ -574,7 +574,8 @@
     "wifi": "Wi-Fi",
     "windows": "Windows",
     "yes": "Yes",
-    "today": "Today"
+    "today": "Today",
+    "display": "Display"
   },
   "control-center": {
     "power-profile": {
@@ -584,7 +585,27 @@
     "wifi": {
       "label-disconnected": "Wi-Fi disconnected",
       "label-ethernet": "Ethernet"
-    }
+    },
+    "module": {
+      "accounts": "Accounts",
+      "display": "Display",
+      "personalization": "Personalization",
+      "taskbar": "Taskbar",
+      "launcher": "Launcher",
+      "network": "Network",
+      "bluetooth": "Bluetooth",
+      "sound": "Sound",
+      "notifications": "Notifications",
+      "datetime": "Date & Time",
+      "power": "Power",
+      "keyboard": "Keyboard",
+      "desktop-widget": "Desktop Widgets",
+      "system-monitor": "System Monitor",
+      "plugins": "Plugins",
+      "advanced": "Advanced",
+      "system-info": "System Info"
+    },
+    "update-available": "Update available: {version}"
   },
   "display-modes": {
     "always-hide": "Always hide",

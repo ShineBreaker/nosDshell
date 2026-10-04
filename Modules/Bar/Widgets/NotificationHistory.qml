@@ -69,7 +69,7 @@ NIconButton {
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
-    if (PanelService.getPanel("notificationHistoryPanel", screen)?.isPanelOpen) {
+    if (PanelService.getPanel("controlCenterPanel", screen)?.isPanelOpen) {
       return "";
     } else {
       return I18n.tr("tooltips.open-notification-history-enable-dnd");
@@ -119,8 +119,13 @@ NIconButton {
   }
 
   onClicked: {
-    var panel = PanelService.getPanel("notificationHistoryPanel", screen);
-    panel?.toggle(this);
+    // DDE: the bell page inside the control center (DESIGN §3.5.2)
+    var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
+    if (!controlCenterPanel)
+      return;
+    controlCenterPanel.notificationPage = true;
+    if (!controlCenterPanel.isPanelOpen)
+      controlCenterPanel.open();
   }
 
   onRightClicked: {

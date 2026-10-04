@@ -12,7 +12,9 @@
 # wiped before each run for reproducibility.
 #
 # Scenes (default: all, lockscreen always runs last):
-#   idle, launcher, control-center, settings, session-menu, notification,
+#   idle, launcher, control-center, cc-notifications, cc-quick-wifi,
+#   cc-quick-bluetooth, cc-quick-display, cc-quick-vpn, cc-quick-basic,
+#   settings, session-menu, notification,
 #   osd-volume, audio-panel, network-panel, bluetooth-panel, battery-panel,
 #   calendar-panel, media-panel, system-monitor, notification-history,
 #   wallpaper, dock, lockscreen
@@ -110,7 +112,9 @@ cat > "$INNER" <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 
-SCENES_ORDER="idle launcher control-center settings session-menu notification
+SCENES_ORDER="idle launcher control-center cc-notifications cc-quick-wifi
+cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
+settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
@@ -196,6 +200,20 @@ run_scene() {
     idle)                 shot idle ;;
     launcher)             toggle launcher toggle 1.5 launcher ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
+    # DDE control center: bell page (3 notifications seeded so the list has content)
+    cc-notifications)     notify-send -a noctalia-verify "Notification one" \
+                            "First test body for the history list." 2>/dev/null
+                          notify-send -a noctalia-verify "Notification two" \
+                            "Second test body, longer line to check elide." 2>/dev/null
+                          notify-send -a noctalia-verify "Notification three" \
+                            "Third body with an action" 2>/dev/null
+                          sleep 1; toggle controlCenter notifications 1.5 cc-notifications ;;
+    # quick-control pages: open the frame, select the page, shoot, close
+    cc-quick-*)           local p="${1#cc-quick-}"
+                          call controlCenter open 1.5
+                          call controlCenter quickPage "$p" 1.2
+                          shot "$1"
+                          call controlCenter toggle 0.5 ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
     settings-*)           call settings openTab "${1#settings-}" 2; shot "$1"; call settings toggle 0.5 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;

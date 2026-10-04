@@ -574,7 +574,8 @@
     "wifi": "Wi-Fi",
     "windows": "窗口",
     "yes": "是",
-    "today": "今天"
+    "today": "今天",
+    "display": "显示"
   },
   "control-center": {
     "power-profile": {
@@ -584,7 +585,27 @@
     "wifi": {
       "label-disconnected": "Wi-Fi 已断开",
       "label-ethernet": "以太网"
-    }
+    },
+    "module": {
+      "accounts": "账户",
+      "display": "显示",
+      "personalization": "个性化",
+      "taskbar": "任务栏",
+      "launcher": "启动器",
+      "network": "网络",
+      "bluetooth": "蓝牙",
+      "sound": "声音",
+      "notifications": "通知",
+      "datetime": "时间日期",
+      "power": "电源",
+      "keyboard": "键盘",
+      "desktop-widget": "桌面挂件",
+      "system-monitor": "系统监控",
+      "plugins": "插件",
+      "advanced": "高级",
+      "system-info": "系统信息"
+    },
+    "update-available": "发现新版本 {version} 可更新"
   },
   "display-modes": {
     "always-hide": "始终隐藏",

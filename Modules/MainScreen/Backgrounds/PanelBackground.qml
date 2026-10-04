@@ -29,7 +29,8 @@ ShapePath {
   property color defaultBackgroundColor: Color.mSurface
 
   // Corner radius (from Style)
-  readonly property real radius: Style.radiusL
+  // Corner radius; the panel may force square corners (edge sheets, §3.5.1)
+  readonly property real radius: (assignedPanel && assignedPanel.squareCorners) ? 0.01 : Style.radiusL
 
   // Get panel's panelRegion (geometry placeholder)
   readonly property var panelRegion: assignedPanel?.panelRegion ?? null

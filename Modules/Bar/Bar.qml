@@ -371,7 +371,7 @@ Item {
             return;
           if (action === "controlCenter") {
             var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
-            controlCenterPanel?.toggle(null, followMouse ? mapToItem(null, mouse.x, mouse.y) : "ControlCenter");
+            controlCenterPanel?.toggle();
             mouse.accepted = true;
           } else if (action === "settings") {
             var settingsPanel = PanelService.getPanel("settingsPanel", screen);

@@ -80,6 +80,10 @@ Item {
   // Whether blur should be applied behind this panel
   property bool blurEnabled: true
 
+  // Optional per-panel shadow descriptor {blur, x, y, color} (DESIGN §1.6).
+  // null keeps the general shadow settings; edge sheets set Style.shadowControlCenter.
+  property var panelShadow: null
+
   // Close with escape key
   property bool closeWithEscape: true
 
@@ -92,6 +96,26 @@ Item {
   // or are matched by the denylist below.
   // ------------------------------------------------------------------
   property bool arrowPopup: true
+
+  // ------------------------------------------------------------------
+  // Edge sheets (DESIGN §3.5.1): a full-height frame flush to a screen edge
+  // that slides in along that axis instead of growing. Used by the control
+  // center — 408 px wide, full screen height, square corners, always on the
+  // right, inset by the taskbar when that is on the right too.
+  // ------------------------------------------------------------------
+  property bool edgeSheet: false
+  readonly property string edgeSheetEdge: "right"
+
+  // Square corners; PanelBackground reads this for both corner states and radius
+  readonly property bool squareCorners: edgeSheet
+
+  readonly property real edgeSheetInset: {
+    if (!edgeSheet || edgeSheetEdge !== "right" || !BarService.hasTaskbarOnScreen(screen?.name || ""))
+      return 0;
+    if (Settings.data.dock.mode === "efficient")
+      return Style.getBarHeightForScreen(screen?.name);
+    return Settings.getBarPositionForScreen(screen?.name) === "right" ? Style.dockItemThickness : 0;
+  }
 
   readonly property bool useArrowPopup: {
     if (!root.arrowPopup)
@@ -433,6 +457,22 @@ Item {
     // Update panelBackground target size (will be animated)
     panelBackground.targetWidth = panelWidth;
     panelBackground.targetHeight = panelHeight;
+
+    // ===== Edge sheet placement (DESIGN §3.5.1) =====
+    // Full-height frame flush to the screen edge, inset by the taskbar when
+    // that is on the same side. No grow/shrink animation: it slides along the
+    // edge axis instead (see panelBackground.x).
+    if (root.edgeSheet) {
+      panelBackground.slidesAlongEdge = true;
+      // Edge sheets span the full screen height, no bar/margin deduction.
+      panelBackground.targetWidth = panelWidth;
+      panelBackground.targetHeight = Math.min(h, root.height);
+      panelBackground.targetX = Math.round(root.edgeSheetEdge === "right" ? root.width - root.edgeSheetInset - panelWidth : root.edgeSheetInset);
+      panelBackground.targetY = 0;
+      return;
+    }
+
+    panelBackground.slidesAlongEdge = false;
 
     // ===== Arrow popup placement (DESIGN §3.2 DockPopupWindow) =====
     // Body sits on the inner side of the taskbar; the arrow tip is
@@ -983,6 +1023,10 @@ Item {
       // Track whether dimensions have been initialized (to prevent initial changes from animating)
       property bool dimensionsInitialized: false
 
+      // Set by setPosition() for edge sheets (DESIGN §3.5.1): the panel slides
+      // along the edge axis instead of growing.
+      property bool slidesAlongEdge: false
+
       property var bezierCurve: [0.05, 0, 0.133, 0.06, 0.166, 0.4, 0.208, 0.82, 0.25, 1, 1, 1]
 
       // Determine which edges the panel is closest to for animation direction
@@ -1183,8 +1227,8 @@ Item {
       // This prevents diagonal animations when panel is attached to a corner
       // Use reactive values here - they're evaluated BEFORE isPanelVisible becomes true
       // Arrow popups never grow/shrink — opacity fade only (DESIGN §3.2)
-      readonly property bool shouldAnimateWidth: !root.useArrowPopup && !shouldAnimateHeight && (animateFromLeft || animateFromRight)
-      readonly property bool shouldAnimateHeight: !root.useArrowPopup && (animateFromTop || animateFromBottom)
+      readonly property bool shouldAnimateWidth: !root.useArrowPopup && !slidesAlongEdge && !shouldAnimateHeight && (animateFromLeft || animateFromRight)
+      readonly property bool shouldAnimateHeight: !root.useArrowPopup && !slidesAlongEdge && (animateFromTop || animateFromBottom)
 
       // Current animated width/height (referenced by x/y for right/bottom positioning)
       readonly property real currentWidth: {
@@ -1210,6 +1254,13 @@ Item {
       height: currentHeight
 
       x: {
+        // Edge sheets slide along the edge axis: the sheet starts a full width
+        // beyond its target edge and animates x to the target (§3.5.1).
+        if (slidesAlongEdge) {
+          if (root.isClosing || !isPanelVisible)
+            return root.edgeSheetEdge === "right" ? targetX + targetWidth : targetX - targetWidth;
+          return targetX;
+        }
         // Offset x to make panel grow/shrink from the appropriate edge
         // Use CACHED values to prevent recalculation during animation
         if (root.cachedAnimateFromRight && root.cachedShouldAnimateWidth) {
@@ -1218,6 +1269,21 @@ Item {
           return targetRightEdge - width;
         }
         return targetX;
+      }
+
+      Behavior on x {
+        enabled: panelBackground.slidesAlongEdge && !PanelService.closedImmediately
+        NumberAnimation {
+          duration: Style.motionEnter
+          easing.type: Easing.OutCubic
+
+          onRunningChanged: {
+            // Edge sheets have no size animation to serialize against, so the
+            // close sequence finishes once the slide-out completes.
+            if (!running && root.isClosing && !root.closeFinalized && panelBackground.slidesAlongEdge)
+              Qt.callLater(root.finalizeClose);
+          }
+        }
       }
       y: {
         // Offset y to make panel grow/shrink from the appropriate edge
@@ -1297,136 +1363,148 @@ Item {
       // State 2: Vertical inversion (outer curve on Y-axis)
 
       // Smart corner state calculation based on bar attachment and edge touching
-      property int topLeftCornerState: {
-        // If bar is not visible, don't show outer corners based on bar attachment
-        if (!root.barShouldShow) {
-          // Only check edge touching, not bar touching
+      // Edge sheets (§3.5.1) are square: all corners are state -1.
+      property int topLeftCornerState: root.squareCorners ? -1 : cornerState_topLeftCornerState()
+
+      function cornerState_topLeftCornerState() {
+          // If bar is not visible, don't show outer corners based on bar attachment
+          if (!root.barShouldShow) {
+            // Only check edge touching, not bar touching
+            var edgeInverted = panelContent.allowAttach && (panelContent.touchingLeftEdge || panelContent.touchingTopEdge);
+            if (edgeInverted) {
+              if (panelContent.touchingLeftEdge && panelContent.touchingTopEdge)
+                return 0; // Both edges: no inversion (normal rounded corner)
+              if (panelContent.touchingLeftEdge)
+                return 2; // Left edge: vertical inversion
+              if (panelContent.touchingTopEdge)
+                return 1; // Top edge: horizontal inversion
+            }
+            return 0;
+          }
+
+          var barTouchInverted = panelContent.touchingTopBar || panelContent.touchingLeftBar;
+          // Invert if touching either edge that forms this corner (left OR top), regardless of bar position
           var edgeInverted = panelContent.allowAttach && (panelContent.touchingLeftEdge || panelContent.touchingTopEdge);
-          if (edgeInverted) {
+
+          if (barTouchInverted || edgeInverted) {
+            // Determine inversion direction based on which edge is touched
             if (panelContent.touchingLeftEdge && panelContent.touchingTopEdge)
               return 0; // Both edges: no inversion (normal rounded corner)
             if (panelContent.touchingLeftEdge)
               return 2; // Left edge: vertical inversion
             if (panelContent.touchingTopEdge)
               return 1; // Top edge: horizontal inversion
+            return root.barIsVertical ? 2 : 1;
           }
           return 0;
-        }
-
-        var barTouchInverted = panelContent.touchingTopBar || panelContent.touchingLeftBar;
-        // Invert if touching either edge that forms this corner (left OR top), regardless of bar position
-        var edgeInverted = panelContent.allowAttach && (panelContent.touchingLeftEdge || panelContent.touchingTopEdge);
-
-        if (barTouchInverted || edgeInverted) {
-          // Determine inversion direction based on which edge is touched
-          if (panelContent.touchingLeftEdge && panelContent.touchingTopEdge)
-            return 0; // Both edges: no inversion (normal rounded corner)
-          if (panelContent.touchingLeftEdge)
-            return 2; // Left edge: vertical inversion
-          if (panelContent.touchingTopEdge)
-            return 1; // Top edge: horizontal inversion
-          return root.barIsVertical ? 2 : 1;
-        }
-        return 0;
       }
 
-      property int topRightCornerState: {
-        // If bar is not visible, don't show outer corners based on bar attachment
-        if (!root.barShouldShow) {
-          // Only check edge touching, not bar touching
+      // Edge sheets (§3.5.1) are square: all corners are state -1.
+      property int topRightCornerState: root.squareCorners ? -1 : cornerState_topRightCornerState()
+
+      function cornerState_topRightCornerState() {
+          // If bar is not visible, don't show outer corners based on bar attachment
+          if (!root.barShouldShow) {
+            // Only check edge touching, not bar touching
+            var edgeInverted = panelContent.allowAttach && (panelContent.touchingRightEdge || panelContent.touchingTopEdge);
+            if (edgeInverted) {
+              if (panelContent.touchingRightEdge && panelContent.touchingTopEdge)
+                return 0; // Both edges: no inversion (normal rounded corner)
+              if (panelContent.touchingRightEdge)
+                return 2; // Right edge: vertical inversion
+              if (panelContent.touchingTopEdge)
+                return 1; // Top edge: horizontal inversion
+            }
+            return 0;
+          }
+
+          var barTouchInverted = panelContent.touchingTopBar || panelContent.touchingRightBar;
+          // Invert if touching either edge that forms this corner (right OR top), regardless of bar position
           var edgeInverted = panelContent.allowAttach && (panelContent.touchingRightEdge || panelContent.touchingTopEdge);
-          if (edgeInverted) {
+
+          if (barTouchInverted || edgeInverted) {
+            // Determine inversion direction based on which edge is touched
             if (panelContent.touchingRightEdge && panelContent.touchingTopEdge)
               return 0; // Both edges: no inversion (normal rounded corner)
             if (panelContent.touchingRightEdge)
               return 2; // Right edge: vertical inversion
             if (panelContent.touchingTopEdge)
               return 1; // Top edge: horizontal inversion
+            return root.barIsVertical ? 2 : 1;
           }
           return 0;
-        }
-
-        var barTouchInverted = panelContent.touchingTopBar || panelContent.touchingRightBar;
-        // Invert if touching either edge that forms this corner (right OR top), regardless of bar position
-        var edgeInverted = panelContent.allowAttach && (panelContent.touchingRightEdge || panelContent.touchingTopEdge);
-
-        if (barTouchInverted || edgeInverted) {
-          // Determine inversion direction based on which edge is touched
-          if (panelContent.touchingRightEdge && panelContent.touchingTopEdge)
-            return 0; // Both edges: no inversion (normal rounded corner)
-          if (panelContent.touchingRightEdge)
-            return 2; // Right edge: vertical inversion
-          if (panelContent.touchingTopEdge)
-            return 1; // Top edge: horizontal inversion
-          return root.barIsVertical ? 2 : 1;
-        }
-        return 0;
       }
 
-      property int bottomLeftCornerState: {
-        // If bar is not visible, don't show outer corners based on bar attachment
-        if (!root.barShouldShow) {
-          // Only check edge touching, not bar touching
+      // Edge sheets (§3.5.1) are square: all corners are state -1.
+      property int bottomLeftCornerState: root.squareCorners ? -1 : cornerState_bottomLeftCornerState()
+
+      function cornerState_bottomLeftCornerState() {
+          // If bar is not visible, don't show outer corners based on bar attachment
+          if (!root.barShouldShow) {
+            // Only check edge touching, not bar touching
+            var edgeInverted = panelContent.allowAttach && (panelContent.touchingLeftEdge || panelContent.touchingBottomEdge);
+            if (edgeInverted) {
+              if (panelContent.touchingLeftEdge && panelContent.touchingBottomEdge)
+                return 0; // Both edges: no inversion (normal rounded corner)
+              if (panelContent.touchingLeftEdge)
+                return 2; // Left edge: vertical inversion
+              if (panelContent.touchingBottomEdge)
+                return 1; // Bottom edge: horizontal inversion
+            }
+            return 0;
+          }
+
+          var barTouchInverted = panelContent.touchingBottomBar || panelContent.touchingLeftBar;
+          // Invert if touching either edge that forms this corner (left OR bottom), regardless of bar position
           var edgeInverted = panelContent.allowAttach && (panelContent.touchingLeftEdge || panelContent.touchingBottomEdge);
-          if (edgeInverted) {
+
+          if (barTouchInverted || edgeInverted) {
+            // Determine inversion direction based on which edge is touched
             if (panelContent.touchingLeftEdge && panelContent.touchingBottomEdge)
               return 0; // Both edges: no inversion (normal rounded corner)
             if (panelContent.touchingLeftEdge)
               return 2; // Left edge: vertical inversion
             if (panelContent.touchingBottomEdge)
               return 1; // Bottom edge: horizontal inversion
+            return root.barIsVertical ? 2 : 1;
           }
           return 0;
-        }
-
-        var barTouchInverted = panelContent.touchingBottomBar || panelContent.touchingLeftBar;
-        // Invert if touching either edge that forms this corner (left OR bottom), regardless of bar position
-        var edgeInverted = panelContent.allowAttach && (panelContent.touchingLeftEdge || panelContent.touchingBottomEdge);
-
-        if (barTouchInverted || edgeInverted) {
-          // Determine inversion direction based on which edge is touched
-          if (panelContent.touchingLeftEdge && panelContent.touchingBottomEdge)
-            return 0; // Both edges: no inversion (normal rounded corner)
-          if (panelContent.touchingLeftEdge)
-            return 2; // Left edge: vertical inversion
-          if (panelContent.touchingBottomEdge)
-            return 1; // Bottom edge: horizontal inversion
-          return root.barIsVertical ? 2 : 1;
-        }
-        return 0;
       }
 
-      property int bottomRightCornerState: {
-        // If bar is not visible, don't show outer corners based on bar attachment
-        if (!root.barShouldShow) {
-          // Only check edge touching, not bar touching
+      // Edge sheets (§3.5.1) are square: all corners are state -1.
+      property int bottomRightCornerState: root.squareCorners ? -1 : cornerState_bottomRightCornerState()
+
+      function cornerState_bottomRightCornerState() {
+          // If bar is not visible, don't show outer corners based on bar attachment
+          if (!root.barShouldShow) {
+            // Only check edge touching, not bar touching
+            var edgeInverted = panelContent.allowAttach && (panelContent.touchingRightEdge || panelContent.touchingBottomEdge);
+            if (edgeInverted) {
+              if (panelContent.touchingRightEdge && panelContent.touchingBottomEdge)
+                return 0; // Both edges: no inversion (normal rounded corner)
+              if (panelContent.touchingRightEdge)
+                return 2; // Right edge: vertical inversion
+              if (panelContent.touchingBottomEdge)
+                return 1; // Bottom edge: horizontal inversion
+            }
+            return 0;
+          }
+
+          var barTouchInverted = panelContent.touchingBottomBar || panelContent.touchingRightBar;
+          // Invert if touching either edge that forms this corner (right OR bottom), regardless of bar position
           var edgeInverted = panelContent.allowAttach && (panelContent.touchingRightEdge || panelContent.touchingBottomEdge);
-          if (edgeInverted) {
+
+          if (barTouchInverted || edgeInverted) {
+            // Determine inversion direction based on which edge is touched
             if (panelContent.touchingRightEdge && panelContent.touchingBottomEdge)
               return 0; // Both edges: no inversion (normal rounded corner)
             if (panelContent.touchingRightEdge)
               return 2; // Right edge: vertical inversion
             if (panelContent.touchingBottomEdge)
               return 1; // Bottom edge: horizontal inversion
+            return root.barIsVertical ? 2 : 1;
           }
           return 0;
-        }
-
-        var barTouchInverted = panelContent.touchingBottomBar || panelContent.touchingRightBar;
-        // Invert if touching either edge that forms this corner (right OR bottom), regardless of bar position
-        var edgeInverted = panelContent.allowAttach && (panelContent.touchingRightEdge || panelContent.touchingBottomEdge);
-
-        if (barTouchInverted || edgeInverted) {
-          // Determine inversion direction based on which edge is touched
-          if (panelContent.touchingRightEdge && panelContent.touchingBottomEdge)
-            return 0; // Both edges: no inversion (normal rounded corner)
-          if (panelContent.touchingRightEdge)
-            return 2; // Right edge: vertical inversion
-          if (panelContent.touchingBottomEdge)
-            return 1; // Bottom edge: horizontal inversion
-          return root.barIsVertical ? 2 : 1;
-        }
-        return 0;
       }
 
       // MouseArea to catch clicks on the panel and prevent them from reaching the background
@@ -1472,9 +1550,9 @@ Item {
           // Make panel visible, now only the intended dimension will animate
           root.isPanelVisible = true;
 
-          if (root.animationsDisabled || root.useArrowPopup) {
-            // Skip delay when animations are disabled; arrow popups have no
-            // size animation, so the opacity fade starts immediately
+          if (root.animationsDisabled || root.useArrowPopup || panelBackground.slidesAlongEdge) {
+            // Skip delay when animations are disabled; arrow popups and edge
+            // sheets have no size animation, so the opacity fade starts at once
             root.sizeAnimationComplete = true;
           } else {
             opacityTrigger.start();

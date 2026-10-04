@@ -346,12 +346,6 @@ PanelWindow {
       screen: root.screen
     }
 
-    NotificationHistoryPanel {
-      id: notificationHistoryPanel
-      objectName: "notificationHistoryPanel-" + (root.screen?.name || "unknown")
-      screen: root.screen
-    }
-
     SessionMenu {
       id: sessionMenuPanel
       objectName: "sessionMenuPanel-" + (root.screen?.name || "unknown")
