@@ -360,9 +360,10 @@ Variants {
           id: editModeControlsPanel
           visible: DesktopWidgetRegistry.editMode && Settings.data.desktopWidgets.enabled
 
-          readonly property string barPos: Settings.getBarPositionForScreen(window.screen?.name)
-          readonly property bool barFloating: Settings.data.bar.barType === "floating"
-          readonly property real barHeight: Style.getBarHeightForScreen(window.screen?.name)
+          readonly property bool hasBar: BarService.hasBarOnScreen(window.screen?.name)
+          readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(window.screen?.name) : ""
+          readonly property bool barFloating: hasBar && Settings.getEffectiveBarType() === "floating"
+          readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(window.screen?.name) : 0
 
           readonly property int barOffsetTop: {
             if (barPos !== "top")

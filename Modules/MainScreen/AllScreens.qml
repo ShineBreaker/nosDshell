@@ -22,9 +22,8 @@ Variants {
 
       let shouldLoad = true;
       if (!Settings.data.general.allowPanelsOnScreenWithoutBar) {
-        // Check if bar is configured for this screen
-        var monitors = Settings.data.bar.monitors || [];
-        shouldLoad = monitors.length === 0 || monitors.includes(modelData?.name);
+        // Check if a taskbar (bar or fashion dock) is configured for this screen
+        shouldLoad = BarService.hasTaskbarOnScreen(modelData?.name);
       }
 
       if (shouldLoad) {
@@ -62,9 +61,8 @@ Variants {
         if (!parent.windowLoaded || !parent.shouldBeActive)
           return false;
 
-        // Check if bar is configured for this screen
-        var monitors = Settings.data.bar.monitors || [];
-        return monitors.length === 0 || monitors.includes(modelData?.name);
+        // The Bar only exists in efficient (taskbar) mode
+        return BarService.hasBarOnScreen(modelData?.name);
       }
       asynchronous: false
 
@@ -88,9 +86,7 @@ Variants {
         if (Settings.getBarDisplayModeForScreen(modelData?.name) !== "auto_hide")
           return false;
 
-        // Check if bar is configured for this screen
-        var monitors = Settings.data.bar.monitors || [];
-        return monitors.length === 0 || monitors.includes(modelData?.name);
+        return BarService.hasBarOnScreen(modelData?.name);
       }
       asynchronous: false
 
@@ -109,15 +105,13 @@ Variants {
     // windows from moving into the bar area. Auto-hide is handled by the component
     // itself via ExclusionMode.Ignore/Auto.
     Repeater {
-      model: Settings.data.bar.barType === "framed" ? ["top", "bottom", "left", "right"] : [Settings.getBarPositionForScreen(windowItem.modelData?.name)]
+      model: Settings.getEffectiveBarType() === "framed" ? ["top", "bottom", "left", "right"] : [Settings.getBarPositionForScreen(windowItem.modelData?.name)]
       delegate: Loader {
         active: {
           if (!windowItem.windowLoaded || !windowItem.shouldBeActive)
             return false;
 
-          // Check if bar is configured for this screen
-          var monitors = Settings.data.bar.monitors || [];
-          return monitors.length === 0 || monitors.includes(windowItem.modelData?.name);
+          return BarService.hasBarOnScreen(windowItem.modelData?.name);
         }
         asynchronous: false
 
@@ -146,9 +140,7 @@ Variants {
         if (!parent.windowLoaded || !parent.shouldBeActive)
           return false;
 
-        // Check if bar is configured for this screen
-        var monitors = Settings.data.bar.monitors || [];
-        return monitors.length === 0 || monitors.includes(modelData?.name);
+        return true;
       }
       asynchronous: false
 

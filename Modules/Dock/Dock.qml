@@ -13,7 +13,7 @@ import qs.Widgets
 
 Loader {
 
-  active: Settings.data.dock.enabled
+  active: Settings.data.dock.enabled && Settings.data.dock.mode === "fashion"
   sourceComponent: Variants {
     model: Quickshell.screens
 
@@ -103,12 +103,12 @@ Loader {
       readonly property bool isVertical: dockPosition === "left" || dockPosition === "right"
 
       // Bar detection and positioning properties
-      readonly property bool hasBar: modelData && modelData.name ? (Settings.data.bar.monitors.includes(modelData.name) || (Settings.data.bar.monitors.length === 0)) : false
+      readonly property bool hasBar: modelData && modelData.name ? BarService.hasBarOnScreen(modelData.name) : false
       readonly property bool barAtSameEdge: hasBar && Settings.getBarPositionForScreen(modelData?.name) === dockPosition
       readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name)
       readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
-      readonly property bool barIsFramed: Settings.data.bar.barType === "framed" && hasBar
-      readonly property bool barFloating: Settings.data.bar.barType === "floating"
+      readonly property bool barIsFramed: Settings.getEffectiveBarType() === "framed" && hasBar
+      readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
       readonly property real barMarginH: barFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
       readonly property real barMarginV: barFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
       readonly property int barHeight: Style.getBarHeightForScreen(modelData?.name)

@@ -60,7 +60,10 @@ Item {
   readonly property real barHeight: Style.getBarHeightForScreen(screenName)
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
   readonly property bool density: Settings.data.bar.density
-  readonly property int iconSize: Style.toOdd(capsuleHeight * 0.65)
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // DDE efficient: 16 px tray icons in 24 px cells with 10 px spacing
+  readonly property int iconSize: efficientMode ? 16 : Style.toOdd(capsuleHeight * 0.65)
+  readonly property int cellSize: efficientMode ? 24 : capsuleHeight
 
   property var blacklist: widgetSettings.blacklist || widgetMetadata.blacklist || [] // Read from settings
   property var pinned: widgetSettings.pinned || widgetMetadata.pinned || [] // Pinned items (shown inline)
@@ -301,14 +304,14 @@ Item {
   visible: filteredItems.length > 0 || dropdownItems.length > 0
   opacity: (filteredItems.length > 0 || dropdownItems.length > 0) ? 1.0 : 0.0
 
-  // Visual capsule centered in parent
+  // Visual capsule centered in parent (DDE efficient: transparent, square)
   Rectangle {
     id: visualCapsule
     width: capsuleWidth
     height: capsuleContentHeight
     x: Style.pixelAlignCenter(parent.width, width)
     y: Style.pixelAlignCenter(parent.height, height)
-    radius: Style.radiusM
+    radius: efficientMode ? Style.radiusPopup : Style.radiusM
     color: Style.capsuleColor
     border.color: Style.capsuleBorderColor
     border.width: Style.capsuleBorderWidth
@@ -337,7 +340,7 @@ Item {
 
   Flow {
     id: trayFlow
-    spacing: 0
+    spacing: efficientMode ? 10 : 0
     flow: isVertical ? Flow.TopToBottom : Flow.LeftToRight
 
     // Position centered in capsule
@@ -347,8 +350,8 @@ Item {
     NIconButton {
       id: chevronIconBefore
       visible: root.drawerEnabled && dropdownItems.length > 0 && BarService.getPillDirection(root)
-      width: isVertical ? barHeight : capsuleHeight
-      height: isVertical ? capsuleHeight : barHeight
+      width: efficientMode ? 24 : (isVertical ? barHeight : capsuleHeight)
+      height: efficientMode ? 24 : (isVertical ? capsuleHeight : barHeight)
       tooltipText: {
         if (PanelService.getPanel("trayDrawerPanel", root.screen)?.isPanelOpen) {
           return "";
@@ -357,11 +360,11 @@ Item {
         }
       }
       tooltipDirection: BarService.getTooltipDirection(root.screen?.name)
-      baseSize: capsuleHeight
+      baseSize: efficientMode ? 24 : capsuleHeight
       applyUiScale: false
-      customRadius: Style.radiusL
+      customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
       colorBg: "transparent"
-      colorFg: root.chevronColor
+      colorFg: efficientMode ? Color.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
       icon: {
@@ -390,8 +393,8 @@ Item {
         id: trayDelegate
         required property var modelData
         required property int index
-        width: isVertical ? barHeight : capsuleHeight
-        height: isVertical ? capsuleHeight : barHeight
+        width: isVertical ? barHeight : cellSize
+        height: isVertical ? cellSize : barHeight
         visible: modelData
         readonly property bool isHovered: root.hoveredItemIndex === index
 
@@ -431,7 +434,7 @@ Item {
           }
           opacity: status === Image.Ready ? 1 : 0
 
-          layer.enabled: widgetSettings.colorizeIcons !== false
+          layer.enabled: widgetSettings.colorizeIcons !== false && !root.efficientMode
           layer.effect: ShaderEffect {
             property color targetColor: Settings.data.colorSchemes.darkMode ? Color.mOnSurface : Color.mSurfaceVariant
             property real colorizeMode: 1.0
@@ -442,6 +445,7 @@ Item {
 
         Rectangle {
           id: hoverIndicator
+          visible: !root.efficientMode
           anchors.bottom: trayIcon.bottom
           anchors.bottomMargin: -2
           anchors.horizontalCenter: trayIcon.horizontalCenter
@@ -549,15 +553,15 @@ Item {
     NIconButton {
       id: chevronIconAfter
       visible: root.drawerEnabled && dropdownItems.length > 0 && !BarService.getPillDirection(root)
-      width: isVertical ? barHeight : capsuleHeight
-      height: isVertical ? capsuleHeight : barHeight
+      width: efficientMode ? 24 : (isVertical ? barHeight : capsuleHeight)
+      height: efficientMode ? 24 : (isVertical ? capsuleHeight : barHeight)
       tooltipText: I18n.tr("tooltips.open-tray-dropdown")
       tooltipDirection: BarService.getTooltipDirection(root.screen?.name)
-      baseSize: capsuleHeight
+      baseSize: efficientMode ? 24 : capsuleHeight
       applyUiScale: false
-      customRadius: Style.radiusL
+      customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
       colorBg: "transparent"
-      colorFg: root.chevronColor
+      colorFg: efficientMode ? Color.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
       icon: {

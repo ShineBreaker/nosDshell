@@ -24,6 +24,9 @@ Item {
   required property var windowRoot
 
   readonly property color panelBackgroundColor: Color.mSurface
+  // Efficient (taskbar) mode: the bar gets its own layer so the maskShell
+  // alpha isn't double-multiplied by the panel opacity layer
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   anchors.fill: parent
 
@@ -34,7 +37,7 @@ Item {
     // When not using separate bar opacity, use unified approach (original behavior)
     Item {
       anchors.fill: parent
-      visible: !Settings.data.bar.useSeparateOpacity
+      visible: !Settings.data.bar.useSeparateOpacity && !root.efficientMode
 
       // Enable layer caching to prevent continuous re-rendering
       layer.enabled: true
@@ -96,10 +99,10 @@ Item {
       }
     }
 
-    // When using separate bar opacity, separate the rendering
+    // When using separate bar opacity (or efficient mode), separate the rendering
     Item {
       anchors.fill: parent
-      visible: Settings.data.bar.useSeparateOpacity
+      visible: Settings.data.bar.useSeparateOpacity || root.efficientMode
 
       // Panel backgrounds with panel opacity
       Item {
@@ -155,7 +158,7 @@ Item {
         anchors.fill: parent
 
         layer.enabled: true
-        opacity: Style.effectiveBarOpacity
+        opacity: root.efficientMode ? 1.0 : Style.effectiveBarOpacity
 
         Shape {
           id: barBackgroundShape
@@ -168,13 +171,15 @@ Item {
             bar: root.bar
             shapeContainer: barBackgroundShape
             windowRoot: root.windowRoot
-            backgroundColor: panelBackgroundColor
+            backgroundColor: root.efficientMode ? Color.maskShell : panelBackgroundColor
           }
         }
 
+        // No shadow on the efficient-mode taskbar (DESIGN §3.1.3)
         NDropShadow {
           anchors.fill: parent
           source: barBackgroundShape
+          visible: !root.efficientMode
         }
       }
     }

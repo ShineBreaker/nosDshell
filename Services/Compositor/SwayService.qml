@@ -417,6 +417,7 @@ Item {
         "title": title,
         "appId": appId,
         "isFocused": focused,
+        "isUrgent": safeGetProperty(toplevel, "urgent", "false") === "true",
         "workspaceId": workspaceId,
         "handle": toplevel
       };

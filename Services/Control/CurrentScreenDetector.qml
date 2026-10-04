@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Services.Compositor
+import qs.Services.UI
 
 /**
 * Detects which screen the cursor is currently on by creating a temporary
@@ -42,13 +43,12 @@ Item {
   * Prioritizes the screen at position 0x0 (likely the primary screen).
   */
   function findScreenWithBar(): var {
-  const monitors = Settings.data.bar.monitors || [];
   let primaryCandidate = null;
   let firstWithBar = null;
 
   for (let i = 0; i < Quickshell.screens.length; i++) {
     const s = Quickshell.screens[i];
-    const hasBar = monitors.length === 0 || monitors.includes(s.name);
+    const hasBar = BarService.hasTaskbarOnScreen(s.name);
 
     if (hasBar) {
       // Check if this is at 0x0 (primary position)
@@ -89,8 +89,7 @@ Item {
               if (screen) {
                 // Apply the bar check if configured (skip for overlay launcher etc.)
                 if (!skipBarCheck && !Settings.data.general.allowPanelsOnScreenWithoutBar) {
-                  const monitors = Settings.data.bar.monitors || [];
-                  const hasBar = monitors.length === 0 || monitors.includes(screen.name);
+                  const hasBar = BarService.hasTaskbarOnScreen(screen.name);
                   if (!hasBar) {
                     screen = findScreenWithBar();
                   }
@@ -117,10 +116,9 @@ Item {
                         // Execute pending callback if any
                         if (root.pendingCallback) {
                           if (!root.pendingSkipBarCheck && !Settings.data.general.allowPanelsOnScreenWithoutBar) {
-                            // If we explicitly disabled panels on screen without bar, check if bar is configured
+                            // If we explicitly disabled panels on screen without bar, check if a taskbar is configured
                             // for this screen, and fallback to primary screen if necessary
-                            var monitors = Settings.data.bar.monitors || [];
-                            const hasBar = monitors.length === 0 || monitors.includes(root.detectedScreen?.name);
+                            const hasBar = BarService.hasTaskbarOnScreen(root.detectedScreen?.name);
                             if (!hasBar) {
                               root.detectedScreen = findScreenWithBar();
                             }

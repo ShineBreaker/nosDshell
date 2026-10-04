@@ -33,16 +33,19 @@ NIconButton {
   }
 
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   baseSize: Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: Style.radiusL
-  colorBg: Settings.data.nightLight.enabled ? Color.mPrimary : Style.capsuleColor
-  colorFg: Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey)
+  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
+  colorBg: Settings.data.nightLight.enabled && !efficientMode ? Color.mPrimary : Style.capsuleColor
+  colorFg: efficientMode ? Color.onShell : (Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
   border.width: Style.capsuleBorderWidth
 
   icon: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? "nightlight-forced" : "nightlight-on") : "nightlight-off"
+  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["night-light-enabled", "night-light", "redshift-status-on"]) : ""
+  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
   tooltipText: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? I18n.tr("common.night-light") : I18n.tr("common.night-light")) : I18n.tr("common.night-light")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   onClicked: {

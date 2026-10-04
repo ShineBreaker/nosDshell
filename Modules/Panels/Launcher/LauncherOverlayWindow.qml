@@ -66,7 +66,7 @@ Variants {
       }
 
       // Positioning logic (respects settings but doesn't attach to bar)
-      readonly property string barPosition: Settings.data.bar.position
+      readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
       readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
       readonly property int barThickness: Math.round(Style.barHeight + Style.marginL)
 

@@ -44,11 +44,16 @@ Item {
   readonly property string formatHorizontal: widgetSettings.formatHorizontal !== undefined ? widgetSettings.formatHorizontal : widgetMetadata.formatHorizontal
   readonly property string formatVertical: widgetSettings.formatVertical !== undefined ? widgetSettings.formatVertical : widgetMetadata.formatVertical
   readonly property string tooltipFormat: widgetSettings.tooltipFormat !== undefined ? widgetSettings.tooltipFormat : widgetMetadata.tooltipFormat
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
-  readonly property color textColor: Color.resolveColorKey(clockColor)
+  readonly property color textColor: efficientMode ? Color.onShell : Color.resolveColorKey(clockColor)
 
-  // Content dimensions for implicit sizing
-  readonly property real contentWidth: isBarVertical ? capsuleHeight : Math.round((isBarVertical ? verticalLoader.implicitWidth : horizontalLoader.implicitWidth) + Style.margin2M)
+  // DDE efficient clock: hh:mm / yyyy-MM-dd on two lines (three lines when vertical)
+  readonly property string effectiveFormatHorizontal: efficientMode ? "hh:mm\\nyyyy/MM/dd" : formatHorizontal.trim()
+  readonly property string effectiveFormatVertical: efficientMode ? "hh mm MM/dd" : formatVertical.trim()
+
+  // Content dimensions for implicit sizing (efficient: text width + 20)
+  readonly property real contentWidth: isBarVertical ? capsuleHeight : Math.round(horizontalLoader.implicitWidth + (efficientMode ? 20 : Style.margin2M))
   readonly property real contentHeight: isBarVertical ? Math.round(verticalLoader.implicitHeight + Style.margin2S) : capsuleHeight
 
   // Size: use implicit width/height
@@ -63,7 +68,7 @@ Item {
     height: root.contentHeight
     anchors.centerIn: parent
 
-    radius: Style.radiusL
+    radius: efficientMode ? Style.radiusPopup : Style.radiusL
     color: Style.capsuleColor
     border.color: Style.capsuleBorderColor
     border.width: Style.capsuleBorderWidth
@@ -82,7 +87,7 @@ Item {
           spacing: Settings.data.bar.showCapsule ? -5 : -3
           Repeater {
             id: repeater
-            model: I18n.locale.toString(now, formatHorizontal.trim()).split("\\n")
+            model: I18n.locale.toString(now, effectiveFormatHorizontal).split("\\n")
             NText {
               visible: text !== ""
               text: modelData
@@ -122,7 +127,7 @@ Item {
           anchors.centerIn: parent
           spacing: -2
           Repeater {
-            model: I18n.locale.toString(now, formatVertical.trim()).split(" ")
+            model: I18n.locale.toString(now, effectiveFormatVertical).split(" ")
             delegate: NText {
               visible: text !== ""
               text: modelData

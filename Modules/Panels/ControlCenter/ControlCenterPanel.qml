@@ -16,10 +16,7 @@ SmartPanel {
   readonly property string controlCenterPosition: Settings.data.controlCenter.position
 
   // Check if there's a bar on this screen
-  readonly property bool hasBarOnScreen: {
-    var monitors = Settings.data.bar.monitors || [];
-    return monitors.length === 0 || monitors.includes(screen?.name);
-  }
+  readonly property bool hasBarOnScreen: BarService.hasBarOnScreen(screen?.name)
 
   // When position is "close_to_bar_button" but there's no bar, fall back to center
   readonly property bool shouldCenter: controlCenterPosition === "close_to_bar_button" && !hasBarOnScreen

@@ -11,6 +11,10 @@ Item {
   property bool applyUiScale: true
 
   property string icon
+  // Themed icon path (e.g. *-symbolic); takes precedence over the glyph icon
+  property string iconSource: ""
+  // Glyph/icon size as a fraction of buttonSize (DDE launcher uses 0.7)
+  property real iconRatio: 0.48
   property var tooltipText
   property string tooltipDirection: "auto"
   property bool allowClickWhenDisabled: false
@@ -75,9 +79,26 @@ Item {
       }
     }
 
+    IconImage {
+      visible: root.iconSource !== ""
+      source: root.iconSource
+      implicitSize: Math.max(1, Math.round(visualButton.width * root.iconRatio))
+      x: Style.pixelAlignCenter(visualButton.width, width)
+      y: Style.pixelAlignCenter(visualButton.height, height)
+
+      // Themed *-symbolic icons are recolored to the foreground color
+      layer.enabled: root.iconSource !== ""
+      layer.effect: ShaderEffect {
+        property color targetColor: root.enabled && visualButton.pressed ? Color.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
+        property real colorizeMode: 3.0
+        fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
+      }
+    }
+
     NIcon {
+      visible: root.iconSource === ""
       icon: root.icon
-      pointSize: Style.toOdd(visualButton.width * 0.48)
+      pointSize: Style.toOdd(visualButton.width * root.iconRatio)
       applyUiScale: root.applyUiScale
       color: root.enabled && visualButton.pressed ? Color.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
       // Pixel-perfect centering

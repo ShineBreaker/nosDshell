@@ -61,7 +61,12 @@ Singleton {
     function setDisplayMode(mode: string, screen: string) {
       if (mode === "always_visible" || mode === "non_exclusive" || mode === "auto_hide") {
         if (!screen || screen === "all") {
-          Settings.data.bar.displayMode = mode;
+          if (Settings.data.dock.mode === "efficient") {
+            // Map to the DDE hide-mode vocabulary
+            Settings.data.dock.hideMode = (mode === "auto_hide") ? "keep-hidden" : "keep-showing";
+          } else {
+            Settings.data.bar.displayMode = mode;
+          }
         } else {
           Settings.setScreenOverride(screen, "displayMode", mode);
         }
@@ -74,7 +79,11 @@ Singleton {
         return;
       }
       if (!screen || screen === "all") {
-        Settings.data.bar.position = position;
+        if (Settings.data.dock.mode === "efficient") {
+          Settings.data.dock.position = position;
+        } else {
+          Settings.data.bar.position = position;
+        }
       } else {
         Settings.setScreenOverride(screen, "position", position);
       }

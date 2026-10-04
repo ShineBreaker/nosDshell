@@ -38,7 +38,21 @@ Item {
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
 
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property string displayMode: widgetSettings.displayMode !== undefined ? widgetSettings.displayMode : widgetMetadata.displayMode
+
+  // DDE battery icon: themed symbolic by charge level, glyph fallback
+  function symbolicBatterySource() {
+    var candidates = [];
+    if (root.isCharging || root.isPluggedIn) {
+      var bucket = Math.max(0, Math.min(100, Math.round(root.percent / 10) * 10));
+      candidates = ["battery-level-" + bucket + "-charging", "battery-full-charging", "battery-good-charging"];
+    } else {
+      var bucket2 = Math.max(10, Math.min(100, Math.round(root.percent / 10) * 10));
+      candidates = ["battery-level-" + bucket2, (root.percent > 60) ? "battery-full" : (root.percent > 30 ? "battery-good" : (root.percent > 10 ? "battery-low" : "battery-caution"))];
+    }
+    return ThemeIcons.symbolicForAny(candidates);
+  }
   readonly property bool useGraphicMode: displayMode === "graphic" || displayMode === "graphic-clean"
 
   readonly property bool hideIfNotDetected: widgetSettings.hideIfNotDetected !== undefined ? widgetSettings.hideIfNotDetected : widgetMetadata.hideIfNotDetected
@@ -232,13 +246,16 @@ Item {
     screen: root.screen
     oppositeDirection: BarService.getPillDirection(root)
     icon: BatteryService.getIcon(root.percent, root.isCharging, root.isPluggedIn, root.isReady)
+    iconSource: root.efficientMode ? root.symbolicBatterySource() : ""
     text: root.isReady ? root.percent : "-"
     suffix: "%"
     autoHide: false
-    forceOpen: root.isReady && root.displayMode === "icon-always"
-    forceClose: root.displayMode === "icon-only" || !root.isReady
-    customBackgroundColor: root.isCharging ? Color.mPrimary : ((root.isLowBattery || root.isCriticalBattery) ? Color.mError : "transparent")
-    customTextIconColor: root.isCharging ? Color.mOnPrimary : ((root.isLowBattery || root.isCriticalBattery) ? Color.mOnError : "transparent")
+    // DDE battery plugin: icon plus percentage text
+    forceOpen: root.efficientMode ? root.isReady : (root.isReady && root.displayMode === "icon-always")
+    forceClose: root.efficientMode ? !root.isReady : (root.displayMode === "icon-only" || !root.isReady)
+    // DDE: no colored fills on plugin items
+    customBackgroundColor: root.efficientMode ? "transparent" : (root.isCharging ? Color.mPrimary : ((root.isLowBattery || root.isCriticalBattery) ? Color.mError : "transparent"))
+    customTextIconColor: root.efficientMode ? "transparent" : (root.isCharging ? Color.mOnPrimary : ((root.isLowBattery || root.isCriticalBattery) ? Color.mOnError : "transparent"))
     tooltipText: !getBatteryPanel()?.isPanelOpen ? root.tooltipContent : ""
     onClicked: toggleBatteryPanel()
     onRightClicked: PanelService.showContextMenu(contextMenu, pill, screen)

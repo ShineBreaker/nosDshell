@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import Quickshell
+import Quickshell.Widgets
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
@@ -11,6 +12,8 @@ Item {
   required property ShellScreen screen
 
   property string icon: ""
+  // Themed icon path (e.g. *-symbolic); takes precedence over the glyph icon
+  property string iconSource: ""
   property string text: ""
   property string suffix: ""
   property var tooltipText
@@ -56,15 +59,19 @@ Item {
 
   // Effective shown state (true if animated open or forced, but not if force closed)
   readonly property bool revealed: !forceClose && (forceOpen || showPill)
-  readonly property bool hasIcon: root.icon !== ""
+  readonly property bool hasIcon: root.icon !== "" || root.iconSource !== ""
 
-  // Always prioritize hover color, then the custom one and finally the fallback color
-  readonly property color bgColor: hovered ? Color.mHover : (customBackgroundColor.a > 0) ? customBackgroundColor : Style.capsuleColor
-  readonly property color fgColor: hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface
-  readonly property color iconFgColor: hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface
-  readonly property color textFgColor: hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
-  readonly property real iconSize: Style.toOdd(pillHeight * 0.48)
+  // Always prioritize hover color, then the custom one and finally the fallback color.
+  // Efficient (DDE taskbar) hover: overlay("hover") fill, onShell content
+  readonly property color bgColor: hovered ? (efficientMode ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : Style.capsuleColor
+  readonly property color fgColor: efficientMode ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color iconFgColor: efficientMode ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color textFgColor: efficientMode ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+
+  // DDE status icons are 16 px
+  readonly property real iconSize: efficientMode ? 16 : Style.toOdd(pillHeight * 0.48)
 
   // Content height calculation (for implicit sizing)
   readonly property real contentHeight: {
@@ -99,7 +106,8 @@ Item {
     id: pillBackground
     width: buttonSize
     height: root.contentHeight
-    radius: Style.radiusM
+    // DDE plugin-item hover: rounded overlay sized to the widget's own content area
+    radius: root.efficientMode ? Style.radiusPopup : Style.radiusM
     color: root.bgColor
     border.color: Style.capsuleBorderColor
     border.width: Style.capsuleBorderWidth
@@ -196,7 +204,25 @@ Item {
     y: openUpward ? (root.contentHeight - height) : 0
     anchors.horizontalCenter: parent.horizontalCenter
 
+    IconImage {
+      visible: root.iconSource !== ""
+      source: root.iconSource
+      implicitSize: root.iconSize
+      x: (iconCircle.width - width) / 2
+      y: (iconCircle.height - height) / 2
+
+      // DDE plugin icons are monochrome white — recolor themed *-symbolic
+      // icons to the on-shell foreground
+      layer.enabled: root.efficientMode && root.iconSource !== ""
+      layer.effect: ShaderEffect {
+        property color targetColor: Color.onShell
+        property real colorizeMode: 3.0
+        fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
+      }
+    }
+
     NIcon {
+      visible: root.iconSource === ""
       icon: root.icon
       pointSize: iconSize
       applyUiScale: false
@@ -309,7 +335,7 @@ Item {
     onEntered: {
       hovered = true;
       root.entered();
-      TooltipService.show(root, root.tooltipText, BarService.getTooltipDirection(root.screen?.name), (forceOpen || forceClose) ? Style.tooltipDelay : Style.tooltipDelayLong);
+      TooltipService.show(root, root.tooltipText, BarService.getTooltipDirection(root.screen?.name), root.efficientMode ? Style.tooltipDelayDock : ((forceOpen || forceClose) ? Style.tooltipDelay : Style.tooltipDelayLong));
       if (forceClose) {
         return;
       }

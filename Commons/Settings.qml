@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/noctalia
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 59
+  readonly property int settingsVersion: 60
   property bool isDebug: Quickshell.env("NOCTALIA_DEBUG") === "1"
   readonly property string shellName: "noctalia"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOCTALIA_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -577,6 +577,37 @@ Singleton {
     // dock
     property JsonObject dock: JsonObject {
       property bool enabled: true
+      property string mode: "fashion" // "fashion" (floating dock), "efficient" (full-width taskbar)
+      property int iconSize: 36 // 30, 36, 48
+      property string hideMode: "keep-showing" // "keep-showing", "keep-hidden", "smart-hide"
+      // Ordered plugin list rendered at the trailing edge of the taskbar in efficient mode.
+      // Entries share the same shape as bar widget entries ({id, ...per-widget settings}).
+      property list<var> plugins: [
+        {
+          "id": "Tray"
+        },
+        {
+          "id": "NotificationHistory"
+        },
+        {
+          "id": "Network"
+        },
+        {
+          "id": "Volume"
+        },
+        {
+          "id": "Battery"
+        },
+        {
+          "id": "Clock"
+        },
+        {
+          "id": "SessionMenu"
+        },
+        {
+          "id": "Trash"
+        }
+      ]
       property string position: "bottom" // "top", "bottom", "left", "right"
       property string displayMode: "auto_hide" // "always_visible", "auto_hide", "exclusive"
       property string dockType: "floating" // "floating", "attached"
@@ -942,22 +973,48 @@ Singleton {
 
   // -----------------------------------------------------
   // Get effective bar position for a screen (with inheritance)
-  // If the screen has a position override and overrides are enabled, use it; otherwise use global default
+  // If the screen has a position override and overrides are enabled, use it; otherwise use the dock position
   function getBarPositionForScreen(screenName) {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.position !== undefined) {
       return override.position;
     }
-    return data.bar.position || "top";
+    return data.dock.position || "bottom";
   }
 
   // -----------------------------------------------------
   // Get effective bar widgets for a screen (with inheritance)
-  // If the screen has widget overrides and overrides are enabled, use them; otherwise use global defaults
+  // If the screen has widget overrides and overrides are enabled, use them.
+  // In efficient (taskbar) mode the sections are synthesized: Launcher + Taskbar
+  // on the left, the ordered dock.plugins list plus ShowDesktop on the right.
   function getBarWidgetsForScreen(screenName) {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.widgets !== undefined) {
       return override.widgets;
+    }
+    if (data.dock.mode === "efficient") {
+      var plugins = data.dock.plugins || [];
+      var right = [];
+      for (var i = 0; i < plugins.length; i++) {
+        if (plugins[i] && plugins[i].id) {
+          right.push(plugins[i]);
+        }
+      }
+      right.push({
+                   "id": "ShowDesktop"
+                 });
+      return {
+        "left": [
+          {
+            "id": "Launcher"
+          },
+          {
+            "id": "Taskbar"
+          }
+        ],
+        "center": [],
+        "right": right
+      };
     }
     return data.bar.widgets;
   }
@@ -975,13 +1032,49 @@ Singleton {
 
   // -----------------------------------------------------
   // Get effective bar display mode for a screen (with inheritance)
-  // If the screen has a displayMode override and overrides are enabled, use it; otherwise use global default
+  // If the screen has a displayMode override and overrides are enabled, use it;
+  // otherwise map dock.hideMode to the bar's display modes.
+  property bool _smartHideFallbackLogged: false
   function getBarDisplayModeForScreen(screenName) {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.displayMode !== undefined) {
       return override.displayMode;
     }
-    return data.bar.displayMode || "always_visible";
+    switch (data.dock.hideMode) {
+    case "keep-hidden":
+      return "auto_hide";
+    case "smart-hide":
+      // Real window-overlap detection is not available on all compositors;
+      // fall back to auto-hide like DDE does when the compositor can't report it.
+      if (!_smartHideFallbackLogged) {
+        _smartHideFallbackLogged = true;
+        Logger.i("Settings", "dock.hideMode 'smart-hide' is not supported by this compositor; falling back to 'keep-hidden'");
+      }
+      return "auto_hide";
+    case "keep-showing":
+    default:
+      return "always_visible";
+    }
+  }
+
+  // -----------------------------------------------------
+  // The bar only exists in efficient mode, where it is always "simple"
+  // (framed/floating bar types are inert — see DESIGN.md §6).
+  function getEffectiveBarType() {
+    if (data.dock.mode === "efficient")
+      return "simple";
+    return data.bar.barType;
+  }
+
+  // -----------------------------------------------------
+  // Write per-widget settings for a dock.plugins entry (efficient mode).
+  function setDockPluginSettings(index, settings) {
+    var plugins = JSON.parse(JSON.stringify(data.dock.plugins || []));
+    if (index < 0 || index >= plugins.length)
+      return;
+    plugins[index] = Object.assign({}, plugins[index], settings);
+    data.dock.plugins = plugins;
+    saveImmediate();
   }
 
   // -----------------------------------------------------

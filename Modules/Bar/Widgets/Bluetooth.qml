@@ -34,6 +34,7 @@ Item {
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property string displayMode: widgetSettings.displayMode !== undefined ? widgetSettings.displayMode : widgetMetadata.displayMode
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property string textColorKey: widgetSettings.textColor !== undefined ? widgetSettings.textColor : widgetMetadata.textColor
@@ -85,6 +86,15 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: !BluetoothService.enabled ? "bluetooth-off" : ((BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0) ? "bluetooth-connected" : "bluetooth")
+    iconSource: {
+      if (!root.efficientMode)
+        return "";
+      if (!BluetoothService.enabled)
+        return ThemeIcons.symbolicFor("bluetooth-disabled");
+      if (BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0)
+        return ThemeIcons.symbolicForAny(["bluetooth-paired", "bluetooth-active"]);
+      return ThemeIcons.symbolicFor("bluetooth-active");
+    }
     text: {
       if (BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0) {
         const firstDevice = BluetoothService.connectedDevices[0];

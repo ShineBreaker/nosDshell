@@ -151,12 +151,13 @@ Item {
       readonly property bool isRight: location.endsWith("_right")
       readonly property bool isCentered: location === "top" || location === "bottom"
 
-      readonly property bool isFramed: Settings.data.bar.barType === "framed"
+      readonly property bool hasBar: BarService.hasBarOnScreen(panel.screen?.name)
+      readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
 
-      readonly property string barPos: Settings.getBarPositionForScreen(panel.screen?.name)
-      readonly property bool isFloating: Settings.data.bar.barType === "floating"
-      readonly property real barHeight: Style.getBarHeightForScreen(panel.screen?.name)
+      readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(panel.screen?.name) : ""
+      readonly property bool isFloating: hasBar && Settings.getEffectiveBarType() === "floating"
+      readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(panel.screen?.name) : 0
 
       // Calculate bar and frame offsets for each edge separately
       readonly property int barOffsetTop: {

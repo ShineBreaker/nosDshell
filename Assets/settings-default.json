@@ -353,6 +353,35 @@
   },
   "dock": {
     "enabled": true,
+    "mode": "fashion",
+    "iconSize": 36,
+    "hideMode": "keep-showing",
+    "plugins": [
+      {
+        "id": "Tray"
+      },
+      {
+        "id": "NotificationHistory"
+      },
+      {
+        "id": "Network"
+      },
+      {
+        "id": "Volume"
+      },
+      {
+        "id": "Battery"
+      },
+      {
+        "id": "Clock"
+      },
+      {
+        "id": "SessionMenu"
+      },
+      {
+        "id": "Trash"
+      }
+    ],
     "position": "bottom",
     "displayMode": "auto_hide",
     "dockType": "floating",

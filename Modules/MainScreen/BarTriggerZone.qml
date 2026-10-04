@@ -15,7 +15,8 @@ PanelWindow {
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
-  readonly property int triggerSize: 1
+  // DDE spec: the hidden-bar trigger zone is a 2 px sliver along the edge
+  readonly property int triggerSize: 2
 
   // Track if component is being destroyed to prevent signals during cleanup
   property bool isBeingDestroyed: false

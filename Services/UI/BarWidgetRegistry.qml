@@ -34,9 +34,11 @@ Singleton {
                            "PowerProfile": powerProfileComponent,
                            "SessionMenu": sessionMenuComponent,
                            "Settings": settingsComponent,
+                           "ShowDesktop": showDesktopComponent,
                            "Spacer": spacerComponent,
                            "SystemMonitor": systemMonitorComponent,
                            "Taskbar": taskbarComponent,
+                           "Trash": trashComponent,
                            "Tray": trayComponent,
                            "Volume": volumeComponent,
                            "VPN": vpnComponent,
@@ -228,6 +230,8 @@ Singleton {
                                   "Settings": {
                                     "iconColor": "none"
                                   },
+                                  "ShowDesktop": {},
+                                  "Trash": {},
                                   "Spacer": {
                                     "width": 20
                                   },
@@ -382,6 +386,12 @@ Singleton {
   }
   property Component settingsComponent: Component {
     Settings {}
+  }
+  property Component showDesktopComponent: Component {
+    ShowDesktop {}
+  }
+  property Component trashComponent: Component {
+    Trash {}
   }
   property Component controlCenterComponent: Component {
     ControlCenter {}

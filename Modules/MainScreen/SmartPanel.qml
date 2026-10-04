@@ -99,10 +99,10 @@ Item {
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
   readonly property real barHeight: barShouldShow ? Style.getBarHeightForScreen(screen?.name) : 0
-  readonly property bool hasBar: modelData && modelData.name ? (Settings.data.bar.monitors.includes(modelData.name) || (Settings.data.bar.monitors.length === 0)) : false
-  readonly property bool isFramed: Settings.data.bar.barType === "framed" && hasBar
+  readonly property bool hasBar: modelData && modelData.name ? BarService.hasBarOnScreen(modelData.name) : false
+  readonly property bool isFramed: Settings.getEffectiveBarType() === "framed" && hasBar
   readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-  readonly property bool barFloating: Settings.data.bar.barType === "floating"
+  readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
   readonly property real barMarginH: (barFloating && barShouldShow) ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
   readonly property real barMarginV: (barFloating && barShouldShow) ? Math.ceil(Settings.data.bar.marginVertical) : 0
   readonly property real attachmentOverlap: 1 // Panel extends into bar area to fix hairline gap with fractional scaling
@@ -111,9 +111,7 @@ Item {
   readonly property bool barShouldShow: {
     if (!BarService.effectivelyVisible)
       return false;
-    var monitors = Settings.data.bar.monitors || [];
-    var screenName = screen?.name || "";
-    return monitors.length === 0 || monitors.includes(screenName);
+    return BarService.hasBarOnScreen(screen?.name || "");
   }
 
   // Helper to detect if any anchor is explicitly set
@@ -814,9 +812,7 @@ Item {
       }
 
       // A panel can only be attached to a bar if there is a bar on that screen
-      var monitors = Settings.data.bar.monitors || [];
-      var result = monitors.length === 0 || monitors.includes(root.screen?.name || "");
-      return result;
+      return BarService.hasBarOnScreen(root.screen?.name || "");
     }
 
     // Edge detection - detect if panel is touching screen edges

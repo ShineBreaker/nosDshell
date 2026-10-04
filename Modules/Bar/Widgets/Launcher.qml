@@ -43,17 +43,21 @@ NIconButton {
     return Color.resolveColorKey(colorizeSystemIcon);
   }
 
+  // Efficient (DDE taskbar) mode: icon-only, no capsule, icon at 0.7 x item size
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+
   // If we have a custom path or are using distro logo, don't show the theme icon.
   icon: (customIconPath === "" && !useDistroLogo) ? customIcon : ""
   tooltipText: I18n.tr("actions.open-launcher")
   tooltipDirection: BarService.getTooltipDirection(screenName)
-  baseSize: Style.getCapsuleHeightForScreen(screenName)
+  baseSize: efficientMode ? Style.getBarHeightForScreen(screenName) : Style.getCapsuleHeightForScreen(screenName)
+  iconRatio: efficientMode ? 0.7 : 0.48
   applyUiScale: false
-  customRadius: Style.radiusL
+  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   colorBg: Style.capsuleColor
-  colorFg: iconColor
-  colorBgHover: Color.mHover
-  colorFgHover: Color.mOnHover
+  colorFg: efficientMode ? Color.onShell : iconColor
+  colorBgHover: efficientMode ? Color.overlay("hover") : Color.mHover
+  colorFgHover: efficientMode ? Color.onShell : Color.mOnHover
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
 
@@ -96,7 +100,7 @@ NIconButton {
   IconImage {
     id: customOrDistroLogo
     anchors.centerIn: parent
-    width: root.buttonSize * 0.8
+    width: root.buttonSize * (root.efficientMode ? 0.7 : 0.8)
     height: width
     source: {
       if (useDistroLogo)

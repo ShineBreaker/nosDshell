@@ -291,4 +291,12 @@ Item {
       Logger.e("NiriService", "Failed to spawn command:", e);
     }
   }
+
+  function toggleOverview() {
+    try {
+      Niri.dispatch(["toggle-overview"]);
+    } catch (e) {
+      Logger.e("NiriService", "Failed to toggle overview:", e);
+    }
+  }
 }

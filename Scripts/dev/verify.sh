@@ -87,9 +87,10 @@ mkdir -p "$NOCTALIA_CONFIG_DIR" "$NOCTALIA_CACHE_DIR"
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion:59 skips the v0->59 migration chain (no-op for real users,
-# just noise in verify logs)
-SEED='{"settingsVersion":59,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+# settingsVersion:60 skips the v0->60 migration chain (no-op for real users,
+# just noise in verify logs). dock.displayMode gates the fashion dock's
+# auto-hide; efficient (taskbar) mode uses dock.hideMode instead.
+SEED='{"settingsVersion":60,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'

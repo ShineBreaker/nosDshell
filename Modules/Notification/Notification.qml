@@ -7,6 +7,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Commons
 import qs.Services.System
+import qs.Services.UI
 import qs.Widgets
 
 // Simple notification popup - displays multiple notifications
@@ -95,11 +96,12 @@ Variants {
       readonly property bool isRight: location.endsWith("_right")
       readonly property bool isCentered: location === "top" || location === "bottom"
 
-      readonly property string barPos: Settings.getBarPositionForScreen(notifWindow.screen?.name)
-      readonly property bool isFloating: Settings.data.bar.barType === "floating"
-      readonly property real barHeight: Style.getBarHeightForScreen(notifWindow.screen?.name)
+      readonly property bool hasBar: BarService.hasBarOnScreen(notifWindow.screen?.name)
+      readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(notifWindow.screen?.name) : ""
+      readonly property bool isFloating: hasBar && Settings.getEffectiveBarType() === "floating"
+      readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(notifWindow.screen?.name) : 0
 
-      readonly property bool isFramed: Settings.data.bar.barType === "framed"
+      readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
 
       readonly property bool isCompact: Settings.data.notifications.density === "compact"

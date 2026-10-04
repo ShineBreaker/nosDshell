@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import qs.Commons
 import qs.Modules.Dock
 import qs.Modules.MainScreen
+import qs.Services.UI
 
 SmartPanel {
   id: root
@@ -11,9 +12,9 @@ SmartPanel {
 
   readonly property string dockPosition: Settings.data.dock.position
   readonly property bool isVertical: dockPosition === "left" || dockPosition === "right"
-  readonly property bool hasBar: modelData && modelData.name ? (Settings.data.bar.monitors.includes(modelData.name) || (Settings.data.bar.monitors.length === 0)) : false
+  readonly property bool hasBar: modelData && modelData.name ? BarService.hasBarOnScreen(modelData.name) : false
   readonly property bool barAtSameEdge: hasBar && Settings.getBarPositionForScreen(modelData?.name) === dockPosition
-  readonly property bool isFramed: Settings.data.bar.barType === "framed" && hasBar
+  readonly property bool isFramed: Settings.getEffectiveBarType() === "framed" && hasBar
   property bool isDockHovered: false
   property bool panelHovered: false
   readonly property int iconSize: Math.round(12 + 24 * (Settings.data.dock.size ?? 1))

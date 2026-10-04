@@ -103,17 +103,11 @@ PanelWindow {
 
   // Check if bar should be visible on this screen
   readonly property bool barShouldShow: {
-    // Check global bar visibility (includes overview state)
+    // Check global bar visibility (includes overview state and dock mode)
     if (!BarService.effectivelyVisible)
       return false;
 
-    // Check screen-specific configuration
-    var monitors = Settings.data.bar.monitors || [];
-    var screenName = screen?.name || "";
-
-    // If no monitors specified, show on all screens
-    // If monitors specified, only show if this screen is in the list
-    return monitors.length === 0 || monitors.includes(screenName);
+    return BarService.hasBarOnScreen(screen?.name || "");
   }
 
   // Make everything click-through except bar
@@ -135,10 +129,10 @@ PanelWindow {
     Region {
       id: barMaskRegion
 
-      readonly property bool isFramed: Settings.data.bar.barType === "framed"
+      readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
       readonly property real barThickness: Style.barHeight
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-      readonly property string barPos: Settings.data.bar.position || "top"
+      readonly property string barPos: Settings.getBarPositionForScreen(root.screen?.name) || "top"
 
       // Bar / Frame Mask
       Region {
@@ -437,9 +431,9 @@ PanelWindow {
       // Bar background positioning properties (per-screen)
       readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
       readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
-      readonly property bool isFramed: Settings.data.bar.barType === "framed"
+      readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-      readonly property bool barFloating: Settings.data.bar.barType === "floating"
+      readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
       readonly property real barMarginH: barFloating ? Math.floor(Settings.data.bar.marginHorizontal) : 0
       readonly property real barMarginV: barFloating ? Math.floor(Settings.data.bar.marginVertical) : 0
       readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
@@ -458,20 +452,44 @@ PanelWindow {
       }
 
       // Expose bar dimensions directly on this Item for BarBackground
-      // Use screen dimensions directly
+      // Use screen dimensions directly.
+      // Efficient mode: the background slides off the screen edge when hidden
+      // (mirrors BarContentWindow's content slide)
+      property real hiddenSlideX: (isHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "left" ? -barHeight : (barPosition === "right" ? barHeight : 0)) : 0
+      property real hiddenSlideY: (isHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "top" ? -barHeight : (barPosition === "bottom" ? barHeight : 0)) : 0
+
+      Behavior on hiddenSlideX {
+        NumberAnimation {
+          duration: Style.motionPanel
+          easing.type: Easing.InOutCubic
+        }
+      }
+      Behavior on hiddenSlideY {
+        NumberAnimation {
+          duration: Style.motionPanel
+          easing.type: Easing.InOutCubic
+        }
+      }
+
       x: {
+        var bx;
         if (barPosition === "right")
-          return (screen?.width ?? 0) - barHeight - barMarginH;
-        if (isFramed && !barIsVertical)
-          return frameThickness;
-        return barMarginH;
+          bx = (screen?.width ?? 0) - barHeight - barMarginH;
+        else if (isFramed && !barIsVertical)
+          bx = frameThickness;
+        else
+          bx = barMarginH;
+        return bx + hiddenSlideX;
       }
       y: {
+        var by;
         if (barPosition === "bottom")
-          return (screen?.height ?? 0) - barHeight - barMarginV;
-        if (isFramed && barIsVertical)
-          return frameThickness;
-        return barMarginV;
+          by = (screen?.height ?? 0) - barHeight - barMarginV;
+        else if (isFramed && barIsVertical)
+          by = frameThickness;
+        else
+          by = barMarginV;
+        return by + hiddenSlideY;
       }
       width: {
         if (barIsVertical) {

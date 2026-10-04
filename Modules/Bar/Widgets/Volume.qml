@@ -35,6 +35,7 @@ Item {
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property string displayMode: (widgetSettings.displayMode !== undefined) ? widgetSettings.displayMode : widgetMetadata.displayMode
   readonly property string middleClickCommand: (widgetSettings.middleClickCommand !== undefined) ? widgetSettings.middleClickCommand : widgetMetadata.middleClickCommand
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
@@ -149,6 +150,20 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: AudioService.getOutputIcon()
+    iconSource: {
+      if (!root.efficientMode)
+        return "";
+      switch (AudioService.getOutputIcon()) {
+      case "volume-mute":
+        return ThemeIcons.symbolicFor("audio-volume-muted");
+      case "volume-x":
+        return ThemeIcons.symbolicFor("audio-volume-low");
+      case "volume-low":
+        return ThemeIcons.symbolicFor("audio-volume-medium");
+      default:
+        return ThemeIcons.symbolicFor("audio-volume-high");
+      }
+    }
     autoHide: false // Important to be false so we can hover as long as we want
     text: {
       const maxVolume = Settings.data.audio.volumeOverdrive ? 1.5 : 1.0;

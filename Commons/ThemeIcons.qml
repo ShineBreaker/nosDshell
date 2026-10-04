@@ -259,6 +259,32 @@ Singleton {
                         }).map(r => r.obj.entry);
   }
 
+  // Resolve a themed status icon for the efficient taskbar: try the
+  // "<base>-symbolic" variant first, then the plain name.
+  // Returns "" when the theme has neither (caller falls back to a glyph).
+  function symbolicFor(baseName) {
+    if (!baseName || baseName.length === 0)
+      return "";
+    const sym = baseName + "-symbolic";
+    if (iconExists(sym))
+      return iconFromName(sym, "");
+    if (iconExists(baseName))
+      return iconFromName(baseName, "");
+    return "";
+  }
+
+  // First resolvable candidate from an ordered list
+  function symbolicForAny(names) {
+    if (!names)
+      return "";
+    for (var i = 0; i < names.length; i++) {
+      var path = symbolicFor(names[i]);
+      if (path !== "")
+        return path;
+    }
+    return "";
+  }
+
   function iconExists(iconName) {
     if (!iconName || iconName.length === 0)
       return false;

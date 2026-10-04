@@ -445,6 +445,27 @@ Singleton {
     }
   }
 
+  // DDE ShowDesktop strip: show desktop if the backend supports it,
+  // otherwise fall back to toggling the compositor overview (e.g. niri).
+  // Returns false when the backend has no equivalent action.
+  function toggleShowDesktop() {
+    try {
+      if (backend && backend.toggleShowDesktop) {
+        backend.toggleShowDesktop();
+        return true;
+      }
+      if (backend && backend.toggleOverview) {
+        backend.toggleOverview();
+        return true;
+      }
+      Logger.i("CompositorService", "Show desktop not supported by the active backend");
+      return false;
+    } catch (e) {
+      Logger.e("CompositorService", "Failed to show desktop:", e);
+      return false;
+    }
+  }
+
   // Spawn command
   function spawn(command) {
     // Ensure command is a proper JS array (QML lists can behave unexpectedly in some contexts)

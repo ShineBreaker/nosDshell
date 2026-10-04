@@ -10,6 +10,8 @@ Item {
   required property ShellScreen screen
 
   property string icon: ""
+  // Themed icon path (e.g. *-symbolic); takes precedence over the glyph icon
+  property string iconSource: ""
   property string iconPosition: ""
   property string text: ""
   property string suffix: ""
@@ -56,6 +58,7 @@ Item {
       BarPillVertical {
         screen: root.screen
         icon: root.icon
+        iconSource: root.iconSource
         iconPosition: root.iconPosition
         text: root.text
         suffix: root.suffix
@@ -86,6 +89,7 @@ Item {
       BarPillHorizontal {
         screen: root.screen
         icon: root.icon
+        iconSource: root.iconSource
         iconPosition: root.iconPosition
         text: root.text
         suffix: root.suffix

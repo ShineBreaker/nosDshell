@@ -15,7 +15,7 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  readonly property bool isVerticalBar: Settings.data.bar.position === "left" || Settings.data.bar.position === "right"
+  readonly property bool isVerticalBar: Settings.getBarPositionForScreen(screen?.name) === "left" || Settings.getBarPositionForScreen(screen?.name) === "right"
 
   // Local state
   property string valueHideMode: widgetData.hideMode !== undefined ? widgetData.hideMode : widgetMetadata.hideMode

@@ -34,6 +34,7 @@ Item {
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property string displayMode: (widgetSettings.displayMode !== undefined) ? widgetSettings.displayMode : widgetMetadata.displayMode
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property string textColorKey: widgetSettings.textColor !== undefined ? widgetSettings.textColor : widgetMetadata.textColor
@@ -144,6 +145,7 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: getIcon()
+    iconSource: root.efficientMode ? ThemeIcons.symbolicFor(getIcon() === "sun-off" ? "display-brightness-off" : "display-brightness") : ""
     autoHide: false // Important to be false so we can hover as long as we want
     text: {
       var monitor = brightnessMonitor;

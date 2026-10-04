@@ -67,15 +67,16 @@ Item {
   // Bar positioning properties (per-screen)
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
-  readonly property bool barFloating: Settings.data.bar.barType === "floating"
+  readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
 
   // Bar density (per-screen)
   readonly property string barDensity: Settings.getBarDensityForScreen(screen?.name)
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
-  // Bar sizing based on per-screen density
-  readonly property real barHeight: Style.getBarHeightForDensity(barDensity, barIsVertical)
-  readonly property real capsuleHeight: Style.getCapsuleHeightForDensity(barDensity, barHeight)
-  readonly property real barFontSize: Style.getBarFontSizeForDensity(barHeight, capsuleHeight, barIsVertical)
+  // Bar sizing (efficient mode: dock.iconSize x 1.2, density is inert)
+  readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
+  readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screen?.name)
+  readonly property real barFontSize: Style.getBarFontSizeForScreen(screen?.name)
 
   // Bar widgets (per-screen) - initial configuration
   // Note: Updates are handled via Connections to BarService.widgetsRevisionChanged
@@ -151,6 +152,14 @@ Item {
     }
   }
 
+  // Efficient mode synthesizes the sections from dock.plugins — re-sync when it changes
+  Connections {
+    target: Settings.data.dock
+    function onPluginsChanged() {
+      Qt.callLater(root._syncFromRevision);
+    }
+  }
+
   // Initialize models — deferred to next event-loop tick via Qt.callLater to avoid
   // re-entrant incubation: Component.onCompleted fires during QQmlObjectCreator::finalize,
   // and ListModel.append synchronously creates Repeater delegates whose own finalization
@@ -192,9 +201,7 @@ Item {
         return false;
       }
 
-      var monitors = Settings.data.bar.monitors || [];
-      var result = monitors.length === 0 || monitors.includes(root.screen.name);
-      return result;
+      return BarService.hasBarOnScreen(root.screen.name);
     }
 
     sourceComponent: Item {
@@ -554,10 +561,14 @@ Item {
 
       // Top section (left widgets)
       ColumnLayout {
+        id: leftSection
         x: Style.pixelAlignCenter(parent.width, width)
         anchors.top: parent.top
         anchors.topMargin: verticalBarMargin + Settings.data.bar.contentPadding
         spacing: Settings.data.bar.widgetSpacing
+        // Efficient mode: the section stretches to fill space up to the right
+        // (bottom) section so the Taskbar widget can occupy the remainder
+        height: root.efficientMode ? Math.max(0, parent.height - rightSection.height - (verticalBarMargin + Settings.data.bar.contentPadding) * 2) : implicitHeight
 
         Repeater {
           model: root.leftWidgetsModel
@@ -574,6 +585,7 @@ Item {
                             "sectionWidgetsCount": root.leftWidgetsModel.count
                           })
             Layout.alignment: Qt.AlignHCenter
+            Layout.fillHeight: root.efficientMode && model.id === "Taskbar"
           }
         }
       }
@@ -605,6 +617,7 @@ Item {
 
       // Bottom section (right widgets)
       ColumnLayout {
+        id: rightSection
         x: Style.pixelAlignCenter(parent.width, width)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: verticalBarMargin + Settings.data.bar.contentPadding
@@ -681,6 +694,9 @@ Item {
         anchors.leftMargin: horizontalBarMargin + Settings.data.bar.contentPadding
         y: Style.pixelAlignCenter(parent.height, height)
         spacing: Settings.data.bar.widgetSpacing
+        // Efficient mode: the section stretches to fill space up to the right
+        // section so the Taskbar widget can occupy the remainder
+        width: root.efficientMode ? Math.max(0, parent.width - rightSection.width - (horizontalBarMargin + Settings.data.bar.contentPadding) * 2) : implicitWidth
 
         Repeater {
           model: root.leftWidgetsModel
@@ -697,6 +713,7 @@ Item {
                             "sectionWidgetsCount": root.leftWidgetsModel.count
                           })
             Layout.alignment: Qt.AlignVCenter
+            Layout.fillWidth: root.efficientMode && model.id === "Taskbar"
           }
         }
       }

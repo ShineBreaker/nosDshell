@@ -32,24 +32,18 @@ ShapePath {
 
   // Check if bar should be visible on this screen
   readonly property bool shouldShow: {
-    // Check global bar visibility (includes overview state)
+    // Check global bar visibility (includes overview state and dock mode)
     if (!BarService.effectivelyVisible)
       return false;
 
-    // Check screen-specific configuration
-    var monitors = Settings.data.bar.monitors || [];
-    var screenName = windowRoot?.screen?.name || "";
-
-    // If no monitors specified, show on all screens
-    // If monitors specified, only show if this screen is in the list
-    return monitors.length === 0 || monitors.includes(screenName);
+    return BarService.hasBarOnScreen(windowRoot?.screen?.name || "");
   }
 
-  // Corner radius (from Style)
-  readonly property real radius: Style.radiusL
+  // Corner radius (from Style); the efficient taskbar is always square
+  readonly property real radius: Settings.data.dock.mode === "efficient" ? 0 : Style.radiusL
 
   // Framed bar properties
-  readonly property bool isFramed: Settings.data.bar.barType === "framed"
+  readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
   readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
   readonly property real frameRadius: Settings.data.bar.frameRadius ?? 20
 
@@ -121,11 +115,12 @@ ShapePath {
   readonly property real leftEdgeOvs: (!isFramed && shouldShow && bar && bar.topLeftCornerState === -1 && bar.bottomLeftCornerState === -1 && barMappedPos.x <= 0) ? -screenEdgeOvershoot : 0
   readonly property real rightEdgeOvs: (!isFramed && shouldShow && bar && bar.topRightCornerState === -1 && bar.bottomRightCornerState === -1 && (barMappedPos.x + barWidth) >= screenWidth) ? screenEdgeOvershoot : 0
 
-  // Auto-hide opacity factor for background fade
-  property real opacityFactor: (bar && bar.isHidden) ? 0 : 1
+  // Auto-hide opacity factor for background fade.
+  // Efficient mode slides the placeholder off-screen instead of fading.
+  property real opacityFactor: (bar && bar.isHidden && Settings.data.dock.mode !== "efficient") ? 0 : 1
 
   Behavior on opacityFactor {
-    enabled: bar && bar.autoHide
+    enabled: bar && bar.autoHide && Settings.data.dock.mode !== "efficient"
     NumberAnimation {
       duration: Style.animationFast
       easing.type: Easing.OutQuad

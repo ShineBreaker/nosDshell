@@ -587,15 +587,20 @@ PopupWindow {
     newSettings.pinned = newPinned;
     widgets[widgetIndex] = newSettings;
 
-    // Write to the correct location: screen override or global
-    if (Settings.hasScreenOverride(screenName, "widgets")) {
+    // Write to the correct location: screen override, dock plugins, or global
+    if (Settings.data.dock.mode === "efficient" && widgetSection === "right" && widgetIndex < (Settings.data.dock.plugins || []).length) {
+      Settings.setDockPluginSettings(widgetIndex, {
+                                       "pinned": newPinned
+                                     });
+    } else if (Settings.hasScreenOverride(screenName, "widgets")) {
       var overrideWidgets = Settings.getBarWidgetsForScreen(screenName);
       overrideWidgets[widgetSection] = widgets;
       Settings.setScreenOverride(screenName, "widgets", overrideWidgets);
+      Settings.saveImmediate();
     } else {
       Settings.data.bar.widgets[widgetSection] = widgets;
+      Settings.saveImmediate();
     }
-    Settings.saveImmediate();
 
     // Close drawer when pinning (drawer needs to resize)
     if (screen) {
@@ -637,14 +642,19 @@ PopupWindow {
     newSettings.pinned = newPinned;
     widgets[widgetIndex] = newSettings;
 
-    // Write to the correct location: screen override or global
-    if (Settings.hasScreenOverride(screenName, "widgets")) {
+    // Write to the correct location: screen override, dock plugins, or global
+    if (Settings.data.dock.mode === "efficient" && widgetSection === "right" && widgetIndex < (Settings.data.dock.plugins || []).length) {
+      Settings.setDockPluginSettings(widgetIndex, {
+                                       "pinned": newPinned
+                                     });
+    } else if (Settings.hasScreenOverride(screenName, "widgets")) {
       var overrideWidgets = Settings.getBarWidgetsForScreen(screenName);
       overrideWidgets[widgetSection] = widgets;
       Settings.setScreenOverride(screenName, "widgets", overrideWidgets);
+      Settings.saveImmediate();
     } else {
       Settings.data.bar.widgets[widgetSection] = widgets;
+      Settings.saveImmediate();
     }
-    Settings.saveImmediate();
   }
 }

@@ -32,11 +32,14 @@ NIconButton {
   }
 
   readonly property string iconColorKey: (widgetSettings.iconColor !== undefined) ? widgetSettings.iconColor : widgetMetadata.iconColor
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   baseSize: Style.getCapsuleHeightForScreen(screenName)
   applyUiScale: false
-  customRadius: Style.radiusL
+  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   icon: "power"
+  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["system-shutdown", "system-log-out"]) : ""
+  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
   tooltipText: {
     if (PanelService.getPanel("sessionMenuPanel", screen)?.isPanelOpen)
       return "";
@@ -45,7 +48,7 @@ NIconButton {
   }
   tooltipDirection: BarService.getTooltipDirection(screenName)
   colorBg: Style.capsuleColor
-  colorFg: Color.resolveColorKey(iconColorKey)
+  colorFg: efficientMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: Style.capsuleBorderWidth
 

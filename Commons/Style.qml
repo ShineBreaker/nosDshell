@@ -102,24 +102,29 @@ Singleton {
   readonly property real uiScaleRatio: Settings.data.general.scaleRatio
 
   // Bar Height
+  // Efficient (DDE taskbar) mode: thickness = dock.iconSize x 1.2 (36 -> 43), density is inert
+  readonly property string _barEffectivePosition: Settings.data.dock.mode === "efficient" ? Settings.data.dock.position : Settings.data.bar.position
+  readonly property bool _barEffectiveVertical: _barEffectivePosition === "left" || _barEffectivePosition === "right"
   readonly property real barHeight: {
+    if (Settings.data.dock.mode === "efficient")
+      return Math.round(Settings.data.dock.iconSize * 1.2);
     let h;
     switch (Settings.data.bar.density) {
       case "mini":
-      h = (Settings.data.bar.position === "left" || Settings.data.bar.position === "right") ? 23 : 21;
+      h = _barEffectiveVertical ? 23 : 21;
       break;
       case "compact":
-      h = (Settings.data.bar.position === "left" || Settings.data.bar.position === "right") ? 27 : 25;
+      h = _barEffectiveVertical ? 27 : 25;
       break;
       case "comfortable":
-      h = (Settings.data.bar.position === "left" || Settings.data.bar.position === "right") ? 39 : 37;
+      h = _barEffectiveVertical ? 39 : 37;
       break;
       case "spacious":
-      h = (Settings.data.bar.position === "left" || Settings.data.bar.position === "right") ? 49 : 47;
+      h = _barEffectiveVertical ? 49 : 47;
       break;
       default:
       case "default":
-      h = (Settings.data.bar.position === "left" || Settings.data.bar.position === "right") ? 33 : 31;
+      h = _barEffectiveVertical ? 33 : 31;
     }
     return toOdd(h);
   }
@@ -128,6 +133,8 @@ Singleton {
   // Note: capsule must always be smaller than barHeight to account for border rendering
   // Qt Quick Rectangle borders are drawn centered on edges (half inside, half outside)
   readonly property real capsuleHeight: {
+    if (Settings.data.dock.mode === "efficient")
+      return Math.round(Settings.data.dock.iconSize);
     let h;
     switch (Settings.data.bar.density) {
       case "mini":
@@ -151,11 +158,12 @@ Singleton {
 
   // The base/default font size for all texts in the bar
   readonly property real _barBaseFontSize: Math.max(1, (Style.barHeight / Style.capsuleHeight) * Style.fontSizeXXS)
-  readonly property real barFontSize: (Settings.data.bar.position === "left" || Settings.data.bar.position === "right") ? _barBaseFontSize * 0.9 * Settings.data.bar.fontScale : _barBaseFontSize * Settings.data.bar.fontScale
+  readonly property real barFontSize: _barEffectiveVertical ? _barBaseFontSize * 0.9 * Settings.data.bar.fontScale : _barBaseFontSize * Settings.data.bar.fontScale
 
-  readonly property color capsuleColor: Settings.data.bar.showCapsule ? Qt.alpha(Settings.data.bar.capsuleColorKey !== "none" ? Color.resolveColorKey(Settings.data.bar.capsuleColorKey) : Color.mSurfaceVariant, Settings.data.bar.capsuleOpacity) : "transparent"
+  // Efficient mode never draws capsules (DESIGN §3.1.3: no capsules on the taskbar)
+  readonly property color capsuleColor: (Settings.data.dock.mode === "efficient" || !Settings.data.bar.showCapsule) ? "transparent" : Qt.alpha(Settings.data.bar.capsuleColorKey !== "none" ? Color.resolveColorKey(Settings.data.bar.capsuleColorKey) : Color.mSurfaceVariant, Settings.data.bar.capsuleOpacity)
 
-  readonly property color capsuleBorderColor: Settings.data.bar.showOutline ? Color.mPrimary : "transparent"
+  readonly property color capsuleBorderColor: (Settings.data.dock.mode !== "efficient" && Settings.data.bar.showOutline) ? Color.mPrimary : "transparent"
   readonly property int capsuleBorderWidth: Settings.data.bar.showOutline ? Style.borderS : 0
 
   readonly property color boxBorderColor: Settings.data.ui.boxBorderEnabled ? Color.mOutline : "transparent"
@@ -229,6 +237,8 @@ Singleton {
 
   // Convenience functions for per-screen bar sizing
   function getBarHeightForScreen(screenName) {
+    if (Settings.data.dock.mode === "efficient")
+      return Math.round(Settings.data.dock.iconSize * 1.2);
     var density = Settings.getBarDensityForScreen(screenName);
     var position = Settings.getBarPositionForScreen(screenName);
     var isVertical = position === "left" || position === "right";
@@ -236,6 +246,8 @@ Singleton {
   }
 
   function getCapsuleHeightForScreen(screenName) {
+    if (Settings.data.dock.mode === "efficient")
+      return Math.round(Settings.data.dock.iconSize);
     var barHeight = getBarHeightForScreen(screenName);
     var density = Settings.getBarDensityForScreen(screenName);
     return getCapsuleHeightForDensity(density, barHeight);

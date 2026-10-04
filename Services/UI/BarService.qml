@@ -11,9 +11,35 @@ Singleton {
 
   property bool isVisible: true
 
-  // Computed visibility that factors in compositor overview state
+  // Central "is there a bar window on this screen" check.
+  // The Noctalia Bar only renders in efficient mode with the dock enabled.
+  function hasBarOnScreen(screenName) {
+    if (!Settings.data.dock.enabled || Settings.data.dock.mode !== "efficient") {
+      return false;
+    }
+    var monitors = Settings.data.bar.monitors || [];
+    return monitors.length === 0 || monitors.includes(screenName);
+  }
+
+  // Any taskbar (the bar in efficient mode, or the floating dock in fashion
+  // mode) configured for this screen. Used by panels/screens gating.
+  function hasTaskbarOnScreen(screenName) {
+    if (!Settings.data.dock.enabled) {
+      return false;
+    }
+    if (Settings.data.dock.mode === "fashion") {
+      var dockMonitors = Settings.data.dock.monitors || [];
+      return dockMonitors.length === 0 || dockMonitors.includes(screenName);
+    }
+    return hasBarOnScreen(screenName);
+  }
+
+  // Computed visibility that factors in dock mode and compositor overview state
   readonly property bool effectivelyVisible: {
     if (!isVisible) {
+      return false;
+    }
+    if (!Settings.data.dock.enabled || Settings.data.dock.mode !== "efficient") {
       return false;
     }
     if (Settings.data.bar.hideOnOverview && CompositorService.overviewActive) {
@@ -566,6 +592,9 @@ Singleton {
                                                   overrideWidgets[sec][idx] = Object.assign({}, overrideWidgets[sec][idx], settings);
                                                   Settings.setScreenOverride(screenName, "widgets", overrideWidgets);
                                                 }
+                                              } else if (Settings.data.dock.mode === "efficient" && sec === "right") {
+                                                // Efficient mode: right section entries map 1:1 onto dock.plugins
+                                                Settings.setDockPluginSettings(idx, settings);
                                               } else {
                                                 var widgets = Settings.data.bar.widgets[sec];
                                                 if (widgets && idx < widgets.length) {

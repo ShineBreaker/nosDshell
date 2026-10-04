@@ -55,10 +55,14 @@ NIconButton {
 
   readonly property int count: computeUnreadCount()
 
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+
   baseSize: Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: Style.radiusL
+  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
+  iconSource: efficientMode ? ThemeIcons.symbolicForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : ""
+  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
   tooltipText: {
     if (PanelService.getPanel("notificationHistoryPanel", screen)?.isPanelOpen) {
       return "";
@@ -68,7 +72,7 @@ NIconButton {
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   colorBg: Style.capsuleColor
-  colorFg: Color.resolveColorKey(iconColorKey)
+  colorFg: efficientMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: Style.capsuleBorderWidth
   visible: !((hideWhenZero && NotificationService.historyModel.count === 0) || (hideWhenZeroUnread && count === 0))

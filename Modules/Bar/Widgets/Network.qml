@@ -37,6 +37,39 @@ Item {
   readonly property string displayMode: widgetSettings.displayMode !== undefined ? widgetSettings.displayMode : widgetMetadata.displayMode
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property string textColorKey: widgetSettings.textColor !== undefined ? widgetSettings.textColor : widgetMetadata.textColor
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+
+  // Map the current glyph to a freedesktop symbolic name (DDE status icons)
+  function symbolicName() {
+    switch (NetworkService.getIcon()) {
+    case "wifi":
+      return "network-wireless-signal-excellent";
+    case "wifi-3":
+      return "network-wireless-signal-good";
+    case "wifi-2":
+      return "network-wireless-signal-ok";
+    case "wifi-1":
+      return "network-wireless-signal-low";
+    case "wifi-0":
+      return "network-wireless-signal-none";
+    case "wifi-exclamation":
+    case "wifi-question":
+      return "network-wireless-acquiring";
+    case "wifi-off":
+      return "network-wireless-disabled";
+    case "ethernet":
+      return "network-wired";
+    case "ethernet-exclamation":
+    case "ethernet-question":
+      return "network-wired-limited";
+    case "ethernet-off":
+      return "network-wired-offline";
+    case "plane":
+      return "airplane-mode";
+    default:
+      return "";
+    }
+  }
 
   implicitWidth: pill.width
   implicitHeight: pill.height
@@ -84,6 +117,7 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: NetworkService.getIcon()
+    iconSource: root.efficientMode ? ThemeIcons.symbolicFor(root.symbolicName()) : ""
     text: NetworkService.getStatusText(false)
     autoHide: false
     forceOpen: !isBarVertical && root.displayMode === "alwaysShow"

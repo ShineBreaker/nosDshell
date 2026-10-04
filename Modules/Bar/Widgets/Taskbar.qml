@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
@@ -44,17 +45,36 @@ Item {
   readonly property string hideMode: (widgetSettings.hideMode !== undefined) ? widgetSettings.hideMode : widgetMetadata.hideMode
   readonly property bool onlySameOutput: (widgetSettings.onlySameOutput !== undefined) ? widgetSettings.onlySameOutput : widgetMetadata.onlySameOutput
   readonly property bool onlyActiveWorkspaces: (widgetSettings.onlyActiveWorkspaces !== undefined) ? widgetSettings.onlyActiveWorkspaces : widgetMetadata.onlyActiveWorkspaces
-  readonly property bool showTitle: isVerticalBar ? false : (widgetSettings.showTitle !== undefined) ? widgetSettings.showTitle : widgetMetadata.showTitle
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  readonly property bool showTitle: isVerticalBar ? false : (widgetSettings.showTitle !== undefined) ? widgetSettings.showTitle : (efficientMode ? false : widgetMetadata.showTitle)
   readonly property bool smartWidth: (widgetSettings.smartWidth !== undefined) ? widgetSettings.smartWidth : widgetMetadata.smartWidth
   readonly property int maxTaskbarWidthPercent: (widgetSettings.maxTaskbarWidth !== undefined) ? widgetSettings.maxTaskbarWidth : widgetMetadata.maxTaskbarWidth
   readonly property real iconScale: (widgetSettings.iconScale !== undefined) ? widgetSettings.iconScale : widgetMetadata.iconScale
   readonly property int itemSize: Style.toOdd(capsuleHeight * Math.max(0.1, iconScale))
 
+  // DDE efficient-mode item geometry (DESIGN §3.1.4):
+  // item long-axis = barThickness x 1.4, icon = 0.7 x min(width, height)
+  readonly property int itemLongLength: efficientMode ? Math.round(barHeight * 1.4) : itemSize
+  readonly property int itemIconSize: efficientMode ? Math.round(Math.min(barHeight, itemLongLength) * 0.7) : itemSize
+
+  // Proportional shrink when items overflow the available length
+  // (gxde-dock mainpanel.cpp:623-698 approach)
+  readonly property real availableLength: isVerticalBar ? root.height : root.width
+  readonly property int effectiveItemLongLength: {
+    var count = combinedModel.length;
+    if (count <= 0 || !efficientMode)
+      return itemLongLength;
+    var total = count * itemLongLength;
+    if (total <= availableLength || availableLength <= 0)
+      return itemLongLength;
+    return Math.max(1, Math.floor(availableLength / count));
+  }
+
   // Maximum width for the taskbar widget to prevent overlapping with other widgets
   readonly property real maxTaskbarWidth: {
     if (!screen || isVerticalBar || !smartWidth || maxTaskbarWidthPercent <= 0)
       return 0;
-    var barFloating = Settings.data.bar.barType === "floating";
+    var barFloating = Settings.getEffectiveBarType() === "floating";
     var barMarginH = barFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
     var availableWidth = screen.width - (barMarginH * 2);
     return Math.round(availableWidth * (maxTaskbarWidthPercent / 100));
@@ -630,6 +650,8 @@ Item {
   readonly property real contentWidth: {
     if (!visible)
       return 0;
+    if (efficientMode)
+      return isVerticalBar ? barHeight : Math.max(itemLongLength, combinedModel.length * effectiveItemLongLength);
     if (isVerticalBar)
       return barHeight;
 
@@ -642,7 +664,13 @@ Item {
 
     return Math.round(calculatedWidth);
   }
-  readonly property real contentHeight: visible ? (isVerticalBar ? Math.round(taskbarLayout.implicitHeight + Style.margin2S) : capsuleHeight) : 0
+  readonly property real contentHeight: {
+    if (!visible)
+      return 0;
+    if (efficientMode)
+      return isVerticalBar ? Math.max(itemLongLength, combinedModel.length * effectiveItemLongLength) : barHeight;
+    return isVerticalBar ? Math.round(taskbarLayout.implicitHeight + Style.margin2S) : capsuleHeight;
+  }
 
   implicitWidth: contentWidth
   implicitHeight: contentHeight
@@ -661,9 +689,9 @@ Item {
     GridLayout {
       id: taskbarLayout
 
-      // Pixel-perfect centering
-      x: isVerticalBar ? Style.pixelAlignCenter(parent.width, width) : ((root.showTitle) ? Style.pixelAlignCenter(parent.width, width) : Style.marginM)
-      y: Style.pixelAlignCenter(parent.height, height)
+      // Pixel-perfect centering (efficient mode packs items from the start edge)
+      x: isVerticalBar ? Style.pixelAlignCenter(parent.width, width) : (root.efficientMode ? 0 : ((root.showTitle) ? Style.pixelAlignCenter(parent.width, width) : Style.marginM))
+      y: (isVerticalBar && root.efficientMode) ? 0 : Style.pixelAlignCenter(parent.height, height)
 
       // Configure GridLayout to behave like RowLayout or ColumnLayout
       rows: isVerticalBar ? -1 : 1 // -1 means unlimited
@@ -685,6 +713,7 @@ Item {
           readonly property bool isFocused: isRunning && modelData.window && modelData.window.isFocused
           readonly property bool isPinnedRunning: isPinned && isRunning && !isFocused
           readonly property bool isHovered: root.hoveredWindowId === modelData.id
+          readonly property bool isUrgent: isRunning && modelData.window && modelData.window.isUrgent === true
 
           readonly property bool shouldShowTitle: root.showTitle && modelData.type !== "pinned"
           readonly property real itemSpacing: Style.marginS
@@ -694,8 +723,8 @@ Item {
           readonly property color titleBgColor: (isHovered || isFocused) ? Color.mHover : Style.capsuleColor
           readonly property color titleFgColor: (isHovered || isFocused) ? Color.mOnHover : Color.mOnSurface
 
-          Layout.preferredWidth: root.isVerticalBar ? root.barHeight : (root.showTitle ? Math.round(contentWidth + Style.margin2M) : Math.round(contentWidth)) // Add margins for both pinned and running apps
-          Layout.preferredHeight: root.isVerticalBar ? root.itemSize : root.barHeight
+          Layout.preferredWidth: root.efficientMode ? (root.isVerticalBar ? root.barHeight : root.effectiveItemLongLength) : (root.isVerticalBar ? root.barHeight : (root.showTitle ? Math.round(contentWidth + Style.margin2M) : Math.round(contentWidth))) // Add margins for both pinned and running apps
+          Layout.preferredHeight: root.efficientMode ? (root.isVerticalBar ? root.effectiveItemLongLength : root.barHeight) : (root.isVerticalBar ? root.itemSize : root.barHeight)
           Layout.alignment: Qt.AlignCenter
 
           // Ensure dragged item is on top
@@ -703,6 +732,35 @@ Item {
 
           property int modelIndex: index
           objectName: "taskbarAppItem"
+
+          // DDE efficient-mode state fill on the item rect inset by 1 px
+          // (DESIGN §3.1.4): active accent@0.3, attention@0.8, running overlay("strong")
+          Rectangle {
+            visible: root.efficientMode
+            anchors.fill: parent
+            anchors.margins: 1
+            color: {
+              if (taskbarItem.isFocused)
+                return Qt.alpha(Color.accent, 0.3);
+              if (taskbarItem.isUrgent)
+                return Qt.alpha(Color.attention, 0.8);
+              if (taskbarItem.isRunning)
+                return Color.overlay("strong");
+              return "transparent";
+            }
+          }
+
+          // Accent edge line on the screen-edge side for the active window
+          // (4 px when the item thickness is > 50, otherwise 2 px)
+          Rectangle {
+            visible: root.efficientMode && taskbarItem.isFocused
+            color: Color.accent
+            readonly property real lw: root.barHeight > 50 ? 4 : 2
+            x: root.barPosition === "left" ? 0 : (root.barPosition === "right" ? parent.width - width : 0)
+            y: root.barPosition === "top" ? 0 : (root.barPosition === "bottom" ? parent.height - height : 0)
+            width: root.isVerticalBar ? lw : parent.width
+            height: root.isVerticalBar ? parent.height : lw
+          }
 
           DropArea {
             anchors.fill: parent
@@ -845,9 +903,15 @@ Item {
                 spacing: taskbarItem.itemSpacing
 
                 Item {
-                  Layout.preferredWidth: root.itemSize
-                  Layout.preferredHeight: root.itemSize
-                  Layout.alignment: Qt.AlignVCenter | Qt.AlignLeft
+                  Layout.preferredWidth: root.efficientMode ? root.itemIconSize : root.itemSize
+                  Layout.preferredHeight: root.efficientMode ? root.itemIconSize : root.itemSize
+                  Layout.alignment: Qt.AlignCenter
+
+                  // DDE: hovering a taskbar item brightens the icon, no extra background
+                  layer.enabled: root.efficientMode && taskbarItem.isHovered
+                  layer.effect: MultiEffect {
+                    brightness: 0.15
+                  }
 
                   IconImage {
                     id: appIcon
@@ -869,7 +933,7 @@ Item {
 
                   Rectangle {
                     id: iconBackground
-                    visible: !shouldShowTitle
+                    visible: !shouldShowTitle && !root.efficientMode
                     anchors.bottomMargin: -2
                     anchors.bottom: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter

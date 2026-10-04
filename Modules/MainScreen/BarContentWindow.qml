@@ -39,17 +39,19 @@ PanelWindow {
   // Position and size to match bar location (per-screen)
   readonly property string barPosition: Settings.getBarPositionForScreen(barWindow.screen?.name)
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
-  readonly property bool isFramed: Settings.data.bar.barType === "framed"
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
   readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-  readonly property bool barFloating: Settings.data.bar.barType === "floating"
+  readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
   readonly property real barMarginH: Math.ceil(barFloating ? Settings.data.bar.marginHorizontal : 0)
   readonly property real barMarginV: Math.ceil(barFloating ? Settings.data.bar.marginVertical : 0)
   readonly property real barHeight: Style.getBarHeightForScreen(barWindow.screen?.name)
 
   // Auto-hide properties
+  // DDE taskbar spec: 100 ms show and hide delays in efficient mode
   readonly property bool autoHide: Settings.getBarDisplayModeForScreen(barWindow.screen?.name) === "auto_hide"
-  readonly property int hideDelay: Settings.data.bar.autoHideDelay || 500
-  readonly property int showDelay: Settings.data.bar.autoShowDelay || 100
+  readonly property int hideDelay: efficientMode ? 100 : (Settings.data.bar.autoHideDelay || 500)
+  readonly property int showDelay: efficientMode ? 100 : (Settings.data.bar.autoShowDelay || 100)
   property bool isHidden: autoHide
 
   // Hover tracking
@@ -156,10 +158,10 @@ PanelWindow {
   // The bar is hidden via opacity + window visibility instead.
   property bool contentLoaded: false
 
-  // Delay window hide to allow fade-out animation to complete
+  // Delay window hide to allow the hide animation to complete
   Timer {
     id: windowHideTimer
-    interval: Style.animationFast
+    interval: barWindow.efficientMode ? Style.motionPanel : Style.animationFast
     onTriggered: {
       if (barWindow.isHidden)
         barWindow.windowVisible = false;
@@ -208,14 +210,37 @@ PanelWindow {
     sourceComponent: Item {
       anchors.fill: parent
 
-      // Fade animation
-      opacity: barWindow.isHidden ? 0 : 1
+      // Efficient mode slides along the screen edge (DDE spec: motionPanel,
+      // InOutCubic); the legacy path fades out instead
+      opacity: (!barWindow.efficientMode && barWindow.isHidden) ? 0 : 1
 
       Behavior on opacity {
-        enabled: barWindow.autoHide
+        enabled: barWindow.autoHide && !barWindow.efficientMode
         NumberAnimation {
           duration: Style.animationFast
           easing.type: Easing.OutQuad
+        }
+      }
+
+      transform: Translate {
+        // Slide distance: the bar thickness beyond the screen edge
+        readonly property real slideOff: barWindow.isHidden ? barWindow.barHeight : 0
+        x: (barWindow.barPosition === "left") ? -slideOff : (barWindow.barPosition === "right") ? slideOff : 0
+        y: (barWindow.barPosition === "top") ? -slideOff : (barWindow.barPosition === "bottom") ? slideOff : 0
+
+        Behavior on x {
+          enabled: barWindow.efficientMode
+          NumberAnimation {
+            duration: Style.motionPanel
+            easing.type: Easing.InOutCubic
+          }
+        }
+        Behavior on y {
+          enabled: barWindow.efficientMode
+          NumberAnimation {
+            duration: Style.motionPanel
+            easing.type: Easing.InOutCubic
+          }
         }
       }
 

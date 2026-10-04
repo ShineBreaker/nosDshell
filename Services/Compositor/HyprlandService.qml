@@ -430,6 +430,7 @@ Item {
         "appId": appId,
         "workspaceId": wsId || -1,
         "isFocused": focused,
+        "isUrgent": safeGetProperty(toplevel, "urgent", "false") === "true",
         "output": output,
         "x": safeX,
         "y": safeY

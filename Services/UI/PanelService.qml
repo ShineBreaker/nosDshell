@@ -207,12 +207,13 @@ Singleton {
     return name in registeredPanels;
   }
 
-  // Check if panels can be shown on a given screen (has bar enabled or allowPanelsOnScreenWithoutBar)
+  // Check if panels can be shown on a given screen (has a taskbar or allowPanelsOnScreenWithoutBar)
   function canShowPanelsOnScreen(screen) {
     const name = screen?.name || "";
-    const monitors = Settings.data.bar.monitors || [];
-    const allowPanelsOnScreenWithoutBar = Settings.data.general.allowPanelsOnScreenWithoutBar;
-    return allowPanelsOnScreenWithoutBar || monitors.length === 0 || monitors.includes(name);
+    if (Settings.data.general.allowPanelsOnScreenWithoutBar) {
+      return true;
+    }
+    return BarService.hasTaskbarOnScreen(name);
   }
 
   // Find a screen that can show panels

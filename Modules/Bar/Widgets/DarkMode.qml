@@ -27,15 +27,18 @@ NIconButton {
   }
 
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   icon: "dark-mode"
+  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["dark-mode", "preferences-desktop-theme"]) : ""
+  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
   tooltipText: Settings.data.colorSchemes.darkMode ? I18n.tr("tooltips.switch-to-light-mode") : I18n.tr("tooltips.switch-to-dark-mode")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   baseSize: Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: Style.radiusL
+  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   colorBg: Style.capsuleColor
-  colorFg: Color.resolveColorKey(iconColorKey)
+  colorFg: efficientMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
   onClicked: Settings.data.colorSchemes.darkMode = !Settings.data.colorSchemes.darkMode
 
   border.color: Style.capsuleBorderColor

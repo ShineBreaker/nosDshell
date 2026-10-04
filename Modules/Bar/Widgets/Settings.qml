@@ -32,8 +32,11 @@ NIconButton {
   readonly property string valueIconColor: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
 
   readonly property color iconColor: Color.resolveColorKey(valueIconColor)
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   icon: "settings"
+  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["preferences-system", "applications-system"]) : ""
+  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
   tooltipText: {
     if (PanelService.getPanel("settingsPanel", screen)?.isPanelOpen) {
       return "";
@@ -44,11 +47,11 @@ NIconButton {
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   baseSize: Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: Style.radiusL
+  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   colorBg: Style.capsuleColor
-  colorFg: iconColor
-  colorBgHover: Color.mHover
-  colorFgHover: Color.mOnHover
+  colorFg: efficientMode ? Color.onShell : iconColor
+  colorBgHover: efficientMode ? Color.overlay("hover") : Color.mHover
+  colorFgHover: efficientMode ? Color.onShell : Color.mOnHover
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
 
