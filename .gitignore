@@ -10,3 +10,4 @@ build
 /debian/
 .direnv/
 .envrc
+references/
