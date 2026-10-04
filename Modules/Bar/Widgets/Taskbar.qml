@@ -6,6 +6,7 @@ import Quickshell
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Commons
+import qs.Modules.Dock
 import qs.Services.Compositor
 import qs.Services.System
 import qs.Services.UI
@@ -464,6 +465,13 @@ Item {
     }
   }
 
+  // DDE window previews (AppSnapshot/PreviewContainer): one shared arrow
+  // popup re-anchored to the hovered taskbar item
+  WindowPreviews {
+    id: windowPreviews
+    dockPosition: root.barPosition
+  }
+
   NPopupContextMenu {
     id: contextMenu
     model: {
@@ -733,6 +741,31 @@ Item {
           property int modelIndex: index
           objectName: "taskbarAppItem"
 
+          // Window preview entries (DDE AppSnapshot): one tile per window —
+          // the efficient taskbar shows one item per window, so one tile
+          function previewEntries() {
+            var w = taskbarItem.modelData ? taskbarItem.modelData.window : null;
+            if (!w || !w.handle)
+              return [];
+            return [{
+                      "toplevel": w.handle,
+                      "title": taskbarItem.title,
+                      "urgent": w.isUrgent === true
+                    }];
+          }
+
+          // 200 ms hover delay before the preview opens (DDE)
+          Timer {
+            id: previewTimer
+            interval: 200
+            onTriggered: {
+              if (!Settings.data.dock.windowPreviews || !taskbarItem.isRunning)
+                return;
+              windowPreviews.show(taskbarItem, taskbarItem.previewEntries, root.screen);
+              TooltipService.hide();
+            }
+          }
+
           // DDE efficient-mode state fill on the item rect inset by 1 px
           // (DESIGN §3.1.4): active accent@0.3, attention@0.8, running overlay("strong")
           Rectangle {
@@ -996,6 +1029,8 @@ Item {
             }
 
             onClicked: mouse => {
+                         windowPreviews.hide();
+                         previewTimer.stop();
                          if (!modelData)
                          return;
                          if (mouse.button === Qt.LeftButton) {
@@ -1023,9 +1058,17 @@ Item {
             onEntered: {
               root.hoveredWindowId = taskbarItem.modelData.id;
               TooltipService.show(taskbarItem, taskbarItem.title, BarService.getTooltipDirection(root.screen?.name));
+              // DDE window preview after 200 ms hover (suppresses the tooltip)
+              if (Settings.data.dock.windowPreviews && taskbarItem.isRunning) {
+                previewTimer.restart();
+              }
             }
             onExited: {
               root.hoveredWindowId = "";
+              previewTimer.stop();
+              if (windowPreviews.anchorItem === taskbarItem) {
+                windowPreviews.scheduleHide();
+              }
               TooltipService.hide();
             }
           }

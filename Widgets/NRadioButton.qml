@@ -10,6 +10,9 @@ RadioButton {
   id: root
 
   property real pointSize: Style.fontSizeM
+  // Inset the row content (not the hover background) — used by DDE applet
+  // panels which pad rows 10–20 px inside the 36 px row bounds
+  property real contentHorizontalPadding: 0
 
   implicitWidth: contentItem.implicitWidth
 
@@ -34,6 +37,8 @@ RadioButton {
       id: rowContent
       anchors.left: parent.left
       anchors.right: parent.right
+      anchors.leftMargin: root.contentHorizontalPadding
+      anchors.rightMargin: root.contentHorizontalPadding
       anchors.verticalCenter: parent.verticalCenter
 
       NText {

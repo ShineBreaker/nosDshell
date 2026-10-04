@@ -18,6 +18,8 @@ Item {
 
   // Configuration for shared use (e.g. by NetworkPanel)
   property bool showOnlyLists: false
+  // DDE dock-applet mode (NetworkPanel): transparent rows, no card chrome
+  property bool flat: false
 
   // State properties
   property string passwordSsid: ""
@@ -182,16 +184,16 @@ Item {
       visible: root.connectedNetworks.length > 0 && NetworkService.wifiEnabled
       Layout.fillWidth: true
       Layout.preferredHeight: connectedCol.implicitHeight + Style.margin2M
-      border.color: showOnlyLists ? Style.boxBorderColor : "transparent"
-      color: showOnlyLists ? Color.mSurfaceVariant : "transparent"
+      border.color: (showOnlyLists && !root.flat) ? Style.boxBorderColor : "transparent"
+      color: (showOnlyLists && !root.flat) ? Color.mSurfaceVariant : "transparent"
 
       ColumnLayout {
         id: connectedCol
         anchors.fill: parent
         anchors.topMargin: Style.marginM
         anchors.bottomMargin: Style.marginM
-        anchors.leftMargin: showOnlyLists ? Style.marginL : 0
-        anchors.rightMargin: showOnlyLists ? Style.marginL : 0
+        anchors.leftMargin: (showOnlyLists && !root.flat) ? Style.marginL : 0
+        anchors.rightMargin: (showOnlyLists && !root.flat) ? Style.marginL : 0
         spacing: Style.marginM
 
         NLabel {
@@ -213,16 +215,16 @@ Item {
       visible: root.savedNetworks.length > 0 && NetworkService.wifiEnabled
       Layout.fillWidth: true
       Layout.preferredHeight: savedCol.implicitHeight + Style.margin2M
-      border.color: showOnlyLists ? Style.boxBorderColor : "transparent"
-      color: showOnlyLists ? Color.mSurfaceVariant : "transparent"
+      border.color: (showOnlyLists && !root.flat) ? Style.boxBorderColor : "transparent"
+      color: (showOnlyLists && !root.flat) ? Color.mSurfaceVariant : "transparent"
 
       ColumnLayout {
         id: savedCol
         anchors.fill: parent
         anchors.topMargin: Style.marginM
         anchors.bottomMargin: Style.marginM
-        anchors.leftMargin: showOnlyLists ? Style.marginL : 0
-        anchors.rightMargin: showOnlyLists ? Style.marginL : 0
+        anchors.leftMargin: (showOnlyLists && !root.flat) ? Style.marginL : 0
+        anchors.rightMargin: (showOnlyLists && !root.flat) ? Style.marginL : 0
         spacing: Style.marginM
 
         NLabel {
@@ -244,16 +246,16 @@ Item {
       visible: root.availableNetworks.length > 0 && NetworkService.wifiEnabled
       Layout.fillWidth: true
       Layout.preferredHeight: availableCol.implicitHeight + Style.margin2M
-      border.color: showOnlyLists ? Style.boxBorderColor : "transparent"
-      color: showOnlyLists ? Color.mSurfaceVariant : "transparent"
+      border.color: (showOnlyLists && !root.flat) ? Style.boxBorderColor : "transparent"
+      color: (showOnlyLists && !root.flat) ? Color.mSurfaceVariant : "transparent"
 
       ColumnLayout {
         id: availableCol
         anchors.fill: parent
         anchors.topMargin: Style.marginM
         anchors.bottomMargin: Style.marginM
-        anchors.leftMargin: showOnlyLists ? Style.marginL : 0
-        anchors.rightMargin: showOnlyLists ? Style.marginL : 0
+        anchors.leftMargin: (showOnlyLists && !root.flat) ? Style.marginL : 0
+        anchors.rightMargin: (showOnlyLists && !root.flat) ? Style.marginL : 0
         spacing: Style.marginM
 
         RowLayout {
@@ -640,6 +642,9 @@ Item {
       readonly property bool isEnterprise: NetworkService.isEnterprise(modelData.security)
 
       function getContentColors(defaultColors = [Color.mSurface, Color.mOnSurface]) {
+        if (root.flat) {
+          return ["transparent", Color.onShell];
+        }
         if (root.passwordSsid === modelData.ssid || NetworkService.connectingTo === modelData.ssid) {
           return [Color.mPrimary, Color.mOnPrimary];
         }
@@ -660,7 +665,7 @@ Item {
       radius: Style.radiusM
       clip: true
       forceOpaque: true
-      color: networkItem.getContentColors()[0]
+      color: root.flat ? "transparent" : networkItem.getContentColors()[0]
 
       ColumnLayout {
         id: deviceColumn
@@ -786,6 +791,14 @@ Item {
 
           Item {
             Layout.fillWidth: true
+          }
+
+          NIcon {
+            visible: root.flat && modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
+            icon: "check"
+            pointSize: Style.fontSizeXL
+            color: Color.accent
+            Layout.alignment: Qt.AlignVCenter
           }
 
           RowLayout {

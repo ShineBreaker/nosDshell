@@ -399,6 +399,7 @@ Singleton {
   readonly property color accent: root.mPrimary
   readonly property color accentAlt: root.mSecondary
   readonly property color accentAction: root.mTertiary
+  readonly property color onAccent: root.mOnPrimary
 
   readonly property color attention: "#F18A2E"
   readonly property color alert: "#F9704F"

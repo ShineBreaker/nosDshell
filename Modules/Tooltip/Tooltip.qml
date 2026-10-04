@@ -54,6 +54,24 @@ PopupWindow {
   property int screenHeight: 1080
   property int screenX: 0
   property int screenY: 0
+  property var targetScreen: null
+
+  // Target rect in screen coordinates (shared taskbar anchor helper —
+  // works for items in both the bar window and the fashion dock window)
+  function targetScreenRect() {
+    var rect = targetScreen ? PanelService.screenRectOf(targetItem, targetScreen) : null;
+    if (rect) {
+      return {
+        "x": rect.x,
+        "y": rect.y
+      };
+    }
+    var abs = targetItem.mapToGlobal(0, 0);
+    return {
+      "x": abs.x - screenX,
+      "y": abs.y - screenY
+    };
+  }
 
   // Arrow state: which edge of the NArrowRect carries the arrow, and where
   // along that edge the tip sits (coordinates relative to the window).
@@ -202,12 +220,14 @@ PopupWindow {
         screenHeight = s.height;
         screenX = s.x;
         screenY = s.y;
+        targetScreen = s;
         foundScreen = true;
         break;
       }
     }
     if (!foundScreen) {
       Logger.w("Tooltip", "No screen found for target position!");
+      targetScreen = null;
     }
 
     // Initialize animation state (hidden)
@@ -294,12 +314,8 @@ PopupWindow {
     root.implicitWidth = tipWidth;
     root.implicitHeight = tipHeight;
 
-    // Get target's global position and convert to screen-relative
-    var targetGlobalAbs = targetItem.mapToGlobal(0, 0);
-    var targetGlobal = {
-      "x": targetGlobalAbs.x - screenX,
-      "y": targetGlobalAbs.y - screenY
-    };
+    // Get target's position in screen coordinates
+    var targetGlobal = targetScreenRect();
     const targetWidth = targetItem.width;
     const targetHeight = targetItem.height;
 
@@ -567,11 +583,7 @@ PopupWindow {
 
     // Reposition based on current direction (screen-relative)
     // Round all values to avoid sub-pixel positioning issues with fractional scaling
-    var targetGlobalAbs = targetItem.mapToGlobal(0, 0);
-    var targetGlobal = {
-      "x": targetGlobalAbs.x - screenX,
-      "y": targetGlobalAbs.y - screenY
-    };
+    var targetGlobal = targetScreenRect();
     const targetWidth = targetItem.width;
     const targetHeight = targetItem.height;
 

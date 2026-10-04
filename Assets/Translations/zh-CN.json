@@ -371,7 +371,8 @@
       "signal-text-good": "信号：良好",
       "signal-text-poor": "信号：弱",
       "signal-text-unknown": "信号：未知",
-      "signal-text-very-poor": "信号：非常差"
+      "signal-text-very-poor": "信号：非常差",
+      "unavailable": "蓝牙不可用"
     }
   },
   "changelog": {
@@ -572,7 +573,8 @@
     "width": "宽度",
     "wifi": "Wi-Fi",
     "windows": "窗口",
-    "yes": "是"
+    "yes": "是",
+    "today": "今天"
   },
   "control-center": {
     "power-profile": {
@@ -833,7 +835,11 @@
       "volumes-volume-feedback-description": "调整音量时播放反馈音效。",
       "volumes-volume-feedback-label": "播放音量反馈",
       "volumes-volume-overdrive-description": "允许将音量提高到100%以上。可能不被所有硬件支持。",
-      "volumes-volume-overdrive-label": "允许音量过载"
+      "volumes-volume-overdrive-label": "允许音量过载",
+      "section-output": "输出",
+      "section-input": "输入",
+      "section-applications": "应用程序",
+      "section-devices": "设备"
     },
     "bar": {
       "appearance-auto-hide-delay-description": "鼠标离开后Bar隐藏所需时间",
@@ -1122,7 +1128,8 @@
       "night-light-temperature-label": "色温",
       "night-light-temperature-night": "夜间",
       "night-light-temperature-night-description": "控制夜间的色温。",
-      "title": "显示"
+      "title": "显示",
+      "section-monitors": "显示器"
     },
     "dock": {
       "appearance-background-opacity-description": "调整 Dock 栏的背景不透明度。",
@@ -1142,6 +1149,8 @@
       "appearance-floating-distance-label": "Dock 栏浮动距离",
       "appearance-group-apps-description": "将同一应用的多个窗口分组到一个 Dock 条目中。",
       "appearance-group-apps-label": "分组相同应用",
+      "appearance-window-previews-description": "悬停应用项时显示窗口实时预览。",
+      "appearance-window-previews-label": "窗口预览",
       "appearance-group-click-action-cycle": "切换窗口",
       "appearance-group-click-action-description": "选择左键单击对分组应用执行的操作。",
       "appearance-group-click-action-label": "分组应用点击操作",
@@ -1913,7 +1922,9 @@
     "gpu-temp": "GPU 温度",
     "load-average": "平均负载",
     "title": "系统监视器",
-    "upload-speed": "上传速度"
+    "upload-speed": "上传速度",
+    "rx": "下载",
+    "tx": "上传"
   },
   "toast": {
     "airplane-mode": {
@@ -2019,6 +2030,7 @@
     "delete-notification": "删除通知",
     "dismiss-notification": "关闭通知",
     "do-not-disturb-enabled": "勿扰模式",
+    "do-not-disturb-disabled": "开启勿扰模式",
     "expand": "展开侧边栏",
     "forget-network": "忘记网络",
     "grid-view": "网格视图",

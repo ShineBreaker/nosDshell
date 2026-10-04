@@ -15,8 +15,7 @@ import qs.Widgets
 SmartPanel {
   id: root
 
-  preferredWidth: Math.round((Settings.data.notifications.enableMarkdown ? 540 : 440) * Style.uiScaleRatio)
-  preferredHeight: Math.round((Settings.data.notifications.enableMarkdown ? 640 : 540) * Style.uiScaleRatio)
+  preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
   onOpened: {
     NotificationService.updateLastSeenTs();
@@ -238,16 +237,9 @@ SmartPanel {
       }
     }
 
-    // Calculate content height based on header + tabs (if visible) + content
-    property real calculatedHeight: {
-      if (NotificationService.historyModel.count === 0) {
-        return headerBox.implicitHeight + scrollView.implicitHeight + Style.margin2L + Style.marginM;
-      }
-      return headerBox.implicitHeight + scrollView.implicitHeight + Style.margin2L + Style.marginM;
-    }
-    property real contentPreferredHeight: Math.min(root.preferredHeight, Math.ceil(calculatedHeight))
+    property real contentPreferredHeight: Math.min(mainColumn.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
-    property real layoutWidth: Math.max(1, root.preferredWidth - Style.margin2L)
+    property real layoutWidth: Math.max(1, root.preferredWidth - Style.margin2S)
 
     // State (lazy-loaded with panelContent)
     property var rangeCounts: [0, 0, 0, 0]
@@ -375,70 +367,73 @@ SmartPanel {
     ColumnLayout {
       id: mainColumn
       anchors.fill: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+      anchors.topMargin: Style.marginS
+      anchors.bottomMargin: Style.marginS
+      spacing: Style.marginS
 
-      // Header section
-      NBox {
+      // Flat header row: icon + title + DND/clear/settings actions (no close)
+      Item {
         id: headerBox
         Layout.fillWidth: true
-        implicitHeight: header.implicitHeight + Style.margin2M
+        implicitHeight: header.implicitHeight
 
         ColumnLayout {
           id: header
           anchors.fill: parent
-          anchors.margins: Style.marginM
-          spacing: Style.marginM
+          spacing: Style.marginS
 
-          RowLayout {
+          Item {
             id: headerRow
-            NIcon {
-              icon: "bell"
-              pointSize: Style.fontSizeXXL
-              color: Color.mPrimary
-            }
+            Layout.fillWidth: true
+            Layout.preferredHeight: 36
 
-            NText {
-              text: I18n.tr("common.notifications")
-              pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightBold
-              color: Color.mOnSurface
-              Layout.fillWidth: true
-            }
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.marginM
+              anchors.rightMargin: Style.marginS
+              spacing: Style.marginXS
 
-            NIconButton {
-              icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
-              tooltipText: NotificationService.doNotDisturb ? I18n.tr("tooltips.do-not-disturb-enabled") : I18n.tr("tooltips.do-not-disturb-enabled")
-              baseSize: Style.baseWidgetSize * 0.8
-              onClicked: NotificationService.doNotDisturb = !NotificationService.doNotDisturb
-            }
-
-            NIconButton {
-              icon: "trash"
-              tooltipText: I18n.tr("actions.clear-history")
-              baseSize: Style.baseWidgetSize * 0.8
-              onClicked: {
-                NotificationService.clearHistory();
-                // Close panel as there is nothing more to see.
-                root.close();
+              NIcon {
+                icon: "bell"
+                pointSize: Style.fontSizeXL
+                color: Color.accent
               }
-            }
 
-            NIconButton {
-              icon: "settings"
-              tooltipText: I18n.tr("common.settings")
-              baseSize: Style.baseWidgetSize * 0.8
-              onClicked: {
-                SettingsPanelService.openToTab(SettingsPanel.Tab.Notifications, 0, screen);
-                root.close();
+              NText {
+                text: I18n.tr("common.notifications")
+                pointSize: Style.fontSizeM
+                font.weight: Style.fontWeightBold
+                Layout.fillWidth: true
+                elide: Text.ElideRight
               }
-            }
 
-            NIconButton {
-              icon: "close"
-              tooltipText: I18n.tr("common.close")
-              baseSize: Style.baseWidgetSize * 0.8
-              onClicked: root.close()
+              NIconButton {
+                icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
+                colorFg: Color.onShell
+                tooltipText: NotificationService.doNotDisturb ? I18n.tr("tooltips.do-not-disturb-enabled") : I18n.tr("tooltips.do-not-disturb-disabled")
+                onClicked: NotificationService.doNotDisturb = !NotificationService.doNotDisturb
+              }
+
+              NIconButton {
+                icon: "trash"
+                colorFg: Color.onShell
+                tooltipText: I18n.tr("actions.clear-history")
+                onClicked: {
+                  NotificationService.clearHistory();
+                  // Close panel as there is nothing more to see.
+                  root.close();
+                }
+              }
+
+              NIconButton {
+                icon: "settings"
+                colorFg: Color.onShell
+                tooltipText: I18n.tr("common.settings")
+                onClicked: {
+                  SettingsPanelService.openToTab(SettingsPanel.Tab.Notifications, 0, screen);
+                  root.close();
+                }
+              }
             }
           }
 
@@ -498,7 +493,7 @@ SmartPanel {
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
           reserveScrollbarSpace: false
-          gradientColor: Color.mSurface
+          gradientColor: Color.popupShell
 
           // Track which notification is expanded
           property string expandedId: ""
@@ -508,7 +503,7 @@ SmartPanel {
             spacing: Style.marginM
 
             // Empty state when no notifications
-            NBox {
+            Item {
               visible: !panelContent.hasNotificationsInCurrentRange()
               Layout.fillWidth: true
               Layout.preferredHeight: emptyState.implicitHeight + Style.marginXL
@@ -526,14 +521,14 @@ SmartPanel {
                 NIcon {
                   icon: "bell-off"
                   pointSize: (NotificationService.historyModel.count === 0) ? 48 : Style.baseWidgetSize
-                  color: Color.mOnSurfaceVariant
+                  color: Color.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
                 NText {
                   text: I18n.tr("notifications.panel.no-notifications")
                   pointSize: (NotificationService.historyModel.count === 0) ? Style.fontSizeL : Style.fontSizeM
-                  color: Color.mOnSurfaceVariant
+                  color: Color.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
@@ -541,7 +536,7 @@ SmartPanel {
                   visible: NotificationService.historyModel.count === 0
                   text: I18n.tr("notifications.panel.description")
                   pointSize: Style.fontSizeS
-                  color: Color.mOnSurfaceVariant
+                  color: Color.onShellTertiary
                   horizontalAlignment: Text.AlignHCenter
                   Layout.fillWidth: true
                   wrapMode: Text.WordWrap
@@ -699,13 +694,13 @@ SmartPanel {
 
                     Rectangle {
                       anchors.fill: parent
-                      radius: Style.radiusM
-                      color: Color.mSurfaceVariant
+                      radius: Style.radiusItem
+                      color: Color.overlay("field")
                       border.color: {
                         if (notificationDelegate.isFocused)
-                          return Color.mPrimary;
+                          return Color.accent;
                         if (Settings.data.ui.boxBorderEnabled)
-                          return Qt.alpha(Color.mOutline, Style.opacityHeavy);
+                          return Color.borderShell;
                         return "transparent";
                       }
                       border.width: notificationDelegate.isFocused ? Style.borderM : Style.borderS
@@ -881,7 +876,7 @@ SmartPanel {
                                 if (model.urgency === 2)
                                   return Color.mError;
                                 else if (model.urgency === 0)
-                                  return Color.mOnSurfaceVariant;
+                                  return Color.onShellTertiary;
                                 else
                                   return "transparent";
                               }
@@ -891,14 +886,14 @@ SmartPanel {
                               text: model.appName || "Unknown App"
                               pointSize: Style.fontSizeXS
                               font.weight: Style.fontWeightBold
-                              color: Color.mSecondary
+                              color: Color.accent
                             }
 
                             NText {
                               textFormat: Text.PlainText
                               text: " " + Time.formatRelativeTime(model.timestamp)
                               pointSize: Style.fontSizeXXS
-                              color: Color.mOnSurfaceVariant
+                              color: Color.onShellTertiary
                               anchors.bottom: parent.bottom
                             }
                           }
@@ -909,7 +904,7 @@ SmartPanel {
                             width: parent.width
                             text: (Settings.data.notifications.enableMarkdown && notificationDelegate.isExpanded) ? (model.summaryMarkdown || I18n.tr("common.no-summary")) : (model.summary || I18n.tr("common.no-summary"))
                             pointSize: Style.fontSizeM
-                            color: Color.mOnSurface
+                            color: Color.onShell
                             textFormat: notificationDelegate.notificationTextFormat
                             wrapMode: Text.Wrap
                             maximumLineCount: notificationDelegate.isExpanded ? 999 : 2
@@ -922,7 +917,7 @@ SmartPanel {
                             width: parent.width
                             text: (Settings.data.notifications.enableMarkdown && notificationDelegate.isExpanded) ? (model.bodyMarkdown || "") : (model.body || "")
                             pointSize: Style.fontSizeS
-                            color: Color.mOnSurfaceVariant
+                            color: Color.onShellTertiary
                             textFormat: notificationDelegate.notificationTextFormat
                             wrapMode: Text.Wrap
                             maximumLineCount: notificationDelegate.isExpanded ? 999 : 3
@@ -946,7 +941,7 @@ SmartPanel {
                                 readonly property bool actionNavActive: notificationDelegate.isFocused && panelContent.actionIndex !== -1
                                 readonly property bool isSelected: actionNavActive && panelContent.actionIndex === index
 
-                                backgroundColor: isSelected ? Color.mSecondary : Color.mPrimary
+                                backgroundColor: isSelected ? Color.accent : Color.accent
                                 textColor: isSelected ? Color.mOnSecondary : Color.mOnPrimary
 
                                 outlined: false

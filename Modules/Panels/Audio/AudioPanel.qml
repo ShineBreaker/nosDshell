@@ -6,831 +6,352 @@ import Quickshell.Services.Pipewire
 import Quickshell.Widgets
 import qs.Commons
 import qs.Modules.MainScreen
+import qs.Services.Hardware
 import qs.Services.Media
+import qs.Services.UI
 import qs.Widgets
 
 SmartPanel {
   id: root
 
-  preferredWidth: Math.round(440 * Style.uiScaleRatio)
-  preferredHeight: Math.round(420 * Style.uiScaleRatio)
+  preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
   panelContent: Item {
     id: panelContent
 
-    // Volume state (lazy-loaded with panelContent)
-    property real localOutputVolume: AudioService.volume || 0
-    property bool localOutputVolumeChanging: false
-    property int lastSinkId: -1
+    property real localOutputVolume: AudioService.volume
+    property bool localOutputMuted: AudioService.muted
+    property real localInputVolume: AudioService.inputVolume
+    property bool localInputMuted: AudioService.inputMuted
+    property real stepSize: Settings.data.audio.volumeStep / 100.0
 
-    property real localInputVolume: AudioService.inputVolume || 0
-    property bool localInputVolumeChanging: false
-    property int lastSourceId: -1
+    property real contentPreferredHeight: Math.min(mainLayout.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
-    readonly property bool outputVolumeGuard: outputVolumeSlider.sliderActive || localOutputVolumeChanging
-    readonly property bool inputVolumeGuard: inputVolumeSlider.sliderActive || localInputVolumeChanging
-
-    // UI state (lazy-loaded with panelContent)
-    property int currentTabIndex: 0
-
-    Component.onCompleted: {
-      var vol = AudioService.volume;
-      localOutputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-      var inputVol = AudioService.inputVolume;
-      localInputVolume = (inputVol !== undefined && !isNaN(inputVol)) ? inputVol : 0;
-      if (AudioService.sink) {
-        lastSinkId = AudioService.sink.id;
-      }
-      if (AudioService.source) {
-        lastSourceId = AudioService.source.id;
-      }
-    }
-
-    // Reset local volume when device changes - use current device's volume
+    // The service stays the source of truth: default device changes and
+    // external volume changes are reflected here (the local properties would
+    // otherwise go stale).
     Connections {
       target: AudioService
       function onSinkChanged() {
-        if (AudioService.sink) {
-          const newSinkId = AudioService.sink.id;
-          if (newSinkId !== panelContent.lastSinkId) {
-            panelContent.lastSinkId = newSinkId;
-            // Immediately set local volume to current device's volume
-            var vol = AudioService.volume;
-            panelContent.localOutputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-          }
-        } else {
-          panelContent.lastSinkId = -1;
-          panelContent.localOutputVolume = 0;
-        }
+        panelContent.syncFromService();
       }
-    }
-
-    Connections {
-      target: AudioService
       function onSourceChanged() {
-        if (AudioService.source) {
-          const newSourceId = AudioService.source.id;
-          if (newSourceId !== panelContent.lastSourceId) {
-            panelContent.lastSourceId = newSourceId;
-            // Immediately set local volume to current device's volume
-            var vol = AudioService.inputVolume;
-            panelContent.localInputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-          }
-        } else {
-          panelContent.lastSourceId = -1;
-          panelContent.localInputVolume = 0;
-        }
+        panelContent.syncFromService();
       }
-    }
-
-    // Connections to update local volumes when AudioService changes
-    Connections {
-      target: AudioService
       function onVolumeChanged() {
-        if (!panelContent.outputVolumeGuard && !AudioService.isSettingOutputVolume && AudioService.sink && AudioService.sink.id === panelContent.lastSinkId) {
-          var vol = AudioService.volume;
-          panelContent.localOutputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-        }
+        panelContent.localOutputVolume = AudioService.volume;
       }
-    }
-
-    Connections {
-      target: AudioService
       function onInputVolumeChanged() {
-        if (!panelContent.inputVolumeGuard && !AudioService.isSettingInputVolume && AudioService.source && AudioService.source.id === panelContent.lastSourceId) {
-          var vol = AudioService.inputVolume;
-          panelContent.localInputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-        }
+        panelContent.localInputVolume = AudioService.inputVolume;
+      }
+      function onMutedChanged() {
+        panelContent.localOutputMuted = AudioService.muted;
+      }
+      function onInputMutedChanged() {
+        panelContent.localInputMuted = AudioService.inputMuted;
       }
     }
 
-    Connections {
-      target: outputVolumeSlider
-      function onSliderActiveChanged() {
-        if (!outputVolumeSlider.sliderActive && AudioService.sink && AudioService.sink.id === panelContent.lastSinkId) {
-          var vol = AudioService.volume;
-          panelContent.localOutputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-        }
-      }
+    Component.onCompleted: {
+      syncFromService();
     }
 
-    Connections {
-      target: inputVolumeSlider
-      function onSliderActiveChanged() {
-        if (!inputVolumeSlider.sliderActive && AudioService.source && AudioService.source.id === panelContent.lastSourceId) {
-          var vol = AudioService.inputVolume;
-          panelContent.localInputVolume = (vol !== undefined && !isNaN(vol)) ? vol : 0;
-        }
-      }
+    function syncFromService() {
+      panelContent.localOutputVolume = AudioService.volume;
+      panelContent.localInputVolume = AudioService.inputVolume;
+      panelContent.localOutputMuted = AudioService.muted;
+      panelContent.localInputMuted = AudioService.inputMuted;
     }
 
-    // Timer to debounce volume changes
-    // Only sync if the device hasn't changed (check by comparing IDs)
-    Timer {
-      interval: 100
-      running: true
-      repeat: true
-      onTriggered: {
-        // Only sync if sink hasn't changed
-        if (AudioService.sink && AudioService.sink.id === panelContent.lastSinkId) {
-          if (Math.abs(panelContent.localOutputVolume - AudioService.volume) >= 0.01) {
-            AudioService.setVolume(panelContent.localOutputVolume);
-          }
-        }
-        // Only sync if source hasn't changed
-        if (AudioService.source && AudioService.source.id === panelContent.lastSourceId) {
-          if (Math.abs(panelContent.localInputVolume - AudioService.inputVolume) >= 0.01) {
-            AudioService.setInputVolume(panelContent.localInputVolume);
-          }
-        }
+    readonly property string outputIcon: {
+      if (localOutputMuted || localOutputVolume <= Number.EPSILON) {
+        return "volume-mute";
       }
+      return localOutputVolume <= 0.5 ? "volume-low" : "volume-high";
     }
 
-    // Find application streams that are actually playing audio (connected to default sink)
-    // Use linkGroups to find nodes connected to the default audio sink
-    // Note: We need to use link IDs since source/target properties require binding
-    readonly property var appStreams: AudioService.appStreams
+    readonly property string inputIcon: {
+      if (localInputMuted || localInputVolume <= Number.EPSILON) {
+        return "mic-mute";
+      }
+      return localInputVolume <= 0.5 ? "mic-low" : "mic-high";
+    }
 
-    // Use implicitHeight from content + margins to avoid binding loops
-    property real contentPreferredHeight: mainColumn.implicitHeight + Style.margin2L
-
-    ColumnLayout {
-      id: mainColumn
+    NScrollView {
+      id: scrollView
       anchors.fill: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+      horizontalPolicy: ScrollBar.AlwaysOff
+      verticalPolicy: ScrollBar.AsNeeded
+      contentWidth: availableWidth
 
-      // HEADER
-      NBox {
-        Layout.fillWidth: true
-        implicitHeight: header.implicitHeight + Style.margin2M
+      ColumnLayout {
+        id: mainLayout
+        width: scrollView.availableWidth
+        spacing: Style.marginS
 
-        ColumnLayout {
-          id: header
-          anchors.fill: parent
-          anchors.margins: Style.marginM
-          spacing: Style.marginM
+        // ---- Output ----
+        NPanelSection {
+          text: I18n.tr("panels.audio.section-output")
+          Layout.fillWidth: true
+          Layout.topMargin: Style.marginM
+        }
 
+        Item {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 36
           RowLayout {
-            NIcon {
-              icon: "settings-audio"
-              pointSize: Style.fontSizeXXL
-              color: Color.mPrimary
-            }
-
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginS
+            spacing: Style.marginXS
             NText {
-              text: I18n.tr("panels.audio.title")
-              pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightBold
-              color: Color.mOnSurface
               Layout.fillWidth: true
+              text: AudioService.sink?.description || I18n.tr("panels.audio.fallback-output-device-name")
+              pointSize: Style.fontSizeM
+              elide: Text.ElideRight
+            }
+            NIconButton {
+              icon: panelContent.outputIcon
+              colorFg: Color.onShell
+              tooltipText: I18n.tr("tooltips.mute-output")
+              onClicked: AudioService.setOutputMuted(!panelContent.localOutputMuted)
+            }
+          }
+        }
+
+        NValueSlider {
+          Layout.fillWidth: true
+          Layout.leftMargin: Style.marginM
+          Layout.rightMargin: Style.marginM
+          Layout.preferredHeight: 22
+          from: 0
+          to: Settings.data.audio.volumeOverdrive ? 1.5 : 1
+          stepSize: panelContent.stepSize
+          value: panelContent.localOutputVolume
+          enabled: AudioService.sink !== null
+          onPressedChanged: playVolumeSound()
+          onMoved: {
+            if (!panelContent.localOutputMuted) {
+              AudioService.setVolume(value);
+            }
+          }
+          text: Math.round(panelContent.localOutputVolume * 100) + "%"
+        }
+
+        // ---- Input ----
+        NPanelSection {
+          text: I18n.tr("panels.audio.section-input")
+          Layout.fillWidth: true
+        }
+
+        Item {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 36
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginS
+            spacing: Style.marginXS
+            NText {
+              Layout.fillWidth: true
+              text: AudioService.source?.description || I18n.tr("panels.audio.fallback-input-device-name")
+              pointSize: Style.fontSizeM
+              elide: Text.ElideRight
+            }
+            NIconButton {
+              icon: panelContent.inputIcon
+              colorFg: Color.onShell
+              tooltipText: I18n.tr("tooltips.mute-input")
+              onClicked: AudioService.setInputMuted(!panelContent.localInputMuted)
+            }
+          }
+        }
+
+        NValueSlider {
+          Layout.fillWidth: true
+          Layout.leftMargin: Style.marginM
+          Layout.rightMargin: Style.marginM
+          Layout.preferredHeight: 22
+          from: 0
+          to: 1
+          stepSize: panelContent.stepSize
+          value: panelContent.localInputVolume
+          enabled: AudioService.source !== null
+          onMoved: {
+            if (!panelContent.localInputMuted) {
+              AudioService.setInputVolume(value);
+            }
+          }
+          text: Math.round(panelContent.localInputVolume * 100) + "%"
+        }
+
+        // ---- Applications ----
+        NPanelSection {
+          text: I18n.tr("panels.audio.section-applications")
+          Layout.fillWidth: true
+          visible: AudioService.appStreams.length > 0
+        }
+
+        Repeater {
+          model: AudioService.appStreams
+          delegate: ColumnLayout {
+            id: appBox
+            Layout.fillWidth: true
+            spacing: 0
+
+            // Track individual node to ensure properties are bound
+            PwObjectTracker {
+              objects: modelData ? [modelData] : []
             }
 
-            NIconButton {
-              icon: "close"
-              tooltipText: I18n.tr("common.close")
-              baseSize: Style.baseWidgetSize * 0.8
-              onClicked: {
-                root.close();
+            property PwNodeAudio nodeAudio: (modelData && modelData.audio) ? modelData.audio : null
+            property real appVolume: (nodeAudio && nodeAudio.volume !== undefined) ? nodeAudio.volume : 0.0
+            property bool appMuted: (nodeAudio && nodeAudio.muted !== undefined) ? nodeAudio.muted : false
+
+            readonly property bool isCaptureStream: {
+              if (!modelData || !modelData.properties)
+                return false;
+              const props = modelData.properties;
+              if (props["stream.capture.sink"] !== undefined)
+                return true;
+              const mediaClass = props["media.class"] || "";
+              return mediaClass.includes("Capture") || mediaClass === "Stream/Input" || mediaClass === "Stream/Input/Audio";
+            }
+
+            visible: !isCaptureStream
+
+            Item {
+              Layout.fillWidth: true
+              Layout.preferredHeight: 36
+              visible: !appBox.isCaptureStream
+              RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Style.marginM
+                anchors.rightMargin: Style.marginS
+                spacing: Style.marginS
+
+                IconImage {
+                  implicitSize: Style.baseWidgetSize * 0.6
+                  source: {
+                    let icon = modelData.properties["application.icon-name"];
+                    return ThemeIcons.iconFromName(icon, "audio-x-generic");
+                  }
+                }
+
+                NText {
+                  Layout.fillWidth: true
+                  text: {
+                    let appName = modelData.properties["application.name"] || "";
+                    if (modelData.isFirefox) {
+                      appName = modelData.properties["media.name"] || appName;
+                    }
+                    return appName || modelData.name;
+                  }
+                  pointSize: Style.fontSizeM
+                  elide: Text.ElideRight
+                }
+
+                NIconButton {
+                  icon: appBox.appMuted ? "volume-mute" : "volume-low"
+                  colorFg: Color.onShell
+                  enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
+                  tooltipText: appBox.appMuted ? I18n.tr("tooltips.unmute-stream") : I18n.tr("tooltips.mute-stream")
+                  onClicked: {
+                    if (appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true) {
+                      var newMuted = !appBox.appMuted;
+                      appBox.nodeAudio.muted = newMuted;
+                      AudioService.setPanelAppStreamMuted(appBox.modelData, newMuted);
+                    }
+                  }
+                }
               }
             }
-          }
 
-          NTabBar {
-            id: tabBar
+            NValueSlider {
+              Layout.fillWidth: true
+              Layout.leftMargin: Style.marginM
+              Layout.rightMargin: Style.marginM
+              Layout.preferredHeight: 22
+              visible: !appBox.isCaptureStream
+              enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
+              from: 0
+              to: 1
+              value: appBox.appVolume
+              stepSize: panelContent.stepSize
+              onMoved: {
+                if (appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true) {
+                  appBox.nodeAudio.volume = value;
+                  AudioService.setPanelAppStreamVolume(appBox.modelData, value);
+                }
+              }
+              text: Math.round(appBox.appVolume * 100) + "%"
+            }
+          }
+        }
+
+        // ---- Devices ----
+        NPanelSection {
+          text: I18n.tr("panels.audio.section-devices")
+          Layout.fillWidth: true
+        }
+
+        Repeater {
+          model: AudioService.sinks
+          delegate: NRadioButton {
             Layout.fillWidth: true
-            margins: Style.marginS
-            currentIndex: panelContent.currentTabIndex
-            distributeEvenly: true
-            onCurrentIndexChanged: panelContent.currentTabIndex = currentIndex
-
-            NTabButton {
-              text: I18n.tr("common.volumes")
-              tabIndex: 0
-              checked: tabBar.currentIndex === 0
-            }
-
-            NTabButton {
-              text: I18n.tr("common.devices")
-              tabIndex: 1
-              checked: tabBar.currentIndex === 1
-            }
+            implicitHeight: 36
+            contentHorizontalPadding: Style.marginM
+            checked: modelData.id === AudioService.sink?.id
+            text: modelData.description || modelData.name
+            pointSize: Style.fontSizeS
+            ButtonGroup.group: sinksRadioGroup
+            onClicked: AudioService.setAudioSink(modelData)
           }
+        }
+
+        NText {
+          Layout.fillWidth: true
+          Layout.leftMargin: Style.marginM
+          Layout.topMargin: Style.marginXS
+          text: I18n.tr("panels.audio.section-input")
+          pointSize: Style.fontSizeS
+          color: Color.onShellTertiary
+          visible: AudioService.sources.length > 0
+        }
+
+        Repeater {
+          model: AudioService.sources
+          delegate: NRadioButton {
+            Layout.fillWidth: true
+            implicitHeight: 36
+            contentHorizontalPadding: Style.marginM
+            checked: modelData.id === AudioService.source?.id
+            text: modelData.description || modelData.name
+            pointSize: Style.fontSizeS
+            ButtonGroup.group: sourcesRadioGroup
+            onClicked: AudioService.setAudioSource(modelData)
+          }
+        }
+
+        Item {
+          Layout.preferredHeight: Style.marginS
         }
       }
-
-      // Content Stack
-      StackLayout {
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        currentIndex: panelContent.currentTabIndex
-
-        // Applications Tab (Volume)
-        NScrollView {
-          id: volumeScrollView
-          horizontalPolicy: ScrollBar.AlwaysOff
-          verticalPolicy: ScrollBar.AsNeeded
-          contentWidth: availableWidth
-          reserveScrollbarSpace: false
-          gradientColor: Color.mSurface
-
-          ColumnLayout {
-            spacing: Style.marginM
-            width: volumeScrollView.availableWidth
-
-            // Output Volume
-            NBox {
-              Layout.fillWidth: true
-              Layout.preferredHeight: outputVolumeColumn.implicitHeight + Style.margin2M
-
-              ColumnLayout {
-                id: outputVolumeColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: Style.marginM
-                spacing: Style.marginM
-
-                RowLayout {
-                  Layout.fillWidth: true
-                  spacing: Style.marginXS
-
-                  NText {
-                    text: I18n.tr("common.output")
-                    pointSize: Style.fontSizeM
-                    color: Color.mPrimary
-                  }
-
-                  NText {
-                    text: AudioService.sink ? (" - " + (AudioService.sink.description || AudioService.sink.name || "")) : ""
-                    pointSize: Style.fontSizeS
-                    color: Color.mOnSurfaceVariant
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                  }
-                }
-
-                RowLayout {
-                  Layout.fillWidth: true
-                  spacing: Style.marginM
-
-                  NValueSlider {
-                    id: outputVolumeSlider
-                    Layout.fillWidth: true
-                    from: 0
-                    to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
-                    value: localOutputVolume
-                    stepSize: 0.01
-                    heightRatio: 0.5
-                    onMoved: function (value) {
-                      localOutputVolume = value;
-                    }
-                    onPressedChanged: function (pressed) {
-                      localOutputVolumeChanging = pressed;
-                    }
-                  }
-
-                  NText {
-                    text: Math.round((panelContent.outputVolumeGuard ? localOutputVolume : AudioService.volume) * 100) + "%"
-                    pointSize: Style.fontSizeM
-                    family: Settings.data.ui.fontFixed
-                    color: Color.mOnSurface
-                    opacity: enabled ? 1.0 : 0.6
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: 45 * Style.uiScaleRatio
-                    horizontalAlignment: Text.AlignRight
-                  }
-
-                  NIconButton {
-                    icon: AudioService.getOutputIcon()
-                    tooltipText: I18n.tr("tooltips.output-muted")
-                    baseSize: Style.baseWidgetSize * 0.7
-                    onClicked: {
-                      AudioService.suppressOutputOSD();
-                      AudioService.setOutputMuted(!AudioService.muted);
-                    }
-                  }
-                }
-              }
-            }
-
-            // Input Volume
-            NBox {
-              Layout.fillWidth: true
-              Layout.preferredHeight: inputVolumeColumn.implicitHeight + Style.margin2M
-
-              ColumnLayout {
-                id: inputVolumeColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: Style.marginM
-                spacing: Style.marginM
-
-                RowLayout {
-                  Layout.fillWidth: true
-                  spacing: Style.marginXS
-
-                  NText {
-                    text: I18n.tr("common.input")
-                    pointSize: Style.fontSizeM
-                    color: Color.mPrimary
-                  }
-
-                  NText {
-                    text: AudioService.source ? (" - " + (AudioService.source.description || AudioService.source.name || "")) : ""
-                    pointSize: Style.fontSizeS
-                    color: Color.mOnSurfaceVariant
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                  }
-                }
-
-                RowLayout {
-                  Layout.fillWidth: true
-                  spacing: Style.marginM
-
-                  NValueSlider {
-                    id: inputVolumeSlider
-                    Layout.fillWidth: true
-                    from: 0
-                    to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
-                    value: localInputVolume
-                    stepSize: 0.01
-                    heightRatio: 0.5
-                    onMoved: function (value) {
-                      localInputVolume = value;
-                    }
-                    onPressedChanged: function (pressed) {
-                      localInputVolumeChanging = pressed;
-                    }
-                  }
-
-                  NText {
-                    text: Math.round((panelContent.inputVolumeGuard ? localInputVolume : AudioService.inputVolume) * 100) + "%"
-                    pointSize: Style.fontSizeM
-                    family: Settings.data.ui.fontFixed
-                    color: Color.mOnSurface
-                    opacity: enabled ? 1.0 : 0.6
-                    Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredWidth: 45 * Style.uiScaleRatio
-                    horizontalAlignment: Text.AlignRight
-                  }
-
-                  NIconButton {
-                    icon: AudioService.getInputIcon()
-                    tooltipText: I18n.tr("tooltips.input-muted")
-                    baseSize: Style.baseWidgetSize * 0.7
-                    onClicked: {
-                      AudioService.suppressInputOSD();
-                      AudioService.setInputMuted(!AudioService.inputMuted);
-                    }
-                  }
-                }
-              }
-            }
-
-            // Bind all app stream nodes to access their audio properties
-            PwObjectTracker {
-              id: appStreamsTracker
-              objects: panelContent.appStreams
-            }
-
-            Repeater {
-              model: panelContent.appStreams
-
-              NBox {
-                id: appBox
-                required property PwNode modelData
-                Layout.fillWidth: true
-                Layout.preferredHeight: appRow.implicitHeight + Style.margin2M
-                visible: !isCaptureStream
-
-                // Track individual node to ensure properties are bound
-                PwObjectTracker {
-                  objects: modelData ? [modelData] : []
-                }
-
-                property PwNodeAudio nodeAudio: (modelData && modelData.audio) ? modelData.audio : null
-                property real appVolume: (nodeAudio && nodeAudio.volume !== undefined) ? nodeAudio.volume : 0.0
-                property bool appMuted: (nodeAudio && nodeAudio.muted !== undefined) ? nodeAudio.muted : false
-
-                // Check if this is a capture stream (after node is bound)
-                readonly property bool isCaptureStream: {
-                  if (!modelData || !modelData.properties)
-                    return false;
-                  const props = modelData.properties;
-                  // Exclude capture streams - check for stream.capture.sink property
-                  if (props["stream.capture.sink"] !== undefined) {
-                    return true;
-                  }
-                  const mediaClass = props["media.class"] || "";
-                  // Exclude Stream/Input (capture) but allow Stream/Output (playback)
-                  if (mediaClass.includes("Capture") || mediaClass === "Stream/Input" || mediaClass === "Stream/Input/Audio") {
-                    return true;
-                  }
-                  const mediaRole = props["media.role"] || "";
-                  if (mediaRole === "Capture") {
-                    return true;
-                  }
-                  return false;
-                }
-
-                // Helper function to validate if a fuzzy match is actually related
-                function isValidMatch(searchTerm, entry) {
-                  if (!entry)
-                    return false;
-                  var search = searchTerm.toLowerCase();
-                  var id = (entry.id || "").toLowerCase();
-                  var name = (entry.name || "").toLowerCase();
-                  var icon = (entry.icon || "").toLowerCase();
-                  // Match is valid if search term appears in entry or entry appears in search
-                  return id.includes(search) || name.includes(search) || icon.includes(search) || search.includes(id.split('.').pop()) || search.includes(name.replace(/\s+/g, ''));
-                }
-
-                readonly property string appName: {
-                  if (!modelData)
-                    return "Unknown App";
-
-                  var props = modelData.properties;
-                  var desc = modelData.description || "";
-                  var name = modelData.name || "";
-
-                  if (!props) {
-                    if (desc)
-                      return desc;
-                    if (name) {
-                      var nameParts = name.split(/[-_]/);
-                      if (nameParts.length > 0 && nameParts[0])
-                        return nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1);
-                      return name;
-                    }
-                    return "Unknown App";
-                  }
-
-                  var binaryName = props["application.process.binary"] || "";
-
-                  // Try binary name first (fixes Electron apps like vesktop)
-                  if (binaryName) {
-                    var binParts = binaryName.split("/");
-                    if (binParts.length > 0) {
-                      var binName = binParts[binParts.length - 1].toLowerCase();
-                      var entry = ThemeIcons.findAppEntry(binName);
-                      // Only use entry if it's actually related to binary name
-                      if (entry && entry.name && isValidMatch(binName, entry))
-                        return entry.name;
-                    }
-                  }
-
-                  var computedAppName = props["application.name"] || "";
-                  var mediaName = props["media.name"] || "";
-                  var mediaTitle = props["media.title"] || "";
-                  var appId = props["application.id"] || "";
-
-                  if (appId) {
-                    var entry = ThemeIcons.findAppEntry(appId);
-                    if (entry && entry.name && isValidMatch(appId, entry))
-                      return entry.name;
-                    if (!computedAppName) {
-                      var parts = appId.split(".");
-                      if (parts.length > 0 && parts[0])
-                        computedAppName = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
-                    }
-                  }
-
-                  if (!computedAppName && binaryName) {
-                    var binParts = binaryName.split("/");
-                    if (binParts.length > 0 && binParts[binParts.length - 1])
-                      computedAppName = binParts[binParts.length - 1].charAt(0).toUpperCase() + binParts[binParts.length - 1].slice(1);
-                  }
-
-                  var result = computedAppName || mediaTitle || mediaName || binaryName || desc || name;
-
-                  if (!result || result === "" || result === "Unknown App") {
-                    if (name) {
-                      var nameParts = name.split(/[-_]/);
-                      if (nameParts.length > 0 && nameParts[0])
-                        result = nameParts[0].charAt(0).toUpperCase() + nameParts[0].slice(1);
-                    }
-                  }
-
-                  return result || "Unknown App";
-                }
-
-                // Tab / page / track label (browsers: media.title/name; players: artist+title when PW exposes it).
-                // Many apps (notably some Spotify builds) only set a generic media.name — then there is nothing useful to show.
-                readonly property string appStreamTitle: {
-                  if (!modelData) {
-                    return "";
-                  }
-                  var props = modelData.properties;
-                  var artist = "";
-                  var title = "";
-                  var mediaName = "";
-                  if (props) {
-                    artist = (props["media.artist"] || "").trim();
-                    title = (props["media.title"] || "").trim();
-                    mediaName = (props["media.name"] || "").trim();
-                  }
-                  var raw = "";
-                  if (title && artist) {
-                    raw = artist + " — " + title;
-                  } else if (title) {
-                    raw = title;
-                  } else if (artist) {
-                    raw = artist;
-                  } else if (mediaName) {
-                    raw = mediaName;
-                  }
-                  if (!raw) {
-                    raw = (modelData.description || "").trim();
-                  }
-                  if (!raw) {
-                    return "";
-                  }
-                  var norm = raw.toLowerCase();
-                  var mainNorm = appName.trim().toLowerCase();
-                  if (norm === mainNorm) {
-                    return "";
-                  }
-                  return raw;
-                }
-
-                readonly property string appIcon: {
-                  if (!modelData)
-                    return ThemeIcons.iconFromName("application-x-executable", "application-x-executable");
-
-                  var props = modelData.properties;
-
-                  if (!props) {
-                    var name = modelData.name || "";
-                    if (name) {
-                      var nameParts = name.split(/[-_]/);
-                      if (nameParts.length > 0) {
-                        var entry = ThemeIcons.findAppEntry(nameParts[0].toLowerCase());
-                        if (entry && entry.icon && isValidMatch(nameParts[0].toLowerCase(), entry))
-                          return ThemeIcons.iconFromName(entry.icon, "application-x-executable");
-                      }
-                    }
-                    return ThemeIcons.iconFromName("application-x-executable", "application-x-executable");
-                  }
-
-                  var binaryName = props["application.process.binary"] || "";
-                  if (binaryName) {
-                    var binParts = binaryName.split("/");
-                    if (binParts.length > 0) {
-                      var binName = binParts[binParts.length - 1].toLowerCase();
-                      var entry = ThemeIcons.findAppEntry(binName);
-                      if (entry && entry.icon && isValidMatch(binName, entry))
-                        return ThemeIcons.iconFromName(entry.icon, "");
-                    }
-                  }
-
-                  var iconName = props["application.icon-name"] || "";
-                  if (iconName && ThemeIcons.iconExists(iconName)) {
-                    var iconPath = ThemeIcons.iconFromName(iconName, "");
-                    if (iconPath && iconPath !== "")
-                      return iconPath;
-                  }
-
-                  var appId = props["application.id"] || "";
-                  if (appId) {
-                    var entry = ThemeIcons.findAppEntry(appId);
-                    if (entry && entry.icon && isValidMatch(appId, entry))
-                      return ThemeIcons.iconFromName(entry.icon, "");
-                  }
-
-                  var appName = props["application.name"] || "";
-                  if (appName) {
-                    var entry = ThemeIcons.findAppEntry(appName.toLowerCase());
-                    if (entry && entry.icon && isValidMatch(appName.toLowerCase(), entry))
-                      return ThemeIcons.iconFromName(entry.icon, "");
-                  }
-
-                  var name = modelData.name || "";
-                  if (name) {
-                    var nameParts = name.split(/[-_]/);
-                    if (nameParts.length > 0) {
-                      var entry = ThemeIcons.findAppEntry(nameParts[0].toLowerCase());
-                      if (entry && entry.icon && isValidMatch(nameParts[0].toLowerCase(), entry))
-                        return ThemeIcons.iconFromName(entry.icon, "");
-                    }
-                  }
-
-                  return ThemeIcons.iconFromName("application-x-executable", "application-x-executable");
-                }
-
-                RowLayout {
-                  id: appRow
-                  anchors.fill: parent
-                  anchors.margins: Style.marginM
-                  spacing: Style.marginM
-
-                  // App Icon
-                  IconImage {
-                    id: appIconImage
-                    Layout.preferredWidth: Style.baseWidgetSize
-                    Layout.preferredHeight: Style.baseWidgetSize
-                    source: appBox.appIcon
-                    smooth: true
-                    asynchronous: true
-
-                    // Fallback icon if image fails to load
-                    NIcon {
-                      anchors.fill: parent
-                      icon: "apps"
-                      pointSize: Style.fontSizeXL
-                      color: Color.mPrimary
-                      visible: appIconImage.status === Image.Error || appIconImage.status === Image.Null || appBox.appIcon === ""
-                    }
-                  }
-
-                  // App Name and Volume Slider
-                  ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: Style.marginXS
-
-                    NText {
-                      text: appBox.appName || "Unknown App"
-                      pointSize: Style.fontSizeM
-                      color: Color.mOnSurface
-                      elide: Text.ElideRight
-                      Layout.fillWidth: true
-                    }
-
-                    NText {
-                      visible: appBox.appStreamTitle !== ""
-                      text: appBox.appStreamTitle
-                      pointSize: Style.fontSizeS
-                      color: Color.mOnSurfaceVariant
-                      elide: Text.ElideRight
-                      wrapMode: Text.NoWrap
-                      maximumLineCount: 1
-                      Layout.fillWidth: true
-                    }
-
-                    RowLayout {
-                      Layout.fillWidth: true
-                      spacing: Style.marginM
-
-                      NValueSlider {
-                        Layout.fillWidth: true
-                        from: 0
-                        to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
-                        value: (appBox.appVolume !== undefined) ? appBox.appVolume : 0.0
-                        stepSize: 0.01
-                        heightRatio: 0.5
-                        enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
-                        onMoved: function (value) {
-                          if (appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true) {
-                            appBox.nodeAudio.volume = value;
-                            AudioService.setPanelAppStreamVolume(appBox.modelData, value);
-                          }
-                        }
-                      }
-
-                      NText {
-                        text: Math.round((appBox.appVolume !== undefined ? appBox.appVolume : 0.0) * 100) + "%"
-                        pointSize: Style.fontSizeM
-                        family: Settings.data.ui.fontFixed
-                        color: Color.mOnSurface
-                        opacity: enabled ? 1.0 : 0.6
-                        Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredWidth: 45 * Style.uiScaleRatio
-                        horizontalAlignment: Text.AlignRight
-                        enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
-                      }
-
-                      // Mute Button
-                      NIconButton {
-                        icon: (appBox.appMuted === true) ? "volume-mute" : "volume-high"
-                        tooltipText: (appBox.appMuted === true) ? I18n.tr("tooltips.unmute") : I18n.tr("tooltips.mute")
-                        baseSize: Style.baseWidgetSize * 0.7
-                        enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
-                        onClicked: {
-                          if (appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true) {
-                            var newMuted = !appBox.appMuted;
-                            appBox.nodeAudio.muted = newMuted;
-                            AudioService.setPanelAppStreamMuted(appBox.modelData, newMuted);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-
-            // Empty state
-            NText {
-              visible: panelContent.appStreams.length === 0
-              text: I18n.tr("panels.audio.panel-applications-empty")
-              pointSize: Style.fontSizeM
-              color: Color.mOnSurfaceVariant
-              horizontalAlignment: Text.AlignHCenter
-              Layout.fillWidth: true
-              Layout.topMargin: Style.marginXL
-            }
-          }
-        }
-
-        // Devices Tab
-        NScrollView {
-          id: devicesScrollView
-          horizontalPolicy: ScrollBar.AlwaysOff
-          verticalPolicy: ScrollBar.AsNeeded
-          contentWidth: availableWidth
-          reserveScrollbarSpace: false
-          gradientColor: Color.mSurface
-
-          // AudioService Devices
-          ColumnLayout {
-            spacing: Style.marginM
-            width: devicesScrollView.availableWidth
-
-            // -------------------------------
-            // Output Devices
-            ButtonGroup {
-              id: sinks
-            }
-
-            NBox {
-              Layout.fillWidth: true
-              Layout.preferredHeight: outputColumn.implicitHeight + Style.margin2M
-
-              ColumnLayout {
-                id: outputColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: Style.marginM
-                spacing: Style.marginS
-
-                NText {
-                  text: I18n.tr("panels.audio.devices-output-device-label")
-                  pointSize: Style.fontSizeL
-                  color: Color.mPrimary
-                }
-
-                Repeater {
-                  model: AudioService.sinks
-                  NRadioButton {
-                    ButtonGroup.group: sinks
-                    required property PwNode modelData
-                    pointSize: Style.fontSizeS
-                    text: modelData.description
-                    checked: AudioService.sink?.id === modelData.id
-                    onClicked: {
-                      AudioService.setAudioSink(modelData);
-                      localOutputVolume = AudioService.volume;
-                    }
-                    Layout.fillWidth: true
-                  }
-                }
-              }
-            }
-
-            // -------------------------------
-            // Input Devices
-            ButtonGroup {
-              id: sources
-            }
-
-            NBox {
-              Layout.fillWidth: true
-              Layout.preferredHeight: inputColumn.implicitHeight + Style.margin2M
-
-              ColumnLayout {
-                id: inputColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                anchors.margins: Style.marginM
-                spacing: Style.marginS
-
-                NText {
-                  text: I18n.tr("panels.audio.devices-input-device-label")
-                  pointSize: Style.fontSizeL
-                  color: Color.mPrimary
-                }
-
-                Repeater {
-                  model: AudioService.sources
-                  NRadioButton {
-                    ButtonGroup.group: sources
-                    required property PwNode modelData
-                    pointSize: Style.fontSizeS
-                    text: modelData.description
-                    checked: AudioService.source?.id === modelData.id
-                    onClicked: AudioService.setAudioSource(modelData)
-                    Layout.fillWidth: true
-                  }
-                }
-              }
-            }
-          }
-        }
+    }
+
+    ButtonGroup {
+      id: sourcesRadioGroup
+      exclusive: true
+    }
+
+    ButtonGroup {
+      id: sinksRadioGroup
+      exclusive: true
+    }
+
+    function playVolumeSound() {
+      if (Settings.data.audio.volumeFeedback) {
+        Quickshell.execDetached(["pw-play", "/usr/share/sounds/freedesktop/stereo/audio-volume-change.oga", "--volume", "0.5"]);
       }
     }
   }

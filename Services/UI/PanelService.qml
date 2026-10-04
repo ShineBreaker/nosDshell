@@ -207,6 +207,48 @@ Singleton {
     return name in registeredPanels;
   }
 
+  // Returns the item's rect in screen coordinates (origin at the screen's
+  // top-left). Works for items living in any of our layer windows: each
+  // window that hosts taskbar items exposes its own `screenOrigin` property
+  // (BarContentWindow, the fashion dock PanelWindow). The item is first
+  // mapped into its window's content via mapToItem(null, …), then the
+  // window origin is added. Returns null when the item can't be resolved.
+  function screenRectOf(item, screen) {
+    if (!item || !screen || typeof item.mapToItem !== "function") {
+      return null;
+    }
+    var pos;
+    try {
+      pos = item.mapToItem(null, 0, 0);
+    } catch (e) {
+      return null;
+    }
+    // Layer-shell surfaces can't report their own position; the window's
+    // origin is precomputed and exposed as `screenOrigin` on a content item
+    // in the widget's parent chain (DockContent, the bar loader root).
+    var ox = 0;
+    var oy = 0;
+    var found = false;
+    var p = item;
+    while (p) {
+      if (p.screenOrigin !== undefined) {
+        ox = p.screenOrigin.x;
+        oy = p.screenOrigin.y;
+        found = true;
+        break;
+      }
+      p = p.parent;
+    }
+    if (!found) {
+      var win = (item.Window && item.Window.window) ? item.Window.window : null;
+      if (win && win.x !== undefined) {
+        ox = win.x - (screen ? screen.x : 0);
+        oy = win.y - (screen ? screen.y : 0);
+      }
+    }
+    return Qt.rect(pos.x + ox, pos.y + oy, item.width, item.height);
+  }
+
   // Check if panels can be shown on a given screen (has a taskbar or allowPanelsOnScreenWithoutBar)
   function canShowPanelsOnScreen(screen) {
     const name = screen?.name || "";

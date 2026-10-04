@@ -85,6 +85,52 @@ Item {
 
   property bool exclusiveKeyboard: true
 
+  // ------------------------------------------------------------------
+  // DDE arrow popups (DESIGN §3.2): taskbar-anchored panels render as a
+  // popupShell rounded rect with an arrow pointing at the taskbar item.
+  // Panels that keep (or will get) their own DDE form set arrowPopup: false
+  // or are matched by the denylist below.
+  // ------------------------------------------------------------------
+  property bool arrowPopup: true
+
+  readonly property bool useArrowPopup: {
+    if (!root.arrowPopup)
+      return false;
+    var n = root.objectName || "";
+    var deny = ["launcherPanel", "controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel", "changelogPanel", "staticDockPanel"];
+    for (var i = 0; i < deny.length; ++i) {
+      if (n.indexOf(deny[i] + "-") === 0)
+        return false;
+    }
+    return true;
+  }
+
+  // Taskbar geometry for arrow popup placement (fashion + efficient modes)
+  readonly property string dockPosition: Settings.data.dock.position
+  readonly property bool taskbarPresent: BarService.hasTaskbarOnScreen(screen?.name || "")
+  readonly property real taskbarThickness: {
+    if (!taskbarPresent)
+      return 0;
+    if (Settings.data.dock.mode === "efficient")
+      return Style.getBarHeightForScreen(screen?.name);
+    return Style.dockItemThickness;
+  }
+
+  // Screen-space rect of the resolved taskbar anchor (set by open())
+  property rect anchorRect: Qt.rect(0, 0, 0, 0)
+  property bool hasAnchorItem: false
+
+  // Arrow edge = the taskbar side the popup hangs from; "" = no arrow
+  // (popup opened without a resolvable anchor, or no taskbar).
+  readonly property string arrowPopupEdge: {
+    if (!useArrowPopup || !hasAnchorItem)
+      return "";
+    return dockPosition;
+  }
+  // Arrow tip coordinate along the arrow edge (popup-box coordinates).
+  // -1 hides the arrow.
+  property real arrowTipPosition: -1
+
   // Keyboard event handler
   // These are called from MainScreen's centralized shortcuts
   // override these in specific panels to handle shortcuts
@@ -160,64 +206,70 @@ Item {
     PanelService.closedImmediately = false;
     // Reset to default - fixes panel being stuck in one position
     root.useButtonPosition = false;
-
-    // Calculate the bar window's position on screen based on bar settings
-    // The BarContentWindow uses anchors + margins, so we need to compute its origin
-    var barWindowX = 0;
-    var barWindowY = 0;
-    var screenWidth = root.screen?.width || 0;
-    var screenHeight = root.screen?.height || 0;
-
-    if (root.barPosition === "right") {
-      barWindowX = screenWidth - root.barMarginH - root.barHeight;
-    } else if (root.barPosition === "left") {
-      barWindowX = root.barMarginH;
-    } else if (root.isFramed) {
-      barWindowX = root.frameThickness;
-    } else {
-      // Horizontal floating bars: BarContentWindow has margins.left = barMarginH
-      barWindowX = root.barMarginH;
-    }
-
-    if (root.barPosition === "bottom") {
-      barWindowY = screenHeight - root.barMarginV - root.barHeight;
-    } else if (root.barPosition === "top") {
-      barWindowY = root.barMarginV;
-    } else if (root.isFramed) {
-      barWindowY = root.frameThickness;
-    } else {
-      // Vertical floating bars: BarContentWindow has margins.top = barMarginV
-      barWindowY = root.barMarginV;
-    }
+    root.anchorRect = Qt.rect(0, 0, 0, 0);
+    root.hasAnchorItem = false;
+    root.arrowTipPosition = -1;
 
     if (!buttonItem && buttonName) {
       // Check if buttonName is actually a point object (click coordinates)
       if (typeof buttonName === "object" && buttonName.x !== undefined && buttonName.y !== undefined) {
         root.buttonItem = null;
-        // Click coordinates are in BarContentWindow-local space, offset to screen space
+        // Click coordinates arrive in the caller window's local space.
+        // Bar-window callers dominate this path; convert via the bar
+        // window's own screen origin (BarContentWindow.screenOrigin math).
+        var barWindowX = 0;
+        var barWindowY = 0;
+        var screenWidth = root.screen?.width || 0;
+        var screenHeight = root.screen?.height || 0;
+
+        if (root.barPosition === "right") {
+          barWindowX = screenWidth - root.barMarginH - root.barHeight;
+        } else if (root.barPosition === "left") {
+          barWindowX = root.barMarginH;
+        } else if (root.isFramed) {
+          barWindowX = root.frameThickness;
+        } else {
+          // Horizontal floating bars: BarContentWindow has margins.left = barMarginH
+          barWindowX = root.barMarginH;
+        }
+
+        if (root.barPosition === "bottom") {
+          barWindowY = screenHeight - root.barMarginV - root.barHeight;
+        } else if (root.barPosition === "top") {
+          barWindowY = root.barMarginV;
+        } else if (root.isFramed) {
+          barWindowY = root.frameThickness;
+        } else {
+          // Vertical floating bars: BarContentWindow has margins.top = barMarginV
+          barWindowY = root.barMarginV;
+        }
+
         root.buttonPosition = Qt.point(barWindowX + buttonName.x, barWindowY + buttonName.y);
         root.buttonWidth = 0;
         root.buttonHeight = 0;
         root.useButtonPosition = true;
       } else {
-        // buttonName is a widget name, look it up
+        // buttonName is a widget name, look it up (finds both bar and
+        // fashion-dock plugin instances)
         buttonItem = BarService.lookupWidget(buttonName, screen.name);
       }
     }
 
-    // Validate buttonItem is a valid QML Item with mapToItem function
+    // Resolve the anchor item to a screen-space rect. Works for items in
+    // both taskbar windows (efficient bar, fashion dock) via their
+    // screenOrigin; PanelService.screenRectOf does the mapping.
     if (buttonItem && typeof buttonItem.mapToItem === "function") {
-      try {
+      var rect = PanelService.screenRectOf(buttonItem, root.screen);
+      if (rect) {
         root.buttonItem = buttonItem;
-        // Map button position within its window (BarContentWindow-local coordinates)
-        var buttonLocal = buttonItem.mapToItem(null, 0, 0);
-
-        root.buttonPosition = Qt.point(barWindowX + buttonLocal.x, barWindowY + buttonLocal.y);
-        root.buttonWidth = buttonItem.width;
-        root.buttonHeight = buttonItem.height;
+        root.buttonPosition = Qt.point(rect.x, rect.y);
+        root.buttonWidth = rect.width;
+        root.buttonHeight = rect.height;
         root.useButtonPosition = true;
-      } catch (e) {
-        Logger.w("SmartPanel", "Failed to get button position, using default positioning:", e);
+        root.anchorRect = rect;
+        root.hasAnchorItem = true;
+      } else {
+        Logger.w("SmartPanel", "Failed to get button position, using default positioning");
         root.buttonItem = null;
         root.useButtonPosition = false;
       }
@@ -381,6 +433,90 @@ Item {
     // Update panelBackground target size (will be animated)
     panelBackground.targetWidth = panelWidth;
     panelBackground.targetHeight = panelHeight;
+
+    // ===== Arrow popup placement (DESIGN §3.2 DockPopupWindow) =====
+    // Body sits on the inner side of the taskbar; the arrow tip is
+    // Style.popupGap from the anchor item's inner edge and the body is
+    // offset by Style.popupArrowHeight. Centered on the anchor along the
+    // taskbar axis, clamped to the screen with a 10 px margin (the arrow
+    // follows the anchor; ArrowRect clamps it off the corners).
+    if (root.useArrowPopup) {
+      var arrowH = Style.popupArrowHeight;
+      var popupMargin = 10;
+      var bodyX;
+      var bodyY;
+
+      if (root.hasAnchorItem) {
+        var ax = root.anchorRect.x;
+        var ay = root.anchorRect.y;
+        var aw = root.anchorRect.width;
+        var ahh = root.anchorRect.height;
+        switch (root.dockPosition) {
+        case "top":
+          bodyY = ay + ahh + Style.popupGap + arrowH;
+          bodyX = ax + aw / 2 - panelWidth / 2;
+          break;
+        case "bottom":
+          bodyY = ay - Style.popupGap - arrowH - panelHeight;
+          bodyX = ax + aw / 2 - panelWidth / 2;
+          break;
+        case "left":
+          bodyX = ax + aw + Style.popupGap + arrowH;
+          bodyY = ay + ahh / 2 - panelHeight / 2;
+          break;
+        default: // "right"
+          bodyX = ax - Style.popupGap - arrowH - panelWidth;
+          bodyY = ay + ahh / 2 - panelHeight / 2;
+          break;
+        }
+      } else {
+        // No resolvable anchor (IPC/keybind, or plugin not on the taskbar):
+        // center along the taskbar axis on its inner side, no arrow. The
+        // body keeps the same distance from the taskbar as anchored popups.
+        if (!root.taskbarPresent) {
+          bodyX = (root.width - panelWidth) / 2;
+          bodyY = (root.height - panelHeight) / 2;
+        } else {
+          switch (root.dockPosition) {
+          case "top":
+            bodyX = (root.width - panelWidth) / 2;
+            bodyY = root.taskbarThickness + Style.popupGap + arrowH;
+            break;
+          case "bottom":
+            bodyX = (root.width - panelWidth) / 2;
+            bodyY = root.height - root.taskbarThickness - Style.popupGap - arrowH - panelHeight;
+            break;
+          case "left":
+            bodyX = root.taskbarThickness + Style.popupGap + arrowH;
+            bodyY = (root.height - panelHeight) / 2;
+            break;
+          default: // "right"
+            bodyX = root.width - root.taskbarThickness - Style.popupGap - arrowH - panelWidth;
+            bodyY = (root.height - panelHeight) / 2;
+            break;
+          }
+        }
+      }
+
+      // Clamp to the screen with a 10 px margin
+      bodyX = Math.max(popupMargin, Math.min(bodyX, root.width - panelWidth - popupMargin));
+      bodyY = Math.max(popupMargin, Math.min(bodyY, root.height - panelHeight - popupMargin));
+
+      // Arrow tip follows the anchor center along the arrow edge
+      if (root.hasAnchorItem) {
+        if (root.dockPosition === "top" || root.dockPosition === "bottom") {
+          root.arrowTipPosition = ax + aw / 2 - bodyX;
+        } else {
+          root.arrowTipPosition = ay + ahh / 2 - bodyY;
+        }
+      } else {
+        root.arrowTipPosition = -1;
+      }
+
+      panelBackground.targetX = Math.round(bodyX);
+      panelBackground.targetY = Math.round(bodyY);
+      return;
+    }
 
     // Pre-compute bar edge positions with overlap (used multiple times below)
     // For attached panels, we extend slightly into the bar area to prevent hairline gaps
@@ -706,8 +842,9 @@ Item {
     enabled: !PanelService.closedImmediately
     NumberAnimation {
       id: opacityAnimation
-      duration: root.isClosing ? Style.animationFaster : Style.animationFast
-      easing.type: Easing.OutQuad
+      // Arrow popups: Style.motionEnter fade in, same duration out (§3.2)
+      duration: root.useArrowPopup ? Style.motionEnter : (root.isClosing ? Style.animationFaster : Style.animationFast)
+      easing.type: root.useArrowPopup ? Easing.OutCubic : Easing.OutQuad
 
       onRunningChanged: {
         // Safety: If animation didn't run (zero duration), handle immediately
@@ -1045,8 +1182,9 @@ Item {
       // Priority: horizontal edges (top/bottom) take precedence over vertical edges (left/right)
       // This prevents diagonal animations when panel is attached to a corner
       // Use reactive values here - they're evaluated BEFORE isPanelVisible becomes true
-      readonly property bool shouldAnimateWidth: !shouldAnimateHeight && (animateFromLeft || animateFromRight)
-      readonly property bool shouldAnimateHeight: animateFromTop || animateFromBottom
+      // Arrow popups never grow/shrink — opacity fade only (DESIGN §3.2)
+      readonly property bool shouldAnimateWidth: !root.useArrowPopup && !shouldAnimateHeight && (animateFromLeft || animateFromRight)
+      readonly property bool shouldAnimateHeight: !root.useArrowPopup && (animateFromTop || animateFromBottom)
 
       // Current animated width/height (referenced by x/y for right/bottom positioning)
       readonly property real currentWidth: {
@@ -1334,8 +1472,9 @@ Item {
           // Make panel visible, now only the intended dimension will animate
           root.isPanelVisible = true;
 
-          if (root.animationsDisabled) {
-            // Skip delay when animations are disabled
+          if (root.animationsDisabled || root.useArrowPopup) {
+            // Skip delay when animations are disabled; arrow popups have no
+            // size animation, so the opacity fade starts immediately
             root.sizeAnimationComplete = true;
           } else {
             opacityTrigger.start();

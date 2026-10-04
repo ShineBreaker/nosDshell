@@ -14,12 +14,11 @@ SmartPanel {
   Component.onCompleted: SystemStatService.registerComponent("panel-systemstats")
   Component.onDestruction: SystemStatService.unregisterComponent("panel-systemstats")
 
-  preferredWidth: Math.round(440 * Style.uiScaleRatio)
+  preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
   panelContent: Item {
     id: panelContent
-    property real contentPreferredHeight: mainColumn.implicitHeight + Style.margin2L
-    readonly property real cardHeight: 90 * Style.uiScaleRatio
+    property real contentPreferredHeight: Math.min(mainColumn.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
     // Get diskPath from bar's SystemMonitor widget if available, otherwise use "/"
     readonly property string diskPath: {
@@ -30,372 +29,141 @@ SmartPanel {
       return "/";
     }
 
-    ColumnLayout {
-      id: mainColumn
-      anchors.fill: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+    component StatRow: ColumnLayout {
+      id: statRow
 
-      // HEADER
-      NBox {
+      property string label: ""
+      property string value: ""
+      property real gaugeRatio: -1 // < 0 hides the gauge
+      property color gaugeColor: Color.accent
+
+      spacing: Style.marginXXS
+      Layout.fillWidth: true
+
+      Item {
         Layout.fillWidth: true
-        implicitHeight: headerRow.implicitHeight + Style.margin2M
+        Layout.preferredHeight: 28
 
         RowLayout {
-          id: headerRow
           anchors.fill: parent
-          anchors.margins: Style.marginM
+          anchors.leftMargin: Style.marginM
+          anchors.rightMargin: Style.marginM
           spacing: Style.marginM
 
-          NIcon {
-            icon: "device-analytics"
-            pointSize: Style.fontSizeXXL
-            color: Color.mPrimary
+          NText {
+            Layout.fillWidth: true
+            text: statRow.label
+            pointSize: Style.fontSizeM
+            elide: Text.ElideRight
           }
 
           NText {
-            text: I18n.tr("system-monitor.title")
-            pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
-            color: Color.mOnSurface
-            Layout.fillWidth: true
-          }
-
-          NIconButton {
-            icon: "close"
-            tooltipText: I18n.tr("common.close")
-            baseSize: Style.baseWidgetSize * 0.8
-            onClicked: {
-              root.close();
-            }
+            text: statRow.value
+            pointSize: Style.fontSizeS
+            color: Color.onShellSecondary
+            font.family: Settings.data.ui.fontFixed
           }
         }
       }
 
-      // CPU Card (dual-line: usage % + temperature °C)
-      NBox {
+      NLinearGauge {
+        visible: statRow.gaugeRatio >= 0
         Layout.fillWidth: true
-        Layout.preferredHeight: panelContent.cardHeight
-
-        ColumnLayout {
-          anchors.fill: parent
-          anchors.margins: Style.marginS
-          anchors.bottomMargin: Style.radiusM * 0.5
-          spacing: Style.marginXS
-
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginXS
-
-            NIcon {
-              icon: "cpu-usage"
-              pointSize: Style.fontSizeXS
-              color: Color.mPrimary
-            }
-
-            NText {
-              text: `${Math.round(SystemStatService.cpuUsage)}% (${SystemStatService.cpuFreq.replace(/[^0-9.]/g, "")} GHz)`
-              pointSize: Style.fontSizeXS
-              color: Color.mPrimary
-              font.family: Settings.data.ui.fontFixed
-            }
-
-            NIcon {
-              icon: "cpu-temperature"
-              pointSize: Style.fontSizeXS
-              color: Color.mSecondary
-            }
-
-            NText {
-              text: `${Math.round(SystemStatService.cpuTemp)}°C`
-              pointSize: Style.fontSizeXS
-              color: Color.mSecondary
-              font.family: Settings.data.ui.fontFixed
-              Layout.rightMargin: Style.marginS
-            }
-
-            Item {
-              Layout.fillWidth: true
-            }
-
-            NText {
-              text: I18n.tr("system-monitor.cpu-usage")
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
-          }
-
-          NGraph {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            values: SystemStatService.cpuHistory
-            values2: SystemStatService.cpuTempHistory
-            minValue: 0
-            maxValue: 100
-            minValue2: Math.max(SystemStatService.cpuTempHistoryMin - 5, 0)
-            maxValue2: Math.max(SystemStatService.cpuTempHistoryMax + 5, 1)
-            color: Color.mPrimary
-            color2: Color.mSecondary
-            strokeWidth: Math.max(1, Style.uiScaleRatio)
-            fill: true
-            fillOpacity: 0.15
-            updateInterval: SystemStatService.cpuUsageIntervalMs
-          }
-        }
+        Layout.leftMargin: Style.marginM
+        Layout.rightMargin: Style.marginM
+        Layout.preferredHeight: 2
+        orientation: Qt.Horizontal
+        ratio: Math.max(0, Math.min(1, statRow.gaugeRatio))
+        fillColor: statRow.gaugeColor
       }
+    }
 
-      // Memory Card (single-line + optional swap indicator)
-      NBox {
-        Layout.fillWidth: true
-        Layout.preferredHeight: panelContent.cardHeight
+    NScrollView {
+      id: scrollView
+      anchors.fill: parent
+      horizontalPolicy: ScrollBar.AlwaysOff
+      verticalPolicy: ScrollBar.AsNeeded
+      contentWidth: availableWidth
 
-        ColumnLayout {
-          anchors.fill: parent
-          anchors.margins: Style.marginS
-          anchors.bottomMargin: Style.radiusM * 0.5
-          spacing: Style.marginXS
+      ColumnLayout {
+        id: mainColumn
+        width: scrollView.availableWidth
+        spacing: Style.marginXS
 
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginXS
-
-            NIcon {
-              icon: "memory"
-              pointSize: Style.fontSizeXS
-              color: Color.mPrimary
-            }
-
-            NText {
-              text: `${Math.round(SystemStatService.memPercent)}% (${(SystemStatService.memGb).toFixed(1)} GiB)`
-              pointSize: Style.fontSizeXS
-              color: Color.mPrimary
-              font.family: Settings.data.ui.fontFixed
-            }
-
-            Item {
-              Layout.fillWidth: true
-            }
-
-            NText {
-              text: I18n.tr("common.memory")
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
-          }
-
-          NGraph {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            values: SystemStatService.memHistory
-            minValue: 0
-            maxValue: 100
-            color: Color.mPrimary
-            strokeWidth: Math.max(1, Style.uiScaleRatio)
-            fill: true
-            fillOpacity: 0.15
-            updateInterval: SystemStatService.memIntervalMs
-          }
+        NPanelSection {
+          text: I18n.tr("system-monitor.title")
+          Layout.fillWidth: true
+          Layout.topMargin: Style.marginM
         }
-      }
 
-      // Network Card (dual-line: RX + TX speeds)
-      NBox {
-        Layout.fillWidth: true
-        Layout.preferredHeight: panelContent.cardHeight
-
-        ColumnLayout {
-          anchors.fill: parent
-          anchors.margins: Style.marginS
-          anchors.bottomMargin: Style.radiusM * 0.5
-          spacing: Style.marginXS
-
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginXS
-
-            NIcon {
-              icon: "download-speed"
-              pointSize: Style.fontSizeXS
-              color: Color.mPrimary
-            }
-
-            NText {
-              text: SystemStatService.formatSpeed(SystemStatService.rxSpeed).replace(/([0-9.]+)([A-Za-z]+)/, "$1 $2") + "/s"
-              pointSize: Style.fontSizeXS
-              color: Color.mPrimary
-              font.family: Settings.data.ui.fontFixed
-              Layout.rightMargin: Style.marginS
-            }
-
-            NIcon {
-              icon: "upload-speed"
-              pointSize: Style.fontSizeXS
-              color: Color.mSecondary
-            }
-
-            NText {
-              text: SystemStatService.formatSpeed(SystemStatService.txSpeed).replace(/([0-9.]+)([A-Za-z]+)/, "$1 $2") + "/s"
-              pointSize: Style.fontSizeXS
-              color: Color.mSecondary
-              font.family: Settings.data.ui.fontFixed
-            }
-
-            Item {
-              Layout.fillWidth: true
-            }
-
-            NText {
-              text: I18n.tr("common.network")
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
-          }
-
-          NGraph {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            values: SystemStatService.rxSpeedHistory
-            values2: SystemStatService.txSpeedHistory
-            minValue: 0
-            maxValue: SystemStatService.rxMaxSpeed
-            minValue2: 0
-            maxValue2: SystemStatService.txMaxSpeed
-            color: Color.mPrimary
-            color2: Color.mSecondary
-            strokeWidth: Math.max(1, Style.uiScaleRatio)
-            fill: true
-            fillOpacity: 0.15
-            updateInterval: SystemStatService.networkIntervalMs
-            animateScale: true
-          }
+        StatRow {
+          label: I18n.tr("system-monitor.cpu-usage")
+          value: `${Math.round(SystemStatService.cpuUsage)}% (${SystemStatService.cpuFreq.replace(/[^0-9.]/g, "")} GHz)`
+          gaugeRatio: SystemStatService.cpuUsage / 100
         }
-      }
 
-      // Detailed Stats section
-      NBox {
-        Layout.fillWidth: true
-        implicitHeight: detailsColumn.implicitHeight + Style.margin2M
+        StatRow {
+          label: I18n.tr("system-monitor.cpu-temp")
+          value: `${Math.round(SystemStatService.cpuTemp)}°C`
+          gaugeRatio: Math.min(SystemStatService.cpuTemp / 100, 1)
+          visible: SystemStatService.cpuTemp > 0
+        }
 
-        ColumnLayout {
-          id: detailsColumn
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.top: parent.top
-          anchors.margins: Style.marginM
-          spacing: Style.marginXS
+        StatRow {
+          label: I18n.tr("common.memory")
+          value: `${Math.round(SystemStatService.memPercent)}% (${(SystemStatService.memGb).toFixed(1)} GiB)`
+          gaugeRatio: SystemStatService.memPercent / 100
+        }
 
-          // Load Average
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginS
-            visible: SystemStatService.nproc > 0
+        StatRow {
+          label: I18n.tr("bar.system-monitor.swap-usage-label")
+          value: `${(SystemStatService.swapGb).toFixed(1)} / ${(SystemStatService.swapTotalGb).toFixed(1)} GiB`
+          gaugeRatio: SystemStatService.swapTotalGb > 0 ? SystemStatService.swapGb / SystemStatService.swapTotalGb : 0
+          visible: SystemStatService.swapTotalGb > 0
+        }
 
-            NIcon {
-              icon: "cpu-usage"
-              pointSize: Style.fontSizeM
-              color: Color.mPrimary
-            }
+        StatRow {
+          label: I18n.tr("system-monitor.gpu-temp")
+          value: `${Math.round(SystemStatService.gpuTemp)}°C`
+          visible: SystemStatService.gpuAvailable
+        }
 
-            NText {
-              text: I18n.tr("system-monitor.load-average") + ":"
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
+        StatRow {
+          label: I18n.tr("system-monitor.load-average")
+          value: `${SystemStatService.loadAvg1.toFixed(2)} • ${SystemStatService.loadAvg5.toFixed(2)} • ${SystemStatService.loadAvg15.toFixed(2)}`
+          visible: SystemStatService.nproc > 0
+        }
 
-            NText {
-              text: `${SystemStatService.loadAvg1.toFixed(2)} • ${SystemStatService.loadAvg5.toFixed(2)} • ${SystemStatService.loadAvg15.toFixed(2)}`
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurface
-              Layout.fillWidth: true
-              horizontalAlignment: Text.AlignRight
-            }
+        StatRow {
+          label: I18n.tr("system-monitor.disk")
+          value: {
+            const usedGb = SystemStatService.diskUsedGb[panelContent.diskPath] || 0;
+            const sizeGb = SystemStatService.diskSizeGb[panelContent.diskPath] || 0;
+            const percent = SystemStatService.diskPercents[panelContent.diskPath] || 0;
+            return `${percent}% (${usedGb.toFixed(1)} / ${sizeGb.toFixed(1)} GB)`;
           }
+          gaugeRatio: (SystemStatService.diskPercents[panelContent.diskPath] || 0) / 100
+        }
 
-          // GPU Temperature (only if available)
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginS
-            visible: SystemStatService.gpuAvailable
+        NPanelSection {
+          text: I18n.tr("common.network")
+          Layout.fillWidth: true
+        }
 
-            NIcon {
-              icon: "gpu-temperature"
-              pointSize: Style.fontSizeM
-              color: Color.mPrimary
-            }
+        StatRow {
+          label: I18n.tr("system-monitor.rx")
+          value: SystemStatService.formatSpeed(SystemStatService.rxSpeed).replace(/([0-9.]+)([A-Za-z]+)/, "$1 $2") + "/s"
+          gaugeRatio: SystemStatService.rxMaxSpeed > 0 ? SystemStatService.rxSpeed / SystemStatService.rxMaxSpeed : 0
+        }
 
-            NText {
-              text: I18n.tr("system-monitor.gpu-temp") + ":"
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
+        StatRow {
+          label: I18n.tr("system-monitor.tx")
+          value: SystemStatService.formatSpeed(SystemStatService.txSpeed).replace(/([0-9.]+)([A-Za-z]+)/, "$1 $2") + "/s"
+          gaugeRatio: SystemStatService.txMaxSpeed > 0 ? SystemStatService.txSpeed / SystemStatService.txMaxSpeed : 0
+        }
 
-            NText {
-              text: `${Math.round(SystemStatService.gpuTemp)}°C`
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurface
-              Layout.fillWidth: true
-              horizontalAlignment: Text.AlignRight
-            }
-          }
-
-          // Disk usage
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginS
-
-            NIcon {
-              icon: "storage"
-              pointSize: Style.fontSizeM
-              color: Color.mPrimary
-            }
-
-            NText {
-              text: I18n.tr("system-monitor.disk") + ":"
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
-
-            NText {
-              text: {
-                const usedGb = SystemStatService.diskUsedGb[panelContent.diskPath] || 0;
-                const sizeGb = SystemStatService.diskSizeGb[panelContent.diskPath] || 0;
-                const percent = SystemStatService.diskPercents[panelContent.diskPath] || 0;
-                return `${percent}% (${usedGb.toFixed(1)} / ${sizeGb.toFixed(1)} GB)`;
-              }
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurface
-              Layout.fillWidth: true
-              horizontalAlignment: Text.AlignRight
-              elide: Text.ElideMiddle
-            }
-          }
-
-          // Swap details (only visible if swap is enabled)
-          RowLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginS
-            visible: SystemStatService.swapTotalGb > 0
-
-            NIcon {
-              icon: "exchange"
-              pointSize: Style.fontSizeM
-              color: Color.mPrimary
-            }
-
-            NText {
-              text: I18n.tr("bar.system-monitor.swap-usage-label") + ":"
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-            }
-
-            NText {
-              text: `${(SystemStatService.swapGb).toFixed(1)} / ${(SystemStatService.swapTotalGb).toFixed(1)} GiB`
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurface
-              Layout.fillWidth: true
-              horizontalAlignment: Text.AlignRight
-            }
-          }
+        Item {
+          Layout.preferredHeight: Style.marginS
         }
       }
     }

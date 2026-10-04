@@ -13,9 +13,7 @@ import qs.Widgets.AudioSpectrum
 SmartPanel {
   id: root
 
-  preferredWidth: Math.round((root.isSideBySide ? 480 : 360) * Style.uiScaleRatio)
-  // Fallback only; SmartPanel uses panelContent.contentPreferredHeight when set.
-  preferredHeight: Math.round((root.compactMode ? 240 : 400) * Style.uiScaleRatio)
+  preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
   property var mediaMiniSettings: {
     const widget = BarService.lookupWidget("MediaMini", screen?.name);
@@ -45,10 +43,7 @@ SmartPanel {
   readonly property bool showArtistFirst: !!(mediaMiniSettings && mediaMiniSettings.showArtistFirst !== undefined ? mediaMiniSettings.showArtistFirst : true)
   readonly property bool showAlbumArt: !!(mediaMiniSettings && mediaMiniSettings.panelShowAlbumArt !== undefined ? mediaMiniSettings.panelShowAlbumArt : true)
   readonly property bool showVisualizer: !!(mediaMiniSettings && mediaMiniSettings.showVisualizer !== undefined ? mediaMiniSettings.showVisualizer : true)
-  readonly property bool compactMode: !!(mediaMiniSettings && mediaMiniSettings.compactMode !== undefined ? mediaMiniSettings.compactMode : false)
   readonly property string scrollingMode: (mediaMiniSettings && mediaMiniSettings.scrollingMode !== undefined) ? mediaMiniSettings.scrollingMode : "hover"
-
-  readonly property bool isSideBySide: root.compactMode && root.showAlbumArt
 
   readonly property bool needsSpectrum: root.showVisualizer && root.visualizerType !== "" && root.visualizerType !== "none" && root.isPanelOpen
 
@@ -74,7 +69,7 @@ SmartPanel {
     id: playerContent
     anchors.fill: parent
 
-    property real contentPreferredHeight: mainLayout.implicitHeight + Style.margin2L
+    property real contentPreferredHeight: Math.min(mainLayout.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
     property Component visualizerSource: {
       switch (root.visualizerType) {
@@ -89,438 +84,334 @@ SmartPanel {
       }
     }
 
-    ColumnLayout {
-      id: mainLayout
+    NScrollView {
+      id: scrollView
       anchors.fill: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+      horizontalPolicy: ScrollBar.AlwaysOff
+      verticalPolicy: ScrollBar.AsNeeded
+      contentWidth: availableWidth
 
-      NBox {
-        Layout.fillWidth: true
-        Layout.preferredHeight: headerRow.implicitHeight + Style.margin2M
+      ColumnLayout {
+        id: mainLayout
+        width: scrollView.availableWidth
+        spacing: Style.marginS
 
-        RowLayout {
-          id: headerRow
-          anchors.fill: parent
-          anchors.margins: Style.marginM
-          spacing: Style.marginM
+        // Player selector (only when more than one player)
+        Item {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 28
+          Layout.topMargin: Style.marginS
+          visible: MediaService.getAvailablePlayers().length > 1
 
-          NIcon {
-            icon: "music"
-            pointSize: Style.fontSizeL
-            color: Color.mPrimary
-          }
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginM
+            spacing: Style.marginXS
 
-          NText {
-            text: I18n.tr("common.media-player")
-            font.weight: Style.fontWeightBold
-            pointSize: Style.fontSizeL
-            color: Color.mOnSurface
-            Layout.fillWidth: true
-          }
-
-          Rectangle {
-            radius: Style.radiusS
-            color: playerSelectorMouse.containsMouse ? Color.mPrimary : "transparent"
-            implicitWidth: playerRow.implicitWidth + Style.marginM
-            implicitHeight: Style.baseWidgetSize * 0.8
-            visible: MediaService.getAvailablePlayers().length > 1
-
-            RowLayout {
-              id: playerRow
-              anchors.centerIn: parent
-              spacing: Style.marginXS
-
-              NText {
-                text: MediaService.currentPlayer ? MediaService.currentPlayer.identity : "Select Player"
-                pointSize: Style.fontSizeXS
-                color: playerSelectorMouse.containsMouse ? Color.mOnPrimary : Color.mOnSurfaceVariant
-              }
-              NIcon {
-                icon: "chevron-down"
-                pointSize: Style.fontSizeXS
-                color: playerSelectorMouse.containsMouse ? Color.mOnPrimary : Color.mOnSurfaceVariant
-              }
+            NText {
+              Layout.fillWidth: true
+              text: MediaService.currentPlayer ? MediaService.currentPlayer.identity : I18n.tr("common.media-player")
+              pointSize: Style.fontSizeS
+              color: Color.onShellSecondary
+              elide: Text.ElideRight
             }
 
-            MouseArea {
-              id: playerSelectorMouse
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: playerContextMenu.open()
+            NIcon {
+              icon: "chevron-down"
+              pointSize: Style.fontSizeS
+              color: Color.onShellSecondary
+            }
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: playerContextMenu.open()
+          }
+
+          Popup {
+            id: playerContextMenu
+            x: 0
+            y: parent.height
+            width: 180
+            padding: Style.marginS
+
+            background: Rectangle {
+              color: Color.popupShell
+              border.color: Color.borderShell
+              border.width: Style.borderS
+              radius: Style.radiusPopup
             }
 
-            Popup {
-              id: playerContextMenu
-              x: 0
-              y: parent.height
-              width: 160
-              padding: Style.marginS
+            contentItem: ColumnLayout {
+              spacing: 0
+              Repeater {
+                model: MediaService.getAvailablePlayers()
+                delegate: Rectangle {
+                  Layout.fillWidth: true
+                  Layout.preferredHeight: 30
+                  color: itemMouse.containsMouse ? Color.overlay("hover") : "transparent"
+                  radius: Style.radiusRow
 
-              background: Rectangle {
-                color: Color.mSurfaceVariant
-                border.color: Color.mOutline
-                border.width: Style.borderS
-                radius: Style.iRadiusM
-              }
+                  RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: Style.marginS
+                    anchors.rightMargin: Style.marginS
+                    spacing: Style.marginS
 
-              contentItem: ColumnLayout {
-                spacing: 0
-                Repeater {
-                  model: MediaService.getAvailablePlayers()
-                  delegate: Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 30
-                    color: "transparent"
-
-                    Rectangle {
-                      anchors.fill: parent
-                      color: itemMouse.containsMouse ? Color.mPrimary : "transparent"
-                      radius: Style.iRadiusS
+                    NText {
+                      text: modelData.identity
+                      pointSize: Style.fontSizeS
+                      Layout.fillWidth: true
+                      elide: Text.ElideRight
                     }
 
-                    RowLayout {
-                      anchors.fill: parent
-                      anchors.margins: Style.marginS
-                      spacing: Style.marginS
-
-                      NIcon {
-                        visible: MediaService.currentPlayer && MediaService.currentPlayer.identity === modelData.identity
-                        icon: "check"
-                        color: itemMouse.containsMouse ? Color.mOnPrimary : Color.mPrimary
-                        pointSize: Style.fontSizeS
-                      }
-
-                      NText {
-                        text: modelData.identity
-                        pointSize: Style.fontSizeS
-                        color: itemMouse.containsMouse ? Color.mOnPrimary : Color.mOnSurface
-                        Layout.fillWidth: true
-                        elide: Text.ElideRight
-                      }
+                    NIcon {
+                      visible: MediaService.currentPlayer && MediaService.currentPlayer.identity === modelData.identity
+                      icon: "check"
+                      color: Color.accent
+                      pointSize: Style.fontSizeS
                     }
+                  }
 
-                    MouseArea {
-                      id: itemMouse
-                      anchors.fill: parent
-                      hoverEnabled: true
-                      cursorShape: Qt.PointingHandCursor
-                      onClicked: {
-                        MediaService.currentPlayer = modelData;
-                        playerContextMenu.close();
-                      }
+                  MouseArea {
+                    id: itemMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: {
+                      MediaService.currentPlayer = modelData;
+                      playerContextMenu.close();
                     }
                   }
                 }
               }
             }
           }
-
-          NIconButton {
-            icon: "close"
-            tooltipText: I18n.tr("common.close")
-            baseSize: Style.baseWidgetSize * 0.8
-            onClicked: root.close()
-          }
-        }
-      }
-
-      NBox {
-        Layout.fillWidth: true
-        Layout.preferredHeight: mediaContentGrid.implicitHeight + Style.margin2M
-
-        // Visualizer background for content area
-        Loader {
-          anchors.fill: parent
-          z: 0
-          active: !!(root.needsSpectrum && !root.showAlbumArt)
-          sourceComponent: visualizerSource
         }
 
-        GridLayout {
-          id: mediaContentGrid
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.top: parent.top
-          anchors.leftMargin: root.compactMode ? Style.marginL : Style.marginM
-          anchors.rightMargin: root.compactMode ? Style.marginL : Style.marginM
-          anchors.topMargin: Style.marginM
-          anchors.bottomMargin: Style.marginM
-          columns: root.isSideBySide ? 2 : 1
-          columnSpacing: Style.marginL
-          rowSpacing: root.compactMode ? Style.marginL : Style.marginM
+        // Track row: 64 px art + title/artist
+        Item {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 64
+          Layout.topMargin: Style.marginS
 
-          // Album Art (Vertical in normal, Horizontal in compact)
-          Item {
-            id: albumArtItem
-            readonly property real compactArtSize: Math.round(110 * Style.uiScaleRatio)
-            readonly property bool artSizeKnown: artSizeProbe.status === Image.Ready && artSizeProbe.sourceSize.width > 0 && artSizeProbe.sourceSize.height > 0
-            readonly property real artAspectRatio: artSizeKnown ? artSizeProbe.sourceSize.width / artSizeProbe.sourceSize.height : 1
-            // Non-compact: height from width÷aspect so grid implicit height does not depend on panel height (no layout loop).
-            readonly property real artBoxW: root.compactMode ? compactArtSize : Math.max(parent.width, 1)
-            readonly property real artBoxH: root.compactMode ? compactArtSize : (artBoxW / Math.max(artAspectRatio, 0.001))
-            readonly property real fitArtW: artBoxW / artBoxH > artAspectRatio ? artBoxH * artAspectRatio : artBoxW
-            readonly property real fitArtH: artBoxW / artBoxH > artAspectRatio ? artBoxH : artBoxW / artAspectRatio
-
-            Layout.preferredWidth: fitArtW
-            Layout.preferredHeight: fitArtH
-            Layout.minimumWidth: fitArtW
-            Layout.maximumWidth: fitArtW
-            Layout.minimumHeight: fitArtH
-            Layout.maximumHeight: fitArtH
-            Layout.fillWidth: false
-            Layout.fillHeight: false
-            Layout.alignment: Qt.AlignHCenter
-            visible: root.showAlbumArt
-
-            Image {
-              id: artSizeProbe
-              visible: false
-              asynchronous: true
-              source: MediaService.trackArtUrl
-            }
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginM
+            spacing: Style.marginM
 
             NImageRounded {
-              anchors.fill: parent
-              radius: root.compactMode ? Style.radiusM : Style.radiusL
+              Layout.preferredWidth: 64
+              Layout.preferredHeight: 64
+              radius: Style.radiusItem
               imagePath: MediaService.trackArtUrl
               imageFillMode: Image.PreserveAspectCrop
               fallbackIcon: "disc"
-              fallbackIconSize: root.compactMode ? Style.fontSizeXXXL * 3 : Style.fontSizeXXXL * 6
+              fallbackIconSize: Style.fontSizeXXXL
               borderWidth: 0
+              visible: root.showAlbumArt
             }
 
-            Loader {
-              anchors.fill: parent
-              anchors.margins: Style.marginS
-              z: 2
-              active: !!(root.needsSpectrum && root.showAlbumArt)
-              sourceComponent: visualizerSource
+            ColumnLayout {
+              Layout.fillWidth: true
+              spacing: Style.marginXXS
+
+              NScrollText {
+                Layout.fillWidth: true
+                maxWidth: parent.width
+                text: {
+                  if (root.showArtistFirst) {
+                    return MediaService.trackArtist || (MediaService.trackAlbum || "Unknown Artist");
+                  } else {
+                    return MediaService.trackTitle || "No Media";
+                  }
+                }
+                scrollMode: {
+                  if (root.scrollingMode === "always")
+                    return NScrollText.ScrollMode.Always;
+                  if (root.scrollingMode === "hover")
+                    return NScrollText.ScrollMode.Hover;
+                  return NScrollText.ScrollMode.Never;
+                }
+                fadeExtent: 0.01
+                delegate: NText {
+                  pointSize: Style.fontSizeM
+                  font.weight: Style.fontWeightBold
+                  color: Color.onShell
+                  elide: Text.ElideNone
+                  wrapMode: Text.NoWrap
+                }
+              }
+
+              NScrollText {
+                Layout.fillWidth: true
+                maxWidth: parent.width
+                text: {
+                  if (root.showArtistFirst) {
+                    return MediaService.trackTitle || "No Media";
+                  } else {
+                    return MediaService.trackArtist || (MediaService.trackAlbum || "Unknown Artist");
+                  }
+                }
+                scrollMode: {
+                  if (root.scrollingMode === "always")
+                    return NScrollText.ScrollMode.Always;
+                  if (root.scrollingMode === "hover")
+                    return NScrollText.ScrollMode.Hover;
+                  return NScrollText.ScrollMode.Never;
+                }
+                fadeExtent: 0.01
+                delegate: NText {
+                  pointSize: Style.fontSizeS
+                  color: Color.onShellSecondary
+                  elide: Text.ElideNone
+                  wrapMode: Text.NoWrap
+                }
+              }
+            }
+          }
+        }
+
+        // Progress: 2 px groove + time labels
+        Item {
+          id: progressWrapper
+          visible: (MediaService.currentPlayer && MediaService.trackLength > 0)
+          Layout.fillWidth: true
+          Layout.preferredHeight: progressColumn.implicitHeight + Style.marginS
+
+          property real localSeekRatio: -1
+          property real lastSentSeekRatio: -1
+          property real seekEpsilon: 0.01
+          property real progressRatio: {
+            if (!MediaService.currentPlayer || MediaService.trackLength <= 0)
+              return 0;
+            const r = MediaService.currentPosition / MediaService.trackLength;
+            if (isNaN(r) || !isFinite(r))
+              return 0;
+            return Math.max(0, Math.min(1, r));
+          }
+
+          Timer {
+            id: seekDebounce
+            interval: 75
+            repeat: false
+            onTriggered: {
+              if (MediaService.isSeeking && progressWrapper.localSeekRatio >= 0) {
+                const next = Math.max(0, Math.min(1, progressWrapper.localSeekRatio));
+                if (progressWrapper.lastSentSeekRatio < 0 || Math.abs(next - progressWrapper.lastSentSeekRatio) >= progressWrapper.seekEpsilon) {
+                  MediaService.seekByRatio(next);
+                  progressWrapper.lastSentSeekRatio = next;
+                }
+              }
             }
           }
 
           ColumnLayout {
-            id: controlsLayout
-            Layout.preferredWidth: root.compactMode ? -1 : albumArtItem.width
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: root.compactMode
-            spacing: root.compactMode ? Style.marginXS : Style.marginS
+            id: progressColumn
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginM
+            spacing: 2
 
-            ColumnLayout {
+            NSlider {
+              id: progressSlider
               Layout.fillWidth: true
-              spacing: 0
+              Layout.preferredHeight: 22
+              from: 0
+              to: 1
+              stepSize: 0
+              snapAlways: false
+              enabled: MediaService.trackLength > 0 && MediaService.canSeek
+              heightRatio: 0.4
 
-              NScrollText {
-                Layout.fillWidth: true
-                maxWidth: parent.width
-                text: {
-                  if (root.showArtistFirst) {
-                    return MediaService.trackArtist || (MediaService.trackAlbum || "Unknown Artist");
-                  } else {
-                    return MediaService.trackTitle || "No Media";
-                  }
-                }
+              value: (!MediaService.isSeeking) ? progressWrapper.progressRatio : (progressWrapper.localSeekRatio >= 0 ? progressWrapper.localSeekRatio : 0)
 
-                scrollMode: {
-                  if (root.scrollingMode === "always")
-                    return NScrollText.ScrollMode.Always;
-                  if (root.scrollingMode === "hover")
-                    return NScrollText.ScrollMode.Hover;
-                  return NScrollText.ScrollMode.Never;
-                }
-                fadeExtent: 0.01
-                fadeCornerRadius: Style.radiusM
-
-                delegate: NText {
-                  pointSize: root.compactMode ? Style.fontSizeL : Style.fontSizeXL
-                  font.weight: Style.fontWeightBold
-                  color: Color.mOnSurface
-                  horizontalAlignment: root.isSideBySide ? Text.AlignLeft : Text.AlignHCenter
-                  elide: Text.ElideNone
-                  wrapMode: Text.NoWrap
+              onMoved: {
+                progressWrapper.localSeekRatio = value;
+                seekDebounce.restart();
+              }
+              onPressedChanged: {
+                if (pressed) {
+                  MediaService.isSeeking = true;
+                  progressWrapper.localSeekRatio = value;
+                  MediaService.seekByRatio(value);
+                  progressWrapper.lastSentSeekRatio = value;
+                } else {
+                  seekDebounce.stop();
+                  MediaService.seekByRatio(value);
+                  MediaService.isSeeking = false;
+                  progressWrapper.localSeekRatio = -1;
+                  progressWrapper.lastSentSeekRatio = -1;
                 }
               }
-
-              NScrollText {
-                Layout.fillWidth: true
-                maxWidth: parent.width
-                text: {
-                  if (root.showArtistFirst) {
-                    return MediaService.trackTitle || "No Media";
-                  } else {
-                    return MediaService.trackArtist || (MediaService.trackAlbum || "Unknown Artist");
-                  }
-                }
-
-                scrollMode: {
-                  if (root.scrollingMode === "always")
-                    return NScrollText.ScrollMode.Always;
-                  if (root.scrollingMode === "hover")
-                    return NScrollText.ScrollMode.Hover;
-                  return NScrollText.ScrollMode.Never;
-                }
-                fadeExtent: 0.01
-                fadeCornerRadius: Style.radiusM
-
-                delegate: NText {
-                  pointSize: root.compactMode ? Style.fontSizeS : Style.fontSizeM
-                  color: Color.mOnSurfaceVariant
-                  horizontalAlignment: root.isSideBySide ? Text.AlignLeft : Text.AlignHCenter
-                  elide: Text.ElideNone
-                  wrapMode: Text.NoWrap
-                }
-              }
-            }
-
-            Item {
-              id: progressWrapper
-              visible: (MediaService.currentPlayer && MediaService.trackLength > 0)
-              Layout.fillWidth: true
-              Layout.preferredHeight: progressColumn.implicitHeight
-
-              property real localSeekRatio: -1
-              property real lastSentSeekRatio: -1
-              property real seekEpsilon: 0.01
-              property real progressRatio: {
-                if (!MediaService.currentPlayer || MediaService.trackLength <= 0)
-                  return 0;
-                const r = MediaService.currentPosition / MediaService.trackLength;
-                if (isNaN(r) || !isFinite(r))
-                  return 0;
-                return Math.max(0, Math.min(1, r));
-              }
-
-              Timer {
-                id: seekDebounce
-                interval: 75
-                repeat: false
-                onTriggered: {
-                  if (MediaService.isSeeking && progressWrapper.localSeekRatio >= 0) {
-                    const next = Math.max(0, Math.min(1, progressWrapper.localSeekRatio));
-                    if (progressWrapper.lastSentSeekRatio < 0 || Math.abs(next - progressWrapper.lastSentSeekRatio) >= progressWrapper.seekEpsilon) {
-                      MediaService.seekByRatio(next);
-                      progressWrapper.lastSentSeekRatio = next;
-                    }
-                  }
-                }
-              }
-
-              ColumnLayout {
-                id: progressColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                spacing: 2
-
-                Item {
-                  Layout.fillWidth: true
-                  Layout.preferredHeight: root.compactMode ? (Style.baseWidgetSize * 0.4) : (Style.baseWidgetSize * 0.5)
-
-                  NSlider {
-                    id: progressSlider
-                    anchors.fill: parent
-                    from: 0
-                    to: 1
-                    stepSize: 0
-                    snapAlways: false
-                    enabled: MediaService.trackLength > 0 && MediaService.canSeek
-                    heightRatio: 0.4
-
-                    value: (!MediaService.isSeeking) ? progressWrapper.progressRatio : (progressWrapper.localSeekRatio >= 0 ? progressWrapper.localSeekRatio : 0)
-
-                    onMoved: {
-                      progressWrapper.localSeekRatio = value;
-                      seekDebounce.restart();
-                    }
-                    onPressedChanged: {
-                      if (pressed) {
-                        MediaService.isSeeking = true;
-                        progressWrapper.localSeekRatio = value;
-                        MediaService.seekByRatio(value);
-                        progressWrapper.lastSentSeekRatio = value;
-                      } else {
-                        seekDebounce.stop();
-                        MediaService.seekByRatio(value);
-                        MediaService.isSeeking = false;
-                        progressWrapper.localSeekRatio = -1;
-                        progressWrapper.lastSentSeekRatio = -1;
-                      }
-                    }
-                  }
-                }
-
-                RowLayout {
-                  Layout.fillWidth: true
-                  spacing: 0
-
-                  NText {
-                    text: MediaService.positionString || "0:00"
-                    pointSize: Style.fontSizeXS
-                    color: Color.mOnSurfaceVariant
-                    visible: progressWrapper.visible
-                  }
-
-                  Item {
-                    Layout.fillWidth: true
-                    Layout.minimumWidth: 0
-                  }
-
-                  NText {
-                    text: MediaService.lengthString || "0:00"
-                    pointSize: Style.fontSizeXS
-                    color: Color.mOnSurfaceVariant
-                    horizontalAlignment: Text.AlignRight
-                    visible: progressWrapper.visible
-                  }
-                }
-              }
-            }
-
-            Item {
-              Layout.preferredHeight: root.isSideBySide ? Style.marginM : Style.marginS
             }
 
             RowLayout {
-              Layout.alignment: Qt.AlignHCenter
-              spacing: root.isSideBySide ? Style.marginL : Style.marginXL
+              Layout.fillWidth: true
+              spacing: 0
 
-              NIconButton {
-                icon: "media-prev"
-                baseSize: root.compactMode ? (Style.baseWidgetSize * 0.9) : (Style.baseWidgetSize * 1.2)
-                onClicked: MediaService.previous()
+              NText {
+                text: MediaService.positionString || "0:00"
+                pointSize: Style.fontSizeXS
+                color: Color.onShellSecondary
               }
 
-              Rectangle {
-                implicitWidth: root.compactMode ? (Style.baseWidgetSize * 1.3) : (Style.baseWidgetSize * 1.8)
-                implicitHeight: root.compactMode ? (Style.baseWidgetSize * 1.3) : (Style.baseWidgetSize * 1.8)
-                radius: root.compactMode ? Style.iRadiusM : Style.iRadiusL
-                color: Color.mPrimary
-
-                NIcon {
-                  anchors.centerIn: parent
-                  icon: MediaService.isPlaying ? "media-pause" : "media-play"
-                  pointSize: root.compactMode ? Style.fontSizeL : Style.fontSizeXXL
-                  color: Color.mOnPrimary
-                }
-
-                MouseArea {
-                  anchors.fill: parent
-                  cursorShape: Qt.PointingHandCursor
-                  hoverEnabled: true
-                  onEntered: parent.color = Color.mPrimary
-                  onClicked: MediaService.playPause()
-                }
+              Item {
+                Layout.fillWidth: true
               }
 
-              NIconButton {
-                icon: "media-next"
-                baseSize: root.compactMode ? (Style.baseWidgetSize * 0.9) : (Style.baseWidgetSize * 1.2)
-                onClicked: MediaService.next()
+              NText {
+                text: MediaService.lengthString || "0:00"
+                pointSize: Style.fontSizeXS
+                color: Color.onShellSecondary
+                horizontalAlignment: Text.AlignRight
               }
             }
           }
+        }
+
+        // Controls row: flat icon buttons
+        RowLayout {
+          Layout.alignment: Qt.AlignHCenter
+          Layout.fillWidth: true
+          spacing: Style.marginL
+
+          NIconButton {
+            icon: "media-prev"
+            colorFg: Color.onShell
+            onClicked: MediaService.previous()
+          }
+
+          NIconButton {
+            icon: MediaService.isPlaying ? "media-pause" : "media-play"
+            colorFg: Color.onShell
+            baseSize: Style.baseWidgetSize
+            onClicked: MediaService.playPause()
+          }
+
+          NIconButton {
+            icon: "media-next"
+            colorFg: Color.onShell
+            onClicked: MediaService.next()
+          }
+        }
+
+        // Optional visualizer strip
+        Loader {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 24
+          active: !!root.needsSpectrum
+          sourceComponent: playerContent.visualizerSource
+        }
+
+        Item {
+          Layout.preferredHeight: Style.marginS
         }
       }
     }
@@ -533,10 +424,9 @@ SmartPanel {
       width: parent.width - Style.marginS
       height: 20
       values: SpectrumService.values
-      fillColor: Color.mPrimary
+      fillColor: Color.accent
       opacity: 0.4
       barPosition: Settings.getBarPositionForScreen(root.screen?.name)
-      mirrored: Settings.data.audio.spectrumMirrored
     }
   }
 
@@ -544,9 +434,9 @@ SmartPanel {
     id: mirroredComponent
     NMirroredSpectrum {
       width: parent.width - Style.marginS
-      height: parent.height - Style.marginS
+      height: 20
       values: SpectrumService.values
-      fillColor: Color.mPrimary
+      fillColor: Color.accent
       opacity: 0.4
       mirrored: Settings.data.audio.spectrumMirrored
     }
@@ -556,9 +446,9 @@ SmartPanel {
     id: waveComponent
     NWaveSpectrum {
       width: parent.width - Style.marginS
-      height: parent.height - Style.marginS
+      height: 20
       values: SpectrumService.values
-      fillColor: Color.mPrimary
+      fillColor: Color.accent
       opacity: 0.4
       mirrored: Settings.data.audio.spectrumMirrored
     }

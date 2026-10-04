@@ -183,5 +183,44 @@ Item {
         }
       }
     }
+
+    // DDE arrow popups (DESIGN §3.2 DockPopupWindow): rendered outside the
+    // panel-opacity layer so the popupShell alpha is not multiplied by
+    // Style.effectivePanelOpacity, with their own shadowPopup shadow.
+    Item {
+      anchors.fill: parent
+
+      Shape {
+        id: arrowPopupShape
+        anchors.fill: parent
+        preferredRendererType: Shape.CurveRenderer
+        asynchronous: true
+        enabled: false
+
+        // Slot 0: Currently open/opening panel
+        ArrowPanelBackground {
+          assignedPanel: {
+            var p = PanelService.backgroundSlotAssignments[0];
+            return (p && p.screen === root.windowRoot.screen) ? p : null;
+          }
+          shapeContainer: arrowPopupShape
+        }
+
+        // Slot 1: Closing panel (during transitions)
+        ArrowPanelBackground {
+          assignedPanel: {
+            var p = PanelService.backgroundSlotAssignments[1];
+            return (p && p.screen === root.windowRoot.screen) ? p : null;
+          }
+          shapeContainer: arrowPopupShape
+        }
+      }
+
+      NDropShadow {
+        anchors.fill: parent
+        source: arrowPopupShape
+        shadow: Style.shadowPopup
+      }
+    }
   }
 }

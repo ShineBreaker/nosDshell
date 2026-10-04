@@ -248,6 +248,14 @@ ColumnLayout {
       onToggled: checked => Settings.data.dock.groupApps = checked
     }
 
+    NToggle {
+      label: I18n.tr("panels.dock.appearance-window-previews-label")
+      description: I18n.tr("panels.dock.appearance-window-previews-description")
+      checked: Settings.data.dock.windowPreviews
+      defaultValue: Settings.getDefaultValue("dock.windowPreviews")
+      onToggled: checked => Settings.data.dock.windowPreviews = checked
+    }
+
     NComboBox {
       Layout.fillWidth: true
       visible: Settings.data.dock.groupApps

@@ -201,6 +201,13 @@ PanelWindow {
   implicitWidth: barIsVertical ? barHeight : barWindow.screen.width
   implicitHeight: barIsVertical ? barWindow.screen.height : barHeight
 
+  // Window origin in screen coordinates (screen's top-left = 0,0).
+  // Layer-shell surfaces can't report their own position, so it's computed
+  // from the anchor/margin geometry; PanelService.screenRectOf uses it.
+  readonly property point screenOrigin: Qt.point(
+                                            (barWindow.barPosition === "right") ? barWindow.screen.width - margins.right - implicitWidth : margins.left,
+                                            (barWindow.barPosition === "bottom") ? barWindow.screen.height - margins.bottom - implicitHeight : margins.top)
+
   // Bar content loader - loaded once, stays active for lifetime
   Loader {
     id: barLoader
@@ -209,6 +216,10 @@ PanelWindow {
 
     sourceComponent: Item {
       anchors.fill: parent
+
+      // Carries the window origin down the widget parent chain so
+      // PanelService.screenRectOf can resolve taskbar items to screen coords
+      readonly property point screenOrigin: barWindow.screenOrigin
 
       // Efficient mode slides along the screen edge (DDE spec: motionPanel,
       // InOutCubic); the legacy path fades out instead

@@ -38,9 +38,11 @@ ShapePath {
   // Only access panelItem if panelRegion exists and is visible
   readonly property var panelBg: (panelRegion && panelRegion.visible) ? panelRegion.panelItem : null
 
-  // Effective background color: use panel's if defined, else default
+  // Effective background color: use panel's if defined, else default.
+  // Arrow popups render in ArrowPanelBackground instead (popupShell alpha
+  // must not be double-multiplied by the panel opacity layer, §3.2).
   readonly property color effectiveBackgroundColor: {
-    if (!assignedPanel)
+    if (!assignedPanel || assignedPanel.useArrowPopup)
       return "transparent";
     if (assignedPanel.panelBackgroundColor !== undefined) {
       return assignedPanel.panelBackgroundColor;

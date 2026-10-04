@@ -13,12 +13,11 @@ import qs.Widgets
 SmartPanel {
   id: root
 
-  preferredWidth: Math.round(440 * Style.uiScaleRatio)
-  preferredHeight: Math.round(420 * Style.uiScaleRatio)
+  preferredWidth: Math.round(260 * Style.uiScaleRatio)
 
   panelContent: Item {
     id: panelContent
-    property real contentPreferredHeight: mainColumn.implicitHeight + Style.margin2L
+    property real contentPreferredHeight: Math.min(mainColumn.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
     property var brightnessWidgetInstance: BarService.lookupWidget("Brightness", screen ? screen.name : null)
     readonly property var brightnessWidgetSettings: brightnessWidgetInstance ? brightnessWidgetInstance.widgetSettings : null
@@ -96,188 +95,165 @@ SmartPanel {
       }
     }
 
-    ColumnLayout {
-      id: mainColumn
+    NScrollView {
+      id: brightnessScrollView
       anchors.fill: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+      horizontalPolicy: ScrollBar.AlwaysOff
+      verticalPolicy: ScrollBar.AsNeeded
+      contentWidth: availableWidth
+      reserveScrollbarSpace: false
 
-      // HEADER
-      NBox {
-        Layout.fillWidth: true
-        implicitHeight: headerRow.implicitHeight + Style.margin2M
+      ColumnLayout {
+        id: mainColumn
+        spacing: Style.marginS
+        width: brightnessScrollView.availableWidth
 
-        RowLayout {
-          id: headerRow
-          anchors.fill: parent
-          anchors.margins: Style.marginM
-          spacing: Style.marginM
+        // ---- Global brightness (when the widget applies to all monitors) ----
+        NPanelSection {
+          Layout.fillWidth: true
+          Layout.topMargin: Style.marginM
+          text: I18n.tr("panels.display.monitors-global-brightness-label")
+          visible: panelContent.globalBrightnessCapableMonitors > 1 && panelContent.resolveWidgetSetting("applyToAllMonitors", false)
+        }
 
-          NIcon {
-            icon: "settings-display"
-            pointSize: Style.fontSizeXXL
-            color: Color.mPrimary
-          }
+        Item {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 36
+          visible: panelContent.globalBrightnessCapableMonitors > 1 && panelContent.resolveWidgetSetting("applyToAllMonitors", false)
 
-          NText {
-            text: I18n.tr("panels.display.title")
-            pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
-            color: Color.mOnSurface
-            Layout.fillWidth: true
-          }
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginM
+            spacing: Style.marginS
 
-          NIconButton {
-            icon: "close"
-            tooltipText: I18n.tr("common.close")
-            baseSize: Style.baseWidgetSize * 0.8
-            onClicked: {
-              root.close();
+            NIcon {
+              icon: panelContent.getIcon(panelContent.globalBrightness)
+              pointSize: Style.fontSizeXL
+              color: Color.onShell
+            }
+
+            NValueSlider {
+              id: globalBrightnessSlider
+              from: 0
+              to: 1
+              value: panelContent.globalBrightness
+              stepSize: 0.01
+              enabled: panelContent.globalBrightnessCapableMonitors > 0
+              onMoved: value => {
+                         panelContent.globalBrightness = value;
+                         panelContent.applyGlobalBrightness(value);
+                       }
+              onPressedChanged: (pressed, value) => {
+                                  panelContent.globalBrightnessChanging = pressed;
+                                  panelContent.globalBrightness = value;
+                                  panelContent.applyGlobalBrightness(value);
+                                }
+              Layout.fillWidth: true
+              Layout.preferredHeight: 22
+              text: ""
+            }
+
+            NText {
+              text: panelContent.globalBrightnessCapableMonitors > 0 ? Math.round(panelContent.globalBrightness * 100) + "%" : "N/A"
+              Layout.preferredWidth: 40
+              horizontalAlignment: Text.AlignRight
+              color: Color.onShellSecondary
+              pointSize: Style.fontSizeS
+              Layout.alignment: Qt.AlignVCenter
             }
           }
         }
-      }
 
-      NScrollView {
-        id: brightnessScrollView
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        horizontalPolicy: ScrollBar.AlwaysOff
-        verticalPolicy: ScrollBar.AsNeeded
-        contentWidth: availableWidth
-        reserveScrollbarSpace: false
-        gradientColor: Color.mSurface
+        // ---- Per-monitor sliders ----
+        NPanelSection {
+          Layout.fillWidth: true
+          Layout.topMargin: (panelContent.globalBrightnessCapableMonitors <= 1 || !panelContent.resolveWidgetSetting("applyToAllMonitors", false)) ? Style.marginM : 0
+          text: I18n.tr("panels.display.section-monitors")
+          visible: (Quickshell.screens || []).length > 0
+        }
 
-        // AudioService Devices
-        ColumnLayout {
-          spacing: Style.marginM
-          width: brightnessScrollView.availableWidth
-
-          NBox {
+        Repeater {
+          model: Quickshell.screens || []
+          delegate: ColumnLayout {
             Layout.fillWidth: true
-            visible: panelContent.globalBrightnessCapableMonitors > 1 && panelContent.resolveWidgetSetting("applyToAllMonitors", false)
-            implicitHeight: globalBrightnessContent.implicitHeight + (Style.marginXL)
+            spacing: 0
 
-            ColumnLayout {
-              id: globalBrightnessContent
-              anchors.left: parent.left
-              anchors.right: parent.right
-              anchors.top: parent.top
-              anchors.margins: Style.marginM
-              spacing: Style.marginS
+            property var brightnessMonitor: BrightnessService.getMonitorForScreen(modelData)
+            readonly property real compositorScale: {
+              const info = CompositorService.displayScales[modelData.name];
+              return (info && info.scale) ? info.scale : 1.0;
+            }
 
-              NLabel {
-                label: I18n.tr("panels.display.monitors-global-brightness-label")
-                description: I18n.tr("panels.display.monitors-global-brightness-description")
-              }
+            Item {
+              Layout.fillWidth: true
+              Layout.preferredHeight: 36
 
               RowLayout {
-                Layout.fillWidth: true
-                spacing: Style.marginS
+                anchors.fill: parent
+                anchors.leftMargin: Style.marginM
+                anchors.rightMargin: Style.marginM
+                spacing: Style.marginM
 
-                NIcon {
-                  icon: panelContent.getIcon(panelContent.globalBrightness)
-                  pointSize: Style.fontSizeXL
-                  color: Color.mOnSurface
-                }
-
-                NValueSlider {
-                  id: globalBrightnessSlider
-                  from: 0
-                  to: 1
-                  value: panelContent.globalBrightness
-                  stepSize: 0.01
-                  enabled: panelContent.globalBrightnessCapableMonitors > 0
-                  onMoved: value => {
-                             panelContent.globalBrightness = value;
-                             panelContent.applyGlobalBrightness(value);
-                           }
-                  onPressedChanged: (pressed, value) => {
-                                      panelContent.globalBrightnessChanging = pressed;
-                                      panelContent.globalBrightness = value;
-                                      panelContent.applyGlobalBrightness(value);
-                                    }
+                NText {
                   Layout.fillWidth: true
-                  text: ""
+                  text: modelData.name || "Unknown"
+                  pointSize: Style.fontSizeM
+                  elide: Text.ElideRight
                 }
 
                 NText {
-                  text: panelContent.globalBrightnessCapableMonitors > 0 ? Math.round(panelContent.globalBrightness * 100) + "%" : "N/A"
-                  Layout.preferredWidth: 55
-                  horizontalAlignment: Text.AlignRight
-                  Layout.alignment: Qt.AlignVCenter
+                  text: Math.round(modelData.width * compositorScale) + "x" + Math.round(modelData.height * compositorScale)
+                  pointSize: Style.fontSizeS
+                  color: Color.onShellTertiary
                 }
               }
             }
-          }
 
-          Repeater {
-            model: Quickshell.screens || []
-            delegate: NBox {
+            Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: outputColumn.implicitHeight + Style.margin2M
+              Layout.preferredHeight: 36
 
-              property var brightnessMonitor: BrightnessService.getMonitorForScreen(modelData)
-              readonly property real compositorScale: {
-                const info = CompositorService.displayScales[modelData.name];
-                return (info && info.scale) ? info.scale : 1.0;
-              }
-
-              ColumnLayout {
-                id: outputColumn
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.margins: Style.marginM
+              RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Style.marginM
+                anchors.rightMargin: Style.marginM
                 spacing: Style.marginS
 
-                NLabel {
-                  label: modelData.name || "Unknown"
-                  labelColor: Color.mPrimary
-                  description: {
-                    I18n.tr("system.monitor-description", {
-                              "model": modelData.model,
-                              "width": modelData.width * compositorScale,
-                              "height": modelData.height * compositorScale,
-                              "scale": compositorScale
-                            });
-                  }
+                NIcon {
+                  icon: getIcon(brightnessMonitor ? brightnessMonitor.brightness : 0)
+                  pointSize: Style.fontSizeXL
+                  color: Color.onShell
                 }
 
-                RowLayout {
-
-                  Layout.fillWidth: true
-                  spacing: Style.marginS
-                  NIcon {
-                    icon: getIcon(brightnessMonitor ? brightnessMonitor.brightness : 0)
-                    pointSize: Style.fontSizeXL
-                    color: Color.mOnSurface
-                  }
-
-                  NValueSlider {
-                    id: brightnessSlider
-                    from: 0
-                    to: 1
-                    value: brightnessMonitor ? brightnessMonitor.brightness : 0.5
-                    stepSize: 0.01
-                    enabled: brightnessMonitor ? brightnessMonitor.brightnessControlAvailable : false
-                    onMoved: value => {
-                               if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                                 brightnessMonitor.setBrightness(value);
-                               }
+                NValueSlider {
+                  id: brightnessSlider
+                  from: 0
+                  to: 1
+                  value: brightnessMonitor ? brightnessMonitor.brightness : 0.5
+                  stepSize: 0.01
+                  enabled: brightnessMonitor ? brightnessMonitor.brightnessControlAvailable : false
+                  onMoved: value => {
+                             if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
+                               brightnessMonitor.setBrightness(value);
                              }
-                    onPressedChanged: (pressed, value) => {
-                                        if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                                          brightnessMonitor.setBrightness(value);
-                                        }
+                           }
+                  onPressedChanged: (pressed, value) => {
+                                      if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
+                                        brightnessMonitor.setBrightness(value);
                                       }
-                    Layout.fillWidth: true
-                    text: brightnessMonitor ? Math.round(brightnessSlider.value * 100) + "%" : "N/A"
-                  }
+                                    }
+                  Layout.fillWidth: true
+                  Layout.preferredHeight: 22
+                  text: brightnessMonitor ? Math.round(brightnessSlider.value * 100) + "%" : "N/A"
                 }
               }
             }
           }
+        }
+
+        Item {
+          Layout.preferredHeight: Style.marginS
         }
       }
     }

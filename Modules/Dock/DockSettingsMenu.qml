@@ -257,13 +257,14 @@ Singleton {
   }
 
   // Convert an item-local point to screen coordinates, then open the menu.
+  // Uses the shared screenRectOf anchor helper so it works for items in
+  // both taskbar windows (efficient bar, fashion dock).
   function openAtItemPoint(screen, item, localX, localY) {
     if (!screen || !item)
       return;
-    var pos = item.mapToItem(null, localX, localY);
-    var win = item.Window ? item.Window.window : null;
-    var sx = pos.x + (win ? win.x - screen.x : 0);
-    var sy = pos.y + (win ? win.y - screen.y : 0);
+    var rect = PanelService.screenRectOf(item, screen);
+    var sx = rect ? rect.x + localX : localX;
+    var sy = rect ? rect.y + localY : localY;
     openAt(screen, sx, sy);
   }
 

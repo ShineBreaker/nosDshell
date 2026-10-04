@@ -24,6 +24,10 @@ Item {
   required property var dockRoot
   property alias dockContainer: dockContainer
 
+  // Screen-space origin of the hosting window, assigned by Dock.qml.
+  // PanelService.screenRectOf walks the parent chain to find it.
+  property point screenOrigin: Qt.point(0, 0)
+
   // Legacy attached-panel insets (StaticDockPanel assigns these); they are
   // inert in fashion mode but kept so the lazy panel stays loadable
   property real extraTop: 0
@@ -141,6 +145,22 @@ Item {
         app.execute();
       } else {
         Logger.w("Dock", `Could not launch: ${app.name}. No valid launch method.`);
+      }
+    }
+  }
+
+  // DDE window previews (AppSnapshot/PreviewContainer): one shared arrow
+  // popup re-anchored to the hovered app item
+  WindowPreviews {
+    id: windowPreviews
+    dockPosition: dockRoot.dockPosition
+
+    // Hide the preview when the dock slides away
+    Connections {
+      target: dockRoot
+      function onHiddenChanged() {
+        if (dockRoot.hidden)
+          windowPreviews.hide();
       }
     }
   }
@@ -641,6 +661,36 @@ Item {
             }
           }
 
+          // Window preview entries for this app (DDE AppSnapshot): one tile
+          // per window, live toplevel capture or title fallback
+          function previewEntries() {
+            var tops = appButton.toplevels || [];
+            var out = [];
+            for (var i = 0; i < tops.length; i++) {
+              var t = tops[i];
+              out.push({
+                         "toplevel": t,
+                         "title": (t && t.title) || appButton.appTitle || "",
+                         "urgent": !!(t && (t.urgent === true || t.urgent === "true"))
+                       });
+            }
+            return out;
+          }
+
+          // 200 ms hover delay before the preview opens (DDE)
+          Timer {
+            id: previewTimer
+            interval: 200
+            onTriggered: {
+              if (!Settings.data.dock.windowPreviews || !appButton.isRunning)
+                return;
+              if (contextMenu.visible)
+                return;
+              windowPreviews.show(appButton, appButton.previewEntries, dock.screen);
+              TooltipService.hideImmediately();
+            }
+          }
+
           // Context menu popup (dark arrowed menu, arrow tip 2 px from item)
           DockMenu {
             id: contextMenu
@@ -719,16 +769,26 @@ Item {
               if (!contextMenu.visible) {
                 TooltipService.show(appButton, tooltipText, tooltipDirection, Style.tooltipDelayDock);
               }
+              // DDE window preview after 200 ms hover (suppresses the tooltip)
+              if (Settings.data.dock.windowPreviews && appButton.isRunning && !contextMenu.visible) {
+                previewTimer.restart();
+              }
             }
 
             onExited: {
               dock.itemExited();
+              previewTimer.stop();
+              if (windowPreviews.anchorItem === appButton) {
+                windowPreviews.scheduleHide();
+              }
               if (!dockRoot.currentContextMenu || !dockRoot.currentContextMenu.visible) {
                 dockRoot.menuHovered = false;
               }
             }
 
             onClicked: mouse => {
+                         windowPreviews.hide();
+                         previewTimer.stop();
                          const targetScreen = dock.screen || null;
                          if (mouse.button === Qt.RightButton) {
                            if (!insideIconSquare(mouse.x, mouse.y)) {

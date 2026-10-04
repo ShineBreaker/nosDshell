@@ -400,6 +400,7 @@
     "pinnedStatic": false,
     "inactiveIndicators": false,
     "groupApps": true,
+    "windowPreviews": true,
     "groupContextMenuMode": "extended",
     "groupClickAction": "cycle",
     "groupIndicatorStyle": "dots",

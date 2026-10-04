@@ -3,11 +3,9 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Bluetooth
-import "../Settings/Tabs/Connections" as BluetoothPrefs
 import qs.Commons
 import qs.Modules.MainScreen
 import qs.Modules.Panels.Settings
-import qs.Services.Hardware
 import qs.Services.Networking
 import qs.Services.UI
 import qs.Widgets
@@ -15,192 +13,333 @@ import qs.Widgets
 SmartPanel {
   id: root
 
-  preferredWidth: Math.round(440 * Style.uiScaleRatio)
-  preferredHeight: Math.round(500 * Style.uiScaleRatio)
+  preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
-  panelContent: Rectangle {
+  panelContent: Item {
     id: panelContent
-    color: "transparent"
 
-    property real contentPreferredHeight: Math.min(root.preferredHeight, mainColumn.implicitHeight + Style.margin2L)
+    property real contentPreferredHeight: Math.min(mainLayout.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
-    ColumnLayout {
-      id: mainColumn
+    function disconnectDevice(device) {
+      if (device.blocked) {
+        device.blocked = false;
+      } else {
+        device.disconnect();
+      }
+    }
+
+    // Device lists — same filtering as BluetoothSubTab
+    readonly property var _allDevices: {
+      if (!BluetoothService.adapter || !BluetoothService.adapter.devices)
+        return [];
+      return BluetoothService.adapter.devices.values;
+    }
+
+    readonly property var connectedDevices: {
+      var filtered = _allDevices.filter(dev => dev && !dev.blocked && dev.connected);
+      return BluetoothService.sortDevices(BluetoothService.dedupeDevices(filtered));
+    }
+
+    readonly property var pairedDevices: {
+      var filtered = _allDevices.filter(dev => dev && !dev.blocked && !dev.connected && (dev.paired || dev.trusted));
+      return BluetoothService.sortDevices(BluetoothService.dedupeDevices(filtered));
+    }
+
+    readonly property var unnamedAvailableDevices: {
+      return _allDevices.filter(dev => dev && !dev.blocked && !dev.paired && !dev.trusted);
+    }
+
+    readonly property var availableDevices: {
+      var list = unnamedAvailableDevices;
+      if (Settings.data.network.bluetoothHideUnnamedDevices) {
+        list = list.filter(function (dev) {
+          var s = String(dev.name || dev.deviceName || "").trim().toLowerCase();
+          return s.length > 0 && s !== "unknown" && s !== "unnamed" && s !== "n/a" && s !== "na";
+        });
+      }
+      return list;
+    }
+
+    NScrollView {
+      id: scrollView
       anchors.fill: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+      horizontalPolicy: ScrollBar.AlwaysOff
+      verticalPolicy: ScrollBar.AsNeeded
+      contentWidth: availableWidth
 
-      // Header
-      NBox {
-        Layout.fillWidth: true
-        Layout.preferredHeight: headerRow.implicitHeight + Style.margin2M
+      ColumnLayout {
+        id: mainLayout
+        width: scrollView.availableWidth
+        spacing: Style.marginS
 
-        RowLayout {
-          id: headerRow
-          anchors.fill: parent
-          anchors.margins: Style.marginM
+        // Toggle switch row + auto-connect + settings gear
+        Item {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 36
+          Layout.topMargin: Style.marginS
+          visible: BluetoothService.bluetoothAvailable
 
-          NIcon {
-            icon: BluetoothService.enabled ? "bluetooth" : "bluetooth-off"
-            pointSize: Style.fontSizeXXL
-            color: BluetoothService.enabled ? Color.mPrimary : Color.mOnSurfaceVariant
-          }
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginS
+            spacing: Style.marginXS
 
-          NLabel {
-            label: I18n.tr("common.bluetooth")
-            Layout.fillWidth: true
-          }
+            NIcon {
+              icon: "bluetooth"
+              pointSize: Style.fontSizeXL
+              color: BluetoothService.enabled ? Color.accent : Color.onShellSecondary
+            }
 
-          NToggle {
-            id: bluetoothSwitch
-            checked: BluetoothService.enabled
-            enabled: !NetworkService.airplaneModeEnabled && BluetoothService.bluetoothAvailable
-            onToggled: checked => BluetoothService.setBluetoothEnabled(checked)
-            baseSize: Style.baseWidgetSize * 0.65
-          }
+            NText {
+              Layout.fillWidth: true
+              text: I18n.tr("common.bluetooth")
+              pointSize: Style.fontSizeM
+              elide: Text.ElideRight
+            }
 
-          NIconButton {
-            icon: Settings.data.network.bluetoothAutoConnect ? "bluetooth-connected" : "bluetooth"
-            tooltipText: Settings.data.network.bluetoothAutoConnect ? I18n.tr("tooltips.bluetooth-auto-connect-on") : I18n.tr("tooltips.bluetooth-auto-connect-off")
-            colorFg: Settings.data.network.bluetoothAutoConnect ? Color.mPrimary : Color.mOnSurfaceVariant
-            baseSize: Style.baseWidgetSize * 0.8
-            onClicked: Settings.data.network.bluetoothAutoConnect = !Settings.data.network.bluetoothAutoConnect
-          }
+            NIconButton {
+              icon: Settings.data.network.bluetoothAutoConnect ? "bluetooth-connected" : "bluetooth"
+              colorFg: Settings.data.network.bluetoothAutoConnect ? Color.accent : Color.onShellTertiary
+              tooltipText: Settings.data.network.bluetoothAutoConnect ? I18n.tr("tooltips.bluetooth-auto-connect-on") : I18n.tr("tooltips.bluetooth-auto-connect-off")
+              onClicked: Settings.data.network.bluetoothAutoConnect = !Settings.data.network.bluetoothAutoConnect
+            }
 
-          NIconButton {
-            icon: "settings"
-            tooltipText: I18n.tr("tooltips.open-settings")
-            baseSize: Style.baseWidgetSize * 0.8
-            onClicked: SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 1, screen)
-          }
+            NIconButton {
+              icon: "settings"
+              colorFg: Color.onShell
+              tooltipText: I18n.tr("tooltips.open-settings")
+              onClicked: SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 1, screen)
+            }
 
-          NIconButton {
-            icon: "close"
-            tooltipText: I18n.tr("common.close")
-            baseSize: Style.baseWidgetSize * 0.8
-            onClicked: {
-              root.close();
+            // DSwitchButton at the end of the switch row
+            NToggle {
+              Layout.fillWidth: false
+              label: ""
+              checked: BluetoothService.enabled
+              enabled: !NetworkService.airplaneModeEnabled && BluetoothService.bluetoothAvailable
+              onToggled: checked => BluetoothService.setBluetoothEnabled(checked)
             }
           }
         }
-      }
 
-      NScrollView {
-        id: bluetoothScrollView
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-        horizontalPolicy: ScrollBar.AlwaysOff
-        verticalPolicy: ScrollBar.AsNeeded
-        reserveScrollbarSpace: false
-        gradientColor: Color.mSurface
+        NText {
+          Layout.fillWidth: true
+          Layout.leftMargin: Style.marginM
+          Layout.rightMargin: Style.marginM
+          visible: !BluetoothService.bluetoothAvailable
+          text: I18n.tr("bluetooth.panel.unavailable")
+          pointSize: Style.fontSizeS
+          color: Color.onShellTertiary
+        }
 
-        ColumnLayout {
-          id: devicesList
-          width: bluetoothScrollView.availableWidth
-          spacing: Style.marginM
+        // ---- Connected devices ----
+        NPanelSection {
+          text: I18n.tr("bluetooth.panel.connected-devices")
+          Layout.fillWidth: true
+          visible: connectedDevices.length > 0
+        }
 
-          // Adapter not available of disabled
-          NBox {
-            id: disabledBox
-            visible: !BluetoothService.enabled
+        Repeater {
+          model: connectedDevices
+          delegate: Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: disabledColumn.implicitHeight + Style.margin2M
+            Layout.preferredHeight: 36
+            radius: Style.radiusRow
+            color: connRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
 
-            ColumnLayout {
-              id: disabledColumn
+            MouseArea {
+              id: connRowMouse
               anchors.fill: parent
-              anchors.margins: Style.marginM
-              spacing: Style.marginL
+              hoverEnabled: true
+              onClicked: panelContent.disconnectDevice(modelData)
+            }
 
-              Item {
-                Layout.fillHeight: true
-              }
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.marginM
+              anchors.rightMargin: Style.marginS
+              spacing: Style.marginS
 
               NIcon {
-                icon: "bluetooth-off"
-                pointSize: 48
-                color: Color.mOnSurfaceVariant
-                Layout.alignment: Qt.AlignHCenter
+                icon: BluetoothService.getDeviceIcon(modelData)
+                pointSize: Style.fontSizeXL
+                color: Color.onShell
               }
 
               NText {
-                text: I18n.tr("bluetooth.panel.disabled")
-                pointSize: Style.fontSizeL
-                color: Color.mOnSurfaceVariant
-                Layout.alignment: Qt.AlignHCenter
-              }
-
-              NText {
-                text: I18n.tr("bluetooth.panel.enable-message")
-                pointSize: Style.fontSizeS
-                color: Color.mOnSurfaceVariant
-                horizontalAlignment: Text.AlignHCenter
                 Layout.fillWidth: true
-                wrapMode: Text.WordWrap
-              }
-
-              Item {
-                Layout.fillHeight: true
-              }
-            }
-          }
-
-          // Empty state when no paired devices
-          NBox {
-            id: emptyBox
-            visible: {
-              if (!BluetoothService.enabled || !BluetoothService.devices)
-                return false;
-              // Pulling pairedDevices count from the source component
-              return (btSource.pairedDevices.length === 0 && btSource.connectedDevices.length === 0);
-            }
-            Layout.fillWidth: true
-            Layout.preferredHeight: emptyColumn.implicitHeight + Style.margin2M
-
-            ColumnLayout {
-              id: emptyColumn
-              anchors.fill: parent
-              anchors.margins: Style.marginM
-              spacing: Style.marginL
-
-              Item {
-                Layout.fillHeight: true
+                text: modelData.name || modelData.deviceName
+                pointSize: Style.fontSizeM
+                elide: Text.ElideRight
               }
 
               NIcon {
-                icon: "bluetooth"
-                pointSize: 48
-                color: Color.mOnSurfaceVariant
-                Layout.alignment: Qt.AlignHCenter
+                icon: "check"
+                pointSize: Style.fontSizeXL
+                color: Color.accent
               }
 
-              NText {
-                text: I18n.tr("bluetooth.panel.no-devices")
-                pointSize: Style.fontSizeL
-                color: Color.mOnSurfaceVariant
-                Layout.alignment: Qt.AlignHCenter
+              NIconButton {
+                icon: "bluetooth-off"
+                colorFg: Color.onShell
+                onClicked: panelContent.disconnectDevice(modelData)
               }
 
-              NButton {
-                text: I18n.tr("common.settings")
-                icon: "settings"
-                Layout.alignment: Qt.AlignHCenter
-                onClicked: SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 1, screen)
-              }
-
-              Item {
-                Layout.fillHeight: true
+              NIconButton {
+                icon: "trash"
+                colorFg: Color.onShell
+                onClicked: BluetoothService.forgetDevice(modelData)
               }
             }
           }
+        }
 
-          // Pull connected/paired lists from BluetoothSubTab
-          BluetoothPrefs.BluetoothSubTab {
-            id: btSource
+        // ---- Paired devices ----
+        NPanelSection {
+          text: I18n.tr("bluetooth.panel.paired-devices")
+          Layout.fillWidth: true
+          visible: pairedDevices.length > 0
+        }
+
+        Repeater {
+          model: pairedDevices
+          delegate: Rectangle {
             Layout.fillWidth: true
-            showOnlyLists: true
-            visible: !disabledBox.visible && !emptyBox.visible
+            Layout.preferredHeight: 36
+            radius: Style.radiusRow
+            color: btRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
+
+            MouseArea {
+              id: btRowMouse
+              anchors.fill: parent
+              hoverEnabled: true
+              onClicked: {
+                if (modelData.connected) {
+                  panelContent.disconnectDevice(modelData);
+                } else {
+                  BluetoothService.connectDeviceWithTrust(modelData);
+                }
+              }
+            }
+
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.marginM
+              anchors.rightMargin: Style.marginS
+              spacing: Style.marginS
+
+              NIcon {
+                icon: BluetoothService.getDeviceIcon(modelData)
+                pointSize: Style.fontSizeXL
+                color: Color.onShell
+                visible: icon !== ""
+              }
+
+              NText {
+                Layout.fillWidth: true
+                text: modelData.name || modelData.deviceName
+                pointSize: Style.fontSizeM
+                elide: Text.ElideRight
+              }
+
+              NIcon {
+                visible: modelData.connected
+                icon: "check"
+                pointSize: Style.fontSizeXL
+                color: Color.accent
+              }
+
+              NIconButton {
+                icon: "bluetooth-off"
+                colorFg: Color.onShell
+                visible: modelData.connected || modelData.pairing || modelData.state === BluetoothDeviceState.Disconnecting
+                onClicked: panelContent.disconnectDevice(modelData)
+              }
+
+              NIconButton {
+                icon: "info-circle"
+                colorFg: Color.onShell
+                onClicked: BluetoothService.toggleDeviceInfo(modelData)
+              }
+
+              NIconButton {
+                icon: "trash"
+                colorFg: Color.onShell
+                onClicked: BluetoothService.forgetDevice(modelData)
+              }
+            }
           }
+        }
+
+        // ---- Available devices ----
+        NPanelSection {
+          text: I18n.tr("bluetooth.panel.available-devices")
+          Layout.fillWidth: true
+          visible: BluetoothService.enabled
+        }
+
+        NText {
+          Layout.fillWidth: true
+          Layout.leftMargin: Style.marginM
+          Layout.rightMargin: Style.marginM
+          visible: BluetoothService.enabled && panelContent.availableDevices.length === 0 && !BluetoothService.scanningActive
+          text: I18n.tr("bluetooth.panel.no-devices")
+          pointSize: Style.fontSizeS
+          color: Color.onShellTertiary
+        }
+
+        Repeater {
+          model: panelContent.availableDevices
+          delegate: Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 36
+            radius: Style.radiusRow
+            color: availRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
+
+            MouseArea {
+              id: availRowMouse
+              anchors.fill: parent
+              hoverEnabled: true
+              onClicked: BluetoothService.connectDeviceWithTrust(modelData)
+            }
+
+            RowLayout {
+              anchors.fill: parent
+              anchors.leftMargin: Style.marginM
+              anchors.rightMargin: Style.marginS
+              spacing: Style.marginS
+
+              NIcon {
+                icon: BluetoothService.getDeviceIcon(modelData)
+                pointSize: Style.fontSizeXL
+                color: Color.onShell
+                visible: icon !== ""
+              }
+
+              NText {
+                Layout.fillWidth: true
+                text: modelData.name || modelData.deviceName
+                pointSize: Style.fontSizeM
+                elide: Text.ElideRight
+              }
+
+              NIconButton {
+                icon: BluetoothService.isDeviceBusy(modelData) ? "bluetooth-connecting" : "link"
+                colorFg: Color.onShell
+                tooltipText: BluetoothService.isDeviceBusy(modelData) ? "" : I18n.tr("tooltips.pair")
+                onClicked: {
+                  if (!BluetoothService.isDeviceBusy(modelData)) {
+                    BluetoothService.connectDeviceWithTrust(modelData);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        Item {
+          Layout.preferredHeight: Style.marginS
         }
       }
     }

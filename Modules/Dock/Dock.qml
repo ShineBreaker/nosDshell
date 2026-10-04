@@ -601,6 +601,14 @@ Loader {
           implicitWidth: isVertical ? itemThickness : 0
           implicitHeight: isVertical ? 0 : itemThickness
 
+          // Window origin in screen coordinates (screen's top-left = 0,0).
+          // Layer-shell surfaces can't report their own position, so it's
+          // computed from the anchor geometry; PanelService.screenRectOf
+          // uses it to place arrow popups and previews over dock items.
+          readonly property point screenOrigin: Qt.point(
+                                                    dockPosition === "right" ? modelData.width - itemThickness : 0,
+                                                    dockPosition === "bottom" ? modelData.height - itemThickness : 0)
+
           // Slide the visual rect off the edge when hidden, leaving a
           // hiddenSliver-thick strip visible on the docked edge.
           readonly property real slideOffset: root.hidden ? (itemThickness - root.hiddenSliver) : 0
@@ -634,6 +642,7 @@ Loader {
             id: dockContent
             anchors.fill: parent
             dockRoot: root
+            screenOrigin: dockWindow.screenOrigin
 
             transform: Translate {
               x: dockWindow.slideX

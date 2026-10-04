@@ -371,7 +371,8 @@
       "signal-text-good": "Signal: Good",
       "signal-text-poor": "Signal: Poor",
       "signal-text-unknown": "Signal: Unknown",
-      "signal-text-very-poor": "Signal: Very poor"
+      "signal-text-very-poor": "Signal: Very poor",
+      "unavailable": "Bluetooth is not available"
     }
   },
   "changelog": {
@@ -572,7 +573,8 @@
     "width": "Width",
     "wifi": "Wi-Fi",
     "windows": "Windows",
-    "yes": "Yes"
+    "yes": "Yes",
+    "today": "Today"
   },
   "control-center": {
     "power-profile": {
@@ -833,7 +835,11 @@
       "volumes-volume-feedback-description": "Play a feedback sound when adjusting volume.",
       "volumes-volume-feedback-label": "Play volume feedback sound",
       "volumes-volume-overdrive-description": "Allow raising volume above 100%. May not be supported by all hardware.",
-      "volumes-volume-overdrive-label": "Allow volume overdrive"
+      "volumes-volume-overdrive-label": "Allow volume overdrive",
+      "section-output": "Output",
+      "section-input": "Input",
+      "section-applications": "Applications",
+      "section-devices": "Devices"
     },
     "bar": {
       "appearance-auto-hide-delay-description": "Time before bar hides after mouse leaves",
@@ -1122,7 +1128,8 @@
       "night-light-temperature-label": "Color temperature",
       "night-light-temperature-night": "Night",
       "night-light-temperature-night-description": "Controls the temperature during nighttime.",
-      "title": "Display"
+      "title": "Display",
+      "section-monitors": "Monitors"
     },
     "dock": {
       "appearance-background-opacity-description": "Adjust the dock's background opacity.",
@@ -1142,6 +1149,8 @@
       "appearance-floating-distance-label": "Dock floating distance",
       "appearance-group-apps-description": "Group multiple windows from the same app into one dock entry.",
       "appearance-group-apps-label": "Group same apps",
+      "appearance-window-previews-description": "Show live window previews when hovering an app item.",
+      "appearance-window-previews-label": "Window previews",
       "appearance-group-click-action-cycle": "Cycle windows",
       "appearance-group-click-action-description": "Choose what left-click does for grouped apps.",
       "appearance-group-click-action-label": "Grouped app click action",
@@ -1913,7 +1922,9 @@
     "gpu-temp": "GPU temp",
     "load-average": "Load average",
     "title": "System Monitor",
-    "upload-speed": "Upload speed"
+    "upload-speed": "Upload speed",
+    "rx": "Download",
+    "tx": "Upload"
   },
   "toast": {
     "airplane-mode": {
@@ -2019,6 +2030,7 @@
     "delete-notification": "Delete notification",
     "dismiss-notification": "Dismiss notification",
     "do-not-disturb-enabled": "Do Not Disturb",
+    "do-not-disturb-disabled": "Enable Do Not Disturb",
     "expand": "Expand sidebar",
     "forget-network": "Forget network",
     "grid-view": "Grid view",
