@@ -285,6 +285,32 @@ Singleton {
     return "";
   }
 
+  // Resolve a themed status icon for the fashion dock: prefer the plain
+  // (full-color) name, fall back to the "*-symbolic" variant.
+  // Returns "" when the theme has neither (caller falls back to a glyph).
+  // Callers should tint the result only when it contains "-symbolic".
+  function fashionFor(baseName) {
+    if (!baseName || baseName.length === 0)
+      return "";
+    if (iconExists(baseName))
+      return iconFromName(baseName, "");
+    const sym = baseName + "-symbolic";
+    if (iconExists(sym))
+      return iconFromName(sym, "");
+    return "";
+  }
+
+  function fashionForAny(names) {
+    if (!names)
+      return "";
+    for (var i = 0; i < names.length; i++) {
+      var path = fashionFor(names[i]);
+      if (path !== "")
+        return path;
+    }
+    return "";
+  }
+
   function iconExists(iconName) {
     if (!iconName || iconName.length === 0)
       return false;

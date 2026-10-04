@@ -35,6 +35,9 @@ Item {
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property string displayMode: widgetSettings.displayMode !== undefined ? widgetSettings.displayMode : widgetMetadata.displayMode
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property string textColorKey: widgetSettings.textColor !== undefined ? widgetSettings.textColor : widgetMetadata.textColor
@@ -86,14 +89,16 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: !BluetoothService.enabled ? "bluetooth-off" : ((BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0) ? "bluetooth-connected" : "bluetooth")
+    dockPresentation: root.dockPresentation
     iconSource: {
-      if (!root.efficientMode)
+      var resolve = root.fashionMode ? ThemeIcons.fashionForAny : ThemeIcons.symbolicForAny;
+      if (!root.efficientMode && !root.fashionMode)
         return "";
       if (!BluetoothService.enabled)
-        return ThemeIcons.symbolicFor("bluetooth-disabled");
+        return resolve(["bluetooth-disabled"]);
       if (BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0)
-        return ThemeIcons.symbolicForAny(["bluetooth-paired", "bluetooth-active"]);
-      return ThemeIcons.symbolicFor("bluetooth-active");
+        return resolve(["bluetooth-paired", "bluetooth-active"]);
+      return resolve(["bluetooth-active"]);
     }
     text: {
       if (BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0) {

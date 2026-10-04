@@ -61,9 +61,19 @@ Item {
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
   readonly property bool density: Settings.data.bar.density
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
-  // DDE efficient: 16 px tray icons in 24 px cells with 10 px spacing
-  readonly property int iconSize: efficientMode ? 16 : Style.toOdd(capsuleHeight * 0.65)
-  readonly property int cellSize: efficientMode ? 24 : capsuleHeight
+  // "fashion" = DDE fashion dock presentation: collapsible pill tray —
+  // the second permitted pill usage (gxde-dock fashiontraycontrolwidget.cpp:
+  // radius-10 pill, expanded = dark, collapsed = white @0.5 with an arrow;
+  // 2 px splitters between groups, tray spacing 10 px).
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  property bool trayExpanded: true
+  // DDE efficient: 16 px tray icons in 24 px cells with 10 px spacing;
+  // fashion: 16 px icons with 10 px spacing on a slim dark pill
+  readonly property int iconSize: (efficientMode || fashionMode) ? 16 : Style.toOdd(capsuleHeight * 0.65)
+  readonly property int cellSize: efficientMode ? 24 : (fashionMode ? 16 : capsuleHeight)
+  readonly property int fashionPillHeight: Math.max(24, Math.round(Style.dockItemThickness * 0.66))
+  readonly property var fashionItems: filteredItems.concat(dropdownItems)
 
   property var blacklist: widgetSettings.blacklist || widgetMetadata.blacklist || [] // Read from settings
   property var pinned: widgetSettings.pinned || widgetMetadata.pinned || [] // Pinned items (shown inline)
@@ -299,14 +309,30 @@ Item {
   readonly property real capsuleWidth: isVertical ? capsuleHeight : Math.round(trayFlow.implicitWidth + capsulePadding * 2)
   readonly property real capsuleContentHeight: isVertical ? Math.round(trayFlow.implicitHeight + capsulePadding * 2) : capsuleHeight
 
-  implicitWidth: isVertical ? barHeight : Math.round(trayFlow.implicitWidth + capsulePadding * 2)
-  implicitHeight: isVertical ? Math.round(trayFlow.implicitHeight + capsulePadding * 2) : barHeight
+  function _fashionLength() {
+    if (!trayExpanded)
+      return Math.round(isVertical ? fashionCollapser.height : fashionCollapser.width);
+    const pillLen = isVertical ? fashionExpandedPill.height : fashionExpandedPill.width;
+    const colLen = isVertical ? fashionCollapser.height : fashionCollapser.width;
+    return Math.round(pillLen + 6 + colLen);
+  }
+  implicitWidth: {
+    if (fashionMode)
+      return isVertical ? Style.dockItemThickness : _fashionLength();
+    return isVertical ? barHeight : Math.round(trayFlow.implicitWidth + capsulePadding * 2);
+  }
+  implicitHeight: {
+    if (fashionMode)
+      return isVertical ? _fashionLength() : Style.dockItemThickness;
+    return isVertical ? Math.round(trayFlow.implicitHeight + capsulePadding * 2) : barHeight;
+  }
   visible: filteredItems.length > 0 || dropdownItems.length > 0
   opacity: (filteredItems.length > 0 || dropdownItems.length > 0) ? 1.0 : 0.0
 
   // Visual capsule centered in parent (DDE efficient: transparent, square)
   Rectangle {
     id: visualCapsule
+    visible: !root.fashionMode
     width: capsuleWidth
     height: capsuleContentHeight
     x: Style.pixelAlignCenter(parent.width, width)
@@ -340,6 +366,7 @@ Item {
 
   Flow {
     id: trayFlow
+    visible: !root.fashionMode
     spacing: efficientMode ? 10 : 0
     flow: isVertical ? Flow.TopToBottom : Flow.LeftToRight
 
@@ -388,21 +415,38 @@ Item {
     Repeater {
       id: repeater
       model: root.filteredItems
+      delegate: trayItemDelegate
+    }
 
-      delegate: Item {
+    // Shared tray-item delegate — used by the classic/efficient flow and the
+    // fashion expanded pill.
+    Component {
+      id: trayItemDelegate
+
+      Item {
         id: trayDelegate
         required property var modelData
         required property int index
-        width: isVertical ? barHeight : cellSize
-        height: isVertical ? cellSize : barHeight
+        width: isVertical ? (root.fashionMode ? root.fashionPillHeight : barHeight) : cellSize
+        height: isVertical ? cellSize : (root.fashionMode ? root.fashionPillHeight : barHeight)
         visible: modelData
         readonly property bool isHovered: root.hoveredItemIndex === index
+
+        // 2 px group splitter before the first unpinned item (fashion pill)
+        Rectangle {
+          visible: root.fashionMode && index === root.filteredItems.length && root.filteredItems.length > 0 && root.dropdownItems.length > 0
+          width: root.isVertical ? parent.width - 8 : 2
+          height: root.isVertical ? 2 : parent.height - 8
+          x: root.isVertical ? 4 : -6
+          y: root.isVertical ? -6 : 4
+          color: Color.overlay("hover")
+        }
 
         // Tooltip anchor representing the visual area (for proper tooltip positioning)
         Item {
           id: tooltipAnchor
-          width: capsuleHeight
-          height: capsuleHeight
+          width: root.fashionMode ? iconSize : capsuleHeight
+          height: root.fashionMode ? iconSize : capsuleHeight
           x: Style.pixelAlignCenter(parent.width, width)
           y: Style.pixelAlignCenter(parent.height, height)
         }
@@ -434,7 +478,7 @@ Item {
           }
           opacity: status === Image.Ready ? 1 : 0
 
-          layer.enabled: widgetSettings.colorizeIcons !== false && !root.efficientMode
+          layer.enabled: widgetSettings.colorizeIcons !== false && !root.efficientMode && !root.fashionMode
           layer.effect: ShaderEffect {
             property color targetColor: Settings.data.colorSchemes.darkMode ? Color.mOnSurface : Color.mSurfaceVariant
             property real colorizeMode: 1.0
@@ -445,7 +489,7 @@ Item {
 
         Rectangle {
           id: hoverIndicator
-          visible: !root.efficientMode
+          visible: !root.efficientMode && !root.fashionMode
           anchors.bottom: trayIcon.bottom
           anchors.bottomMargin: -2
           anchors.horizontalCenter: trayIcon.horizontalCenter
@@ -581,4 +625,67 @@ Item {
       onRightClicked: PanelService.showContextMenu(chevronContextMenu, this, screen)
     }
   } // closes Flow
+
+  // ---- Fashion presentation (gxde-dock fashiontraycontrolwidget.cpp:71-110) ----
+  // The collapsible tray is a radius-10 pill — the second permitted pill
+  // usage in the shell. Expanded: dark pill (#282828 @0.5) with 16 px icons
+  // at 10 px spacing and 2 px overlay("hover") splitters between groups;
+  // collapsed: white @0.5 pill with an arrow glyph.
+  Rectangle {
+    id: fashionExpandedPill
+    visible: root.fashionMode && root.trayExpanded
+    x: 0
+    y: root.isVertical ? 0 : Math.round((Style.dockItemThickness - height) / 2)
+    width: root.isVertical ? root.fashionPillHeight : Math.round(fashionIconsFlow.implicitWidth + 12)
+    height: root.isVertical ? Math.round(fashionIconsFlow.implicitHeight + 12) : root.fashionPillHeight
+    radius: 10
+    color: Qt.rgba(0.157, 0.157, 0.157, 0.5)
+
+    Flow {
+      id: fashionIconsFlow
+      anchors.centerIn: parent
+      spacing: 10
+      flow: root.isVertical ? Flow.TopToBottom : Flow.LeftToRight
+
+      Repeater {
+        model: root.fashionItems
+        delegate: trayItemDelegate
+      }
+    }
+  }
+
+  // Collapse/expand toggle pill
+  Rectangle {
+    id: fashionCollapser
+    visible: root.fashionMode
+    x: root.isVertical ? Math.round((Style.dockItemThickness - width) / 2) : (root.trayExpanded ? fashionExpandedPill.width + 6 : 0)
+    y: root.isVertical ? (root.trayExpanded ? fashionExpandedPill.height + 6 : 0) : Math.round((Style.dockItemThickness - height) / 2)
+    width: root.isVertical ? root.fashionPillHeight : 20
+    height: root.isVertical ? 20 : root.fashionPillHeight
+    radius: 10
+    color: collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(1, 1, 1, 0.3) : Qt.rgba(1, 1, 1, 0.6)) : Qt.rgba(1, 1, 1, 0.5)
+
+    NIcon {
+      anchors.centerIn: parent
+      icon: {
+        if (root.isVertical)
+          return root.trayExpanded ? "chevron-up" : "chevron-down";
+        return root.trayExpanded ? "chevron-left" : "chevron-right";
+      }
+      pointSize: Style.fontSizeL
+      applyUiScale: false
+      color: Qt.rgba(0, 0, 0, 0.7)
+    }
+
+    MouseArea {
+      id: collapserArea
+      anchors.fill: parent
+      hoverEnabled: true
+      cursorShape: Qt.PointingHandCursor
+      onClicked: {
+        TooltipService.hideImmediately();
+        root.trayExpanded = !root.trayExpanded;
+      }
+    }
+  }
 }

@@ -116,7 +116,7 @@ battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
 settings-osd
-wallpaper dock lockscreen"
+wallpaper dock dock-menu dock-submenu lockscreen"
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -216,6 +216,8 @@ run_scene() {
     wallpaper)            call wallpaper set "$REPO/Assets/Wallpaper/noctalia.png" 2
                           shot wallpaper ;;
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
+    dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
+    dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
     lockscreen)           call lockScreen lock 2.5; shot lockscreen ;;
     *)                    echo "unknown scene: $1" ;;
   esac

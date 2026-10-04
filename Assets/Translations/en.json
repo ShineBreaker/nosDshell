@@ -2266,5 +2266,25 @@
       "poor": "Poor",
       "weak": "Weak"
     }
+  },
+  "dock-menu": {
+    "mode": "Mode",
+    "mode-fashion": "Fashion mode",
+    "mode-efficient": "Efficient mode",
+    "location": "Location",
+    "location-top": "Top",
+    "location-bottom": "Bottom",
+    "location-left": "Left",
+    "location-right": "Right",
+    "size": "Size",
+    "size-large": "Large",
+    "size-medium": "Medium",
+    "size-small": "Small",
+    "state": "Status",
+    "state-keep-showing": "Keep shown",
+    "state-keep-hidden": "Keep hidden",
+    "state-smart-hide": "Smart hide",
+    "plugins": "Plugins",
+    "settings": "Dock settings"
   }
 }

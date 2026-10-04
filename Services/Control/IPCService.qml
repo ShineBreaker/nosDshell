@@ -7,6 +7,7 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 
 import qs.Commons
+import qs.Modules.Dock
 import qs.Modules.Panels.Settings
 import qs.Services.Compositor
 import qs.Services.Hardware
@@ -599,6 +600,21 @@ Singleton {
     target: "dock"
     function toggle() {
       Settings.data.dock.enabled = !Settings.data.dock.enabled;
+    }
+
+    // Open the light dock settings menu centered on the dock's screen edge.
+    // Used for verification screenshots and scripted menu checks.
+    function showSettingsMenu() {
+      root.screenDetector.withCurrentScreen(screen => {
+                                              DockSettingsMenu.openAtDockCenter(screen);
+                                            });
+    }
+
+    // Open the settings menu and expand its first submenu (verification).
+    function showSettingsSubmenu() {
+      root.screenDetector.withCurrentScreen(screen => {
+                                              DockSettingsMenu.openSubmenuPreview(screen);
+                                            });
     }
   }
 

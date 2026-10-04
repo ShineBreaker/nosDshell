@@ -34,18 +34,23 @@ NIconButton {
 
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
-  colorBg: Settings.data.nightLight.enabled && !efficientMode ? Color.mPrimary : Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : (Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
+  customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
+  colorBg: fashionMode ? "transparent" : (Settings.data.nightLight.enabled && !efficientMode ? Color.mPrimary : Style.capsuleColor)
+  colorFg: onShellSurface ? Color.onShell : (Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
   icon: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? "nightlight-forced" : "nightlight-on") : "nightlight-off"
-  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["night-light-enabled", "night-light", "redshift-status-on"]) : ""
-  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(["night-light-enabled", "night-light", "redshift-status-on"]) : (efficientMode ? ThemeIcons.symbolicForAny(["night-light-enabled", "night-light", "redshift-status-on"]) : "")
+  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
+  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? I18n.tr("common.night-light") : I18n.tr("common.night-light")) : I18n.tr("common.night-light")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   onClicked: {

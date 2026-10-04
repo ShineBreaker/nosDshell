@@ -28,21 +28,26 @@ NIconButton {
 
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
   icon: "dark-mode"
-  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["dark-mode", "preferences-desktop-theme"]) : ""
-  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(["dark-mode", "preferences-desktop-theme"]) : (efficientMode ? ThemeIcons.symbolicForAny(["dark-mode", "preferences-desktop-theme"]) : "")
+  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
+  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.colorSchemes.darkMode ? I18n.tr("tooltips.switch-to-light-mode") : I18n.tr("tooltips.switch-to-dark-mode")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
-  colorBg: Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
+  customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
+  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   onClicked: Settings.data.colorSchemes.darkMode = !Settings.data.colorSchemes.darkMode
 
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
   NPopupContextMenu {
     id: contextMenu

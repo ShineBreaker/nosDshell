@@ -399,7 +399,7 @@
     "launcherIconColor": "none",
     "pinnedStatic": false,
     "inactiveIndicators": false,
-    "groupApps": false,
+    "groupApps": true,
     "groupContextMenuMode": "extended",
     "groupClickAction": "cycle",
     "groupIndicatorStyle": "dots",

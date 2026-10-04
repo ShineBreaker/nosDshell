@@ -33,10 +33,15 @@ NIconButton {
 
   readonly property color iconColor: Color.resolveColorKey(valueIconColor)
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
   icon: "settings"
-  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["preferences-system", "applications-system"]) : ""
-  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(["preferences-system", "applications-system"]) : (efficientMode ? ThemeIcons.symbolicForAny(["preferences-system", "applications-system"]) : "")
+  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
+  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
     if (PanelService.getPanel("settingsPanel", screen)?.isPanelOpen) {
       return "";
@@ -45,13 +50,13 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
-  colorBg: Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : iconColor
-  colorBgHover: efficientMode ? Color.overlay("hover") : Color.mHover
-  colorFgHover: efficientMode ? Color.onShell : Color.mOnHover
+  customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
+  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorFg: onShellSurface ? Color.onShell : iconColor
+  colorBgHover: onShellSurface ? Color.overlay("hover") : Color.mHover
+  colorFgHover: onShellSurface ? Color.onShell : Color.mOnHover
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
 

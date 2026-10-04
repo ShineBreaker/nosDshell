@@ -11,6 +11,11 @@ Item {
   required property var widgetScreen
   required property var widgetProps
 
+  // "fashion" = loaded inside the DDE fashion dock; the widget is sized as a
+  // dock item (itemThickness on the cross axis) instead of a bar widget
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+
   // Extract section info from widgetProps
   readonly property string section: widgetProps ? (widgetProps.section || "") : ""
   readonly property int sectionIndex: widgetProps ? (widgetProps.sectionWidgetIndex || 0) : 0
@@ -37,8 +42,9 @@ Item {
   // Request full bar dimension from layout to extend click areas above/below widgets
   // For horizontal bars: full bar height, widget's content width
   // For vertical bars: full bar width, widget's content height
-  implicitWidth: isVerticalBar ? barHeight : getImplicitSize(loader.item, "implicitWidth")
-  implicitHeight: isVerticalBar ? getImplicitSize(loader.item, "implicitHeight") : barHeight
+  // Fashion dock: itemThickness on the cross axis, widget content on the long axis
+  implicitWidth: isVerticalBar ? (fashionMode ? Style.dockItemThickness : barHeight) : getImplicitSize(loader.item, "implicitWidth")
+  implicitHeight: isVerticalBar ? getImplicitSize(loader.item, "implicitHeight") : (fashionMode ? Style.dockItemThickness : barHeight)
 
   // Remove layout space left by hidden widgets
   visible: loader.item ? ((loader.item.opacity > 0.0) || (loader.item.hasOwnProperty("hideMode") && loader.item.hideMode === "transparent")) : false
@@ -81,13 +87,17 @@ Item {
   // but still load correctly — and plugins that DO define them (e.g. for unique
   // SpectrumService keys with multiple instances) get correct values from the start.
   function _initialProps() {
-    return {
+    var props = {
       "screen": widgetScreen,
       "widgetId": widgetProps.widgetId || "",
       "section": widgetProps.section || "",
       "sectionWidgetIndex": widgetProps.sectionWidgetIndex || 0,
       "sectionWidgetsCount": widgetProps.sectionWidgetsCount || 0
     };
+    // Only inject when set — bar widgets are not required to declare it
+    if (root.dockPresentation !== "")
+      props["dockPresentation"] = root.dockPresentation;
+    return props;
   }
 
   // Core widget URLs: file names match widget IDs exactly
@@ -144,14 +154,26 @@ Item {
       // Extend widget to fill full bar dimension for extended click areas
       // For horizontal bars: widget fills bar height (content width preserved)
       // For vertical bars: widget fills bar width (content height preserved)
-      if (root.isVerticalBar) {
+      // Fashion dock widgets size themselves (square dock items); no stretch
+      if (root.isVerticalBar && !root.fashionMode) {
         item.width = Qt.binding(function () {
           return root.barHeight;
         });
-      } else {
+      } else if (!root.fashionMode) {
         item.height = Qt.binding(function () {
           return root.barHeight;
         });
+      } else {
+        // Fashion: cross axis = dock item thickness
+        if (root.isVerticalBar) {
+          item.width = Qt.binding(function () {
+            return Style.dockItemThickness;
+          });
+        } else {
+          item.height = Qt.binding(function () {
+            return Style.dockItemThickness;
+          });
+        }
       }
 
       // Apply remaining widget properties (screen is already set as initial prop)

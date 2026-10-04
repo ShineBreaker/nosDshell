@@ -350,4 +350,10 @@ Singleton {
   readonly property int dockIconSmall: 30
   readonly property int dockIconMedium: 36
   readonly property int dockIconLarge: 48
+
+  // DDE fashion dock item metrics (gxde-dock appitem.cpp: thickness = iconSize*1.5,
+  // length = thickness*1.1, icon = 0.8*min(w,h))
+  readonly property int dockItemThickness: Math.round(Settings.data.dock.iconSize * 1.5)
+  readonly property int dockItemLength: Math.round(dockItemThickness * 1.1)
+  readonly property int dockIconContent: Math.round(Math.min(dockItemThickness, dockItemLength) * 0.8)
 }

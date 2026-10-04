@@ -2266,5 +2266,25 @@
       "poor": "差",
       "weak": "弱"
     }
+  },
+  "dock-menu": {
+    "mode": "模式",
+    "mode-fashion": "时尚模式",
+    "mode-efficient": "高效模式",
+    "location": "位置",
+    "location-top": "上",
+    "location-bottom": "下",
+    "location-left": "左",
+    "location-right": "右",
+    "size": "大小",
+    "size-large": "大",
+    "size-medium": "中",
+    "size-small": "小",
+    "state": "状态",
+    "state-keep-showing": "一直显示",
+    "state-keep-hidden": "一直隐藏",
+    "state-smart-hide": "智能隐藏",
+    "plugins": "插件",
+    "settings": "Dock 设置"
   }
 }

@@ -23,15 +23,19 @@ Item {
   property bool oppositeDirection: false
   property string iconPosition: ""
   property bool hovered: false
+  // "fashion" = DDE fashion dock presentation: square item, icon only at 0.8,
+  // full-color themed icon (symbolic variants are tinted onShell)
+  property string dockPresentation: ""
   property color customBackgroundColor: "transparent"
   property color customTextIconColor: "transparent"
   property color customIconColor: "transparent"
   property color customTextColor: "transparent"
 
-  readonly property bool collapseToIcon: forceClose && !forceOpen
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool collapseToIcon: fashionMode || (forceClose && !forceOpen)
 
   // Effective shown state (true if hovered/animated open or forced)
-  readonly property bool revealed: !forceClose && (forceOpen || showPill)
+  readonly property bool revealed: !fashionMode && !forceClose && (forceOpen || showPill)
   readonly property bool hasIcon: root.icon !== "" || root.iconSource !== ""
 
   signal shown
@@ -47,7 +51,7 @@ Item {
   property bool showPill: false
   property bool shouldAnimateHide: false
 
-  readonly property int pillHeight: Style.getCapsuleHeightForScreen(screen?.name)
+  readonly property int pillHeight: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
   readonly property real barFontSize: Style.getBarFontSizeForScreen(screen?.name)
   readonly property int pillPaddingHorizontal: Math.round(pillHeight * 0.2)
   readonly property int pillOverlap: Math.round(pillHeight * 0.5)
@@ -57,13 +61,14 @@ Item {
 
   // Always prioritize hover color, then the custom one and finally the fallback color.
   // Efficient (DDE taskbar) hover: overlay("hover") fill, onShell content
-  readonly property color bgColor: hovered ? (efficientMode ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : Style.capsuleColor
-  readonly property color fgColor: efficientMode ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
-  readonly property color iconFgColor: efficientMode ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
-  readonly property color textFgColor: efficientMode ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property bool onShellSurface: efficientMode || fashionMode
+  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? "transparent" : Style.capsuleColor)
+  readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color iconFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color textFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
 
-  // DDE status icons are 16 px
-  readonly property real iconSize: efficientMode ? 16 : Style.toOdd(pillHeight * 0.48)
+  // DDE status icons are 16 px (efficient); fashion plugins render at 0.8 of the item
+  readonly property real iconSize: efficientMode ? 16 : (fashionMode ? Math.round(pillHeight * 0.8) : Style.toOdd(pillHeight * 0.48))
 
   // Content width calculation (for implicit sizing)
   readonly property real contentWidth: {
@@ -204,8 +209,9 @@ Item {
       y: (iconCircle.height - height) / 2
 
       // DDE plugin icons are monochrome white — recolor themed *-symbolic
-      // icons to the on-shell foreground
-      layer.enabled: root.efficientMode && root.iconSource !== ""
+      // icons to the on-shell foreground. Fashion shows full-color themed
+      // icons and only tints when the theme could only provide a symbolic one.
+      layer.enabled: root.iconSource !== "" && (root.efficientMode || (root.fashionMode && root.iconSource.indexOf("-symbolic") >= 0))
       layer.effect: ShaderEffect {
         property color targetColor: Color.onShell
         property real colorizeMode: 3.0
@@ -311,7 +317,7 @@ Item {
     onEntered: {
       hovered = true;
       root.entered();
-      TooltipService.show(root, root.tooltipText, BarService.getTooltipDirection(root.screen?.name), root.efficientMode ? Style.tooltipDelayDock : ((forceOpen || forceClose) ? Style.tooltipDelay : Style.tooltipDelayLong));
+      TooltipService.show(root, root.tooltipText, BarService.getTooltipDirection(root.screen?.name), root.onShellSurface ? Style.tooltipDelayDock : ((forceOpen || forceClose) ? Style.tooltipDelay : Style.tooltipDelayLong));
       if (forceClose) {
         return;
       }

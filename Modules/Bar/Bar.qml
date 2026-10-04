@@ -6,6 +6,7 @@ import Quickshell.Services.UPower
 import Quickshell.Wayland
 import qs.Commons
 import qs.Modules.Bar.Extras
+import qs.Modules.Dock
 import qs.Modules.Notification
 import qs.Modules.Panels.Settings
 import qs.Services.Compositor
@@ -429,7 +430,10 @@ Item {
                        if (mouse.button === Qt.RightButton) {
                          if (bar.isPointOverWidget(mouse.x, mouse.y))
                          return;
-                         bar.handleEmptyBarClick(bar.barRightClickAction, Settings.data.bar.rightClickFollowMouse, Settings.data.bar.rightClickCommand, mouse);
+                         // DDE: right-click on empty taskbar space opens the
+                         // light dock settings menu (widget-level right-click
+                         // actions are unchanged).
+                         DockSettingsMenu.openAtItemPoint(screen, bar, mouse.x, mouse.y);
                          mouse.accepted = true;
                          return;
                        }

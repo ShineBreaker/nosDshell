@@ -22,6 +22,9 @@ Item {
   property bool oppositeDirection: false
   property bool hovered: false
   property bool rotateText: false
+  // "fashion" = DDE fashion dock presentation: square item, icon only at 0.8,
+  // full-color themed icon (symbolic variants are tinted onShell)
+  property string dockPresentation: ""
   property color customBackgroundColor: "transparent"
   property color customTextIconColor: "transparent"
   property color customIconColor: "transparent"
@@ -69,6 +72,7 @@ Item {
         oppositeDirection: root.oppositeDirection
         hovered: root.hovered
         rotateText: root.rotateText
+        dockPresentation: root.dockPresentation
         customBackgroundColor: root.customBackgroundColor
         customTextIconColor: root.customTextIconColor
         customIconColor: root.customIconColor
@@ -99,6 +103,7 @@ Item {
         forceClose: root.forceClose
         oppositeDirection: root.oppositeDirection
         hovered: root.hovered
+        dockPresentation: root.dockPresentation
         customBackgroundColor: root.customBackgroundColor
         customTextIconColor: root.customTextIconColor
         customIconColor: root.customIconColor

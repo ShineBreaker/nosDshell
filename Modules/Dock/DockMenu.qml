@@ -49,7 +49,7 @@ PopupWindow {
   readonly property bool splitExtendedLayout: separatorIndex >= 0
   readonly property var scrollItems: splitExtendedLayout ? root.items.slice(0, separatorIndex) : root.items
   readonly property var fixedItems: splitExtendedLayout ? root.items.slice(separatorIndex + 1) : []
-  readonly property real menuInnerHeight: Math.max(0, implicitHeight - Style.margin2M)
+  readonly property real menuInnerHeight: Math.max(0, implicitHeight - Style.margin2M - (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0))
   readonly property real fixedActionsHeight: listHeight(fixedItems)
   readonly property real separatorBlockHeight: splitExtendedLayout ? separatorCompactHeight : 0
   readonly property real scrollAreaHeight: splitExtendedLayout ? Math.max(0, menuInnerHeight - fixedActionsHeight - separatorBlockHeight) : menuInnerHeight
@@ -61,8 +61,8 @@ PopupWindow {
     return listHeight(root.items);
   }
 
-  implicitWidth: menuContentWidth + Style.margin2M
-  implicitHeight: Math.min(menuBodyHeight + Style.margin2M, menuMaxHeight)
+  implicitWidth: menuContentWidth + Style.margin2M + (arrowEdge === "left" || arrowEdge === "right" ? Style.popupArrowHeight : 0)
+  implicitHeight: Math.min(menuBodyHeight + Style.margin2M, menuMaxHeight) + (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
   color: "transparent"
   visible: false
 
@@ -360,16 +360,30 @@ PopupWindow {
   // Dock position for context menu placement
   property string dockPosition: "bottom"
 
+  // Arrow on the menu edge facing the dock item (DESIGN §3.3 arrowed dark menu)
+  readonly property string arrowEdge: dockPosition === "top" ? "top" : dockPosition === "bottom" ? "bottom" : dockPosition === "left" ? "left" : "right"
+  // Arrow tip points at the item center along the arrow edge
+  readonly property real _arrowPos: {
+    if (!anchorItem)
+      return -1;
+    if (arrowEdge === "top" || arrowEdge === "bottom")
+      return anchorItem.width / 2 - anchor.rect.x;
+    if (arrowEdge === "left" || arrowEdge === "right")
+      return anchorItem.height / 2 - anchor.rect.y;
+    return -1;
+  }
+
   anchor.item: anchorItem
-  // Position menu on opposite side of dock with comfortable spacing
+  // Position menu on the opposite side of the dock, arrow tip Style.popupGap
+  // (2 px) from the item edge
   anchor.rect.x: {
     if (!anchorItem)
       return 0;
     switch (dockPosition) {
     case "left":
-      return anchorItem.width + Style.marginL; // Open to right of dock
+      return anchorItem.width + Style.popupGap; // Open to right of dock
     case "right":
-      return -implicitWidth - Style.marginL; // Open to left of dock
+      return -implicitWidth - Style.popupGap; // Open to left of dock
     default:
       return (anchorItem.width - implicitWidth) / 2; // Center horizontally
     }
@@ -379,14 +393,14 @@ PopupWindow {
       return 0;
     switch (dockPosition) {
     case "top":
-      return anchorItem.height + Style.marginL; // Open below dock
+      return anchorItem.height + Style.popupGap; // Open below dock
     case "bottom":
-      return -implicitHeight - Style.marginL; // Open above dock (default)
+      return -implicitHeight - Style.popupGap; // Open above dock (default)
     case "left":
     case "right":
       return (anchorItem.height - implicitHeight) / 2; // Center vertically
     default:
-      return -implicitHeight - Style.marginL;
+      return -implicitHeight - Style.popupGap;
     }
   }
 
@@ -584,6 +598,8 @@ PopupWindow {
   NArrowRect {
     id: menuBody
     anchors.fill: parent
+    arrowEdge: root.arrowEdge
+    arrowPosition: root._arrowPos
     fillColor: Color.popupShell
     radius: Style.radiusPopup
     borderColor: Color.borderShell
@@ -621,9 +637,9 @@ PopupWindow {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
-      anchors.leftMargin: Style.marginM
-      anchors.rightMargin: Style.marginM
-      anchors.topMargin: Style.marginM
+      anchors.leftMargin: Style.marginM + (root.arrowEdge === "left" ? Style.popupArrowHeight : 0)
+      anchors.rightMargin: Style.marginM + (root.arrowEdge === "right" ? Style.popupArrowHeight : 0)
+      anchors.topMargin: Style.marginM + (root.arrowEdge === "top" ? Style.popupArrowHeight : 0)
       height: root.scrollAreaHeight
       clip: true
       contentWidth: width
@@ -761,10 +777,10 @@ PopupWindow {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.bottom: parent.bottom
-      anchors.leftMargin: Style.marginM
-      anchors.rightMargin: Style.marginM
+      anchors.leftMargin: Style.marginM + (root.arrowEdge === "left" ? Style.popupArrowHeight : 0)
+      anchors.rightMargin: Style.marginM + (root.arrowEdge === "right" ? Style.popupArrowHeight : 0)
       anchors.topMargin: Style.marginS
-      anchors.bottomMargin: Style.marginM
+      anchors.bottomMargin: Style.marginM + (root.arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
       anchors.top: separator.bottom
       spacing: 0
 

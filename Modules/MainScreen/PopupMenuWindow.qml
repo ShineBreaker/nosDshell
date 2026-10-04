@@ -102,8 +102,10 @@ PanelWindow {
 
   // Show a dynamic context menu with model and callback at screen coordinates
   // Used for items in other window layers (e.g., desktop widgets in bottom layer)
-  function showDynamicContextMenu(model, screenX, screenY, callback) {
+  // variant: "dark" (default) or "light" (DDE light menu, e.g. the dock settings menu)
+  function showDynamicContextMenu(model, screenX, screenY, callback, variant) {
     dynamicMenu.model = model;
+    dynamicMenu.variant = variant || "dark";
     dynamicMenuCallback = callback;
 
     // Use the anchor point item for positioning at absolute coordinates
@@ -114,6 +116,7 @@ PanelWindow {
     contentItem = dynamicMenu;
     dynamicMenu.visible = true;
     open();
+    return dynamicMenu;
   }
 
   // Invisible anchor point for dynamic menu positioning
@@ -142,6 +145,7 @@ PanelWindow {
     }
     // Hide dynamic menu
     dynamicMenu.visible = false;
+    dynamicMenu.variant = "dark";
     dynamicMenuCallback = null;
     // Restore TrayMenu as default content
     if (trayMenuLoader.item) {

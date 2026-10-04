@@ -22,20 +22,25 @@ NIconButton {
 
   readonly property string screenName: screen ? screen.name : ""
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
   readonly property string trashFilesDir: (Quickshell.env("XDG_DATA_HOME") || (Quickshell.env("HOME") + "/.local/share")) + "/Trash/files"
   property bool isFull: false
 
-  baseSize: Style.getCapsuleHeightForScreen(screenName)
+  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screenName)
   applyUiScale: false
-  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
+  customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: isFull ? "trash-x" : "trash"
-  iconSource: efficientMode ? ThemeIcons.symbolicFor(isFull ? "user-trash-full" : "user-trash") : ""
-  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
-  colorBg: Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : Color.mOnSurface
+  iconSource: fashionMode ? ThemeIcons.fashionFor(isFull ? "user-trash-full" : "user-trash") : (efficientMode ? ThemeIcons.symbolicFor(isFull ? "user-trash-full" : "user-trash") : "")
+  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
+  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
+  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorFg: onShellSurface ? Color.onShell : Color.mOnSurface
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
   tooltipText: I18n.tr("tooltips.trash")
   tooltipDirection: BarService.getTooltipDirection(screenName)
   onClicked: root.openTrash()

@@ -439,7 +439,9 @@ Singleton {
                                           "field": 0.15,
                                           "strong": 0.20,
                                           "checked": 0.30,
-                                          "press": 0.50
+                                          "press": 0.50,
+                                          // DDE fashion running-indicator bar (white @0.25, gxde-dock indicator.png)
+                                          "indicator": 0.25
                                         })
 
   property var _overlayWarned: ({})

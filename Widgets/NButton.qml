@@ -18,6 +18,8 @@ Item {
   property real fontSize: Style.fontSizeM
   property int fontWeight: Style.fontWeightMedium
   property real iconSize: Style.fontSizeL
+  // Kept for API compatibility: DDE has no outlined variant, so `outlined`
+  // renders exactly like the normal RoundedButton.
   property bool outlined: false
   property int horizontalAlignment: Qt.AlignHCenter
   property real buttonRadius: Style.radiusPill
@@ -38,7 +40,7 @@ Item {
     if (!root.enabled) {
       return Color.onShellTertiary;
     }
-    if (root.pressed && !root.outlined) {
+    if (root.pressed) {
       return Color.mOnPrimary;
     }
     if (root.isPrimary) {
@@ -46,9 +48,6 @@ Item {
     }
     if (root.hovered) {
       return root.textHoverColor;
-    }
-    if (root.outlined) {
-      return root.backgroundColor;
     }
     return root.textColor;
   }
@@ -70,24 +69,18 @@ Item {
     radius: root.buttonRadius
     color: {
       if (!root.enabled)
-        return root.outlined ? "transparent" : Color.overlay("idle");
-      if (root.pressed && !root.outlined)
+        return Color.overlay("idle");
+      if (root.pressed)
         return Color.accent;
       if (root.hovered)
         return root.hoverColor;
       if (root.isPrimary)
         return Color.overlay("strong");
-      return root.outlined ? "transparent" : root.backgroundColor;
+      return root.backgroundColor;
     }
 
-    border.width: root.outlined ? Style.borderS : 0
-    border.color: {
-      if (!root.enabled)
-        return Color.mOutline;
-      if (root.hovered)
-        return root.hoverColor;
-      return root.outlined ? root.backgroundColor : "transparent";
-    }
+    border.width: 0
+    border.color: root.hovered ? root.hoverColor : "transparent"
 
     Behavior on color {
       enabled: !Color.isTransitioning

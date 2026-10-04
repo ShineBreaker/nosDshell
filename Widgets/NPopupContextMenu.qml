@@ -35,6 +35,13 @@ PopupWindow {
   property string arrowEdge: ""
   property real arrowPosition: -1 // -1 = centered
 
+  // Submenu support: model entries may carry hasSubmenu: true + submenu: [...].
+  // Submenus are nested PopupWindows anchored to the parent row (same pattern
+  // as Modules/Bar/Extras/TrayMenu.qml).
+  property bool isSubmenu: false
+  property real submenuAnchorX: 0
+  property real submenuAnchorY: 0
+
   readonly property bool _light: variant === "light"
   readonly property color _bgColor: _light ? Qt.rgba(1, 1, 1, 0.9) : Color.popupShell
   readonly property color _borderColor: _light ? Color.borderLight : Color.borderShell
@@ -94,11 +101,51 @@ PopupWindow {
     return item && !_isSeparator(item) && item.visible !== false && item.enabled !== false;
   }
 
+  function _hasSubmenu(item) {
+    return item && item.hasSubmenu === true && item.submenu !== undefined && item.submenu.length > 0;
+  }
+
   function _activate(index) {
     if (_isActivatable(index)) {
       var item = model[index];
+      if (_hasSubmenu(item)) {
+        var row = repeater.itemAt(index);
+        if (row && row._openSubmenu)
+          row._openSubmenu();
+        return;
+      }
       root.triggered(item.action || item.key || index.toString(), item);
     }
+  }
+
+  function _closeSubmenusExcept(row) {
+    for (var i = 0; i < columnLayout.children.length; i++) {
+      var child = columnLayout.children[i];
+      if (child !== row && child.subMenu) {
+        child.subMenu.close();
+        child.subMenu.destroy();
+        child.subMenu = null;
+      }
+    }
+  }
+
+  function _closeSubmenus() {
+    _closeSubmenusExcept(null);
+  }
+
+  function _hasOpenSubmenu() {
+    for (var i = 0; i < columnLayout.children.length; i++) {
+      if (columnLayout.children[i].subMenu)
+        return true;
+    }
+    return false;
+  }
+
+  // Programmatically open the submenu of row `index` (verification/testing).
+  function openSubmenuAt(index) {
+    var row = repeater.itemAt(index);
+    if (row && row.hasSubmenu && row._openSubmenu)
+      row._openSubmenu();
   }
 
   function calculateWidth() {
@@ -135,6 +182,21 @@ PopupWindow {
   anchor.item: anchorItem
 
   anchor.rect.x: {
+    // Submenus anchor beside the parent row, flipping left when they would clip
+    // the right screen edge (TrayMenu.qml pattern).
+    if (isSubmenu && anchorItem) {
+      var posInPopupX = anchorItem.mapToItem(null, 0, 0);
+      var parentWindowX = anchorItem.Window ? anchorItem.Window.window : null;
+      var windowXOnScreen = (parentWindowX && screen) ? (parentWindowX.x - screen.x) : 0;
+      var menuScreenX = windowXOnScreen + posInPopupX.x + submenuAnchorX;
+      if (screen && menuScreenX + implicitWidth > screen.width) {
+        return -implicitWidth + Style.marginS;
+      }
+      if (screen && menuScreenX < 0) {
+        return submenuAnchorX - menuScreenX;
+      }
+      return submenuAnchorX;
+    }
     if (anchorItem && screen) {
       const anchorGlobalPos = anchorItem.mapToItem(null, 0, 0);
 
@@ -175,6 +237,23 @@ PopupWindow {
     return 0;
   }
   anchor.rect.y: {
+    // Submenus align their top with the parent row, shifting up when they would
+    // clip the bottom screen edge.
+    if (isSubmenu && anchorItem) {
+      var posInPopupY = anchorItem.mapToItem(null, 0, 0);
+      var parentWindowY = anchorItem.Window ? anchorItem.Window.window : null;
+      var windowYOnScreen = (parentWindowY && screen) ? (parentWindowY.y - screen.y) : 0;
+      var menuScreenY = windowYOnScreen + posInPopupY.y + submenuAnchorY;
+      var screenHeight = screen ? screen.height : 0;
+      var overflowBottom = menuScreenY + implicitHeight - (screenHeight - Style.marginM);
+      if (screen && overflowBottom > 0) {
+        return submenuAnchorY - overflowBottom;
+      }
+      if (screen && menuScreenY < Style.marginM) {
+        return submenuAnchorY + (Style.marginM - menuScreenY);
+      }
+      return submenuAnchorY;
+    }
     if (anchorItem && screen) {
       // Check if using absolute positioning (small anchor point item)
       const isAbsolutePosition = anchorItem.width <= 1 && anchorItem.height <= 1;
@@ -277,7 +356,21 @@ PopupWindow {
     }
     Keys.onReturnPressed: root._activate(root.highlightIndex)
     Keys.onEnterPressed: root._activate(root.highlightIndex)
-    Keys.onEscapePressed: root.close()
+    Keys.onRightPressed: {
+      var row = repeater.itemAt(root.highlightIndex);
+      if (row && row.hasSubmenu && row._openSubmenu)
+        row._openSubmenu();
+    }
+    Keys.onLeftPressed: {
+      if (root.isSubmenu)
+        root.close();
+    }
+    Keys.onEscapePressed: {
+      if (root._hasOpenSubmenu())
+        root._closeSubmenus();
+      else
+        root.close();
+    }
   }
 
   NArrowRect {
@@ -333,7 +426,52 @@ PopupWindow {
 
           readonly property bool isSeparator: root._isSeparator(modelData)
           readonly property bool rowEnabled: modelData.enabled !== false
+          readonly property bool hasSubmenu: root._hasSubmenu(modelData)
           readonly property bool active: rowEnabled && (mouseArea.containsMouse || root.highlightIndex === index)
+          property var subMenu: null
+
+          // Open this row's submenu beside the parent menu. The child is a
+          // nested PopupWindow anchored to this row (TrayMenu.qml pattern).
+          function _openSubmenu() {
+            if (menuItem.subMenu || !menuItem.hasSubmenu)
+              return;
+            var sub = Qt.createComponent("NPopupContextMenu.qml").createObject(root, {
+                                                                               "isSubmenu": true,
+                                                                               "variant": root.variant,
+                                                                               "screen": root.screen,
+                                                                               "minWidth": root.minWidth,
+                                                                               "submenuAnchorX": menuItem.width - Style.marginS,
+                                                                               "submenuAnchorY": 0,
+                                                                               "anchorItem": menuItem,
+                                                                               "model": menuItem.modelData.submenu || []
+                                                                             });
+            if (!sub)
+              return;
+            menuItem.subMenu = sub;
+            sub.triggered.connect(function (action, item) {
+              root.triggered(action, item);
+            });
+            sub.visible = true;
+            Qt.callLater(() => {
+                           if (menuItem.subMenu)
+                             menuItem.subMenu.anchor.updateAnchor();
+                         });
+          }
+
+          Timer {
+            id: submenuOpenTimer
+            interval: 250
+            repeat: false
+            onTriggered: menuItem._openSubmenu()
+          }
+
+          Component.onDestruction: {
+            if (subMenu) {
+              subMenu.close();
+              subMenu.destroy();
+              subMenu = null;
+            }
+          }
 
           Layout.preferredWidth: parent.width
           Layout.preferredHeight: modelData.visible !== false ? (isSeparator ? Style.marginS : root._rowHeight) : 0
@@ -411,8 +549,8 @@ PopupWindow {
 
               // Check mark / submenu chevron, 12px on the right
               NIcon {
-                visible: modelData.checked === true || modelData.hasSubmenu === true
-                icon: modelData.hasSubmenu === true ? "chevron-right" : "check"
+                visible: modelData.checked === true || menuItem.hasSubmenu || modelData.hasSubmenu === true
+                icon: (menuItem.hasSubmenu || modelData.hasSubmenu === true) ? "chevron-right" : "check"
                 pointSize: Style.fontSizeXL
                 color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : Color.accent
               }
@@ -425,7 +563,24 @@ PopupWindow {
               enabled: menuItem.rowEnabled && root.visible
               cursorShape: Qt.PointingHandCursor
 
+              onEntered: {
+                if (menuItem.hasSubmenu) {
+                  root._closeSubmenusExcept(menuItem);
+                  submenuOpenTimer.restart();
+                } else {
+                  root._closeSubmenus();
+                }
+              }
+
+              onExited: {
+                submenuOpenTimer.stop();
+              }
+
               onClicked: {
+                if (menuItem.hasSubmenu) {
+                  menuItem._openSubmenu();
+                  return;
+                }
                 if (menuItem.modelData.enabled !== false) {
                   root.triggered(menuItem.modelData.action || menuItem.modelData.key || menuItem.index.toString(), menuItem.modelData);
                   // Don't call root.close() here - let the parent PopupMenuWindow handle closing
@@ -477,7 +632,13 @@ PopupWindow {
                  });
   }
 
+  onVisibleChanged: {
+    if (!visible)
+      _closeSubmenus();
+  }
+
   function close() {
+    _closeSubmenus();
     visible = false;
   }
 

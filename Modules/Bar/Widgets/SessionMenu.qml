@@ -33,13 +33,18 @@ NIconButton {
 
   readonly property string iconColorKey: (widgetSettings.iconColor !== undefined) ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: Style.getCapsuleHeightForScreen(screenName)
+  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screenName)
   applyUiScale: false
-  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
+  customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: "power"
-  iconSource: efficientMode ? ThemeIcons.symbolicForAny(["system-shutdown", "system-log-out"]) : ""
-  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
+  iconSource: fashionMode ? ThemeIcons.fashionFor("system-shutdown") : (efficientMode ? ThemeIcons.symbolicForAny(["system-shutdown", "system-log-out"]) : "")
+  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
+  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
     if (PanelService.getPanel("sessionMenuPanel", screen)?.isPanelOpen)
       return "";
@@ -47,10 +52,10 @@ NIconButton {
       return I18n.tr("tooltips.session-menu");
   }
   tooltipDirection: BarService.getTooltipDirection(screenName)
-  colorBg: Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
+  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
   NPopupContextMenu {
     id: contextMenu

@@ -56,13 +56,18 @@ NIconButton {
   readonly property int count: computeUnreadCount()
 
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
-  customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
+  customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
-  iconSource: efficientMode ? ThemeIcons.symbolicForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : ""
-  iconRatio: efficientMode ? 16.0 / baseSize : 0.48
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled", "bell"] : ["notification", "preferences-system-notifications", "bell"]) : (efficientMode ? ThemeIcons.symbolicForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : "")
+  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
+  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
     if (PanelService.getPanel("notificationHistoryPanel", screen)?.isPanelOpen) {
       return "";
@@ -71,10 +76,10 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
-  colorBg: Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
+  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
   visible: !((hideWhenZero && NotificationService.historyModel.count === 0) || (hideWhenZeroUnread && count === 0))
   opacity: !((hideWhenZero && NotificationService.historyModel.count === 0) || (hideWhenZeroUnread && count === 0)) ? 1.0 : 0.0
 

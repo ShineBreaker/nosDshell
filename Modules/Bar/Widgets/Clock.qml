@@ -45,8 +45,13 @@ Item {
   readonly property string formatVertical: widgetSettings.formatVertical !== undefined ? widgetSettings.formatVertical : widgetMetadata.formatVertical
   readonly property string tooltipFormat: widgetSettings.tooltipFormat !== undefined ? widgetSettings.tooltipFormat : widgetMetadata.tooltipFormat
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation: rounded-square clock tile
+  // (big HH over mm digits — derived from the gxde-dock datetimewidget layout)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool onShellSurface: efficientMode || fashionMode
 
-  readonly property color textColor: efficientMode ? Color.onShell : Color.resolveColorKey(clockColor)
+  readonly property color textColor: onShellSurface ? Color.onShell : Color.resolveColorKey(clockColor)
 
   // DDE efficient clock: hh:mm / yyyy-MM-dd on two lines (three lines when vertical)
   readonly property string effectiveFormatHorizontal: efficientMode ? "hh:mm\\nyyyy/MM/dd" : formatHorizontal.trim()
@@ -58,12 +63,54 @@ Item {
 
   // Size: use implicit width/height
   // BarWidgetLoader sets explicit width/height to extend click area
-  implicitWidth: contentWidth
-  implicitHeight: contentHeight
+  implicitWidth: fashionMode ? Style.dockItemThickness : contentWidth
+  implicitHeight: fashionMode ? Style.dockItemThickness : contentHeight
+
+  // DDE fashion clock tile: dark rounded square with HH over mm digits in
+  // a Light weight (gxde-dock datetimewidget draws an SVG clock face with
+  // big digits h=i/2.5 — re-created in QML, no copied assets).
+  Rectangle {
+    id: fashionTile
+    visible: root.fashionMode
+    width: Style.dockItemThickness
+    height: width
+    anchors.centerIn: parent
+    radius: Style.radiusLarge
+    color: Color.overlay("strong")
+
+    Column {
+      anchors.centerIn: parent
+      spacing: -2
+
+      NText {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: I18n.locale.toString(root.now, "HH")
+        pointSize: Style.fontSizeXXL
+        font.weight: Font.Light
+        color: Color.onShell
+        applyUiScale: false
+        features: ({
+                     "tnum": 1
+                   })
+      }
+      NText {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: I18n.locale.toString(root.now, "mm")
+        pointSize: Style.fontSizeL
+        font.weight: Font.Light
+        color: Color.onShell
+        applyUiScale: false
+        features: ({
+                     "tnum": 1
+                   })
+      }
+    }
+  }
 
   // Visual clock capsule - stays at content size, centered in parent
   Rectangle {
     id: visualClock
+    visible: !root.fashionMode
     width: root.contentWidth
     height: root.contentHeight
     anchors.centerIn: parent
@@ -94,6 +141,9 @@ Item {
               family: useCustomFont && customFont ? customFont : Settings.data.ui.fontDefault
               Binding on pointSize {
                 value: {
+                  // DDE datetimewidget draws both lines with a single font size.
+                  if (efficientMode)
+                    return barFontSize;
                   if (repeater.model.length == 1) {
                     // Single line: Full size
                     return barFontSize;

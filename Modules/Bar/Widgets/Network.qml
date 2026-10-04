@@ -38,6 +38,9 @@ Item {
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property string textColorKey: widgetSettings.textColor !== undefined ? widgetSettings.textColor : widgetMetadata.textColor
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   // Map the current glyph to a freedesktop symbolic name (DDE status icons)
   function symbolicName() {
@@ -117,7 +120,8 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: NetworkService.getIcon()
-    iconSource: root.efficientMode ? ThemeIcons.symbolicFor(root.symbolicName()) : ""
+    iconSource: root.fashionMode ? ThemeIcons.fashionFor(root.symbolicName()) : (root.efficientMode ? ThemeIcons.symbolicFor(root.symbolicName()) : "")
+    dockPresentation: root.dockPresentation
     text: NetworkService.getStatusText(false)
     autoHide: false
     forceOpen: !isBarVertical && root.displayMode === "alwaysShow"

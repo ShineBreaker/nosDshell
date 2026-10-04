@@ -39,10 +39,14 @@ Item {
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
 
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property string displayMode: widgetSettings.displayMode !== undefined ? widgetSettings.displayMode : widgetMetadata.displayMode
 
-  // DDE battery icon: themed symbolic by charge level, glyph fallback
-  function symbolicBatterySource() {
+  // Fashion battery icon: full-color themed icon by charge level (symbolic
+  // fallback is tinted by the pill), glyph fallback.
+  function fashionBatterySource() {
     var candidates = [];
     if (root.isCharging || root.isPluggedIn) {
       var bucket = Math.max(0, Math.min(100, Math.round(root.percent / 10) * 10));
@@ -51,7 +55,25 @@ Item {
       var bucket2 = Math.max(10, Math.min(100, Math.round(root.percent / 10) * 10));
       candidates = ["battery-level-" + bucket2, (root.percent > 60) ? "battery-full" : (root.percent > 30 ? "battery-good" : (root.percent > 10 ? "battery-low" : "battery-caution"))];
     }
-    return ThemeIcons.symbolicForAny(candidates);
+    return ThemeIcons.fashionForAny(candidates);
+  }
+
+  // DDE battery icon: *-symbolic theme icon by charge level only (never the
+  // colored variant — DDE battery icons are monochrome), glyph fallback.
+  function symbolicBatterySource() {
+    var candidates = [];
+    if (root.isCharging || root.isPluggedIn) {
+      var bucket = Math.max(0, Math.min(100, Math.round(root.percent / 10) * 10));
+      candidates = ["battery-level-" + bucket + "-charging-symbolic", "battery-full-charging-symbolic", "battery-good-charging-symbolic"];
+    } else {
+      var bucket2 = Math.max(10, Math.min(100, Math.round(root.percent / 10) * 10));
+      candidates = ["battery-level-" + bucket2 + "-symbolic", (root.percent > 60) ? "battery-full-symbolic" : (root.percent > 30 ? "battery-good-symbolic" : (root.percent > 10 ? "battery-low-symbolic" : "battery-caution-symbolic"))];
+    }
+    for (var i = 0; i < candidates.length; i++) {
+      if (ThemeIcons.iconExists(candidates[i]))
+        return ThemeIcons.iconFromName(candidates[i], "");
+    }
+    return "";
   }
   readonly property bool useGraphicMode: displayMode === "graphic" || displayMode === "graphic-clean"
 
@@ -246,7 +268,8 @@ Item {
     screen: root.screen
     oppositeDirection: BarService.getPillDirection(root)
     icon: BatteryService.getIcon(root.percent, root.isCharging, root.isPluggedIn, root.isReady)
-    iconSource: root.efficientMode ? root.symbolicBatterySource() : ""
+    dockPresentation: root.dockPresentation
+    iconSource: root.fashionMode ? root.fashionBatterySource() : (root.efficientMode ? root.symbolicBatterySource() : "")
     text: root.isReady ? root.percent : "-"
     suffix: "%"
     autoHide: false

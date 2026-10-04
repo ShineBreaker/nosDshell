@@ -13,6 +13,9 @@ Item {
   property string icon
   // Themed icon path (e.g. *-symbolic); takes precedence over the glyph icon
   property string iconSource: ""
+  // When true (default), iconSource is recolored to a flat colorFg silhouette;
+  // false renders the themed icon as-is (fashion dock uses full-color icons).
+  property bool recolorIcon: true
   // Glyph/icon size as a fraction of buttonSize (DDE launcher uses 0.7)
   property real iconRatio: 0.48
   property var tooltipText
@@ -87,7 +90,7 @@ Item {
       y: Style.pixelAlignCenter(visualButton.height, height)
 
       // Themed *-symbolic icons are recolored to the foreground color
-      layer.enabled: root.iconSource !== ""
+      layer.enabled: root.iconSource !== "" && root.recolorIcon
       layer.effect: ShaderEffect {
         property color targetColor: root.enabled && visualButton.pressed ? Color.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
         property real colorizeMode: 3.0

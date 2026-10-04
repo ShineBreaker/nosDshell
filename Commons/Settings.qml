@@ -625,7 +625,7 @@ Singleton {
       property string launcherIconColor: "none"
       property bool pinnedStatic: false
       property bool inactiveIndicators: false
-      property bool groupApps: false
+      property bool groupApps: true // DDE: one item per application
       property string groupContextMenuMode: "extended" // "list", "extended"
       property string groupClickAction: "cycle" // "cycle", "list"
       property string groupIndicatorStyle: "dots" // "number", "dots"
@@ -1013,10 +1013,19 @@ Singleton {
           }
         ],
         "center": [],
-        "right": right
+        "right": right,
+        "dock": plugins
       };
     }
-    return data.bar.widgets;
+    // "dock" mirrors dock.plugins in every mode so dock-loaded widgets can
+    // resolve their per-instance settings via the usual section/index lookup.
+    var base = data.bar.widgets;
+    return {
+      "left": base.left || [],
+      "center": base.center || [],
+      "right": base.right || [],
+      "dock": data.dock.plugins || []
+    };
   }
 
   // -----------------------------------------------------
@@ -1034,7 +1043,9 @@ Singleton {
   // Get effective bar display mode for a screen (with inheritance)
   // If the screen has a displayMode override and overrides are enabled, use it;
   // otherwise map dock.hideMode to the bar's display modes.
-  property bool _smartHideFallbackLogged: false
+  // NB: the smart-hide "logged once" flag lives on the function object inside
+  // getBarDisplayModeForScreen (see below) — a QML property write inside a
+  // binding dependency would re-dirty every binding that calls it.
   function getBarDisplayModeForScreen(screenName) {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.displayMode !== undefined) {
@@ -1046,8 +1057,10 @@ Singleton {
     case "smart-hide":
       // Real window-overlap detection is not available on all compositors;
       // fall back to auto-hide like DDE does when the compositor can't report it.
-      if (!_smartHideFallbackLogged) {
-        _smartHideFallbackLogged = true;
+      // The flag lives on the function object: writing a tracked QML property
+      // here would re-dirty the bindings that call this function.
+      if (getBarDisplayModeForScreen._smartHideLogged !== true) {
+        getBarDisplayModeForScreen._smartHideLogged = true;
         Logger.i("Settings", "dock.hideMode 'smart-hide' is not supported by this compositor; falling back to 'keep-hidden'");
       }
       return "auto_hide";

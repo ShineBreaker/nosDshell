@@ -18,6 +18,12 @@ SmartPanel {
   property bool isDockHovered: false
   property bool panelHovered: false
   readonly property int iconSize: Math.round(12 + 24 * (Settings.data.dock.size ?? 1))
+  // Fashion geometry aliases — DockContent reads these on whatever dockRoot it
+  // is hosted by; the attached panel path is inert in fashion mode but must
+  // stay loadable
+  readonly property int itemThickness: Style.dockItemThickness
+  readonly property int itemLength: Style.dockItemLength
+  readonly property int maxLength: Math.max(0, (isVertical ? (screen?.height ?? 0) : (screen?.width ?? 0)) - 60)
   readonly property int maxWidth: screen ? screen.width * 0.8 : 1000
   readonly property int maxHeight: screen ? screen.height * 0.8 : 1000
   readonly property bool autoHide: false

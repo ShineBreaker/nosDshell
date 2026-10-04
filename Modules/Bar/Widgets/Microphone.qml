@@ -37,6 +37,9 @@ Item {
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property string displayMode: (widgetSettings.displayMode !== undefined) ? widgetSettings.displayMode : widgetMetadata.displayMode
   readonly property string middleClickCommand: (widgetSettings.middleClickCommand !== undefined) ? widgetSettings.middleClickCommand : widgetMetadata.middleClickCommand
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
@@ -135,7 +138,8 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: AudioService.getInputIcon()
-    iconSource: root.efficientMode ? ThemeIcons.symbolicFor(AudioService.getInputIcon() === "microphone-mute" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : ""
+    dockPresentation: root.dockPresentation
+    iconSource: root.fashionMode ? ThemeIcons.fashionFor(AudioService.getInputIcon() === "microphone-mute" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : (root.efficientMode ? ThemeIcons.symbolicFor(AudioService.getInputIcon() === "microphone-mute" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : "")
     autoHide: false // Important to be false so we can hover as long as we want
     text: {
       const maxVolume = Settings.data.audio.volumeOverdrive ? 1.5 : 1.0;
