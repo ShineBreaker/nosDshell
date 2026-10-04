@@ -17,7 +17,7 @@ Loader {
   active: false
 
   // Track if the visualizer should be shown (lockscreen active + media playing + non-compact mode)
-  readonly property bool needsSpectrum: root.active && !Settings.data.general.compactLockScreen && Settings.data.audio.visualizerType !== "" && Settings.data.audio.visualizerType !== "none"
+  readonly property bool needsSpectrum: root.active && Settings.data.audio.visualizerType !== "" && Settings.data.audio.visualizerType !== "none"
 
   onActiveChanged: {
     if (root.active && root.needsSpectrum) {
@@ -142,9 +142,11 @@ Loader {
                   }
                 }
 
-                // Header with avatar, welcome, time, date
-                LockScreenHeader {
+                // DDE bottom band: clock left, control row right
+                // (DESIGN §3.9, lockframe.cpp: 132 px band, 33 px margins)
+                LockScreenBand {
                   id: headerComponent
+                  batteryIndicator: batteryIndicator
                 }
 
                 // Info notification
@@ -153,7 +155,7 @@ Loader {
                   height: 50
                   anchors.horizontalCenter: parent.horizontalCenter
                   anchors.bottom: parent.bottom
-                  anchors.bottomMargin: (Settings.data.general.compactLockScreen ? 280 : 360) * Style.uiScaleRatio
+                  anchors.bottomMargin: 360 * Style.uiScaleRatio
                   radius: Style.radiusL
                   color: Color.mTertiary
                   visible: lockContext.showInfo && lockContext.infoMessage && !panelComponent.timerActive
@@ -186,52 +188,13 @@ Loader {
                   }
                 }
 
-                // Error notification
-                Rectangle {
-                  width: errorRowLayout.implicitWidth + Style.marginXL * 1.5
-                  height: 50
-                  anchors.horizontalCenter: parent.horizontalCenter
-                  anchors.bottom: parent.bottom
-                  anchors.bottomMargin: (Settings.data.general.compactLockScreen ? 280 : 360) * Style.uiScaleRatio
-                  radius: Style.radiusL
-                  color: Color.mError
-                  visible: lockContext.showFailure && lockContext.errorMessage && !panelComponent.timerActive
-                  opacity: visible ? 1.0 : 0.0
-
-                  RowLayout {
-                    id: errorRowLayout
-                    anchors.centerIn: parent
-                    spacing: Style.marginM
-
-                    NIcon {
-                      icon: "alert-circle"
-                      pointSize: Style.fontSizeXL
-                      color: Color.mOnError
-                    }
-
-                    NText {
-                      text: lockContext.errorMessage || "Authentication failed"
-                      color: Color.mOnError
-                      pointSize: Style.fontSizeL
-                      horizontalAlignment: Text.AlignHCenter
-                    }
-                  }
-
-                  Behavior on opacity {
-                    NumberAnimation {
-                      duration: Style.animationNormal
-                      easing.type: Easing.OutCubic
-                    }
-                  }
-                }
-
                 // Countdown notification
                 Rectangle {
                   width: countdownRowLayout.implicitWidth + Style.marginXL * 1.5
                   height: 50
                   anchors.horizontalCenter: parent.horizontalCenter
                   anchors.bottom: parent.bottom
-                  anchors.bottomMargin: (Settings.data.general.compactLockScreen ? 280 : 360) * Style.uiScaleRatio
+                  anchors.bottomMargin: 360 * Style.uiScaleRatio
                   radius: Style.radiusL
                   color: Color.mSurface
                   visible: panelComponent.timerActive

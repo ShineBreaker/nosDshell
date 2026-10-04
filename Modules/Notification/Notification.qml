@@ -10,7 +10,9 @@ import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
 
-// Simple notification popup - displays multiple notifications
+// DDE 15 notification bubble (DESIGN §3.6, gxde-session-ui dde-osd/notification):
+// light mask surface, 300x70 base, app icon at (11,11), actions as a right
+// strip. maxVisible = 1 (default) shows one bubble at a time.
 Variants {
 
   model: {
@@ -24,9 +26,7 @@ Variants {
 
   delegate: Loader {
     id: root
-
     required property ShellScreen modelData
-
     property ListModel notificationModel: NotificationService.popupModel
 
     // Deferred activation via Qt.callLater to avoid activating the Loader
@@ -38,7 +38,7 @@ Variants {
     // Keep loader active briefly after last notification to allow animations to complete
     Timer {
       id: delayTimer
-      interval: Style.animationSlow + 200
+      interval: Style.motionBubbleOut + 200
       repeat: false
     }
 
@@ -104,9 +104,20 @@ Variants {
       readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
 
-      readonly property bool isCompact: Settings.data.notifications.density === "compact"
-      readonly property int notifWidth: Math.round((isCompact ? 320 : 440) * Style.uiScaleRatio)
+      // Left of the control center when it is open (DESIGN §3.6,
+      // dde-osd/notification/bubblemanager.cpp getX: bubbles sit left of the CC)
+      readonly property var ccPanel: PanelService.getPanel("controlCenterPanel", notifWindow.screen)
+      readonly property bool ccOpen: (ccPanel && ccPanel.isPanelOpen) || false
+      readonly property real ccWidth: ccOpen ? 408 : 0
+
+      // DDE bubble metrics — see Style §3.6 block
+      readonly property int notifWidth: Style.bubbleBaseWidth
+      readonly property int bubbleHeight: Style.bubbleBaseHeight
       readonly property int shadowPadding: Style.shadowBlurMax + Style.marginL
+
+      // DDE keeps 20 px from the screen edge (bubblemanager.cpp getX/getY,
+      // bubble.h Padding), and stacks bubbles 10 px apart when maxVisible > 1.
+      readonly property int edgeOffset: Style.bubbleEdgeOffset
 
       // Calculate bar and frame offsets for each edge separately
       readonly property int barOffsetTop: {
@@ -144,10 +155,10 @@ Variants {
       anchors.right: isRight
 
       // Margins for PanelWindow - only apply bar offset for the specific edge where the bar is
-      margins.top: isTop ? barOffsetTop - shadowPadding + Style.marginM : 0
-      margins.bottom: isBottom ? barOffsetBottom - shadowPadding : 0
-      margins.left: isLeft ? barOffsetLeft - shadowPadding + Style.marginM : 0
-      margins.right: isRight ? barOffsetRight - shadowPadding + Style.marginM : 0
+      margins.top: isTop ? barOffsetTop - shadowPadding + edgeOffset : 0
+      margins.bottom: isBottom ? barOffsetBottom - shadowPadding + edgeOffset : 0
+      margins.left: isLeft ? barOffsetLeft - shadowPadding + edgeOffset : 0
+      margins.right: isRight ? barOffsetRight - shadowPadding + edgeOffset + (ccOpen ? ccWidth : 0) : 0
 
       implicitWidth: notifWidth + shadowPadding * 2
       implicitHeight: notificationStack.implicitHeight + Style.marginL
@@ -198,17 +209,7 @@ Variants {
           horizontalCenter: parent.isCentered ? parent.horizontalCenter : undefined
         }
 
-        spacing: -notifWindow.shadowPadding * 2 + Style.marginM
-
-        Behavior on implicitHeight {
-          enabled: !Settings.data.general.animationDisabled
-          SpringAnimation {
-            spring: 2.0
-            damping: 0.4
-            epsilon: 0.01
-            mass: 0.8
-          }
-        }
+        spacing: Style.bubbleStackSpacing
 
         Repeater {
           id: notificationRepeater
@@ -223,14 +224,24 @@ Variants {
             property bool isRemoving: false
 
             readonly property int animationDelay: index * 100
-            readonly property int slideDistance: 300
+            readonly property real slideDistance: 12 // motionBubbleIn rise
 
-            Layout.preferredWidth: notifWidth + notifWindow.shadowPadding * 2
-            Layout.preferredHeight: (notifWindow.isCompact ? compactContent.implicitHeight : notificationContent.implicitHeight) + Style.margin2M + notifWindow.shadowPadding * 2
+            readonly property var actions: {
+              try {
+                return model.actionsJson ? JSON.parse(model.actionsJson) : [];
+              } catch (e) {
+                return [];
+              }
+            }
+
+            // "default" is the click-body action and is not rendered as a button
+            readonly property var visibleActions: actions.filter(a => a.identifier !== "default")
+
+            Layout.preferredWidth: notifWindow.notifWidth + notifWindow.shadowPadding * 2
+            Layout.preferredHeight: bubbleBody.height + notifWindow.shadowPadding * 2
             Layout.maximumHeight: Layout.preferredHeight
 
             // Animation properties
-            property real scaleValue: 0.8
             property real opacityValue: 0.0
             property real slideOffset: 0
             property real swipeOffset: 0
@@ -241,10 +252,9 @@ Variants {
             property bool suppressClick: false
             readonly property bool useVerticalSwipe: notifWindow.location === "bottom" || notifWindow.location === "top"
             readonly property real swipeStartThreshold: Math.round(18 * Style.uiScaleRatio)
-            readonly property real swipeDismissThreshold: Math.max(110, cardBackground.width * 0.32)
-            readonly property real verticalSwipeDismissThreshold: Math.max(70, cardBackground.height * 0.35)
+            readonly property real swipeDismissThreshold: Math.max(110, bubbleBody.width * 0.32)
+            readonly property real verticalSwipeDismissThreshold: Math.max(70, bubbleBody.height * 0.35)
 
-            scale: scaleValue
             opacity: opacityValue
             transform: Translate {
               x: card.swipeOffset
@@ -252,7 +262,7 @@ Variants {
             }
 
             readonly property real slideInOffset: notifWindow.isTop ? -slideDistance : slideDistance
-            readonly property real slideOutOffset: slideInOffset
+            readonly property real slideOutOffset: -slideDistance
 
             function clampSwipeDelta(deltaX) {
               if (notifWindow.isRight)
@@ -270,7 +280,6 @@ Variants {
               return deltaY;
             }
 
-            // Animation setup
             function triggerEntryAnimation() {
               animInDelayTimer.stop();
               removalTimer.stop();
@@ -282,13 +291,11 @@ Variants {
               swipeOffsetY = 0;
               if (Settings.data.general.animationDisabled) {
                 slideOffset = 0;
-                scaleValue = 1.0;
                 opacityValue = 1.0;
                 return;
               }
 
               slideOffset = slideInOffset;
-              scaleValue = 0.8;
               opacityValue = 0.0;
               animInDelayTimer.interval = animationDelay;
               animInDelayTimer.start();
@@ -306,7 +313,6 @@ Variants {
                 if (card.isRemoving)
                   return;
                 slideOffset = 0;
-                scaleValue = 1.0;
                 opacityValue = 1.0;
               }
             }
@@ -322,7 +328,6 @@ Variants {
               swipeOffsetY = 0;
               if (!Settings.data.general.animationDisabled) {
                 slideOffset = slideOutOffset;
-                scaleValue = 0.8;
                 opacityValue = 0.0;
               }
             }
@@ -334,19 +339,15 @@ Variants {
               resumeTimer.stop();
               isRemoving = true;
               isSwiping = false;
+              swipeOffset = 0;
               if (!Settings.data.general.animationDisabled) {
                 if (useVerticalSwipe) {
-                  swipeOffset = 0;
-                  swipeOffsetY = swipeOffsetY >= 0 ? cardBackground.height + Style.marginXL : -cardBackground.height - Style.marginXL;
+                  swipeOffsetY = swipeOffsetY >= 0 ? bubbleBody.height + Style.marginXL : -bubbleBody.height - Style.marginXL;
                 } else {
-                  swipeOffset = swipeOffset >= 0 ? cardBackground.width + Style.marginXL : -cardBackground.width - Style.marginXL;
+                  swipeOffset = swipeOffset >= 0 ? bubbleBody.width + Style.marginXL : -bubbleBody.width - Style.marginXL;
                   swipeOffsetY = 0;
                 }
-                scaleValue = 0.8;
                 opacityValue = 0.0;
-              } else {
-                swipeOffset = 0;
-                swipeOffsetY = 0;
               }
             }
 
@@ -363,7 +364,7 @@ Variants {
 
             Timer {
               id: removalTimer
-              interval: Style.animationSlow
+              interval: Style.motionBubbleOut
               repeat: false
               onTriggered: {
                 NotificationService.dismissPopup(notificationId);
@@ -376,31 +377,19 @@ Variants {
               }
             }
 
-            Behavior on scale {
-              enabled: !Settings.data.general.animationDisabled
-              SpringAnimation {
-                spring: 3
-                damping: 0.4
-                epsilon: 0.01
-                mass: 0.8
-              }
-            }
-
             Behavior on opacity {
               enabled: !Settings.data.general.animationDisabled
               NumberAnimation {
-                duration: Style.animationNormal
+                duration: Style.motionBubbleIn
                 easing.type: Easing.OutCubic
               }
             }
 
             Behavior on slideOffset {
               enabled: !Settings.data.general.animationDisabled
-              SpringAnimation {
-                spring: 2.5
-                damping: 0.3
-                epsilon: 0.01
-                mass: 0.6
+              NumberAnimation {
+                duration: Style.motionBubbleIn
+                easing.type: Easing.OutCubic
               }
             }
 
@@ -420,21 +409,167 @@ Variants {
               }
             }
 
-            // Sub item with the right dimensions, really usefull for the
-            // HoverHandler: card items are overlapping because of the
-            // negative spacing of notificationStack.
-            Item {
-              id: displayedCard
+            // The bubble itself (shadow area excluded from the clickable mask)
+            Rectangle {
+              id: bubbleBody
+              anchors.centerIn: parent
+              width: notifWindow.notifWidth
+              height: contentColumn.implicitHeight + Style.margin2M
+              radius: Style.radiusWindow
+              color: Color.maskTransient
+              border.color: Color.borderTransient
+              border.width: Style.borderS
 
-              anchors.fill: parent
-              anchors.margins: notifWindow.shadowPadding
+              NDropShadow {
+                anchors.fill: parent
+                source: bubbleBody
+                autoPaddingEnabled: true
+                shadow: Style.shadowBubble
+              }
+
+              // App / notification image at (11,11)
+              NImageRounded {
+                id: bubbleIcon
+                x: Style.bubbleIconInset
+                y: Style.bubbleIconInset
+                width: Style.bubbleIconSize
+                height: Style.bubbleIconSize
+                radius: Style.radiusRow
+                imagePath: model.originalImage || ""
+                borderColor: "transparent"
+                borderWidth: 0
+                fallbackIcon: "bell"
+                fallbackIconSize: Math.round(Style.fontSizeXXL * Style.uiScaleRatio)
+              }
+
+              // Text column: x=70, width 220 (150 when actions exist)
+              ColumnLayout {
+                id: contentColumn
+                x: Style.bubbleTextInset
+                y: Style.marginM
+                width: notifWindow.notifWidth - Style.bubbleTextInset - (card.visibleActions.length > 0 ? Style.bubbleActionsWidth : Style.marginM)
+                spacing: Style.marginXXXS
+
+                // Title — onTransient Medium
+                NText {
+                  Layout.fillWidth: true
+                  text: model.summary || I18n.tr("common.no-summary")
+                  pointSize: Style.fontSizeM
+                  font.weight: Style.fontWeightMedium
+                  color: Color.onTransient
+                  textFormat: Text.StyledText
+                  wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                  maximumLineCount: 2
+                  elide: Text.ElideRight
+                  visible: text.length > 0
+                }
+
+                // Body — onTransientBody, at most 3 lines
+                NText {
+                  Layout.fillWidth: true
+                  text: model.body || ""
+                  pointSize: Style.fontSizeS
+                  color: Color.onTransientBody
+                  textFormat: Text.StyledText
+                  wrapMode: Text.WrapAtWordBoundaryOrAnywhere
+                  maximumLineCount: Style.bubbleMaxBodyLines
+                  elide: Text.ElideRight
+                  visible: text.length > 0
+                }
+
+                // App name + relative time
+                NText {
+                  Layout.fillWidth: true
+                  text: (model.appName || "") + (model.appName ? " · " : "") + Time.formatRelativeTime(model.timestamp)
+                  pointSize: Style.fontSizeXXS
+                  color: Color.onTransientBody
+                  elide: Text.ElideRight
+                  visible: text.length > 0
+                }
+              }
+
+              // Action strip on the right (70 px, accentAction text)
+              ColumnLayout {
+                id: actionStrip
+                visible: card.visibleActions.length > 0
+                x: bubbleBody.width - Style.bubbleActionsWidth
+                y: 0
+                width: Style.bubbleActionsWidth
+                height: parent.height
+                spacing: 0
+
+                Repeater {
+                  model: card.visibleActions
+
+                  delegate: Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    color: actionArea.containsMouse ? Color.accentAction : "transparent"
+
+                    NText {
+                      anchors.centerIn: parent
+                      width: parent.width - Style.marginXS
+                      text: {
+                        var actionText = modelData.text || "OK";
+                        if (actionText.includes(","))
+                          return actionText.split(",")[1] || actionText;
+                        return actionText;
+                      }
+                      pointSize: Style.fontSizeS
+                      color: actionArea.containsMouse ? "white" : Color.accentAction
+                      elide: Text.ElideRight
+                      horizontalAlignment: Text.AlignHCenter
+                    }
+
+                    MouseArea {
+                      id: actionArea
+                      anchors.fill: parent
+                      hoverEnabled: true
+                      cursorShape: Qt.PointingHandCursor
+                      onClicked: card.runAction(modelData.identifier, false)
+                    }
+                  }
+                }
+
+                // 1 px separators between action buttons
+                Repeater {
+                  model: Math.max(0, card.visibleActions.length - 1)
+                  delegate: Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 1
+                    color: Color.overlayTransient("hover")
+                  }
+                }
+              }
+
+              // Close × on hover, top-right
+              NIconButton {
+                id: closeButton
+                icon: "close"
+                tooltipText: I18n.tr("tooltips.dismiss-notification")
+                baseSize: Style.baseWidgetSize * 0.6
+                anchors.top: parent.top
+                anchors.topMargin: Style.marginXS
+                anchors.right: parent.right
+                anchors.rightMargin: Style.marginXS
+                opacity: card.isHovered ? 0.6 : 0
+                visible: opacity > 0
+
+                Behavior on opacity {
+                  NumberAnimation {
+                    duration: Style.animationFast
+                  }
+                }
+
+                onClicked: card.runAction("", true)
+              }
 
               HoverHandler {
                 onHoveredChanged: {
-                  isHovered = hovered;
-                  if (isHovered) {
+                  card.isHovered = hovered;
+                  if (hovered) {
                     resumeTimer.stop();
-                    NotificationService.pauseTimeout(notificationId);
+                    NotificationService.pauseTimeout(card.notificationId);
                   } else {
                     resumeTimer.start();
                   }
@@ -446,16 +581,15 @@ Variants {
                 interval: 50
                 repeat: false
                 onTriggered: {
-                  if (!isHovered) {
-                    NotificationService.resumeTimeout(notificationId);
-                  }
+                  if (!card.isHovered)
+                    NotificationService.resumeTimeout(card.notificationId);
                 }
               }
 
-              // Right-click to dismiss
+              // Click body = default action; drag to dismiss
               MouseArea {
                 id: cardDragArea
-                anchors.fill: cardBackground
+                anchors.fill: parent
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 hoverEnabled: true
                 onPressed: mouse => {
@@ -497,9 +631,8 @@ Variants {
                 onReleased: mouse => {
                               if (mouse.button === Qt.RightButton) {
                                 card.animateOut();
-                                if (Settings.data.notifications.clearDismissed) {
-                                  NotificationService.removeFromHistory(notificationId);
-                                }
+                                if (Settings.data.notifications.clearDismissed)
+                                  NotificationService.removeFromHistory(card.notificationId);
                                 return;
                               }
 
@@ -511,9 +644,8 @@ Variants {
                                 const threshold = card.useVerticalSwipe ? card.verticalSwipeDismissThreshold : card.swipeDismissThreshold;
                                 if (dismissDistance >= threshold) {
                                   card.dismissBySwipe();
-                                  if (Settings.data.notifications.clearDismissed) {
-                                    NotificationService.removeFromHistory(notificationId);
-                                  }
+                                  if (Settings.data.notifications.clearDismissed)
+                                    NotificationService.removeFromHistory(card.notificationId);
                                 } else {
                                   card.swipeOffset = 0;
                                   card.swipeOffsetY = 0;
@@ -526,15 +658,12 @@ Variants {
                               if (card.suppressClick)
                               return;
 
-                              var actions = model.actionsJson ? JSON.parse(model.actionsJson) : [];
-                              var hasDefault = actions.some(function (a) {
-                                return a.identifier === "default";
-                              });
-                              if (hasDefault && NotificationService.invokeActionAndSuppressClose(notificationId, "default")) {
+                              const hasDefault = card.actions.some(a => a.identifier === "default");
+                              if (hasDefault && NotificationService.invokeActionAndSuppressClose(card.notificationId, "default")) {
                                 card.animateOut();
                               } else {
                                 // Without a default action, or if invoking it fails,
-                                // the best fallback is focusing the sender window by app identity.
+                                // the best fallback is focusing the sender window.
                                 NotificationService.focusSenderWindow(model.appName);
                                 card.animateOut();
                               }
@@ -543,266 +672,6 @@ Variants {
                   card.isSwiping = false;
                   card.swipeOffset = 0;
                   card.swipeOffsetY = 0;
-                }
-              }
-
-              // Background with border
-              Rectangle {
-                id: cardBackground
-                anchors.fill: parent
-                radius: Style.radiusL
-                border.color: Qt.alpha(Color.mOutline, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
-                border.width: Style.borderS
-                color: Qt.alpha(Color.mSurface, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
-
-                // Progress bar
-                Rectangle {
-                  anchors.top: parent.top
-                  anchors.left: parent.left
-                  anchors.right: parent.right
-                  height: 2
-                  color: "transparent"
-
-                  Rectangle {
-                    id: progressBar
-                    readonly property real progressWidth: cardBackground.width - (2 * cardBackground.radius)
-                    height: parent.height
-                    x: cardBackground.radius + (progressWidth * (1 - model.progress)) / 2
-                    width: progressWidth * model.progress
-
-                    color: {
-                      var baseColor = model.urgency === 2 ? Color.mError : model.urgency === 0 ? Color.mOnSurface : Color.mPrimary;
-                      return Qt.alpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
-                    }
-
-                    antialiasing: true
-
-                    Behavior on width {
-                      enabled: !card.isRemoving
-                      NumberAnimation {
-                        duration: 100
-                        easing.type: Easing.Linear
-                      }
-                    }
-
-                    Behavior on x {
-                      enabled: !card.isRemoving
-                      NumberAnimation {
-                        duration: 100
-                        easing.type: Easing.Linear
-                      }
-                    }
-                  }
-                }
-              }
-
-              NDropShadow {
-                anchors.fill: cardBackground
-                source: cardBackground
-                autoPaddingEnabled: true
-              }
-
-              // Content
-              ColumnLayout {
-                id: notificationContent
-                visible: !notifWindow.isCompact
-                anchors.fill: cardBackground
-                anchors.margins: Style.marginM
-                spacing: Style.marginM
-
-                RowLayout {
-                  Layout.fillWidth: true
-                  spacing: Style.marginL
-                  Layout.leftMargin: Style.marginM
-                  Layout.rightMargin: Style.marginM
-                  Layout.topMargin: Style.marginM
-                  Layout.bottomMargin: Style.marginM
-
-                  NImageRounded {
-                    Layout.preferredWidth: Math.round(40 * Style.uiScaleRatio)
-                    Layout.preferredHeight: Math.round(40 * Style.uiScaleRatio)
-                    Layout.alignment: Qt.AlignVCenter
-                    radius: Math.min(Style.radiusL, Layout.preferredWidth / 2)
-                    imagePath: model.originalImage || ""
-                    borderColor: "transparent"
-                    borderWidth: 0
-                    fallbackIcon: "bell"
-                    fallbackIconSize: 24
-                  }
-
-                  ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: Style.marginS
-
-                    // Header with urgency indicator
-                    RowLayout {
-                      Layout.fillWidth: true
-                      spacing: Style.marginS
-
-                      Rectangle {
-                        Layout.preferredWidth: 6
-                        Layout.preferredHeight: 6
-                        Layout.alignment: Qt.AlignVCenter
-                        radius: Style.radiusXS
-                        color: model.urgency === 2 ? Color.mError : model.urgency === 0 ? Color.mOnSurface : Color.mPrimary
-                      }
-
-                      NText {
-                        text: model.appName || "Unknown App"
-                        pointSize: Style.fontSizeXS
-                        font.weight: Style.fontWeightBold
-                        color: Color.mSecondary
-                      }
-
-                      NText {
-                        textFormat: Text.PlainText
-                        text: " " + Time.formatRelativeTime(model.timestamp)
-                        pointSize: Style.fontSizeXXS
-                        color: Color.mOnSurfaceVariant
-                        Layout.alignment: Qt.AlignBottom
-                      }
-
-                      Item {
-                        Layout.fillWidth: true
-                      }
-                    }
-
-                    NText {
-                      text: model.summary || I18n.tr("common.no-summary")
-                      pointSize: Style.fontSizeM
-                      font.weight: Style.fontWeightMedium
-                      color: Color.mOnSurface
-                      textFormat: Text.StyledText
-                      wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-                      maximumLineCount: 3
-                      elide: Text.ElideRight
-                      visible: text.length > 0
-                      Layout.fillWidth: true
-                      Layout.rightMargin: Style.marginM
-                    }
-
-                    NText {
-                      text: model.body || ""
-                      pointSize: Style.fontSizeM
-                      color: Color.mOnSurface
-                      textFormat: Text.StyledText
-                      wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-
-                      maximumLineCount: 5
-                      elide: Text.ElideRight
-                      visible: text.length > 0
-                      Layout.fillWidth: true
-                      Layout.rightMargin: Style.marginXL
-                    }
-
-                    // Actions
-                    Flow {
-                      Layout.fillWidth: true
-                      spacing: Style.marginS
-                      Layout.topMargin: Style.marginM
-                      flow: Flow.LeftToRight
-
-                      property string parentNotificationId: notificationId
-                      property var parsedActions: {
-                        try {
-                          return model.actionsJson ? JSON.parse(model.actionsJson) : [];
-                        } catch (e) {
-                          return [];
-                        }
-                      }
-                      visible: parsedActions.length > 0
-
-                      Repeater {
-                        model: parent.parsedActions
-
-                        delegate: NButton {
-                          property var actionData: modelData
-
-                          text: {
-                            var actionText = actionData.text || "Open";
-                            if (actionText.includes(",")) {
-                              return actionText.split(",")[1] || actionText;
-                            }
-                            return actionText;
-                          }
-                          fontSize: Style.fontSizeS
-                          backgroundColor: Color.mPrimary
-                          textColor: hovered ? Color.mOnHover : Color.mOnPrimary
-                          hoverColor: Color.mHover
-                          outlined: false
-                          implicitHeight: 24
-                          onClicked: {
-                            card.runAction(actionData.identifier, false);
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-
-              // Close button
-              NIconButton {
-                visible: !notifWindow.isCompact
-                icon: "close"
-                tooltipText: I18n.tr("tooltips.dismiss-notification")
-                baseSize: Style.baseWidgetSize * 0.6
-                anchors.top: cardBackground.top
-                anchors.topMargin: Style.marginXL
-                anchors.right: cardBackground.right
-                anchors.rightMargin: Style.marginXL
-
-                onClicked: {
-                  card.runAction("", true);
-                }
-              }
-
-              // Compact content
-              RowLayout {
-                id: compactContent
-                visible: notifWindow.isCompact
-                anchors.fill: cardBackground
-                anchors.margins: Style.marginM
-                spacing: Style.marginS
-
-                NImageRounded {
-                  Layout.preferredWidth: Math.round(24 * Style.uiScaleRatio)
-                  Layout.preferredHeight: Math.round(24 * Style.uiScaleRatio)
-                  Layout.alignment: Qt.AlignVCenter
-                  radius: Style.radiusXS
-                  imagePath: model.originalImage || ""
-                  borderColor: "transparent"
-                  borderWidth: 0
-                  fallbackIcon: "bell"
-                  fallbackIconSize: 16
-                }
-
-                ColumnLayout {
-                  Layout.fillWidth: true
-                  spacing: Style.marginXS
-
-                  NText {
-                    text: model.summary || I18n.tr("common.no-summary")
-                    pointSize: Style.fontSizeM
-                    font.weight: Style.fontWeightMedium
-                    color: Color.mOnSurface
-                    textFormat: Text.StyledText
-                    maximumLineCount: 1
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                  }
-
-                  NText {
-                    visible: model.body && model.body.length > 0
-                    Layout.fillWidth: true
-                    text: model.body || ""
-                    pointSize: Style.fontSizeS
-                    color: Color.mOnSurfaceVariant
-                    textFormat: Text.StyledText
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 2
-                    elide: Text.ElideRight
-                  }
                 }
               }
             }

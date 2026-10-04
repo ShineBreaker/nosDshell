@@ -18,7 +18,9 @@ Singleton {
   id: root
 
   // Configuration
-  property int maxPopups: 5
+  // DDE shows one bubble at a time and queues the rest (DESIGN §3.6,
+  // notifications.maxVisible default 1).
+  readonly property int maxPopups: Math.max(1, Settings.data.notifications?.maxVisible ?? 1)
   property int maxHistory: 100
   property string historyFile: Quickshell.env("NOCTALIA_NOTIF_HISTORY_FILE") || (Settings.cacheDir + "notifications.json")
 

@@ -8,6 +8,7 @@ import qs.Services.Hardware
 import qs.Services.Keyboard
 import qs.Services.Location
 import qs.Services.Media
+import qs.Services.System
 import qs.Widgets
 import qs.Widgets.AudioSpectrum
 
@@ -142,11 +143,11 @@ Item {
     height: 40
     anchors.horizontalCenter: parent.horizontalCenter
     anchors.bottom: parent.bottom
-    anchors.bottomMargin: 96 + (Settings.data.general.compactLockScreen ? 116 : 220)
+    anchors.bottomMargin: 96 + 220
     topLeftRadius: Style.radiusL
     topRightRadius: Style.radiusL
     color: Color.mSurface
-    visible: Settings.data.general.compactLockScreen && (batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn)
+    visible: (batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn)
 
     RowLayout {
       id: compactStatusRow
@@ -211,540 +212,117 @@ Item {
     }
   }
 
-  // Bottom container with weather, password input and controls
+  // Bottom container with the DDE centre block: avatar, user name, password
+  // field and the session controls.
   Rectangle {
     id: bottomContainer
 
-    // Support for removing the session/power buttons at the bottom.
-    readonly property int deltaY: Settings.data.general.showSessionButtonsOnLockScreen ? 0 : (Settings.data.general.compactLockScreen ? 36 : 48) + 14
+    // DDE band (DESIGN §3.9, lockframe.cpp): 132 px tall, 33 px above the
+    // bottom. The auth block is vertically centred in the space left above it.
+    readonly property int bandHeight: Math.round(132 * Style.uiScaleRatio)
+    readonly property int bandEdgeMargin: Math.round(33 * Style.uiScaleRatio)
 
-    height: {
-      let calcHeight = Settings.data.general.compactLockScreen ? 120 : 220;
-      if (!Settings.data.general.showSessionButtonsOnLockScreen) {
-        calcHeight -= bottomContainer.deltaY;
-      }
-      return calcHeight;
-    }
+    // Let the content size the container; a fixed height clipped/overlapped the
+    // rows once the DDE centre block was added (avatar + name + field).
     anchors.horizontalCenter: parent.horizontalCenter
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: 100 + bottomContainer.deltaY
+    anchors.verticalCenter: parent.verticalCenter
+    anchors.verticalCenterOffset: -bandHeight / 2
     radius: Style.radiusL
-    color: Color.mSurface
+    color: "transparent"
 
     width: Settings.data.general.showHibernateOnLockScreen ? 860 : 810
 
     ColumnLayout {
-      anchors.fill: parent
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.top: parent.top
       anchors.margins: 14
       spacing: Style.marginL
 
-      // Top info row
-      RowLayout {
+
+      // DDE centre block (DESIGN §3.9, userinputwidget.cpp): 100 px ringless
+      // avatar, user name 16 px 25 px below, then the password field 20 px below.
+      ColumnLayout {
         Layout.fillWidth: true
-        Layout.preferredHeight: 65
-        spacing: Style.marginXL
-        visible: !Settings.data.general.compactLockScreen
+        Layout.alignment: Qt.AlignHCenter
+        spacing: 0
 
-        // Media widget with visualizer
-        Item {
-          Layout.preferredWidth: Style.marginM
-          visible: MediaService.currentPlayer && MediaService.canPlay
+        NImageRounded {
+          Layout.alignment: Qt.AlignHCenter
+          Layout.preferredWidth: 100
+          Layout.preferredHeight: 100
+          Layout.bottomMargin: 25
+          radius: width / 2
+          imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
+          fallbackIcon: "person"
+          fallbackIconSize: Math.round(Style.fontSizeXXXL * Style.uiScaleRatio)
         }
 
-        Rectangle {
-          Layout.preferredWidth: 220
-          // Expand to take remaining space when weather is hidden
-          Layout.fillWidth: !(Settings.data.location.weatherEnabled && LocationService.data.weather !== null)
-          Layout.preferredHeight: 50
-          radius: Style.radiusL
-          color: "transparent"
-          clip: true
-          visible: MediaService.currentPlayer && MediaService.canPlay
-
-          Loader {
-            anchors.fill: parent
-            anchors.margins: 4
-            active: Settings.data.audio.visualizerType === "linear"
-            z: 0
-            sourceComponent: NLinearSpectrum {
-              anchors.fill: parent
-              values: SpectrumService.values
-              fillColor: Color.mPrimary
-              opacity: 0.4
-              mirrored: Settings.data.audio.spectrumMirrored
-            }
-          }
-
-          Loader {
-            anchors.fill: parent
-            anchors.margins: 4
-            active: Settings.data.audio.visualizerType === "mirrored"
-            z: 0
-            sourceComponent: NMirroredSpectrum {
-              anchors.fill: parent
-              values: SpectrumService.values
-              fillColor: Color.mPrimary
-              opacity: 0.4
-              mirrored: Settings.data.audio.spectrumMirrored
-            }
-          }
-
-          Loader {
-            anchors.fill: parent
-            anchors.margins: 4
-            active: Settings.data.audio.visualizerType === "wave"
-            z: 0
-            sourceComponent: NWaveSpectrum {
-              anchors.fill: parent
-              values: SpectrumService.values
-              fillColor: Color.mPrimary
-              opacity: 0.4
-              mirrored: Settings.data.audio.spectrumMirrored
-            }
-          }
-
-          RowLayout {
-            anchors.fill: parent
-            anchors.margins: 8
-            spacing: Style.marginM
-            z: 1
-
-            Rectangle {
-              Layout.preferredWidth: 34
-              Layout.preferredHeight: 34
-              radius: Math.min(Style.radiusL, width / 2)
-              color: "transparent"
-              clip: true
-
-              NImageRounded {
-                anchors.fill: parent
-                anchors.margins: 2
-                radius: Math.min(Style.radiusL, width / 2)
-                imagePath: MediaService.trackArtUrl
-                fallbackIcon: "disc"
-                fallbackIconSize: Style.fontSizeM
-                borderColor: Color.mOutline
-                borderWidth: Style.borderS
-              }
-            }
-
-            ColumnLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginXXS
-
-              NText {
-                text: MediaService.trackTitle || "No media"
-                pointSize: Style.fontSizeM
-                color: Color.mOnSurface
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-              }
-
-              NText {
-                text: MediaService.trackArtist || ""
-                pointSize: Style.fontSizeM
-                color: Color.mOnSurfaceVariant
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-              }
-            }
-
-            // Media controls (when enabled)
-            RowLayout {
-              spacing: Style.marginXS
-              visible: Settings.data.general.enableLockScreenMediaControls
-              Layout.alignment: Qt.AlignHCenter
-
-              Rectangle {
-                width: 28
-                height: 28
-                radius: Math.min(Style.radiusL, width / 2)
-                color: prevButtonArea.containsMouse ? Color.mPrimary : Qt.alpha(Color.mOnSurface, 0.1)
-                visible: MediaService.canGoPrevious
-
-                NIcon {
-                  anchors.centerIn: parent
-                  icon: "media-prev"
-                  pointSize: Style.fontSizeM
-                  color: prevButtonArea.containsMouse ? Color.mOnPrimary : Color.mOnSurface
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                      easing.type: Easing.OutCubic
-                    }
-                  }
-                }
-
-                MouseArea {
-                  id: prevButtonArea
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: MediaService.canGoPrevious ? MediaService.previous() : {}
-                }
-
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                    easing.type: Easing.OutCubic
-                  }
-                }
-              }
-
-              Rectangle {
-                width: 32
-                height: 32
-                radius: Math.min(Style.radiusL, width / 2)
-                color: playPauseButtonArea.containsMouse ? Color.mPrimary : Qt.alpha(Color.mOnSurface, 0.15)
-                visible: MediaService.canPlay || MediaService.canPause
-
-                NIcon {
-                  anchors.centerIn: parent
-                  icon: MediaService.isPlaying ? "media-pause" : "media-play"
-                  pointSize: Style.fontSizeL
-                  color: playPauseButtonArea.containsMouse ? Color.mOnPrimary : Color.mOnSurface
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                      easing.type: Easing.OutCubic
-                    }
-                  }
-                }
-
-                MouseArea {
-                  id: playPauseButtonArea
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: (MediaService.canPlay || MediaService.canPause) ? MediaService.playPause() : {}
-                }
-
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                    easing.type: Easing.OutCubic
-                  }
-                }
-              }
-
-              Rectangle {
-                width: 28
-                height: 28
-                radius: Math.min(Style.radiusL, width / 2)
-                color: nextButtonArea.containsMouse ? Color.mPrimary : Qt.alpha(Color.mOnSurface, 0.1)
-                visible: MediaService.canGoNext
-
-                NIcon {
-                  anchors.centerIn: parent
-                  icon: "media-next"
-                  pointSize: Style.fontSizeM
-                  color: nextButtonArea.containsMouse ? Color.mOnPrimary : Color.mOnSurface
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                      easing.type: Easing.OutCubic
-                    }
-                  }
-                }
-
-                MouseArea {
-                  id: nextButtonArea
-                  anchors.fill: parent
-                  hoverEnabled: true
-                  cursorShape: Qt.PointingHandCursor
-                  onClicked: MediaService.canGoNext ? MediaService.next() : {}
-                }
-
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                    easing.type: Easing.OutCubic
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        Rectangle {
-          Layout.preferredWidth: 1
-          Layout.fillHeight: true
-          Layout.rightMargin: 4
-          color: Qt.alpha(Color.mOutline, 0.3)
-          visible: MediaService.currentPlayer && MediaService.canPlay
-        }
-
-        Item {
-          Layout.preferredWidth: Style.marginM
-          visible: !(MediaService.currentPlayer && MediaService.canPlay)
-        }
-
-        // Current weather
-        RowLayout {
-          visible: Settings.data.location.weatherEnabled && LocationService.data.weather !== null
-          Layout.preferredWidth: 180
-          spacing: Style.marginM
-
-          Item {
-            Layout.preferredWidth: lockMainWeatherIconSide
-            Layout.preferredHeight: lockMainWeatherIconSide
-            Layout.alignment: Qt.AlignVCenter
-            readonly property int lockMainWeatherIconSide: Math.round(Style.fontSizeXXXL * Style.uiScaleRatio * 1.6)
-
-            NIcon {
-              visible: !LocationService.taliaWeatherMascotActive || !weatherReady
-              anchors.centerIn: parent
-              icon: weatherReady ? LocationService.weatherSymbolFromCode(LocationService.data.weather.current_weather.weathercode) : "weather-cloud-off"
-              pointSize: Style.fontSizeXXXL
-              color: Color.mPrimary
-            }
-            Loader {
-              active: LocationService.taliaWeatherMascotActive && weatherReady
-              anchors.fill: parent
-              asynchronous: true
-              sourceComponent: Component {
-                Image {
-                  anchors.fill: parent
-                  fillMode: Image.PreserveAspectFit
-                  smooth: true
-                  mipmap: true
-                  asynchronous: true
-                  source: Qt.resolvedUrl(LocationService.taliaWeatherImageFromCode(LocationService.data.weather.current_weather.weathercode))
-                }
-              }
-            }
-          }
-
-          ColumnLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginXXS
-
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginL
-
-              NText {
-                text: {
-                  var temp = LocationService.data.weather.current_weather.temperature;
-                  var suffix = "C";
-                  if (Settings.data.location.useFahrenheit) {
-                    temp = LocationService.celsiusToFahrenheit(temp);
-                    suffix = "F";
-                  }
-                  temp = Math.round(temp);
-                  return temp + "°" + suffix;
-                }
-                pointSize: Style.fontSizeXL
-                font.weight: Style.fontWeightBold
-                color: Color.mOnSurface
-              }
-
-              NText {
-                text: {
-                  var wind = LocationService.data.weather.current_weather.windspeed;
-                  var unit = "km/h";
-                  if (Settings.data.location.useFahrenheit) {
-                    wind = wind * 0.621371; // Convert km/h to mph
-                    unit = "mph";
-                  }
-                  wind = Math.round(wind);
-                  return wind + " " + unit;
-                }
-                pointSize: Style.fontSizeM
-                color: Color.mOnSurfaceVariant
-              }
-            }
-
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginM
-
-              NText {
-                text: Settings.data.location.name.split(",")[0]
-                pointSize: Style.fontSizeM
-                color: Color.mOnSurfaceVariant
-                visible: !Settings.data.location.hideWeatherCityName
-              }
-
-              NText {
-                text: (LocationService.data.weather.current && LocationService.data.weather.current.relativehumidity_2m) ? LocationService.data.weather.current.relativehumidity_2m + "% humidity" : ""
-                pointSize: Style.fontSizeM
-                color: Color.mOnSurfaceVariant
-              }
-            }
-          }
-        }
-
-        // Forecast
-        RowLayout {
-          visible: Settings.data.location.weatherEnabled && LocationService.data.weather !== null
-          Layout.preferredWidth: 260
-          Layout.rightMargin: 8
-          spacing: Style.marginXS
-
-          Repeater {
-            model: MediaService.currentPlayer && MediaService.canPlay ? 2 : 4
-            delegate: ColumnLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginXXS + 1
-
-              NText {
-                text: {
-                  var weatherDate = new Date(LocationService.data.weather.daily.time[index].replace(/-/g, "/"));
-                  return I18n.locale.toString(weatherDate, "ddd");
-                }
-                pointSize: Style.fontSizeM
-                color: Color.mOnSurfaceVariant
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-              }
-
-              Item {
-                Layout.preferredWidth: lockForecastWeatherIconSide
-                Layout.preferredHeight: lockForecastWeatherIconSide
-                Layout.alignment: Qt.AlignHCenter
-                readonly property int lockForecastWeatherIconSide: Math.round(Style.fontSizeXL * Style.uiScaleRatio * 1.6)
-
-                NIcon {
-                  visible: !LocationService.taliaWeatherMascotActive
-                  anchors.centerIn: parent
-                  icon: LocationService.weatherSymbolFromCode(LocationService.data.weather.daily.weathercode[index])
-                  pointSize: Style.fontSizeXL
-                  color: Color.mOnSurfaceVariant
-                }
-                Loader {
-                  active: LocationService.taliaWeatherMascotActive
-                  anchors.fill: parent
-                  asynchronous: true
-                  sourceComponent: Component {
-                    Image {
-                      anchors.fill: parent
-                      fillMode: Image.PreserveAspectFit
-                      smooth: true
-                      mipmap: true
-                      asynchronous: true
-                      source: Qt.resolvedUrl(LocationService.taliaWeatherImageFromCode(LocationService.data.weather.daily.weathercode[index]))
-                    }
-                  }
-                }
-              }
-
-              NText {
-                text: {
-                  var max = LocationService.data.weather.daily.temperature_2m_max[index];
-                  var min = LocationService.data.weather.daily.temperature_2m_min[index];
-                  if (Settings.data.location.useFahrenheit) {
-                    max = LocationService.celsiusToFahrenheit(max);
-                    min = LocationService.celsiusToFahrenheit(min);
-                  }
-                  max = Math.round(max);
-                  min = Math.round(min);
-                  return max + "°/" + min + "°";
-                }
-                pointSize: Style.fontSizeM
-                font.weight: Style.fontWeightMedium
-                color: Color.mOnSurfaceVariant
-                horizontalAlignment: Text.AlignHCenter
-                Layout.fillWidth: true
-              }
-            }
-          }
-        }
-
-        Item {
-          Layout.fillWidth: batteryIndicator.isReady
-        }
-
-        // Battery and Keyboard Layout (full mode only)
-        ColumnLayout {
-          Layout.alignment: (batteryIndicator.isReady) ? (Qt.AlignRight | Qt.AlignVCenter) : Qt.AlignVCenter
-          spacing: Style.marginM
-          visible: batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn
-
-          // Battery
-          RowLayout {
-            spacing: Style.marginXS
-            visible: batteryIndicator.isReady
-
-            NIcon {
-              icon: batteryIndicator.icon
-              pointSize: Style.fontSizeM
-              color: batteryIndicator.charging ? Color.mPrimary : Color.mOnSurfaceVariant
-            }
-
-            NText {
-              text: Math.round(batteryIndicator.percent) + "%"
-              color: Color.mOnSurfaceVariant
-              pointSize: Style.fontSizeM
-            }
-          }
-
-          // Keyboard Layout
-          RowLayout {
-            spacing: Style.marginXS
-            visible: keyboardLayout.currentLayout !== "Unknown"
-
-            NIcon {
-              icon: "keyboard"
-              pointSize: Style.fontSizeM
-              color: Color.mOnSurfaceVariant
-            }
-
-            NText {
-              text: keyboardLayout.currentLayout
-              color: Color.mOnSurfaceVariant
-              pointSize: Style.fontSizeM
-              elide: Text.ElideRight
-            }
-          }
-
-          // Caps Lock
-          RowLayout {
-            spacing: Style.marginXS
-            visible: batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn
-
-            NIcon {
-              icon: "lock"
-              pointSize: Style.fontSizeM
-              color: LockKeysService.capsLockOn ? Color.mPrimary : Qt.alpha(Color.mOnSurfaceVariant, 0.5)
-            }
-
-            NText {
-              text: I18n.tr("bar.lock-keys.show-caps-lock-label")
-              color: LockKeysService.capsLockOn ? Color.mOnSurfaceVariant : Qt.alpha(Color.mOnSurfaceVariant, 0.65)
-              pointSize: Style.fontSizeM
-              elide: Text.ElideRight
-            }
-          }
-        }
-
-        Item {
-          Layout.preferredWidth: Style.marginM
+        NText {
+          Layout.alignment: Qt.AlignHCenter
+          Layout.bottomMargin: 20
+          text: HostService.displayName
+          pointSize: 16
+          color: "white"
+          horizontalAlignment: Text.AlignHCenter
         }
       }
 
-      // Password input
+      // Password input (20 px below the user name, DESIGN §3.9)
       RowLayout {
         Layout.fillWidth: true
         spacing: 0
 
         Item {
-          Layout.preferredWidth: Style.marginM
+          Layout.fillWidth: true
         }
 
         Rectangle {
           id: passwordInputContainer
-          Layout.fillWidth: true
-          Layout.preferredHeight: 48
-          radius: Style.iRadiusL
-          color: Color.mSurface
-          border.color: passwordInput.activeFocus ? Color.mPrimary : Qt.alpha(Color.mOutline, 0.3)
-          border.width: passwordInput.activeFocus ? 2 : 1
+          Layout.alignment: Qt.AlignHCenter
+          Layout.preferredWidth: 280
+          Layout.preferredHeight: 36
+          radius: Math.min(Style.iRadiusL, height / 2)
+          color: Color.overlay("field")
+          border.color: lockControl.showFailure ? Color.alert : (passwordInput.activeFocus ? Color.mPrimary : Qt.alpha(Color.mOutline, 0.3))
+          border.width: 1
 
           property bool passwordVisible: false
+
+          // Error tooltip (DESIGN §3.9, widgets/errortooltip.cpp): white card
+          // below the field, alert-coloured message, arrow pointing up.
+          NArrowRect {
+            id: errorTooltip
+            anchors.top: parent.bottom
+            anchors.topMargin: Style.marginS
+            anchors.horizontalCenter: parent.horizontalCenter
+            arrowEdge: "top"
+            arrowWidth: Style.marginM
+            arrowHeight: Style.marginS
+            radius: Style.radiusPopup
+            fillColor: "white"
+            borderColor: Color.alert
+            borderWidth: 1
+            visible: lockControl.showFailure && (lockControl.errorMessage || "").length > 0
+            z: 3
+
+            RowLayout {
+              spacing: Style.marginM
+
+              NIcon {
+                icon: "alert-circle"
+                pointSize: Style.fontSizeL
+                color: Color.alert
+              }
+
+              NText {
+                text: lockControl.errorMessage || "Authentication failed"
+                color: Color.alert
+                pointSize: Style.fontSizeM
+                horizontalAlignment: Text.AlignHCenter
+              }
+            }
+          }
 
           // Ctrl + A to highlight the portion
           Shortcut {
@@ -762,19 +340,25 @@ Item {
 
           Row {
             anchors.left: parent.left
-            anchors.leftMargin: 18
+            anchors.leftMargin: 12
+            anchors.right: parent.right
+            anchors.rightMargin: 12
             anchors.verticalCenter: parent.verticalCenter
-            spacing: Style.marginL
+            spacing: Style.marginS
 
+            // Caps-lock glyph, left of the dots (DESIGN §3.9,
+            // userinputwidget.cpp qlineedit icon).
             NIcon {
-              icon: "login-2"
+              id: capsLockGlyph
+              icon: "arrow-bar-up"
               pointSize: Style.fontSizeL
-              color: passwordInput.activeFocus ? Color.mPrimary : Color.mOnSurfaceVariant
-              anchors.verticalCenter: parent.verticalCenter
+              color: Color.mPrimary
+              visible: LockKeysService.capsLockOn
             }
 
             Row {
               spacing: 0
+              Layout.alignment: Qt.AlignLeft
 
               Rectangle {
                 width: 2
@@ -806,12 +390,35 @@ Item {
                 }
               }
 
-              // Host for dots / plain text and the caret (caret x follows passwordInput.cursorPosition)
+              // Authenticating: spinner replaces the dots (DESIGN §3.9,
+              // userinputwidget.cpp loadingIndicator). NBusyIndicator always
+              // renders its frame, so it must be hidden while idle.
+              NBusyIndicator {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 20
+                height: 20
+                running: lockControl.unlockInProgress
+                visible: lockControl.unlockInProgress
+              }
+
+              // Placeholder for the idle field. With fprintd enabled DDE waits
+              // for a fingerprint first, so the fprintd text shows until the
+              // user types (DESIGN §3.9, brief §2).
+              NText {
+                anchors.verticalCenter: parent.verticalCenter
+                text: lockControl.waitingForPassword ? I18n.tr("authentication.fingerprint-or-password") : I18n.tr("authentication.password")
+                color: Qt.alpha("white", 0.5)
+                pointSize: Style.fontSizeM
+                visible: passwordInput.text.length === 0 && !passwordInput.activeFocus
+              }
+
+              // Authenticating hides the dot host so the two never overlap.
               Item {
                 id: passwordVisualHost
                 height: 20
                 width: passwordInputContainer.passwordVisible ? Math.min(visiblePasswordPlainText.implicitWidth, 550) : Math.min(passwordDisplayContent.width, 550)
                 anchors.verticalCenter: parent.verticalCenter
+                visible: !lockControl.unlockInProgress
 
                 readonly property real caretVisualX: {
                   const len = passwordInput.text.length;
@@ -1012,7 +619,7 @@ Item {
             radius: Math.min(Style.iRadiusL, width / 2)
             color: eyeButtonArea.containsMouse ? Color.mPrimary : "transparent"
             visible: passwordInput.text.length > 0
-            enabled: !lockContext || !lockContext.unlockInProgress
+            enabled: !lockControl || !lockControl.unlockInProgress
 
             NIcon {
               anchors.centerIn: parent
@@ -1056,7 +663,7 @@ Item {
             color: submitButtonArea.containsMouse ? Color.mPrimary : "transparent"
             border.color: Color.mPrimary
             border.width: Style.borderS
-            enabled: !lockContext || !lockContext.unlockInProgress
+            enabled: !lockControl || !lockControl.unlockInProgress
 
             NIcon {
               anchors.centerIn: parent
@@ -1097,7 +704,7 @@ Item {
         }
 
         Item {
-          Layout.preferredWidth: Style.marginM
+          Layout.fillWidth: true
         }
       }
 
@@ -1105,7 +712,7 @@ Item {
       RowLayout {
         id: sessionButtonRow
         Layout.fillWidth: true
-        Layout.preferredHeight: Settings.data.general.compactLockScreen ? 36 : 48
+        Layout.preferredHeight: 48
         Layout.alignment: Qt.AlignHCenter
         spacing: Style.marginM
         visible: Settings.data.general.showSessionButtonsOnLockScreen
@@ -1126,8 +733,8 @@ Item {
             outlined: true
             backgroundColor: Color.mOnSurfaceVariant
             textColor: Color.mOnPrimary
-            fontSize: Settings.data.general.compactLockScreen ? Style.fontSizeS : Style.fontSizeM
-            iconSize: Settings.data.general.compactLockScreen ? Style.fontSizeM : Style.fontSizeL
+            fontSize: Style.fontSizeM
+            iconSize: Style.fontSizeL
             horizontalAlignment: Qt.AlignHCenter
             buttonRadius: Style.radiusL
             onClicked: startTimer("logout")
@@ -1145,8 +752,8 @@ Item {
             outlined: true
             backgroundColor: Color.mOnSurfaceVariant
             textColor: Color.mOnPrimary
-            fontSize: Settings.data.general.compactLockScreen ? Style.fontSizeS : Style.fontSizeM
-            iconSize: Settings.data.general.compactLockScreen ? Style.fontSizeM : Style.fontSizeL
+            fontSize: Style.fontSizeM
+            iconSize: Style.fontSizeL
             horizontalAlignment: Qt.AlignHCenter
             buttonRadius: Style.radiusL
             onClicked: startTimer("suspend")
@@ -1165,8 +772,8 @@ Item {
             outlined: true
             backgroundColor: Color.mOnSurfaceVariant
             textColor: Color.mOnPrimary
-            fontSize: Settings.data.general.compactLockScreen ? Style.fontSizeS : Style.fontSizeM
-            iconSize: Settings.data.general.compactLockScreen ? Style.fontSizeM : Style.fontSizeL
+            fontSize: Style.fontSizeM
+            iconSize: Style.fontSizeL
             horizontalAlignment: Qt.AlignHCenter
             buttonRadius: Style.radiusL
             onClicked: startTimer("hibernate")
@@ -1184,8 +791,8 @@ Item {
             outlined: true
             backgroundColor: Color.mOnSurfaceVariant
             textColor: Color.mOnPrimary
-            fontSize: Settings.data.general.compactLockScreen ? Style.fontSizeS : Style.fontSizeM
-            iconSize: Settings.data.general.compactLockScreen ? Style.fontSizeM : Style.fontSizeL
+            fontSize: Style.fontSizeM
+            iconSize: Style.fontSizeL
             horizontalAlignment: Qt.AlignHCenter
             buttonRadius: Style.radiusL
             onClicked: startTimer("reboot")
@@ -1203,8 +810,8 @@ Item {
             outlined: true
             backgroundColor: Color.mError
             textColor: Color.mOnError
-            fontSize: Settings.data.general.compactLockScreen ? Style.fontSizeS : Style.fontSizeM
-            iconSize: Settings.data.general.compactLockScreen ? Style.fontSizeM : Style.fontSizeL
+            fontSize: Style.fontSizeM
+            iconSize: Style.fontSizeL
             horizontalAlignment: Qt.AlignHCenter
             buttonRadius: Style.radiusL
             onClicked: startTimer("shutdown")

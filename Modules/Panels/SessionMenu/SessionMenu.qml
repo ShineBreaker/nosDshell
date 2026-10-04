@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
@@ -7,56 +6,40 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Commons
+import qs.Modules.LockScreen
 import qs.Modules.MainScreen
 import qs.Services.Compositor
 import qs.Services.UI
 import qs.Widgets
 
+// dde-shutdown full-screen session menu (DESIGN §3.8).
+//
+// Route note: this stays a SmartPanel. SmartPanel owns the window (layershell,
+// focus, mask, close animation) and MainScreen's background slots reference
+// panels through PanelService, so the only way to keep `qs ipc call sessionMenu
+// toggle`, the bar button and the blurred backdrop working is to remain a
+// SmartPanel. The DDE full-screen look is achieved with preferredWidth/Height
+// ratio 1.0 and a transparent panelBackgroundColor + blurEnabled = false, so
+// SmartPanel draws no frame and clips nothing — the DDE form is the
+// panelContent.
 SmartPanel {
   id: root
 
-  readonly property bool largeButtonsStyle: Settings.data.sessionMenu.largeButtonsStyle || false
-  readonly property bool largeButtonsLayout: Settings.data.sessionMenu.largeButtonsLayout || "grid"
+  // Full-screen form: no panel frame, no SmartPanel background.
+  blurEnabled: false
+  panelBackgroundColor: "transparent"
+  panelBorderColor: "transparent"
+  preferredWidth: 0
+  preferredWidthRatio: 1.0
+  preferredHeight: 0
+  preferredHeightRatio: 1.0
 
-  // Large buttons style is fullscreen — disable blur behind it
-  blurEnabled: !largeButtonsStyle
+  // dde-shutdown always centers its button row
+  panelAnchorHorizontalCenter: true
+  panelAnchorVerticalCenter: true
 
-  // Make panel background transparent for large buttons style
-  panelBackgroundColor: largeButtonsStyle ? "transparent" : Color.mSurface
-
-  preferredWidth: largeButtonsStyle ? 0 : Math.round(440 * Style.uiScaleRatio)
-  preferredWidthRatio: largeButtonsStyle ? 1.0 : 0
-  preferredHeight: {
-    if (largeButtonsStyle) {
-      return 0; // Use ratio instead
-    }
-    var headerHeight = Settings.data.sessionMenu.showHeader ? Style.baseWidgetSize * 0.6 : 0;
-
-    var dividerHeight = Settings.data.sessionMenu.showHeader ? Style.marginS : 0;
-    var buttonHeight = Style.baseWidgetSize * 1.3 * Style.uiScaleRatio;
-    var buttonSpacing = Style.marginS;
-    var enabledCount = powerOptions.length;
-
-    var headerSpacing = Settings.data.sessionMenu.showHeader ? Style.margin2L : 0;
-    var baseHeight = (Style.marginL * 4) + headerHeight + dividerHeight + headerSpacing;
-    var buttonsHeight = enabledCount > 0 ? (buttonHeight * enabledCount) + (buttonSpacing * (enabledCount - 1)) : 0;
-
-    return Math.round(baseHeight + buttonsHeight);
-  }
-  preferredHeightRatio: largeButtonsStyle ? 1.0 : 0
-
-  // Positioning - large buttons style is always centered and fullscreen
-  readonly property string panelPosition: Settings.data.sessionMenu.position
-
-  panelAnchorHorizontalCenter: largeButtonsStyle || panelPosition === "center" || panelPosition.endsWith("_center")
-  panelAnchorVerticalCenter: largeButtonsStyle || panelPosition === "center"
-  panelAnchorLeft: !largeButtonsStyle && panelPosition !== "center" && panelPosition.endsWith("_left")
-  panelAnchorRight: !largeButtonsStyle && panelPosition !== "center" && panelPosition.endsWith("_right")
-  panelAnchorBottom: !largeButtonsStyle && panelPosition.startsWith("bottom_")
-  panelAnchorTop: !largeButtonsStyle && panelPosition.startsWith("top_")
-
-  // SessionMenu handle it's own closing logic
-  property bool closeWithEscape: false
+  // SessionMenu handles its own closing logic
+  closeWithEscape: false
 
   // Timer properties
   readonly property int timerDuration: Settings.data.sessionMenu.countdownDuration
@@ -67,53 +50,46 @@ SmartPanel {
   // Navigation properties
   property int selectedIndex: -1
   property bool ignoreMouseHover: true // Transient flag, should always be true on init
+  property bool mouseTrackingReady: false
 
   // Global mouse tracking for movement detection across delegates
   property real globalLastMouseX: 0
   property real globalLastMouseY: 0
   property bool globalMouseInitialized: false
-  property bool mouseTrackingReady: false // Delay tracking until panel is settled
+  // Set by presetSelection(); the row inside panelContent picks it up and takes
+  // focus, because ids in panelContent are not visible from this scope.
+  property bool focusRequested: false
 
-  Timer {
-    id: mouseTrackingDelayTimer
-    interval: Style.animationNormal + 50 // Wait for panel animation to complete + safety margin
-    repeat: false
-    onTriggered: {
-      root.mouseTrackingReady = true;
-      root.globalMouseInitialized = false; // Reset so we get fresh initial position
-    }
-  }
-
-  // Action metadata mapping
+  // Action metadata mapping (dde-shutdown contentwidget.cpp order)
   readonly property var actionMetadata: {
+    "shutdown": {
+      "icon": "power",
+      "title": I18n.tr("common.shutdown"),
+      "isShutdown": true
+    },
+    "reboot": {
+      "icon": "refresh",
+      "title": I18n.tr("common.reboot"),
+      "isShutdown": false
+    },
+    "suspend": {
+      "icon": "moon",
+      "title": I18n.tr("common.suspend"),
+      "isShutdown": false
+    },
+    "hibernate": {
+      "icon": "snowflake",
+      "title": I18n.tr("common.hibernate"),
+      "isShutdown": false
+    },
     "lock": {
       "icon": "lock",
       "title": I18n.tr("common.lock"),
       "isShutdown": false
     },
-    "suspend": {
-      "icon": "suspend",
-      "title": I18n.tr("common.suspend"),
-      "isShutdown": false
-    },
-    "hibernate": {
-      "icon": "hibernate",
-      "title": I18n.tr("common.hibernate"),
-      "isShutdown": false
-    },
-    "reboot": {
-      "icon": "reboot",
-      "title": I18n.tr("common.reboot"),
-      "isShutdown": false
-    },
-    "userspaceReboot": {
-      "icon": "rotate",
-      "title": I18n.tr("common.userspace-reboot"),
-      "isShutdown": false
-    },
-    "rebootToUefi": {
-      "icon": "reboot",
-      "title": I18n.tr("common.reboot-to-uefi"),
+    "switchUser": {
+      "icon": "user-switch",
+      "title": I18n.tr("session-menu.switch-user"),
       "isShutdown": false
     },
     "logout": {
@@ -121,36 +97,58 @@ SmartPanel {
       "title": I18n.tr("common.logout"),
       "isShutdown": false
     },
-    "shutdown": {
-      "icon": "shutdown",
-      "title": I18n.tr("common.shutdown"),
-      "isShutdown": true
+    "rebootToUefi": {
+      "icon": "device-desktop",
+      "title": I18n.tr("common.reboot-to-uefi"),
+      "isShutdown": false
     }
   }
 
-  // Build powerOptions from settings, filtering enabled ones and adding metadata
-  // _powerOptionsVersion forces re-evaluation when settings change
+  // DDE has no "switch user" action in the session service; the entry is only
+  // offered when the compositor service can actually switch users.
+  readonly property bool switchUserAvailable: typeof CompositorService.switchUser === "function"
+
+  // Build powerOptions from settings, filtering enabled ones and adding metadata.
+  // Order follows dde-shutdown; _powerOptionsVersion forces re-evaluation.
   property int _powerOptionsVersion: 0
   property var powerOptions: {
-    // Reference version to trigger re-evaluation
     void (_powerOptionsVersion);
     var options = [];
     var settingsOptions = Settings.data.sessionMenu.powerOptions || [];
 
+    var ddeOrder = ["shutdown", "reboot", "suspend", "hibernate", "lock", "switchUser", "logout", "rebootToUefi"];
+    var enabled = [];
     for (var i = 0; i < settingsOptions.length; i++) {
-      var settingOption = settingsOptions[i];
-      if (settingOption.enabled && actionMetadata[settingOption.action]) {
-        var metadata = actionMetadata[settingOption.action];
-        options.push({
-                       "action": settingOption.action,
-                       "icon": metadata.icon,
-                       "title": metadata.title,
-                       "isShutdown": metadata.isShutdown,
-                       "countdownEnabled": settingOption.countdownEnabled !== undefined ? settingOption.countdownEnabled : true,
-                       "command": settingOption.command || "",
-                       "keybind": settingOption.keybind || ""
-                     });
+      if (settingsOptions[i].enabled && actionMetadata[settingsOptions[i].action]) {
+        enabled.push(settingsOptions[i]);
       }
+    }
+    enabled.sort(function (a, b) {
+      var ia = ddeOrder.indexOf(a.action);
+      var ib = ddeOrder.indexOf(b.action);
+      if (ia < 0)
+        ia = ddeOrder.length;
+      if (ib < 0)
+        ib = ddeOrder.length;
+      return ia - ib;
+    });
+
+    for (var j = 0; j < enabled.length; j++) {
+      var settingOption = enabled[j];
+      // "switch user" is only offered when it can actually run
+      if (settingOption.action === "switchUser" && !switchUserAvailable) {
+        continue;
+      }
+      var metadata = actionMetadata[settingOption.action];
+      options.push({
+                     "action": settingOption.action,
+                     "icon": metadata.icon,
+                     "title": metadata.title,
+                     "isShutdown": metadata.isShutdown,
+                     "countdownEnabled": settingOption.countdownEnabled !== undefined ? settingOption.countdownEnabled : true,
+                     "command": settingOption.command || "",
+                     "keybind": settingOption.keybind || ""
+                   });
     }
 
     return options;
@@ -163,27 +161,56 @@ SmartPanel {
     }
   }
 
-  // Lifecycle handlers
-  onOpened: {
-    if (powerOptions.length > 0) {
-      selectedIndex = -1;
-      ignoreMouseHover = true;
-      globalMouseInitialized = false;
-      mouseTrackingReady = false;
-      mouseTrackingDelayTimer.restart();
-    } else {
+  // Lifecycle ------------------------------------------------------------
+  // Named presetSelection() rather than open() so it does not shadow
+  // SmartPanel.open(); called when the panel becomes visible.
+  // NOTE: close()/toggle() are SmartPanel's — this panel only adds
+  // cancelTimer() via onIsPanelVisibleChanged below, because defining
+  // close() here would shadow it and recurse infinitely.
+  function presetSelection() {
+    if (powerOptions.length === 0) {
       Logger.w("SessionMenu", "Trying to open an empty session menu");
-      root.closeImmediately();
+      return;
+    }
+
+    // DDE preselects "lock" (dde-shutdown contentwidget.cpp m_currentSelectedBtn)
+    var lockIndex = -1;
+    for (var i = 0; i < powerOptions.length; i++) {
+      if (powerOptions[i].action === "lock") {
+        lockIndex = i;
+        break;
+      }
+    }
+    selectedIndex = lockIndex >= 0 ? lockIndex : 0;
+    ignoreMouseHover = true;
+    mouseTrackingReady = false;
+    globalMouseInitialized = false;
+    mouseTrackingDelayTimer.restart();
+    focusRequested = true;
+  }
+
+  function cancelTimer() {
+    timerActive = false;
+    pendingAction = "";
+    timeRemaining = 0;
+    countdownTimer.stop();
+  }
+
+  // SmartPanel already defines open()/close()/toggle(), so only hook the
+  // visibility transition here (preset selection on open, timer cancel on
+  // close) instead of shadowing those functions.
+  Connections {
+    target: root
+    function onIsPanelVisibleChanged() {
+      if (root.isPanelVisible) {
+        root.presetSelection();
+      } else {
+        root.cancelTimer();
+      }
     }
   }
 
-  onClosed: {
-    cancelTimer();
-    selectedIndex = -1;
-    ignoreMouseHover = true;
-  }
-
-  // Timer management
+  // Timer management -----------------------------------------------------
   function startTimer(action) {
     // Check if global countdown is disabled
     if (!Settings.data.sessionMenu.enableCountdown) {
@@ -218,24 +245,14 @@ SmartPanel {
     countdownTimer.start();
   }
 
-  function cancelTimer() {
-    timerActive = false;
-    pendingAction = "";
-    timeRemaining = 0;
-    countdownTimer.stop();
-  }
-
   function executeAction(action) {
-    // Stop timer but don't reset other properties yet
     countdownTimer.stop();
 
-    // Use default behavior or custom command handled by CompositorService
     switch (action) {
     case "lock":
       CompositorService.lock();
       break;
     case "suspend":
-      // Check if we should lock before suspending
       if (Settings.data.general.lockOnSuspend) {
         CompositorService.lockAndSuspend();
       } else {
@@ -262,12 +279,12 @@ SmartPanel {
       break;
     }
 
-    // Reset timer state and close panel
     cancelTimer();
+    // SmartPanel's close — do NOT call this.close(), that would recurse.
     root.close();
   }
 
-  // Navigation functions
+  // Navigation -----------------------------------------------------------
   function selectNextWrapped() {
     if (powerOptions.length > 0) {
       if (selectedIndex < 0) {
@@ -289,158 +306,31 @@ SmartPanel {
   }
 
   function selectFirst() {
-    if (powerOptions.length > 0) {
-      selectedIndex = 0;
-    } else {
-      selectedIndex = -1;
-    }
+    selectedIndex = powerOptions.length > 0 ? 0 : -1;
   }
 
   function selectLast() {
-    if (powerOptions.length > 0) {
-      selectedIndex = powerOptions.length - 1;
-    } else {
-      selectedIndex = -1;
-    }
-  }
-
-  function getGridInfo() {
-    let columns, rows;
-    if (Settings.data.sessionMenu.largeButtonsLayout === "single-row") {
-      columns = powerOptions.length;
-      rows = 1;
-    } else {
-      columns = Math.min(3, Math.ceil(Math.sqrt(powerOptions.length)));
-      rows = Math.ceil(powerOptions.length / columns);
-    }
-
-    return {
-      columns,
-      rows,
-      currentRow: selectedIndex >= 0 ? Math.floor(selectedIndex / columns) : -1,
-      currentCol: selectedIndex >= 0 ? selectedIndex % columns : -1,
-      itemsInRow: row => Math.min(columns, powerOptions.length - row * columns)
-    };
-  }
-
-  // Unified navigation function
-  function navigateGrid(direction) {
-    if (powerOptions.length === 0)
-      return;
-
-    const grid = getGridInfo();
-    // If no selection, start at first item
-    let newRow = grid.currentRow >= 0 ? grid.currentRow : 0;
-    let newCol = grid.currentCol >= 0 ? grid.currentCol : 0;
-
-    switch (direction) {
-    case "left":
-      newCol = newCol - 1 < 0 ? grid.itemsInRow(newRow) - 1 : newCol - 1;
-      break;
-    case "right":
-      // We already moved to newCol to 0 if grid.currentCol was negative
-      newCol = grid.currentCol < 0 ? newRow : newCol + 1 >= grid.itemsInRow(newRow) ? 0 : newCol + 1;
-      break;
-    case "up":
-      newRow = newRow - 1 < 0 ? grid.rows - 1 : newRow - 1;
-      break;
-    case "down":
-      // We already moved to newRow to 0 if grid.currentRow was negative
-      newRow = grid.currentRow < 0 ? newRow : newRow + 1 >= grid.rows ? 0 : newRow + 1;
-      break;
-    }
-
-    // For vertical movement, clamp column if row has fewer items
-    if (direction === "up" || direction === "down") {
-      const itemsInNewRow = grid.itemsInRow(newRow);
-      newCol = Math.min(newCol, itemsInNewRow - 1);
-    }
-
-    const newIndex = newRow * grid.columns + newCol;
-    if (newIndex < powerOptions.length) {
-      selectedIndex = newIndex;
-    }
+    selectedIndex = powerOptions.length > 0 ? powerOptions.length - 1 : -1;
   }
 
   function activate() {
     if (powerOptions.length > 0 && selectedIndex >= 0 && powerOptions[selectedIndex]) {
-      const option = powerOptions[selectedIndex];
-      startTimer(option.action);
+      startTimer(powerOptions[selectedIndex].action);
     }
   }
 
-  function checkKey(event, settingName) {
-    return Keybinds.checkKey(event, settingName, Settings);
-  }
-
-  function handleUp() {
-    if (largeButtonsStyle) {
-      navigateGrid("up");
-    } else {
-      selectPreviousWrapped();
-    }
-  }
-
-  function handleDown() {
-    if (largeButtonsStyle) {
-      navigateGrid("down");
-    } else {
-      selectNextWrapped();
-    }
-  }
-
-  function handleLeft() {
-    if (largeButtonsStyle) {
-      navigateGrid("left");
-    } else {
-      selectPreviousWrapped();
-    }
-  }
-
-  function handleRight() {
-    if (largeButtonsStyle) {
-      navigateGrid("right");
-    } else {
-      selectNextWrapped();
-    }
-  }
-
-  function handleEnter() {
-    activate();
-  }
-
-  function handleEscape() {
-    if (timerActive) {
-      cancelTimer();
-    } else {
-      root.close();
-    }
-  }
-
-  // Override keyboard handlers from SmartPanel
-  function onEscapePressed() {
-    handleEscape();
-  }
-  function onTabPressed() {
-    selectNextWrapped();
-  }
-  function onBackTabPressed() {
+  // MainScreen's central keyboard shortcuts route here.
+  function onLeftPressed() {
     selectPreviousWrapped();
   }
-  function onLeftPressed() {
-    handleLeft();
-  }
   function onRightPressed() {
-    handleRight();
+    selectNextWrapped();
   }
   function onUpPressed() {
-    handleUp();
+    selectPreviousWrapped();
   }
   function onDownPressed() {
-    handleDown();
-  }
-  function onEnterPressed() {
-    handleEnter();
+    selectNextWrapped();
   }
   function onHomePressed() {
     selectFirst();
@@ -448,13 +338,21 @@ SmartPanel {
   function onEndPressed() {
     selectLast();
   }
+  function onReturnPressed() {
+    activate();
+  }
+  function onEscapePressed() {
+    if (timerActive) {
+      cancelTimer();
+    } else {
+      root.close(); // SmartPanel's close
+    }
+  }
 
   function checkKeybind(event) {
     if (powerOptions.length === 0)
       return false;
 
-    // Construct key string in the same format as the recorder
-    // Ignore modifier keys by themselves
     if (event.key === Qt.Key_Control || event.key === Qt.Key_Shift || event.key === Qt.Key_Alt || event.key === Qt.Key_Meta) {
       return false;
     }
@@ -474,7 +372,6 @@ SmartPanel {
     return false;
   }
 
-  // Countdown timer
   Timer {
     id: countdownTimer
     interval: 100
@@ -487,650 +384,238 @@ SmartPanel {
     }
   }
 
-  panelContent: Rectangle {
-    id: panelContent
-    color: "transparent"
-    focus: true
-
-    // For large buttons style, use full screen dimensions
-    readonly property var contentPreferredWidth: largeButtonsStyle ? (root.screen?.width || root.width || 0) : undefined
-    readonly property var contentPreferredHeight: largeButtonsStyle ? (root.screen?.height || root.height || 0) : undefined
-
-    // Focus management
-    Connections {
-      target: root
-      function onOpened() {
-        Qt.callLater(() => {
-                       panelContent.forceActiveFocus();
-                     });
-      }
+  Timer {
+    id: mouseTrackingDelayTimer
+    interval: Style.motionEnter + 50
+    repeat: false
+    onTriggered: {
+      root.mouseTrackingReady = true;
+      root.globalMouseInitialized = false;
     }
+  }
 
-    Keys.onPressed: event => {
-                      // Check custom entry keybinds first
-                      if (root.checkKeybind(event)) {
-                        event.accepted = true;
-                        return;
-                      }
+  // DDE renders the shutdown form over a blurred wallpaper with black
+  // underneath (widgets/fullscreenbackground.cpp). LockScreenBackground already
+  // owns wallpaper resolution and the nosd-blur / MultiEffect fallback, so
+  // reuse it instead of duplicating that machinery.
+  //
+  // NOTE: the background and the click-outside area live inside panelContent,
+  // not as siblings of it — SmartPanel's contentLoader is declared in the base
+  // file, so siblings added here would paint above the panel content and hide
+  // the button row.
+  panelContent: Component {
+    Item {
+      id: content
+      anchors.fill: parent
+      focus: true
 
-                      // Check global navigation keybinds
-                      if (checkKey(event, 'up')) {
-                        handleUp();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (checkKey(event, 'down')) {
-                        handleDown();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (checkKey(event, 'left')) {
-                        handleLeft();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (checkKey(event, 'right')) {
-                        handleRight();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (checkKey(event, 'enter')) {
-                        handleEnter();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (checkKey(event, 'escape')) {
-                        handleEscape();
-                        event.accepted = true;
-                        return;
-                      }
+      readonly property bool allowAttach: false
+      readonly property var geometryPlaceholder: null
 
-                      // Block default keys if they weren't matched above
-                      // This prevents 'Up' from working if rebinned to something else
-                      if (event.key === Qt.Key_Up || event.key === Qt.Key_Down || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
-                        event.accepted = true;
-                        return;
-                      }
-                    }
+      LockScreenBackground {
+        anchors.fill: parent
+        screen: root.screen
+        tintColor: "transparent"
+        z: 0
+      }
 
-    HoverHandler {
-      id: globalHoverHandler
+      // Click on empty area cancels the countdown, else closes the menu
+      MouseArea {
+        anchors.fill: parent
+        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+        z: 1
 
-      onPointChanged: {
-        if (!root.mouseTrackingReady) {
-          return;
-        }
-
-        if (!root.globalMouseInitialized) {
-          root.globalLastMouseX = point.position.x;
-          root.globalLastMouseY = point.position.y;
-          root.globalMouseInitialized = true;
-          return;
-        }
-
-        const deltaX = Math.abs(point.position.x - root.globalLastMouseX);
-        const deltaY = Math.abs(point.position.y - root.globalLastMouseY);
-        if (deltaX + deltaY >= 5) {
-          root.ignoreMouseHover = false;
-          root.globalLastMouseX = point.position.x;
-          root.globalLastMouseY = point.position.y;
+        onClicked: {
+          if (root.timerActive) {
+            root.cancelTimer();
+          } else {
+            root.close(); // SmartPanel's close
+          }
         }
       }
-    }
 
-    // Timer text for large buttons style, positioned absolutely with background
-    Rectangle {
-      id: timerTextContainer
-      visible: largeButtonsStyle && timerActive
-      anchors.bottom: largeButtonsContainer.top
-      anchors.horizontalCenter: largeButtonsContainer.horizontalCenter
-      anchors.bottomMargin: Style.marginM
-      width: timerText.width + Style.margin2XL
-      height: timerText.height + Style.margin2L
-      radius: Style.radiusM
-      color: Color.mSurfaceVariant
-      border.color: Color.mOutline
-      border.width: Style.borderS
-      z: 1000
+      // Cross-scope focus handshake (buttonRow lives here, the trigger is on root)
+      Connections {
+        target: root
+        function onFocusRequestedChanged() {
+          if (root.focusRequested) {
+            root.focusRequested = false;
+            buttonRow.forceActiveFocus();
+          }
+        }
+      }
 
-      NText {
-        id: timerText
+      Keys.onPressed: event => {
+                        if (root.checkKeybind(event)) {
+                          event.accepted = true;
+                          return;
+                        }
+
+                        if (Keybinds.checkKey(event, 'left', Settings)) {
+                          root.selectPreviousWrapped();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'right', Settings)) {
+                          root.selectNextWrapped();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'up', Settings)) {
+                          root.selectPreviousWrapped();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'down', Settings)) {
+                          root.selectNextWrapped();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'home', Settings)) {
+                          root.selectFirst();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'end', Settings)) {
+                          root.selectLast();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'enter', Settings)) {
+                          root.activate();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (Keybinds.checkKey(event, 'escape', Settings)) {
+                          root.onEscapePressed();
+                          event.accepted = true;
+                          return;
+                        }
+
+                        // Block defaults so rebinding a direction actually disables it
+                        if (event.key === Qt.Key_Up || event.key === Qt.Key_Down || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
+                          event.accepted = true;
+                        }
+                      }
+
+      // One horizontal row, vertically centered (contentwidget.cpp buttonLayout)
+      Row {
+        id: buttonRow
         anchors.centerIn: parent
-        text: I18n.tr("session-menu.action-in-seconds", {
-                        "action": root.actionMetadata[pendingAction] ? root.actionMetadata[pendingAction].title : "",
-                        "seconds": Math.ceil(timeRemaining / 1000)
-                      })
-        font.weight: Style.fontWeightBold
-        pointSize: Style.fontSizeL
-        color: Color.mOnSurfaceVariant
-      }
-    }
-
-    // Large buttons style layout container
-    ColumnLayout {
-      id: largeButtonsContainer
-      visible: largeButtonsStyle
-      anchors.centerIn: parent
-
-      // Large buttons style layout (grid)
-      GridLayout {
-        id: largeButtonsGrid
-        Layout.alignment: Qt.AlignHCenter
-        columns: Settings.data.sessionMenu.largeButtonsLayout === "single-row" ? powerOptions.length : Math.min(3, Math.ceil(Math.sqrt(powerOptions.length)))
-        rowSpacing: Style.marginXL
-        columnSpacing: Style.marginXL
-        width: columns * 200 * Style.uiScaleRatio + (columns - 1) * Style.marginXL
-        height: Math.ceil(powerOptions.length / columns) * 200 * Style.uiScaleRatio + (Math.ceil(powerOptions.length / columns) - 1) * Style.marginXL
+        spacing: Style.shutdownButtonSpacing
+        z: 2
 
         Repeater {
-          model: powerOptions
-          delegate: LargeButton {
-            Layout.preferredWidth: Math.round(200 * Style.uiScaleRatio)
-            Layout.preferredHeight: Math.round(200 * Style.uiScaleRatio)
+          model: root.powerOptions
+          delegate: ShutdownButton {
+            required property var modelData
+            required property int index
+
+            width: Style.shutdownButtonSize
+            height: Style.shutdownButtonSize
             icon: modelData.icon
             title: modelData.title
             isShutdown: modelData.isShutdown || false
-            isSelected: index === selectedIndex
-            number: index + 1
-            buttonIndex: index
+            isSelected: index === root.selectedIndex
+            effectiveHover: !root.ignoreMouseHover && buttonMouse.containsMouse
+            pending: root.timerActive && root.pendingAction === modelData.action
+            keybind: (Settings.data.sessionMenu.showKeybinds && modelData.keybind) ? modelData.keybind : ""
+
             onClicked: {
-              selectedIndex = index;
-              startTimer(modelData.action);
-            }
-            pending: timerActive && pendingAction === modelData.action
-            keybind: modelData.keybind || ""
-          }
-        }
-      }
-    }
-
-    // Normal style layout
-    NBox {
-      visible: !largeButtonsStyle
-      anchors.fill: parent
-      anchors.margins: Style.marginL
-      color: Color.mSurfaceVariant
-
-      ColumnLayout {
-        anchors.fill: parent
-        anchors.margins: Style.marginL
-        spacing: Style.marginL
-
-        // Header with title and close button
-        RowLayout {
-          visible: Settings.data.sessionMenu.showHeader
-          Layout.fillWidth: true
-          Layout.preferredHeight: Style.baseWidgetSize * 0.6
-
-          NText {
-            text: timerActive ? I18n.tr("session-menu.action-in-seconds", {
-                                          "action": root.actionMetadata[pendingAction] ? root.actionMetadata[pendingAction].title : "",
-                                          "seconds": Math.ceil(timeRemaining / 1000)
-                                        }) : I18n.tr("session-menu.title")
-            font.weight: Style.fontWeightBold
-            pointSize: Style.fontSizeL
-            color: timerActive ? Color.mPrimary : Color.mOnSurface
-            Layout.alignment: Qt.AlignVCenter
-            verticalAlignment: Text.AlignVCenter
-          }
-
-          Item {
-            Layout.fillWidth: true
-          }
-
-          NIconButton {
-            icon: timerActive ? "stop" : "close"
-            tooltipText: timerActive ? I18n.tr("session-menu.cancel-timer") : I18n.tr("common.close")
-            Layout.alignment: Qt.AlignVCenter
-            baseSize: Style.baseWidgetSize * 0.7
-            colorBg: timerActive ? Qt.alpha(Color.mError, 0.08) : "transparent"
-            colorFg: timerActive ? Color.mError : Color.mOnSurface
-            onClicked: {
-              if (timerActive) {
-                cancelTimer();
-              } else {
-                cancelTimer();
-                root.close();
-              }
-            }
-          }
-        }
-
-        NDivider {
-          visible: Settings.data.sessionMenu.showHeader
-          Layout.fillWidth: true
-        }
-
-        // Power options
-        ColumnLayout {
-          Layout.fillWidth: true
-          spacing: Style.marginS
-
-          Repeater {
-            model: powerOptions
-            delegate: PowerButton {
-              Layout.fillWidth: true
-              icon: modelData.icon
-              title: modelData.title
-              isShutdown: modelData.isShutdown || false
-              isSelected: index === selectedIndex
-              number: index + 1
-              buttonIndex: index
-              onClicked: {
-                selectedIndex = index;
-                startTimer(modelData.action);
-              }
-              pending: timerActive && pendingAction === modelData.action
-              keybind: modelData.keybind || ""
+              root.selectedIndex = index;
+              root.startTimer(modelData.action);
             }
           }
         }
       }
-    }
 
-    // Background MouseArea for large buttons style - closes panel when clicking outside buttons
-    MouseArea {
-      visible: largeButtonsStyle
-      anchors.fill: parent
-      z: -1
-      acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-      onClicked: mouse => {
-                   // Only close if not clicking on a button
-                   // The buttons are above this MouseArea, so clicks on them won't reach here
-                   if (timerActive) {
-                     // Cancel countdown if active
-                     cancelTimer();
-                   } else {
-                     root.close();
-                   }
-                 }
+      // Countdown line, 40 px under the row (contentwidget.cpp setBottomWidget)
+      NText {
+        id: countdownText
+        anchors.top: buttonRow.bottom
+        anchors.topMargin: Style.shutdownCountdownOffset
+        anchors.horizontalCenter: buttonRow.horizontalCenter
+        visible: root.timerActive
+        z: 2
+        text: I18n.tr("session-menu.action-in-seconds", {
+                        "action": root.actionMetadata[root.pendingAction] ? root.actionMetadata[root.pendingAction].title : "",
+                        "seconds": Math.ceil(root.timeRemaining / 1000)
+                      })
+        pointSize: Style.fontSizeL
+        color: "white"
+      }
     }
   }
 
-  // Custom power button component
-  component PowerButton: Rectangle {
-    id: buttonRoot
+  // RoundItemButton (rounditembutton.cpp): 140x140, 75x75 glyph, 10 px gap,
+  // white wrapping label; hover/selected = pressDim rounded rect radiusLarge;
+  // disabled = opacity 0.5
+  component ShutdownButton: Rectangle {
+    id: button
 
     property string icon: ""
     property string title: ""
-    property bool pending: false
     property bool isShutdown: false
     property bool isSelected: false
-    property int number: 0
+    property bool effectiveHover: false
+    property bool pending: false
     property string keybind: ""
-    property int buttonIndex: -1
-
-    // Effective hover state that respects ignoreMouseHover
-    readonly property bool effectiveHover: !root.ignoreMouseHover && mouseArea.containsMouse
 
     signal clicked
 
-    height: Style.baseWidgetSize * 1.3 * Style.uiScaleRatio
-    radius: Style.radiusS
-    color: {
-      if (pending) {
-        return Qt.alpha(Color.mPrimary, 0.08);
-      }
-      if (isSelected || effectiveHover) {
-        return Color.mHover;
-      }
-      return "transparent";
-    }
+    readonly property bool dimmed: isSelected || effectiveHover
 
-    border.width: pending ? Math.max(Style.borderM) : 0
-    border.color: pending ? Color.mPrimary : Color.mOutline
+    radius: Style.radiusLarge
+    color: dimmed ? Color.pressDim : "transparent"
+    opacity: 1.0
 
     Behavior on color {
+      enabled: !Settings.data.general.animationDisabled
       ColorAnimation {
         duration: Style.animationFast
-        easing.type: Easing.OutCirc
-      }
-    }
-
-    Item {
-      id: contentItem
-      anchors.fill: parent
-      anchors.margins: Style.marginM
-
-      // Icon on the left
-      NIcon {
-        id: iconElement
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        icon: buttonRoot.icon
-        color: {
-          if (buttonRoot.pending)
-            return Color.mPrimary;
-          if (buttonRoot.isShutdown && !buttonRoot.isSelected && !buttonRoot.effectiveHover)
-            return Color.mError;
-          if (buttonRoot.isSelected || buttonRoot.effectiveHover)
-            return Color.mOnHover;
-          return Color.mOnSurface;
-        }
-        pointSize: Style.fontSizeXXL
-        width: Style.baseWidgetSize * 0.5
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-
-        Behavior on color {
-          ColorAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCirc
-          }
-        }
-      }
-
-      // Keybind indicator and countdown text at far right
-      Item {
-        id: indicatorGroup
-        width: (countdownText.visible ? countdownText.width + Style.marginXS : 0) + numberIndicatorRect.width
-        height: numberIndicatorRect.height
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.right: parent.right
-        z: 20
-
-        // Countdown as plain text (left of keybind)
-        NText {
-          id: countdownText
-          visible: !Settings.data.sessionMenu.showHeader && buttonRoot.pending && timerActive && pendingAction === modelData.action
-          anchors.left: parent.left
-          anchors.verticalCenter: parent.verticalCenter
-          text: Math.ceil(timeRemaining / 1000)
-          pointSize: Style.fontSizeS
-          color: Color.mPrimary
-          font.weight: Style.fontWeightBold
-        }
-
-        // Keybind indicator
-        Rectangle {
-          id: numberIndicatorRect
-          anchors.left: countdownText.visible ? countdownText.right : parent.left
-          anchors.leftMargin: countdownText.visible ? Style.marginXS : 0
-          anchors.verticalCenter: parent.verticalCenter
-          width: labelText.implicitWidth + Style.margin2M
-          height: labelText.height + Style.margin2XS
-          radius: Math.min(Style.radiusM, height / 2)
-          color: (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mOnPrimary : Color.mSurface
-          border.width: Style.borderS
-          border.color: (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mOnPrimary : Color.mOutline
-          visible: Settings.data.sessionMenu.showKeybinds && (buttonRoot.keybind !== "") && !buttonRoot.pending
-
-          NText {
-            id: labelText
-            anchors.centerIn: parent
-            text: buttonRoot.keybind
-            pointSize: Style.fontSizeXS
-            color: (buttonRoot.isSelected || buttonRoot.effectiveHover) ? Color.mPrimary : Color.mOnSurface
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-                easing.type: Easing.OutCirc
-              }
-            }
-          }
-        }
-      }
-
-      // Text content in the middle
-      ColumnLayout {
-        anchors.left: iconElement.right
-        anchors.right: indicatorGroup.left
-        anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: Style.marginL
-        anchors.rightMargin: Style.marginM
-        spacing: 0
-
-        NText {
-          text: buttonRoot.title
-          font.weight: Style.fontWeightMedium
-          pointSize: Style.fontSizeM
-          color: {
-            if (buttonRoot.pending)
-              return Color.mPrimary;
-            if (buttonRoot.isShutdown && !buttonRoot.isSelected && !buttonRoot.effectiveHover)
-              return Color.mError;
-            if (buttonRoot.isSelected || buttonRoot.effectiveHover)
-              return Color.mOnHover;
-            return Color.mOnSurface;
-          }
-
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.OutCirc
-            }
-          }
-        }
-      }
-    }
-
-    MouseArea {
-      id: mouseArea
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-
-      onEntered: {
-        if (!root.ignoreMouseHover) {
-          selectedIndex = buttonRoot.buttonIndex;
-        }
-      }
-
-      onExited: {
-        if (!root.ignoreMouseHover && selectedIndex === buttonRoot.buttonIndex) {
-          selectedIndex = -1;
-        }
-      }
-
-      onClicked: buttonRoot.clicked()
-    }
-  }
-
-  // Large buttons style button component
-  component LargeButton: Rectangle {
-    id: largeButtonRoot
-
-    property string icon: ""
-    property string title: ""
-    property bool pending: false
-    property bool isShutdown: false
-    property bool isSelected: false
-    property int number: 0
-    property string keybind: ""
-    property int buttonIndex: -1
-
-    // Effective hover state that respects ignoreMouseHover
-    readonly property bool effectiveHover: !root.ignoreMouseHover && mouseArea.containsMouse
-    readonly property real hoveredScale: 1.05
-
-    signal clicked
-
-    property real hoverScale: (isSelected || effectiveHover) ? hoveredScale : 1.0
-
-    radius: Style.radiusL
-    color: {
-      if (pending) {
-        return Qt.alpha(Color.mPrimary, 1.0);
-      }
-      if (isSelected || effectiveHover) {
-        return Qt.alpha(Color.mPrimary, 1.0);
-      }
-      return Color.mSurface;
-    }
-
-    border.width: Style.borderS
-    border.color: Color.mOutline
-
-    // Always enable layer to fix nvidia bug, render at 2x size to avoid blur when scaling up
-    layer.enabled: true
-    layer.smooth: true
-    layer.textureSize: Qt.size(Math.ceil(width * 2), Math.ceil(height * 2))
-
-    // Scale transform for hover effect
-    transform: Scale {
-      origin.x: largeButtonRoot.width / 2
-      origin.y: largeButtonRoot.height / 2
-      xScale: hoverScale
-      yScale: hoverScale
-    }
-
-    Behavior on color {
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCirc
-      }
-    }
-
-    Behavior on border.width {
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCirc
-      }
-    }
-
-    Behavior on hoverScale {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutBack
-        easing.overshoot: 0.5
+        easing.type: Easing.OutCubic
       }
     }
 
     ColumnLayout {
       anchors.centerIn: parent
-      anchors.margins: Style.marginL
-      spacing: Style.marginM
+      spacing: Style.marginS
 
-      // Large icon with scale animation
       NIcon {
-        id: iconElement
         Layout.alignment: Qt.AlignHCenter
-        icon: largeButtonRoot.icon
-        color: {
-          if (largeButtonRoot.pending)
-            return Color.mOnPrimary;
-          if (largeButtonRoot.isShutdown && !largeButtonRoot.isSelected && !largeButtonRoot.effectiveHover)
-            return Color.mError;
-          if (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover)
-            return Color.mOnPrimary;
-          return Color.mOnSurface;
-        }
-        pointSize: Style.fontSizeXXXL * 2.25
-        width: 90 * Style.uiScaleRatio
-        height: 90 * Style.uiScaleRatio
+        Layout.preferredWidth: Style.shutdownButtonIcon
+        Layout.preferredHeight: Style.shutdownButtonIcon
+        icon: button.icon
+        color: "white"
+        pointSize: Style.fontSizeXXXL
+      }
+
+      NText {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.maximumWidth: Style.shutdownButtonSize - Style.marginM
+        text: button.title
+        pointSize: Style.fontSizeM
+        color: "white"
         horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-
-        readonly property real hoveredIconScale: 1.15
-        property real iconScale: (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? hoveredIconScale : 1.0
-
-        // Always enable layer to fix nvidia bug, render at 2x size to avoid blur when scaling up
-        layer.enabled: true
-        layer.smooth: true
-        layer.textureSize: Qt.size(Math.ceil(width * 2), Math.ceil(height * 2))
-
-        transform: Scale {
-          origin.x: iconElement.width / 2
-          origin.y: iconElement.height / 2
-          xScale: iconElement.iconScale
-          yScale: iconElement.iconScale
-        }
-
-        Behavior on color {
-          ColorAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCirc
-          }
-        }
-
-        Behavior on iconScale {
-          NumberAnimation {
-            duration: Style.animationNormal
-            easing.type: Easing.OutBack
-            easing.overshoot: 0.6
-          }
-        }
+        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
       }
 
-      // Title text
+      // Keybind shown after the label, onShellTertiary (white @0.6)
       NText {
         Layout.alignment: Qt.AlignHCenter
-        text: largeButtonRoot.title
-        font.weight: Style.fontWeightMedium
-        pointSize: Style.fontSizeL
-        color: {
-          if (largeButtonRoot.pending)
-            return Color.mOnPrimary;
-          if (largeButtonRoot.isShutdown && !largeButtonRoot.isSelected && !largeButtonRoot.effectiveHover)
-            return Color.mError;
-          if (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover)
-            return Color.mOnPrimary;
-          return Color.mOnSurface;
-        }
-
-        Behavior on color {
-          ColorAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCirc
-          }
-        }
-      }
-    }
-
-    // Keybind/Number indicator in top-right corner
-    Rectangle {
-      anchors.top: parent.top
-      anchors.right: parent.right
-      anchors.margins: Style.marginM
-      width: largeNumberText.implicitWidth + Style.margin2M
-      height: largeNumberText.implicitHeight + Style.margin2XS
-      radius: Math.min(Style.radiusM, height / 2)
-      color: (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mOnPrimary : Qt.alpha(Color.mSurfaceVariant, 0.7)
-      border.width: Style.borderS
-      border.color: (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover) ? Color.mOnPrimary : Color.mOutline
-      visible: Settings.data.sessionMenu.showKeybinds && (largeButtonRoot.keybind !== "") && !largeButtonRoot.pending
-      z: 10
-
-      NText {
-        id: largeNumberText
-        anchors.centerIn: parent
-        text: largeButtonRoot.keybind
+        text: button.keybind
         pointSize: Style.fontSizeS
-        color: {
-          if (largeButtonRoot.isSelected || largeButtonRoot.effectiveHover)
-            return Color.mPrimary;
-          return Color.mOnSurfaceVariant;
-        }
-
-        Behavior on color {
-          ColorAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCirc
-          }
-        }
+        color: Color.onShellTertiary
+        visible: text.length > 0
       }
     }
 
     MouseArea {
-      id: mouseArea
+      id: buttonMouse
       anchors.fill: parent
       hoverEnabled: true
       cursorShape: Qt.PointingHandCursor
-
-      onEntered: {
-        if (!root.ignoreMouseHover) {
-          selectedIndex = largeButtonRoot.buttonIndex;
-        }
-      }
-
-      onExited: {
-        if (!root.ignoreMouseHover && selectedIndex === largeButtonRoot.buttonIndex) {
-          selectedIndex = -1;
-        }
-      }
-
-      onClicked: largeButtonRoot.clicked()
+      onClicked: button.clicked()
     }
   }
 }

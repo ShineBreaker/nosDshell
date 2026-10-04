@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/noctalia
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 62
+  readonly property int settingsVersion: 63
   property bool isDebug: Quickshell.env("NOCTALIA_DEBUG") === "1"
   readonly property string shellName: "noctalia"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOCTALIA_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -312,6 +312,9 @@ Singleton {
       property real screenRadiusRatio: 1.0
       property real animationSpeed: 1.0
       property bool animationDisabled: false
+      // Inert under the DDE lock layout (DESIGN §3.9): the setting is kept so
+      // existing configs and the Settings UI keep working, but the lock screen
+      // no longer has a compact variant to switch to.
       property bool compactLockScreen: false
       property bool lockScreenAnimations: false
       property bool lockOnSuspend: true
@@ -661,6 +664,8 @@ Singleton {
     property JsonObject sessionMenu: JsonObject {
       property bool enableCountdown: true
       property int countdownDuration: 10000
+      // Noctalia layout options are inert under the DDE full-screen form
+      // (DESIGN §3.8) — kept so existing configs still load.
       property string position: "center"
       property bool showHeader: true
       property bool showKeybinds: true
@@ -668,32 +673,32 @@ Singleton {
       property string largeButtonsLayout: "single-row"
       property list<var> powerOptions: [
         {
-          "action": "lock",
+          "action": "shutdown",
           "enabled": true,
           "keybind": "1"
         },
         {
-          "action": "suspend",
+          "action": "reboot",
           "enabled": true,
           "keybind": "2"
         },
         {
-          "action": "hibernate",
+          "action": "suspend",
           "enabled": true,
           "keybind": "3"
         },
         {
-          "action": "reboot",
+          "action": "hibernate",
           "enabled": true,
           "keybind": "4"
         },
         {
-          "action": "logout",
+          "action": "lock",
           "enabled": true,
           "keybind": "5"
         },
         {
-          "action": "shutdown",
+          "action": "logout",
           "enabled": true,
           "keybind": "6"
         },
@@ -716,8 +721,9 @@ Singleton {
       property real backgroundOpacity: 1.0
       property bool respectExpireTimeout: false
       property int lowUrgencyDuration: 3
-      property int normalUrgencyDuration: 8
+      property int normalUrgencyDuration: 5
       property int criticalUrgencyDuration: 15
+      property int maxVisible: 1
       property bool clearDismissed: true
       property JsonObject saveToHistory: JsonObject {
         property bool low: true
@@ -741,7 +747,7 @@ Singleton {
     // on-screen display
     property JsonObject osd: JsonObject {
       property bool enabled: true
-      property string location: "bottom"
+      property string location: "bottom_center"
       property int autoHideMs: 1000
       property bool overlayLayer: true
       property real backgroundOpacity: 1.0

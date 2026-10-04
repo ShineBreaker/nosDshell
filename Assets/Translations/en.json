@@ -31,7 +31,9 @@
   },
   "authentication": {
     "error": "Authentication error",
-    "failed": "Authentication failed"
+    "failed": "Authentication failed",
+    "password": "Password",
+    "fingerprint-or-password": "Verify fingerprint or enter password"
   },
   "bar": {
     "active-window": {

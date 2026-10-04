@@ -345,7 +345,65 @@ Singleton {
   readonly property real fontSizeTitle: 10.5
   readonly property real fontSizeSubtitle: 12
   readonly property real fontSizeClockCC: 34.5
-  readonly property real fontSizeClockLock: 51
+  readonly property real fontSizeLockClock: 51
+
+  // ----------------------------------------------------------------
+  // §3.6 notification bubble / toast (gxde-session-ui bubble.h: Padding=20,
+  // BubbleWidth=300, BubbleHeight=70; appicon 48 at (11,11); body at x=70,
+  // width 220 (150 when actions exist); ActionButton 70 wide)
+  // ----------------------------------------------------------------
+  readonly property int bubbleBaseWidth: 300
+  readonly property int bubbleBaseHeight: 70
+  readonly property int bubbleEdgeOffset: 20
+  readonly property int bubbleStackSpacing: 10
+  readonly property int bubbleIconSize: 48
+  readonly property int bubbleIconInset: 11
+  readonly property int bubbleTextInset: 70
+  readonly property int bubbleTextWidth: 220
+  readonly property int bubbleTextWidthWithActions: 150
+  readonly property int bubbleActionsWidth: 70
+  readonly property int bubbleMaxBodyLines: 3
+
+  // ----------------------------------------------------------------
+  // §3.7 OSD tile (dde-osd/container.cpp: contentSize 140x140,
+  // moveToCenter keeps the tile 180 px above the screen bottom)
+  // ----------------------------------------------------------------
+  readonly property int osdTileSize: 140
+  readonly property int osdBottomOffset: 180
+  readonly property int osdIconOffset: 40 // icon only
+  readonly property int osdIconOffsetWithText: 25
+  readonly property int osdIconOffsetWithProgress: 30
+  readonly property int osdProgressWidth: 80
+  readonly property int osdProgressHeight: 4
+  readonly property int osdProgressOffset: 110
+  readonly property int osdOverdriveMax: 150 // percent
+  readonly property int osdTickWidth: 1
+  readonly property int osdTickHeight: 5
+
+  // ----------------------------------------------------------------
+  // §3.8 shutdown row (rounditembutton.cpp: 140x140, icon 75, spacing 10,
+  // checked = black @0.41 rounded 10)
+  // ----------------------------------------------------------------
+  readonly property int shutdownButtonSize: 140
+  readonly property int shutdownButtonIcon: 75
+  readonly property int shutdownButtonSpacing: 10
+  readonly property int shutdownCountdownOffset: 40
+
+  // ----------------------------------------------------------------
+  // §3.9 lock screen (sessionbasewindow.cpp: bottom widget 132 tall;
+  // constants.h: PASSWDLINEEIDT_WIDTH=280, PASSWDLINEEDIT_HEIGHT=36;
+  // useravatar LARGE = 100; controlwidget spacing 26 / trailing 60)
+  // ----------------------------------------------------------------
+  readonly property int lockBandHeight: 132
+  readonly property int lockBandMargin: 33
+  readonly property int lockClockInset: 48
+  readonly property int lockControlSpacing: 26
+  readonly property int lockControlTrailing: 60
+  readonly property int lockAvatarSize: 100
+  readonly property int lockNameGap: 25
+  readonly property int lockPasswordWidth: 280
+  readonly property int lockPasswordHeight: 36
+  readonly property int lockPasswordGap: 20
 
   // Control center home (DESIGN §3.5.1–3.5.2)
   // 408 px frame, flush right edge, full screen height (gxde-control-center frame.h:53)
