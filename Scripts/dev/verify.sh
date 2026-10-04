@@ -87,10 +87,10 @@ mkdir -p "$NOCTALIA_CONFIG_DIR" "$NOCTALIA_CACHE_DIR"
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion:60 skips the v0->60 migration chain (no-op for real users,
+# settingsVersion:62 skips the v0->62 migration chain (no-op for real users,
 # just noise in verify logs). dock.displayMode gates the fashion dock's
 # auto-hide; efficient (taskbar) mode uses dock.hideMode instead.
-SEED='{"settingsVersion":60,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":62,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
@@ -115,15 +115,22 @@ osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
-settings-osd
-wallpaper dock dock-menu dock-submenu lockscreen"
+settings-osd notification-actions notification-long osd-overdrive toast \
+wallpaper dock dock-menu dock-submenu lockscreen" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
   for s in $SCENES_ORDER; do [[ "$WANTED" == *" $s "* ]] && SELECTED="$SELECTED $s"; done
-  # lockscreen always last even if listed earlier
+  # lockscreen always last even if listed earlier. Strip the longer name first:
+  # substituting "lockscreen" inside "lockscreen-error" would leave "-error".
+  SELECTED="${SELECTED// lockscreen-error/}"
   SELECTED="${SELECTED// lockscreen/}"
   [[ "$WANTED" == *" lockscreen "* ]] && SELECTED="$SELECTED lockscreen"
+  # lockscreen-error is absent from SCENES_ORDER on purpose (it must not run in
+  # the default set) and needs its own invocation because the PAM failure is a
+  # process-level env var (Quickshell.env, read at shell start):
+  #   NOSD_PAM_BAD=1 ./verify.sh <run>-lockerr --scenes lockscreen-error
+  [[ "$WANTED" == *" lockscreen-error "* ]] && SELECTED="$SELECTED lockscreen-error"
 else
   SELECTED="$SCENES_ORDER"
 fi
@@ -140,6 +147,8 @@ def merge(a,b):
 base=json.loads(os.environ["SEED"])
 uf=os.environ.get("USER_SETTINGS") or ""
 if uf: merge(base, json.load(open(uf)))
+if os.environ.get("NOSD_AUTOSTART_AUTH") or os.environ.get("NOSD_PAM_BAD"):
+    base.setdefault("general",{})["autoStartAuth"]=True
 open(os.environ["NOCTALIA_CONFIG_DIR"].rstrip("/")+"/settings.json","w").write(json.dumps(base))
 open(os.environ["NOCTALIA_CACHE_DIR"].rstrip("/")+"/shell-state.json","w").write(
   json.dumps({"changelogState":{"lastSeenVersion":"4.7.8"},
@@ -172,11 +181,25 @@ for i in $(seq 1 50); do
 done
 echo "SWAYSOCK=$SWAYSOCK WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
 swaymsg "output HEADLESS-1 resolution 1920x1080 position 0 0" 2>/dev/null || swaymsg create_output 2>/dev/null
+# wlroots headless can expose a second HEADLESS-n at the same position; a second
+# surface splits panels/OSD and grim only captures one. Keep HEADLESS-1 only.
+for OUT in $(swaymsg -t get_outputs 2>/dev/null | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | grep -v '^HEADLESS-1$'); do
+  echo "disabling extra output: $OUT"
+  swaymsg "output $OUT disable" 2>/dev/null
+done
 
 # pipewire on the private bus so AudioService / volume OSD work
 pipewire   > "$WORK/logs/pipewire.log"   2>&1 & PW_PID=$!
 wireplumber > "$WORK/logs/wireplumber.log" 2>&1 & WP_PID=$!
 sleep 1
+
+# lockscreen-error run: point LockContext at a PAM service that does not exist
+# so pam.start() fails (onError -> showFailure) without typing anything; the
+# seed turns on general.autoStartAuth so PAM starts with no user interaction.
+if [ -n "${NOSD_PAM_BAD:-}" ]; then
+  export NOCTALIA_PAM_SERVICE="nosd-verify-nonexistent"
+  echo "NOSD_PAM_BAD set: NOCTALIA_PAM_SERVICE=$NOCTALIA_PAM_SERVICE"
+fi
 
 qs -p "$REPO" > "$LOG" 2>&1 &
 QS_PID=$!
@@ -205,6 +228,21 @@ run_scene() {
     osd-volume)           call volume increase 0.4; call volume increase 0.4
                           call volume increase 0.4; shot osd-volume ;;
     osd-brightness)       call brightness increase 0.4; shot osd-brightness ;;
+    osd-overdrive)        call volume increase 0.4
+                          call volume increase 0.4; call volume increase 0.4
+                          call volume increase 0.4; shot osd-overdrive ;;
+    notification-actions) notify-send -a noctalia-verify -A "yes=好的" -A "no=算了" \
+                          "Actions" "Pick one of the action buttons." \
+                          > "$WORK/notify-actions.out" 2>&1
+                          sleep 0.8; shot notification-actions
+                          # notify-send -A waits for a reply; kill it and the
+                          # daemon it spawns so the scene can proceed.
+                          pkill -f "notify-actions.out" 2>/dev/null ;;
+    notification-long)    notify-send -a noctalia-verify "Long body" \
+                          "第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行"$'\n'"第二行 第二行 第二行 第二行 第二行 第二行 第二行 第二行"$'\n'"第三行 第三行 第三行 第三行 第三行 第三行 第三行 第三行" 2>/dev/null
+                          sleep 0.8; shot notification-long ;;
+    toast)                call toast send '{"title":"Toast 标题","body":"这是 toast 正文","type":"notice"}' 1.5
+                          shot toast ;;
     audio-panel)          toggle volume togglePanel 1.5 audio-panel ;;
     network-panel)        toggle network togglePanel 1.5 network-panel ;;
     bluetooth-panel)      toggle bluetooth togglePanel 1.5 bluetooth-panel ;;
@@ -219,6 +257,18 @@ run_scene() {
     dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
     dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
     lockscreen)           call lockScreen lock 2.5; shot lockscreen ;;
+    # Requires NOSD_PAM_BAD=1 (separate verify run): LockContext then uses a
+    # nonexistent PAM service, so pam.start() errors out and LockContext lands
+    # in showFailure — the DDE error tooltip (white card, alert text, arrow up).
+    lockscreen-error)
+      if [ -n "${NOSD_PAM_BAD:-}" ]; then
+        call lockScreen lock 3
+        # autoStartAuth + a dead PAM service ⇒ onError ⇒ showFailure
+        sleep 2; shot lockscreen-error
+      else
+        echo "lockscreen-error needs NOSD_PAM_BAD=1 (separate verify run)"
+      fi
+      ;;
     *)                    echo "unknown scene: $1" ;;
   esac
 }

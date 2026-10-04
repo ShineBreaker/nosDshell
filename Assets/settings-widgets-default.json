@@ -81,7 +81,6 @@
         "vertical": 10
       },
       "colorizeSystemIcon": "none",
-      "colorizeSystemText": "none",
       "ipcIdentifier": ""
     },
     "DarkMode": {
@@ -148,6 +147,8 @@
     "Settings": {
       "iconColor": "none"
     },
+    "ShowDesktop": {},
+    "Trash": {},
     "Spacer": {
       "width": 20
     },

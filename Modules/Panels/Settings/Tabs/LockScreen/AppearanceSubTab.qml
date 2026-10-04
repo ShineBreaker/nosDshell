@@ -73,6 +73,7 @@ ColumnLayout {
     description: I18n.tr("panels.lock-screen.compact-lockscreen-description")
     checked: Settings.data.general.compactLockScreen
     onToggled: checked => Settings.data.general.compactLockScreen = checked
+    enabled: false
     defaultValue: Settings.getDefaultValue("general.compactLockScreen")
   }
 
@@ -81,7 +82,6 @@ ColumnLayout {
     description: I18n.tr("panels.lock-screen.enable-lockscreen-media-controls-description")
     checked: Settings.data.general.enableLockScreenMediaControls
     onToggled: checked => Settings.data.general.enableLockScreenMediaControls = checked
-    visible: !Settings.data.general.compactLockScreen
     defaultValue: Settings.getDefaultValue("general.enableLockScreenMediaControls")
   }
 

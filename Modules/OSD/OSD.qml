@@ -26,9 +26,7 @@ Variants {
 
   delegate: Loader {
     id: root
-
     required property ShellScreen modelData
-
     active: false
 
     // OSD State
@@ -38,7 +36,7 @@ Variants {
     property bool suppressInputOSD: false
 
     // Lock Key States
-    property string lastLockKeyChanged: ""  // "caps", "num", "scroll", or ""
+    property string lastLockKeyChanged: "" // "caps", "num", "scroll", or ""
 
     // Current values (computed properties)
     readonly property real currentVolume: AudioService.volume
@@ -123,49 +121,12 @@ Variants {
       return pct + "%";
     }
 
-    function getProgressColor() {
-      const isMutedState = (currentOSDType === OSD.Type.Volume && isMuted) || (currentOSDType === OSD.Type.InputVolume && isInputMuted);
-      if (isMutedState) {
-        return Color.mError;
-      }
-      // When volumeOverdrive is enabled, show error color if volume is above 100%
-      if ((currentOSDType === OSD.Type.Volume || currentOSDType === OSD.Type.InputVolume) && Settings.data.audio.volumeOverdrive) {
-        const value = getCurrentValue();
-        if (value > 1.0) {
-          return Color.mError;
-        }
-      }
-      // For lock keys, use a different color to indicate the lock state
-      if (currentOSDType === OSD.Type.LockKey) {
-        // Check the specific lock key that was changed
-        if (lastLockKeyChanged.startsWith("CAPS")) {
-          return LockKeysService.capsLockOn ? Color.mPrimary : Color.mOnSurfaceVariant;
-        } else if (lastLockKeyChanged.startsWith("NUM")) {
-          return LockKeysService.numLockOn ? Color.mPrimary : Color.mOnSurfaceVariant;
-        } else if (lastLockKeyChanged.startsWith("SCROLL")) {
-          return LockKeysService.scrollLockOn ? Color.mPrimary : Color.mOnSurfaceVariant;
-        }
-      }
-      return Color.mPrimary;
-    }
-
     function getIconColor() {
       const isMutedState = (currentOSDType === OSD.Type.Volume && isMuted) || (currentOSDType === OSD.Type.InputVolume && isInputMuted);
       if (isMutedState)
-        return Color.mError;
+        return Color.alert;
 
-      if (currentOSDType === OSD.Type.LockKey) {
-        // Check the specific lock key that was changed
-        if (lastLockKeyChanged.startsWith("CAPS")) {
-          return LockKeysService.capsLockOn ? Color.mPrimary : Color.mOnSurfaceVariant;
-        } else if (lastLockKeyChanged.startsWith("NUM")) {
-          return LockKeysService.numLockOn ? Color.mPrimary : Color.mOnSurfaceVariant;
-        } else if (lastLockKeyChanged.startsWith("SCROLL")) {
-          return LockKeysService.scrollLockOn ? Color.mPrimary : Color.mOnSurfaceVariant;
-        }
-      }
-
-      return Color.mOnSurface;
+      return Color.onTransient;
     }
 
     // Brightness Handling
@@ -394,12 +355,16 @@ Variants {
       screen: modelData
 
       // Position configuration
-      readonly property string location: Settings.data.osd?.location || "top_right"
+      readonly property string location: Settings.data.osd?.location || "bottom_center"
       readonly property bool isTop: location === "top" || location.startsWith("top")
       readonly property bool isBottom: location === "bottom" || location.startsWith("bottom")
       readonly property bool isLeft: location.includes("_left") || location === "left"
       readonly property bool isRight: location.includes("_right") || location === "right"
       readonly property bool verticalMode: location === "left" || location === "right"
+
+      // DDE default: tile horizontally centred, its bottom edge 180 px above the
+      // screen bottom (dde-osd/container.cpp moveToCenter / setWaylandAnimationOffset).
+      readonly property bool ddeBottomCenter: location === "bottom_center"
 
       // Hidden text element for measuring lock key text width
       NText {
@@ -478,14 +443,14 @@ Variants {
         // Add extra buffer to ensure everything fits comfortably
         const buffer = Style.marginL;
         const totalHeight = textHeight + bgMargins + contentMargins + iconSize + textIconSpacing + buffer;
-        // Ensure minimum height and add extra padding for safety
+        // Ensure minimum height and add some padding for safety
         return Math.max(shortVHeight, Math.round(totalHeight * 1.1));
       }
 
-      readonly property int barThickness: {
-        const base = Math.max(8, Math.round(8 * Style.uiScaleRatio));
-        return base % 2 === 0 ? base : base + 1;
-      }
+      // DDE: tile bottom edge 180 px above the screen bottom (container.cpp
+      // moveToCenter). `bottom_center` is the "bottom" location with that
+      // offset; bare "bottom" keeps the generic margin.
+      readonly property int osdBottomOffset: Math.round(180 * Style.uiScaleRatio)
 
       anchors.top: isTop
       anchors.bottom: isBottom
@@ -517,12 +482,12 @@ Variants {
       }
 
       margins.top: calculateMargin(anchors.top, "top")
-      margins.bottom: calculateMargin(anchors.bottom, "bottom")
+      margins.bottom: (isBottom ? Math.max(calculateMargin(anchors.bottom, "bottom"), ddeBottomCenter ? osdBottomOffset : 0) : 0)
       margins.left: calculateMargin(anchors.left, "left")
       margins.right: calculateMargin(anchors.right, "right")
 
-      implicitWidth: verticalMode ? longVWidth : (isShortMode ? lockKeyHWidth : longHWidth)
-      implicitHeight: verticalMode ? (isShortMode ? lockKeyVHeight : longVHeight) : longHHeight
+      implicitWidth: Math.max(Style.osdTileSize, verticalMode ? longVWidth : (isShortMode ? lockKeyHWidth : Style.osdTileSize))
+      implicitHeight: Math.max(Style.osdTileSize, verticalMode ? longVHeight : Style.osdTileSize)
       color: "transparent"
 
       WlrLayershell.namespace: "noctalia-osd-" + (screen?.name || "unknown")
@@ -538,19 +503,24 @@ Variants {
         anchors.fill: parent
         visible: false
         opacity: 0
-        scale: 0.85
 
         Behavior on opacity {
           NumberAnimation {
-            duration: Style.animationNormal
-            easing.type: Easing.InOutQuad
+            duration: Style.motionOsdIn
+            easing.type: Easing.OutCubic
           }
         }
 
-        Behavior on scale {
+        // DDE slides the tile up 12 px on show / 8 px on hide while fading
+        // (dde-osd/container.cpp startWaylandAnimation).
+        property real slideOffset: 0
+        transform: Translate {
+          y: osdItem.slideOffset
+        }
+        Behavior on slideOffset {
           NumberAnimation {
-            duration: Style.animationNormal
-            easing.type: Easing.InOutQuad
+            duration: Style.motionOsdIn
+            easing.type: Easing.OutCubic
           }
         }
 
@@ -562,7 +532,7 @@ Variants {
 
         Timer {
           id: visibilityTimer
-          interval: Style.animationNormal + 50
+          interval: Style.motionOsdOut
           onTriggered: {
             osdItem.visible = false;
             root.currentOSDType = -1;
@@ -572,254 +542,111 @@ Variants {
         }
 
         Rectangle {
-          id: background
-          anchors.fill: parent
-          anchors.margins: Style.marginM * 1.5
-          radius: Style.radiusL
-          color: Qt.alpha(Color.mSurface, Color.adaptiveOpacity(Settings.data.osd.backgroundOpacity) || 1.0)
-          border.color: Qt.alpha(Color.mOutline, Color.adaptiveOpacity(Settings.data.osd.backgroundOpacity) || 1.0)
-          border.width: {
-            const bw = Math.max(2, Style.borderM);
-            return bw % 2 === 0 ? bw : bw + 1;
+          id: tile
+          anchors.centerIn: parent
+          width: Style.osdTileSize
+          height: Style.osdTileSize
+          radius: Style.radiusLarge
+          color: Color.maskTransient
+          border.color: Color.borderTransient
+          border.width: Style.borderS
+
+          // Shadow: must not inflate the window. autoPaddingEnabled grows an
+          // anchors.fill child, which would push the panel surface past
+          // 140x140 and scale the whole tile; anchor it to the tile's own
+          // geometry instead.
+          NDropShadow {
+            x: tile.x
+            y: tile.y
+            width: tile.width
+            height: tile.height
+            source: tile
+            autoPaddingEnabled: false
+            shadow: Style.shadowOsd
           }
-        }
 
-        NDropShadow {
-          anchors.fill: background
-          source: background
-          autoPaddingEnabled: true
-        }
+          // ---- progress types: volume / input volume / brightness ----
+          // Absolute positioning: DDE draws the glyph at a fixed offset from the
+          // tile top and the bar at a fixed offset (dde-osd/common.cpp
+          // DrawImage / DrawProgressBar), so no layout pass can shift them.
+          NIcon {
+            id: osdGlyph
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Style.osdIconOffsetWithProgress
+            icon: root.getIcon()
+            color: root.getIconColor()
+            pointSize: Style.fontSizeXL
+          }
 
-        Loader {
-          id: contentLoader
-          anchors.fill: background
-          anchors.margins: Style.marginM
-          active: true
-          sourceComponent: panel.verticalMode ? verticalContent : horizontalContent
-        }
+          Rectangle {
+            id: progressTrack
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Style.osdProgressOffset
+            width: Style.osdProgressWidth
+            height: Style.osdProgressHeight
+            radius: Style.osdProgressHeight / 2
+            color: Color.onTransientTrack
 
-        Component {
-          id: horizontalContent
-          RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: Style.marginL
-            anchors.rightMargin: Style.marginL
-            spacing: Style.marginM
-
-            TextMetrics {
-              id: percentageMetrics
-              font.family: Settings.data.ui.fontFixed
-              font.pointSize: Style.fontSizeS * (Settings.data.ui.fontFixedScale * Style.uiScaleRatio)
-              text: "150%"
-            }
-
-            // Common Icon for all types
-            NIcon {
-              icon: root.getIcon()
-              color: root.getIconColor()
-              pointSize: Style.fontSizeXL
-              Layout.alignment: Qt.AlignVCenter
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationNormal
-                  easing.type: Easing.InOutQuad
-                }
-              }
-            }
-
-            // Lock Key Status Text (replaces progress bar)
-            NText {
-              visible: root.currentOSDType === OSD.Type.LockKey
-              text: root.getDisplayPercentage()
-              color: root.getProgressColor()
-              pointSize: Style.fontSizeS
-              elide: Text.ElideNone
-              Layout.fillWidth: true
-              horizontalAlignment: Text.AlignHCenter
-              Layout.alignment: Qt.AlignVCenter
-            }
-
-            // Progress Bar for Volume/Brightness
             Rectangle {
-              visible: root.currentOSDType !== OSD.Type.LockKey
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignVCenter
-              height: panel.barThickness
-              radius: Math.min(Style.iRadiusL, panel.barThickness / 2)
-              color: Color.mSurfaceVariant
+              anchors.left: parent.left
+              anchors.top: parent.top
+              anchors.bottom: parent.bottom
+              width: parent.width * Math.min(1.0, root.getCurrentValue() / root.getMaxValue())
+              radius: parent.radius
+              color: Color.onTransient
 
-              Rectangle {
-                anchors.left: parent.left
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: parent.width * Math.min(1.0, root.getCurrentValue() / root.getMaxValue())
-                radius: parent.radius
-                color: root.getProgressColor()
-
-                Behavior on width {
-                  NumberAnimation {
-                    duration: Style.animationNormal
-                    easing.type: Easing.InOutQuad
-                  }
-                }
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationNormal
-                    easing.type: Easing.InOutQuad
-                  }
+              Behavior on width {
+                NumberAnimation {
+                  duration: Style.motionOsdIn
+                  easing.type: Easing.OutCubic
                 }
               }
             }
 
-            // Percentage Text for Volume/Brightness
-            NText {
-              visible: root.currentOSDType !== OSD.Type.LockKey
-              text: root.getDisplayPercentage()
-              color: Color.mOnSurface
-              pointSize: Style.fontSizeS
-              family: Settings.data.ui.fontFixed
-              Layout.alignment: Qt.AlignVCenter | Qt.AlignRight
-              horizontalAlignment: Text.AlignRight
-              verticalAlignment: Text.AlignVCenter
-              Layout.fillWidth: false
-              Layout.preferredWidth: Math.ceil(percentageMetrics.width) + Math.round(8 * Style.uiScaleRatio)
-              Layout.maximumWidth: Math.ceil(percentageMetrics.width) + Math.round(8 * Style.uiScaleRatio)
-              Layout.minimumWidth: Math.ceil(percentageMetrics.width)
+            // Overdrive graduation: two 1x5 tick marks at the 2/3 point of
+            // the track (dde-osd/common.cpp DrawVolumeGraduation).
+            Rectangle {
+              visible: Settings.data.audio.volumeOverdrive && (root.currentOSDType === OSD.Type.Volume || root.currentOSDType === OSD.Type.InputVolume)
+              x: parent.width * (1.0 / 1.5)
+              y: -8
+              width: Style.osdTickWidth
+              height: Style.osdTickHeight
+              color: Color.onTransientTick
+            }
+
+            Rectangle {
+              visible: Settings.data.audio.volumeOverdrive && (root.currentOSDType === OSD.Type.Volume || root.currentOSDType === OSD.Type.InputVolume)
+              x: parent.width * (1.0 / 1.5)
+              y: parent.height + 3
+              width: Style.osdTickWidth
+              height: Style.osdTickHeight
+              color: Color.onTransientTick
             }
           }
-        }
 
-        Component {
-          id: verticalContent
-          ColumnLayout {
-            anchors.fill: parent
-            anchors.topMargin: Style.marginL
-            anchors.bottomMargin: Style.marginL
-            spacing: root.currentOSDType === OSD.Type.LockKey ? Style.marginM : Style.marginS
-            clip: root.currentOSDType !== OSD.Type.LockKey
-
-            ColumnLayout {
-              id: textVerticalLayout
-              visible: root.currentOSDType === OSD.Type.LockKey
-              Layout.fillWidth: true
-              Layout.fillHeight: false
-              Layout.alignment: Qt.AlignHCenter
-              spacing: 0
-
-              property var verticalTextChars: []
-
-              function updateVerticalTextChars() {
-                const text = root.getDisplayPercentage();
-                const chars = [];
-                for (let i = 0; i < text.length; i++) {
-                  chars.push(text[i]);
-                }
-                verticalTextChars = chars;
-              }
-
-              Component.onCompleted: updateVerticalTextChars()
-
-              Connections {
-                target: root
-                function onLastLockKeyChangedChanged() {
-                  if (root.currentOSDType === OSD.Type.LockKey) {
-                    textVerticalLayout.updateVerticalTextChars();
-                  }
-                }
-                function onCurrentOSDTypeChanged() {
-                  if (root.currentOSDType === OSD.Type.LockKey) {
-                    textVerticalLayout.updateVerticalTextChars();
-                  }
-                }
-              }
-
-              Repeater {
-                model: textVerticalLayout.verticalTextChars
-
-                NText {
-                  text: modelData || ""
-                  color: root.getProgressColor()
-                  pointSize: Style.fontSizeS
-                  family: Settings.data.ui.fontFixed
-                  Layout.fillWidth: true
-                  Layout.preferredHeight: {
-                    const fontSize = Style.fontSizeS * Settings.data.ui.fontFixedScale * Style.uiScaleRatio;
-                    return Math.round(fontSize * 1.3);
-                  }
-                  Layout.alignment: Qt.AlignHCenter
-                  horizontalAlignment: Text.AlignHCenter
-                  verticalAlignment: Text.AlignVCenter
-                }
-              }
-            }
-
-            NText {
-              visible: root.currentOSDType !== OSD.Type.LockKey
-              text: root.getDisplayPercentage()
-              color: Color.mOnSurface
-              pointSize: Style.fontSizeS
-              family: Settings.data.ui.fontFixed
-              Layout.fillWidth: true
-              Layout.alignment: Qt.AlignHCenter
-              horizontalAlignment: Text.AlignHCenter
-              verticalAlignment: Text.AlignVCenter
-              Layout.preferredHeight: Math.round(20 * Style.uiScaleRatio)
-            }
-
-            Item {
-              visible: root.currentOSDType !== OSD.Type.LockKey
-              Layout.fillWidth: true
-              Layout.fillHeight: root.currentOSDType !== OSD.Type.LockKey
-
-              Rectangle {
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.top: parent.top
-                anchors.bottom: parent.bottom
-                width: panel.barThickness
-                radius: Math.min(Style.iRadiusL, panel.barThickness / 2)
-                color: Color.mSurfaceVariant
-
-                Rectangle {
-                  anchors.left: parent.left
-                  anchors.right: parent.right
-                  anchors.bottom: parent.bottom
-                  height: parent.height * Math.min(1.0, root.getCurrentValue() / root.getMaxValue())
-                  radius: parent.radius
-                  color: root.getProgressColor()
-
-                  Behavior on height {
-                    NumberAnimation {
-                      duration: Style.animationNormal
-                      easing.type: Easing.InOutQuad
-                    }
-                  }
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationNormal
-                      easing.type: Easing.InOutQuad
-                    }
-                  }
-                }
-              }
-            }
-
-            NIcon {
-              icon: root.getIcon()
-              color: root.getIconColor()
-              pointSize: root.currentOSDType === OSD.Type.LockKey ? Style.fontSizeXL : Style.fontSizeL
-              Layout.alignment: root.currentOSDType === OSD.Type.LockKey ? Qt.AlignHCenter : (Qt.AlignHCenter | Qt.AlignBottom)
-              Layout.preferredHeight: root.currentOSDType === OSD.Type.LockKey ? (Style.fontSizeXL * Style.uiScaleRatio * 1.5) : -1
-              Layout.minimumHeight: root.currentOSDType === OSD.Type.LockKey ? (Style.fontSizeXL * Style.uiScaleRatio) : 0
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationNormal
-                  easing.type: Easing.InOutQuad
-                }
-              }
-            }
+          // ---- lock key: glyph + text, no progress ----
+          NIcon {
+            id: lockKeyGlyph
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Style.osdIconOffsetWithText
+            visible: root.currentOSDType === OSD.Type.LockKey
+            icon: root.getIcon()
+            color: root.getIconColor()
+            pointSize: Style.fontSizeXL
           }
+
+          NText {
+            id: lockKeyLabel
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: Style.osdIconOffsetWithText + Style.fontSizeXL * Style.uiScaleRatio + Style.marginS
+            visible: root.currentOSDType === OSD.Type.LockKey
+            text: root.getDisplayPercentage()
+            color: Color.onTransient
+            pointSize: Style.fontSizeS
+            elide: Text.ElideNone
+            horizontalAlignment: Text.AlignHCenter
+          }
+
         }
 
         // Delay showing the OSD to allow the layout to settle after activation.
@@ -830,8 +657,10 @@ Variants {
           interval: 30
           onTriggered: {
             osdItem.visible = true;
+            osdItem.slideOffset = -12;
+            osdItem.opacity = 0;
+            osdItem.slideOffset = 0;
             osdItem.opacity = 1;
-            osdItem.scale = 1.0;
             hideTimer.start();
           }
         }
@@ -846,7 +675,7 @@ Variants {
           hideTimer.stop();
           visibilityTimer.stop();
           osdItem.opacity = 0;
-          osdItem.scale = 0.85;
+          osdItem.slideOffset = -8;
           visibilityTimer.start();
         }
 
@@ -854,7 +683,6 @@ Variants {
           hideTimer.stop();
           visibilityTimer.stop();
           osdItem.opacity = 0;
-          osdItem.scale = 0.85;
           osdItem.visible = false;
           root.currentOSDType = -1;
           root.active = false;

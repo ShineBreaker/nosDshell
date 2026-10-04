@@ -172,7 +172,7 @@
     "firstDayOfWeek": -1,
     "hideWeatherTimezone": false,
     "hideWeatherCityName": false,
-    "autoLocate": true
+    "autoLocate": false
   },
   "calendar": {
     "cards": [
@@ -431,32 +431,32 @@
     "largeButtonsLayout": "single-row",
     "powerOptions": [
       {
-        "action": "lock",
+        "action": "shutdown",
         "enabled": true,
         "keybind": "1"
       },
       {
-        "action": "suspend",
+        "action": "reboot",
         "enabled": true,
         "keybind": "2"
       },
       {
-        "action": "hibernate",
+        "action": "suspend",
         "enabled": true,
         "keybind": "3"
       },
       {
-        "action": "reboot",
+        "action": "hibernate",
         "enabled": true,
         "keybind": "4"
       },
       {
-        "action": "logout",
+        "action": "lock",
         "enabled": true,
         "keybind": "5"
       },
       {
-        "action": "shutdown",
+        "action": "logout",
         "enabled": true,
         "keybind": "6"
       },
@@ -477,8 +477,9 @@
     "backgroundOpacity": 1,
     "respectExpireTimeout": false,
     "lowUrgencyDuration": 3,
-    "normalUrgencyDuration": 8,
+    "normalUrgencyDuration": 5,
     "criticalUrgencyDuration": 15,
+    "maxVisible": 1,
     "clearDismissed": true,
     "saveToHistory": {
       "low": true,
@@ -500,7 +501,7 @@
   },
   "osd": {
     "enabled": true,
-    "location": "bottom",
+    "location": "bottom_center",
     "autoHideMs": 1000,
     "overlayLayer": true,
     "backgroundOpacity": 1,

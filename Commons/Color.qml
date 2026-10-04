@@ -431,6 +431,13 @@ Singleton {
   readonly property color onTransient: "#303030"
   readonly property color onTransientBody: Qt.rgba(0, 0, 0, 0.9)
 
+  // Dark-on-light foreground for transient prompts (OSD glyphs, lock-key text).
+  // OSD track/labels over a light tile: black @0.1 and @0.5 are DDE's literal
+  // values (dde-osd/common.cpp DrawProgressBar / DrawVolumeGraduation) — no
+  // adaptive fallback exists for them, so read the ladder instead of inlining.
+  readonly property color onTransientTrack: Qt.rgba(0, 0, 0, 0.1)
+  readonly property color onTransientTick: Qt.rgba(0, 0, 0, 0.5)
+
   // White overlay ladder on dark surfaces (black on light) — DESIGN §1.3
   readonly property var overlayLevels: ({
                                           "idle": 0.03,
