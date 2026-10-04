@@ -24,10 +24,10 @@ Popup {
   property bool showToastOnSave: false
 
   background: Rectangle {
-    color: Color.mSurface
-    radius: Style.radiusL
-    border.color: Color.mPrimary
-    border.width: Style.borderM
+    color: Color.maskShell
+    radius: Style.radiusWindow
+    border.color: Color.borderShell
+    border.width: Style.borderS
   }
 
   contentItem: FocusScope {
@@ -47,8 +47,8 @@ Popup {
                           "plugin": root.currentPlugin?.name || ""
                         })
           pointSize: Style.fontSizeL
-          font.weight: Style.fontWeightBold
-          color: Color.mPrimary
+          font.weight: Style.fontWeightSemiBold
+          color: Color.onShell
           Layout.fillWidth: true
         }
 
@@ -63,7 +63,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Color.overlay("hover")
       }
 
       // Settings loader - pluginApi is passed via setSource() in openPluginSettings()
@@ -79,6 +79,13 @@ Popup {
           id: settingsLoader
           width: settingsScrollView.availableWidth
         }
+      }
+
+      // DDialog button bar separator
+      Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 1
+        color: Color.overlay("hover")
       }
 
       // Action buttons
@@ -100,6 +107,7 @@ Popup {
         NButton {
           text: I18n.tr("common.apply")
           icon: "check"
+          backgroundColor: Color.mPrimary // recommended action → accent text
           onClicked: {
             if (settingsLoader.item && settingsLoader.item.saveSettings) {
               settingsLoader.item.saveSettings();

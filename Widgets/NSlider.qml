@@ -8,7 +8,7 @@ Slider {
   id: root
 
   readonly property bool sliderActive: activeFocus || pressed
-  property color fillColor: Color.mPrimary
+  property color fillColor: Color.accent
   property var cutoutColor: Color.mSurface
   property bool snapAlways: true
   property real heightRatio: 0.7
@@ -16,17 +16,18 @@ Slider {
   property string tooltipDirection: "auto"
   property bool hovering: false
 
-  readonly property color effectiveFillColor: enabled ? fillColor : Color.mOutline
+  readonly property color effectiveFillColor: enabled ? fillColor : Color.onShellTertiary
 
-  readonly property real knobDiameter: Math.round((Style.baseWidgetSize * heightRatio * Style.uiScaleRatio) / 2) * 2
-  readonly property real trackHeight: Math.round((knobDiameter * 0.4 * Style.uiScaleRatio) / 2) * 2
-  readonly property real trackRadius: Math.min(Style.iRadiusL, trackHeight / 2)
+  // DSlider (DESIGN §3.5.4): 2px groove, 12px white knob, whole control >= 22px tall
+  readonly property real knobDiameter: Math.max(4, Math.round(12 * Style.uiScaleRatio * (heightRatio / 0.7) / 2) * 2)
+  readonly property real trackHeight: Math.max(2, Math.round(2 * Style.uiScaleRatio))
+  readonly property real trackRadius: trackHeight / 2
   readonly property real cutoutExtra: Math.round((Style.baseWidgetSize * 0.1 * Style.uiScaleRatio) / 2) * 2
 
   padding: cutoutExtra / 2
 
   snapMode: snapAlways ? Slider.SnapAlways : Slider.SnapOnRelease
-  implicitHeight: Math.max(trackHeight, knobDiameter)
+  implicitHeight: Math.max(Math.round(22 * Style.uiScaleRatio), Math.max(trackHeight, knobDiameter))
 
   background: Item {
     id: bgContainer
@@ -48,9 +49,9 @@ Slider {
 
       ShapePath {
         id: bgPath
-        strokeColor: Qt.alpha(Color.mOutline, 0.5)
-        strokeWidth: Style.borderS
-        fillColor: Qt.alpha(Color.mSurface, 0.5)
+        strokeColor: "transparent"
+        strokeWidth: -1
+        fillColor: Color.overlay("strong")
 
         readonly property real w: bgContainer.width
         readonly property real h: bgContainer.height
@@ -102,22 +103,6 @@ Slider {
       }
     }
 
-    LinearGradient {
-      id: fillGradient
-      x1: 0
-      y1: 0
-      x2: root.availableWidth
-      y2: 0
-      GradientStop {
-        position: 0.0
-        color: Qt.darker(effectiveFillColor, 1.2)
-      }
-      GradientStop {
-        position: 1.0
-        color: effectiveFillColor
-      }
-    }
-
     // Active/filled track
     Shape {
       width: bgContainer.fillWidth
@@ -130,7 +115,7 @@ Slider {
       ShapePath {
         id: fillPath
         strokeColor: "transparent"
-        fillGradient: fillGradient
+        fillColor: root.effectiveFillColor
 
         readonly property real fullWidth: root.availableWidth
         readonly property real h: root.trackHeight
@@ -204,10 +189,10 @@ Slider {
       id: knob
       implicitWidth: knobDiameter
       implicitHeight: knobDiameter
-      radius: Math.min(Style.iRadiusL, width / 2)
-      color: root.pressed ? Color.mHover : Color.mSurface
-      border.color: effectiveFillColor
-      border.width: Style.borderL
+      radius: width / 2
+      color: "#FFFFFF"
+      border.color: Qt.alpha("#000000", 0.1)
+      border.width: Style.borderS
       anchors.centerIn: parent
 
       Behavior on color {

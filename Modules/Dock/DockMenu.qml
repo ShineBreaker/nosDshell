@@ -84,7 +84,7 @@ PopupWindow {
         const item = root.items[i];
         if (item && item.text) {
           // Calculate width: margins + icon (if present) + spacing + text width
-          let itemWidth = Style.margin2S; // left and right margins
+          let itemWidth = Style.menuItemPadding * 2; // left and right padding
 
           if (item.icon && item.icon !== "") {
             itemWidth += Style.fontSizeL + Style.marginS; // icon + spacing
@@ -134,7 +134,8 @@ PopupWindow {
   }
 
   function rowHeightForItem(item) {
-    return item && item.separator === true ? 16 : 32;
+    // DDE menu rows: font height + 8; separators are 6px grooves
+    return item && item.separator === true ? Style.marginS : Math.round(Style.fontSizeS * 1.33) + 8;
   }
 
   function listHeight(items) {
@@ -580,13 +581,14 @@ PopupWindow {
     }
   }
 
-  Rectangle {
+  NArrowRect {
+    id: menuBody
     anchors.fill: parent
-    anchors.margins: border.width
-    color: Color.mSurfaceVariant
-    radius: Style.radiusS
-    border.color: Color.mOutline
-    border.width: Style.borderS
+    fillColor: Color.popupShell
+    radius: Style.radiusPopup
+    borderColor: Color.borderShell
+    borderWidth: Style.borderS
+    shadow: Style.shadowPopup
 
     HoverHandler {
       id: menuHoverHandler
@@ -650,23 +652,42 @@ PopupWindow {
             readonly property bool isSeparator: modelData && modelData.separator === true
             width: scrollColumn.width
             height: root.rowHeightForItem(modelData)
-            color: (!isSeparator && root.hoveredItem === index) ? Color.mHover : "transparent"
-            radius: Style.radiusXS
+            color: (!isSeparator && root.hoveredItem === index) ? Color.accent : "transparent"
+            radius: 0
+
+            // Separator: DDE two-line groove (dark over light, inset 4)
+            Item {
+              visible: parent.isSeparator
+              anchors.centerIn: parent
+              width: parent.width - Style.margin2XS
+              height: 2
+              Rectangle {
+                width: parent.width
+                height: 1
+                color: Qt.rgba(0, 0, 0, 0.1)
+              }
+              Rectangle {
+                y: 1
+                width: parent.width
+                height: 1
+                color: Qt.rgba(1, 1, 1, 0.1)
+              }
+            }
 
             Row {
               id: rowLayout
               anchors.left: parent.left
               anchors.right: parent.right
               anchors.verticalCenter: parent.verticalCenter
-              anchors.leftMargin: Style.marginS
-              anchors.rightMargin: Style.marginS
+              anchors.leftMargin: Style.menuItemPadding
+              anchors.rightMargin: Style.menuItemPadding
               spacing: Style.marginS
               visible: !isSeparator
 
               NIcon {
                 icon: modelData.icon
                 pointSize: Style.fontSizeL
-                color: root.hoveredItem === index ? Color.mOnHover : Color.mOnSurfaceVariant
+                color: root.hoveredItem === index ? "#FFFFFF" : Color.onShellSecondary
                 visible: icon !== ""
                 anchors.verticalCenter: parent.verticalCenter
               }
@@ -674,7 +695,7 @@ PopupWindow {
               NText {
                 text: modelData.text
                 pointSize: Style.fontSizeS
-                color: root.hoveredItem === index ? Color.mOnHover : Color.mOnSurfaceVariant
+                color: root.hoveredItem === index ? "#FFFFFF" : Color.onShell
                 anchors.verticalCenter: parent.verticalCenter
                 width: rowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
                 elide: Text.ElideRight
@@ -709,18 +730,29 @@ PopupWindow {
       }
     }
 
-    Rectangle {
+    Item {
       id: separator
       visible: root.splitExtendedLayout
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: menuFlick.bottom
-      anchors.leftMargin: Style.marginS
-      anchors.rightMargin: Style.marginS
+      anchors.leftMargin: Style.marginXS
+      anchors.rightMargin: Style.marginXS
       anchors.topMargin: Style.marginS
-      height: Style.borderS
-      color: Qt.alpha(Color.mOutline, 0.7)
-      radius: Style.radiusXS
+      height: 2
+
+      // DDE two-line groove (dark over light)
+      Rectangle {
+        width: parent.width
+        height: 1
+        color: Qt.rgba(0, 0, 0, 0.1)
+      }
+      Rectangle {
+        y: 1
+        width: parent.width
+        height: 1
+        color: Qt.rgba(1, 1, 1, 0.1)
+      }
     }
 
     Column {
@@ -744,22 +776,22 @@ PopupWindow {
           readonly property int globalIndex: root.fixedItemGlobalIndex(index)
           width: fixedColumn.width
           height: root.rowHeightForItem(modelData)
-          color: root.hoveredItem === globalIndex ? Color.mHover : "transparent"
-          radius: Style.radiusXS
+          color: root.hoveredItem === globalIndex ? Color.accent : "transparent"
+          radius: 0
 
           Row {
             id: fixedRowLayout
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: Style.marginS
-            anchors.rightMargin: Style.marginS
+            anchors.leftMargin: Style.menuItemPadding
+            anchors.rightMargin: Style.menuItemPadding
             spacing: Style.marginS
 
             NIcon {
               icon: modelData.icon
               pointSize: Style.fontSizeL
-              color: root.hoveredItem === fixedItemRect.globalIndex ? Color.mOnHover : Color.mOnSurfaceVariant
+              color: root.hoveredItem === fixedItemRect.globalIndex ? "#FFFFFF" : Color.onShellSecondary
               visible: icon !== ""
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -767,7 +799,7 @@ PopupWindow {
             NText {
               text: modelData.text
               pointSize: Style.fontSizeS
-              color: root.hoveredItem === fixedItemRect.globalIndex ? Color.mOnHover : Color.mOnSurfaceVariant
+              color: root.hoveredItem === fixedItemRect.globalIndex ? "#FFFFFF" : Color.onShell
               anchors.verticalCenter: parent.verticalCenter
               width: fixedRowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
               elide: Text.ElideRight

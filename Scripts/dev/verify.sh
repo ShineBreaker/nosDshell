@@ -16,6 +16,11 @@
 #   osd-volume, audio-panel, network-panel, bluetooth-panel, battery-panel,
 #   calendar-panel, media-panel, system-monitor, notification-history,
 #   wallpaper, dock, lockscreen
+#   plus settings-tab scenes (open the settings panel on a specific tab):
+#   settings-general, settings-userinterface, settings-audio,
+#   settings-colorscheme, settings-dock, settings-launcher,
+#   settings-wallpaper, settings-notifications, settings-osd
+#   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
 #
 # IPC targets available (Services/Control/IPCService.qml):
 #   bar, settings, calendar, notifications, toast, idleInhibitor, launcher,
@@ -107,6 +112,9 @@ cd "$WORK"
 SCENES_ORDER="idle launcher control-center settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
+settings-general settings-userinterface settings-audio settings-colorscheme
+settings-dock settings-launcher settings-wallpaper settings-notifications
+settings-osd
 wallpaper dock lockscreen"
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
@@ -188,6 +196,7 @@ run_scene() {
     launcher)             toggle launcher toggle 1.5 launcher ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
+    settings-*)           call settings openTab "${1#settings-}" 2; shot "$1"; call settings toggle 0.5 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
     notification)         notify-send -a noctalia-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null

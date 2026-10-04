@@ -27,13 +27,13 @@ Rectangle {
   Layout.fillHeight: true
   implicitWidth: contentLayout.implicitWidth + Style.margin2M
 
-  topLeftRadius: isFirst ? Style.iRadiusM : Style.iRadiusXXXS
-  bottomLeftRadius: isFirst ? Style.iRadiusM : Style.iRadiusXXXS
-  topRightRadius: isLast ? Style.iRadiusM : Style.iRadiusXXXS
-  bottomRightRadius: isLast ? Style.iRadiusM : Style.iRadiusXXXS
+  topLeftRadius: isFirst ? Style.radiusItem : Style.radiusXXXS
+  bottomLeftRadius: isFirst ? Style.radiusItem : Style.radiusXXXS
+  topRightRadius: isLast ? Style.radiusItem : Style.radiusXXXS
+  bottomRightRadius: isLast ? Style.radiusItem : Style.radiusXXXS
 
-  color: root.isHovered ? Color.mHover : (root.checked ? Color.mPrimary : Color.smartAlpha(Color.mSurface))
-  border.color: root.checked ? Color.mPrimary : Color.mOutline
+  color: root.isHovered ? Color.overlay("hover") : (root.checked ? Color.overlay("checked") : "transparent")
+  border.color: "transparent"
   border.width: Style.borderS
 
   Behavior on color {
@@ -56,7 +56,7 @@ Rectangle {
       Layout.alignment: Qt.AlignVCenter
       icon: root.icon
       pointSize: root.pointSize * 1.2
-      color: root.isHovered ? Color.mOnHover : (root.checked ? Color.mOnPrimary : Color.mOnSurface)
+      color: Color.onShell
 
       Behavior on color {
         enabled: !Color.isTransitioning
@@ -73,8 +73,8 @@ Rectangle {
       Layout.alignment: Qt.AlignVCenter
       text: root.text
       pointSize: root.pointSize
-      font.weight: Style.fontWeightSemiBold
-      color: root.isHovered ? Color.mOnHover : (root.checked ? Color.mOnPrimary : Color.mOnSurface)
+      font.weight: root.checked ? Style.fontWeightMedium : Style.fontWeightRegular
+      color: Color.onShell
       horizontalAlignment: Text.AlignHCenter
       verticalAlignment: Text.AlignVCenter
 

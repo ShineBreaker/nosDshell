@@ -7,15 +7,15 @@ import qs.Services.Power
 Singleton {
   id: root
 
-  // Font size
-  readonly property real fontSizeXXS: 8
-  readonly property real fontSizeXS: 9
-  readonly property real fontSizeS: 10
-  readonly property real fontSizeM: 11
-  readonly property real fontSizeL: 13
-  readonly property real fontSizeXL: 16
-  readonly property real fontSizeXXL: 18
-  readonly property real fontSizeXXXL: 24
+  // Font size (points; DDE base = 9pt)
+  readonly property real fontSizeXXS: 7
+  readonly property real fontSizeXS: 8
+  readonly property real fontSizeS: 8.5
+  readonly property real fontSizeM: 9
+  readonly property real fontSizeL: 10.5
+  readonly property real fontSizeXL: 12
+  readonly property real fontSizeXXL: 14
+  readonly property real fontSizeXXXL: 18
 
   // Font weight
   readonly property int fontWeightLight: 300
@@ -25,20 +25,20 @@ Singleton {
   readonly property int fontWeightBold: 700
 
   // Container Radii: major layout sections (sidebars, cards, content panels)
-  readonly property int radiusXXXS: Math.round(3 * Settings.data.general.radiusRatio)
-  readonly property int radiusXXS: Math.round(4 * Settings.data.general.radiusRatio)
-  readonly property int radiusXS: Math.round(8 * Settings.data.general.radiusRatio)
-  readonly property int radiusS: Math.round(12 * Settings.data.general.radiusRatio)
-  readonly property int radiusM: Math.round(16 * Settings.data.general.radiusRatio)
-  readonly property int radiusL: Math.round(20 * Settings.data.general.radiusRatio)
+  readonly property int radiusXXXS: Math.round(2 * Settings.data.general.radiusRatio)
+  readonly property int radiusXXS: Math.round(3 * Settings.data.general.radiusRatio)
+  readonly property int radiusXS: Math.round(4 * Settings.data.general.radiusRatio)
+  readonly property int radiusS: Math.round(5 * Settings.data.general.radiusRatio)
+  readonly property int radiusM: Math.round(6 * Settings.data.general.radiusRatio)
+  readonly property int radiusL: Math.round(8 * Settings.data.general.radiusRatio)
 
   // Input radii: interactive elements (buttons, toggles, text fields)
-  readonly property int iRadiusXXXS: Math.round(3 * Settings.data.general.iRadiusRatio)
-  readonly property int iRadiusXXS: Math.round(4 * Settings.data.general.iRadiusRatio)
-  readonly property int iRadiusXS: Math.round(8 * Settings.data.general.iRadiusRatio)
-  readonly property int iRadiusS: Math.round(12 * Settings.data.general.iRadiusRatio)
-  readonly property int iRadiusM: Math.round(16 * Settings.data.general.iRadiusRatio)
-  readonly property int iRadiusL: Math.round(20 * Settings.data.general.iRadiusRatio)
+  readonly property int iRadiusXXXS: Math.round(2 * Settings.data.general.iRadiusRatio)
+  readonly property int iRadiusXXS: Math.round(3 * Settings.data.general.iRadiusRatio)
+  readonly property int iRadiusXS: Math.round(4 * Settings.data.general.iRadiusRatio)
+  readonly property int iRadiusS: Math.round(5 * Settings.data.general.iRadiusRatio)
+  readonly property int iRadiusM: Math.round(6 * Settings.data.general.iRadiusRatio)
+  readonly property int iRadiusL: Math.round(8 * Settings.data.general.iRadiusRatio)
 
   readonly property int screenRadius: Math.round(20 * Settings.data.general.screenRadiusRatio)
 
@@ -265,6 +265,12 @@ Singleton {
   readonly property int popupArrowHeight: 10
   readonly property int popupGap: 2
 
+  // DDE menu row metrics: rows are font-height + 8, padded 20px on each side
+  readonly property int menuItemPadding: Math.round(20 * uiScaleRatio)
+
+  // Capsule radius — only the switch and RoundedButton-style buttons may use it (DESIGN §7)
+  readonly property int radiusPill: 15
+
   // Shadows — feed into NDropShadow; plain {blur, x, y, color} objects (DESIGN §1.6)
   readonly property var shadowPopup: ({
                                         "blur": 20,
@@ -314,6 +320,7 @@ Singleton {
   readonly property int motionOsdOut: _motion(120)
   readonly property int motionFade: _motion(1000)
   readonly property int motionNavZoom: _motion(300)
+  readonly property int motionSwitch: _motion(150)
 
   // Timeouts (ms)
   readonly property int tooltipDelayDock: 500

@@ -33,11 +33,14 @@ RowLayout {
     label: root.label
     description: root.description
     icon: root.icon
-    iconColor: root.checked ? Color.mPrimary : Color.mOnSurface
+    iconColor: root.checked ? Color.accent : Color.onShell
     visible: root.label !== "" || root.description !== ""
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
   }
+
+  // DSwitchButton: 40x22 capsule, off = white x 0.2, on = accent, white 18px knob (DESIGN §3.5.4)
+  readonly property real _switchScale: Math.round(Style.baseWidgetSize * 0.8 * Style.uiScaleRatio) > 0 ? root.baseSize / Math.round(Style.baseWidgetSize * 0.8 * Style.uiScaleRatio) : 1
 
   Rectangle {
     id: switcher
@@ -45,39 +48,29 @@ RowLayout {
     opacity: enabled ? 1.0 : 0.6
     Layout.alignment: Qt.AlignVCenter
     Layout.margins: Style.borderS
-    implicitWidth: Math.round(root.baseSize * .85) * 2
-    implicitHeight: Math.round(root.baseSize * .5) * 2
-    radius: Math.min(Style.iRadiusL, height / 2)
-    color: root.checked ? Color.mPrimary : Color.mSurface
-    border.color: Color.mOutline
-    border.width: Style.borderS
+    implicitWidth: Math.round(40 * root._switchScale)
+    implicitHeight: Math.round(22 * root._switchScale)
+    radius: height / 2
+    color: root.checked ? Color.accent : Color.overlay("strong")
 
     Behavior on color {
       ColorAnimation {
-        duration: Style.animationFast
-      }
-    }
-
-    Behavior on border.color {
-      ColorAnimation {
-        duration: Style.animationFast
+        duration: Style.motionSwitch
       }
     }
 
     Rectangle {
-      implicitWidth: Math.round(root.baseSize * 0.4) * 2
-      implicitHeight: Math.round(root.baseSize * 0.4) * 2
-      radius: Math.min(Style.iRadiusL, height / 2)
-      color: root.checked ? Color.mOnPrimary : Color.mPrimary
-      border.color: root.checked ? Color.mSurface : Color.mSurface
-      border.width: Style.borderM
+      implicitWidth: Math.round(18 * root._switchScale)
+      implicitHeight: Math.round(18 * root._switchScale)
+      radius: height / 2
+      color: "#FFFFFF"
       anchors.verticalCenter: parent.verticalCenter
       anchors.verticalCenterOffset: 0
-      x: root.checked ? switcher.width - width - 3 : 3
+      x: root.checked ? switcher.width - width - 2 : 2
 
       Behavior on x {
         NumberAnimation {
-          duration: Style.animationFast
+          duration: Style.motionSwitch
           easing.type: Easing.OutCubic
         }
       }

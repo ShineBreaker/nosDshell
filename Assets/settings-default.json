@@ -150,7 +150,7 @@
     "fontDefaultScale": 1,
     "fontFixedScale": 1,
     "tooltipsEnabled": true,
-    "scrollbarAlwaysVisible": true,
+    "scrollbarAlwaysVisible": false,
     "boxBorderEnabled": false,
     "panelBackgroundOpacity": 0.4,
     "translucentWidgets": false,

@@ -55,6 +55,33 @@ PopupWindow {
   property int screenX: 0
   property int screenY: 0
 
+  // Arrow state: which edge of the NArrowRect carries the arrow, and where
+  // along that edge the tip sits (coordinates relative to the window).
+  property string _effectiveDirection: ""
+  property real _arrowPosition: 0
+  property real _bodyWidth: 0
+  property real _bodyHeight: 0
+
+  // Approximate line height of the tooltip font, used for DDE padding math.
+  readonly property real _fontHeight: rowHeightMeasure.implicitHeight
+
+  // DDE tooltip arrows point back at the target: a tooltip shown "above"
+  // its target carries the arrow on its bottom edge, etc.
+  function _arrowEdgeFor(direction) {
+    switch (direction) {
+    case "top":
+      return "bottom";
+    case "bottom":
+      return "top";
+    case "left":
+      return "right";
+    case "right":
+      return "left";
+    default:
+      return "";
+    }
+  }
+
   visible: false
   color: "transparent"
 
@@ -138,7 +165,7 @@ PopupWindow {
     if (!target || !content || content === "" || (Array.isArray(content) && content.length === 0))
       return;
 
-    root.delay = showDelay;
+    root.delay = (showDelay === undefined) ? Style.tooltipDelayDock : showDelay;
 
     // Stop any running timers and animations
     hideTimer.stop();
@@ -258,10 +285,13 @@ PopupWindow {
     }
 
     const extraPad = isGridMode ? gridPaddingVertical : 0;
-    const tipWidth = Math.ceil(Math.min(contentWidth + ((padding + extraPad) * 2), maxWidth));
-    root.implicitWidth = tipWidth;
-
+    // DDE TipsWidget: width ≈ text width + 6 × font height (capped)
+    const horizontalPad = Math.min(_fontHeight * 6, maxWidth * 0.5);
+    const tipWidth = Math.ceil(Math.min(contentWidth + horizontalPad, maxWidth));
     const tipHeight = Math.ceil(contentHeight + ((padding + extraPad) * 2));
+    root._bodyWidth = tipWidth;
+    root._bodyHeight = tipHeight;
+    root.implicitWidth = tipWidth;
     root.implicitHeight = tipHeight;
 
     // Get target's global position and convert to screen-relative
@@ -410,6 +440,24 @@ PopupWindow {
       }
     }
 
+    // Arrow: the window grows by the arrow on the edge facing the target,
+    // and the arrow tip points at the target's center.
+    root._effectiveDirection = effectiveDirection;
+    const arrowEdge = root._arrowEdgeFor(effectiveDirection);
+    if (arrowEdge === "top" || arrowEdge === "bottom") {
+      root.implicitWidth = tipWidth;
+      root.implicitHeight = tipHeight + Style.popupArrowHeight;
+      root._arrowPosition = targetWidth / 2 - newAnchorX;
+    } else if (arrowEdge !== "") {
+      root.implicitWidth = tipWidth + Style.popupArrowHeight;
+      root.implicitHeight = tipHeight;
+      root._arrowPosition = targetHeight / 2 - newAnchorY;
+    } else {
+      root.implicitWidth = tipWidth;
+      root.implicitHeight = tipHeight;
+      root._arrowPosition = tipWidth / 2;
+    }
+
     // Apply position first (before making visible)
     // Use floor for negative values to push tooltip away from target
     anchorX = newAnchorX < 0 ? Math.floor(newAnchorX) : Math.round(newAnchorX);
@@ -500,11 +548,22 @@ PopupWindow {
     }
 
     const extraPad = isGridMode ? gridPaddingVertical : 0;
-    const tipWidth = Math.ceil(Math.min(contentWidth + ((padding + extraPad) * 2), maxWidth));
-    root.implicitWidth = tipWidth;
-
+    const horizontalPad = Math.min(_fontHeight * 6, maxWidth * 0.5);
+    const tipWidth = Math.ceil(Math.min(contentWidth + horizontalPad, maxWidth));
     const tipHeight = Math.ceil(contentHeight + ((padding + extraPad) * 2));
-    root.implicitHeight = tipHeight;
+    root._bodyWidth = tipWidth;
+    root._bodyHeight = tipHeight;
+    const aEdge = root._arrowEdgeFor(root._effectiveDirection);
+    if (aEdge === "top" || aEdge === "bottom") {
+      root.implicitWidth = tipWidth;
+      root.implicitHeight = tipHeight + Style.popupArrowHeight;
+    } else if (aEdge !== "") {
+      root.implicitWidth = tipWidth + Style.popupArrowHeight;
+      root.implicitHeight = tipHeight;
+    } else {
+      root.implicitWidth = tipWidth;
+      root.implicitHeight = tipHeight;
+    }
 
     // Reposition based on current direction (screen-relative)
     // Round all values to avoid sub-pixel positioning issues with fractional scaling
@@ -586,6 +645,12 @@ PopupWindow {
       }
     }
 
+    if (aEdge === "top" || aEdge === "bottom") {
+      root._arrowPosition = targetWidth / 2 - newAnchorX;
+    } else if (aEdge !== "") {
+      root._arrowPosition = targetHeight / 2 - newAnchorY;
+    }
+
     // Apply the new anchor positions
     // Use floor for negative values to push tooltip away from target
     anchorX = newAnchorX < 0 ? Math.floor(newAnchorX) : Math.round(newAnchorX);
@@ -639,52 +704,64 @@ PopupWindow {
     scale: 1.0
     transformOrigin: Item.Center
 
-    Rectangle {
+    // DDE TipsWidget: arrowed dark popup, white text (DESIGN §3.2)
+    NArrowRect {
+      id: arrowRect
       anchors.fill: parent
-      anchors.margins: border.width
-      color: Color.mSurface
-      border.color: Color.mOutline
-      border.width: Style.borderS
-      radius: Math.min(Style.radiusS, Math.min(width, height) / 3)
+      radius: Style.radiusPopup
+      arrowEdge: root._arrowEdgeFor(root._effectiveDirection)
+      arrowPosition: root._arrowPosition
+      fillColor: Color.popupShell
+      borderColor: Color.borderShell
+      borderWidth: Style.borderS
+      shadow: Style.shadowPopup
 
       // Only show content when we have content
       visible: root.text !== "" || root.isGridMode
 
-      // Text content (default mode)
-      NText {
-        id: tooltipText
-        visible: !root.isGridMode
-        anchors.centerIn: parent
-        anchors.margins: root.padding
-        text: root.text
-        pointSize: Style.fontSizeS
-        family: Settings.data.ui.fontFixed
-        color: Color.mOnSurfaceVariant
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
-        wrapMode: Text.WordWrap
-        width: Math.min(implicitWidth, root.maxWidth - (root.padding * 2))
-        richTextEnabled: true
-      }
+      // Content is placed inside the arrow-free body region
+      Item {
+        x: arrowRect.bodyRect.x
+        y: arrowRect.bodyRect.y
+        width: arrowRect.bodyRect.width
+        height: arrowRect.bodyRect.height
 
-      // Grid content (grid mode)
-      GridLayout {
-        id: gridContent
-        visible: root.isGridMode
-        anchors.centerIn: parent
-        columns: root.columnCount
-        rowSpacing: 0
-        columnSpacing: Style.marginM
+        // Text content (default mode)
+        NText {
+          id: tooltipText
+          visible: !root.isGridMode
+          anchors.centerIn: parent
+          anchors.margins: root.padding
+          text: root.text
+          pointSize: Style.fontSizeS
+          family: Settings.data.ui.fontFixed
+          color: Color.onShell
+          horizontalAlignment: Text.AlignHCenter
+          verticalAlignment: Text.AlignVCenter
+          wrapMode: Text.WordWrap
+          width: Math.min(implicitWidth, Math.max(1, root.maxWidth - root._fontHeight * 6))
+          richTextEnabled: true
+        }
 
-        Repeater {
-          model: root.isGridMode ? [].concat.apply([], root.rows) : []
+        // Grid content (grid mode)
+        GridLayout {
+          id: gridContent
+          visible: root.isGridMode
+          anchors.centerIn: parent
+          columns: root.columnCount
+          rowSpacing: 0
+          columnSpacing: Style.marginM
 
-          NText {
-            text: modelData
-            pointSize: Style.fontSizeS
-            family: tooltipText.family
-            color: Color.mOnSurfaceVariant
-            Layout.preferredHeight: rowHeightMeasure.implicitHeight
+          Repeater {
+            model: root.isGridMode ? [].concat.apply([], root.rows) : []
+
+            NText {
+              text: modelData
+              pointSize: Style.fontSizeS
+              family: tooltipText.family
+              color: Color.onShell
+              Layout.preferredHeight: rowHeightMeasure.implicitHeight
+            }
           }
         }
       }

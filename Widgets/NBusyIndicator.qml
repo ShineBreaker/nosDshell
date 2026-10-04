@@ -1,19 +1,21 @@
 import QtQuick
 import qs.Commons
 
+// DSpinner: 12 short ticks in a ring with descending alpha, rotating (DESIGN §3.5.4)
 Item {
   id: root
 
   property bool running: true
-  property color color: Color.mPrimary
+  property color color: Color.onShell
   property int size: Style.baseWidgetSize
-  property int strokeWidth: Style.borderL
+  property int strokeWidth: Style.borderM
   property int duration: Style.animationSlow * 2
 
   implicitWidth: size
   implicitHeight: size
 
   onColorChanged: canvas.requestPaint()
+  onStrokeWidthChanged: canvas.requestPaint()
 
   // GPU-optimized spinner - draw once, rotate with GPU transform
   Item {
@@ -39,18 +41,25 @@ Item {
         var ctx = getContext("2d");
         ctx.reset();
 
-        var centerX = width / 2;
-        var centerY = height / 2;
-        var radius = Math.min(width, height) / 2 - strokeWidth / 2;
+        var cx = width / 2;
+        var cy = height / 2;
+        var ticks = 12;
+        var outer = Math.min(width, height) / 2 - Math.max(1, root.strokeWidth) / 2;
+        var inner = outer * 0.45;
+        var c = root.color;
 
-        ctx.strokeStyle = root.color;
         ctx.lineWidth = Math.max(1, root.strokeWidth);
         ctx.lineCap = "round";
 
-        // Draw arc with gap (270 degrees = 3/4 of circle)
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, -Math.PI / 2, -Math.PI / 2 + Math.PI * 1.5);
-        ctx.stroke();
+        for (var i = 0; i < ticks; i++) {
+          var angle = (i * Math.PI * 2 / ticks) - Math.PI / 2;
+          var alpha = 1.0 - (i / ticks) * 0.85;
+          ctx.strokeStyle = "rgba(" + Math.round(c.r * 255) + "," + Math.round(c.g * 255) + "," + Math.round(c.b * 255) + "," + (alpha * c.a).toFixed(3) + ")";
+          ctx.beginPath();
+          ctx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+          ctx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+          ctx.stroke();
+        }
       }
     }
 

@@ -19,9 +19,9 @@ Item {
   property real baseSize: Style.fontSizeM
 
   // Styling - no hardcoded colors, only theme colors
-  property color baseColor: Color.mOnSurface
-  property color lowColor: Color.mError
-  property color chargingColor: Color.mPrimary
+  property color baseColor: Color.onShell
+  property color lowColor: Color.alert
+  property color chargingColor: Color.accent
   property color textColor: Color.mSurface
 
   // Display options
@@ -76,7 +76,7 @@ Item {
   }
 
   // Background color for empty portion (semi-transparent)
-  readonly property color emptyColor: Qt.alpha(baseColor, 0.66)
+  readonly property color emptyColor: Color.overlay("strong")
 
   // State icon logic
   readonly property string stateIcon: {
@@ -165,7 +165,7 @@ Item {
     x: batteryBody.x + Style.pixelAlignCenter(bodyBackground.width, width)
     y: batteryBody.y + bodyBackground.y + Style.pixelAlignCenter(bodyBackground.height, height)
     font.family: Settings.data.ui.fontFixed
-    font.weight: Style.fontWeightBold
+    font.weight: Style.fontWeightMedium
     text: root.vertical ? String(Math.round(root.animatedPercentage)).split('').join('\n') : Math.round(root.animatedPercentage)
     pointSize: root.baseSize * (root.vertical ? 0.82 : 0.82)
     color: Qt.alpha(root.textColor, 0.75)

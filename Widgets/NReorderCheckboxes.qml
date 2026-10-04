@@ -9,9 +9,9 @@ Item {
   // Public API
   property var model: []
   property var disabledIds: []
-  property color activeColor: Color.mPrimary
-  property color activeOnColor: Color.mOnPrimary
-  property color dragHandleColor: Color.mOutline
+  property color activeColor: Color.accent
+  property color activeOnColor: "#FFFFFF"
+  property color dragHandleColor: Color.onShellTertiary
   property int baseSize: Style.baseWidgetSize * 0.7
   property int spacing: Style.marginM
 
@@ -100,8 +100,8 @@ Item {
 
             Layout.preferredWidth: root.baseSize
             Layout.preferredHeight: root.baseSize
-            radius: Style.iRadiusXS
-            color: dragHandleMouseArea.containsMouse ? Color.mSurfaceVariant : "transparent"
+            radius: Style.radiusRow
+            color: dragHandleMouseArea.containsMouse ? Color.overlay("hover") : "transparent"
 
             Behavior on color {
               ColorAnimation {
@@ -195,25 +195,19 @@ Item {
             }
           }
 
-          // Checkbox
+          // Checkbox — OptionItem style: accent check glyph, no box
           Rectangle {
             id: box
 
             Layout.preferredWidth: root.baseSize
             Layout.preferredHeight: root.baseSize
-            radius: Style.iRadiusXS
-            color: delegateItem.itemEnabled ? root.activeColor : Color.mSurface
-            border.color: delegateItem.required ? root.activeColor : Color.mOutline
+            radius: Style.radiusRow
+            color: checkboxMouseArea.containsMouse && !delegateItem.required && !delegateItem.isDisabled ? Color.overlay("hover") : "transparent"
+            border.color: "transparent"
             border.width: Style.borderS
             opacity: delegateItem.required ? 0.7 : 1.0
 
             Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
-
-            Behavior on border.color {
               ColorAnimation {
                 duration: Style.animationFast
               }
@@ -224,14 +218,16 @@ Item {
               anchors.centerIn: parent
               anchors.horizontalCenterOffset: -1
               icon: "check"
-              color: root.activeOnColor
+              color: root.activeColor
               pointSize: Math.max(Style.fontSizeXS, root.baseSize * 0.5)
             }
 
             MouseArea {
+              id: checkboxMouseArea
               anchors.fill: parent
               cursorShape: (!delegateItem.required && !delegateItem.isDisabled) ? Qt.PointingHandCursor : Qt.ArrowCursor
               enabled: !delegateItem.required && !delegateItem.isDisabled
+              hoverEnabled: true
 
               onClicked: {
                 if (!delegateItem.required && !delegateItem.isDisabled) {
@@ -245,7 +241,7 @@ Item {
           NText {
             Layout.fillWidth: true
             text: delegateItem.text
-            color: Color.mOnSurface
+            color: Color.onShell
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
           }
@@ -254,7 +250,7 @@ Item {
           NText {
             visible: delegateItem.required
             text: I18n.tr("common.required")
-            color: Color.mOnSurfaceVariant
+            color: Color.onShellTertiary
             verticalAlignment: Text.AlignVCenter
           }
         }

@@ -11,16 +11,16 @@ Item {
   property string text: ""
   property string icon: ""
   property var tooltipText
-  property color backgroundColor: Color.mPrimary
-  property color textColor: Color.mOnPrimary
-  property color hoverColor: Color.mHover
-  property color textHoverColor: Color.mOnHover
+  property color backgroundColor: Color.overlay("strong")
+  property color textColor: Color.onShell
+  property color hoverColor: Color.overlay("press")
+  property color textHoverColor: Color.onShell
   property real fontSize: Style.fontSizeM
-  property int fontWeight: Style.fontWeightSemiBold
+  property int fontWeight: Style.fontWeightMedium
   property real iconSize: Style.fontSizeL
   property bool outlined: false
   property int horizontalAlignment: Qt.AlignHCenter
-  property real buttonRadius: Style.iRadiusS
+  property real buttonRadius: Style.radiusPill
 
   // Signals
   signal clicked
@@ -31,9 +31,18 @@ Item {
 
   // Internal properties
   property bool hovered: false
+  readonly property bool pressed: mouseArea.pressed
+  // Callers that pass the accent color as background get the "recommended" look (DESIGN §3.5.4)
+  readonly property bool isPrimary: Qt.colorEqual(root.backgroundColor, Color.mPrimary)
   readonly property color contentColor: {
     if (!root.enabled) {
-      return Color.mOnSurfaceVariant;
+      return Color.onShellTertiary;
+    }
+    if (root.pressed && !root.outlined) {
+      return Color.mOnPrimary;
+    }
+    if (root.isPrimary) {
+      return Color.accent;
     }
     if (root.hovered) {
       return root.textHoverColor;
@@ -61,9 +70,13 @@ Item {
     radius: root.buttonRadius
     color: {
       if (!root.enabled)
-        return root.outlined ? "transparent" : Qt.lighter(Color.mSurfaceVariant, 1.2);
+        return root.outlined ? "transparent" : Color.overlay("idle");
+      if (root.pressed && !root.outlined)
+        return Color.accent;
       if (root.hovered)
         return root.hoverColor;
+      if (root.isPrimary)
+        return Color.overlay("strong");
       return root.outlined ? "transparent" : root.backgroundColor;
     }
 

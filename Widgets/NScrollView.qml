@@ -6,12 +6,12 @@ import qs.Commons
 ScrollView {
   id: root
 
-  property color handleColor: Qt.alpha(Color.mHover, 0.8)
+  property color handleColor: Color.overlay("checked")
   property color handleHoverColor: handleColor
   property color handlePressedColor: handleColor
   property color trackColor: "transparent"
-  property real handleWidth: Math.round(6 * Style.uiScaleRatio)
-  property real handleRadius: Style.iRadiusM
+  property real handleWidth: Math.round(4 * Style.uiScaleRatio)
+  property real handleRadius: Style.radiusXXXS
   property int verticalPolicy: ScrollBar.AsNeeded
   property int horizontalPolicy: ScrollBar.AsNeeded
   property bool preventHorizontalScroll: horizontalPolicy === ScrollBar.AlwaysOff
@@ -205,7 +205,7 @@ ScrollView {
       implicitHeight: 100
       radius: root.handleRadius
       color: parent.pressed ? root.handlePressedColor : parent.hovered ? root.handleHoverColor : root.handleColor
-      opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active) ? 1.0 : 0.0) : 0.0
+      opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
 
       Behavior on opacity {
         NumberAnimation {
@@ -224,7 +224,7 @@ ScrollView {
       implicitWidth: root.handleWidth
       implicitHeight: 100
       color: root.trackColor
-      opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active) ? 0.3 : 0.0) : 0.0
+      opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 0.3 : 0.0) : 0.0
       radius: root.handleRadius / 2
 
       Behavior on opacity {
@@ -248,7 +248,7 @@ ScrollView {
       implicitHeight: root.handleWidth
       radius: root.handleRadius
       color: parent.pressed ? root.handlePressedColor : parent.hovered ? root.handleHoverColor : root.handleColor
-      opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.horizontalScrollable ? ((root.showScrollbarWhenScrollable || parent.active) ? 1.0 : 0.0) : 0.0
+      opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.horizontalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
 
       Behavior on opacity {
         NumberAnimation {
@@ -267,7 +267,7 @@ ScrollView {
       implicitWidth: 100
       implicitHeight: root.handleWidth
       color: root.trackColor
-      opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.horizontalScrollable ? ((root.showScrollbarWhenScrollable || parent.active) ? 0.3 : 0.0) : 0.0
+      opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.horizontalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 0.3 : 0.0) : 0.0
       radius: root.handleRadius / 2
 
       Behavior on opacity {

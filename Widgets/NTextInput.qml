@@ -11,14 +11,14 @@ ColumnLayout {
   property string description: ""
   property string inputIconName: ""
   property bool readOnly: false
-  property color labelColor: Color.mOnSurface
-  property color descriptionColor: Color.mOnSurfaceVariant
+  property color labelColor: Color.onShell
+  property color descriptionColor: Color.onShellTertiary
   property string fontFamily: Settings.data.ui.fontDefault
   property real fontSize: Style.fontSizeS
   property int fontWeight: Style.fontWeightRegular
   property var defaultValue: undefined
   property string settingsPath: ""
-  property real radius: Style.iRadiusM
+  property real radius: Style.radiusItem
   property real minimumInputWidth: 80 * Style.uiScaleRatio
   property bool showClearButton: true
 
@@ -57,7 +57,7 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.minimumWidth: root.minimumInputWidth
     Layout.margins: Style.borderS
-    implicitHeight: Style.baseWidgetSize * 1.1 * Style.uiScaleRatio
+    implicitHeight: Math.round(30 * Style.uiScaleRatio)
 
     // This is important - makes the control accept focus
     focusPolicy: Qt.StrongFocus
@@ -67,8 +67,8 @@ ColumnLayout {
       id: frame
 
       radius: root.radius
-      color: Color.mSurface
-      border.color: input.activeFocus ? Color.mSecondary : Color.mOutline
+      color: Color.overlay("field")
+      border.color: input.activeFocus ? Color.accent : "transparent"
       border.width: Style.borderS
 
       Behavior on border.color {
@@ -151,8 +151,8 @@ ColumnLayout {
 
             echoMode: TextInput.Normal
             readOnly: root.readOnly
-            placeholderTextColor: Qt.alpha(Color.mOnSurfaceVariant, 0.6)
-            color: enabled ? Color.mOnSurface : Qt.alpha(Color.mOnSurface, 0.4)
+            placeholderTextColor: Color.onShellTertiary
+            color: enabled ? Color.onShell : Qt.alpha(Color.onShell, 0.4)
 
             selectByMouse: true
 
@@ -220,8 +220,8 @@ ColumnLayout {
 
             colorBg: "transparent"
             colorBgHover: "transparent"
-            colorFg: Color.mOnSurface
-            colorFgHover: Color.mError
+            colorFg: Color.onShellSecondary
+            colorFgHover: Color.alert
 
             visible: root.showClearButton && input.text.length > 0 && !root.readOnly
             enabled: input.text.length > 0 && !root.readOnly && root.enabled

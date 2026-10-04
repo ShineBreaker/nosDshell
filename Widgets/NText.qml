@@ -25,7 +25,7 @@ Text {
   font.weight: Style.fontWeightMedium
   font.pointSize: Math.max(1, root.pointSize * fontScale)
   font.features: root.features
-  color: Color.mOnSurface
+  color: Color.onShell
   elide: Text.ElideRight
   wrapMode: Text.NoWrap
   verticalAlignment: Text.AlignVCenter

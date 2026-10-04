@@ -9,9 +9,9 @@ Rectangle {
   required property int orientation // Qt.Vertical || Qt.Horizontal
   required property real ratio // 0..1
 
-  radius: orientation === Qt.Vertical ? width / 2 : height / 2
-  color: Color.mOutline
-  property color fillColor: Color.mPrimary
+  radius: Style.radiusXXXS
+  color: Color.overlay("strong")
+  property color fillColor: Color.accent
 
   // Fill that grows from bottom if vertical and left if horizontal.
   // Snap to zero if the computed pixel length is sub-pixel (< 1px).

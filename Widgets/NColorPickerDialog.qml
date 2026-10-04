@@ -56,10 +56,10 @@ Popup {
   }
 
   background: Rectangle {
-    color: Color.mSurface
-    radius: Style.iRadiusS
-    border.color: Color.mPrimary
-    border.width: Style.borderM
+    color: Color.maskShell
+    radius: Style.radiusWindow
+    border.color: Color.borderShell
+    border.width: Style.borderS
   }
 
   contentItem: ColumnLayout {
@@ -739,6 +739,14 @@ Popup {
       }
     }
 
+    // DDialog button bar separator
+    Rectangle {
+      visible: !root.liveMode
+      Layout.fillWidth: true
+      Layout.preferredHeight: 1
+      color: Color.overlay("hover")
+    }
+
     RowLayout {
       visible: !root.liveMode
       Layout.fillWidth: true
@@ -762,6 +770,7 @@ Popup {
       NButton {
         text: I18n.tr("common.apply")
         icon: "check"
+        backgroundColor: Color.mPrimary // recommended action → accent text
         onClicked: {
           root.colorSelected(root.selectedColor);
           // Delay close to prevent click propagation to elements behind the dialog

@@ -21,7 +21,7 @@ RowLayout {
   property string settingsPath: ""
   property real baseSize: 1.0
 
-  readonly property real preferredHeight: Math.round(Style.baseWidgetSize * 1.1 * root.baseSize)
+  readonly property real preferredHeight: Math.round(30 * root.baseSize)
   readonly property var comboBox: combo
 
   signal selected(string key)
@@ -195,10 +195,10 @@ RowLayout {
     background: Rectangle {
       implicitWidth: Math.round(Style.baseWidgetSize * 3.75 * Style.uiScaleRatio)
       implicitHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
-      color: Color.mSurface
-      border.color: combo.activeFocus ? Color.mSecondary : Color.mOutline
+      color: Color.overlay("field")
+      border.color: combo.activeFocus ? Color.accent : "transparent"
       border.width: Style.borderS
-      radius: Style.iRadiusM
+      radius: Style.radiusItem
 
       Behavior on border.color {
         ColorAnimation {
@@ -229,7 +229,7 @@ RowLayout {
       pointSize: Style.fontSizeM
       verticalAlignment: Text.AlignVCenter
       elide: Text.ElideRight
-      color: combo.currentIndex >= 0 ? Color.mOnSurface : Color.mOnSurfaceVariant
+      color: combo.currentIndex >= 0 ? Color.onShell : Color.onShellTertiary
       text: {
         if (combo.currentIndex >= 0 && combo.currentIndex < root.itemCount()) {
           var item = root.getItem(combo.currentIndex);
@@ -244,13 +244,14 @@ RowLayout {
       y: combo.topPadding + (combo.availableHeight - height) / 2
       icon: "caret-down"
       pointSize: Style.fontSizeL
+      color: Color.onShellSecondary
     }
 
     popup: Popup {
       y: combo.height + Style.marginS
       implicitWidth: combo.width
       implicitHeight: Math.min(Math.round(root.popupHeight * Style.uiScaleRatio), listView.contentHeight + Style.margin2M)
-      padding: Style.marginM
+      padding: 0
 
       onOpened: {
         listView.currentIndex = combo.currentIndex;
@@ -264,25 +265,26 @@ RowLayout {
         highlightMoveDuration: 0
         //showGradientMasks: false
 
+        // Dark menu rows (DESIGN §3.3): full-row accent highlight, no row radius
         delegate: Rectangle {
           id: delegateRect
           required property int index
           property bool isHighlighted: listView.currentIndex === index
 
           width: listView.availableWidth
-          height: delegateText.implicitHeight + Style.margin2S
-          radius: Style.iRadiusS
-          color: isHighlighted ? Color.mHover : "transparent"
+          height: delegateText.implicitHeight + 8
+          radius: 0
+          color: isHighlighted ? Color.accent : "transparent"
 
           NText {
             id: delegateText
             anchors.fill: parent
-            anchors.leftMargin: Style.marginM
-            anchors.rightMargin: Style.marginM
+            anchors.leftMargin: 20 * Style.uiScaleRatio
+            anchors.rightMargin: 20 * Style.uiScaleRatio
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             pointSize: Style.fontSizeM
-            color: delegateRect.isHighlighted ? Color.mOnHover : Color.mOnSurface
+            color: delegateRect.isHighlighted ? "#FFFFFF" : Color.onShell
             text: {
               var item = root.getItem(delegateRect.index);
               return item && item.name ? item.name : "";
@@ -310,10 +312,10 @@ RowLayout {
       }
 
       background: Rectangle {
-        color: Color.mSurfaceVariant
-        border.color: Color.mOutline
+        color: Color.popupShell
+        border.color: Color.borderShell
         border.width: Style.borderS
-        radius: Style.iRadiusM
+        radius: Style.radiusPopup
       }
     }
 

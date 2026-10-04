@@ -12,7 +12,7 @@ Item {
   property string icon: ""
   property string suffix: "%"
   property real contentScale: 1.0
-  property color fillColor: Color.mPrimary
+  property color fillColor: Color.accent
   property var tooltipText
   property string tooltipDirection: "top"
 
@@ -105,7 +105,7 @@ Item {
       ctx.lineCap = Settings.data.general.iRadiusRatio > 0 ? "round" : "butt";
 
       // Track uses outline for contrast against surfaceVariant backgrounds
-      ctx.strokeStyle = Color.mSurface;
+      ctx.strokeStyle = Color.overlay("strong");
       ctx.beginPath();
       ctx.arc(cx, cy, r, start, endBg);
       ctx.stroke();
@@ -130,8 +130,8 @@ Item {
     anchors.verticalCenterOffset: -4 * root.contentScale
     text: `${Math.round(root.animatedRatio * 100)}${root.suffix}`
     pointSize: Style.fontSizeM * root.contentScale * 0.9
-    font.weight: Style.fontWeightBold
-    color: root.fillColor
+    font.weight: Style.fontWeightMedium
+    color: Color.onShell
     horizontalAlignment: Text.AlignHCenter
   }
 

@@ -212,12 +212,14 @@ PopupWindow {
     menu: root.menu
   }
 
-  Rectangle {
+  NArrowRect {
+    id: menuBody
     anchors.fill: parent
-    color: Color.mSurface
-    border.color: Color.mOutline
-    border.width: Math.max(1, Style.borderS)
-    radius: Style.radiusM
+    radius: Style.radiusPopup
+    fillColor: Color.popupShell
+    borderColor: Color.borderShell
+    borderWidth: Style.borderS
+    shadow: Style.shadowPopup
 
     // Fade-in animation
     opacity: root.visible ? 1.0 : 0.0
@@ -232,8 +234,10 @@ PopupWindow {
 
   Flickable {
     id: flickable
-    anchors.fill: parent
-    anchors.margins: Style.marginS
+    x: menuBody.bodyRect.x + Style.marginS
+    y: menuBody.bodyRect.y + Style.marginS
+    width: menuBody.bodyRect.width - Style.margin2S
+    height: menuBody.bodyRect.height - Style.margin2S
     contentHeight: columnLayout.implicitHeight
     interactive: true
 
@@ -263,34 +267,49 @@ PopupWindow {
           Layout.preferredWidth: parent.width
           Layout.preferredHeight: {
             if (modelData?.isSeparator) {
-              return 8;
+              return Style.marginS;
             } else {
-              // Calculate based on text content
+              // Row height = font height + 8
               const textHeight = text.contentHeight || (Style.fontSizeS * 1.2);
-              return Math.max(28, textHeight + Style.margin2S);
+              return textHeight + 8;
             }
           }
 
           color: "transparent"
           property var subMenu: null
 
-          NDivider {
-            anchors.centerIn: parent
-            width: parent.width - Style.margin2M
+          // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
+          Rectangle {
             visible: modelData?.isSeparator ?? false
+            anchors.centerIn: parent
+            width: parent.width - Style.margin2XS
+            height: 2
+            color: "transparent"
+
+            Rectangle {
+              width: parent.width
+              height: 1
+              color: Qt.rgba(0, 0, 0, 0.1)
+            }
+            Rectangle {
+              y: 1
+              width: parent.width
+              height: 1
+              color: Qt.rgba(1, 1, 1, 0.1)
+            }
           }
 
           Rectangle {
             id: innerRect
             anchors.fill: parent
-            color: mouseArea.containsMouse ? Color.mHover : "transparent"
-            radius: Style.radiusS
+            color: mouseArea.containsMouse ? Color.accent : "transparent"
+            radius: 0
             visible: !(modelData?.isSeparator ?? false)
 
             RowLayout {
               anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              anchors.rightMargin: Style.marginM
+              anchors.leftMargin: Style.menuItemPadding
+              anchors.rightMargin: Style.menuItemPadding
               spacing: Style.marginS
 
               // Indicator Container
@@ -306,10 +325,9 @@ PopupWindow {
                 readonly property bool isRadio: type === QsMenuButtonType.RadioButton
                 readonly property bool isChecked: modelData?.checkState === Qt.Checked || (modelData?.checked ?? false)
 
-                // Color Logic
-                readonly property color activeColor: mouseArea.containsMouse ? Color.mOnHover : Color.mPrimary
-                readonly property color checkMarkColor: mouseArea.containsMouse ? Color.mHover : Color.mOnPrimary
-                readonly property color borderColor: isChecked ? activeColor : (mouseArea.containsMouse ? Color.mOnHover : Color.mOnSurface)
+                // Color Logic — OptionItem style: accent check, white when the row is hovered
+                readonly property color activeColor: mouseArea.containsMouse ? "#FFFFFF" : Color.accent
+                readonly property color borderColor: activeColor
 
                 // Checkbox Visuals
                 Rectangle {
@@ -317,9 +335,9 @@ PopupWindow {
                   anchors.centerIn: parent
                   width: Math.round(Style.baseWidgetSize * 0.5)
                   height: Math.round(Style.baseWidgetSize * 0.5)
-                  radius: Style.iRadiusXS
+                  radius: Style.radiusRow
                   color: "transparent" // Transparent to match RadioButton style
-                  border.color: parent.borderColor
+                  border.color: "transparent"
                   border.width: Style.borderM
 
                   Behavior on border.color {
@@ -338,7 +356,7 @@ PopupWindow {
                   }
                 }
 
-                // RadioButton Visuals
+                // RadioButton Visuals — accent dot, no ring
                 Rectangle {
                   visible: parent.isRadio
                   anchors.centerIn: parent
@@ -346,14 +364,8 @@ PopupWindow {
                   height: Style.toOdd(Style.baseWidgetSize * 0.5)
                   radius: width / 2
                   color: "transparent"
-                  border.color: parent.borderColor
+                  border.color: "transparent"
                   border.width: Style.borderM // Slightly thicker for radio look
-
-                  Behavior on border.color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
 
                   Rectangle {
                     visible: parent.parent.isChecked
@@ -375,7 +387,7 @@ PopupWindow {
               NText {
                 id: text
                 Layout.fillWidth: true
-                color: (modelData?.enabled ?? true) ? (mouseArea.containsMouse ? Color.mOnHover : Color.mOnSurface) : Color.mOnSurfaceVariant
+                color: (modelData?.enabled ?? true) ? (mouseArea.containsMouse ? "#FFFFFF" : Color.onShell) : Color.textDisabledDark
                 text: modelData?.text !== "" ? modelData?.text.replace(/[\n\r]+/g, ' ') : "..."
                 pointSize: Style.fontSizeS
                 verticalAlignment: Text.AlignVCenter
@@ -391,12 +403,12 @@ PopupWindow {
               }
 
               NIcon {
-                icon: modelData?.hasChildren ? "menu" : ""
-                pointSize: Style.fontSizeS
+                icon: modelData?.hasChildren ? "chevron-right" : ""
+                pointSize: Style.fontSizeXL
                 applyUiScale: false
                 verticalAlignment: Text.AlignVCenter
                 visible: modelData?.hasChildren ?? false
-                color: (mouseArea.containsMouse ? Color.mOnTertiary : Color.mOnSurface)
+                color: (mouseArea.containsMouse ? "#FFFFFF" : Color.onShellSecondary)
               }
             }
 
@@ -500,16 +512,16 @@ PopupWindow {
           return widgetSettings.drawerEnabled ?? false;
         }
         Layout.preferredWidth: parent.width
-        Layout.preferredHeight: 28
-        color: pinUnpinMouseArea.containsMouse ? Qt.alpha(Color.mPrimary, 0.2) : Qt.alpha(Color.mPrimary, 0.08)
-        radius: Style.radiusS
-        border.color: Qt.alpha(Color.mPrimary, pinUnpinMouseArea.containsMouse ? 0.4 : 0.2)
+        Layout.preferredHeight: Math.round(Style.fontSizeS * 1.33) + 8
+        color: pinUnpinMouseArea.containsMouse ? Color.accent : "transparent"
+        radius: 0
+        border.color: "transparent"
         border.width: Style.borderS
 
         RowLayout {
           anchors.fill: parent
-          anchors.leftMargin: Style.marginM
-          anchors.rightMargin: Style.marginM
+          anchors.leftMargin: Style.menuItemPadding
+          anchors.rightMargin: Style.menuItemPadding
           spacing: Style.marginS
 
           NIcon {
@@ -517,12 +529,12 @@ PopupWindow {
             pointSize: Style.fontSizeS
             applyUiScale: false
             verticalAlignment: Text.AlignVCenter
-            color: Color.mPrimary
+            color: pinUnpinMouseArea.containsMouse ? "#FFFFFF" : Color.accent
           }
 
           NText {
             Layout.fillWidth: true
-            color: Color.mPrimary
+            color: pinUnpinMouseArea.containsMouse ? "#FFFFFF" : Color.accent
             text: root.isPinned ? I18n.tr("panels.bar.tray-unpin-application") : I18n.tr("panels.bar.tray-pin-application")
             pointSize: Style.fontSizeS
             verticalAlignment: Text.AlignVCenter

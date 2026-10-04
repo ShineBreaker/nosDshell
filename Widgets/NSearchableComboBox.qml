@@ -21,7 +21,7 @@ RowLayout {
   property var defaultValue: undefined
   property string settingsPath: ""
 
-  readonly property real preferredHeight: Math.round(Style.baseWidgetSize * 1.1)
+  readonly property real preferredHeight: 30
 
   signal selected(string key)
 
@@ -189,10 +189,10 @@ RowLayout {
     background: Rectangle {
       implicitWidth: Math.round(Style.baseWidgetSize * 3.75 * Style.uiScaleRatio)
       implicitHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
-      color: Color.mSurface
-      border.color: combo.activeFocus ? Color.mSecondary : Color.mOutline
+      color: Color.overlay("field")
+      border.color: combo.activeFocus ? Color.accent : "transparent"
       border.width: Style.borderS
-      radius: Style.iRadiusM
+      radius: Style.radiusItem
 
       Behavior on border.color {
         ColorAnimation {
@@ -212,7 +212,7 @@ RowLayout {
       readonly property int sourceIndex: root.findIndexByKey(root.currentKey)
       readonly property bool hasSelection: root.model && sourceIndex >= 0 && sourceIndex < root.model.count
 
-      color: hasSelection ? Color.mOnSurface : Color.mOnSurfaceVariant
+      color: hasSelection ? Color.onShell : Color.onShellTertiary
       text: hasSelection ? root.model.get(sourceIndex).name : root.placeholder
     }
 
@@ -221,13 +221,14 @@ RowLayout {
       y: combo.topPadding + (combo.availableHeight - height) / 2
       icon: "caret-down"
       pointSize: Style.fontSizeL
+      color: Color.onShellSecondary
     }
 
     popup: Popup {
       y: combo.height + Style.marginS
       width: combo.width
       height: Math.round((root.popupHeight + 60) * Style.uiScaleRatio)
-      padding: Style.marginM
+      padding: Style.marginS
 
       contentItem: ColumnLayout {
         spacing: Style.marginS
@@ -332,7 +333,7 @@ RowLayout {
                 NText {
                   text: name
                   pointSize: Style.fontSizeM
-                  color: highlighted ? Color.mOnHover : Color.mOnSurface
+                  color: highlighted ? "#FFFFFF" : Color.onShell
                   verticalAlignment: Text.AlignVCenter
                   elide: Text.ElideRight
                   Layout.fillWidth: true
@@ -379,7 +380,7 @@ RowLayout {
                         else
                           return Style.fontSizeXS;
                       }
-                      color: highlighted ? Color.mOnHover : (badgeData && badgeData.color ? badgeData.color : Color.mOnSurface)
+                      color: highlighted ? "#FFFFFF" : (badgeData && badgeData.color ? badgeData.color : Color.onShellSecondary)
                       Layout.preferredWidth: Math.round(Style.baseWidgetSize * 0.6)
                       Layout.preferredHeight: Math.round(Style.baseWidgetSize * 0.6)
                       visible: badgeData && badgeData.icon !== undefined && badgeData.icon !== ""
@@ -389,8 +390,8 @@ RowLayout {
               }
               background: Rectangle {
                 anchors.fill: parent
-                color: highlighted ? Color.mHover : "transparent"
-                radius: Style.iRadiusS
+                color: highlighted ? Color.accent : "transparent"
+                radius: 0
               }
             }
           }
@@ -398,10 +399,10 @@ RowLayout {
       }
 
       background: Rectangle {
-        color: Color.mSurfaceVariant
-        border.color: Color.mOutline
+        color: Color.popupShell
+        border.color: Color.borderShell
         border.width: Style.borderS
-        radius: Style.iRadiusM
+        radius: Style.radiusPopup
       }
     }
 

@@ -22,16 +22,16 @@ Rectangle {
   property bool pressed: false
 
   // Color properties
-  property color colorBg: Color.smartAlpha(Color.mSurfaceVariant)
-  property color colorFg: Color.mPrimary
-  property color colorBgHover: Color.mHover
-  property color colorFgHover: Color.mOnHover
-  property color colorBorder: Color.mOutline
-  property color colorBorderHover: Color.mOutline
+  property color colorBg: "transparent"
+  property color colorFg: Color.onShellSecondary
+  property color colorBgHover: Color.overlay("hover")
+  property color colorFgHover: Color.onShell
+  property color colorBorder: "transparent"
+  property color colorBorderHover: "transparent"
 
   // Hot state colors
-  property color colorBgHot: Color.mPrimary
-  property color colorFgHot: Color.mOnPrimary
+  property color colorBgHot: Color.overlay("checked")
+  property color colorFgHot: Color.onShell
 
   // Signals
   signal entered
@@ -56,7 +56,7 @@ Rectangle {
     }
     return colorBg;
   }
-  radius: Math.min(Style.iRadiusL, width / 2)
+  radius: Math.min(Style.radiusRow, width / 2)
   border.color: root.enabled && root.hovering ? colorBorderHover : colorBorder
   border.width: Style.borderS
 
@@ -74,7 +74,10 @@ Rectangle {
     pointSize: Math.max(1, Math.round(root.width * 0.48))
     applyUiScale: root.applyUiScale
     color: {
-      if (root.enabled && root.hovering || pressed) {
+      if (root.enabled && root.pressed) {
+        return Color.accent;
+      }
+      if (root.enabled && root.hovering) {
         return colorFgHover;
       }
       if (hot) {

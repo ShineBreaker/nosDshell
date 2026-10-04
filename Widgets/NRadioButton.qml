@@ -1,53 +1,53 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
+// DDE OptionItem radio: no circle; checked shows an accent check glyph on
+// the right; the whole row is clickable and highlights on hover (DESIGN §3.5.4).
 RadioButton {
   id: root
 
   property real pointSize: Style.fontSizeM
 
-  implicitWidth: outerCircle.implicitWidth + Style.marginS + contentItem.implicitWidth
+  implicitWidth: contentItem.implicitWidth
 
-  indicator: Rectangle {
-    id: outerCircle
+  indicator: Item {
+    implicitWidth: 0
+    implicitHeight: 0
+  }
 
-    implicitWidth: Style.baseWidgetSize * 0.625 * pointSize / Style.fontSizeM
-    implicitHeight: Style.baseWidgetSize * 0.625 * pointSize / Style.fontSizeM
-    radius: Math.min(Style.iRadiusL, width / 2)
-    color: "transparent"
-    border.color: root.checked ? Color.mPrimary : Color.mOnSurface
-    border.width: Style.borderM
-    anchors.verticalCenter: parent.verticalCenter
+  contentItem: Rectangle {
+    implicitWidth: rowContent.implicitWidth
+    implicitHeight: rowContent.implicitHeight
+    radius: Style.radiusRow
+    color: root.hovered ? Color.overlay("hover") : "transparent"
 
-    Rectangle {
-      anchors.fill: parent
-      anchors.margins: parent.width * 0.3
-
-      radius: Math.min(Style.iRadiusL, width / 2)
-      color: Qt.alpha(Color.mPrimary, root.checked ? 1 : 0)
-
-      Behavior on color {
-        ColorAnimation {
-          duration: Style.animationFast
-        }
-      }
-    }
-
-    Behavior on border.color {
+    Behavior on color {
       ColorAnimation {
         duration: Style.animationFast
       }
     }
-  }
 
-  contentItem: NText {
-    text: root.text
-    pointSize: root.pointSize
-    anchors.verticalCenter: parent.verticalCenter
-    anchors.left: outerCircle.right
-    anchors.right: parent.right
-    anchors.leftMargin: Style.marginS
+    RowLayout {
+      id: rowContent
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.verticalCenter: parent.verticalCenter
+
+      NText {
+        text: root.text
+        pointSize: root.pointSize
+        Layout.fillWidth: true
+      }
+
+      NIcon {
+        icon: "check"
+        pointSize: Style.fontSizeXL
+        color: Color.accent
+        visible: root.checked
+      }
+    }
   }
 }

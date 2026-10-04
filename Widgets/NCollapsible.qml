@@ -24,9 +24,9 @@ ColumnLayout {
     id: headerContainer
     Layout.fillWidth: true
     Layout.preferredHeight: headerContent.implicitHeight + Style.margin2M
-    color: root.expanded ? Color.mSecondary : Color.mPrimary
-    radius: Style.iRadiusM
-    border.color: root.expanded ? Color.mOnSecondary : Color.mOutline
+    color: headerArea.containsMouse ? Color.overlay("hover") : "transparent"
+    radius: Style.radiusRow
+    border.color: "transparent"
     border.width: Style.borderS
 
     // Smooth color transitions
@@ -57,20 +57,6 @@ ColumnLayout {
         root.expanded = !root.expanded;
         root.toggled(root.expanded);
       }
-
-      // Hover effect overlay
-      Rectangle {
-        anchors.fill: parent
-        color: headerArea.containsMouse ? Color.mOnSurface : "transparent"
-        opacity: headerArea.containsMouse ? 0.08 : 0
-        radius: headerContainer.radius // Reference the container's radius directly
-
-        Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
-          }
-        }
-      }
     }
 
     RowLayout {
@@ -84,7 +70,7 @@ ColumnLayout {
         id: chevronIcon
         icon: "chevron-right"
         pointSize: Style.fontSizeL
-        color: root.expanded ? Color.mOnSecondary : Color.mOnPrimary
+        color: Color.onShellSecondary
         Layout.alignment: Qt.AlignVCenter
 
         rotation: root.expanded ? 90 : 0
@@ -114,33 +100,18 @@ ColumnLayout {
           text: root.label
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
-          color: root.expanded ? Color.mOnSecondary : Color.mOnPrimary
+          color: Color.onShell
           wrapMode: Text.WordWrap
-
-          Behavior on color {
-            enabled: root._userInteracted
-            ColorAnimation {
-              duration: Style.animationNormal
-            }
-          }
         }
 
         NText {
           text: root.description
           pointSize: Style.fontSizeS
           font.weight: Style.fontWeightRegular
-          color: root.expanded ? Color.mOnSecondary : Color.mOnPrimary
+          color: Color.onShellTertiary
           Layout.fillWidth: true
           wrapMode: Text.WordWrap
           visible: root.description !== ""
-          opacity: 0.87
-
-          Behavior on color {
-            enabled: root._userInteracted
-            ColorAnimation {
-              duration: Style.animationNormal
-            }
-          }
         }
       }
     }
@@ -153,9 +124,9 @@ ColumnLayout {
     Layout.topMargin: Style.marginS
 
     visible: root.expanded
-    color: Color.mSurface
-    radius: Style.iRadiusL
-    border.color: Color.mOutline
+    color: Color.overlay("strong")
+    radius: Style.radiusItem
+    border.color: Style.boxBorderColor
     border.width: Style.borderS
 
     // Dynamic height based on content

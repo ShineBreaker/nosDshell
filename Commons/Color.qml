@@ -438,7 +438,8 @@ Singleton {
                                           "hover": 0.10,
                                           "field": 0.15,
                                           "strong": 0.20,
-                                          "checked": 0.30
+                                          "checked": 0.30,
+                                          "press": 0.50
                                         })
 
   property var _overlayWarned: ({})

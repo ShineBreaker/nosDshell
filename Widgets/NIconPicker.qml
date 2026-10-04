@@ -38,10 +38,10 @@ Popup {
   }
 
   background: Rectangle {
-    color: Color.mSurface
-    radius: Style.iRadiusL
-    border.color: Color.mPrimary
-    border.width: Style.borderM
+    color: Color.maskShell
+    radius: Style.radiusWindow
+    border.color: Color.borderShell
+    border.width: Style.borderS
   }
 
   ColumnLayout {
@@ -54,8 +54,8 @@ Popup {
       NText {
         text: I18n.tr("widgets.icon-picker.title")
         pointSize: Style.fontSizeL
-        font.weight: Style.fontWeightBold
-        color: Color.mPrimary
+        font.weight: Style.fontWeightSemiBold
+        color: Color.onShell
         Layout.fillWidth: true
       }
       NIconButton {
@@ -99,8 +99,8 @@ Popup {
         height: grid.cellHeight
         radius: Style.iRadiusS
 
-        color: (root.selectedIcon === modelData) ? Qt.alpha(Color.mPrimary, 0.15) : "transparent"
-        border.color: (root.selectedIcon === modelData) ? Color.mPrimary : "transparent"
+        color: (root.selectedIcon === modelData) ? Qt.alpha(Color.accent, 0.15) : "transparent"
+        border.color: (root.selectedIcon === modelData) ? Color.accent : "transparent"
         border.width: (root.selectedIcon === modelData) ? Style.borderS : 0
 
         MouseArea {
@@ -134,7 +134,7 @@ Popup {
             wrapMode: Text.NoWrap
             maximumLineCount: 1
             horizontalAlignment: Text.AlignHCenter
-            color: Color.mOnSurfaceVariant
+            color: Color.onShellTertiary
             pointSize: Style.fontSizeXS
             text: modelData
           }
@@ -143,6 +143,13 @@ Popup {
           }
         }
       }
+    }
+
+    // DDialog button bar separator
+    Rectangle {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 1
+      color: Color.overlay("hover")
     }
 
     RowLayout {
@@ -159,6 +166,7 @@ Popup {
       NButton {
         text: I18n.tr("common.apply")
         icon: "check"
+        backgroundColor: Color.mPrimary // recommended action → accent text
         enabled: root.selectedIcon !== ""
         onClicked: {
           root.iconSelected(root.selectedIcon);

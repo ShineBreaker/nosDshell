@@ -133,9 +133,9 @@ Popup {
   anchors.centerIn: Overlay.overlay
 
   background: Rectangle {
-    color: Color.mSurfaceVariant
-    radius: Style.iRadiusL
-    border.color: Color.mOutline
+    color: Color.maskShell
+    radius: Style.radiusWindow
+    border.color: Color.borderShell
     border.width: Style.borderS
   }
 
@@ -675,7 +675,7 @@ Popup {
             color: {
               if (filePickerPanel.currentSelection.includes(model.filePath))
                 return Color.mSecondary;
-              if (mouseArea.containsMouse)
+              if (listMouseArea.containsMouse)
                 return Color.mHover;
               return "transparent";
             }
@@ -717,7 +717,7 @@ Popup {
             }
 
             MouseArea {
-              id: mouseArea
+              id: listMouseArea
               anchors.fill: parent
               hoverEnabled: true
               acceptedButtons: Qt.LeftButton | Qt.RightButton
@@ -759,6 +759,13 @@ Popup {
         }
       }
 
+      // DDialog button bar separator
+      Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 1
+        color: Color.overlay("hover")
+      }
+
       // Footer
       RowLayout {
         Layout.fillWidth: true
@@ -792,6 +799,7 @@ Popup {
         NButton {
           text: root.selectionMode === "folders" ? I18n.tr("widgets.file-picker.select-folder") : I18n.tr("widgets.file-picker.select-file")
           icon: "filepicker-check"
+          backgroundColor: Color.mPrimary // recommended action → accent text
           enabled: filePickerPanel.currentSelection.length > 0
           onClicked: root.confirmSelection()
         }

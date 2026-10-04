@@ -52,7 +52,7 @@ RowLayout {
         implicitHeight: root.diameter
         radius: root.diameter * 0.5
         color: (modelData.key === "none" && root.noneColor !== undefined) ? root.noneColor : Color.resolveColorKey(modelData.key)
-        border.color: (isSelected || isHovered) ? Color.mOnSurface : Color.mOutline
+        border.color: (isSelected || isHovered) ? Color.accent : Color.borderShell
         border.width: Style.borderM
 
         MouseArea {
@@ -74,7 +74,7 @@ RowLayout {
           icon: "check"
           pointSize: Math.max(Style.fontSizeXS, colorCircle.width * 0.4)
           color: (modelData.key === "none" && root.noneOnColor !== undefined) ? root.noneOnColor : Color.resolveOnColorKey(modelData.key)
-          font.weight: Style.fontWeightBold
+          font.weight: Style.fontWeightMedium
           visible: colorCircle.isSelected
         }
 

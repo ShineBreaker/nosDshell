@@ -17,13 +17,15 @@ Item {
   property bool handleWheel: false
   property bool hovering: false
 
-  property color colorBg: Color.smartAlpha(Color.mSurfaceVariant)
-  property color colorFg: Color.mPrimary
-  property color colorBgHover: Color.mHover
-  property color colorFgHover: Color.mOnHover
-  property color colorBorder: Color.mOutline
-  property color colorBorderHover: Color.mOutline
-  property real customRadius: -1 // -1 means use default (iRadiusL), otherwise use this value
+  property bool checked: false
+
+  property color colorBg: "transparent"
+  property color colorFg: Color.onShellSecondary
+  property color colorBgHover: Color.overlay("hover")
+  property color colorFgHover: Color.onShell
+  property color colorBorder: "transparent"
+  property color colorBorderHover: "transparent"
+  property real customRadius: -1 // -1 means use default (radiusRow), otherwise use this value
 
   // Expose border properties for backwards compatibility (aliases to visualButton)
   property alias border: visualButton.border
@@ -54,8 +56,14 @@ Item {
     height: root.buttonSize
     anchors.centerIn: parent
 
-    color: root.enabled && root.hovering ? colorBgHover : colorBg
-    radius: Math.min((customRadius >= 0 ? customRadius : Style.iRadiusL), width / 2)
+    readonly property bool pressed: mouseArea.pressed
+
+    color: {
+      if (root.enabled && root.checked)
+        return Color.overlay("checked");
+      return root.enabled && root.hovering ? colorBgHover : colorBg;
+    }
+    radius: Math.min((customRadius >= 0 ? customRadius : Style.radiusRow), width / 2)
     border.color: root.enabled && root.hovering ? colorBorderHover : colorBorder
     border.width: Style.borderS
 
@@ -71,7 +79,7 @@ Item {
       icon: root.icon
       pointSize: Style.toOdd(visualButton.width * 0.48)
       applyUiScale: root.applyUiScale
-      color: root.enabled && root.hovering ? colorFgHover : colorFg
+      color: root.enabled && visualButton.pressed ? Color.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
       // Pixel-perfect centering
       x: Style.pixelAlignCenter(visualButton.width, width)
       y: Style.pixelAlignCenter(visualButton.height, contentHeight)
@@ -88,6 +96,7 @@ Item {
 
   // MouseArea fills root (extends beyond visual button for bar click area)
   MouseArea {
+    id: mouseArea
     // Always enabled to allow hover/tooltip even when the button is disabled
     enabled: true
     anchors.fill: parent

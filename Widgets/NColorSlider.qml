@@ -99,7 +99,7 @@ Slider {
 
       ShapePath {
         id: trackPath
-        strokeColor: Qt.alpha(Color.mOutline, 0.5)
+        strokeColor: Color.borderShell
         strokeWidth: Style.borderS
         fillGradient: root.rainbowMode ? rainbowLinearGradient : standardLinearGradient
 
@@ -191,8 +191,8 @@ Slider {
         }
       }
 
-      border.color: root.pressed ? Color.mHover : Color.mPrimary
-      border.width: Style.borderL
+      border.color: root.pressed ? Color.accent : "#FFFFFF"
+      border.width: Style.borderM
       anchors.centerIn: parent
 
       Behavior on color {

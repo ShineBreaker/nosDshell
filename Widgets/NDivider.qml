@@ -16,11 +16,11 @@ Rectangle {
     }
     GradientStop {
       position: 0.1
-      color: Color.mOutline
+      color: Color.overlay("field")
     }
     GradientStop {
       position: 0.9
-      color: Color.mOutline
+      color: Color.overlay("field")
     }
     GradientStop {
       position: 1.0

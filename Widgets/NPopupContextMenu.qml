@@ -7,12 +7,14 @@ import qs.Commons
 // Simple context menu PopupWindow (similar to TrayMenu)
 // Designed to be rendered inside a PopupMenuWindow for click-outside-to-close
 // Automatically positions itself to respect screen boundaries
+// DDE deepin-menu look (DESIGN §3.3): arrowed dark popup, full-row accent
+// hover, 20px side padding, font-height+8 rows, groove separators.
 PopupWindow {
   id: root
 
   property alias model: repeater.model
-  property real itemHeight: 28 // Match TrayMenu
-  property real itemPadding: Style.marginM
+  property real itemHeight: -1 // -1 = auto: font height + 8
+  property real itemPadding: Style.menuItemPadding
   property int verticalPolicy: ScrollBar.AsNeeded
   property int horizontalPolicy: ScrollBar.AsNeeded
 
@@ -27,15 +29,40 @@ PopupWindow {
   property real targetWidth: 0
   property real targetHeight: 0
 
+  // DDE menu variants (DESIGN §3.3): "dark" (default) or "light"
+  property string variant: "dark"
+  // Arrowed popup plumbing; callers set these when they anchor the menu
+  property string arrowEdge: ""
+  property real arrowPosition: -1 // -1 = centered
+
+  readonly property bool _light: variant === "light"
+  readonly property color _bgColor: _light ? Qt.rgba(1, 1, 1, 0.9) : Color.popupShell
+  readonly property color _borderColor: _light ? Color.borderLight : Color.borderShell
+  readonly property real _radius: _light ? Style.radiusRow : Style.radiusPopup
+  readonly property var _shadow: _light ? Style.shadowMenuLight : Style.shadowPopup
+  readonly property color _textColor: _light ? "#303030" : Color.onShell
+  readonly property color _disabledColor: _light ? Qt.rgba(0, 0, 0, 0.3) : Color.textDisabledDark
+  readonly property real _rowHeight: itemHeight > 0 ? itemHeight : rowMeasure.implicitHeight + 8
+
+  // Keyboard highlight index (-1 = none)
+  property int highlightIndex: -1
+
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
 
   signal triggered(string action, var item)
 
-  implicitWidth: calculatedWidth
-  implicitHeight: Math.min(600, flickable.contentHeight + Style.margin2S)
+  implicitWidth: calculatedWidth + (arrowEdge === "left" || arrowEdge === "right" ? Style.popupArrowHeight : 0)
+  implicitHeight: Math.min(600, flickable.contentHeight + Style.margin2S) + (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
   visible: false
   color: "transparent"
+
+  NText {
+    id: rowMeasure
+    visible: false
+    text: "Ag"
+    pointSize: Style.fontSizeS
+  }
 
   NText {
     id: textMeasure
@@ -58,12 +85,28 @@ PopupWindow {
     Qt.callLater(calculateWidth);
   }
 
+  function _isSeparator(item) {
+    return item && (item.separator === true || item.type === "separator" || item.action === "separator");
+  }
+
+  function _isActivatable(index) {
+    var item = model && model[index];
+    return item && !_isSeparator(item) && item.visible !== false && item.enabled !== false;
+  }
+
+  function _activate(index) {
+    if (_isActivatable(index)) {
+      var item = model[index];
+      root.triggered(item.action || item.key || index.toString(), item);
+    }
+  }
+
   function calculateWidth() {
     let maxWidth = 0;
     if (model && model.length) {
       for (let i = 0; i < model.length; i++) {
         const item = model[i];
-        if (item && item.visible !== false) {
+        if (item && item.visible !== false && !_isSeparator(item)) {
           const label = item.label || item.text || "";
           textMeasure.text = label;
           textMeasure.forceLayout();
@@ -72,6 +115,10 @@ PopupWindow {
 
           if (item.icon !== undefined) {
             itemWidth += iconMeasure.width + Style.marginS;
+          }
+
+          if (item.checked === true || item.hasSubmenu === true) {
+            itemWidth += Style.fontSizeXL + Style.marginS;
           }
 
           itemWidth += Style.margin2M;
@@ -202,16 +249,47 @@ PopupWindow {
   Item {
     anchors.fill: parent
     focus: true
+
+    // Keyboard navigation: Up/Down move, Enter triggers, Escape closes
+    Keys.onUpPressed: {
+      var n = root.model ? root.model.length : 0;
+      if (n === 0)
+        return;
+      var i = root.highlightIndex;
+      var steps = 0;
+      do {
+        i = (i <= 0) ? n - 1 : i - 1;
+        steps++;
+      } while (steps < n && !root._isActivatable(i))
+      root.highlightIndex = i;
+    }
+    Keys.onDownPressed: {
+      var n = root.model ? root.model.length : 0;
+      if (n === 0)
+        return;
+      var i = root.highlightIndex;
+      var steps = 0;
+      do {
+        i = (i >= n - 1) ? 0 : i + 1;
+        steps++;
+      } while (steps < n && !root._isActivatable(i))
+      root.highlightIndex = i;
+    }
+    Keys.onReturnPressed: root._activate(root.highlightIndex)
+    Keys.onEnterPressed: root._activate(root.highlightIndex)
     Keys.onEscapePressed: root.close()
   }
 
-  Rectangle {
+  NArrowRect {
     id: menuBackground
     anchors.fill: parent
-    color: Color.mSurface
-    border.color: Color.mOutline
-    border.width: Style.borderS
-    radius: Style.radiusM
+    arrowEdge: root.arrowEdge
+    arrowPosition: root.arrowPosition
+    radius: root._radius
+    fillColor: root._bgColor
+    borderColor: root._borderColor
+    borderWidth: Style.borderS
+    shadow: root._shadow
     opacity: root.visible ? 1.0 : 0.0
 
     Behavior on opacity {
@@ -224,10 +302,13 @@ PopupWindow {
 
   Flickable {
     id: flickable
-    anchors.fill: parent
-    anchors.margins: Style.marginS
+    x: menuBackground.bodyRect.x + Style.marginS
+    y: menuBackground.bodyRect.y + Style.marginS
+    width: menuBackground.bodyRect.width - Style.margin2S
+    height: menuBackground.bodyRect.height - Style.margin2S
     contentHeight: columnLayout.implicitHeight
     interactive: true
+    clip: true
     opacity: root.visible ? 1.0 : 0.0
 
     Behavior on opacity {
@@ -250,17 +331,42 @@ PopupWindow {
           required property var modelData
           required property int index
 
+          readonly property bool isSeparator: root._isSeparator(modelData)
+          readonly property bool rowEnabled: modelData.enabled !== false
+          readonly property bool active: rowEnabled && (mouseArea.containsMouse || root.highlightIndex === index)
+
           Layout.preferredWidth: parent.width
-          Layout.preferredHeight: modelData.visible !== false ? root.itemHeight : 0
+          Layout.preferredHeight: modelData.visible !== false ? (isSeparator ? Style.marginS : root._rowHeight) : 0
           visible: modelData.visible !== false
           color: "transparent"
+
+          // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
+          Rectangle {
+            visible: menuItem.isSeparator
+            anchors.centerIn: parent
+            width: parent.width - Style.margin2XS
+            height: 2
+            color: "transparent"
+
+            Rectangle {
+              width: parent.width
+              height: 1
+              color: Qt.rgba(0, 0, 0, 0.1)
+            }
+            Rectangle {
+              y: 1
+              width: parent.width
+              height: 1
+              color: Qt.rgba(1, 1, 1, 0.1)
+            }
+          }
 
           Rectangle {
             id: innerRect
             anchors.fill: parent
-            color: mouseArea.containsMouse ? Color.mHover : "transparent"
-            radius: Style.radiusS
-            opacity: modelData.enabled !== false ? 1.0 : 0.5
+            visible: !menuItem.isSeparator
+            color: menuItem.active ? Color.accent : "transparent"
+            radius: 0
 
             Behavior on color {
               ColorAnimation {
@@ -270,8 +376,8 @@ PopupWindow {
 
             RowLayout {
               anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              anchors.rightMargin: Style.marginM
+              anchors.leftMargin: root.itemPadding
+              anchors.rightMargin: root.itemPadding
               spacing: Style.marginS
 
               NIcon {
@@ -279,7 +385,7 @@ PopupWindow {
                 icon: modelData.icon || ""
                 pointSize: Style.fontSizeS
                 applyUiScale: false
-                color: mouseArea.containsMouse ? Color.mOnHover : Color.mOnSurface
+                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : root._textColor
                 verticalAlignment: Text.AlignVCenter
 
                 Behavior on color {
@@ -292,7 +398,7 @@ PopupWindow {
               NText {
                 text: modelData.label || modelData.text || ""
                 pointSize: Style.fontSizeS
-                color: mouseArea.containsMouse ? Color.mOnHover : Color.mOnSurface
+                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : root._textColor
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
 
@@ -302,13 +408,21 @@ PopupWindow {
                   }
                 }
               }
+
+              // Check mark / submenu chevron, 12px on the right
+              NIcon {
+                visible: modelData.checked === true || modelData.hasSubmenu === true
+                icon: modelData.hasSubmenu === true ? "chevron-right" : "check"
+                pointSize: Style.fontSizeXL
+                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : Color.accent
+              }
             }
 
             MouseArea {
               id: mouseArea
               anchors.fill: parent
               hoverEnabled: true
-              enabled: (modelData.enabled !== false) && root.visible
+              enabled: menuItem.rowEnabled && root.visible
               cursorShape: Qt.PointingHandCursor
 
               onClicked: {
@@ -336,6 +450,7 @@ PopupWindow {
     // Set anchor and screen first
     anchorItem = item;
     screen = itemScreen || null;
+    highlightIndex = -1;
 
     // Compute target offset and dimensions from centerOnItem
     if (centerOnItem && centerOnItem !== item) {
