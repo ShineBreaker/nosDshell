@@ -11,6 +11,9 @@ Item {
   property string name: I18n.tr("launcher.providers.applications")
   property bool handleSearch: true
   property var entries: []
+  // All installed applications (unfiltered) — the DDE mini view's category list
+  // filters this by DDE bucket.
+  readonly property var allApps: (DesktopEntries.applications ? DesktopEntries.applications.values : []) || []
   property string supportedLayouts: "both"
   property bool isDefaultProvider: true // This provider handles empty search
   property bool ignoreDensity: false // Apps should scale with launcher density
@@ -21,6 +24,10 @@ Item {
   property bool showsCategories: true // Default to showing categories
   property var categories: ["all", "Pinned", "AudioVideo", "Chat", "Development", "Education", "Game", "Graphics", "Network", "Office", "System", "Misc", "WebBrowser"]
   property var availableCategories: ["all"] // Reactive property for available categories
+
+  // DDE views select one of the 11 DDE buckets (ddeCategories); "all" is the
+  // default every-apps view DDE opens on.
+  property string ddeCategory: "all"
 
   property var categoryIcons: ({
                                  "all": "apps",
@@ -56,8 +63,115 @@ Item {
       "Misc": I18n.tr("launcher.categories.misc"),
       "WebBrowser": I18n.tr("launcher.categories.webbrowser")
     };
+    return names[category] || getDDECategoryName(category);
+  }
+
+  // ---------------------------------------------------------------
+  // DDE 15 categories (DESIGN §3.4.1). The 11 DDE buckets replace the
+  // Noctalia category set in the fullscreen/mini DDE views; the legacy
+  // lists above stay for the legacy panel and for search filtering.
+  // Mapping mirrors deepin-daemon launcher/category.go (xCategories).
+  // ---------------------------------------------------------------
+  readonly property var ddeCategories: [
+    "Internet", "Chat", "Music", "Video", "Graphics", "Game",
+    "Office", "Reading", "Development", "System", "Others"
+  ]
+
+  // desktop-entry Categories (lowercase) -> DDE bucket; unmapped keys fall
+  // back to the most frequent mapped key, ignoring Others
+  readonly property var ddeCategoryMap: ({
+                                           "network": "Internet",
+                                           "webbrowser": "Internet",
+                                           "email": "Internet",
+                                           "instantmessaging": "Chat",
+                                           "chat": "Chat",
+                                           "audio": "Music",
+                                           "music": "Music",
+                                           "player": "Music",
+                                           "video": "Video",
+                                           "audiovideo": "Video",
+                                           "graphics": "Graphics",
+                                           "2dgraphics": "Graphics",
+                                           "3dgraphics": "Graphics",
+                                           "photography": "Graphics",
+                                           "game": "Game",
+                                           "actiongame": "Game",
+                                           "adventuregame": "Game",
+                                           "arcadegame": "Game",
+                                           "boardgame": "Game",
+                                           "office": "Office",
+                                           "wordprocessor": "Office",
+                                           "spreadsheet": "Office",
+                                           "science": "Office",
+                                           "education": "Office",
+                                           "news": "Reading",
+                                           "translation": "Reading",
+                                           "development": "Development",
+                                           "ide": "Development",
+                                           "webdevelopment": "Development",
+                                           "system": "System",
+                                           "settings": "System",
+                                           "utility": "System",
+                                           "filemanager": "System",
+                                           "terminalemulator": "System"
+                                         })
+
+  function getDDECategoryName(category) {
+    const names = {
+      "Internet": I18n.tr("launcher.dde.categories.internet"),
+      "Chat": I18n.tr("launcher.dde.categories.chat"),
+      "Music": I18n.tr("launcher.dde.categories.music"),
+      "Video": I18n.tr("launcher.dde.categories.video"),
+      "Graphics": I18n.tr("launcher.dde.categories.graphics"),
+      "Game": I18n.tr("launcher.dde.categories.game"),
+      "Office": I18n.tr("launcher.dde.categories.office"),
+      "Reading": I18n.tr("launcher.dde.categories.reading"),
+      "Development": I18n.tr("launcher.dde.categories.development"),
+      "System": I18n.tr("launcher.dde.categories.system"),
+      "Others": I18n.tr("launcher.dde.categories.others")
+    };
     return names[category] || category;
   }
+
+  // Primary DDE bucket for an app (entry.Categories).
+  // Single category -> its mapping; multiple -> most frequent, Others ignored.
+  function getDDECategory(app) {
+    if (!app)
+    return "Others";
+
+    const raw = getAppCategories(app);
+    if (raw.length === 0)
+    return "Others";
+
+    if (raw.length === 1) {
+      const mapped = ddeCategoryMap[raw[0].toLowerCase()];
+      return mapped || "Others";
+    }
+
+    const counts = {};
+    let best = "Others";
+    let bestCount = 0;
+    for (const cat of raw) {
+      const mapped = ddeCategoryMap[cat.toLowerCase()];
+      if (!mapped || mapped === "Others")
+      continue;
+      counts[mapped] = (counts[mapped] || 0) + 1;
+      if (counts[mapped] > bestCount) {
+        bestCount = counts[mapped];
+        best = mapped;
+      }
+    }
+    return best;
+  }
+
+  function appMatchesDDECategory(app, category) {
+    if (category === "all")
+    return true;
+    if (category === "Others")
+    return getDDECategory(app) === "Others";
+    return getDDECategory(app) === category;
+  }
+
 
   function init() {
     loadApplications();
@@ -88,6 +202,17 @@ Item {
 
   function selectCategory(category) {
     selectedCategory = category;
+    if (launcher) {
+      launcher.updateResults();
+    }
+  }
+
+  // DDE views select one of the 11 buckets; the legacy selectedCategory is
+  // left untouched so switching back to the legacy view keeps its state.
+  function selectDDECategory(category) {
+    if (ddeCategory !== category) {
+      ddeCategory = category;
+    }
     if (launcher) {
       launcher.updateResults();
     }
@@ -361,6 +486,10 @@ Item {
 
     Logger.d("ApplicationsProvider", `Loaded ${entries.length} applications`);
     updateAvailableCategories();
+    // Entries can be (re)loaded after the launcher already rendered its last
+    // result set — refresh the view so a late XDG scan is not invisible.
+    if (launcher && launcher.updateResults)
+      launcher.updateResults();
   }
 
   function updateAvailableCategories() {
@@ -425,10 +554,18 @@ Item {
     const isSearching = !!(query && query.trim() !== "");
     showsCategories = !isSearching;
 
-    // Filter by category only when NOT searching
+    // Filter by category only when NOT searching.
+    // DDE views (displayMode/fullscreen/mini) use the 11-bucket filtering;
+    // the legacy panel keeps the Noctalia category set.
+    const useDDECategories = Settings.data.appLauncher.displayMode === "category" || Settings.data.appLauncher.mode === "mini" || Settings.data.appLauncher.mode === "fullscreen";
+
     let filteredEntries = entries;
-    if (!isSearching && selectedCategory && selectedCategory !== "all") {
-      filteredEntries = entries.filter(app => appMatchesCategory(app, selectedCategory));
+    if (!isSearching) {
+      if (useDDECategories) {
+        filteredEntries = entries.filter(app => appMatchesDDECategory(app, ddeCategory));
+      } else if (selectedCategory && selectedCategory !== "all") {
+        filteredEntries = entries.filter(app => appMatchesCategory(app, selectedCategory));
+      }
     }
 
     if (!query || query.trim() === "") {

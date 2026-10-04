@@ -322,10 +322,8 @@ Singleton {
       overlayLauncherScreen = screen;
       willOpen();
     } else {
-      // Normal mode - use the SmartPanel
-      var panel = getPanel("launcherPanel", screen);
-      if (panel)
-        panel.open();
+      // DDE launcher (DESIGN §3.4)
+      LauncherState.open(screen);
     }
   }
 
@@ -338,9 +336,9 @@ Singleton {
         openLauncher(screen);
       }
     } else {
-      var panel = getPanel("launcherPanel", screen);
-      if (panel)
-        panel.toggle();
+      // DDE launcher (DESIGN §3.4): the fullscreen/mini views own their own
+      // windows and open state through LauncherState.
+      LauncherState.toggle(screen);
     }
   }
 
@@ -370,8 +368,7 @@ Singleton {
     if (Settings.data.appLauncher.overviewLayer) {
       return overlayLauncherOpen && overlayLauncherScreen === screen;
     } else {
-      var panel = getPanel("launcherPanel", screen);
-      return panel ? panel.isPanelOpen : false;
+      return LauncherState.isOpen(screen);
     }
   }
 
@@ -379,8 +376,8 @@ Singleton {
     if (Settings.data.appLauncher.overviewLayer) {
       return overlayLauncherCore ? overlayLauncherCore.searchText : "";
     } else {
-      var panel = getPanel("launcherPanel", screen);
-      return panel ? panel.searchText : "";
+      var model = LauncherState.modelForScreen(screen);
+      return model ? model.searchText : "";
     }
   }
 
@@ -389,9 +386,9 @@ Singleton {
       if (overlayLauncherCore)
         overlayLauncherCore.setSearchText(text);
     } else {
-      var panel = getPanel("launcherPanel", screen);
-      if (panel)
-        panel.setSearchText(text);
+      var model = LauncherState.modelForScreen(screen);
+      if (model)
+        model.setSearchText(text);
     }
   }
 
@@ -404,11 +401,9 @@ Singleton {
                      overlayLauncherCore.setSearchText(searchText);
                    });
     } else {
-      var panel = getPanel("launcherPanel", screen);
-      if (panel) {
-        panel.open();
-        panel.setSearchText(searchText);
-      }
+      var model = LauncherState.openWithSearch(screen, searchText);
+      if (!model)
+        return;
     }
   }
 
@@ -416,9 +411,7 @@ Singleton {
     if (Settings.data.appLauncher.overviewLayer) {
       closeOverlayLauncher();
     } else {
-      var panel = getPanel("launcherPanel", screen);
-      if (panel)
-        panel.close();
+      LauncherState.close(screen);
     }
   }
 

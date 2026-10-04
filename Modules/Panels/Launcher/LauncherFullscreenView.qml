@@ -1,0 +1,502 @@
+import QtQuick
+import QtQuick.Controls
+import Quickshell
+import Quickshell.Widgets
+
+import qs.Commons
+import qs.Services.UI
+import qs.Widgets
+import QtQuick.Layouts
+
+// Fullscreen launcher content (DESIGN §3.4.1). Consumes LauncherModel for all
+// non-visual state and only builds UI on top of it.
+//
+// Layout: search row (30 px) -> 20 px -> body: [category nav] + results area
+// (non-app list under the search row, app grid below it). Geometry comes in as
+// properties from the window wrapper so the same view could be embedded.
+Item {
+  id: root
+
+  signal requestClose
+  signal requestCloseImmediately
+
+  // ---- geometry in ----
+  property var screen: null
+  property int topInset: 0
+  property int bottomGap: 60
+  property int sidePadding: 200
+  property int navWidth: 180
+  property int columns: 6
+  property real cellWidth: 170
+  property real cellHeight: 170
+  property int cellSpacing: 10
+  property real iconSize: 85
+  property string barPosition: "bottom"
+
+  // ---- state ----
+  readonly property bool categoryMode: Settings.data.appLauncher.displayMode === "category"
+  readonly property var appsProvider: model.appsProvider
+  property bool searchActive: false
+  property int focusZone: 0 // 0 = grid, 1 = nav, 2 = search
+
+  // Width aligned to the search field, capped at 600
+  readonly property real listWidth: Math.min(600, Math.max(200, resultsArea.width))
+
+  // App results are the apps provider's output; everything else is a list
+  // entry. While searching, app hits go to the list too (DESIGN §3.4.1:
+  // "搜索结果以列表形式展示"): grid is only for the browse view.
+  readonly property bool browsing: model.searchText.trim() === "" && !model.activeProvider
+  readonly property var listResults: {
+    if (root.browsing)
+    return [];
+    if (model.activeProvider && model.activeProvider !== appsProvider)
+    return model.results;
+    if (model.searchText.trim() !== "")
+    return model.results;
+    return [];
+  }
+
+  readonly property var appResults: {
+    if (!root.browsing)
+    return [];
+    if (model.activeProvider && model.activeProvider !== appsProvider)
+    return [];
+    return model.results.filter(r => r.provider === appsProvider);
+  }
+
+  onCategoryModeChanged: if (!categoryMode)
+    focusZone = 0
+
+  // ---------------------------------------------------------------
+  // Model (providers, search text, results, selection, activation)
+  // ---------------------------------------------------------------
+  LauncherModel {
+    id: model
+    screen: root.screen
+    isOpen: true
+    Component.onCompleted: LauncherState.registerModel("fullscreen", model)
+    Component.onDestruction: LauncherState.unregisterModel("fullscreen", model)
+    onRequestClose: root.requestClose()
+    onRequestCloseImmediately: root.requestCloseImmediately()
+  }
+
+  // Escape closes and typing goes to the search field
+  Item {
+    anchors.fill: parent
+    focus: false
+
+    Keys.onPressed: event => {
+      // Escape works from every zone
+      if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
+        LauncherState.close(root.screen);
+        event.accepted = true;
+        return;
+      }
+
+      // While the search field has focus it handles its own keys
+      if (root.focusZone === 2) {
+        if (searchField.textInput.activeFocus) {
+          if (event.key === Qt.Key_Tab) {
+            root.focusZone = 0;
+            event.accepted = true;
+          }
+          return;
+        }
+      }
+
+      // Typing anywhere goes to the search field
+      if (event.text !== "" && event.text >= " " && !(event.modifiers & Qt.ControlModifier)) {
+        if (root.focusZone !== 2) {
+          root.focusZone = 2;
+        }
+        if (!searchField.textInput.activeFocus) {
+          searchField.textInput.forceActiveFocus();
+        }
+        // Forward the typed character
+        searchField.textInput.text = searchField.textInput.text + event.text;
+        model.setSearchText(searchField.textInput.text);
+        event.accepted = true;
+        return;
+      }
+
+      if (event.modifiers & Qt.ControlModifier) {
+        // Ctrl+V pastes into the search field (DESIGN §3.4.1)
+        if (event.matches(StandardKey.Paste)) {
+          root.pasteIntoSearch();
+          event.accepted = true;
+          return;
+        }
+        if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) {
+          root.adjustIconRatio(0.1);
+          event.accepted = true;
+          return;
+        }
+        if (event.key === Qt.Key_Minus) {
+          root.adjustIconRatio(-0.1);
+          event.accepted = true;
+          return;
+        }
+      }
+
+      root.handleGridKeys(event);
+    }
+  }
+
+  function handleGridKeys(event) {
+    // Tab cycles grid -> nav -> search (search is always in the cycle;
+    // nav is skipped in free mode)
+    if (event.key === Qt.Key_Tab && !(event.modifiers & Qt.ControlModifier)) {
+      root.cycleFocus();
+      event.accepted = true;
+      return;
+    }
+
+    if (event.key === Qt.Key_PageUp) {
+      model.selectPreviousPage(5);
+      event.accepted = true;
+      return;
+    }
+    if (event.key === Qt.Key_PageDown) {
+      model.selectNextPage(5);
+      event.accepted = true;
+      return;
+    }
+    if (event.key === Qt.Key_Home) {
+      model.selectFirst();
+      event.accepted = true;
+      return;
+    }
+    if (event.key === Qt.Key_End) {
+      model.selectLast();
+      event.accepted = true;
+      return;
+    }
+
+    if (root.focusZone === 1 && root.categoryMode) {
+      switch (event.key) {
+      case Qt.Key_Up:
+        categoryNav.step(-1);
+        event.accepted = true;
+        break;
+      case Qt.Key_Down:
+        categoryNav.step(1);
+        event.accepted = true;
+        break;
+      case Qt.Key_Enter:
+      case Qt.Key_Return:
+        categoryNav.activateCurrent();
+        event.accepted = true;
+        break;
+      }
+      if (event.accepted)
+      return;
+    }
+
+    switch (event.key) {
+    case Qt.Key_Up:
+      model.selectPreviousRow(root.columns);
+      event.accepted = true;
+      break;
+    case Qt.Key_Down:
+      model.selectNextRow(root.columns);
+      event.accepted = true;
+      break;
+    case Qt.Key_Left:
+      model.selectPreviousColumn(root.columns);
+      event.accepted = true;
+      break;
+    case Qt.Key_Right:
+      model.selectNextColumn(root.columns);
+      event.accepted = true;
+      break;
+    case Qt.Key_Enter:
+    case Qt.Key_Return:
+      model.activate();
+      event.accepted = true;
+      break;
+    case Qt.Key_Delete:
+      model.deleteSelected();
+      event.accepted = true;
+      break;
+    }
+  }
+
+  function cycleFocus() {
+    const zones = categoryMode ? [0, 1, 2] : [0, 2];
+    const idx = zones.indexOf(focusZone);
+    focusZone = zones[(idx + 1) % zones.length];
+
+    if (focusZone === 2) {
+      searchField.textInput.forceActiveFocus();
+    } else {
+      resultsGrid.forceActiveFocus();
+    }
+  }
+
+  function pasteIntoSearch() {
+    Clipboard.getText(function (text) {
+      if (!text)
+      return;
+      searchField.textInput.text = text;
+      model.setSearchText(text);
+    });
+  }
+
+  function adjustIconRatio(delta) {
+    let value = Settings.data.appLauncher.iconRatio + delta;
+    value = Math.max(0.2, Math.min(0.6, Math.round(value * 10) / 10));
+    Settings.data.appLauncher.iconRatio = value;
+  }
+
+  // Ctrl + wheel adjusts iconRatio (DESIGN §3.4.1)
+  WheelHandler {
+    acceptedModifiers: Qt.ControlModifier
+    onWheel: event => {
+      if (event.angleDelta.y > 0)
+      root.adjustIconRatio(0.1);
+      else
+      root.adjustIconRatio(-0.1);
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // Layout
+  // ---------------------------------------------------------------
+  ColumnLayout {
+    anchors.fill: parent
+    anchors.topMargin: root.topInset
+    anchors.bottomMargin: root.bottomGap
+    spacing: 20
+
+    // ---------------- Search row ----------------
+    RowLayout {
+      id: searchRow
+      Layout.fillWidth: true
+      Layout.leftMargin: root.sidePadding
+      Layout.rightMargin: root.sidePadding
+      Layout.preferredHeight: 30
+      spacing: 24
+
+      // Category / free mode toggle (22 px glyph)
+      NIconButton {
+        Layout.preferredWidth: 22
+        Layout.preferredHeight: 22
+        icon: "category"
+        tooltipText: I18n.tr("launcher.dde.toggle-category")
+        colorBg: root.categoryMode ? Color.overlay("hover") : "transparent"
+        colorBgHover: Color.overlay("hover")
+        colorFg: root.categoryMode ? Color.onShell : Color.onShellTertiary
+        onClicked: Settings.data.appLauncher.displayMode = root.categoryMode ? "free" : "category"
+      }
+
+      LauncherSearchField {
+        id: searchField
+        Layout.preferredWidth: 290
+        Layout.preferredHeight: 30
+        text: model.searchText
+        onTextEdited: txt => model.setSearchText(txt)
+        onAccepted: model.activate()
+        onActiveFocusChanged: {
+          if (searchField.textInput.activeFocus)
+          root.focusZone = 2;
+          else if (root.focusZone === 2)
+          root.focusZone = 0;
+        }
+      }
+
+      Item {
+        Layout.fillWidth: true
+      }
+
+      // Switch to mini
+      NIconButton {
+        Layout.preferredWidth: 22
+        Layout.preferredHeight: 22
+        icon: "maximize"
+        tooltipText: I18n.tr("launcher.dde.switch-to-mini")
+        colorBg: "transparent"
+        colorBgHover: Color.overlay("hover")
+        onClicked: LauncherState.setMode("mini")
+      }
+
+      // Settings (control-center settings)
+      NIconButton {
+        Layout.preferredWidth: 22
+        Layout.preferredHeight: 22
+        icon: "settings"
+        tooltipText: I18n.tr("launcher.dde.open-settings")
+        colorBg: "transparent"
+        colorBgHover: Color.overlay("hover")
+        onClicked: LauncherState.showSettings(root.screen)
+      }
+
+      // Power (session menu)
+      NIconButton {
+        Layout.preferredWidth: 22
+        Layout.preferredHeight: 22
+        icon: "power"
+        tooltipText: I18n.tr("launcher.dde.open-session-menu")
+        colorBg: "transparent"
+        colorBgHover: Color.overlay("hover")
+        onClicked: LauncherState.showSessionMenu(root.screen)
+      }
+    }
+
+    // ---------------- Body: nav + results ----------------
+    Item {
+      Layout.fillWidth: true
+      Layout.fillHeight: true
+
+      // Category navigation column (DESIGN §3.4.1)
+      LauncherCategoryNav {
+        id: categoryNav
+        visible: root.categoryMode
+        width: root.navWidth
+        height: parent.height
+        z: 2
+
+        model: root.model
+        appsProvider: root.appsProvider
+        gridView: resultsGrid
+      }
+
+      Item {
+        id: resultsArea
+        anchors.left: categoryNav.visible ? categoryNav.right : parent.left
+        anchors.leftMargin: categoryNav.visible ? 0 : root.sidePadding
+        anchors.right: parent.right
+        anchors.rightMargin: root.sidePadding
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+
+        // Grouped non-app list under the search row (DESIGN §3.4.1):
+        // rows like the mini list, width aligned to the search field
+        NListView {
+          id: listView
+          visible: root.listResults.length > 0
+          width: root.listWidth
+          height: Math.min(contentHeight, root.height * 0.5)
+          spacing: 0
+          clip: true
+          model: root.listResults
+          currentIndex: model.selectedIndex
+          interactive: true
+          reserveScrollbarSpace: false
+
+          delegate: LauncherListRow {
+            listView: listView
+            onActivated: {
+              model.selectIndex(index);
+              model.activate();
+            }
+          }
+
+          // Clipboard preview in a dark card to the right of the list
+          Loader {
+            x: listView.width + Style.marginL
+            width: 260
+            anchors.top: listView.top
+            anchors.bottom: listView.bottom
+            active: model.activeProvider === model.clipboardProvider
+            visible: active
+
+            sourceComponent: ClipboardPreview {
+              currentItem: model.selectedIndex >= 0 && model.selectedIndex < model.results.length ? model.results[model.selectedIndex] : null
+            }
+          }
+        }
+
+        // ---- app grid ----
+        NGridView {
+          id: resultsGrid
+
+          anchors.top: listView.visible ? listView.bottom : parent.top
+          anchors.topMargin: listView.visible ? Style.marginM : (pinnedTitle.visible ? pinnedTitle.height : 0)
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.bottom: parent.bottom
+
+          // Layout
+          cellWidth: root.cellWidth
+          cellHeight: root.cellHeight
+          spacing: root.cellSpacing
+          model: root.appResults
+          currentIndex: model.selectedIndex
+          interactive: true
+          focus: true
+          verticalPolicy: ScrollBar.AlwaysOff
+          horizontalPolicy: ScrollBar.AlwaysOff
+          reserveScrollbarSpace: false
+          showGradientMasks: false
+          boundsBehavior: Flickable.StopAtBounds
+
+          // Keyboard selection: animates to the new row (NGridView smooth scroll)
+          onCurrentIndexChanged: {
+            if (currentIndex >= 0)
+            positionViewAtIndex(currentIndex, GridView.Contain);
+          }
+          delegate: LauncherGridCell {
+            width: resultsGrid.effectiveCellWidth
+            height: resultsGrid.effectiveCellHeight
+            iconSize: Math.round(resultsGrid.effectiveCellWidth * Settings.data.appLauncher.iconRatio)
+          }
+        }
+
+        // Pinned section title (category mode): text + a 1 px line fading from
+        // white@0.3 to 0, pinned to the grid top while scrolling.
+        Rectangle {
+          id: pinnedTitle
+          visible: root.categoryMode && !listView.visible
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.top: parent.top
+          height: 50
+          color: Qt.alpha(Color.mShadow, 0.3)
+
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginM
+            spacing: Style.marginS
+
+            NText {
+              text: appsProvider ? (appsProvider.getDDECategoryName ? appsProvider.getDDECategoryName(appsProvider.ddeCategory) : appsProvider.ddeCategory) : ""
+              pointSize: Style.fontSizeBody
+              font.weight: Style.fontWeightMedium
+              color: Color.onShell
+            }
+
+            Rectangle {
+              Layout.fillWidth: true
+              Layout.preferredHeight: 1
+              opacity: 0.3
+              gradient: Gradient {
+                GradientStop {
+                  position: 0.0
+                  color: Qt.alpha(Color.onShell, 0.3)
+                }
+                GradientStop {
+                  position: 1.0
+                  color: Qt.alpha(Color.onShell, 0)
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // ---- section tracking (DESIGN §3.4.1) ----
+  // The grid already shows one category's apps, so the pinned title follows
+  // the active DDE category; the nav column owns selection.
+  Component.onCompleted: Qt.callLater(() => {
+      mainContainer.forceActiveFocus();
+  });
+
+  Item {
+    id: mainContainer
+    anchors.fill: parent
+    focus: true
+  }
+}

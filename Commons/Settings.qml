@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/noctalia
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 61
+  readonly property int settingsVersion: 62
   property bool isDebug: Quickshell.env("NOCTALIA_DEBUG") === "1"
   readonly property string shellName: "noctalia"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOCTALIA_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -459,6 +459,12 @@ Singleton {
       property string clipboardWatchTextCommand: "wl-paste --type text --watch cliphist store"
       property string clipboardWatchImageCommand: "wl-paste --type image --watch cliphist store"
       property string position: "center"  // Position: center, top_left, top_right, bottom_left, bottom_right, bottom_center, top_center
+      // DDE launcher view: "fullscreen" | "mini" (DESIGN §3.4)
+      property string mode: "fullscreen"
+      // DDE launcher layout: "free" | "category"
+      property string displayMode: "free"
+      // Grid icon size as a fraction of the cell width (0.2-0.6)
+      property real iconRatio: 0.5
       property list<string> pinnedApps: []
       property bool sortByMostUsed: true
       property string terminalCommand: "alacritty -e"

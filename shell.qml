@@ -144,6 +144,11 @@ ShellRoot {
         }
       }
 
+      // DDE launcher (DESIGN §3.4): fullscreen layer surface + mini window,
+      // opened through LauncherState (taskbar item / IPC / view toggles).
+      LauncherFullscreenWindow {}
+      LauncherMiniWindow {}
+
       LockScreen {}
       FadeOverlay {}
 
