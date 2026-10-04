@@ -78,6 +78,48 @@ export NOCTALIA_CONFIG_DIR="$WORK/config/noctalia/"
 export NOCTALIA_CACHE_DIR="$WORK/cache/noctalia/"
 mkdir -p "$NOCTALIA_CONFIG_DIR" "$NOCTALIA_CACHE_DIR"
 
+# --- seed test .desktop apps into the isolated XDG_DATA_HOME -----------------
+# The headless image has (almost) no .desktop files, so the launcher grid would
+# be empty. NOSD_SEED_DESKTOP_APPS=1 (default) writes a small set spanning the
+# 11 DDE categories into $XDG_DATA_HOME/applications/ so grid/category scenes
+# have something to render. Never touches the user's real dirs.
+if [ "${NOSD_SEED_DESKTOP_APPS:-1}" = "1" ]; then
+  mkdir -p "$XDG_DATA_HOME/applications"
+  write_app() { # write_app <file> <Name> <Exec> <Categories>
+    cat > "$XDG_DATA_HOME/applications/$1.desktop" <<EOF
+[Desktop Entry]
+Type=Application
+Name=$2
+Exec=$3
+Icon=$1
+Categories=$4
+Terminal=false
+EOF
+  }
+  write_app nosd-firefox       "Firefox"        "firefox"                "Network;WebBrowser"
+  write_app nosd-thunderbird   "Thunderbird"    "thunderbird"            "Network;Email"
+  write_app nosd-telegram      "Telegram"       "telegram-desktop"       "Network;InstantMessaging"
+  write_app nosd-vlc           "VLC Media Player" "vlc"                 "AudioVideo;Video;Player"
+  write_app nosd-rhythmbox     "Rhythmbox"      "rhythmbox"              "AudioVideo;Audio"
+  write_app nosd-gimp          "GIMP"           "gimp"                   "Graphics;2DGraphics"
+  write_app nosd-inkscape      "Inkscape"       "inkscape"               "Graphics;VectorGraphics"
+  write_app nosd-steam         "Steam"          "steam"                  "Game"
+  write_app nosd-0ad           "0 A.D."         "0ad"                    "Game;StrategyGame"
+  write_app nosd-writer        "LibreOffice Writer" "libreoffice --writer" "Office;WordProcessor"
+  write_app nosd-calc          "LibreOffice Calc"   "libreoffice --calc"   "Office;Spreadsheet"
+  write_app nosd-evince        "Document Viewer"    "evince"              "Office;Viewer"
+  write_app nosd-feedreader    "Feed Reader"    "feedreader"             "News;"
+  write_app nosd-okular        "Okular"         "okular"                 "Office;TextEditor"
+  write_app nosd-vscode        "Visual Studio Code" "code"               "Development;IDE"
+  write_app nosd-gitg          "gitg"           "gitg"                   "Development;RevisionControl"
+  write_app nosd-files         "Files"          "nautilus"               "System;FileManager"
+  write_app nosd-terminal      "Terminal"       "alacritty"              "System;TerminalEmulator"
+  write_app nosd-settings      "Settings"       "gnome-control-center"   "System;Settings"
+  write_app nosd-imageviewer   "Image Viewer"   "eog"                    "Graphics;Viewer"
+  write_app nosd-pluma         "Pluma Text Editor" "pluma"         "Utility;TextEditor"
+  update-desktop-database "$XDG_DATA_HOME/applications" 2>/dev/null || true
+fi
+
 # --- seed: no wizards/popups, dock always visible -------------------------
 # settings.json existing at all  -> Settings.shouldOpenSetupWizard stays false
 #   (fresh-install flag only fires on missing file, Commons/Settings.qml:159)
@@ -87,10 +129,10 @@ mkdir -p "$NOCTALIA_CONFIG_DIR" "$NOCTALIA_CACHE_DIR"
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion:60 skips the v0->60 migration chain (no-op for real users,
+# settingsVersion:60 skips the v0->62 migration chain (no-op for real users,
 # just noise in verify logs). dock.displayMode gates the fashion dock's
 # auto-hide; efficient (taskbar) mode uses dock.hideMode instead.
-SEED='{"settingsVersion":60,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":62,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
@@ -110,7 +152,7 @@ cat > "$INNER" <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 
-SCENES_ORDER="idle launcher control-center settings session-menu notification
+SCENES_ORDER="idle launcher launcher-search launcher-category launcher-mini control-center settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
@@ -195,6 +237,27 @@ run_scene() {
   case "$1" in
     idle)                 shot idle ;;
     launcher)             toggle launcher toggle 1.5 launcher ;;
+    # DDE launcher (DESIGN §3.4): app search, command provider, category mode.
+    # Each shot is taken while the launcher stays open; the launcher is closed
+    # once at the end of the scene.
+    launcher-search)      call launcher toggle 1.5; shot launcher-search-open
+                          call launcher setSearchText "fire" 1.2; shot launcher-search-app
+                          call launcher setSearchText ">" 1.2;      shot launcher-search-cmd
+                          call launcher setSearchText "2+2*8" 1.2;  shot launcher-search-calc
+                          call launcher setSearchText "" 0.5;      call launcher toggle 0.5 ;;
+    # Category mode: nav column + filtered grid, then back to free mode.
+    launcher-category)    call launcher toggle 1.5; shot launcher-category-free
+                          call launcher switchDisplayMode 0.6; shot launcher-category-open
+                          call launcher selectCategory "Internet" 1.2; shot launcher-category-internet
+                          call launcher switchDisplayMode 0.6
+                          call launcher toggle 0.5 ;;
+    # Mini mode: floating panel anchored 1 px from the bar, search + results.
+    launcher-mini)        call launcher switchMode mini 1
+                          call launcher toggle 1.5; shot launcher-mini-open
+                          call launcher setSearchText "chr" 1.2; shot launcher-mini-search
+                          call launcher setSearchText "" 0.5
+                          call launcher toggle 0.5
+                          call launcher switchMode fullscreen 0.8 ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
     settings-*)           call settings openTab "${1#settings-}" 2; shot "$1"; call settings toggle 0.5 ;;

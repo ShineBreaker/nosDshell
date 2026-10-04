@@ -647,6 +647,38 @@
       "emoji-search-description": "Search and copy emojis",
       "settings-search-description": "Search and navigate to settings",
       "windows-search-description": "Search and focus open windows"
+    },
+    "dde": {
+      "search-placeholder": "Search",
+      "toggle-category": "Toggle category view",
+      "switch-to-mini": "Switch to mini launcher",
+      "switch-to-fullscreen": "Switch to fullscreen launcher",
+      "open-settings": "Open settings",
+      "open-session-menu": "Open session menu",
+      "all-apps": "All applications",
+      "categories-label": "Categories",
+      "categories": {
+        "internet": "Internet",
+        "chat": "Chat",
+        "music": "Music",
+        "video": "Video",
+        "graphics": "Graphics",
+        "game": "Game",
+        "office": "Office",
+        "reading": "Reading",
+        "development": "Development",
+        "system": "System",
+        "others": "Others"
+      },
+      "back": "Back",
+      "places": {
+        "computer": "Computer",
+        "videos": "Videos",
+        "music": "Music",
+        "pictures": "Pictures",
+        "documents": "Documents",
+        "downloads": "Downloads"
+      }
     }
   },
   "lock-screen": {

@@ -45,6 +45,16 @@ Item {
   property alias delegate: gridView.delegate
   property alias cellWidth: gridView.cellWidth
   property alias cellHeight: gridView.cellHeight
+  // Grid spacing between cells (GridView has no built-in spacing, so NGridView
+  // shrinks each delegate by `spacing` on its low/right edge and lets the
+  // delegate draw its own hover/highlight rect at the shrunk size).
+  // Consumers must size their delegates from the GridView's cellWidth/cellHeight,
+  // not assume the full cell.
+  property int spacing: 0
+
+  // Delegate geometry accounting for spacing (read-only for consumers)
+  readonly property real effectiveCellWidth: Math.max(1, cellWidth - spacing)
+  readonly property real effectiveCellHeight: Math.max(1, cellHeight - spacing)
   property alias leftMargin: gridView.leftMargin
   property alias rightMargin: gridView.rightMargin
   property alias topMargin: gridView.topMargin

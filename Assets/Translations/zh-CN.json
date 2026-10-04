@@ -647,6 +647,38 @@
       "emoji-search-description": "搜索和复制表情符号",
       "settings-search-description": "搜索并前往设置",
       "windows-search-description": "搜索并聚焦打开的窗口"
+    },
+    "dde": {
+      "search-placeholder": "搜索",
+      "toggle-category": "切换分类视图",
+      "switch-to-mini": "切换到迷你启动器",
+      "switch-to-fullscreen": "切换到全屏启动器",
+      "open-settings": "打开设置",
+      "open-session-menu": "打开会话菜单",
+      "all-apps": "全部应用",
+      "categories-label": "分类",
+      "categories": {
+        "internet": "网络",
+        "chat": "社交",
+        "music": "音乐",
+        "video": "视频",
+        "graphics": "图像",
+        "game": "游戏",
+        "office": "办公",
+        "reading": "阅读",
+        "development": "编程",
+        "system": "系统",
+        "others": "其他"
+      },
+      "back": "返回",
+      "places": {
+        "computer": "计算机",
+        "videos": "视频",
+        "music": "音乐",
+        "pictures": "图片",
+        "documents": "文档",
+        "downloads": "下载"
+      }
     }
   },
   "lock-screen": {

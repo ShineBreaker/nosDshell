@@ -378,8 +378,7 @@ Item {
             settingsPanel?.toggle(null, followMouse ? mapToItem(null, mouse.x, mouse.y) : null);
             mouse.accepted = true;
           } else if (action === "launcherPanel") {
-            var launcherPanel = PanelService.getPanel("launcherPanel", screen);
-            launcherPanel?.toggle(null, followMouse ? mapToItem(null, mouse.x, mouse.y) : null);
+            PanelService.toggleLauncher(screen);
             mouse.accepted = true;
           } else if (action === "command") {
             runCustomCommand(command);

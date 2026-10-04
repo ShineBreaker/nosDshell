@@ -328,19 +328,65 @@ Singleton {
     target: "launcher"
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-                                              var searchText = PanelService.getLauncherSearchText(screen);
-                                              var isInAppMode = !searchText.startsWith(">");
-                                              if (!PanelService.isLauncherOpen(screen)) {
-                                                // Closed -> open in app mode
-                                                PanelService.openLauncherWithSearch(screen, "");
-                                              } else if (isInAppMode) {
-                                                // Already in app mode -> close
-                                                PanelService.closeLauncher(screen);
-                                              } else {
-                                                // In another mode -> switch to app mode
-                                                PanelService.setLauncherSearchText(screen, "");
-                                              }
-                                            }, Settings.data.appLauncher.overviewLayer);
+                                                var searchText = PanelService.getLauncherSearchText(screen);
+                                                var isInAppMode = !searchText.startsWith(">");
+                                                if (!PanelService.isLauncherOpen(screen)) {
+                                                  // Closed -> open in app mode
+                                                  PanelService.openLauncherWithSearch(screen, "");
+                                                } else if (isInAppMode) {
+                                                  // Already in app mode -> close
+                                                  PanelService.closeLauncher(screen);
+                                                } else {
+                                                  // In another mode -> switch to app mode
+                                                  PanelService.setLauncherSearchText(screen, "");
+                                                }
+                                              }, Settings.data.appLauncher.overviewLayer);
+    }
+    function setSearchText(text: string) {
+      // Prefer the launcher that is actually open (its screen), otherwise the
+      // current screen — the fallback used to target a screen with no launcher,
+      // which silently wrote the text into nothing.
+      var screen = LauncherState.fullscreenScreen || LauncherState.miniScreen;
+      if (!screen) {
+        root.screenDetector.withCurrentScreen(s => {
+                                                applyText(s, text);
+                                              });
+        return;
+      }
+      applyText(screen, text);
+    }
+
+    function applyText(screen, text) {
+      var model = LauncherState.modelForScreen(screen);
+      if (!model)
+      PanelService.openLauncherWithSearch(screen, text);
+      else
+      model.setSearchText(text);
+    }
+    // Cycle Settings.data.appLauncher.displayMode ("free" <-> "category")
+    function switchDisplayMode() {
+      var mode = Settings.data.appLauncher.displayMode === "category" ? "free" : "category";
+      Settings.data.appLauncher.displayMode = mode;
+      return mode;
+    }
+    // Select a DDE category bucket ("all" | "Internet" | ... "Others")
+    function selectCategory(category: string) {
+      var model = LauncherState.activeModel;
+      if (model && model.appsProvider)
+      model.appsProvider.selectDDECategory(category);
+    }
+    // Switch the launcher mode (persisted): "fullscreen" | "mini"
+    function switchMode(mode: string) {
+      if (mode === "fullscreen" || mode === "mini") {
+        var wasOpen = LauncherState.isOpenOnAnyScreen();
+        var screen = LauncherState.fullscreenScreen || LauncherState.miniScreen;
+        LauncherState.setMode(mode);
+        if (wasOpen && screen) {
+          LauncherState.close(screen);
+          if (mode === "mini")
+          LauncherState.open(screen);
+        }
+      }
     }
     function clipboard() {
       root.screenDetector.withCurrentScreen(screen => {
