@@ -55,6 +55,16 @@ SmartPanel {
     activeModule = module;
   }
 
+  // Page state resets on close. This must live at the root: the closed signal
+  // is emitted after isPanelOpen=false unloads panelContent, so a handler
+  // inside the content would already be destroyed.
+  onClosed: {
+    MediaService.autoSwitchingPaused = false;
+    notificationPage = false;
+    activeModule = null;
+    pendingQuickPage = "";
+  }
+
   // Positioning: flush right edge, full height, square corners.
   panelAnchorRight: true
   panelAnchorVerticalCenter: false
@@ -95,11 +105,6 @@ SmartPanel {
           root.openModule(root.pendingModule);
           root.pendingModule = null;
         }
-      }
-      function onClosed() {
-        MediaService.autoSwitchingPaused = false;
-        root.notificationPage = false;
-        root.activeModule = null;
       }
       function onNotificationPageChanged() {
         if (root.notificationPage)

@@ -313,13 +313,13 @@ run_scene() {
     osd-overdrive)        call volume increase 0.4
                           call volume increase 0.4; call volume increase 0.4
                           call volume increase 0.4; shot osd-overdrive ;;
-    notification-actions) notify-send -a noctalia-verify -A "yes=好的" -A "no=算了" \
+    notification-actions) # notify-send -A blocks until a reply/close, so it
+                          # must run in the background with a hard timeout —
+                          # in the foreground it would hang the whole scene run.
+                          timeout 8 notify-send -a noctalia-verify -A "yes=好的" -A "no=算了" \
                           "Actions" "Pick one of the action buttons." \
-                          > "$WORK/notify-actions.out" 2>&1
-                          sleep 0.8; shot notification-actions
-                          # notify-send -A waits for a reply; kill it and the
-                          # daemon it spawns so the scene can proceed.
-                          pkill -f "notify-actions.out" 2>/dev/null ;;
+                          > "$WORK/notify-actions.out" 2>&1 &
+                          sleep 1.2; shot notification-actions ;;
     notification-long)    notify-send -a noctalia-verify "Long body" \
                           "第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行"$'\n'"第二行 第二行 第二行 第二行 第二行 第二行 第二行 第二行"$'\n'"第三行 第三行 第三行 第三行 第三行 第三行 第三行 第三行" 2>/dev/null
                           sleep 0.8; shot notification-long ;;
