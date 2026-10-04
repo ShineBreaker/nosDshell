@@ -14,12 +14,15 @@ Singleton {
   // Public Properties
   // -------------------------------------------------
   property bool imageMagickAvailable: false
+  property bool blurToolAvailable: false
+  property string blurToolPath: ""
   property bool initialized: false
 
   // Cache directories
   readonly property string baseDir: Settings.cacheDir + "images/"
   readonly property string wpThumbDir: baseDir + "wallpapers/thumbnails/"
   readonly property string wpLargeDir: baseDir + "wallpapers/large/"
+  readonly property string wpBlurredDir: baseDir + "wallpapers/blurred/"
   readonly property string notificationsDir: baseDir + "notifications/"
   readonly property string contributorsDir: baseDir + "contributors/"
 
@@ -67,17 +70,19 @@ Singleton {
     createDirectories();
     cleanupOldCache();
     checkMagickProcess.running = true;
+    checkBlurProcess.running = true;
   }
 
   function createDirectories() {
     Quickshell.execDetached(["mkdir", "-p", wpThumbDir]);
     Quickshell.execDetached(["mkdir", "-p", wpLargeDir]);
+    Quickshell.execDetached(["mkdir", "-p", wpBlurredDir]);
     Quickshell.execDetached(["mkdir", "-p", notificationsDir]);
     Quickshell.execDetached(["mkdir", "-p", contributorsDir]);
   }
 
   function cleanupOldCache() {
-    const dirs = [wpThumbDir, wpLargeDir, notificationsDir, contributorsDir];
+    const dirs = [wpThumbDir, wpLargeDir, wpBlurredDir, notificationsDir, contributorsDir];
     dirs.forEach(function (dir) {
       Quickshell.execDetached(["find", dir, "-type", "f", "-mtime", "+15", "-delete"]);
     });
@@ -154,6 +159,69 @@ Singleton {
         });
       });
     });
+  }
+
+  // -------------------------------------------------
+  // Public API: Get Pre-Blurred Wallpaper (exact WxH, via nosd-blur)
+  // -------------------------------------------------
+  property bool _blurWarned: false
+
+  function getBlurred(sourcePath, width, height, callback) {
+    if (!sourcePath || sourcePath === "") {
+      callback("", false);
+      return;
+    }
+
+    if (!blurToolAvailable) {
+      if (!_blurWarned) {
+        _blurWarned = true;
+        Logger.w("ImageCache", "nosd-blur tool not available, pre-blurred wallpapers disabled");
+      }
+      callback("", false);
+      return;
+    }
+
+    const sigma = 0.03 * Math.min(width, height);
+
+    getMtime(sourcePath, function (mtime) {
+      const cacheKey = generateBlurredKey(sourcePath, width, height, sigma, mtime);
+      const cachedPath = wpBlurredDir + cacheKey + ".png";
+
+      processRequest(cacheKey, cachedPath, sourcePath, callback, function () {
+        startBlurProcessing(sourcePath, cachedPath, width, height, sigma, cacheKey);
+      });
+    });
+  }
+
+  function generateBlurredKey(sourcePath, width, height, sigma, mtime) {
+    const keyString = sourcePath + "@" + width + "x" + height + "@" + sigma.toFixed(2) + "@" + (mtime || "unknown");
+    return Checksum.sha256(keyString);
+  }
+
+  function startBlurProcessing(sourcePath, outputPath, width, height, sigma, cacheKey) {
+    const srcEsc = sourcePath.replace(/'/g, "'\\''");
+    const dstEsc = outputPath.replace(/'/g, "'\\''");
+    const toolEsc = blurToolPath.replace(/'/g, "'\\''");
+
+    const command = `'${toolEsc}' '${srcEsc}' '${dstEsc}' --width ${width} --height ${height} --sigma ${sigma.toFixed(2)}`;
+
+    queueImageMagickProcess({
+                              command: command,
+                              cacheKey: cacheKey,
+                              onComplete: function (exitCode, proc) {
+                                if (exitCode !== 0) {
+                                  const stderrText = proc && proc.stderr ? proc.stderr.text : "";
+                                  Logger.e("ImageCache", "nosd-blur failed:", stderrText);
+                                  notifyCallbacks(cacheKey, "", false);
+                                } else {
+                                  Logger.d("ImageCache", "Blurred wallpaper cached:", outputPath);
+                                  notifyCallbacks(cacheKey, outputPath, true);
+                                }
+                              },
+                              onError: function () {
+                                notifyCallbacks(cacheKey, "", false);
+                              }
+                            });
   }
 
   // -------------------------------------------------
@@ -732,6 +800,7 @@ Singleton {
     Logger.i("ImageCache", "Clearing all cache");
     clearThumbnails();
     clearLarge();
+    clearBlurred();
     clearNotifications();
     clearContributors();
   }
@@ -748,6 +817,12 @@ Singleton {
     Quickshell.execDetached(["mkdir", "-p", wpLargeDir]);
   }
 
+  function clearBlurred() {
+    Logger.i("ImageCache", "Clearing blurred wallpaper cache");
+    Quickshell.execDetached(["rm", "-rf", wpBlurredDir]);
+    Quickshell.execDetached(["mkdir", "-p", wpBlurredDir]);
+  }
+
   function clearNotifications() {
     Logger.i("ImageCache", "Clearing notifications cache");
     Quickshell.execDetached(["rm", "-rf", notificationsDir]);
@@ -758,6 +833,28 @@ Singleton {
     Logger.i("ImageCache", "Clearing contributors cache");
     Quickshell.execDetached(["rm", "-rf", contributorsDir]);
     Quickshell.execDetached(["mkdir", "-p", contributorsDir]);
+  }
+
+  // -------------------------------------------------
+  // nosd-blur Detection (PATH, else the in-tree release binary)
+  // -------------------------------------------------
+  Process {
+    id: checkBlurProcess
+    command: ["sh", "-c", "command -v nosd-blur || { p=\"" + Quickshell.shellDir + "/tools/nosd-blur/target/release/nosd-blur\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    running: false
+
+    stdout: StdioCollector {}
+    stderr: StdioCollector {}
+
+    onExited: function (exitCode) {
+      root.blurToolPath = stdout.text.trim();
+      root.blurToolAvailable = (exitCode === 0 && root.blurToolPath !== "");
+      if (root.blurToolAvailable) {
+        Logger.i("ImageCache", "nosd-blur available:", root.blurToolPath);
+      } else {
+        Logger.w("ImageCache", "nosd-blur not found, live blur fallback will be used");
+      }
+    }
   }
 
   // -------------------------------------------------

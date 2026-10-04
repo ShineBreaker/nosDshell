@@ -11,3 +11,4 @@ build
 .direnv/
 .envrc
 references/
+tools/*/target/

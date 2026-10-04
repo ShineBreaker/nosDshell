@@ -12,6 +12,9 @@ Item {
 
   // Cached wallpaper path - exposed for parent components
   property string resolvedWallpaperPath: ""
+  // Pre-blurred variant produced by nosd-blur (empty until ready/unavailable)
+  property string resolvedBlurredPath: ""
+  readonly property bool usePreBlurred: resolvedBlurredPath !== "" && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.noctaliaPerformanceMode
   property color tintColor: Settings.data.colorSchemes.darkMode ? Color.mSurface : Color.mOnSurface
 
   required property var screen
@@ -101,6 +104,18 @@ Item {
         resolvedWallpaperPath = originalPath;
       }
     });
+
+    // Pre-blurred variant replaces the live MultiEffect blur when available
+    if (ImageCacheService.blurToolAvailable && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.noctaliaPerformanceMode) {
+      ImageCacheService.getBlurred(originalPath, targetWidth, targetHeight, function (cachedPath, success) {
+        if (success) {
+          Logger.d("LockScreen", "Using pre-blurred wallpaper:", cachedPath);
+          resolvedBlurredPath = cachedPath;
+        }
+      });
+    } else {
+      resolvedBlurredPath = "";
+    }
   }
 
   // Background - solid color or black fallback
@@ -111,7 +126,7 @@ Item {
 
   Image {
     id: lockBgImage
-    visible: source !== "" && Settings.data.wallpaper.enabled && !Settings.data.wallpaper.useSolidColor && (!PowerProfileService.noctaliaPerformanceMode || !Settings.data.noctaliaPerformance.disableWallpaper)
+    visible: source !== "" && Settings.data.wallpaper.enabled && !Settings.data.wallpaper.useSolidColor && (!PowerProfileService.noctaliaPerformanceMode || !Settings.data.noctaliaPerformance.disableWallpaper) && !root.usePreBlurred
     anchors.fill: parent
     fillMode: Image.PreserveAspectCrop
     source: resolvedWallpaperPath
@@ -127,6 +142,27 @@ Item {
       blur: Settings.data.general.lockScreenBlur
       blurMax: 48
     }
+
+    // Tint overlay
+    Rectangle {
+      anchors.fill: parent
+      color: root.tintColor
+      opacity: Settings.data.general.lockScreenTint
+    }
+  }
+
+  // Pre-blurred wallpaper (nosd-blur output, exact screen size) - no live blur needed
+  Image {
+    id: blurredBgImage
+    visible: root.usePreBlurred && status === Image.Ready && Settings.data.wallpaper.enabled && !Settings.data.wallpaper.useSolidColor
+    anchors.fill: parent
+    fillMode: Image.PreserveAspectCrop
+    source: root.resolvedBlurredPath
+    cache: false
+    asynchronous: true
+    smooth: true
+    mipmap: false
+    antialiasing: true
 
     // Tint overlay
     Rectangle {

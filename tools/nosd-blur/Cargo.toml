@@ -1,0 +1,13 @@
+[package]
+name = "nosd-blur"
+version = "0.1.0"
+edition = "2021"
+description = "Pre-blur wallpapers for nosDshell (cover-resize + gaussian approximation)"
+license = "MIT"
+
+[dependencies]
+image = { version = "=0.25.8", default-features = false, features = ["png", "jpeg", "webp"] }
+
+[profile.release]
+opt-level = 3
+lto = true
