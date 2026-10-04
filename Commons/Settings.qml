@@ -84,7 +84,7 @@ Singleton {
     // Patch-in the local default, resolved to user's home
     adapter.general.avatarImage = defaultAvatar;
     adapter.wallpaper.directory = defaultWallpapersDirectory;
-    adapter.ui.fontDefault = Qt.application.font.family;
+    adapter.ui.fontDefault = "Noto Sans";
     adapter.ui.fontFixed = "monospace";
 
     // Set the adapter to the settingsFileView to trigger the real settings load
@@ -321,8 +321,8 @@ Singleton {
       property bool enableShadows: true
       property bool enableBlurBehind: true
       property string shadowDirection: "bottom_right"
-      property int shadowOffsetX: 2
-      property int shadowOffsetY: 3
+      property int shadowOffsetX: 0
+      property int shadowOffsetY: 2
       property string language: ""
       property bool allowPanelsOnScreenWithoutBar: true
       property bool showChangelogOnStartup: true
@@ -335,7 +335,7 @@ Singleton {
       property string clockFormat: "hh\\nmm"
       property bool passwordChars: false
       property list<string> lockScreenMonitors: [] // holds lock screen visibility per monitor
-      property real lockScreenBlur: 0.0
+      property real lockScreenBlur: 1.0
       property real lockScreenTint: 0.0
       property JsonObject keybinds: JsonObject {
         property list<string> keyUp: ["Up"]
@@ -359,9 +359,9 @@ Singleton {
       property bool tooltipsEnabled: true
       property bool scrollbarAlwaysVisible: true
       property bool boxBorderEnabled: false
-      property real panelBackgroundOpacity: 0.93
+      property real panelBackgroundOpacity: 0.4
       property bool translucentWidgets: false
-      property bool panelsAttachedToBar: true
+      property bool panelsAttachedToBar: false
       property string settingsPanelMode: "attached" // "centered", "attached", "window"
       property bool settingsPanelSideBarCardStyle: false
     }
@@ -703,8 +703,8 @@ Singleton {
     // on-screen display
     property JsonObject osd: JsonObject {
       property bool enabled: true
-      property string location: "top_right"
-      property int autoHideMs: 2000
+      property string location: "bottom"
+      property int autoHideMs: 1000
       property bool overlayLayer: true
       property real backgroundOpacity: 1.0
       property list<var> enabledTypes: [OSD.Type.Volume, OSD.Type.InputVolume, OSD.Type.Brightness]
@@ -735,7 +735,7 @@ Singleton {
 
     property JsonObject colorSchemes: JsonObject {
       property bool useWallpaperColors: false
-      property string predefinedScheme: "Noctalia (default)"
+      property string predefinedScheme: "Deepin"
       property bool darkMode: true
       property string schedulingMode: "off"
       property string manualSunrise: "06:30"

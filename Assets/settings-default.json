@@ -101,8 +101,8 @@
     "enableShadows": true,
     "enableBlurBehind": true,
     "shadowDirection": "bottom_right",
-    "shadowOffsetX": 2,
-    "shadowOffsetY": 3,
+    "shadowOffsetX": 0,
+    "shadowOffsetY": 2,
     "language": "",
     "allowPanelsOnScreenWithoutBar": true,
     "showChangelogOnStartup": true,
@@ -115,7 +115,7 @@
     "clockFormat": "hh\\nmm",
     "passwordChars": false,
     "lockScreenMonitors": [],
-    "lockScreenBlur": 0,
+    "lockScreenBlur": 1,
     "lockScreenTint": 0,
     "keybinds": {
       "keyUp": [
@@ -152,9 +152,9 @@
     "tooltipsEnabled": true,
     "scrollbarAlwaysVisible": true,
     "boxBorderEnabled": false,
-    "panelBackgroundOpacity": 0.93,
+    "panelBackgroundOpacity": 0.4,
     "translucentWidgets": false,
-    "panelsAttachedToBar": true,
+    "panelsAttachedToBar": false,
     "settingsPanelMode": "attached",
     "settingsPanelSideBarCardStyle": false
   },
@@ -471,8 +471,8 @@
   },
   "osd": {
     "enabled": true,
-    "location": "top_right",
-    "autoHideMs": 2000,
+    "location": "bottom",
+    "autoHideMs": 1000,
     "overlayLayer": true,
     "backgroundOpacity": 1,
     "enabledTypes": [
@@ -501,7 +501,7 @@
   },
   "colorSchemes": {
     "useWallpaperColors": false,
-    "predefinedScheme": "Noctalia (default)",
+    "predefinedScheme": "Deepin",
     "darkMode": true,
     "schedulingMode": "off",
     "manualSunrise": "06:30",

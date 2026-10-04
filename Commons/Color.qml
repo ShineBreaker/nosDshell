@@ -392,33 +392,105 @@ Singleton {
   ]
 
   // --------------------------------
-  // Default colors: Noctalia (default) dark — must match Assets/ColorScheme/Noctalia-default
+  // DDE 15 semantic layer (DESIGN.md §1.1–1.3)
+  // --------------------------------
+
+  // Accents resolve through the active color scheme so other schemes still work.
+  readonly property color accent: root.mPrimary
+  readonly property color accentAlt: root.mSecondary
+  readonly property color accentAction: root.mTertiary
+
+  readonly property color attention: "#F18A2E"
+  readonly property color alert: "#F9704F"
+  readonly property color lowPower: "#FF8000"
+  readonly property color textDisabledDark: "#646464"
+  readonly property color pressDim: Qt.rgba(0, 0, 0, 0.41)
+
+  // True when the compositor-side blur path is enabled (controls mask alpha).
+  readonly property bool blurActive: Settings.data.general.enableBlurBehind && !PowerProfileService.noctaliaPerformanceMode
+  // Dark/light mode source of truth, same as the scheme system.
+  readonly property bool shellIsDark: Settings.data.colorSchemes.darkMode
+
+  // Surfaces: more opaque when blur is off (DESIGN §1.2 fallback)
+  readonly property color maskDark: Qt.rgba(0, 0, 0, blurActive ? Settings.data.ui.panelBackgroundOpacity : 0.8)
+  readonly property color maskLight: Qt.rgba(1, 1, 1, blurActive ? Settings.data.ui.panelBackgroundOpacity : 0.8)
+  readonly property color popupDark: Qt.rgba(36 / 255, 36 / 255, 36 / 255, 0.86)
+
+  readonly property color borderDark: blurActive ? Qt.rgba(1, 1, 1, 0.05) : "#2C3238"
+  readonly property color borderLight: blurActive ? Qt.rgba(0, 0, 0, 0.04) : "#E5E5E5"
+
+  readonly property color maskShell: shellIsDark ? maskDark : maskLight
+  readonly property color popupShell: shellIsDark ? popupDark : Qt.rgba(1, 1, 1, 0.9)
+  readonly property color maskTransient: maskLight
+  readonly property color borderShell: shellIsDark ? borderDark : borderLight
+  readonly property color borderTransient: borderLight
+
+  readonly property color onShell: shellIsDark ? "#FFFFFF" : "#303030"
+  readonly property color onShellSecondary: Qt.alpha(onShell, 0.8)
+  readonly property color onShellTertiary: Qt.alpha(onShell, 0.6)
+  readonly property color onTransient: "#303030"
+  readonly property color onTransientBody: Qt.rgba(0, 0, 0, 0.9)
+
+  // White overlay ladder on dark surfaces (black on light) — DESIGN §1.3
+  readonly property var overlayLevels: ({
+                                          "idle": 0.03,
+                                          "subtle": 0.05,
+                                          "hover": 0.10,
+                                          "field": 0.15,
+                                          "strong": 0.20,
+                                          "checked": 0.30
+                                        })
+
+  property var _overlayWarned: ({})
+
+  function overlay(level) {
+    return _overlay(level, shellIsDark ? "#FFFFFF" : "#000000");
+  }
+
+  function overlayTransient(level) {
+    return _overlay(level, "#000000");
+  }
+
+  function _overlay(level, base) {
+    const a = overlayLevels[level];
+    if (a === undefined) {
+      if (!_overlayWarned[level]) {
+        _overlayWarned[level] = true;
+        Logger.w("Color", "Unknown overlay level:", level);
+      }
+      return "transparent";
+    }
+    return Qt.alpha(base, a);
+  }
+
+  // --------------------------------
+  // Default colors: Deepin dark — must match Assets/ColorScheme/Deepin
   QtObject {
     id: defaultColors
 
-    readonly property color mPrimary: "#fff59b"
-    readonly property color mOnPrimary: "#0e0e43"
+    readonly property color mPrimary: "#2CA7F8"
+    readonly property color mOnPrimary: "#FFFFFF"
 
-    readonly property color mSecondary: "#a9aefe"
-    readonly property color mOnSecondary: "#0e0e43"
+    readonly property color mSecondary: "#01BDFF"
+    readonly property color mOnSecondary: "#FFFFFF"
 
-    readonly property color mTertiary: "#9BFECE"
-    readonly property color mOnTertiary: "#0e0e43"
+    readonly property color mTertiary: "#0087FF"
+    readonly property color mOnTertiary: "#FFFFFF"
 
-    readonly property color mError: "#FD4663"
-    readonly property color mOnError: "#0e0e43"
+    readonly property color mError: "#F9704F"
+    readonly property color mOnError: "#FFFFFF"
 
-    readonly property color mSurface: "#070722"
-    readonly property color mOnSurface: "#f3edf7"
+    readonly property color mSurface: "#181818"
+    readonly property color mOnSurface: "#FFFFFF"
 
-    readonly property color mSurfaceVariant: "#11112d"
-    readonly property color mOnSurfaceVariant: "#7c80b4"
+    readonly property color mSurfaceVariant: "#2A2A2A"
+    readonly property color mOnSurfaceVariant: "#B4B4B4"
 
-    readonly property color mOutline: "#21215F"
-    readonly property color mShadow: "#070722"
+    readonly property color mOutline: "#3A3A3A"
+    readonly property color mShadow: "#000000"
 
-    readonly property color mHover: "#9BFECE"
-    readonly property color mOnHover: "#0e0e43"
+    readonly property color mHover: "#2CA7F8"
+    readonly property color mOnHover: "#FFFFFF"
   }
 
   // ----------------------------------------------------------------

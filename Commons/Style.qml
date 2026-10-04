@@ -18,6 +18,7 @@ Singleton {
   readonly property real fontSizeXXXL: 24
 
   // Font weight
+  readonly property int fontWeightLight: 300
   readonly property int fontWeightRegular: 400
   readonly property int fontWeightMedium: 500
   readonly property int fontWeightSemiBold: 600
@@ -247,4 +248,87 @@ Singleton {
     var isVertical = position === "left" || position === "right";
     return getBarFontSizeForDensity(barHeight, capsuleHeight, isVertical);
   }
+
+  // ----------------------------------------------------------------
+  // DDE 15 tokens (DESIGN.md §1.4–1.7, §3)
+  // ----------------------------------------------------------------
+
+  // Radii — never above 10 except true circles
+  readonly property int radiusRow: Math.round(4 * Settings.data.general.radiusRatio)
+  readonly property int radiusItem: Math.round(5 * Settings.data.general.radiusRatio)
+  readonly property int radiusPopup: Math.round(6 * Settings.data.general.radiusRatio)
+  readonly property int radiusWindow: Math.round(8 * Settings.data.general.radiusRatio)
+  readonly property int radiusLarge: Math.round(10 * Settings.data.general.radiusRatio)
+
+  // Arrow popups (DockPopupWindow geometry)
+  readonly property int popupArrowWidth: 18
+  readonly property int popupArrowHeight: 10
+  readonly property int popupGap: 2
+
+  // Shadows — feed into NDropShadow; plain {blur, x, y, color} objects (DESIGN §1.6)
+  readonly property var shadowPopup: ({
+                                        "blur": 20,
+                                        "x": 0,
+                                        "y": 2,
+                                        "color": Qt.rgba(0, 0, 0, 0.5)
+                                      })
+  readonly property var shadowControlCenter: ({
+                                                "blur": 20,
+                                                "x": 0,
+                                                "y": 0,
+                                                "color": Qt.rgba(0, 0, 0, 0.5)
+                                              })
+  readonly property var shadowOsd: ({
+                                      "blur": 16,
+                                      "x": 0,
+                                      "y": 4,
+                                      "color": Qt.rgba(0, 0, 0, 70 / 255)
+                                    })
+  readonly property var shadowBubble: ({
+                                         "blur": 14,
+                                         "x": 0,
+                                         "y": 4,
+                                         "color": Qt.rgba(0, 0, 0, 100 / 255)
+                                       })
+  readonly property var shadowMenuLight: ({
+                                            "blur": 12,
+                                            "x": 0,
+                                            "y": 6,
+                                            "color": Qt.rgba(0, 0, 0, 0.2)
+                                          })
+
+  // Motion (ms) — 0 when animations are off or in performance mode;
+  // panel/enter motions fall back to 150 ms when blur is disabled (DESIGN §1.7)
+  function _motion(baseMs, noBlurMs) {
+    if (Settings.data.general.animationDisabled || PowerProfileService.noctaliaPerformanceMode)
+      return 0;
+    const ms = (noBlurMs !== undefined && !Color.blurActive) ? noBlurMs : baseMs;
+    return Math.round(ms / Settings.data.general.animationSpeed);
+  }
+
+  readonly property int motionPanel: _motion(300, 150)
+  readonly property int motionEnter: _motion(300, 150)
+  readonly property int motionBubbleIn: _motion(180)
+  readonly property int motionBubbleOut: _motion(300)
+  readonly property int motionOsdIn: _motion(160)
+  readonly property int motionOsdOut: _motion(120)
+  readonly property int motionFade: _motion(1000)
+  readonly property int motionNavZoom: _motion(300)
+
+  // Timeouts (ms)
+  readonly property int tooltipDelayDock: 500
+  readonly property int osdTimeout: 1000
+  readonly property int bubbleTimeout: 5000
+
+  // DDE type scale (points, same unit as the other fontSize* tokens)
+  readonly property real fontSizeBody: 9
+  readonly property real fontSizeTitle: 10.5
+  readonly property real fontSizeSubtitle: 12
+  readonly property real fontSizeClockCC: 34.5
+  readonly property real fontSizeClockLock: 51
+
+  // Dock icon size presets
+  readonly property int dockIconSmall: 30
+  readonly property int dockIconMedium: 36
+  readonly property int dockIconLarge: 48
 }
