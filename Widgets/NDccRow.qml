@@ -57,6 +57,12 @@ Rectangle {
 
   signal clicked
 
+  // DDE's SettingsGroup is a QVBoxLayout, so every item in it is stretched to
+  // the group width (settingsgroup.cpp:46-47). Rows do the same; a bare control
+  // keeps its content width so a switch in a dock popup does not stretch. A
+  // caller can still pin a labelled row with `Layout.fillWidth: false`.
+  Layout.fillWidth: !root.plain
+
   // A row is stretched by its container (DDE's SettingsItem is a QFrame in a
   // QVBoxLayout and never drives the group's width), so the implicit width is
   // only a hint. Cap it at one content width: a long description would

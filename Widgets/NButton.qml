@@ -22,7 +22,14 @@ Item {
   // renders exactly like the normal RoundedButton.
   property bool outlined: false
   property int horizontalAlignment: Qt.AlignHCenter
+  // DDE RoundedButton (DESIGN §3.5.4): a 15 px capsule — the second of the two
+  // places a pill is allowed — filled white x 0.2, white x 0.5 on hover,
+  // accent while pressed.
   property real buttonRadius: Style.radiusPill
+  // Recommended action: the label turns accent. Existing callers get this for
+  // free by passing `backgroundColor: Color.mPrimary`; setting `primary`
+  // directly is the explicit form.
+  property bool primary: false
 
   // Signals
   signal clicked
@@ -35,7 +42,7 @@ Item {
   property bool hovered: false
   readonly property bool pressed: mouseArea.pressed
   // Callers that pass the accent color as background get the "recommended" look (DESIGN §3.5.4)
-  readonly property bool isPrimary: Qt.colorEqual(root.backgroundColor, Color.mPrimary)
+  readonly property bool isPrimary: root.primary || Qt.colorEqual(root.backgroundColor, Color.mPrimary)
   readonly property color contentColor: {
     if (!root.enabled) {
       return Color.onShellTertiary;
@@ -79,18 +86,7 @@ Item {
       return root.backgroundColor;
     }
 
-    border.width: 0
-    border.color: root.hovered ? root.hoverColor : "transparent"
-
     Behavior on color {
-      enabled: !Color.isTransitioning
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
-      }
-    }
-
-    Behavior on border.color {
       enabled: !Color.isTransitioning
       ColorAnimation {
         duration: Style.animationFast
