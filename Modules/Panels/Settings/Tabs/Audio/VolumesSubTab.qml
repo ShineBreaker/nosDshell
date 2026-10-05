@@ -19,11 +19,11 @@ ColumnLayout {
     label: I18n.tr("control-center.module.sound")
   }
 
-  // SettingsGroup 1: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     Connections {
       target: AudioService
       function onSinkChanged() {
@@ -126,11 +126,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 2: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     ColumnLayout {
       spacing: Style.marginXS
       Layout.fillWidth: true
@@ -187,11 +187,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 3: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 3: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     ColumnLayout {
       spacing: Style.marginS
       Layout.fillWidth: true

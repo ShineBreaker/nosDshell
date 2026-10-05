@@ -167,7 +167,7 @@ Item {
           }
         }
 
-        NDivider {
+        NDccGap {
           Layout.fillWidth: true
           visible: BluetoothService.enabled && isDiscoverable
         }

@@ -93,7 +93,7 @@ ColumnLayout {
 
   // Clock style section
   ColumnLayout {
-    spacing: 0
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     NToggle {
@@ -125,7 +125,7 @@ ColumnLayout {
     Layout.fillWidth: true
   }
   ColumnLayout {
-    spacing: 0
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     Connections {

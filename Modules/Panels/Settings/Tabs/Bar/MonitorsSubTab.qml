@@ -97,7 +97,7 @@ ColumnLayout {
           }
         }
 
-        NDivider {
+        NDccGap {
           Layout.fillWidth: true
           visible: Settings.data.bar.monitors.includes(monitorCard.screenName)
         }

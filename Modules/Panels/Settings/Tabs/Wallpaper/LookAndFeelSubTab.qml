@@ -18,11 +18,11 @@ ColumnLayout {
     label: I18n.tr("panels.wallpaper.look-feel-header")
   }
 
-  // SettingsGroup 1: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     NComboBox {
       label: I18n.tr("panels.wallpaper.look-feel-fill-mode-label")
       description: I18n.tr("panels.wallpaper.look-feel-fill-mode-description")
@@ -52,7 +52,7 @@ ColumnLayout {
     Layout.fillWidth: true
   }
   ColumnLayout {
-    spacing: 0
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     NLabel {
@@ -89,11 +89,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 3: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 3: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     NToggle {
       label: I18n.tr("panels.wallpaper.look-feel-skip-startup-transition-label")
       description: I18n.tr("panels.wallpaper.look-feel-skip-startup-transition-description")

@@ -156,7 +156,7 @@ Item {
           }
         }
 
-        NDivider {
+        NDccGap {
           Layout.fillWidth: true
           visible: NetworkService.wifiEnabled
         }

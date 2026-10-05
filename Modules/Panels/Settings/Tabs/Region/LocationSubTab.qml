@@ -16,11 +16,11 @@ ColumnLayout {
     label: I18n.tr("control-center.module.datetime")
   }
 
-  // SettingsGroup 1: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.language-select-label")
@@ -59,11 +59,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 2: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     ColumnLayout {
       Layout.fillWidth: true
       spacing: Style.marginS

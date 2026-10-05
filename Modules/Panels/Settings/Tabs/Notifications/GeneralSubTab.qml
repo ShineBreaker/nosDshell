@@ -24,7 +24,7 @@ ColumnLayout {
   }
 
   ColumnLayout {
-    spacing: Style.marginL
+    spacing: Style.settingsGroupGap
     enabled: Settings.data.notifications.enabled
 
     NComboBox {
@@ -108,7 +108,7 @@ ColumnLayout {
       defaultValue: Settings.getDefaultValue("notifications.backgroundOpacity")
     }
 
-    NDivider {
+    NDccGap {
       Layout.fillWidth: true
     }
 

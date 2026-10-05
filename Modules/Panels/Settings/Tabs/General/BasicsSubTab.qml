@@ -18,11 +18,11 @@ ColumnLayout {
     label: I18n.tr("panels.general.tab-basics")
   }
 
-  // SettingsGroup 1: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     RowLayout {
       Layout.fillWidth: true
       spacing: Style.marginL
@@ -40,7 +40,7 @@ ColumnLayout {
       }
 
       ColumnLayout {
-        spacing: 0
+        spacing: Style.settingsGroupGap
         NText {
           text: HostService.displayName
           pointSize: Style.fontSizeM
@@ -83,12 +83,12 @@ ColumnLayout {
     Layout.fillWidth: true
   }
   ColumnLayout {
-    spacing: 0
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     // Font configuration section
     ColumnLayout {
-      spacing: 0
+      spacing: Style.settingsGroupGap
       Layout.fillWidth: true
 
       NSearchableComboBox {
@@ -151,11 +151,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 3: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 3: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.reverse-scrolling-label")
@@ -179,11 +179,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 4: the rows sit flush, the 1 px seam
-  // between them comes from the dcc row (DESIGN §3.5.4)
+  // SettingsGroup 4: one DDE SettingsGroup -- rows stack with the
+  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: 0
+    spacing: Style.settingsGroupGap
     RowLayout {
       spacing: Style.marginL
       Layout.fillWidth: true
