@@ -167,6 +167,28 @@
         rust-zune-core-0.4.12
         rust-zune-jpeg-0.4.21))
 
+;;; Upstream quickshell plus the pipewire use-after-free fixes that the
+;;; archived noctalia-qs fork carried and upstream never merged: dangling
+;;; raw PwNode pointers in the default-device tracker (ecdc0b1) and in the
+;;; PwNodeIface-bound volume/peak readers (587f531 minus its spectrum.hpp
+;;; hunk, which is fork-only).  Both crash the shell when a pipewire node
+;;; (USB audio, headphones) disappears.  The fork's third engine fix —
+;;; diffUpdate reordering in core/model — is already upstream at v0.3.0.
+(define quickshell/nosd
+  (package
+    (inherit quickshell)
+    (name "quickshell-nosd")
+    (source
+     (origin
+       (inherit (package-source quickshell))
+       (patches
+        (list (local-file
+               (string-append %repo-root
+                              "/packaging/patches/quickshell-pipewire-default-tracker-qpointer.patch"))
+              (local-file
+               (string-append %repo-root
+                              "/packaging/patches/quickshell-pipewire-node-iface-qpointer.patch"))))))))
+
 (define-public nosd-blur
   (package
     (name "nosd-blur")
@@ -211,6 +233,16 @@ menu) can skip a live blur pass and just draw the cached image.")
           (add-after 'unpack 'reduce-output-size
             (lambda _
               (delete-file-recursively "Assets/Screenshots")))
+          (add-after 'install 'embed-rfkill-path
+            (lambda* (#:key inputs #:allow-other-keys)
+              ;; rfkill lives in util-linux/sbin, which the wrapper PATH
+              ;; does not cover; point the unblock call at the store path.
+              (substitute* (string-append
+                            #$output
+                            "/etc/xdg/quickshell/nosdshell/Services/Networking/BluetoothService.qml")
+                (("\\[\"rfkill\", \"unblock\", \"bluetooth\"\\]")
+                 (string-append "[\"" (search-input-file inputs "sbin/rfkill")
+                                "\", \"unblock\", \"bluetooth\"]")))))
           (add-after 'install 'make-wrapper
             (lambda* (#:key inputs #:allow-other-keys)
               (let ((script "nosdshell"))
@@ -282,7 +314,8 @@ exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
            qtdeclarative
            qtmultimedia
            qtwayland
-           quickshell
+           quickshell/nosd
+           util-linux
            which
            wl-clipboard
            wlsunset

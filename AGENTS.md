@@ -16,7 +16,7 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 
 ## 运行环境与校验
 
-本机是 Guix，没有 Nix。shell 运行在**上游 `quickshell`** 上（Guix 频道里的 `quickshell` 包）。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`），不要重新引入对 `noctalia-qs` fork 的依赖——它已归档停更。
+本机是 Guix，没有 Nix。shell 运行在**上游 `quickshell`** 上（Guix 频道里的 `quickshell` 包）。`nosdshell.scm` 实际打包的是 `quickshell-nosd`——上游 0.3.0 加两个 fork 未上游的 pipewire UAF 补丁（`packaging/patches/`）。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`），不要重新引入对 `noctalia-qs` fork 的依赖——它已归档停更。
 
 | 目的 | 命令 |
 |---|---|
