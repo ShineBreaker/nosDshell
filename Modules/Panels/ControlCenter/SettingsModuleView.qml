@@ -114,15 +114,21 @@ Item {
       }
     }
     idleFillTimer.stop();
-    // All tabs instantiated: positions are final, drop any re-snap target.
-    root._pendingSnap = null;
+    // NOTE: do NOT drop _pendingSnap here — flags are set but asynchronous
+    // instantiation may still be in flight; the snap clears once the target
+    // and everything above it are really Ready (see _onTabLoaded).
   }
 
   // ---- programmatic scroll (nav click / routing) ----
   property bool _programmatic: false
-  // Re-snap target while lazy tabs still load: {sec, tab}.
+  // Re-snap target while lazy tabs still load: {sec, tab}. Cleared on user
+  // scroll, or once the target section and everything above it are Ready
+  // (only then is the target Y final).
   property var _pendingSnap: null
   property bool _snapLogged: false
+  // True while we set contentY ourselves (re-snap): keeps onContentYChanged
+  // from mistaking our own writes for user scrolls.
+  property bool _snapping: false
 
   NumberAnimation {
     id: scrollAnim
@@ -130,7 +136,10 @@ Item {
     property: "contentY"
     duration: Style.motionSettingsScroll
     easing.type: Easing.OutQuint
-    onFinished: root._programmatic = false
+    onFinished: {
+      root._programmatic = false;
+      root._settleSnap();
+    }
   }
 
   function _cancelProgrammatic() {
@@ -227,7 +236,9 @@ Item {
       scrollAnim.start();
     } else {
       root._programmatic = false;
+      root._snapping = true;
       f.contentY = y;
+      root._snapping = false;
     }
   }
 
@@ -244,8 +255,10 @@ Item {
   }
 
   // Called by every tab Loader when it finishes: while a snap target is
-  // pending, keep its header stable as heights above it still change, and
-  // log open latency once the target section is fully ready.
+  // pending, keep its header stable as heights above or below it still change.
+  // The snap clears only once the target section and everything above it are
+  // really Ready (active flags alone are not enough: async instantiation
+  // lags behind the idle fill).
   function _onTabLoaded(secIdx) {
     // Open-latency probe, independent of the re-snap lifecycle.
     if (secIdx === root._targetSec && !root._snapLogged) {
@@ -258,14 +271,46 @@ Item {
     const snap = root._pendingSnap;
     if (!snap)
       return;
-    const y = snap.tab >= 0 ? _tabSlotY(snap.sec, snap.tab) : _sectionY(snap.sec);
-    if (scrollAnim.running) {
-      scrollAnim.to = _clampY(y);
-    } else {
-      const f = _flickable();
-      if (f)
-        f.contentY = _clampY(y);
+    _resnapToTarget();
+    if (_aboveReady(snap.sec))
+      root._pendingSnap = null;
+  }
+
+  // Everything above section sec fully instantiated?
+  function _aboveReady(sec) {
+    for (var i = 0; i < sec; i++) {
+      const s = sectionsRepeater.itemAt(i);
+      if (!s || !s.tabsReady || !s.tabsReady())
+        return false;
     }
+    return true;
+  }
+
+  // Move contentY onto the pending target when it drifted off by more
+  // than a pixel, either direction. Called after loads and when the scroll
+  // animation settles.
+  function _resnapToTarget() {
+    const snap = root._pendingSnap;
+    if (!snap)
+      return;
+    const y = _clampY(snap.tab >= 0 ? _tabSlotY(snap.sec, snap.tab) : _sectionY(snap.sec));
+    if (scrollAnim.running) {
+      scrollAnim.to = y;
+      return;
+    }
+    const f = _flickable();
+    if (f && Math.abs(f.contentY - y) > 1) {
+      root._snapping = true;
+      f.contentY = y;
+      root._snapping = false;
+    }
+  }
+
+  // Settle check after the scroll animation ends: loads that finished
+  // mid-flight may have moved the target since `to` was computed.
+  function _settleSnap() {
+    if (root._pendingSnap)
+      _resnapToTarget();
   }
 
   function selectModule(mod) {
@@ -676,8 +721,12 @@ Item {
                 root._cancelProgrammatic();
             }
             function onContentYChanged() {
-              if (!root._programmatic)
-                scrollSettleTimer.restart();
+              if (root._programmatic || root._snapping)
+                return;
+              // Genuine user scroll: drop any pending target, then debounce
+              // the rail highlight sync.
+              root._pendingSnap = null;
+              scrollSettleTimer.restart();
             }
           }
 
