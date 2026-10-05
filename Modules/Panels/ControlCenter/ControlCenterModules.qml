@@ -30,6 +30,7 @@ Singleton {
   readonly property var modules: [
     {
       "id": "accounts",
+      "ddeIcon": "accounts",
       "label": "control-center.module.accounts",
       "icon": "person",
       "tabs": [
@@ -41,6 +42,7 @@ Singleton {
     },
     {
       "id": "display",
+      "ddeIcon": "display",
       "label": "control-center.module.display",
       "icon": "settings-display",
       "tabs": [
@@ -52,6 +54,7 @@ Singleton {
     },
     {
       "id": "personalization",
+      "ddeIcon": "personalization",
       "label": "control-center.module.personalization",
       "icon": "palette",
       "tabs": [
@@ -108,6 +111,7 @@ Singleton {
     },
     {
       "id": "network",
+      "ddeIcon": "network",
       "label": "control-center.module.network",
       "icon": "wifi",
       "tabs": [
@@ -119,6 +123,7 @@ Singleton {
     },
     {
       "id": "bluetooth",
+      "ddeIcon": "bluetooth",
       "label": "control-center.module.bluetooth",
       "icon": "bluetooth",
       "tabs": [
@@ -130,6 +135,7 @@ Singleton {
     },
     {
       "id": "sound",
+      "ddeIcon": "sound",
       "label": "control-center.module.sound",
       "icon": "device-speaker",
       "tabs": [
@@ -156,6 +162,7 @@ Singleton {
     },
     {
       "id": "datetime",
+      "ddeIcon": "datetime",
       "label": "control-center.module.datetime",
       "icon": "clock",
       "tabs": [
@@ -167,6 +174,7 @@ Singleton {
     },
     {
       "id": "power",
+      "ddeIcon": "power",
       "label": "control-center.module.power",
       "icon": "moon",
       "tabs": [
@@ -186,6 +194,7 @@ Singleton {
     },
     {
       "id": "keyboard",
+      "ddeIcon": "keyboard",
       "label": "control-center.module.keyboard",
       "icon": "keyboard",
       "tabs": [
@@ -241,6 +250,7 @@ Singleton {
     },
     {
       "id": "systeminfo",
+      "ddeIcon": "systeminfo",
       "label": "control-center.module.system-info",
       "icon": "info-square-rounded",
       "tabs": [
@@ -256,6 +266,16 @@ Singleton {
     if (module.id === "bluetooth")
       return BluetoothService.bluetoothAvailable;
     return true;
+  }
+
+  // DDE 15 original navigation artwork (DESIGN §1.9/§3.5.3): selected state
+  // uses nav_<m>.svg, default state nav_<m>_normal.svg. Returns "" when the
+  // module has no original art (caller falls back to a Tabler glyph).
+  function navIconUrl(module, selected) {
+    if (!module || !module.ddeIcon)
+      return "";
+    const suffix = selected ? "" : "_normal";
+    return Quickshell.shellDir + "/Assets/DDE/gxde-control-center/src/frame/modules/" + module.ddeIcon + "/themes/dark/icons/nav_" + module.ddeIcon + suffix + ".svg";
   }
 
   // First module carrying `tab`, optionally on the given sub-tab. Used by

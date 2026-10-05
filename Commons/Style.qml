@@ -444,6 +444,16 @@ Singleton {
   readonly property int settingsRailSpacing: Math.round(20 * uiScaleRatio)
   readonly property int settingsModuleContentWidth: Math.round(352 * uiScaleRatio)
   readonly property int settingsWindowContentWidth: Math.round(640 * uiScaleRatio)
+  // All-settings page (DESIGN §3.5.3): nav→content scroll, OutQuint 1400 ms
+  // (contentwidget.cpp:67-69); module headers; lazy tab placeholders.
+  readonly property int motionSettingsScroll: _motion(1400)
+  readonly property int settingsModuleHeadLeft: Math.round(11 * uiScaleRatio)
+  readonly property int settingsModuleHeadIcon: Math.round(24 * uiScaleRatio)
+  readonly property int settingsModuleHeadPadV: Math.round(5 * uiScaleRatio)
+  readonly property int settingsRailButtonMarginH: Math.round(10 * uiScaleRatio)
+  readonly property int settingsRailButtonPadV: Math.round(5 * uiScaleRatio)
+  readonly property real settingsRailIconDim: 0.4
+  readonly property int settingsTabEstimateHeight: Math.round(480 * uiScaleRatio)
   // Content header: back button, centred title 14/500, separator 15 px below
   readonly property int settingsModuleTitleSize: Math.round(14 * uiScaleRatio)
   readonly property int settingsModuleSeparatorGap: Math.round(15 * uiScaleRatio)

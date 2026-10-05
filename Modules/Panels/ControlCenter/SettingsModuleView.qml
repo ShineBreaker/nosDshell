@@ -47,7 +47,8 @@ import qs.Widgets
 Item {
   id: root
 
-  // The module currently shown (an entry of ControlCenterModules.modules).
+  // The highlighted module: rail selection and scroll target. Owners push via
+  // openModuleAt; the view never writes an outside binding (see panel/window).
   property var module: null
   // 352 in the frame, 640 in the centered window (DESIGN §3.5.3).
   property real contentWidth: Style.settingsModuleContentWidth
@@ -55,23 +56,238 @@ Item {
   signal backRequested
 
   readonly property var modules: ControlCenterModules.modules.filter(m => ControlCenterModules.isVisible(m))
-  readonly property var activeModule: module ?? (modules.length > 0 ? modules[0] : null)
-  readonly property string title: activeModule ? ControlCenterModules.tr(activeModule.label) : ""
+  readonly property string title: I18n.tr("control-center.all-settings")
+
+  // Module visibility can change live (bluetooth adapter); indices shift, so
+  // drop lazy state and reload around the current module.
+  onModulesChanged: {
+    root._loadedMap = ({});
+    root._pendingSnap = null;
+    const i = moduleIndex(module);
+    if (i >= 0) {
+      _ensureLoaded(i);
+      idleFillTimer.start();
+    }
+  }
 
   implicitWidth: Style.settingsRailWidth + root.contentWidth
-  implicitHeight: contentLayout.implicitHeight
+  implicitHeight: sectionsColumn.implicitHeight
+
+  // ---- staged tab loading (DESIGN §3.5.3 perf): the target module and its
+  // neighbours load at once, the rest fills in on idle; unloaded tabs keep
+  // an estimated-height placeholder so headers stay put.
+  property var _loadedMap: ({})
+  property double _openStamp: 0
+  property int _targetSec: -1
+
+  Timer {
+    id: idleFillTimer
+    interval: 80
+    repeat: true
+    onTriggered: root._fillNext()
+  }
+
+  function _markLoaded(idx) {
+    if (root._loadedMap[idx] === true)
+      return;
+    const m = Object.assign({}, root._loadedMap);
+    m[idx] = true;
+    root._loadedMap = m;
+  }
+
+  function _ensureLoaded(idx) {
+    for (var k = idx - 1; k <= idx + 1; k++) {
+      if (k >= 0 && k < modules.length)
+        _markLoaded(k);
+    }
+  }
+
+  function _tabActive(mIdx) {
+    return root._loadedMap[mIdx] === true;
+  }
+
+  function _fillNext() {
+    for (var i = 0; i < modules.length; i++) {
+      if (root._loadedMap[i] !== true) {
+        _markLoaded(i);
+        return;
+      }
+    }
+    idleFillTimer.stop();
+    // All tabs instantiated: positions are final, drop any re-snap target.
+    root._pendingSnap = null;
+  }
+
+  // ---- programmatic scroll (nav click / routing) ----
+  property bool _programmatic: false
+  // Re-snap target while lazy tabs still load: {sec, tab}.
+  property var _pendingSnap: null
+  property bool _snapLogged: false
+
+  NumberAnimation {
+    id: scrollAnim
+    target: contentScroll.contentItem
+    property: "contentY"
+    duration: Style.motionSettingsScroll
+    easing.type: Easing.OutQuint
+    onFinished: root._programmatic = false
+  }
+
+  function _cancelProgrammatic() {
+    if (scrollAnim.running)
+      scrollAnim.stop();
+    root._programmatic = false;
+    root._pendingSnap = null;
+  }
+
+  // User scroll stopped (short debounce) → highlight the first module whose
+  // header top sits at/below the viewport top (settingswidget.cpp:342-380).
+  // The current module is kept while its section still intersects the
+  // viewport (same hysteresis as the C++ early-return). Deviation: past the
+  // last header the C++ falls back to the first activable module; here the
+  // last visible section stays highlighted instead of jumping to the top.
+  Timer {
+    id: scrollSettleTimer
+    interval: 180
+    repeat: false
+    onTriggered: root._syncModuleToScroll()
+  }
+
+  function _syncModuleToScroll() {
+    if (root._programmatic || modules.length === 0)
+      return;
+    const f = _flickable();
+    if (!f)
+      return;
+    const top = f.contentY;
+    const cur = moduleIndex(module);
+    if (cur >= 0) {
+      const s = sectionsRepeater.itemAt(cur);
+      if (s && s.y < top + f.height && s.y + s.height > top)
+        return;
+    }
+    var first = -1;
+    for (var i = 0; i < modules.length; i++) {
+      const it = sectionsRepeater.itemAt(i);
+      if (!it)
+        continue;
+      if (it.y >= top - 1) {
+        first = i;
+        break;
+      }
+    }
+    if (first < 0) {
+      for (var j = modules.length - 1; j >= 0; j--) {
+        const jt = sectionsRepeater.itemAt(j);
+        if (jt && jt.y < top + f.height) {
+          first = j;
+          break;
+        }
+      }
+      if (first < 0)
+        return;
+    }
+    if (modules[first] !== module)
+      module = modules[first];
+  }
+
+  function _flickable() {
+    return contentScroll.contentItem;
+  }
+
+  function _clampY(y) {
+    const f = _flickable();
+    if (!f)
+      return 0;
+    return Math.max(0, Math.min(y, Math.max(0, f.contentHeight - f.height)));
+  }
+
+  // Y of a module header / tab slot inside the scroll content.
+  function _sectionY(i) {
+    const s = sectionsRepeater.itemAt(i);
+    return s ? s.y : 0;
+  }
+
+  function _tabSlotY(i, j) {
+    const s = sectionsRepeater.itemAt(i);
+    if (!s || typeof s.tabSlotY !== "function")
+      return _sectionY(i);
+    return s.y + s.tabSlotY(j);
+  }
+
+  function _scrollToY(y, animated) {
+    const f = _flickable();
+    if (!f)
+      return;
+    y = _clampY(y);
+    scrollAnim.stop();
+    if (animated && Style.motionSettingsScroll > 0 && Math.abs(f.contentY - y) > 1) {
+      root._programmatic = true;
+      scrollAnim.to = y;
+      scrollAnim.start();
+    } else {
+      root._programmatic = false;
+      f.contentY = y;
+    }
+  }
+
+  function _scrollToSection(i, subTab, animated) {
+    var tab = (subTab === undefined || subTab === null) ? -1 : subTab;
+    const y = tab >= 0 ? _tabSlotY(i, tab) : _sectionY(i);
+    root._pendingSnap = {
+      "sec": i,
+      "tab": tab
+    };
+    _scrollToY(y, animated);
+    // Already fully loaded (e.g. reopening): settle immediately.
+    _onTabLoaded(i);
+  }
+
+  // Called by every tab Loader when it finishes: while a snap target is
+  // pending, keep its header stable as heights above it still change, and
+  // log open latency once the target section is fully ready.
+  function _onTabLoaded(secIdx) {
+    // Open-latency probe, independent of the re-snap lifecycle.
+    if (secIdx === root._targetSec && !root._snapLogged) {
+      const t = sectionsRepeater.itemAt(secIdx);
+      if (t && t.tabsReady && t.tabsReady()) {
+        root._snapLogged = true;
+        Logger.i("SettingsModule", "all-settings open: target ready in", (Date.now() - root._openStamp) + "ms");
+      }
+    }
+    const snap = root._pendingSnap;
+    if (!snap)
+      return;
+    const y = snap.tab >= 0 ? _tabSlotY(snap.sec, snap.tab) : _sectionY(snap.sec);
+    if (scrollAnim.running) {
+      scrollAnim.to = _clampY(y);
+    } else {
+      const f = _flickable();
+      if (f)
+        f.contentY = _clampY(y);
+    }
+  }
 
   function selectModule(mod) {
     openModuleAt(mod, -1);
   }
 
-  // External entry point for routing (panel openModule, window navigateTo).
-  // Sets the highlighted module; scrolling to it lands with the all-settings
-  // page rewrite (next commit) — until then this only switches the module.
+  // External entry point for routing (panel openModule, window navigateTo,
+  // rail clicks, search results): highlight + scroll to the module header,
+  // or to a tab section when subTab >= 0.
   function openModuleAt(mod, subTab) {
     if (!mod)
       return;
+    const idx = moduleIndex(mod);
+    if (idx < 0)
+      return;
+    root._openStamp = Date.now();
+    root._snapLogged = false;
+    root._targetSec = idx;
     module = mod;
+    _ensureLoaded(idx);
+    idleFillTimer.start();
+    Qt.callLater(() => _scrollToSection(idx, subTab, true));
   }
 
   function moduleIndex(mod) {
@@ -83,15 +299,66 @@ Item {
   }
 
   function selectNextModule() {
-    const i = moduleIndex(activeModule);
+    const i = moduleIndex(module);
     if (i >= 0 && i + 1 < modules.length)
-      selectModule(modules[i + 1]);
+      openModuleAt(modules[i + 1], -1);
+  }
+
+  // Tab enum -> Loader component (shared by every module section).
+  function _tabComponent(tab) {
+    switch (tab) {
+    case SettingsPanel.Tab.About:
+      return aboutTab;
+    case SettingsPanel.Tab.Audio:
+      return audioTab;
+    case SettingsPanel.Tab.Bar:
+      return barTab;
+    case SettingsPanel.Tab.ColorScheme:
+      return colorSchemeTab;
+    case SettingsPanel.Tab.LockScreen:
+      return lockScreenTab;
+    case SettingsPanel.Tab.ControlCenter:
+      return controlCenterTab;
+    case SettingsPanel.Tab.DesktopWidgets:
+      return desktopWidgetsTab;
+    case SettingsPanel.Tab.OSD:
+      return osdTab;
+    case SettingsPanel.Tab.Display:
+      return displayTab;
+    case SettingsPanel.Tab.Dock:
+      return dockTab;
+    case SettingsPanel.Tab.General:
+      return generalTab;
+    case SettingsPanel.Tab.Hooks:
+      return hooksTab;
+    case SettingsPanel.Tab.Idle:
+      return idleTab;
+    case SettingsPanel.Tab.Launcher:
+      return launcherTab;
+    case SettingsPanel.Tab.Location:
+      return regionTab;
+    case SettingsPanel.Tab.Connections:
+      return connectionsTab;
+    case SettingsPanel.Tab.Notifications:
+      return notificationsTab;
+    case SettingsPanel.Tab.Plugins:
+      return pluginsTab;
+    case SettingsPanel.Tab.SessionMenu:
+      return sessionMenuTab;
+    case SettingsPanel.Tab.System:
+      return systemMonitorTab;
+    case SettingsPanel.Tab.UserInterface:
+      return userInterfaceTab;
+    case SettingsPanel.Tab.Wallpaper:
+      return wallpaperTab;
+    }
+    return aboutTab;
   }
 
   function selectPreviousModule() {
-    const i = moduleIndex(activeModule);
+    const i = moduleIndex(module);
     if (i > 0)
-      selectModule(modules[i - 1]);
+      openModuleAt(modules[i - 1], -1);
   }
 
   // Sub-tabs of a tab are shown as SettingsGroups on one scrollable page
@@ -133,6 +400,7 @@ Item {
       color: "transparent"
 
       NScrollView {
+        id: railScroll
         anchors.fill: parent
         anchors.topMargin: Style.marginS
         anchors.bottomMargin: Style.marginS
@@ -144,53 +412,90 @@ Item {
 
         Column {
           width: parent.width
-          spacing: Style.settingsRailSpacing
+          spacing: 0
 
-          Repeater {
-            model: root.modules
+          // Button group stays vertically centred; spacers collapse when
+          // the buttons overflow (navigationbar.cpp: centralLayout stretches).
+          Item {
+            width: 1
+            height: Math.max(0, (railScroll.height - railButtons.height) / 2)
+          }
 
-            delegate: Rectangle {
-              required property var modelData
-              required property int index
+          Column {
+            id: railButtons
+            width: parent.width
+            spacing: Style.settingsRailSpacing
 
-              readonly property bool selected: root.activeModule === modelData
+            Repeater {
+              model: root.modules
 
-              width: Style.settingsRailWidth
-              height: Style.settingsRailWidth
-              radius: Style.radiusItem
-              color: {
-                if (railArea.containsMouse)
-                  return Qt.rgba(1, 1, 1, 0.3);
-                if (selected)
-                  return Qt.rgba(1, 1, 1, 0.3);
-                return "transparent";
-              }
+              delegate: Item {
+                required property var modelData
+                required property int index
 
-              Behavior on color {
-                enabled: !Color.isTransitioning
-                ColorAnimation {
-                  duration: Style.animationFast
+                readonly property bool selected: root.module === modelData
+                readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, selected)
+
+                width: Style.settingsRailWidth
+                height: Style.settingsModuleHeadIcon + 2 * Style.settingsRailButtonPadV
+
+                Rectangle {
+                  anchors.centerIn: parent
+                  width: Style.settingsRailWidth - 2 * Style.settingsRailButtonMarginH
+                  height: parent.height
+                  radius: Style.radiusRow
+                  color: {
+                    if (railArea.containsMouse)
+                      return Qt.rgba(1, 1, 1, 0.2);
+                    if (selected)
+                      return Qt.rgba(1, 1, 1, 0.3);
+                    return "transparent";
+                  }
+
+                  Behavior on color {
+                    enabled: !Color.isTransitioning
+                    ColorAnimation {
+                      duration: Style.animationFast
+                    }
+                  }
+
+                  Image {
+                    anchors.centerIn: parent
+                    width: Style.settingsModuleHeadIcon
+                    height: Style.settingsModuleHeadIcon
+                    sourceSize.width: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
+                    sourceSize.height: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
+                    source: ddeArt
+                    visible: ddeArt !== ""
+                    smooth: true
+                  }
+
+                  NIcon {
+                    anchors.centerIn: parent
+                    icon: modelData.icon
+                    pointSize: Style.fontSizeL
+                    applyUiScale: false
+                    visible: ddeArt === ""
+                    color: selected ? Color.onShell : Qt.rgba(1, 1, 1, Style.settingsRailIconDim)
+                  }
+
+                  MouseArea {
+                    id: railArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onEntered: TooltipService.show(parent, ControlCenterModules.tr(modelData.label), "left")
+                    onExited: TooltipService.hide()
+                    onClicked: root.selectModule(modelData)
+                  }
                 }
               }
-
-              NIcon {
-                anchors.centerIn: parent
-                icon: modelData.icon
-                pointSize: Style.fontSizeL
-                applyUiScale: false
-                color: parent.selected ? Color.onShell : Color.onShellSecondary
-              }
-
-              MouseArea {
-                id: railArea
-                anchors.fill: parent
-                hoverEnabled: true
-                cursorShape: Qt.PointingHandCursor
-                onEntered: TooltipService.show(parent, ControlCenterModules.tr(modelData.label), "left")
-                onExited: TooltipService.hide()
-                onClicked: root.selectModule(modelData)
-              }
             }
+          }
+
+          Item {
+            width: 1
+            height: Math.max(0, (railScroll.height - railButtons.height) / 2)
           }
         }
       }
@@ -218,7 +523,10 @@ Item {
             anchors.leftMargin: Style.marginS
             anchors.verticalCenter: parent.verticalCenter
             icon: "chevron-left"
-            baseSize: Style.baseWidgetSize * 0.75
+            // 24×24, radius 4, white×0.2 block (DESIGN §3.5.3).
+            baseSize: 24
+            customRadius: Style.radiusRow
+            colorBg: Qt.rgba(1, 1, 1, 0.2)
             tooltipText: I18n.tr("common.back")
             onClicked: root.backRequested()
           }
@@ -295,8 +603,8 @@ Item {
             height: visible ? Math.min(contentHeight, Style.controlCenterWidth) : 0
             clip: true
             model: SettingsSearchService.searchIndex.filter(function (entry) {
-                    return SettingsSearchService.isEntryVisible(entry) && searchInput.text.trim() !== "" && I18n.tr(entry.labelKey).toLowerCase().includes(searchInput.text.trim().toLowerCase());
-                  })
+              return SettingsSearchService.isEntryVisible(entry) && searchInput.text.trim() !== "" && I18n.tr(entry.labelKey).toLowerCase().includes(searchInput.text.trim().toLowerCase());
+            })
             z: 10
 
             function selectFirst() {
@@ -340,8 +648,10 @@ Item {
           }
         }
 
-        // The tabs of the active module, stacked as groups (DESIGN §3.5.3)
+        // All visible modules stacked in one scroll area (DESIGN §3.5.3): every
+        // module opens with its header, then its tabs as groups.
         NScrollView {
+          id: contentScroll
           Layout.fillWidth: true
           Layout.fillHeight: true
           Layout.leftMargin: Style.marginS
@@ -353,73 +663,127 @@ Item {
           showGradientMasks: false
           gradientColor: Color.maskShell
 
+          // User scroll cancels programmatic scroll + pending re-snap; scroll
+          // stops (debounced) sync the rail highlight (commit: nav sync).
+          Connections {
+            target: contentScroll.contentItem
+            function onDraggingChanged() {
+              if (contentScroll.contentItem.dragging)
+                root._cancelProgrammatic();
+            }
+            function onFlickingChanged() {
+              if (contentScroll.contentItem.flicking)
+                root._cancelProgrammatic();
+            }
+            function onContentYChanged() {
+              if (!root._programmatic)
+                scrollSettleTimer.restart();
+            }
+          }
+
           Column {
-            id: tabColumn
+            id: sectionsColumn
             width: parent.width
-            spacing: Style.marginM
+            spacing: Style.settingsGroupSpacing
 
             Repeater {
-              model: root.activeModule ? (root.activeModule.tabs ?? [root.activeModule]) : []
+              id: sectionsRepeater
+              model: root.modules
 
-              delegate: Loader {
+              delegate: Column {
                 required property var modelData
-                width: tabColumn.width
-                sourceComponent: {
-                  switch (modelData.tab) {
-                  case SettingsPanel.Tab.About:
-                    return aboutTab;
-                  case SettingsPanel.Tab.Audio:
-                    return audioTab;
-                  case SettingsPanel.Tab.Bar:
-                    return barTab;
-                  case SettingsPanel.Tab.ColorScheme:
-                    return colorSchemeTab;
-                  case SettingsPanel.Tab.LockScreen:
-                    return lockScreenTab;
-                  case SettingsPanel.Tab.ControlCenter:
-                    return controlCenterTab;
-                  case SettingsPanel.Tab.DesktopWidgets:
-                    return desktopWidgetsTab;
-                  case SettingsPanel.Tab.OSD:
-                    return osdTab;
-                  case SettingsPanel.Tab.Display:
-                    return displayTab;
-                  case SettingsPanel.Tab.Dock:
-                    return dockTab;
-                  case SettingsPanel.Tab.General:
-                    return generalTab;
-                  case SettingsPanel.Tab.Hooks:
-                    return hooksTab;
-                  case SettingsPanel.Tab.Idle:
-                    return idleTab;
-                  case SettingsPanel.Tab.Launcher:
-                    return launcherTab;
-                  case SettingsPanel.Tab.Location:
-                    return regionTab;
-                  case SettingsPanel.Tab.Connections:
-                    return connectionsTab;
-                  case SettingsPanel.Tab.Notifications:
-                    return notificationsTab;
-                  case SettingsPanel.Tab.Plugins:
-                    return pluginsTab;
-                  case SettingsPanel.Tab.SessionMenu:
-                    return sessionMenuTab;
-                  case SettingsPanel.Tab.System:
-                    return systemMonitorTab;
-                  case SettingsPanel.Tab.UserInterface:
-                    return userInterfaceTab;
-                  case SettingsPanel.Tab.Wallpaper:
-                    return wallpaperTab;
+                required property int index
+                readonly property var sectionModule: modelData
+                readonly property int sectionIndex: index
+                // Original nav art for the header (selected variant); "" → Tabler.
+                readonly property string headArt: ControlCenterModules.navIconUrl(sectionModule, true)
+                width: sectionsColumn.width
+                spacing: Style.marginS
+
+                // Y of a tab slot for subTab scrolling.
+                function tabSlotY(j) {
+                  const t = tabsRepeater.itemAt(j);
+                  return t ? t.y : 0;
+                }
+                // Every tab slot loaded?
+                function tabsReady() {
+                  for (var k = 0; k < tabsRepeater.count; k++) {
+                    const t = tabsRepeater.itemAt(k);
+                    if (!t || !t.tabReady())
+                      return false;
                   }
-                  return aboutTab;
+                  return true;
                 }
 
-                onLoaded: {
-                  if (item === null)
-                    return;
-                  _applyGroupMode(item);
-                  if (modelData.subTab !== undefined && modelData.subTab >= 0)
-                    item.currentSubTabIndex = modelData.subTab;
+                // Module header: left 11, 24 icon, large white title,
+                // 5 px vertical padding (modulewidget.cpp).
+                Item {
+                  width: parent.width
+                  height: Style.settingsModuleHeadIcon + 2 * Style.settingsModuleHeadPadV
+                  Row {
+                    anchors.left: parent.left
+                    anchors.leftMargin: Style.settingsModuleHeadLeft
+                    anchors.verticalCenter: parent.verticalCenter
+                    spacing: Style.marginS
+                    Image {
+                      anchors.verticalCenter: parent.verticalCenter
+                      width: Style.settingsModuleHeadIcon
+                      height: Style.settingsModuleHeadIcon
+                      sourceSize.width: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
+                      sourceSize.height: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
+                      source: headArt
+                      visible: headArt !== ""
+                      smooth: true
+                    }
+                    NIcon {
+                      anchors.verticalCenter: parent.verticalCenter
+                      icon: sectionModule.icon
+                      pointSize: Style.settingsModuleHeadIcon
+                      applyUiScale: false
+                      visible: headArt === ""
+                      color: Color.onShell
+                    }
+                    NText {
+                      anchors.verticalCenter: parent.verticalCenter
+                      text: ControlCenterModules.tr(sectionModule.label)
+                      pointSize: Style.fontSizeXL
+                      color: Color.onShell
+                    }
+                  }
+                }
+
+                Repeater {
+                  id: tabsRepeater
+                  model: sectionModule.tabs ?? [sectionModule]
+
+                  delegate: Item {
+                    required property var modelData
+                    required property int index
+                    width: sectionsColumn.width
+                    implicitHeight: tabLoader.item ? tabLoader.item.implicitHeight : Style.settingsTabEstimateHeight
+
+                    function tabReady() {
+                      return tabLoader.status === Loader.Ready && tabLoader.item !== null;
+                    }
+
+                    Loader {
+                      id: tabLoader
+                      width: parent.width
+                      asynchronous: true
+                      active: root._tabActive(sectionIndex)
+                      sourceComponent: root._tabComponent(modelData.tab)
+
+                      onLoaded: {
+                        if (item === null)
+                          return;
+                        root._applyGroupMode(item);
+                        // NOTE: no currentSubTabIndex preselect — tab files have no
+                        // such property (the old line only ever errored); subTab
+                        // routing scrolls to the tab section instead.
+                        root._onTabLoaded(sectionIndex);
+                      }
+                    }
+                  }
                 }
               }
             }

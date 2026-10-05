@@ -587,7 +587,8 @@
       "advanced": "Advanced",
       "system-info": "System Info"
     },
-    "update-available": "Update available: {version}"
+    "update-available": "Update available: {version}",
+    "all-settings": "All Settings"
   },
   "display-modes": {
     "always-hide": "Always hide",
