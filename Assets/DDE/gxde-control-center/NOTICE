@@ -1,0 +1,38 @@
+DDE 15 素材 —— 来源：gxde-control-center
+=============================================
+
+来源仓库：https://github.com/GXDE-OS/gxde-control-center
+分支/版本：浅克隆的默认分支（GXDE-OS 对 deepin 15 的社区维护版）
+上游版权：Copyright (C) 2015 ~ 2018 Deepin Technology Co., Ltd.（src/frame/navigationbar.cpp 头部声明等）
+上游许可：GPL-3.0（见来源仓库根目录的 LICENSE）
+本仓库许可：GPL-3.0（见仓库根目录的 LICENSE）
+
+复制规则：原样复制，不修改文件名，便于溯源（DESIGN §1.9）。
+
+文件清单
+--------
+
+### `src/frame/modules/*/themes/dark/icons/` —— 设置页导航条与模块头图标
+
+上游在 `src/frame/navigationbar.cpp:106-107` 用 `DImageButton` 按
+`:/<模块>/themes/dark/icons/nav_<模块>.svg`（选中态）/
+`nav_<模块>_normal.svg`（默认态）两态切换；同一张选中态图也用在
+模块头（`modulewidget.cpp` 的标题图标与导航选中态同一个）。
+SVG 均为 24×24（`viewBox="0 0 24 24"`），QML 侧用 `Image` 以
+`sourceSize` 锁定 24 px 显示。本次只复制 nosDshell 模块用到的 10 个
+目录（dock / launcher / controlcenter / notifications / desktopwidgets /
+systemmonitor / plugins / advanced 在 DDE 里没有对应模块，继续用
+Tabler 字形，见 DESIGN §3.5.3）。
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `src/frame/modules/accounts/themes/dark/icons/nav_accounts{,_normal}.svg` | 同左 | 账户模块导航/头图 |
+| `src/frame/modules/display/themes/dark/icons/nav_display{,_normal}.svg` | 同左 | 显示模块导航/头图 |
+| `src/frame/modules/personalization/themes/dark/icons/nav_personalization{,_normal}.svg` | 同左 | 个性化模块导航/头图 |
+| `src/frame/modules/network/themes/dark/icons/nav_network{,_normal}.svg` | 同左 | 网络模块导航/头图 |
+| `src/frame/modules/bluetooth/themes/dark/icons/nav_bluetooth{,_normal}.svg` | 同左 | 蓝牙模块导航/头图 |
+| `src/frame/modules/sound/themes/dark/icons/nav_sound{,_normal}.svg` | 同左 | 声音模块导航/头图 |
+| `src/frame/modules/datetime/themes/dark/icons/nav_datetime{,_normal}.svg` | 同左 | 时间日期模块导航/头图 |
+| `src/frame/modules/power/themes/dark/icons/nav_power{,_normal}.svg` | 同左 | 电源模块导航/头图 |
+| `src/frame/modules/keyboard/themes/dark/icons/nav_keyboard{,_normal}.svg` | 同左 | 键盘模块导航/头图 |
+| `src/frame/modules/systeminfo/themes/dark/icons/nav_systeminfo{,_normal}.svg` | 同左 | 系统信息模块导航/头图 |
