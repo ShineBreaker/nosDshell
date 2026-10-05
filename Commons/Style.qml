@@ -608,4 +608,16 @@ Singleton {
   readonly property int dockClockBigSmallGap: 2 // big block to small block / am-pm tips (line 154, 173, 179)
   readonly property int dockClockBigNumLeftBias: 1 // "… - bigNumWidth * 2 + 1" (line 140)
   readonly property int dockClockAmPmLeftInset: 1 // 12h branch drops the small digits by 1 px (line 154)
+
+  // ---- Wallpaper selection filmstrip (DESIGN §3.10) ----
+  // Derived from dde-desktop; references/ has no counterpart, so the numbers
+  // come from DESIGN.md §3.10 only.
+  readonly property int wallpaperStripThumbWidth: Math.round(160 * uiScaleRatio)
+  readonly property int wallpaperStripThumbHeight: Math.round(wallpaperStripThumbWidth * 9 / 16)
+  readonly property int wallpaperStripSpacing: Math.round(10 * uiScaleRatio)
+  readonly property int wallpaperStripRowHeight: 30 // §3.5.4 field height
+  readonly property int wallpaperStripActionHeight: 26 // capsule button row under a hovered thumb
+  // ~160 at uiScaleRatio 1: 90 thumb + 30 source row + 26 actions + 2 x marginS
+  readonly property int wallpaperStripHeight: wallpaperStripThumbHeight + wallpaperStripRowHeight + wallpaperStripActionHeight + marginS * 2
+  readonly property int wallpaperStripCurrentRingWidth: 2 // §3.10 accent ring on the current wallpaper
 }

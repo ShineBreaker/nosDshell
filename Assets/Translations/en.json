@@ -2154,6 +2154,11 @@
       "title": "Wallpaper Selector",
       "wallhaven-settings-title": "Wallhaven Settings"
     },
+    "strip": {
+      "current": "Current",
+      "other": "Other",
+      "both": "Both"
+    },
     "transitions": {
       "disc": "Disc",
       "fade": "Fade",

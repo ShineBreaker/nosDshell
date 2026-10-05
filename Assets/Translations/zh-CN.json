@@ -2152,6 +2152,11 @@
       "title": "壁纸选择器",
       "wallhaven-settings-title": "Wallhaven 设置"
     },
+    "strip": {
+      "current": "当前外观",
+      "other": "另一外观",
+      "both": "都设置"
+    },
     "transitions": {
       "disc": "圆盘",
       "fade": "淡入淡出",
