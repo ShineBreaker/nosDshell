@@ -16,6 +16,10 @@ import qs.Widgets
 Rectangle {
   id: root
 
+  // Marker so neighbouring dcc rows recognise this one when picking the group's
+  // head/tail corners.
+  readonly property bool isDccRow: true
+
   property string title: ""
   property string description: ""
   property string icon: ""

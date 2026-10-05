@@ -460,6 +460,24 @@ Singleton {
   readonly property int switchHeight: Math.round(22 * uiScaleRatio)
   readonly property int switchKnob: Math.round(18 * uiScaleRatio)
   readonly property int switchDuration: 150
+  // Text fields (LineEditWidget / ComboBoxWidget / spin box): 30 high, radiusItem
+  readonly property int settingsFieldHeight: Math.round(30 * uiScaleRatio)
+  readonly property int settingsFieldRadius: radiusItem
+  // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83); the
+  // gap between the title and the field is 0 there, we use marginXS so long
+  // titles stay readable.
+  readonly property int settingsFieldTitleWidth: Math.round(140 * uiScaleRatio)
+  readonly property int settingsFieldGap: Math.round(4 * uiScaleRatio)
+  // NextPageWidget: 5 px between value and chevron, 10 px trailing margin
+  // (nextpagewidget.cpp:50-51); the chevron is a 16 px enter_details glyph.
+  readonly property int settingsNextGap: Math.round(5 * uiScaleRatio)
+  readonly property int settingsNextChevronSize: Math.round(16 * uiScaleRatio)
+  // Spacing between two SettingsGroups (settingsgroup.cpp has no such token —
+  // derived from the 15 px separator under the module head in the frame).
+  readonly property int settingsGroupSpacing: Math.round(15 * uiScaleRatio)
+  // DCCSlider row: the groove sits under the title, 6 px of breathing room
+  // (dccslider.cpp:44 fixes the whole control at 35 px).
+  readonly property int settingsSliderTitleGap: Math.round(6 * uiScaleRatio)
 
   // ----------------------------------------------------------------
   // §3.4.1 fullscreen launcher (gxde-launcher fullscreenframe.cpp:1319-1341,

@@ -19,6 +19,12 @@ import qs.Widgets
 Item {
   id: root
 
+  // NDccRow reads this to know the group already decided the head/tail corners
+  // for its children and it should not re-derive them.
+  readonly property bool isDccSettingsGroup: true
+  // A group is not itself a row: to a neighbouring row it reads as a boundary.
+  readonly property bool isDccRow: false
+
   default property alias content: column.data
 
   implicitWidth: implicitContentWidth
@@ -48,10 +54,17 @@ Item {
     for (var i = 0; i < kids.length; i++) {
       if (kids[i] === undefined || kids[i] === null)
         continue;
-      kids[i].isFirst = (i === 0);
-      kids[i].isLast = (i === kids.length - 1);
+      // DDE only looks at visible items (settingsgroup.cpp:172-192), so an
+      // invisible row neither holds the corners nor gives them up.
+      const visible = kids[i].visible !== false;
+      kids[i].isFirst = visible && (i === 0 || !isVisibleRow(kids[i - 1]));
+      kids[i].isLast = visible && (i === kids.length - 1 || !isVisibleRow(kids[i + 1]));
       // Rows span the group width (NSettingsItem is a Rectangle, not a layout).
       kids[i].width = Qt.binding(() => root.width);
     }
+  }
+
+  function isVisibleRow(child) {
+    return child !== undefined && child !== null && child.visible !== false;
   }
 }
