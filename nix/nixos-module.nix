@@ -4,35 +4,39 @@
   ...
 }:
 let
-  cfg = config.services.noctalia-shell;
+  cfg = config.services.nosdshell;
 in
 {
-  options.services.noctalia-shell = {
-    enable = lib.mkEnableOption "Noctalia shell systemd service";
+  imports = map (o: lib.mkRenamedOptionModule [ "services" "noctalia-shell" o ] [ "services" "nosdshell" o ]) [
+    "enable"
+    "package"
+    "target"
+  ];
+
+  options.services.nosdshell = {
+    enable = lib.mkEnableOption "nosDshell systemd service";
 
     package = lib.mkOption {
       type = lib.types.package;
-      description = "The noctalia-shell package to use";
+      description = "The nosdshell package to use";
     };
 
     target = lib.mkOption {
       type = lib.types.str;
       default = "graphical-session.target";
       example = "hyprland-session.target";
-      description = "The systemd target for the noctalia-shell service.";
+      description = "The systemd target for the nosdshell service.";
     };
   };
 
   config = lib.mkIf cfg.enable {
     warnings = [
       ''
-        Running noctalia-shell as a systemd service has been deprecated!
-        See https://docs.noctalia.dev/getting-started/nixos/#running-the-shell for details.
+        Running nosdshell as a systemd service has been deprecated!
       ''
     ];
-    systemd.user.services.noctalia-shell = {
-      description = "Noctalia Shell - Wayland desktop shell";
-      documentation = [ "https://docs.noctalia.dev" ];
+    systemd.user.services.nosdshell = {
+      description = "nosDshell - Wayland desktop shell";
       after = [ cfg.target ];
       partOf = [ cfg.target ];
       wantedBy = [ cfg.target ];

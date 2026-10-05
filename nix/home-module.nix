@@ -5,28 +5,47 @@
   ...
 }:
 let
-  cfg = config.programs.noctalia-shell;
+  cfg = config.programs.nosdshell;
   jsonFormat = pkgs.formats.json { };
   tomlFormat = pkgs.formats.toml { };
 
   generateJson =
     name: value:
     if lib.isString value then
-      pkgs.writeText "noctalia-${name}.json" value
+      pkgs.writeText "nosd-${name}.json" value
     else if builtins.isPath value || lib.isStorePath value then
       value
     else
-      jsonFormat.generate "noctalia-${name}.json" value;
+      jsonFormat.generate "nosd-${name}.json" value;
 in
 {
-  options.programs.noctalia-shell = {
-    enable = lib.mkEnableOption "Noctalia shell configuration";
+  imports =
+    map (o: lib.mkRenamedOptionModule [ "programs" "noctalia-shell" o ] [ "programs" "nosdshell" o ]) [
+      "enable"
+      "package"
+      "settings"
+      "colors"
+      "user-templates"
+      "plugins"
+      "pluginSettings"
+    ]
+    ++ [
+      (lib.mkRenamedOptionModule [ "programs" "noctalia-shell" "systemd" "enable" ] [
+        "programs"
+        "nosdshell"
+        "systemd"
+        "enable"
+      ])
+    ];
 
-    systemd.enable = lib.mkEnableOption "Noctalia shell systemd integration";
+  options.programs.nosdshell = {
+    enable = lib.mkEnableOption "nosDshell configuration";
+
+    systemd.enable = lib.mkEnableOption "nosDshell systemd integration";
 
     package = lib.mkOption {
       type = lib.types.nullOr lib.types.package;
-      description = "The noctalia-shell package to use";
+      description = "The nosdshell package to use";
     };
 
     settings = lib.mkOption {
@@ -56,7 +75,7 @@ in
         }
       '';
       description = ''
-        Noctalia shell configuration settings as an attribute set, string
+        nosDshell configuration settings as an attribute set, string
         or filepath, to be written to ~/.config/noctalia/settings.json.
       '';
     };
@@ -89,7 +108,7 @@ in
         }
       '';
       description = ''
-        Noctalia shell color configuration as an attribute set, string
+        nosDshell color configuration as an attribute set, string
         or filepath, to be written to ~/.config/noctalia/colors.json.
       '';
     };
@@ -115,7 +134,7 @@ in
         }
       '';
       description = ''
-        Template definitions for Noctalia, to be written to ~/.config/noctalia/user-templates.toml.
+        Template definitions for nosDshell, to be written to ~/.config/noctalia/user-templates.toml.
 
         This option accepts:
         - a Nix attrset (converted to TOML automatically)
@@ -152,7 +171,7 @@ in
         }
       '';
       description = ''
-        Noctalia shell plugin configuration as an attribute set, string
+        nosDshell plugin configuration as an attribute set, string
         or filepath, to be written to ~/.config/noctalia/plugins.json.
       '';
     };
@@ -176,7 +195,8 @@ in
       '';
       description = ''
         Each plugin’s settings as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/plugins/plugin-name/settings.json.
+        or filepath, to be written to
+        ~/.config/noctalia/plugins/plugin-name/settings.json.
       '';
     };
   };
@@ -184,15 +204,13 @@ in
   config = lib.mkIf cfg.enable {
     warnings = lib.mkIf cfg.systemd.enable [
       ''
-        Running noctalia-shell as a systemd service has been deprecated!
-        See https://docs.noctalia.dev/getting-started/nixos/#running-the-shell for details.
+        Running nosdshell as a systemd service has been deprecated!
       ''
     ];
 
-    systemd.user.services.noctalia-shell = lib.mkIf cfg.systemd.enable {
+    systemd.user.services.nosdshell = lib.mkIf cfg.systemd.enable {
       Unit = {
-        Description = "Noctalia Shell - Wayland desktop shell";
-        Documentation = "https://docs.noctalia.dev";
+        Description = "nosDshell - Wayland desktop shell";
         PartOf = [ config.wayland.systemd.target ];
         After = [ config.wayland.systemd.target ];
         X-Restart-Triggers =
@@ -217,6 +235,8 @@ in
 
     home.packages = lib.optional (cfg.package != null) cfg.package;
 
+    # These paths must stay `noctalia/` until the runtime shellName is
+    # renamed: Settings.qml still resolves ~/.config/noctalia.
     xdg.configFile = {
       "noctalia/settings.json" = lib.mkIf (cfg.settings != { }) {
         source = generateJson "settings" cfg.settings;
@@ -230,11 +250,11 @@ in
       "noctalia/user-templates.toml" = lib.mkIf (cfg.user-templates != { }) {
         source =
           if lib.isString cfg.user-templates then
-            pkgs.writeText "noctalia-user-templates.toml" cfg.user-templates
+            pkgs.writeText "nosd-user-templates.toml" cfg.user-templates
           else if builtins.isPath cfg.user-templates || lib.isStorePath cfg.user-templates then
             cfg.user-templates
           else
-            tomlFormat.generate "noctalia-user-templates.toml" cfg.user-templates;
+            tomlFormat.generate "nosd-user-templates.toml" cfg.user-templates;
       };
     }
     // lib.mapAttrs' (
@@ -247,7 +267,7 @@ in
     assertions = [
       {
         assertion = !cfg.systemd.enable || cfg.package != null;
-        message = "noctalia-shell: The package option must not be null when systemd service is enabled.";
+        message = "nosdshell: The package option must not be null when systemd service is enabled.";
       }
     ];
   };

@@ -3,8 +3,10 @@
   extraPackages ? [ ],
   runtimeDeps ? [
     brightnessctl
+    cava
     cliphist
     ddcutil
+    util-linux
     wlsunset
     wl-clipboard
     wlr-randr
@@ -20,8 +22,10 @@
   quickshell,
   # runtime deps
   brightnessctl,
+  cava,
   cliphist,
   ddcutil,
+  util-linux,
   wlsunset,
   wl-clipboard,
   wlr-randr,
@@ -70,7 +74,7 @@ let
   ];
 in
 stdenvNoCC.mkDerivation {
-  pname = "noctalia-shell";
+  pname = "nosdshell";
   inherit version src;
 
   nativeBuildInputs = [
@@ -83,24 +87,24 @@ stdenvNoCC.mkDerivation {
   ];
 
   installPhase = ''
-    mkdir -p $out/share/noctalia-shell $out/bin
-    cp -r . $out/share/noctalia-shell
-    ln -s ${quickshell}/bin/qs $out/bin/noctalia-shell
+    mkdir -p $out/share/nosdshell $out/bin
+    cp -r . $out/share/nosdshell
+    ln -s ${quickshell}/bin/qs $out/bin/nosdshell
   '';
 
   preFixup = ''
     qtWrapperArgs+=(
       --prefix PATH : ${lib.makeBinPath (runtimeDeps ++ extraPackages)}
       --prefix XDG_DATA_DIRS : ${wayland-scanner}/share
-      --set-default QS_CONFIG_PATH "$out/share/noctalia-shell"
+      --set-default QS_CONFIG_PATH "$out/share/nosdshell"
       ${lib.optionalString calendarSupport "--prefix GI_TYPELIB_PATH : ${giTypelibPath}"}
     )
   '';
 
   meta = {
-    description = "A sleek and minimal desktop shell thoughtfully crafted for Wayland, built with Quickshell.";
-    homepage = "https://github.com/noctalia-dev/noctalia-shell";
-    license = lib.licenses.mit;
-    mainProgram = "noctalia-shell";
+    description = "Wayland desktop shell in the DDE 15 visual language, built with Quickshell.";
+    homepage = "https://github.com/ShineBreaker/nosDshell";
+    license = lib.licenses.gpl3Plus;
+    mainProgram = "nosdshell";
   };
 }
