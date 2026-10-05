@@ -5,7 +5,6 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Modules.LockScreen
-import qs.Modules.MainScreen
 import qs.Services.Plugins
 import qs.Services.System
 import qs.Services.UI
@@ -16,22 +15,74 @@ import qs.Widgets
 // wide because the steps carry settings rows, page dots for the step count and
 // "Next" in the bottom-right. The trigger (Settings.shouldOpenSetupWizard) is
 // untouched; only the presentation is DDE's.
-SmartPanel {
+//
+// A standalone fullscreen PanelWindow (like SessionMenu), not a SmartPanel:
+// SmartPanel clamps every panel to the screen minus Style.marginL per side
+// and minus the taskbar height, which left a sharp unblurred band around
+// the wallpaper. Full-screen anchors let LockScreenBackground cover the
+// whole output, taskbar included.
+PanelWindow {
   id: root
 
-  // SmartPanel clamps every panel to the screen minus Style.marginL per side and
-  // minus the taskbar height, so the ratio is 1 and the wallpaper is drawn over
-  // whatever area the panel does get (see the report for the remaining band).
-  preferredWidthRatio: 1
-  preferredHeightRatio: 1
+  // Screen property is inherited from PanelWindow; MainScreen assigns it.
+  color: "transparent"
 
-  panelAnchorHorizontalCenter: true
-  panelAnchorVerticalCenter: true
+  WlrLayershell.namespace: "nosdshell-setup-wizard-" + (root.screen?.name || "unknown")
+  // Modal over the whole screen, above the taskbar (same as SessionMenu).
+  WlrLayershell.layer: WlrLayer.Overlay
+  // Never reserve space — the wizard must not push the taskbar around.
+  WlrLayershell.exclusionMode: ExclusionMode.Ignore
+  WlrLayershell.keyboardFocus: root.isPanelOpen ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-  closeWithEscape: false
+  anchors {
+    top: true
+    bottom: true
+    left: true
+    right: true
+  }
+  implicitWidth: root.screen?.width || 0
+  implicitHeight: root.screen?.height || 0
 
-  panelContent: Item {
+  // Window state follows the PanelService contract (same shape as SessionMenu,
+  // minus its fade-out dance: the wizard is modal first-run UI, close maps
+  // the surface off at once instead of leaving a transparent zombie mapped).
+  // isPanelOpen drives everything; MainScreen/PanelService only ever call
+  // open()/close() and read isPanelOpen.
+  property bool isPanelOpen: false
+
+  visible: isPanelOpen
+
+  function open() {
+    if (isPanelOpen)
+      return;
+    isPanelOpen = true;
+    PanelService.willOpenPanel(root);
+  }
+
+  function close() {
+    if (!isPanelOpen)
+      return;
+    isPanelOpen = false;
+    PanelService.closedPanel(root);
+  }
+
+  function closeImmediately() {
+    close();
+  }
+
+  function toggle() {
+    if (isPanelOpen) {
+      close();
+    } else {
+      open();
+    }
+  }
+
+  Component.onCompleted: PanelService.registerPanel(root)
+
+  Item {
     id: panelContent
+    anchors.fill: parent
 
     // Wizard state (lazy-loaded with panelContent)
     property int currentStep: 0
