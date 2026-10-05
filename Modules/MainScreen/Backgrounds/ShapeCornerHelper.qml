@@ -71,4 +71,14 @@ Singleton {
   function shouldFlatten(width, height, radius) {
     return width < radius * 2 || height < radius * 2;
   }
+
+  /**
+  * Map a corner state to a blur-region radius for upstream Quickshell's
+  * Region API (topLeftRadius etc.). State -1 means a flat corner; normal and
+  * inverted corners keep the radius (upstream cannot express concave corners,
+  * so a convex radius is the closest approximation).
+  */
+  function getRegionRadius(cornerState, radius) {
+    return cornerState === -1 ? 0 : radius;
+  }
 }

@@ -50,10 +50,10 @@ Variants {
           width: Math.round(launcherPanel.width)
           height: Math.round(launcherPanel.height)
           radius: Style.radiusL
-          topLeftCorner: launcherPanel.topLeftCornerState
-          topRightCorner: launcherPanel.topRightCornerState
-          bottomLeftCorner: launcherPanel.bottomLeftCornerState
-          bottomRightCorner: launcherPanel.bottomRightCornerState
+          topLeftRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.topLeftCornerState, Style.radiusL)
+          topRightRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.topRightCornerState, Style.radiusL)
+          bottomLeftRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.bottomLeftCornerState, Style.radiusL)
+          bottomRightRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.bottomRightCornerState, Style.radiusL)
         }
 
         Region {
