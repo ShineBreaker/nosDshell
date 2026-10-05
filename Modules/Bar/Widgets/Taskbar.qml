@@ -1020,6 +1020,20 @@ Item {
             drag.axis: root.isVerticalBar ? Drag.YAxis : Drag.XAxis
             preventStealing: true
 
+            // The icon square is centred; the dark window menu is only
+            // reachable inside it (DESIGN §3.1.1 right-click zones).
+            // With a title shown the title block belongs to the same item
+            // and keeps the dark menu too.
+            function insideItemContent(mx, my) {
+              if (shouldShowTitle && mx >= 0 && mx <= width && my >= 0 && my <= height) {
+                return true;
+              }
+              var s = root.efficientMode ? root.itemIconSize : root.itemSize;
+              var cx = (width - s) / 2;
+              var cy = (height - s) / 2;
+              return mx >= cx && mx <= cx + s && my >= cy && my <= cy + s;
+            }
+
             onPressed: {
               // Constrain drag to roughly the taskbar area but allow some freedom
               // Or just let it be free since we only care about drops
@@ -1051,11 +1065,16 @@ Item {
                          } else if (mouse.button === Qt.RightButton) {
                            TooltipService.hide();
                            // Only show context menu for running apps
-                           if (isRunning && modelData.window) {
+                           if (isRunning && modelData.window && insideItemContent(mouse.x, mouse.y)) {
                              root.selectedWindowId = modelData.id;
                              root.selectedAppId = modelData.appId;
                              root.openTaskbarContextMenu(taskbarItem);
+                             return;
                            }
+                           // Outside the icon square, or a pinned app that has no
+                           // window menu yet -> light dock settings menu
+                           TooltipService.hideImmediately();
+                           DockSettingsMenu.openAtItemPoint(screen, taskbarMouseArea, mouse.x, mouse.y);
                          }
                        }
             onEntered: {
