@@ -14,7 +14,7 @@ Item {
   property alias textInput: input
   property string placeholderText: I18n.tr("launcher.dde.search-placeholder")
   signal textEdited(string text)
-  signal accepted()
+  signal accepted
 
   Rectangle {
     anchors.fill: parent

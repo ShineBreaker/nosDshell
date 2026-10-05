@@ -22,8 +22,13 @@ Item {
 
   // ---- geometry in ----
   property var screen: null
-  property int topInset: 0
-  property int bottomGap: 60
+  // Taskbar thickness when the taskbar sits on the left / right edge; the
+  // launcher's own bands are the other three (gxde-launcher
+  // fullscreenframe.cpp:1321-1345).
+  property int leftInset: 0
+  property int rightInset: 0
+  property int topInset: Style.launcherTopBand
+  property int bottomGap: Style.launcherGridBottomMargin
   property int sidePadding: 200
   property int navWidth: 180
   property int columns: 6
@@ -32,6 +37,9 @@ Item {
   property int cellSpacing: 10
   property real iconSize: 85
   property string barPosition: "bottom"
+
+  // Original DDE multi-state artwork (DESIGN §1.9)
+  readonly property string ddeIcons: Quickshell.shellDir + "/Assets/DDE/gxde-launcher/src/skin/icons/"
 
   // ---- state ----
   readonly property bool categoryMode: Settings.data.appLauncher.displayMode === "category"
@@ -48,24 +56,24 @@ Item {
   readonly property bool browsing: model.searchText.trim() === "" && !model.activeProvider
   readonly property var listResults: {
     if (root.browsing)
-    return [];
+      return [];
     if (model.activeProvider && model.activeProvider !== appsProvider)
-    return model.results;
+      return model.results;
     if (model.searchText.trim() !== "")
-    return model.results;
+      return model.results;
     return [];
   }
 
   readonly property var appResults: {
     if (!root.browsing)
-    return [];
+      return [];
     if (model.activeProvider && model.activeProvider !== appsProvider)
-    return [];
+      return [];
     return model.results.filter(r => r.provider === appsProvider);
   }
 
   onCategoryModeChanged: if (!categoryMode)
-    focusZone = 0
+                           focusZone = 0
 
   // ---------------------------------------------------------------
   // Model (providers, search text, results, selection, activation)
@@ -86,60 +94,60 @@ Item {
     focus: false
 
     Keys.onPressed: event => {
-      // Escape works from every zone
-      if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
-        LauncherState.close(root.screen);
-        event.accepted = true;
-        return;
-      }
+                      // Escape works from every zone
+                      if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
+                        LauncherState.close(root.screen);
+                        event.accepted = true;
+                        return;
+                      }
 
-      // While the search field has focus it handles its own keys
-      if (root.focusZone === 2) {
-        if (searchField.textInput.activeFocus) {
-          if (event.key === Qt.Key_Tab) {
-            root.focusZone = 0;
-            event.accepted = true;
-          }
-          return;
-        }
-      }
+                      // While the search field has focus it handles its own keys
+                      if (root.focusZone === 2) {
+                        if (searchField.textInput.activeFocus) {
+                          if (event.key === Qt.Key_Tab) {
+                            root.focusZone = 0;
+                            event.accepted = true;
+                          }
+                          return;
+                        }
+                      }
 
-      // Typing anywhere goes to the search field
-      if (event.text !== "" && event.text >= " " && !(event.modifiers & Qt.ControlModifier)) {
-        if (root.focusZone !== 2) {
-          root.focusZone = 2;
-        }
-        if (!searchField.textInput.activeFocus) {
-          searchField.textInput.forceActiveFocus();
-        }
-        // Forward the typed character
-        searchField.textInput.text = searchField.textInput.text + event.text;
-        model.setSearchText(searchField.textInput.text);
-        event.accepted = true;
-        return;
-      }
+                      // Typing anywhere goes to the search field
+                      if (event.text !== "" && event.text >= " " && !(event.modifiers & Qt.ControlModifier)) {
+                        if (root.focusZone !== 2) {
+                          root.focusZone = 2;
+                        }
+                        if (!searchField.textInput.activeFocus) {
+                          searchField.textInput.forceActiveFocus();
+                        }
+                        // Forward the typed character
+                        searchField.textInput.text = searchField.textInput.text + event.text;
+                        model.setSearchText(searchField.textInput.text);
+                        event.accepted = true;
+                        return;
+                      }
 
-      if (event.modifiers & Qt.ControlModifier) {
-        // Ctrl+V pastes into the search field (DESIGN §3.4.1)
-        if (event.matches(StandardKey.Paste)) {
-          root.pasteIntoSearch();
-          event.accepted = true;
-          return;
-        }
-        if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) {
-          root.adjustIconRatio(0.1);
-          event.accepted = true;
-          return;
-        }
-        if (event.key === Qt.Key_Minus) {
-          root.adjustIconRatio(-0.1);
-          event.accepted = true;
-          return;
-        }
-      }
+                      if (event.modifiers & Qt.ControlModifier) {
+                        // Ctrl+V pastes into the search field (DESIGN §3.4.1)
+                        if (event.matches(StandardKey.Paste)) {
+                          root.pasteIntoSearch();
+                          event.accepted = true;
+                          return;
+                        }
+                        if (event.key === Qt.Key_Plus || event.key === Qt.Key_Equal) {
+                          root.adjustIconRatio(0.1);
+                          event.accepted = true;
+                          return;
+                        }
+                        if (event.key === Qt.Key_Minus) {
+                          root.adjustIconRatio(-0.1);
+                          event.accepted = true;
+                          return;
+                        }
+                      }
 
-      root.handleGridKeys(event);
-    }
+                      root.handleGridKeys(event);
+                    }
   }
 
   function handleGridKeys(event) {
@@ -189,7 +197,7 @@ Item {
         break;
       }
       if (event.accepted)
-      return;
+        return;
     }
 
     switch (event.key) {
@@ -236,7 +244,7 @@ Item {
   function pasteIntoSearch() {
     Clipboard.getText(function (text) {
       if (!text)
-      return;
+        return;
       searchField.textInput.text = text;
       model.setSearchText(text);
     });
@@ -252,11 +260,11 @@ Item {
   WheelHandler {
     acceptedModifiers: Qt.ControlModifier
     onWheel: event => {
-      if (event.angleDelta.y > 0)
-      root.adjustIconRatio(0.1);
-      else
-      root.adjustIconRatio(-0.1);
-    }
+               if (event.angleDelta.y > 0)
+               root.adjustIconRatio(0.1);
+               else
+               root.adjustIconRatio(-0.1);
+             }
   }
 
   // ---------------------------------------------------------------
@@ -266,41 +274,52 @@ Item {
     anchors.fill: parent
     anchors.topMargin: root.topInset
     anchors.bottomMargin: root.bottomGap
-    spacing: 20
+    spacing: Style.launcherAppsAreaTopMargin
 
     // ---------------- Search row ----------------
+    // Layout after gxde-launcher searchwidget.cpp:81-103: 30 px left margin,
+    // category toggle, stretch, the 290 px search box centred, stretch, the
+    // mini-mode toggle, 30, settings, 30, power, 30 px right margin.
     RowLayout {
       id: searchRow
       Layout.fillWidth: true
-      Layout.leftMargin: root.sidePadding
-      Layout.rightMargin: root.sidePadding
-      Layout.preferredHeight: 30
-      spacing: 24
+      Layout.preferredHeight: Style.launcherSearchButtonSizeAlt
+      spacing: 0
 
-      // Category / free mode toggle (22 px glyph)
-      NIconButton {
-        Layout.preferredWidth: 22
-        Layout.preferredHeight: 22
-        icon: "category"
+      Item {
+        Layout.preferredWidth: Style.launcherSearchButtonGap
+      }
+
+      // Category / free mode toggle (category_{normal,hover,active}_22px.png)
+      LauncherImageButton {
+        Layout.preferredWidth: Style.launcherSearchButtonSizeAlt
+        Layout.preferredHeight: Style.launcherSearchButtonSizeAlt
+        iconSize: Style.launcherSearchButtonSizeAlt
+        checked: root.categoryMode
+        normalSource: root.ddeIcons + "category_normal_22px.png"
+        hoverSource: root.ddeIcons + "category_hover_22px.png"
+        pressSource: root.ddeIcons + "category_active_22px.png"
+        activeSource: root.ddeIcons + "category_active_22px.png"
         tooltipText: I18n.tr("launcher.dde.toggle-category")
-        colorBg: root.categoryMode ? Color.overlay("hover") : "transparent"
-        colorBgHover: Color.overlay("hover")
-        colorFg: root.categoryMode ? Color.onShell : Color.onShellTertiary
         onClicked: Settings.data.appLauncher.displayMode = root.categoryMode ? "free" : "category"
+      }
+
+      Item {
+        Layout.fillWidth: true
       }
 
       LauncherSearchField {
         id: searchField
-        Layout.preferredWidth: 290
+        Layout.preferredWidth: Style.launcherSearchWidth
         Layout.preferredHeight: 30
         text: model.searchText
         onTextEdited: txt => model.setSearchText(txt)
         onAccepted: model.activate()
         onActiveFocusChanged: {
           if (searchField.textInput.activeFocus)
-          root.focusZone = 2;
+            root.focusZone = 2;
           else if (root.focusZone === 2)
-          root.focusZone = 0;
+            root.focusZone = 0;
         }
       }
 
@@ -308,37 +327,52 @@ Item {
         Layout.fillWidth: true
       }
 
-      // Switch to mini
-      NIconButton {
-        Layout.preferredWidth: 22
-        Layout.preferredHeight: 22
-        icon: "maximize"
+      // Switch to mini (unfullscreen_{normal,hover,press}.png)
+      LauncherImageButton {
+        Layout.preferredWidth: Style.launcherSearchButtonSizeAlt
+        Layout.preferredHeight: Style.launcherSearchButtonSizeAlt
+        iconSize: Style.launcherSearchButtonSizeAlt
+        normalSource: root.ddeIcons + "unfullscreen_normal.png"
+        hoverSource: root.ddeIcons + "unfullscreen_hover.png"
+        pressSource: root.ddeIcons + "unfullscreen_press.png"
         tooltipText: I18n.tr("launcher.dde.switch-to-mini")
-        colorBg: "transparent"
-        colorBgHover: Color.overlay("hover")
         onClicked: LauncherState.setMode("mini")
       }
 
-      // Settings (control-center settings)
-      NIconButton {
-        Layout.preferredWidth: 22
-        Layout.preferredHeight: 22
-        icon: "settings"
+      Item {
+        Layout.preferredWidth: Style.launcherSearchButtonGap
+      }
+
+      // Settings (settings_{normal,hover,press}_24px.svg)
+      LauncherImageButton {
+        Layout.preferredWidth: Style.launcherSearchButtonSizeAlt
+        Layout.preferredHeight: Style.launcherSearchButtonSizeAlt
+        iconSize: Style.launcherSearchButtonSizeAlt
+        normalSource: root.ddeIcons + "settings_normal_24px.svg"
+        hoverSource: root.ddeIcons + "settings_hover_24px.svg"
+        pressSource: root.ddeIcons + "settings_press_24px.svg"
         tooltipText: I18n.tr("launcher.dde.open-settings")
-        colorBg: "transparent"
-        colorBgHover: Color.overlay("hover")
         onClicked: LauncherState.showSettings(root.screen)
       }
 
-      // Power (session menu)
-      NIconButton {
-        Layout.preferredWidth: 22
-        Layout.preferredHeight: 22
-        icon: "power"
+      Item {
+        Layout.preferredWidth: Style.launcherSearchButtonGap
+      }
+
+      // Power (poweroff_{normal,hover,press}.png)
+      LauncherImageButton {
+        Layout.preferredWidth: Style.launcherSearchButtonSizeAlt
+        Layout.preferredHeight: Style.launcherSearchButtonSizeAlt
+        iconSize: Style.launcherSearchButtonSizeAlt
+        normalSource: root.ddeIcons + "poweroff_normal.png"
+        hoverSource: root.ddeIcons + "poweroff_hover.png"
+        pressSource: root.ddeIcons + "poweroff_press.png"
         tooltipText: I18n.tr("launcher.dde.open-session-menu")
-        colorBg: "transparent"
-        colorBgHover: Color.overlay("hover")
         onClicked: LauncherState.showSessionMenu(root.screen)
+      }
+
+      Item {
+        Layout.preferredWidth: Style.launcherSearchButtonGap
       }
     }
 
