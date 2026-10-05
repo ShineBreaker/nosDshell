@@ -580,7 +580,7 @@ Noctalia 卡片的对应关系：
   - `Assets/settings-default.json`
   - `Commons/Settings.qml`（JsonAdapter）
   - 新建迁移文件 `Commons/Migrations/MigrationNN.qml`，并登记到 `MigrationRegistry`，同时递增 `settingsVersion`
-  - 运行 `Scripts/dev/build-settings-search-index.py`
+  - 运行 `Scripts/test/build-settings-search-index.py`
 - 主要默认值变化：
 
 | 设置 | 新默认值 |
