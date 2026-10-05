@@ -14,32 +14,90 @@ import qs.Widgets
 
 // dde-shutdown full-screen session menu (DESIGN §3.8).
 //
-// Route note: this stays a SmartPanel. SmartPanel owns the window (layershell,
-// focus, mask, close animation) and MainScreen's background slots reference
-// panels through PanelService, so the only way to keep `qs ipc call sessionMenu
-// toggle`, the bar button and the blurred backdrop working is to remain a
-// SmartPanel. The DDE full-screen look is achieved with preferredWidth/Height
-// ratio 1.0 and a transparent panelBackgroundColor + blurEnabled = false, so
-// SmartPanel draws no frame and clips nothing — the DDE form is the
-// panelContent.
-SmartPanel {
+// Route note: unlike the other panels this one is NOT a SmartPanel. SmartPanel
+// sizes every panel to the screen minus Style.marginL on each side and minus
+// the taskbar height, which left a ~13 px band of sharp wallpaper around the
+// shutdown screen; and because SmartPanel lives inside MainScreen's PanelWindow
+// (WlrLayer.Top) it can never paint over the taskbar, whose own content window
+// sits on the same layer. dde-shutdown covers the whole screen including the
+// taskbar, so this owns a full-screen PanelWindow on WlrLayer.Overlay instead
+// (same reasoning as the launcher's own LauncherFullscreenWindow, mirrored to
+// the other side of the taskbar). It still registers with PanelService, so
+// `qs ipc call sessionMenu toggle`, the taskbar button and MainScreen's central
+// keyboard routing (onEscapePressed / onLeftPressed / …) keep working unchanged.
+PanelWindow {
   id: root
 
-  // Full-screen form: no panel frame, no SmartPanel background.
-  blurEnabled: false
-  panelBackgroundColor: "transparent"
-  panelBorderColor: "transparent"
-  preferredWidth: 0
-  preferredWidthRatio: 1.0
-  preferredHeight: 0
-  preferredHeightRatio: 1.0
+  // Screen property is inherited from PanelWindow; MainScreen assigns it.
+  color: "transparent"
 
-  // dde-shutdown always centers its button row
-  panelAnchorHorizontalCenter: true
-  panelAnchorVerticalCenter: true
+  WlrLayershell.namespace: "nosdshell-session-menu-" + (root.screen?.name || "unknown")
+  // Above the taskbar: dde-shutdown is modal over the whole screen
+  WlrLayershell.layer: WlrLayer.Overlay
+  // Never reserve space — the shutdown screen must not push the taskbar around
+  WlrLayershell.exclusionMode: ExclusionMode.Ignore
+  WlrLayershell.keyboardFocus: root.isPanelVisible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
 
-  // SessionMenu handles its own closing logic
-  closeWithEscape: false
+  anchors {
+    top: true
+    bottom: true
+    left: true
+    right: true
+  }
+  implicitWidth: root.screen?.width || 0
+  implicitHeight: root.screen?.height || 0
+
+  // Window state mirrored from the SmartPanel contract that PanelService and
+  // MainScreen expect: isPanelOpen drives the open sequence, isPanelVisible is
+  // what actually maps the surface.
+  property bool isPanelOpen: false
+  property bool isPanelVisible: false
+  property bool isClosing: false
+  readonly property real contentOpacity: isPanelVisible && !isClosing ? 1 : 0
+
+  visible: isPanelVisible || isClosing
+
+  onIsPanelOpenChanged: {
+    if (isPanelOpen) {
+      isClosing = false;
+      isPanelVisible = true;
+    } else {
+      isClosing = true;
+    }
+  }
+
+  function open(buttonItem, buttonName) {
+    void buttonItem;
+    void buttonName;
+    if (isPanelOpen)
+      return;
+    isPanelOpen = true;
+    PanelService.willOpenPanel(root);
+  }
+
+  function close() {
+    if (!isPanelOpen)
+      return;
+    isPanelOpen = false;
+    PanelService.closedPanel(root);
+  }
+
+  function closeImmediately() {
+    isClosing = false;
+    isPanelVisible = false;
+    isPanelOpen = false;
+    PanelService.closedPanel(root);
+  }
+
+  function toggle(buttonItem, buttonName) {
+    if (isPanelOpen) {
+      close();
+    } else {
+      open(buttonItem, buttonName);
+    }
+  }
+
+  Component.onCompleted: PanelService.registerPanel(root)
 
   // Timer properties
   readonly property int timerDuration: Settings.data.sessionMenu.countdownDuration
@@ -56,8 +114,7 @@ SmartPanel {
   property real globalLastMouseX: 0
   property real globalLastMouseY: 0
   property bool globalMouseInitialized: false
-  // Set by presetSelection(); the row inside panelContent picks it up and takes
-  // focus, because ids in panelContent are not visible from this scope.
+  // Set by presetSelection(); the row below picks it up and takes focus.
   property bool focusRequested: false
 
   // DDE ships the button artwork as normal/hover/press SVGs; the mapping below
@@ -189,11 +246,8 @@ SmartPanel {
   }
 
   // Lifecycle ------------------------------------------------------------
-  // Named presetSelection() rather than open() so it does not shadow
-  // SmartPanel.open(); called when the panel becomes visible.
-  // NOTE: close()/toggle() are SmartPanel's — this panel only adds
-  // cancelTimer() via onIsPanelVisibleChanged below, because defining
-  // close() here would shadow it and recurse infinitely.
+  // Named presetSelection() rather than open() so it does not shadow the
+  // open() above; called when the panel becomes visible.
   function presetSelection() {
     if (powerOptions.length === 0) {
       Logger.w("SessionMenu", "Trying to open an empty session menu");
@@ -223,9 +277,7 @@ SmartPanel {
     countdownTimer.stop();
   }
 
-  // SmartPanel already defines open()/close()/toggle(), so only hook the
-  // visibility transition here (preset selection on open, timer cancel on
-  // close) instead of shadowing those functions.
+  // Hook the visibility transition for preset selection and timer cleanup.
   Connections {
     target: root
     function onIsPanelVisibleChanged() {
@@ -307,7 +359,6 @@ SmartPanel {
     }
 
     cancelTimer();
-    // SmartPanel's close — do NOT call this.close(), that would recurse.
     root.close();
   }
 
@@ -372,7 +423,7 @@ SmartPanel {
     if (timerActive) {
       cancelTimer();
     } else {
-      root.close(); // SmartPanel's close
+      root.close();
     }
   }
 
@@ -424,155 +475,157 @@ SmartPanel {
   // DDE renders the shutdown form over a blurred wallpaper with black
   // underneath (widgets/fullscreenbackground.cpp). LockScreenBackground already
   // owns wallpaper resolution and the nosd-blur / MultiEffect fallback, so
-  // reuse it instead of duplicating that machinery.
-  //
-  // NOTE: the background and the click-outside area live inside panelContent,
-  // not as siblings of it — SmartPanel's contentLoader is declared in the base
-  // file, so siblings added here would paint above the panel content and hide
-  // the button row.
-  panelContent: Component {
-    Item {
-      id: content
+  // reuse it instead of duplicating that machinery. It fills this window, which
+  // is anchored to all four edges, so the blurred wallpaper reaches every pixel
+  // with no sharp band showing through.
+  Item {
+    id: content
+    anchors.fill: parent
+    focus: true
+
+    // PanelWindow exposes no opacity of its own; fade the content item instead
+    opacity: root.contentOpacity
+    Behavior on opacity {
+      enabled: !Settings.data.general.animationDisabled
+      NumberAnimation {
+        duration: Style.motionEnter
+        easing.type: Easing.OutCubic
+      }
+    }
+
+    LockScreenBackground {
       anchors.fill: parent
-      focus: true
+      screen: root.screen
+      tintColor: "transparent"
+      z: 0
+    }
 
-      readonly property bool allowAttach: false
-      readonly property var geometryPlaceholder: null
+    // Click on empty area cancels the countdown, else closes the menu
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+      z: 1
 
-      LockScreenBackground {
-        anchors.fill: parent
-        screen: root.screen
-        tintColor: "transparent"
-        z: 0
-      }
-
-      // Click on empty area cancels the countdown, else closes the menu
-      MouseArea {
-        anchors.fill: parent
-        acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-        z: 1
-
-        onClicked: {
-          if (root.timerActive) {
-            root.cancelTimer();
-          } else {
-            root.close(); // SmartPanel's close
-          }
+      onClicked: {
+        if (root.timerActive) {
+          root.cancelTimer();
+        } else {
+          root.close();
         }
       }
+    }
 
-      // Cross-scope focus handshake (buttonRow lives here, the trigger is on root)
-      Connections {
-        target: root
-        function onFocusRequestedChanged() {
-          if (root.focusRequested) {
-            root.focusRequested = false;
-            buttonRow.forceActiveFocus();
-          }
+    // Cross-scope focus handshake (buttonRow lives here, the trigger is on root)
+    Connections {
+      target: root
+      function onFocusRequestedChanged() {
+        if (root.focusRequested) {
+          root.focusRequested = false;
+          buttonRow.forceActiveFocus();
         }
       }
+    }
 
-      Keys.onPressed: event => {
-                        if (root.checkKeybind(event)) {
-                          event.accepted = true;
-                          return;
-                        }
-
-                        if (Keybinds.checkKey(event, 'left', Settings)) {
-                          root.selectPreviousWrapped();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'right', Settings)) {
-                          root.selectNextWrapped();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'up', Settings)) {
-                          root.selectPreviousWrapped();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'down', Settings)) {
-                          root.selectNextWrapped();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'home', Settings)) {
-                          root.selectFirst();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'end', Settings)) {
-                          root.selectLast();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'enter', Settings)) {
-                          root.activate();
-                          event.accepted = true;
-                          return;
-                        }
-                        if (Keybinds.checkKey(event, 'escape', Settings)) {
-                          root.onEscapePressed();
-                          event.accepted = true;
-                          return;
-                        }
-
-                        // Block defaults so rebinding a direction actually disables it
-                        if (event.key === Qt.Key_Up || event.key === Qt.Key_Down || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
-                          event.accepted = true;
-                        }
+    Keys.onPressed: event => {
+                      if (root.checkKeybind(event)) {
+                        event.accepted = true;
+                        return;
                       }
 
-      // One horizontal row, vertically centered (contentwidget.cpp buttonLayout)
-      Row {
-        id: buttonRow
-        anchors.centerIn: parent
-        spacing: Style.shutdownButtonSpacing
-        z: 2
+                      if (Keybinds.checkKey(event, 'left', Settings)) {
+                        root.selectPreviousWrapped();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'right', Settings)) {
+                        root.selectNextWrapped();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'up', Settings)) {
+                        root.selectPreviousWrapped();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'down', Settings)) {
+                        root.selectNextWrapped();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'home', Settings)) {
+                        root.selectFirst();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'end', Settings)) {
+                        root.selectLast();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'enter', Settings)) {
+                        root.activate();
+                        event.accepted = true;
+                        return;
+                      }
+                      if (Keybinds.checkKey(event, 'escape', Settings)) {
+                        root.onEscapePressed();
+                        event.accepted = true;
+                        return;
+                      }
 
-        Repeater {
-          model: root.powerOptions
-          delegate: ShutdownButton {
-            required property var modelData
-            required property int index
+                      // Block defaults so rebinding a direction actually disables it
+                      if (event.key === Qt.Key_Up || event.key === Qt.Key_Down || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
+                        event.accepted = true;
+                      }
+                    }
 
-            width: Style.shutdownButtonSize
-            height: Style.shutdownButtonSize
-            icon: modelData.icon
-            artworkPath: modelData.artworkUrl
-            title: modelData.title
-            isShutdown: modelData.isShutdown || false
-            isSelected: index === root.selectedIndex
-            effectiveHover: !root.ignoreMouseHover && buttonMouse.containsMouse
-            available: modelData.available !== false
-            pending: root.timerActive && root.pendingAction === modelData.action
-            keybind: (Settings.data.sessionMenu.showKeybinds && modelData.keybind) ? modelData.keybind : ""
+    // One horizontal row, vertically centered (contentwidget.cpp buttonLayout)
+    Row {
+      id: buttonRow
+      anchors.centerIn: parent
+      spacing: Style.shutdownButtonSpacing
+      z: 2
 
-            onClicked: {
-              root.selectedIndex = index;
-              root.startTimer(modelData.action);
-            }
+      Repeater {
+        model: root.powerOptions
+        delegate: ShutdownButton {
+          required property var modelData
+          required property int index
+
+          width: Style.shutdownButtonSize
+          height: Style.shutdownButtonSize
+          icon: modelData.icon
+          artworkPath: modelData.artworkUrl
+          title: modelData.title
+          isShutdown: modelData.isShutdown || false
+          isSelected: index === root.selectedIndex
+          effectiveHover: !root.ignoreMouseHover && buttonMouse.containsMouse
+          available: modelData.available !== false
+          pending: root.timerActive && root.pendingAction === modelData.action
+          keybind: (Settings.data.sessionMenu.showKeybinds && modelData.keybind) ? modelData.keybind : ""
+
+          onClicked: {
+            root.selectedIndex = index;
+            root.startTimer(modelData.action);
           }
         }
       }
+    }
 
-      // Countdown line, 40 px under the row (contentwidget.cpp setBottomWidget)
-      NText {
-        id: countdownText
-        anchors.top: buttonRow.bottom
-        anchors.topMargin: Style.shutdownCountdownOffset
-        anchors.horizontalCenter: buttonRow.horizontalCenter
-        visible: root.timerActive
-        z: 2
-        text: I18n.tr("session-menu.action-in-seconds", {
-                        "action": root.actionMetadata[root.pendingAction] ? root.actionMetadata[root.pendingAction].title : "",
-                        "seconds": Math.ceil(root.timeRemaining / 1000)
-                      })
-        pointSize: Style.fontSizeL
-        color: "white"
-      }
+    // Countdown line, 40 px under the row (contentwidget.cpp setBottomWidget)
+    NText {
+      id: countdownText
+      anchors.top: buttonRow.bottom
+      anchors.topMargin: Style.shutdownCountdownOffset
+      anchors.horizontalCenter: buttonRow.horizontalCenter
+      visible: root.timerActive
+      z: 2
+      text: I18n.tr("session-menu.action-in-seconds", {
+                      "action": root.actionMetadata[root.pendingAction] ? root.actionMetadata[root.pendingAction].title : "",
+                      "seconds": Math.ceil(root.timeRemaining / 1000)
+                    })
+      pointSize: Style.fontSizeL
+      color: "white"
     }
   }
 
