@@ -629,8 +629,8 @@ Loader {
             height: Math.round(dockContent.dockContainer.height)
           }
 
-          // Blur behind the dock rect
-          BackgroundEffect.blurRegion: Settings.data.general.enableBlurBehind ? dockBlurRegion : null
+          // Blur behind the dock rect (only when the compositor can blur, §1.2)
+          BackgroundEffect.blurRegion: Color.blurActive ? dockBlurRegion : null
           Region {
             id: dockBlurRegion
             Region {

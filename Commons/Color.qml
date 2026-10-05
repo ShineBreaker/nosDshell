@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Commons
+import qs.Services.Compositor
 import qs.Services.Power
 
 /*
@@ -408,7 +409,9 @@ Singleton {
   readonly property color pressDim: Qt.rgba(0, 0, 0, 0.41)
 
   // True when the compositor-side blur path is enabled (controls mask alpha).
-  readonly property bool blurActive: Settings.data.general.enableBlurBehind && !PowerProfileService.performanceMode
+  // DESIGN §1.2: the setting alone is not enough, the compositor must also
+  // advertise ext-background-effect-v1 (probed once at startup, §4.1).
+  readonly property bool blurActive: Settings.data.general.enableBlurBehind && CompositorService.blurSupported && !PowerProfileService.performanceMode
   // Dark/light mode source of truth, same as the scheme system.
   readonly property bool shellIsDark: Settings.data.colorSchemes.darkMode
 

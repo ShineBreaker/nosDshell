@@ -40,7 +40,8 @@ Variants {
       WlrLayershell.layer: WlrLayer.Overlay
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
-      BackgroundEffect.blurRegion: Settings.data.general.enableBlurBehind ? launcherBlurRegion : null
+      // Only request compositor blur when it is actually available (§1.2).
+      BackgroundEffect.blurRegion: Color.blurActive ? launcherBlurRegion : null
       Region {
         id: launcherBlurRegion
 

@@ -35,6 +35,38 @@ Singleton {
   // True for LabWC (stacking compositor), false for tiling WMs with per-output workspaces
   property bool globalWorkspaces: false
 
+  // Compositor blur capability (DESIGN §1.2 / §4.1): probed once at startup
+  // via `nosd-helpers wl-probe` because QML cannot see the Wayland registry.
+  // A missing or failed probe keeps the legacy behaviour (assumed supported).
+  property bool _blurSupported: true
+  readonly property bool blurSupported: _blurSupported
+
+  Process {
+    id: wlProbeProcess
+    // Same binary resolution as the other nosd-helpers callers: PATH
+    // install first, then the in-tree release binary.
+    command: ["sh", "-c", "b=$(command -v nosd-helpers) || b=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/release/nosd-helpers\"; [ -x \"$b\" ] || exit 127; exec \"$b\" wl-probe"]
+    running: true
+    stdout: StdioCollector {
+      id: wlProbeOut
+    }
+    Component.onCompleted: {
+      wlProbeProcess.exited.connect(function (exitCode) {
+        if (exitCode !== 0) {
+          Logger.w("CompositorService", "wl-probe unavailable; assuming compositor blur support");
+          return;
+        }
+        try {
+          const r = JSON.parse(wlProbeOut.text);
+          root._blurSupported = r.compositor_blur === true;
+          Logger.i("CompositorService", "Compositor blur support:", root._blurSupported);
+        } catch (e) {
+          Logger.w("CompositorService", "wl-probe output unreadable; assuming compositor blur support");
+        }
+      });
+    }
+  }
+
   // Generic events
   signal workspaceChanged
   signal activeWindowChanged

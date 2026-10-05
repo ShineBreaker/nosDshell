@@ -194,7 +194,8 @@ PanelWindow {
   }
 
   // Blur behind the bar and open panels — attached to PanelWindow (required by BackgroundEffect API)
-  BackgroundEffect.blurRegion: Settings.data.general.enableBlurBehind ? blurRegion : null
+  // DESIGN §1.2: only request compositor blur when it is actually available.
+  BackgroundEffect.blurRegion: Color.blurActive ? blurRegion : null
   Region {
     id: blurRegion
     // ── Non-framed bar (simple/floating): single rectangle with bar corner states ──
