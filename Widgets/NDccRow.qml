@@ -28,13 +28,26 @@ import qs.Widgets
 Rectangle {
   id: root
 
-  // Rows recognise each other through this marker.
-  readonly property bool isDccRow: true
+  // Rows recognise each other through this marker. A plain row is not one: it
+  // has no chrome, so it also ends the run of rows above it.
+  readonly property bool isDccRow: !root.plain
 
   default property alias content: contentRow.data
 
+  // Forwarded so a control can keep declaring `spacing` on its root the way it
+  // did when the root was a RowLayout.
+  property alias spacing: contentRow.spacing
+
   property bool interactive: true
   property bool error: false
+  // Plain mode drops the row chrome entirely (no fill, no padding, no minimum
+  // height). Controls set this when they have no label to show, so a bare
+  // switch or combo still looks like it always did.
+  property bool plain: false
+  // Rows that are clickable in their own right install a click area. Controls
+  // whose content already handles clicks (switch, combo, slider) leave this
+  // false so the content keeps its input.
+  property bool clickable: false
   // Hover can be driven from the outside when the control already owns a
   // MouseArea covering the whole row (NCheckbox).
   property bool hovered: false
@@ -44,14 +57,21 @@ Rectangle {
 
   signal clicked
 
-  implicitHeight: Math.max(Style.settingsRowHeight, contentRow.implicitHeight + Style.settingsRowPaddingV * 2)
-  implicitWidth: contentRow.implicitWidth + Style.settingsRowPaddingH * 2
+  // A row is stretched by its container (DDE's SettingsItem is a QFrame in a
+  // QVBoxLayout and never drives the group's width), so the implicit width is
+  // only a hint. Cap it at one content width: a long description would
+  // otherwise widen the enclosing scroll column past the module view and push
+  // the row's right-hand control off screen.
+  implicitHeight: plain ? contentRow.implicitHeight : Math.max(Style.settingsRowHeight, contentRow.implicitHeight + Style.settingsRowPaddingV * 2)
+  implicitWidth: Math.min(contentRow.implicitWidth, Style.settingsRowContentMaxWidth) + (plain ? 0 : Style.settingsRowPaddingH * 2)
 
   color: rowColor
   border.color: root.error ? Color.alert : "transparent"
   border.width: root.error ? Style.borderM : 0
 
   readonly property color rowColor: {
+    if (root.plain)
+      return "transparent";
     if (root.hovered && root.interactive && !root.error)
       return Color.overlay("checked");
     return Color.overlay("strong");
@@ -60,8 +80,8 @@ Rectangle {
   // Only the head row's top corners and the tail row's bottom corners are
   // rounded; rows in between stay square so the 1 px gaps read as separators
   // (common.qss: SettingsItem[isHead=true] / [isTail=true]).
-  readonly property bool headRow: root._groupDriven ? root.isFirst : root._autoIsFirst
-  readonly property bool tailRow: root._groupDriven ? root.isLast : root._autoIsLast
+  readonly property bool headRow: root.plain ? false : (root._groupDriven ? root.isFirst : root._autoIsFirst)
+  readonly property bool tailRow: root.plain ? false : (root._groupDriven ? root.isLast : root._autoIsLast)
 
   topLeftRadius: headRow ? Style.radiusItem : 0
   topRightRadius: headRow ? Style.radiusItem : 0
@@ -82,17 +102,29 @@ Rectangle {
   RowLayout {
     id: contentRow
     anchors.fill: parent
-    anchors.leftMargin: Style.settingsRowPaddingH
-    anchors.rightMargin: Style.settingsRowPaddingH
-    anchors.topMargin: Style.settingsRowPaddingV
-    anchors.bottomMargin: Style.settingsRowPaddingV
+    anchors.leftMargin: root.plain ? 0 : Style.settingsRowPaddingH
+    anchors.rightMargin: root.plain ? 0 : Style.settingsRowPaddingH
+    anchors.topMargin: root.plain ? 0 : Style.settingsRowPaddingV
+    anchors.bottomMargin: root.plain ? 0 : Style.settingsRowPaddingV
     spacing: Style.marginM
   }
 
+  // A passive hover handler rather than a MouseArea: the row's own children
+  // (switch, combo, slider) own their clicks, and a MouseArea covering the
+  // whole row would swallow them.
+  HoverHandler {
+    id: rowHover
+    enabled: root.interactive
+    onHoveredChanged: root.hovered = hovered
+  }
+
+  // Only rows that are clickable in their own right (NDccNextPage, NCheckbox)
+  // get a click area; the rest let their content handle input.
   MouseArea {
     anchors.fill: parent
+    visible: root.clickable
+    enabled: root.clickable && root.interactive
     hoverEnabled: true
-    enabled: root.interactive
     cursorShape: root.interactive ? Qt.PointingHandCursor : Qt.ArrowCursor
     onEntered: root.hovered = true
     onExited: root.hovered = false

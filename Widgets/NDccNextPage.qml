@@ -18,6 +18,7 @@ NDccRow {
   property string value: ""
   property string icon: ""
 
+  clickable: true
   Layout.fillWidth: true
 
   NText {

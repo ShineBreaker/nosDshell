@@ -5,7 +5,7 @@ import qs.Commons
 import qs.Services.UI
 import qs.Widgets
 
-Item {
+NDccRow {
   id: root
 
   property string label: ""
@@ -16,12 +16,14 @@ Item {
   property color labelColor: Color.onShell
   property color descriptionColor: Color.onShellTertiary
   property string settingsPath: ""
+  // A labelled recorder is a settings row; a bare one is not.
+  property bool dccRow: label !== ""
 
   property int maxKeybinds: 2
   property bool requireModifierForNormalKeys: true
   signal keybindsChanged(var newKeybinds)
 
-  implicitHeight: contentLayout.implicitHeight
+  // implicitHeight comes from NDccRow (row minimum + padding).
 
   // -1 = not recording, >= 0 = re-recording at index, -2 = adding new
   property int recordingIndex: -1
@@ -82,9 +84,14 @@ Item {
     }
   }
 
+  plain: !root.dccRow
+  spacing: Style.marginL
+  // A conflicting keybind gets the SettingsItem error border.
+  error: root.hasConflict
+
   RowLayout {
     id: contentLayout
-    width: parent.width
+    Layout.fillWidth: true
     spacing: Style.marginL
 
     // Label and Description (optional)
@@ -94,9 +101,12 @@ Item {
       description: root.description
       labelColor: root.labelColor
       descriptionColor: root.descriptionColor
+      labelWeight: Style.fontWeightRegular
       visible: label !== "" || description !== ""
       Layout.fillWidth: true
       Layout.alignment: Qt.AlignVCenter
+      // §3.5.4: the title sits in a fixed column, the slots take the rest.
+      Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
     }
 
     RowLayout {

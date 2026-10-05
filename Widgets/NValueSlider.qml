@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-RowLayout {
+NDccRow {
   id: root
 
   property real from: 0
@@ -22,13 +22,16 @@ RowLayout {
   property string description: ""
   property var defaultValue: undefined
   property bool showReset: false
-
-  spacing: Style.marginL
-  Layout.fillWidth: true
+  // A labelled slider is a settings row; a bare one is not.
+  property bool dccRow: label !== "" || description !== ""
 
   // Signals
   signal moved(real value)
   signal pressedChanged(bool pressed, real value)
+
+  plain: !root.dccRow
+  spacing: Style.marginL
+  Layout.fillWidth: true
 
   readonly property bool sliderActive: slider.activeFocus || slider.pressed
   readonly property bool isValueChanged: defaultValue !== undefined && (value !== defaultValue)
@@ -52,18 +55,39 @@ RowLayout {
                    });
   }
 
+  // §3.5.4 DCCSlider: the title (and its value) sit on one line, the 2 px
+  // groove runs underneath. A bare slider — the audio/brightness popups — keeps
+  // the value beside the groove instead, since it has no title line.
   ColumnLayout {
-    spacing: Style.marginS
+    spacing: Style.settingsSliderTitleGap
     Layout.fillWidth: true
 
-    NLabel {
-      label: root.label
-      description: root.description
-      visible: root.label !== "" || root.description !== ""
-      showIndicator: root.isValueChanged
-      indicatorTooltip: root.indicatorTooltip
-      opacity: root.enabled ? 1.0 : 0.6
+    RowLayout {
       Layout.fillWidth: true
+      spacing: Style.marginM
+      visible: root.dccRow && (root.label !== "" || root.description !== "" || root.text !== "")
+
+      NLabel {
+        label: root.label
+        description: root.description
+        labelWeight: Style.fontWeightRegular
+        visible: root.label !== "" || root.description !== ""
+        showIndicator: root.isValueChanged
+        indicatorTooltip: root.indicatorTooltip
+        opacity: root.enabled ? 1.0 : 0.6
+        Layout.fillWidth: true
+      }
+
+      NText {
+        visible: root.text !== ""
+        text: root.text
+        pointSize: root.textSize
+        family: Settings.data.ui.fontFixed
+        color: Color.onShellSecondary
+        opacity: root.enabled ? 1.0 : 0.6
+        Layout.alignment: Qt.AlignVCenter
+        horizontalAlignment: Text.AlignRight
+      }
     }
 
     RowLayout {
@@ -85,7 +109,7 @@ RowLayout {
       }
 
       NText {
-        visible: root.text !== ""
+        visible: !root.dccRow && root.text !== ""
         text: root.text
         pointSize: root.textSize
         family: Settings.data.ui.fontFixed

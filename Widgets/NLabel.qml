@@ -15,6 +15,9 @@ ColumnLayout {
   property bool showIndicator: false
   property string indicatorTooltip: ""
   property real labelSize: Style.fontSizeL
+  // dcc rows use Regular(400) titles (DESIGN §3.5.4); everything else keeps
+  // the SemiBold default.
+  property int labelWeight: Style.fontWeightSemiBold
 
   opacity: enabled ? 1.0 : 0.6
   spacing: Style.marginXXS
@@ -40,7 +43,7 @@ ColumnLayout {
       Layout.fillWidth: true
       text: root.label
       pointSize: root.labelSize
-      font.weight: Style.fontWeightSemiBold
+      font.weight: root.labelWeight
       color: labelColor
       wrapMode: Text.WordWrap
 

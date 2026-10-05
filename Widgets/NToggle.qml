@@ -4,7 +4,15 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-RowLayout {
+/**
+* NToggle - a DDE SwitchWidget row (DESIGN §3.5.4).
+*
+* With a label it presents as a SettingsItem row: title on the left, the
+* 40x22 DSwitchButton on the right (off = white x 0.2, on = accent, 18 px white
+* knob, 150 ms). Without a label — the dock/panel popups — it falls back to the
+* bare switch, which is what `dccRow: false` selects.
+*/
+NDccRow {
   id: root
 
   property string label: ""
@@ -15,12 +23,14 @@ RowLayout {
   property int baseSize: Math.round(Style.baseWidgetSize * 0.8 * Style.uiScaleRatio)
   property var defaultValue: undefined
   property string settingsPath: ""
+  // A labelled toggle is a settings row; a bare one is not.
+  property bool dccRow: label !== "" || description !== ""
 
   signal toggled(bool checked)
   signal entered
   signal exited
 
-  Layout.fillWidth: true
+  plain: !root.dccRow
   spacing: Style.marginM
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (checked !== defaultValue)
@@ -33,6 +43,7 @@ RowLayout {
     label: root.label
     description: root.description
     icon: root.icon
+    labelWeight: Style.fontWeightRegular
     iconColor: root.checked ? Color.accent : Color.onShell
     visible: root.label !== "" || root.description !== ""
     showIndicator: root.isValueChanged

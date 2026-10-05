@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-RowLayout {
+NDccRow {
   id: root
 
   // Public properties
@@ -20,6 +20,8 @@ RowLayout {
   property int baseSize: Style.baseWidgetSize
   property var defaultValue: undefined
   property string settingsPath: ""
+  // A labelled spin box is a settings row; a bare one is not.
+  property bool dccRow: label !== "" || description !== ""
 
   // Convenience properties for common naming
   property alias minimum: root.from
@@ -37,6 +39,8 @@ RowLayout {
   signal exited
 
   Layout.fillWidth: true
+  plain: !root.dccRow
+  spacing: Style.marginL
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (value !== defaultValue)
   readonly property string indicatorTooltip: defaultValue !== undefined ? I18n.tr("panels.indicator.default-value", {
@@ -84,6 +88,7 @@ RowLayout {
   NLabel {
     label: root.label
     description: root.description
+    labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
   }
@@ -93,8 +98,8 @@ RowLayout {
     id: spinBoxContainer
     Layout.margins: Style.borderS
     implicitWidth: 120
-    implicitHeight: Math.max(Math.round(30 * Style.uiScaleRatio), Math.round((root.baseSize - 4) / 2) * 2)
-    radius: Style.radiusItem
+    implicitHeight: Math.max(Style.settingsFieldHeight, Math.round((root.baseSize - 4) / 2) * 2)
+    radius: Style.settingsFieldRadius
     color: Color.overlay("field")
     border.color: (root.hovering || decreaseArea.containsMouse || increaseArea.containsMouse) ? Color.accent : "transparent"
     border.width: Style.borderS

@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-RowLayout {
+NDccRow {
   id: root
 
   property real minimumWidth: 280
@@ -20,12 +20,17 @@ RowLayout {
   property Component delegate: null
   property var defaultValue: undefined
   property string settingsPath: ""
+  // A labelled combo is a settings row; a bare one is not.
+  property bool dccRow: label !== "" || description !== ""
+  // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83).
+  property real titleWidth: Style.settingsFieldTitleWidth
 
   readonly property real preferredHeight: 30
 
   signal selected(string key)
 
-  spacing: Style.marginL
+  plain: !root.dccRow
+  spacing: root.dccRow ? Style.settingsFieldGap : Style.marginL
   Layout.fillWidth: true
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (currentKey !== defaultValue)
@@ -161,12 +166,10 @@ RowLayout {
   NLabel {
     label: root.label
     description: root.description
+    labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
-  }
-
-  Item {
-    Layout.fillWidth: true
+    Layout.maximumWidth: root.dccRow ? root.titleWidth : Number.POSITIVE_INFINITY
   }
 
   ComboBox {
@@ -182,6 +185,7 @@ RowLayout {
     // was the recursive-rearrange feedback loop.
     // In narrow contexts (the 352 px module view, §3.5.3) the row squeezes
     // the box toward the 120 floor instead of starving the label column.
+    Layout.fillWidth: true
     Layout.minimumWidth: Math.round(120 * Style.uiScaleRatio)
     Layout.preferredWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.maximumWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
@@ -196,12 +200,13 @@ RowLayout {
     }
 
     background: Rectangle {
-      implicitWidth: Math.round(Style.baseWidgetSize * 3.75 * Style.uiScaleRatio)
-      implicitHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
+      // §3.5.4: the drop-down looks like a text field — field fill, radius 5,
+      // 1 px accent outline on focus.
+      implicitHeight: Style.settingsFieldHeight
       color: Color.overlay("field")
       border.color: combo.activeFocus ? Color.accent : "transparent"
       border.width: Style.borderS
-      radius: Style.radiusItem
+      radius: Style.settingsFieldRadius
 
       Behavior on border.color {
         ColorAnimation {

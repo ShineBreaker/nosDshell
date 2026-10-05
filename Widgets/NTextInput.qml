@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-ColumnLayout {
+NDccRow {
   id: root
 
   property string label: ""
@@ -18,9 +18,13 @@ ColumnLayout {
   property int fontWeight: Style.fontWeightRegular
   property var defaultValue: undefined
   property string settingsPath: ""
-  property real radius: Style.radiusItem
+  property real radius: Style.settingsFieldRadius
   property real minimumInputWidth: 80 * Style.uiScaleRatio
   property bool showClearButton: true
+  // A labelled input is a settings row; a bare one is not.
+  property bool dccRow: label !== "" || description !== ""
+  // LineEditWidget puts the title in a fixed 140 px column (lineeditwidget.cpp:83).
+  property real titleWidth: Style.settingsFieldTitleWidth
 
   property alias text: input.text
   property alias placeholderText: input.placeholderText
@@ -32,7 +36,8 @@ ColumnLayout {
   signal accepted
 
   opacity: enabled ? 1.0 : 0.3
-  spacing: Style.marginS
+  plain: !root.dccRow
+  spacing: root.dccRow ? Style.settingsFieldGap : Style.marginS
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (text !== defaultValue)
   readonly property string indicatorTooltip: defaultValue !== undefined ? I18n.tr("panels.indicator.default-value", {
@@ -44,8 +49,11 @@ ColumnLayout {
     description: root.description
     labelColor: root.labelColor
     descriptionColor: root.descriptionColor
+    labelWeight: Style.fontWeightRegular
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
+    // §3.5.4: the title sits in a fixed column, the field takes the rest.
+    Layout.maximumWidth: root.dccRow ? root.titleWidth : Number.POSITIVE_INFINITY
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
   }
@@ -57,7 +65,7 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.minimumWidth: root.minimumInputWidth
     Layout.margins: Style.borderS
-    implicitHeight: Math.round(30 * Style.uiScaleRatio)
+    implicitHeight: Style.settingsFieldHeight
 
     // This is important - makes the control accept focus
     focusPolicy: Qt.StrongFocus

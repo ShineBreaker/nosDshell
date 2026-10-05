@@ -4,9 +4,15 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-ColumnLayout {
+/**
+* NTextInputButton - a text field row with a trailing action button.
+*
+* With a label it is one DDE settings row (DESIGN §3.5.4): title on the left,
+* field plus button on the right. The inner NTextInput is forced into plain
+* mode so it does not paint a second row of its own.
+*/
+NDccRow {
   id: root
-  Layout.fillWidth: true
 
   property alias text: input.text
   property alias placeholderText: input.placeholderText
@@ -17,19 +23,24 @@ ColumnLayout {
   property alias buttonTooltip: button.tooltipText
   property alias buttonEnabled: button.enabled
   property real maximumWidth: 0
+  // A labelled field is a settings row; a bare one is not.
+  property bool dccRow: label !== "" || description !== ""
 
   signal buttonClicked
   signal inputTextChanged(string text)
   signal inputEditingFinished
 
-  spacing: Style.marginS
+  plain: !root.dccRow
+  spacing: root.dccRow ? Style.settingsFieldGap : Style.marginS
 
   // Label and description
   NLabel {
     label: root.label
     description: root.description
+    labelWeight: Style.fontWeightRegular
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
   }
 
   // Input field with button
@@ -40,6 +51,7 @@ ColumnLayout {
     NTextInput {
       id: input
       inputIconName: root.inputIconName
+      dccRow: false
       Layout.fillWidth: true
       Layout.alignment: Qt.AlignVCenter
       enabled: root.enabled

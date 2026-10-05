@@ -475,6 +475,12 @@ Singleton {
   // Spacing between two SettingsGroups (settingsgroup.cpp has no such token —
   // derived from the 15 px separator under the module head in the frame).
   readonly property int settingsGroupSpacing: Math.round(15 * uiScaleRatio)
+  // Usable width inside a settings row: the 352 px module content (§3.5.3)
+  // minus the scroll view's 6 px margins and the row's 20 px padding a side.
+  // A row is stretched by its container, so this only caps the implicit width
+  // it advertises — without the cap a long description would widen the whole
+  // scroll column and push the row's right-hand control off screen.
+  readonly property int settingsRowContentMaxWidth: Math.round(300 * uiScaleRatio)
   // DCCSlider row: the groove sits under the title, 6 px of breathing room
   // (dccslider.cpp:44 fixes the whole control at 35 px).
   readonly property int settingsSliderTitleGap: Math.round(6 * uiScaleRatio)
