@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
+import qs.Modules.Panels.SessionMenu
 import qs.Services.Compositor
 import qs.Services.Hardware
 import qs.Services.Keyboard
@@ -40,7 +41,17 @@ Item {
   property string pendingAction: ""
   property bool timerActive: false
   property int timeRemaining: 0
-  readonly property bool weatherReady: Settings.data.location.weatherEnabled && (LocationService.data.weather !== null)
+
+  // DESIGN §3.9 — the power button opens the dde-shutdown button row *inside* the
+  // lock screen and hides the password area. A session-lock surface sits above
+  // every layer surface, so the standalone SessionMenu panel can never show
+  // here; the row has to be rendered on this surface.
+  property bool powerRowOpen: false
+  readonly property var lockPowerOptions: actions.buildOptions()
+
+  ShutdownActions {
+    id: actions
+  }
 
   // Timer management functions
   function startTimer(action) {
@@ -72,31 +83,11 @@ Item {
   function executeAction(action) {
     // Stop timer but don't reset other properties yet
     countdownTimer.stop();
-
-    // Execute the action
-    switch (action) {
-    case "logout":
-      CompositorService.logout();
-      break;
-    case "suspend":
-      CompositorService.suspend();
-      break;
-    case "hibernate":
-      CompositorService.hibernate();
-      break;
-    case "reboot":
-      CompositorService.reboot();
-      break;
-    case "userspaceReboot":
-      CompositorService.userspaceReboot();
-      break;
-    case "shutdown":
-      CompositorService.shutdown();
-      break;
-    }
-
+    actions.execute(action);
     // Reset timer state
     cancelTimer();
+    // The power row closes itself once an action has been taken
+    powerRowOpen = false;
   }
 
   // Countdown timer
@@ -142,10 +133,22 @@ Item {
 
       // DDE centre block (DESIGN §3.9, userinputwidget.cpp): 100 px ringless
       // avatar, user name 16 px 25 px below, then the password field 20 px below.
+      // Hidden while the power row is open (DESIGN §3.9: 电源按钮会在锁屏内打开
+      // §3.8 的按钮行；此时密码区隐藏).
       ColumnLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignHCenter
         spacing: 0
+        visible: opacity > 0
+        opacity: root.powerRowOpen ? 0 : 1
+
+        Behavior on opacity {
+          enabled: !Settings.data.general.animationDisabled
+          NumberAnimation {
+            duration: Style.animationFast
+            easing.type: Easing.OutCubic
+          }
+        }
 
         NImageRounded {
           Layout.alignment: Qt.AlignHCenter
@@ -169,10 +172,21 @@ Item {
         }
       }
 
-      // Password input (20 px below the user name, DESIGN §3.9)
+      // Password input (20 px below the user name, DESIGN §3.9). Hidden together
+      // with the centre block while the power row is open.
       RowLayout {
         Layout.fillWidth: true
         spacing: 0
+        visible: opacity > 0
+        opacity: root.powerRowOpen ? 0 : 1
+
+        Behavior on opacity {
+          enabled: !Settings.data.general.animationDisabled
+          NumberAnimation {
+            duration: Style.animationFast
+            easing.type: Easing.OutCubic
+          }
+        }
 
         Item {
           Layout.fillWidth: true
@@ -183,7 +197,8 @@ Item {
           Layout.alignment: Qt.AlignHCenter
           Layout.preferredWidth: 280
           Layout.preferredHeight: 36
-          radius: Math.min(Style.iRadiusL, height / 2)
+          // DESIGN §3.9: 280x36, field colour, radius 6 (not a pill)
+          radius: Style.lockPasswordFieldRadius
           color: Color.overlay("field")
           border.color: lockControl.showFailure ? Color.alert : (passwordInput.activeFocus ? Color.mPrimary : Qt.alpha(Color.mOutline, 0.3))
           border.width: 1
@@ -510,89 +525,42 @@ Item {
             }
           }
 
-          // Eye button to toggle password visibility
-          Rectangle {
-            anchors.right: submitButton.left
+          // DESIGN §3.9 — "右侧嵌着解锁图标按钮": the embedded unlock button
+          // (widgets/passwdedit.cpp uses the action_icons/unlock_* set) is the
+          // only control inside the field; DDE has no reveal or separate submit
+          // button there. Pressing Return in the field still submits.
+          Item {
+            id: unlockButton
+            anchors.right: parent.right
             anchors.rightMargin: 4
             anchors.verticalCenter: parent.verticalCenter
-            width: 36
-            height: 36
-            radius: Math.min(Style.iRadiusL, width / 2)
-            color: eyeButtonArea.containsMouse ? Color.mPrimary : "transparent"
-            visible: passwordInput.text.length > 0
+            width: 28
+            height: 28
             enabled: !lockControl || !lockControl.unlockInProgress
 
-            NIcon {
-              anchors.centerIn: parent
-              icon: parent.parent.passwordVisible ? "eye-off" : "eye"
-              pointSize: Style.fontSizeM
-              color: eyeButtonArea.containsMouse ? Color.mOnPrimary : Color.mOnSurfaceVariant
+            readonly property bool hovered: unlockArea.containsMouse && !unlockArea.pressed
+            readonly property string artworkState: unlockArea.pressed ? "press" : (hovered ? "hover" : "normal")
 
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                  easing.type: Easing.OutCubic
-                }
-              }
+            Image {
+              anchors.centerIn: parent
+              width: 18
+              height: width
+              source: "file://" + Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/widgets/img/action_icons/unlock_" + unlockButton.artworkState + ".svg"
+              sourceSize.width: width
+              sourceSize.height: height
+              fillMode: Image.PreserveAspectFit
+              smooth: true
+              asynchronous: true
+              cache: true
             }
 
             MouseArea {
-              id: eyeButtonArea
+              id: unlockArea
               anchors.fill: parent
               hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onClicked: parent.parent.passwordVisible = !parent.parent.passwordVisible
-            }
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-                easing.type: Easing.OutCubic
-              }
-            }
-          }
-
-          // Submit button
-          Rectangle {
-            id: submitButton
-            anchors.right: parent.right
-            anchors.rightMargin: 8
-            anchors.verticalCenter: parent.verticalCenter
-            width: 36
-            height: 36
-            radius: Math.min(Style.iRadiusL, width / 2)
-            color: submitButtonArea.containsMouse ? Color.mPrimary : "transparent"
-            border.color: Color.mPrimary
-            border.width: Style.borderS
-            enabled: !lockControl || !lockControl.unlockInProgress
-
-            NIcon {
-              anchors.centerIn: parent
-              icon: "arrow-forward"
-              pointSize: Style.fontSizeM
-              color: submitButtonArea.containsMouse ? Color.mOnPrimary : Color.mPrimary
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                  easing.type: Easing.OutCubic
-                }
-              }
-            }
-
-            MouseArea {
-              id: submitButtonArea
-              anchors.fill: parent
-              hoverEnabled: true
+              enabled: unlockButton.enabled
               cursorShape: Qt.PointingHandCursor
               onClicked: root.doUnlock()
-            }
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-                easing.type: Easing.OutCubic
-              }
             }
           }
 
@@ -609,116 +577,60 @@ Item {
         }
       }
 
-      // Session control buttons
-      RowLayout {
-        id: sessionButtonRow
+      // DESIGN §3.9 — the dde-shutdown button row, opened from the power button
+      // inside the lock screen. Same RoundItemButton, artwork and action dispatch
+      // as the standalone panel (shared ShutdownButton / ShutdownActions).
+      ColumnLayout {
+        id: powerRow
         Layout.fillWidth: true
-        Layout.preferredHeight: 48
         Layout.alignment: Qt.AlignHCenter
-        spacing: Style.marginM
-        visible: Settings.data.general.showSessionButtonsOnLockScreen
+        spacing: Style.marginS
+        visible: root.powerRowOpen
+        opacity: root.powerRowOpen ? 1 : 0
 
-        readonly property int buttonCount: Settings.data.general.showHibernateOnLockScreen ? 5 : 4
-        readonly property real availableWidth: bottomContainer.width - 48
-        readonly property real buttonWidth: (availableWidth - (buttonCount - 1) * spacing) / buttonCount
-        readonly property real buttonHeight: sessionButtonRow.height
-
-        Item {
-          Layout.preferredWidth: sessionButtonRow.buttonWidth
-          Layout.preferredHeight: sessionButtonRow.buttonHeight
-
-          NButton {
-            anchors.fill: parent
-            icon: "logout"
-            text: I18n.tr("common.logout")
-            outlined: true
-            backgroundColor: Color.mOnSurfaceVariant
-            textColor: Color.mOnPrimary
-            fontSize: Style.fontSizeM
-            iconSize: Style.fontSizeL
-            horizontalAlignment: Qt.AlignHCenter
-            buttonRadius: Style.radiusL
-            onClicked: startTimer("logout")
+        Behavior on opacity {
+          enabled: !Settings.data.general.animationDisabled
+          NumberAnimation {
+            duration: Style.animationFast
+            easing.type: Easing.OutCubic
           }
         }
 
-        Item {
-          Layout.preferredWidth: sessionButtonRow.buttonWidth
-          Layout.preferredHeight: sessionButtonRow.buttonHeight
+        RowLayout {
+          Layout.alignment: Qt.AlignHCenter
+          spacing: 0
 
-          NButton {
-            anchors.fill: parent
-            icon: "suspend"
-            text: I18n.tr("common.suspend")
-            outlined: true
-            backgroundColor: Color.mOnSurfaceVariant
-            textColor: Color.mOnPrimary
-            fontSize: Style.fontSizeM
-            iconSize: Style.fontSizeL
-            horizontalAlignment: Qt.AlignHCenter
-            buttonRadius: Style.radiusL
-            onClicked: startTimer("suspend")
+          Repeater {
+            model: root.lockPowerOptions
+
+            ShutdownButton {
+              required property var modelData
+              width: Style.shutdownButtonSize
+              height: Style.shutdownButtonSize
+              icon: modelData.icon
+              artworkPath: modelData.artworkUrl
+              title: modelData.title
+              isShutdown: modelData.isShutdown
+              available: modelData.available
+              pending: root.timerActive && root.pendingAction === modelData.action
+              onClicked: root.startTimer(modelData.action)
+            }
           }
         }
 
-        Item {
-          Layout.preferredWidth: sessionButtonRow.buttonWidth
-          Layout.preferredHeight: sessionButtonRow.buttonHeight
-          visible: Settings.data.general.showHibernateOnLockScreen
-
-          NButton {
-            anchors.fill: parent
-            icon: "hibernate"
-            text: I18n.tr("common.hibernate")
-            outlined: true
-            backgroundColor: Color.mOnSurfaceVariant
-            textColor: Color.mOnPrimary
-            fontSize: Style.fontSizeM
-            iconSize: Style.fontSizeL
-            horizontalAlignment: Qt.AlignHCenter
-            buttonRadius: Style.radiusL
-            onClicked: startTimer("hibernate")
-          }
-        }
-
-        Item {
-          Layout.preferredWidth: sessionButtonRow.buttonWidth
-          Layout.preferredHeight: sessionButtonRow.buttonHeight
-
-          NButton {
-            anchors.fill: parent
-            icon: "reboot"
-            text: I18n.tr("common.reboot")
-            outlined: true
-            backgroundColor: Color.mOnSurfaceVariant
-            textColor: Color.mOnPrimary
-            fontSize: Style.fontSizeM
-            iconSize: Style.fontSizeL
-            horizontalAlignment: Qt.AlignHCenter
-            buttonRadius: Style.radiusL
-            onClicked: startTimer("reboot")
-          }
-        }
-
-        Item {
-          Layout.preferredWidth: sessionButtonRow.buttonWidth
-          Layout.preferredHeight: sessionButtonRow.buttonHeight
-
-          NButton {
-            anchors.fill: parent
-            icon: "shutdown"
-            text: I18n.tr("common.shutdown")
-            outlined: true
-            backgroundColor: Color.mError
-            textColor: Color.mOnError
-            fontSize: Style.fontSizeM
-            iconSize: Style.fontSizeL
-            horizontalAlignment: Qt.AlignHCenter
-            buttonRadius: Style.radiusL
-            onClicked: startTimer("shutdown")
-          }
+        NText {
+          Layout.alignment: Qt.AlignHCenter
+          text: root.timerActive ? I18n.tr("session-menu.action-in-seconds", {
+                                          "action": root.lockPowerOptions.find(function (o) {
+                                                                    return o.action === root.pendingAction;
+                                                                  })?.title || "",
+                                          "seconds": Math.ceil(root.timeRemaining / 1000)
+                                        }) : ""
+          pointSize: Style.fontSizeL
+          color: "white"
         }
       }
+
     }
   }
 }

@@ -407,6 +407,8 @@ Singleton {
   readonly property int lockPasswordWidth: 280
   readonly property int lockPasswordHeight: 36
   readonly property int lockPasswordGap: 20
+  // DESIGN §3.9: the field is a 6 px rounded rectangle, not a pill
+  readonly property int lockPasswordFieldRadius: 6
 
   // Control center home (DESIGN §3.5.1–3.5.2)
   // 408 px frame, flush right edge, full screen height (gxde-control-center frame.h:53)

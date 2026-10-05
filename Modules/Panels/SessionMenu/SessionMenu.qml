@@ -117,125 +117,21 @@ PanelWindow {
   // Set by presetSelection(); the row below picks it up and takes focus.
   property bool focusRequested: false
 
-  // DDE ships the button artwork as normal/hover/press SVGs; the mapping below
-  // is the one dde-shutdown/skin/shutdown.qss:1-40 declares per button objectName.
-  // hibernate uses the shared widgets/ list_actions/sleep_*.svg (shutdown.qss:37-40);
-  // rebootToUefi is nosDshell-only and has no DDE artwork, so it reuses reboot_*.
-  readonly property string ddeShutdownIcons: Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/dde-shutdown/img/"
-  readonly property string ddeWidgetIcons: Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/widgets/img/"
-  // Action metadata mapping (dde-shutdown contentwidget.cpp order)
-  readonly property var actionMetadata: {
-    "shutdown": {
-      "icon": "power",
-      "artwork": "poweroff",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("common.shutdown"),
-      "isShutdown": true
-    },
-    "reboot": {
-      "icon": "refresh",
-      "artwork": "reboot",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("common.reboot"),
-      "isShutdown": false
-    },
-    "suspend": {
-      "icon": "moon",
-      "artwork": "suspend",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("common.suspend"),
-      "isShutdown": false
-    },
-    "hibernate": {
-      "icon": "snowflake",
-      "artwork": "sleep",
-      "artworkDir": "widgets/list_actions",
-      "title": I18n.tr("common.hibernate"),
-      "isShutdown": false
-    },
-    "lock": {
-      "icon": "lock",
-      "artwork": "lock",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("common.lock"),
-      "isShutdown": false
-    },
-    "switchUser": {
-      "icon": "user-switch",
-      "artwork": "userswitch",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("session-menu.switch-user"),
-      "isShutdown": false
-    },
-    "logout": {
-      "icon": "logout",
-      "artwork": "logout",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("common.logout"),
-      "isShutdown": false
-    },
-    "rebootToUefi": {
-      "icon": "device-desktop",
-      "artwork": "reboot",
-      "artworkDir": "shutdown",
-      "title": I18n.tr("common.reboot-to-uefi"),
-      "isShutdown": false
-    }
+  // Artwork map, DDE button order and action dispatch live in ShutdownActions so
+  // the lock screen's power row (Modules/LockScreen) shows the same buttons.
+  ShutdownActions {
+    id: actions
   }
 
-  // DDE has no "switch user" action in the session service; the entry is only
-  // offered when the compositor service can actually switch users.
-  readonly property bool switchUserAvailable: typeof CompositorService.switchUser === "function"
+  readonly property var actionMetadata: actions.actionMetadata
+  readonly property bool switchUserAvailable: actions.switchUserAvailable
 
   // Build powerOptions from settings, filtering enabled ones and adding metadata.
   // Order follows dde-shutdown; _powerOptionsVersion forces re-evaluation.
   property int _powerOptionsVersion: 0
   property var powerOptions: {
     void (_powerOptionsVersion);
-    var options = [];
-    var settingsOptions = Settings.data.sessionMenu.powerOptions || [];
-
-    var ddeOrder = ["shutdown", "reboot", "suspend", "hibernate", "lock", "switchUser", "logout", "rebootToUefi"];
-    var enabled = [];
-    for (var i = 0; i < settingsOptions.length; i++) {
-      if (settingsOptions[i].enabled && actionMetadata[settingsOptions[i].action]) {
-        enabled.push(settingsOptions[i]);
-      }
-    }
-    enabled.sort(function (a, b) {
-      var ia = ddeOrder.indexOf(a.action);
-      var ib = ddeOrder.indexOf(b.action);
-      if (ia < 0)
-        ia = ddeOrder.length;
-      if (ib < 0)
-        ib = ddeOrder.length;
-      return ia - ib;
-    });
-
-    for (var j = 0; j < enabled.length; j++) {
-      var settingOption = enabled[j];
-      // "switch user" is only offered when it can actually run
-      if (settingOption.action === "switchUser" && !switchUserAvailable) {
-        continue;
-      }
-      var metadata = actionMetadata[settingOption.action];
-      // Most artwork lives in dde-shutdown/img/; hibernate uses the shared
-      // widgets/ list_actions set (shutdown.qss:37-40)
-      var base = metadata.artworkDir === "shutdown" ? root.ddeShutdownIcons : root.ddeWidgetIcons + "list_actions/";
-      options.push({
-                     "action": settingOption.action,
-                     "icon": metadata.icon,
-                     "artworkUrl": metadata.artwork ? base + metadata.artwork : "",
-                     "title": metadata.title,
-                     "isShutdown": metadata.isShutdown,
-                     "available": settingOption.action !== "switchUser" || switchUserAvailable,
-                     "countdownEnabled": settingOption.countdownEnabled !== undefined ? settingOption.countdownEnabled : true,
-                     "command": settingOption.command || "",
-                     "keybind": settingOption.keybind || ""
-                   });
-    }
-
-    return options;
+    return actions.buildOptions();
   }
 
   Connections {
@@ -326,38 +222,7 @@ PanelWindow {
 
   function executeAction(action) {
     countdownTimer.stop();
-
-    switch (action) {
-    case "lock":
-      CompositorService.lock();
-      break;
-    case "suspend":
-      if (Settings.data.general.lockOnSuspend) {
-        CompositorService.lockAndSuspend();
-      } else {
-        CompositorService.suspend();
-      }
-      break;
-    case "hibernate":
-      CompositorService.hibernate();
-      break;
-    case "reboot":
-      CompositorService.reboot();
-      break;
-    case "userspaceReboot":
-      CompositorService.userspaceReboot();
-      break;
-    case "rebootToUefi":
-      CompositorService.rebootToUefi();
-      break;
-    case "logout":
-      CompositorService.logout();
-      break;
-    case "shutdown":
-      CompositorService.shutdown();
-      break;
-    }
-
+    actions.execute(action);
     cancelTimer();
     root.close();
   }
@@ -626,120 +491,6 @@ PanelWindow {
                     })
       pointSize: Style.fontSizeL
       color: "white"
-    }
-  }
-
-  // RoundItemButton (rounditembutton.cpp): 140x140, 75x75 glyph, 10 px gap,
-  // white wrapping label; hover/selected = pressDim rounded rect radiusLarge;
-  // disabled = opacity 0.5. The glyph itself is the original 75x75 DDE artwork
-  // and switches between the normal / hover / press SVGs — rounditembutton.cpp
-  // repaints m_itemIcon from a QSvgRenderer in its event filter (lines 173-181),
-  // it does not tint or fade it.
-  component ShutdownButton: Rectangle {
-    id: button
-
-    property string icon: ""
-    // Absolute path prefix of the DDE artwork, e.g. ".../dde-shutdown/img/poweroff"
-    property string artworkPath: ""
-    property string title: ""
-    property bool isShutdown: false
-    property bool isSelected: false
-    property bool effectiveHover: false
-    property bool pressed: false
-    property bool available: true
-    property bool pending: false
-    property string keybind: ""
-
-    signal clicked
-
-    readonly property bool dimmed: isSelected || effectiveHover || pressed
-
-    // rounditembutton.cpp:194-201 — one SVG per state, no overlay
-    readonly property string artworkState: pressed ? "press" : (dimmed ? "hover" : "normal")
-
-    radius: Style.radiusLarge
-    color: dimmed ? Color.pressDim : "transparent"
-    // rounditembutton.cpp:65-74 — setDisabled() drops the whole widget to 0.5
-    opacity: button.available ? 1.0 : 0.5
-
-    Behavior on color {
-      enabled: !Settings.data.general.animationDisabled
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
-      }
-    }
-
-    Behavior on opacity {
-      enabled: !Settings.data.general.animationDisabled
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
-      }
-    }
-
-    ColumnLayout {
-      anchors.centerIn: parent
-      // rounditembutton.cpp:104-111 — 10 px of leading space, then the icon,
-      // then the wrapping label below it
-      spacing: Style.shutdownButtonIconTextGap
-
-      Image {
-        Layout.alignment: Qt.AlignHCenter
-        Layout.preferredWidth: Style.shutdownButtonIcon
-        Layout.preferredHeight: Style.shutdownButtonIcon
-        source: button.artworkPath !== "" ? button.artworkPath + "_" + button.artworkState + ".svg" : ""
-        sourceSize.width: Style.shutdownButtonIcon
-        sourceSize.height: Style.shutdownButtonIcon
-        fillMode: Image.PreserveAspectFit
-        smooth: true
-        asynchronous: true
-        cache: true
-        // Fall back to the Tabler glyph only if the artwork is missing
-        visible: source !== ""
-      }
-
-      NIcon {
-        Layout.alignment: Qt.AlignHCenter
-        Layout.preferredWidth: Style.shutdownButtonIcon
-        Layout.preferredHeight: Style.shutdownButtonIcon
-        visible: button.artworkPath === ""
-        icon: button.icon
-        color: "white"
-        pointSize: Style.fontSizeXXXL
-      }
-
-      NText {
-        Layout.alignment: Qt.AlignHCenter
-        Layout.maximumWidth: Style.shutdownButtonSize - Style.marginM
-        text: button.title
-        pointSize: Style.fontSizeM
-        color: "white"
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.WrapAtWordBoundaryOrAnywhere
-      }
-
-      // Keybind shown after the label, onShellTertiary (white @0.6)
-      NText {
-        Layout.alignment: Qt.AlignHCenter
-        text: button.keybind
-        pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
-        visible: text.length > 0
-      }
-    }
-
-    MouseArea {
-      id: buttonMouse
-      anchors.fill: parent
-      hoverEnabled: true
-      enabled: button.available
-      cursorShape: Qt.PointingHandCursor
-      onPressed: button.pressed = true
-      onReleased: button.pressed = false
-      onEntered: button.pressed = false
-      onExited: button.pressed = false
-      onClicked: button.clicked()
     }
   }
 }

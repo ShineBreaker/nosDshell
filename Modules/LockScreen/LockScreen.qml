@@ -142,6 +142,10 @@ Loader {
                 LockScreenBand {
                   id: headerComponent
                   batteryIndicator: batteryIndicator
+                  // DESIGN §3.9 — the power button opens the dde-shutdown row
+                  // inside the lock screen, which also hides the password area
+                  powerRowOpen: panelComponent.powerRowOpen
+                  onPowerRowOpenChanged: panelComponent.powerRowOpen = powerRowOpen
                 }
 
                 // Info notification
