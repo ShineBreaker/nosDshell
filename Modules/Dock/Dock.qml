@@ -591,6 +591,10 @@ Loader {
 
           WlrLayershell.namespace: "nosdshell-dock-" + (screen?.name || "unknown")
           WlrLayershell.exclusionMode: root.autoHide ? ExclusionMode.Ignore : ExclusionMode.Auto
+          // Overlay so the dock keeps drawing above the fullscreen launcher,
+          // which sits on Top — the protocol has no layer in between
+          // (DESIGN §3.4.1). DDE's dock is always on top as well.
+          WlrLayershell.layer: WlrLayer.Overlay
 
           anchors.top: dockPosition === "top" || isVertical
           anchors.bottom: dockPosition === "bottom" || isVertical

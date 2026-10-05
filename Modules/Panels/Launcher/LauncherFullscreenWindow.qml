@@ -99,11 +99,12 @@ Variants {
       implicitHeight: modelData?.height ?? 0
 
       WlrLayershell.namespace: "nosd-launcher-full-" + (screen?.name || "unknown")
-      // Bottom, not Overlay: the launcher paints the blurred wallpaper itself
-      // (it is opaque), and the taskbar lives on the Top layer so it keeps
-      // drawing above the launcher and stays clickable (DESIGN §3.4.1,
-      // fullscreenframe.cpp updateDockPosition).
-      WlrLayershell.layer: WlrLayer.Bottom
+      // Top: every layer-shell layer is above application windows, and this one
+      // is still below the taskbar — BarContentWindow (efficient) and the dock
+      // (fashion) draw on Overlay, and the protocol has no layer in between.
+      // That pairing is what makes DESIGN §3.4.1 work: the launcher covers the
+      // whole output while the taskbar stays visible and clickable on top of it.
+      WlrLayershell.layer: WlrLayer.Top
       WlrLayershell.keyboardFocus: screenItem.isActive ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
       // Never reserve space: the launcher must not push the taskbar around
       WlrLayershell.exclusionMode: ExclusionMode.Ignore

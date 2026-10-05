@@ -35,14 +35,15 @@ Variants {
     readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
-    readonly property bool verticalBar: barPosition === "left" || barPosition === "right"
 
     readonly property real windowWidth: Style.launcherMiniLeftPaneWidth + Style.launcherMiniRightPaneWidth
     readonly property real windowHeight: Style.launcherMiniHeight
     // 1 px off the taskbar (windowedframe.cpp adjustPosition)
     readonly property real gap: Style.launcherMiniDockGap
 
-    readonly property real barThickness: hasTaskbar ? (verticalBar ? Style.dockItemThickness : Style.barHeight) : 0
+    // Cross-axis thickness of the taskbar: the efficient bar's height, or the
+    // fashion dock's item box. DDE reads this straight off dockRect.
+    readonly property real barThickness: hasTaskbar ? (efficient ? Style.barHeight : Style.dockItemThickness) : 0
 
     // Long-axis length of the centred fashion dock, published by DockContent.
     // Bound through dockLengthsRevision so the position follows the dock as

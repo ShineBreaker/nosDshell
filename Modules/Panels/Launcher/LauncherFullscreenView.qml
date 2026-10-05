@@ -408,7 +408,7 @@ Item {
         // Grouped non-app list under the search row (DESIGN §3.4.1):
         // rows like the mini list, width aligned to the search field
         NListView {
-          id: listView
+          id: resultsList
           visible: root.listResults.length > 0
           width: root.listWidth
           height: Math.min(contentHeight, root.height * 0.5)
@@ -420,7 +420,7 @@ Item {
           reserveScrollbarSpace: false
 
           delegate: LauncherListRow {
-            listView: listView
+            listView: resultsList
             onActivated: {
               model.selectIndex(index);
               model.activate();
@@ -429,10 +429,10 @@ Item {
 
           // Clipboard preview in a dark card to the right of the list
           Loader {
-            x: listView.width + Style.marginL
+            x: resultsList.width + Style.marginL
             width: 260
-            anchors.top: listView.top
-            anchors.bottom: listView.bottom
+            anchors.top: resultsList.top
+            anchors.bottom: resultsList.bottom
             active: model.activeProvider === model.clipboardProvider
             visible: active
 
@@ -446,8 +446,8 @@ Item {
         NGridView {
           id: resultsGrid
 
-          anchors.top: listView.visible ? listView.bottom : parent.top
-          anchors.topMargin: listView.visible ? Style.marginM : (pinnedTitle.visible ? pinnedTitle.height : 0)
+          anchors.top: resultsList.visible ? resultsList.bottom : parent.top
+          anchors.topMargin: resultsList.visible ? Style.marginM : (pinnedTitle.visible ? pinnedTitle.height : 0)
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.bottom: parent.bottom
@@ -483,7 +483,7 @@ Item {
         // white@0.3 to 0, pinned to the grid top while scrolling.
         Rectangle {
           id: pinnedTitle
-          visible: root.categoryMode && !listView.visible
+          visible: root.categoryMode && !resultsList.visible
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.top: parent.top

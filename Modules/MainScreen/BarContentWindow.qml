@@ -33,7 +33,10 @@ PanelWindow {
 
   // Wayland layer configuration
   WlrLayershell.namespace: "nosdshell-bar-content-" + (barWindow.screen?.name || "unknown")
-  WlrLayershell.layer: WlrLayer.Top
+  // Overlay so the taskbar keeps drawing above the fullscreen launcher, which
+  // sits on Top — the protocol has no layer in between (DESIGN §3.4.1). Panels
+  // stay on Top, so they now open under the launcher instead of over it.
+  WlrLayershell.layer: WlrLayer.Overlay
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // Don't reserve space - BarExclusionZone in MainScreen handles that
 
   // Position and size to match bar location (per-screen)
