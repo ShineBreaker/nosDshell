@@ -93,9 +93,12 @@ Singleton {
     Logger.i("IdleInhibitor", "Stopped inhibition");
   }
 
-  // Subprocess fallback using systemd-inhibit
+  // Subprocess fallback via systemd-inhibit (systemd) or elogind-inhibit
+  // (elogind, e.g. Guix System). `exec` keeps the inhibit binary as the
+  // direct child so stopInhibition's SIGTERM reaches it.
   function startSubprocessInhibition() {
-    inhibitorProcess.command = ["systemd-inhibit", "--what=idle", "--why=" + reason, "--mode=block", "sleep", "infinity"];
+    var args = "--what=idle --why=\"" + reason + "\" --mode=block sleep infinity";
+    inhibitorProcess.command = ["sh", "-c", "exec systemd-inhibit " + args + " || exec elogind-inhibit " + args];
     inhibitorProcess.running = true;
   }
 
