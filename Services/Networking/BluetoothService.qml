@@ -7,6 +7,7 @@ import Quickshell.Io
 import "../../Helpers/BluetoothUtils.js" as BluetoothUtils
 import qs.Commons
 import qs.Services.System
+import qs.Services.Theming
 import qs.Services.UI
 
 Singleton {
@@ -418,7 +419,8 @@ Singleton {
     }
 
     const scriptPath = Quickshell.shellDir + "/Scripts/python/src/network/bluetooth-pair.py";
-    pairingProcess.command = ["python3", scriptPath, String(addr), String(pairWait), String(attempts), String(intervalSec)];
+    const helperArgs = [String(addr), String(pairWait), String(attempts), String(intervalSec)];
+    pairingProcess.command = TemplateRegistry.helperCmd("bluetooth-pair", helperArgs) || ["python3", scriptPath].concat(helperArgs);
     pairingProcess.running = true;
   }
 

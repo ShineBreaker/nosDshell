@@ -19,7 +19,6 @@ Singleton {
   // Last successfully parsed predefined scheme JSON (full object). Used to refresh app templates
   // on wallpaper changes without re-running applyScheme (avoids rewriting colors.json when unchanged).
   property var lastPredefinedSchemeData: null
-  readonly property string gtkRefreshScript: Quickshell.shellDir + "/Scripts/python/src/theming/gtk-refresh.py"
 
   // prefer-light/prefer-dark only; GTK template post_hook still runs full gtk-refresh.
   function pushSystemColorScheme() {
@@ -28,7 +27,7 @@ Singleton {
     if (TemplateProcessor.isTemplateEnabled("gtk"))
       return;
     const mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
-    Quickshell.execDetached(["python3", gtkRefreshScript, "--appearance-only", mode]);
+    Quickshell.execDetached(TemplateRegistry.gtkRefreshCmd("--appearance-only").concat([mode]));
   }
 
   Connections {

@@ -1,0 +1,23 @@
+[package]
+name = "nosd-helpers"
+version = "0.1.0"
+edition = "2021"
+description = "Small nosDshell helper tools (theming, calendar, system)"
+license = "GPL-3.0-or-later"
+
+[dependencies]
+chrono = "=0.4.45"
+chrono-tz = "=0.10.4"
+portable-pty = "=0.9.0"
+serde_json = { version = "=1.0.151", features = ["preserve_order"] }
+tokio = { version = "=1.53.2", features = ["rt-multi-thread", "macros"] }
+ureq = "=3.4.2"
+zbus = "=5.19.0"
+
+[[bin]]
+name = "nosd-helpers"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true

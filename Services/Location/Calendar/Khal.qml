@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Commons
 import qs.Services.Location
+import qs.Services.Theming
 
 Singleton {
   id: root
@@ -35,7 +36,7 @@ Singleton {
   Process {
     id: availabilityCheckProcess
     running: false
-    command: ["sh", "-c", "command -v khal >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1"]
+    command: ["sh", "-c", "command -v khal >/dev/null 2>&1 && { command -v nosd-helpers >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; }"]
     onExited: function (exitCode) {
       if (exitCode === 0) {
         CalendarService.available = true;
@@ -94,7 +95,7 @@ Singleton {
     property string startTime: ""
     property string duration: ""
 
-    command: ["python3", root.khalEventsScript, startTime, duration]
+    command: TemplateRegistry.khalEventsCmd(startTime, duration) || ["python3", root.khalEventsScript, startTime, duration]
 
     stdout: StdioCollector {
       onStreamFinished: {

@@ -160,7 +160,7 @@ Singleton {
       // Pass --default-mode so "default" in templates resolves to the current theme mode
       // Pass wallpaper as positional arg so image_path is available in templates (no extraction occurs when --scheme is used)
       const wpArg = wallpaperPath ? `'${wallpaperPath.replace(/'/g, "'\\''")}'` : "";
-      script += `python3 "${templateProcessorScript}" ${wpArg} --scheme '${schemeJsonPathEsc}' --config '${configPathEsc}' --default-mode ${mode}\n`;
+      script += `${TemplateRegistry.themeProcessorCmd()} ${wpArg} --scheme '${schemeJsonPathEsc}' --config '${configPathEsc}' --default-mode ${mode}\n`;
     }
 
     // Add user templates if enabled
@@ -349,7 +349,7 @@ Singleton {
       // Don't pass --mode so templates get both dark and light colors (e.g., zed.json needs both)
       // Pass --default-mode so "default" in templates resolves to the current theme mode
       const schemeType = getSchemeType();
-      script += `python3 "${templateProcessorScript}" "$NOSD_WP_PATH" --scheme-type ${schemeType} --config '${pathEsc}' --default-mode ${mode}\n`;
+      script += `${TemplateRegistry.themeProcessorCmd()} "$NOSD_WP_PATH" --scheme-type ${schemeType} --config '${pathEsc}' --default-mode ${mode}\n`;
     }
 
     script += buildUserTemplateCommand("$NOSD_WP_PATH", mode);
@@ -374,7 +374,7 @@ Singleton {
     const schemeType = getSchemeType();
     // Don't pass --mode so user templates get both dark and light colors
     // Pass --default-mode so "default" in templates resolves to the current theme mode
-    script += `  python3 "${templateProcessorScript}" ${inputQuoted} --scheme-type ${schemeType} --config '${userConfigPath}' --default-mode ${mode}\n`;
+    script += `  ${TemplateRegistry.themeProcessorCmd()} ${inputQuoted} --scheme-type ${schemeType} --config '${userConfigPath}' --default-mode ${mode}\n`;
     script += "fi";
 
     return script;
@@ -396,7 +396,7 @@ Singleton {
     // Don't pass --mode so user templates get both dark and light colors
     // Pass --default-mode so "default" in templates resolves to the current theme mode
     // Pass wallpaper as positional arg so image_path is available in templates
-    script += `  python3 "${templateProcessorScript}" ${wpArg} --scheme '${schemeJsonPathEsc}' --config '${userConfigPath}' --default-mode ${mode}\n`;
+    script += `  ${TemplateRegistry.themeProcessorCmd()} ${wpArg} --scheme '${schemeJsonPathEsc}' --config '${userConfigPath}' --default-mode ${mode}\n`;
     script += "fi";
 
     return script;

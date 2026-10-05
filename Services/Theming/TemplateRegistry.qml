@@ -17,8 +17,103 @@ Singleton {
   readonly property string gtkRefreshScript: Quickshell.shellDir + '/Scripts/python/src/theming/gtk-refresh.py'
   readonly property string kdeApplyScript: Quickshell.shellDir + '/Scripts/python/src/theming/kde-apply-scheme.py'
   readonly property string vscodeHelperScript: Quickshell.shellDir + '/Scripts/python/src/theming/vscode-helper.py'
+  readonly property string themeProcessorScript: Quickshell.shellDir + '/Scripts/python/src/theming/template-processor.py'
 
-  // Dynamically resolved VSCode extension theme paths (all matching noctalia extensions)
+  // Rust helpers (tools/nosd-helpers): PATH install, else the in-tree
+  // release binary. Empty until the detector below finishes; callers use
+  // helperCmd() so they fall back to the python scripts either way.
+  property string helpersBin: ""
+
+  function helperCmd(sub, args) {
+    if (root.helpersBin !== "")
+      return [root.helpersBin, sub].concat(args);
+    return null;
+  }
+  function gtkRefreshCmd(mode) {
+    return root.helperCmd("gtk-refresh", [mode]) || ["python3", root.gtkRefreshScript, mode];
+  }
+  function kdeApplyCmd(scheme) {
+    return root.helperCmd("kde-apply-scheme", [scheme]) || ["python3", root.kdeApplyScript, scheme];
+  }
+  function vscodeCmd(extensionsDir) {
+    return root.helperCmd("vscode-themes", [extensionsDir]) || ["python3", root.vscodeHelperScript, extensionsDir];
+  }
+  function khalEventsCmd(startDate, duration) {
+    return root.helperCmd("khal-events", [startDate, duration]);
+  }
+  function edsCheckCmd() {
+    return root.helperCmd("eds-check", []);
+  }
+  function edsCalendarsCmd() {
+    return root.helperCmd("eds-calendars", []);
+  }
+  function edsEventsCmd(startTime, endTime) {
+    return root.helperCmd("eds-events", [startTime, endTime]);
+  }
+  function migrateCmd(configDir) {
+    return root.helperCmd("migrate-colorschemes", [configDir]);
+  }
+  // nosd-theme binary (tools/nosd-theme): PATH install, else the in-tree
+  // release binary. Empty until the detector below finishes.
+  property string themeBin: ""
+  // Shell prefix for template-processor invocations: the Rust binary when
+  // detected, otherwise the python implementation. Same CLI on both sides.
+  function themeProcessorCmd() {
+    if (root.themeBin !== "")
+      return root.themeBin;
+    return `python3 ${root.themeProcessorScript}`;
+  }
+  // Shell one-liners for template post_hook entries (evaluated at apply time).
+  function gtkRefreshHook(mode) {
+    if (root.helpersBin !== "")
+      return `${root.helpersBin} gtk-refresh ${mode}`;
+    return `python3 ${root.gtkRefreshScript} ${mode}`;
+  }
+  function kdeApplyHook(scheme) {
+    if (root.helpersBin !== "")
+      return `${root.helpersBin} kde-apply-scheme ${scheme}`;
+    return `python3 ${root.kdeApplyScript} ${scheme}`;
+  }
+  // Shell one-liner for template-apply post_hook entries (evaluated at
+  // apply time): `nosd-helpers apply` when detected, else template-apply.sh.
+  function applyHook(app, mode) {
+    const tail = (mode !== undefined && mode !== "") ? ` ${mode}` : "";
+    if (root.helpersBin !== "")
+      return `${root.helpersBin} apply ${app}${tail}`;
+    return `${root.templateApplyScript} ${app}${tail}`;
+  }
+
+  Process {
+    id: helpersDetectProcess
+    command: ["sh", "-c", "command -v nosd-helpers || { p=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/release/nosd-helpers\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    running: true
+    stdout: StdioCollector {}
+    onExited: {
+      root.helpersBin = stdout.text.trim();
+      if (root.helpersBin !== "")
+      Logger.i("Theming", "nosd-helpers available:", root.helpersBin);
+      else
+      Logger.w("Theming", "nosd-helpers not found, falling back to python helpers");
+      codeResolverProcess.running = true;
+      codiumResolverProcess.running = true;
+    }
+  }
+
+  Process {
+    id: themeDetectProcess
+    command: ["sh", "-c", "command -v nosd-theme || { p=\"" + Quickshell.shellDir + "/tools/nosd-theme/target/release/nosd-theme\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    running: true
+    stdout: StdioCollector {}
+    onExited: {
+      root.themeBin = stdout.text.trim();
+      if (root.themeBin !== "")
+      Logger.i("Theming", "nosd-theme available:", root.themeBin);
+      else
+      Logger.w("Theming", "nosd-theme not found, falling back to template-processor.py");
+    }
+  }
+
+  // Dynamically resolved VSCode extension theme paths (all matching nosd extensions)
   property var resolvedCodePaths: []
   property var resolvedCodiumPaths: []
 
@@ -31,7 +126,7 @@ Singleton {
       "templatePath": "terminal/foot",
       "predefinedTemplatePath": "terminal/foot-predefined",
       "outputPath": "~/.config/foot/themes/nosdshell",
-      "postHook": `${templateApplyScript} foot`
+      "postHook": `${applyHook("foot")}`
     },
     {
       "id": "ghostty",
@@ -39,7 +134,7 @@ Singleton {
       "templatePath": "terminal/ghostty",
       "predefinedTemplatePath": "terminal/ghostty-predefined",
       "outputPath": "~/.config/ghostty/themes/nosdshell",
-      "postHook": `${templateApplyScript} ghostty`
+      "postHook": `${applyHook("ghostty")}`
     },
     {
       "id": "kitty",
@@ -47,7 +142,7 @@ Singleton {
       "templatePath": "terminal/kitty.conf",
       "predefinedTemplatePath": "terminal/kitty-predefined.conf",
       "outputPath": "~/.config/kitty/themes/nosdshell.conf",
-      "postHook": `${templateApplyScript} kitty`
+      "postHook": `${applyHook("kitty")}`
     },
     {
       "id": "alacritty",
@@ -55,7 +150,7 @@ Singleton {
       "templatePath": "terminal/alacritty.toml",
       "predefinedTemplatePath": "terminal/alacritty-predefined.toml",
       "outputPath": "~/.config/alacritty/themes/nosdshell.toml",
-      "postHook": `${templateApplyScript} alacritty`
+      "postHook": `${applyHook("alacritty")}`
     },
     {
       "id": "wezterm",
@@ -63,7 +158,7 @@ Singleton {
       "templatePath": "terminal/wezterm.toml",
       "predefinedTemplatePath": "terminal/wezterm-predefined.toml",
       "outputPath": "~/.config/wezterm/colors/nosDshell.toml",
-      "postHook": `${templateApplyScript} wezterm`
+      "postHook": `${applyHook("wezterm")}`
     },
     {
       "id": "starship",
@@ -71,7 +166,7 @@ Singleton {
       "templatePath": "terminal/starship.toml",
       "predefinedTemplatePath": "terminal/starship-predefined.toml",
       "outputPath": "~/.cache/nosdshell/starship-palette.toml",
-      "postHook": `${templateApplyScript} starship`
+      "postHook": `${applyHook("starship")}`
     }
   ]
 
@@ -84,15 +179,15 @@ Singleton {
       "input": "gtk4.css",
       "outputs": [
         {
-          "path": "~/.config/gtk-3.0/nosdshell.css",
+          "path": "~/.config/gtk-3.0/nosd.css",
           "input": "gtk3.css"
         },
         {
-          "path": "~/.config/gtk-4.0/nosdshell.css",
+          "path": "~/.config/gtk-4.0/nosd.css",
           "input": "gtk4.css"
         }
       ],
-      "postProcess": mode => `python3 ${gtkRefreshScript} ${mode}`
+      "postProcess": mode => root.gtkRefreshHook(mode)
     },
     {
       "id": "qt",
@@ -115,10 +210,10 @@ Singleton {
       "input": "kcolorscheme.colors",
       "outputs": [
         {
-          "path": "~/.local/share/color-schemes/nosdshell.colors"
+          "path": "~/.local/share/color-schemes/nosd.colors"
         }
       ],
-      "postProcess": () => `${kdeApplyScript} nosdshell`
+      "postProcess": () => root.kdeApplyHook("nosd")
     },
     {
       "id": "fuzzel",
@@ -130,7 +225,7 @@ Singleton {
           "path": "~/.config/fuzzel/themes/nosdshell"
         }
       ],
-      "postProcess": () => `${templateApplyScript} fuzzel`
+      "postProcess": () => `${applyHook("fuzzel")}`
     },
     {
       "id": "vicinae",
@@ -142,7 +237,7 @@ Singleton {
           "path": "~/.local/share/vicinae/themes/nosdshell.toml"
         }
       ],
-      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/nosdshell.svg ~/.local/share/vicinae/themes/nosdshell.svg && ${templateApplyScript} vicinae`
+      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${applyHook("vicinae")}`,
     },
     {
       "id": "walker",
@@ -154,7 +249,7 @@ Singleton {
           "path": "~/.config/walker/themes/nosdshell/style.css"
         }
       ],
-      "postProcess": () => `${templateApplyScript} walker`,
+      "postProcess": () => `${applyHook("walker")}`,
       "strict": true // Use strict mode for palette generation (preserves custom surface/outline values)
     },
     {
@@ -167,7 +262,7 @@ Singleton {
           "path": "~/.cache/wal/colors.json"
         }
       ],
-      "postProcess": mode => `${templateApplyScript} pywalfox ${mode}`
+      "postProcess": mode => `${applyHook("pywalfox", mode)}`
     } // CONSOLIDATED DISCORD CLIENTS
     ,
     {
@@ -226,11 +321,11 @@ Singleton {
       "clients": [
         {
           "name": "code",
-          "path": "~/.vscode/extensions/noctalia.noctaliatheme-0.0.5/themes/NoctaliaTheme-color-theme.json"
+          "path": "~/.vscode/extensions/nosd.nosdtheme-0.0.5/themes/NosdTheme-color-theme.json"
         },
         {
           "name": "codium",
-          "path": "~/.vscode-oss/extensions/noctalia.noctaliatheme-0.0.5-universal/themes/NoctaliaTheme-color-theme.json"
+          "path": "~/.vscode-oss/extensions/nosd.nosdtheme-0.0.5-universal/themes/NosdTheme-color-theme.json"
         }
       ]
     },
@@ -307,7 +402,7 @@ Singleton {
           "path": "~/.config/cava/themes/nosdshell"
         }
       ],
-      "postProcess": () => `${templateApplyScript} cava`
+      "postProcess": () => `${applyHook("cava")}`
     },
     {
       "id": "yazi",
@@ -319,7 +414,7 @@ Singleton {
           "path": "~/.config/yazi/flavors/nosdshell.yazi/flavor.toml"
         }
       ],
-      "postProcess": () => `${templateApplyScript} yazi`
+      "postProcess": () => `${applyHook("yazi")}`
     },
     {
       "id": "emacs",
@@ -338,7 +433,7 @@ Singleton {
           "path": "~/.config/labwc/themerc-override"
         }
       ],
-      "postProcess": () => `${templateApplyScript} labwc`
+      "postProcess": () => `${applyHook("labwc")}`
     },
     {
       "id": "niri",
@@ -350,7 +445,7 @@ Singleton {
           "path": "~/.config/niri/nosdshell.kdl"
         }
       ],
-      "postProcess": () => `${templateApplyScript} niri`
+      "postProcess": () => `${applyHook("niri")}`
     },
     {
       "id": "sway",
@@ -362,7 +457,7 @@ Singleton {
           "path": "~/.config/sway/nosdshell"
         }
       ],
-      "postProcess": () => `${templateApplyScript} sway`
+      "postProcess": () => `${applyHook("sway")}`
     },
     {
       "id": "scroll",
@@ -374,7 +469,7 @@ Singleton {
           "path": "~/.config/scroll/nosdshell"
         }
       ],
-      "postProcess": () => `${templateApplyScript} scroll`
+      "postProcess": () => `${applyHook("scroll")}`
     },
     {
       "id": "hyprland",
@@ -391,7 +486,7 @@ Singleton {
           "input": "hyprland.lua"
         },
       ],
-      "postProcess": () => `${templateApplyScript} hyprland`
+      "postProcess": () => `${applyHook("hyprland")}`
     },
     {
       "id": "hyprtoolkit",
@@ -414,7 +509,7 @@ Singleton {
           "path": "~/.config/mango/nosdshell.conf"
         }
       ],
-      "postProcess": () => `${templateApplyScript} mango`
+      "postProcess": () => `${applyHook("mango")}`
     },
     {
       "id": "btop",
@@ -426,7 +521,7 @@ Singleton {
           "path": "~/.config/btop/themes/nosdshell.theme"
         }
       ],
-      "postProcess": () => `${templateApplyScript} btop`
+      "postProcess": () => `${applyHook("btop")}`
     },
     {
       "id": "zathura",
@@ -438,7 +533,7 @@ Singleton {
           "path": "~/.config/zathura/nosdshellrc"
         }
       ],
-      "postProcess": () => `${templateApplyScript} zathura`
+      "postProcess": () => `${applyHook("zathura")}`
     },
     {
       "id": "steam",
@@ -504,11 +599,12 @@ Singleton {
     return clients;
   }
 
-  // Resolve VSCode extension paths dynamically
+  // Resolve VSCode extension paths dynamically (after helpers detection,
+  // so the Rust binary is preferred with python as fallback)
   Process {
     id: codeResolverProcess
-    command: ["python3", vscodeHelperScript, "~/.vscode/extensions"]
-    running: true
+    command: root.vscodeCmd("~/.vscode/extensions")
+    running: false
     property var paths: []
     stdout: SplitParser {
       onRead: data => {
@@ -524,8 +620,8 @@ Singleton {
 
   Process {
     id: codiumResolverProcess
-    command: ["python3", vscodeHelperScript, "~/.vscode-oss/extensions"]
-    running: true
+    command: root.vscodeCmd("~/.vscode-oss/extensions")
+    running: false
     property var paths: []
     stdout: SplitParser {
       onRead: data => {
