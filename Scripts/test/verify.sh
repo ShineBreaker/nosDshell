@@ -247,6 +247,12 @@ PYEOF
 dbus-run-session -- bash <<'DBUSEOF'
 set -uo pipefail
 
+# Scrub compositor-detection env inherited from the invoking session: a stray
+# NIRI_SOCKET/HYPRLAND signature makes CompositorService connect to the user's
+# real compositor and leak its windows into "isolated" shots.
+unset NIRI_SOCKET HYPRLAND_INSTANCE_SIGNATURE LABWC_PID
+export XDG_CURRENT_DESKTOP=sway
+
 SWAY_PID=""; QS_PID=""; PW_PID=""; WP_PID=""
 FOOT_PIDS=""
 cleanup() {
