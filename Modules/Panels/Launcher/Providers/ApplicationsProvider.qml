@@ -72,10 +72,7 @@ Item {
   // lists above stay for the legacy panel and for search filtering.
   // Mapping mirrors deepin-daemon launcher/category.go (xCategories).
   // ---------------------------------------------------------------
-  readonly property var ddeCategories: [
-    "Internet", "Chat", "Music", "Video", "Graphics", "Game",
-    "Office", "Reading", "Development", "System", "Others"
-  ]
+  readonly property var ddeCategories: ["Internet", "Chat", "Music", "Video", "Graphics", "Game", "Office", "Reading", "Development", "System", "Others"]
 
   // desktop-entry Categories (lowercase) -> DDE bucket; unmapped keys fall
   // back to the most frequent mapped key, ignoring Others
@@ -118,6 +115,9 @@ Item {
 
   function getDDECategoryName(category) {
     const names = {
+      // No bucket selected yet: the nav and the pinned title say "all apps"
+      // rather than leaking the internal key (miniframeswitchbtn.cpp:52-70).
+      "all": I18n.tr("launcher.dde.all-apps"),
       "Internet": I18n.tr("launcher.dde.categories.internet"),
       "Chat": I18n.tr("launcher.dde.categories.chat"),
       "Music": I18n.tr("launcher.dde.categories.music"),
@@ -137,11 +137,11 @@ Item {
   // Single category -> its mapping; multiple -> most frequent, Others ignored.
   function getDDECategory(app) {
     if (!app)
-    return "Others";
+      return "Others";
 
     const raw = getAppCategories(app);
     if (raw.length === 0)
-    return "Others";
+      return "Others";
 
     if (raw.length === 1) {
       const mapped = ddeCategoryMap[raw[0].toLowerCase()];
@@ -154,7 +154,7 @@ Item {
     for (const cat of raw) {
       const mapped = ddeCategoryMap[cat.toLowerCase()];
       if (!mapped || mapped === "Others")
-      continue;
+        continue;
       counts[mapped] = (counts[mapped] || 0) + 1;
       if (counts[mapped] > bestCount) {
         bestCount = counts[mapped];
@@ -166,12 +166,11 @@ Item {
 
   function appMatchesDDECategory(app, category) {
     if (category === "all")
-    return true;
+      return true;
     if (category === "Others")
-    return getDDECategory(app) === "Others";
+      return getDDECategory(app) === "Others";
     return getDDECategory(app) === category;
   }
-
 
   function init() {
     loadApplications();
