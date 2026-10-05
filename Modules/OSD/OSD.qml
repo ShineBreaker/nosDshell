@@ -490,7 +490,7 @@ Variants {
       implicitHeight: Math.max(Style.osdTileSize, verticalMode ? longVHeight : Style.osdTileSize)
       color: "transparent"
 
-      WlrLayershell.namespace: "noctalia-osd-" + (screen?.name || "unknown")
+      WlrLayershell.namespace: "nosdshell-osd-" + (screen?.name || "unknown")
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
       WlrLayershell.layer: Settings.data.osd?.overlayLayer ? WlrLayer.Overlay : WlrLayer.Top
       WlrLayershell.exclusionMode: ExclusionMode.Ignore

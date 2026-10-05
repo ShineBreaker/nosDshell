@@ -76,7 +76,7 @@ in
       '';
       description = ''
         nosDshell configuration settings as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/settings.json.
+        or filepath, to be written to ~/.config/nosdshell/settings.json.
       '';
     };
 
@@ -109,7 +109,7 @@ in
       '';
       description = ''
         nosDshell color configuration as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/colors.json.
+        or filepath, to be written to ~/.config/nosdshell/colors.json.
       '';
     };
 
@@ -126,7 +126,7 @@ in
         {
           templates = {
             neovim = {
-              input_path = "~/.config/noctalia/templates/template.lua";
+              input_path = "~/.config/nosdshell/templates/template.lua";
               output_path = "~/.config/nvim/generated.lua";
               post_hook = "pkill -SIGUSR1 nvim";
             };
@@ -134,7 +134,7 @@ in
         }
       '';
       description = ''
-        Template definitions for nosDshell, to be written to ~/.config/noctalia/user-templates.toml.
+        Template definitions for nosDshell, to be written to ~/.config/nosdshell/user-templates.toml.
 
         This option accepts:
         - a Nix attrset (converted to TOML automatically)
@@ -157,14 +157,14 @@ in
           sources = [
             {
               enabled = true;
-              name = "Noctalia Plugins";
-              url = "https://github.com/noctalia-dev/noctalia-plugins";
+              name = "Example Plugins";
+              url = "https://github.com/example/example-plugins";
             }
           ];
           states = {
             catwalk = {
               enabled = true;
-              sourceUrl = "https://github.com/noctalia-dev/noctalia-plugins";
+              sourceUrl = "https://github.com/example/example-plugins";
             };
           };
           version = 2;
@@ -172,7 +172,7 @@ in
       '';
       description = ''
         nosDshell plugin configuration as an attribute set, string
-        or filepath, to be written to ~/.config/noctalia/plugins.json.
+        or filepath, to be written to ~/.config/nosdshell/plugins.json.
       '';
     };
 
@@ -196,7 +196,7 @@ in
       description = ''
         Each plugin’s settings as an attribute set, string
         or filepath, to be written to
-        ~/.config/noctalia/plugins/plugin-name/settings.json.
+        ~/.config/nosdshell/plugins/plugin-name/settings.json.
       '';
     };
   };
@@ -214,14 +214,14 @@ in
         PartOf = [ config.wayland.systemd.target ];
         After = [ config.wayland.systemd.target ];
         X-Restart-Triggers =
-          lib.optional (cfg.settings != { }) "${config.xdg.configFile."noctalia/settings.json".source}"
-          ++ lib.optional (cfg.colors != { }) "${config.xdg.configFile."noctalia/colors.json".source}"
-          ++ lib.optional (cfg.plugins != { }) "${config.xdg.configFile."noctalia/plugins.json".source}"
+          lib.optional (cfg.settings != { }) "${config.xdg.configFile."nosdshell/settings.json".source}"
+          ++ lib.optional (cfg.colors != { }) "${config.xdg.configFile."nosdshell/colors.json".source}"
+          ++ lib.optional (cfg.plugins != { }) "${config.xdg.configFile."nosdshell/plugins.json".source}"
           ++ lib.optional (
             cfg.user-templates != { }
-          ) "${config.xdg.configFile."noctalia/user-templates.toml".source}"
+          ) "${config.xdg.configFile."nosdshell/user-templates.toml".source}"
           ++ lib.mapAttrsToList (
-            name: _: "${config.xdg.configFile."noctalia/plugins/${name}/settings.json".source}"
+            name: _: "${config.xdg.configFile."nosdshell/plugins/${name}/settings.json".source}"
           ) cfg.pluginSettings;
       };
 
@@ -235,19 +235,17 @@ in
 
     home.packages = lib.optional (cfg.package != null) cfg.package;
 
-    # These paths must stay `noctalia/` until the runtime shellName is
-    # renamed: Settings.qml still resolves ~/.config/noctalia.
     xdg.configFile = {
-      "noctalia/settings.json" = lib.mkIf (cfg.settings != { }) {
+      "nosdshell/settings.json" = lib.mkIf (cfg.settings != { }) {
         source = generateJson "settings" cfg.settings;
       };
-      "noctalia/colors.json" = lib.mkIf (cfg.colors != { }) {
+      "nosdshell/colors.json" = lib.mkIf (cfg.colors != { }) {
         source = generateJson "colors" cfg.colors;
       };
-      "noctalia/plugins.json" = lib.mkIf (cfg.plugins != { }) {
+      "nosdshell/plugins.json" = lib.mkIf (cfg.plugins != { }) {
         source = generateJson "plugins" cfg.plugins;
       };
-      "noctalia/user-templates.toml" = lib.mkIf (cfg.user-templates != { }) {
+      "nosdshell/user-templates.toml" = lib.mkIf (cfg.user-templates != { }) {
         source =
           if lib.isString cfg.user-templates then
             pkgs.writeText "nosd-user-templates.toml" cfg.user-templates
@@ -259,7 +257,7 @@ in
     }
     // lib.mapAttrs' (
       name: value:
-      lib.nameValuePair "noctalia/plugins/${name}/settings.json" {
+      lib.nameValuePair "nosdshell/plugins/${name}/settings.json" {
         source = generateJson "${name}-settings" value;
       }
     ) cfg.pluginSettings;

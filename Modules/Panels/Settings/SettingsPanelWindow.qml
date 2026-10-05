@@ -11,7 +11,7 @@ import qs.Widgets
 FloatingWindow {
   id: root
 
-  title: "Noctalia"
+  title: "nosDshell"
   // 56 px rail + 640 px content (DESIGN §3.5.3), plus the DDE window padding.
   minimumSize: Qt.size((Style.settingsRailWidth + Style.settingsWindowContentWidth + Style.margin2M) * 1, 910 * Style.uiScaleRatio)
   implicitWidth: Math.round(Style.settingsRailWidth + Style.settingsWindowContentWidth + Style.margin2M)

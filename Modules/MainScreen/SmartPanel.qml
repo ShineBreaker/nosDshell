@@ -121,7 +121,7 @@ Item {
     if (!root.arrowPopup)
       return false;
     var n = root.objectName || "";
-    var deny = ["launcherPanel", "controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel", "changelogPanel", "staticDockPanel"];
+    var deny = ["launcherPanel", "controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel", "staticDockPanel"];
     for (var i = 0; i < deny.length; ++i) {
       if (n.indexOf(deny[i] + "-") === 0)
         return false;

@@ -30,7 +30,7 @@ Singleton {
       "name": "Foot",
       "templatePath": "terminal/foot",
       "predefinedTemplatePath": "terminal/foot-predefined",
-      "outputPath": "~/.config/foot/themes/noctalia",
+      "outputPath": "~/.config/foot/themes/nosdshell",
       "postHook": `${templateApplyScript} foot`
     },
     {
@@ -38,7 +38,7 @@ Singleton {
       "name": "Ghostty",
       "templatePath": "terminal/ghostty",
       "predefinedTemplatePath": "terminal/ghostty-predefined",
-      "outputPath": "~/.config/ghostty/themes/noctalia",
+      "outputPath": "~/.config/ghostty/themes/nosdshell",
       "postHook": `${templateApplyScript} ghostty`
     },
     {
@@ -46,7 +46,7 @@ Singleton {
       "name": "Kitty",
       "templatePath": "terminal/kitty.conf",
       "predefinedTemplatePath": "terminal/kitty-predefined.conf",
-      "outputPath": "~/.config/kitty/themes/noctalia.conf",
+      "outputPath": "~/.config/kitty/themes/nosdshell.conf",
       "postHook": `${templateApplyScript} kitty`
     },
     {
@@ -54,7 +54,7 @@ Singleton {
       "name": "Alacritty",
       "templatePath": "terminal/alacritty.toml",
       "predefinedTemplatePath": "terminal/alacritty-predefined.toml",
-      "outputPath": "~/.config/alacritty/themes/noctalia.toml",
+      "outputPath": "~/.config/alacritty/themes/nosdshell.toml",
       "postHook": `${templateApplyScript} alacritty`
     },
     {
@@ -62,7 +62,7 @@ Singleton {
       "name": "Wezterm",
       "templatePath": "terminal/wezterm.toml",
       "predefinedTemplatePath": "terminal/wezterm-predefined.toml",
-      "outputPath": "~/.config/wezterm/colors/Noctalia.toml",
+      "outputPath": "~/.config/wezterm/colors/nosDshell.toml",
       "postHook": `${templateApplyScript} wezterm`
     },
     {
@@ -70,7 +70,7 @@ Singleton {
       "name": "Starship",
       "templatePath": "terminal/starship.toml",
       "predefinedTemplatePath": "terminal/starship-predefined.toml",
-      "outputPath": "~/.cache/noctalia/starship-palette.toml",
+      "outputPath": "~/.cache/nosdshell/starship-palette.toml",
       "postHook": `${templateApplyScript} starship`
     }
   ]
@@ -84,11 +84,11 @@ Singleton {
       "input": "gtk4.css",
       "outputs": [
         {
-          "path": "~/.config/gtk-3.0/noctalia.css",
+          "path": "~/.config/gtk-3.0/nosdshell.css",
           "input": "gtk3.css"
         },
         {
-          "path": "~/.config/gtk-4.0/noctalia.css",
+          "path": "~/.config/gtk-4.0/nosdshell.css",
           "input": "gtk4.css"
         }
       ],
@@ -101,10 +101,10 @@ Singleton {
       "input": "qtct.conf",
       "outputs": [
         {
-          "path": "~/.config/qt5ct/colors/noctalia.conf"
+          "path": "~/.config/qt5ct/colors/nosdshell.conf"
         },
         {
-          "path": "~/.config/qt6ct/colors/noctalia.conf"
+          "path": "~/.config/qt6ct/colors/nosdshell.conf"
         }
       ]
     },
@@ -115,10 +115,10 @@ Singleton {
       "input": "kcolorscheme.colors",
       "outputs": [
         {
-          "path": "~/.local/share/color-schemes/noctalia.colors"
+          "path": "~/.local/share/color-schemes/nosdshell.colors"
         }
       ],
-      "postProcess": () => `${kdeApplyScript} noctalia`
+      "postProcess": () => `${kdeApplyScript} nosdshell`
     },
     {
       "id": "fuzzel",
@@ -127,7 +127,7 @@ Singleton {
       "input": "fuzzel.conf",
       "outputs": [
         {
-          "path": "~/.config/fuzzel/themes/noctalia"
+          "path": "~/.config/fuzzel/themes/nosdshell"
         }
       ],
       "postProcess": () => `${templateApplyScript} fuzzel`
@@ -139,10 +139,10 @@ Singleton {
       "input": "vicinae.toml",
       "outputs": [
         {
-          "path": "~/.local/share/vicinae/themes/noctalia.toml"
+          "path": "~/.local/share/vicinae/themes/nosdshell.toml"
         }
       ],
-      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${templateApplyScript} vicinae`
+      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/nosdshell.svg ~/.local/share/vicinae/themes/nosdshell.svg && ${templateApplyScript} vicinae`
     },
     {
       "id": "walker",
@@ -151,7 +151,7 @@ Singleton {
       "input": "walker.css",
       "outputs": [
         {
-          "path": "~/.config/walker/themes/noctalia/style.css"
+          "path": "~/.config/walker/themes/nosdshell/style.css"
         }
       ],
       "postProcess": () => `${templateApplyScript} walker`,
@@ -241,7 +241,7 @@ Singleton {
       "input": "zed.json",
       "outputs": [
         {
-          "path": "~/.config/zed/themes/noctalia.json"
+          "path": "~/.config/zed/themes/nosdshell.json"
         }
       ],
       "dualMode": true // Template contains both dark and light theme patterns
@@ -253,7 +253,7 @@ Singleton {
       "input": "helix.toml",
       "outputs": [
         {
-          "path": "~/.config/helix/themes/noctalia.toml"
+          "path": "~/.config/helix/themes/nosdshell.toml"
         }
       ]
     },
@@ -276,7 +276,7 @@ Singleton {
       "input": "telegram.tdesktop-theme",
       "outputs": [
         {
-          "path": "~/.config/telegram-desktop/themes/noctalia.tdesktop-theme"
+          "path": "~/.config/telegram-desktop/themes/nosdshell.tdesktop-theme"
         }
       ]
     },
@@ -287,15 +287,15 @@ Singleton {
       "input": "zen-browser/zen-userChrome.css",
       "outputs": [
         {
-          "path": "~/.cache/noctalia/zen-browser/zen-userChrome.css"
+          "path": "~/.cache/nosdshell/zen-browser/zen-userChrome.css"
         },
         {
-          "path": "~/.cache/noctalia/zen-browser/zen-userContent.css",
+          "path": "~/.cache/nosdshell/zen-browser/zen-userContent.css",
           "input": "zen-browser/zen-userContent.css"
         }
       ],
       "postProcess": ()
-                     => "sh -c 'CSS_CHROME=\"$HOME/.cache/noctalia/zen-browser/zen-userChrome.css\"; CSS_CONTENT=\"$HOME/.cache/noctalia/zen-browser/zen-userContent.css\"; LINE_CHROME=\"@import \\\"$CSS_CHROME\\\";\"; LINE_CONTENT=\"@import \\\"$CSS_CONTENT\\\";\"; find \"$HOME/.config/zen\" \"$HOME/.zen\" -mindepth 2 -maxdepth 2 -type d -name chrome -print0 2>/dev/null | while IFS= read -r -d \"\" dir; do USER_CHROME=\"$dir/userChrome.css\"; USER_CONTENT=\"$dir/userContent.css\"; mkdir -p \"$dir\"; touch \"$USER_CHROME\" \"$USER_CONTENT\"; sed -i \"/zen-browser\\/zen-userChrome\\.css/d\" \"$USER_CHROME\"; sed -i \"/zen-browser\\/zen-userContent\\.css/d\" \"$USER_CONTENT\"; if ! grep -Fq \"$LINE_CHROME\" \"$USER_CHROME\"; then printf \"%s\\n\" \"$LINE_CHROME\" >> \"$USER_CHROME\"; fi; if ! grep -Fq \"$LINE_CONTENT\" \"$USER_CONTENT\"; then printf \"%s\\n\" \"$LINE_CONTENT\" >> \"$USER_CONTENT\"; fi; done'"
+                     => "sh -c 'CSS_CHROME=\"$HOME/.cache/nosdshell/zen-browser/zen-userChrome.css\"; CSS_CONTENT=\"$HOME/.cache/nosdshell/zen-browser/zen-userContent.css\"; LINE_CHROME=\"@import \\\"$CSS_CHROME\\\";\"; LINE_CONTENT=\"@import \\\"$CSS_CONTENT\\\";\"; find \"$HOME/.config/zen\" \"$HOME/.zen\" -mindepth 2 -maxdepth 2 -type d -name chrome -print0 2>/dev/null | while IFS= read -r -d \"\" dir; do USER_CHROME=\"$dir/userChrome.css\"; USER_CONTENT=\"$dir/userContent.css\"; mkdir -p \"$dir\"; touch \"$USER_CHROME\" \"$USER_CONTENT\"; sed -i \"/zen-browser\\/zen-userChrome\\.css/d\" \"$USER_CHROME\"; sed -i \"/zen-browser\\/zen-userContent\\.css/d\" \"$USER_CONTENT\"; if ! grep -Fq \"$LINE_CHROME\" \"$USER_CHROME\"; then printf \"%s\\n\" \"$LINE_CHROME\" >> \"$USER_CHROME\"; fi; if ! grep -Fq \"$LINE_CONTENT\" \"$USER_CONTENT\"; then printf \"%s\\n\" \"$LINE_CONTENT\" >> \"$USER_CONTENT\"; fi; done'"
     },
     {
       "id": "cava",
@@ -304,7 +304,7 @@ Singleton {
       "input": "cava.ini",
       "outputs": [
         {
-          "path": "~/.config/cava/themes/noctalia"
+          "path": "~/.config/cava/themes/nosdshell"
         }
       ],
       "postProcess": () => `${templateApplyScript} cava`
@@ -316,7 +316,7 @@ Singleton {
       "input": "yazi.toml",
       "outputs": [
         {
-          "path": "~/.config/yazi/flavors/noctalia.yazi/flavor.toml"
+          "path": "~/.config/yazi/flavors/nosdshell.yazi/flavor.toml"
         }
       ],
       "postProcess": () => `${templateApplyScript} yazi`
@@ -326,7 +326,7 @@ Singleton {
       "name": "Emacs",
       "category": "editor",
       "input": "emacs.el",
-      "postProcess": () => `emacsclient -e "(load-theme 'noctalia t)"`
+      "postProcess": () => `emacsclient -e "(load-theme 'nosdshell t)"`
     },
     {
       "id": "labwc",
@@ -347,7 +347,7 @@ Singleton {
       "input": "niri.kdl",
       "outputs": [
         {
-          "path": "~/.config/niri/noctalia.kdl"
+          "path": "~/.config/niri/nosdshell.kdl"
         }
       ],
       "postProcess": () => `${templateApplyScript} niri`
@@ -359,7 +359,7 @@ Singleton {
       "input": "sway",
       "outputs": [
         {
-          "path": "~/.config/sway/noctalia"
+          "path": "~/.config/sway/nosdshell"
         }
       ],
       "postProcess": () => `${templateApplyScript} sway`
@@ -371,7 +371,7 @@ Singleton {
       "input": "scroll",
       "outputs": [
         {
-          "path": "~/.config/scroll/noctalia"
+          "path": "~/.config/scroll/nosdshell"
         }
       ],
       "postProcess": () => `${templateApplyScript} scroll`
@@ -383,11 +383,11 @@ Singleton {
       "input": "hyprland.conf",
       "outputs": [
         {
-          "path": "~/.config/hypr/noctalia/noctalia-colors.conf",
+          "path": "~/.config/hypr/nosdshell/nosdshell-colors.conf",
           "postProcess": false
         },
         {
-          "path": "~/.config/hypr/noctalia/noctalia-colors.lua",
+          "path": "~/.config/hypr/nosdshell/nosdshell-colors.lua",
           "input": "hyprland.lua"
         },
       ],
@@ -411,7 +411,7 @@ Singleton {
       "input": "mango.conf",
       "outputs": [
         {
-          "path": "~/.config/mango/noctalia.conf"
+          "path": "~/.config/mango/nosdshell.conf"
         }
       ],
       "postProcess": () => `${templateApplyScript} mango`
@@ -423,7 +423,7 @@ Singleton {
       "input": "btop.theme",
       "outputs": [
         {
-          "path": "~/.config/btop/themes/noctalia.theme"
+          "path": "~/.config/btop/themes/nosdshell.theme"
         }
       ],
       "postProcess": () => `${templateApplyScript} btop`
@@ -435,7 +435,7 @@ Singleton {
       "input": "zathurarc",
       "outputs": [
         {
-          "path": "~/.config/zathura/noctaliarc"
+          "path": "~/.config/zathura/nosdshellrc"
         }
       ],
       "postProcess": () => `${templateApplyScript} zathura`
@@ -462,7 +462,7 @@ Singleton {
                                    clients.push({
                                                   "name": client.name,
                                                   "configPath": client.path,
-                                                  "themePath": `${client.path}/themes/noctalia.theme.css`
+                                                  "themePath": `${client.path}/themes/nosdshell.theme.css`
                                                 });
                                  });
     }
@@ -549,13 +549,13 @@ Singleton {
     lines.push("# Add your custom templates below");
     lines.push("# Example:");
     lines.push("# [templates.myapp]");
-    lines.push("# input_path = \"~/.config/noctalia/templates/myapp.css\"");
+    lines.push("# input_path = \"~/.config/nosdshell/templates/myapp.css\"");
     lines.push("# output_path = \"~/.config/myapp/theme.css\"");
     lines.push("# post_hook = \"myapp --reload-theme\"");
     lines.push("");
     lines.push("# Remove this section and add your own templates");
     lines.push("#[templates.placeholder]");
-    lines.push("#input_path = \"" + Quickshell.shellDir + "/Assets/Templates/noctalia.json\"");
+    lines.push("#input_path = \"" + Quickshell.shellDir + "/Assets/Templates/nosdshell.json\"");
     lines.push("#output_path = \"" + Settings.cacheDir + "placeholder.json\"");
     lines.push("");
 

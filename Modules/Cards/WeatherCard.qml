@@ -116,14 +116,14 @@ NBox {
           readonly property int mainWeatherIconSide: Math.round(Style.fontSizeXXXL * 1.75 * Style.uiScaleRatio * 1.6)
 
           NIcon {
-            visible: !LocationService.taliaWeatherMascotActive
+            visible: !LocationService.weatherMascotActive
             anchors.centerIn: parent
             icon: weatherReady ? LocationService.weatherSymbolFromCode(LocationService.data.weather.current_weather.weathercode) : ""
             pointSize: Style.fontSizeXXXL * 1.75
             color: Color.mPrimary
           }
           Loader {
-            active: LocationService.taliaWeatherMascotActive
+            active: LocationService.weatherMascotActive
             anchors.fill: parent
             asynchronous: true
             sourceComponent: Component {
@@ -133,7 +133,7 @@ NBox {
                 smooth: true
                 mipmap: true
                 asynchronous: true
-                source: Qt.resolvedUrl(LocationService.taliaWeatherImageFromCode(currentWeatherCode))
+                source: Qt.resolvedUrl(LocationService.weatherMascotImageFromCode(currentWeatherCode))
               }
             }
           }
@@ -215,14 +215,14 @@ NBox {
             readonly property int forecastWeatherIconSide: Math.round(Style.fontSizeXXL * 1.6 * Style.uiScaleRatio * 1.6)
 
             NIcon {
-              visible: !LocationService.taliaWeatherMascotActive
+              visible: !LocationService.weatherMascotActive
               anchors.centerIn: parent
               icon: LocationService.weatherSymbolFromCode(LocationService.data.weather.daily.weathercode[index])
               pointSize: Style.fontSizeXXL * 1.6
               color: Color.mPrimary
             }
             Loader {
-              active: LocationService.taliaWeatherMascotActive
+              active: LocationService.weatherMascotActive
               anchors.fill: parent
               asynchronous: true
               sourceComponent: Component {
@@ -232,7 +232,7 @@ NBox {
                   smooth: true
                   mipmap: true
                   asynchronous: true
-                  source: Qt.resolvedUrl(LocationService.taliaWeatherImageFromCode(LocationService.data.weather.daily.weathercode[index]))
+                  source: Qt.resolvedUrl(LocationService.weatherMascotImageFromCode(LocationService.data.weather.daily.weathercode[index]))
                 }
               }
             }

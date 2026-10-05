@@ -201,7 +201,7 @@ ColumnLayout {
       outlined: true
       Layout.fillWidth: true
       onClicked: {
-        Qt.openUrlExternally("https://docs.noctalia.dev");
+        Qt.openUrlExternally("https://github.com/ShineBreaker/nosDshell");
       }
     }
 

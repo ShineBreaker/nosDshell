@@ -130,12 +130,12 @@ ColumnLayout {
     }
 
     NToggle {
-      label: I18n.tr("panels.location.weather-talia-mascot-always-label")
-      description: I18n.tr("panels.location.weather-talia-mascot-always-description")
-      checked: Settings.data.location.weatherTaliaMascotAlways
-      onToggled: checked => Settings.data.location.weatherTaliaMascotAlways = checked
+      label: I18n.tr("panels.location.weather-mascot-always-label")
+      description: I18n.tr("panels.location.weather-mascot-always-description")
+      checked: Settings.data.location.weatherMascotAlways
+      onToggled: checked => Settings.data.location.weatherMascotAlways = checked
       enabled: Settings.data.location.weatherEnabled
-      defaultValue: Settings.getDefaultValue("location.weatherTaliaMascotAlways")
+      defaultValue: Settings.getDefaultValue("location.weatherMascotAlways")
     }
 
     NToggle {

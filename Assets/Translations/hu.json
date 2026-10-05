@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Widget elrejtése, ha a rendszer nem észlel akkumulátort.",
       "hide-if-not-detected-label": "Elrejtés, ha nincs észlelve",
       "low-battery-threshold-label": "Alacsony akkumulátor töltöttségi figyelmeztetési küszöb",
-      "show-noctalia-performance-description": "A Noctalia teljesítménymód kapcsoló megjelenítése az akkumulátor panelen belül.<br>Letiltja az árnyékokat és animációkat a Noctaliaban az erőforrásfelhasználás csökkentése érdekében.",
-      "show-noctalia-performance-label": "Noctalia Teljesítmény kapcsoló megjelenítése",
       "show-power-profile-description": "Az energiaprofil kiválasztásának megjelenítése az akkumulátor panelen belül.",
-      "show-power-profile-label": "Energiaprofil vezérlők"
+      "show-power-profile-label": "Energiaprofil vezérlők",
+      "show-performance-mode-description": "A nosDshell teljesítménymód kapcsoló megjelenítése az akkumulátor panelen belül.<br>Letiltja az árnyékokat és animációkat a nosDshellban az erőforrásfelhasználás csökkentése érdekében.",
+      "show-performance-mode-label": "nosDshell Teljesítmény kapcsoló megjelenítése"
     },
     "brightness": {
       "apply-all-description": "A fényerő módosítása minden monitoron a görgő használatával.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Bal",
       "icon-position-right": "Jobb",
       "icon-position-top": "Felül",
-      "ipc-identifier-description": "Egyedi azonosító az IPC parancsokhoz. Használd ezt az azonosítót a 'qs -c noctalia-shell ipc call cb [akció] [azonosító]' paranccsal, hogy vezéreld ezt a gombot IPC-n keresztül.",
+      "ipc-identifier-description": "Egyedi azonosító az IPC parancsokhoz. Használd ezt az azonosítót a 'qs -c nosdshell ipc call cb [akció] [azonosító]' paranccsal, hogy vezéreld ezt a gombot IPC-n keresztül.",
       "ipc-identifier-label": "IPC-azonosító",
       "left-click-description": "Végrehajtandó parancs a gomb bal egérgombbal történő kattintásakor.",
       "left-click-label": "Bal kattintás",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Jelerősség: Nagyon gyenge"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "Nem sikerült betölteni a változási napló adatait. Próbálja újra később.",
-      "rate-limit": "Túllépte a GitHub sebességkorlátját. Próbálja újra néhány perc múlva."
-    },
-    "panel": {
-      "buttons-discord": "Csatlakozz a Discordunkhoz",
-      "buttons-dismiss": "OK",
-      "buttons-feedback": "Adj visszajelzést",
-      "empty": "A kiadási jegyzetek még nem érhetők el.",
-      "highlight-title": "Főbb újdonságok",
-      "released": "Kiadva: {date}",
-      "subtitle-fresh": "Köszönjük, hogy telepítette a Noctalia-t! Itt van, mi található ebben az összeállításban.",
-      "subtitle-updated": "Frissítve erről: {previousVersion}",
-      "title": "Újdonságok a {version} verzióban",
-      "version": "verzió {version}",
-      "version-new-user": "Új telepítés"
-    }
-  },
   "common": {
     "actions": "Műveletek",
     "active": "Aktív",
@@ -421,7 +402,6 @@
     "connected": "Csatlakoztatva",
     "connecting": "Csatlakozás…",
     "continue": "Folytatás",
-    "contributors": "Közreműködők",
     "copied-to-clipboard": "Vágólapra másolva",
     "countdown": "Visszaszámlálás",
     "customize": "Testreszabás",
@@ -538,7 +518,6 @@
     "sources": "Források",
     "start": "Kezdés",
     "stop": "Állj",
-    "supporters": "Támogatók",
     "suspend": "Felfüggesztés",
     "templates": "Sablonok",
     "tertiary": "Harmadlagos",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Legyél támogató",
-      "changelog": "Változások megtekintése",
-      "changelog-on-startup": "Változási napló megjelenítése frissítéskor",
-      "changelog-on-startup-desc": "Automatikusan jelenítse meg a változási naplót, amikor a Noctalia frissül.",
-      "contributors-description": "Köszönet a(z) {count} <b>fantasztikus</b> közreműködőnknek!",
-      "contributors-description-plural": "Köszönet a(z) {count} <b>fantasztikus</b> közreműködőnknek!",
       "copy-info": "Információk másolása",
       "debug-disabled": "Hibakeresési mód letiltva",
       "debug-enabled": "Hibakeresési mód engedélyezve",
       "info-copied": "Információ a vágólapra másolva",
-      "noctalia-available": "Elérhető:",
-      "noctalia-desc": "Egy elegáns és minimalista asztali felület, Waylandra tervezve, Quickshell-en alapulva.",
-      "noctalia-git-commit": "Git commit:",
-      "noctalia-installed-version": "Telepített verzió:",
-      "noctalia-latest-version": "Legújabb verzió:",
-      "noctalia-qs-version": "Noctalia QS verzió:",
-      "noctalia-title": "Noctalia shell",
-      "privacy-policy": "Adatvédelmi irányelvek",
-      "support": "Támogass minket",
-      "supporter-badge": "Támogató",
-      "supporters-desc": "Hatalmas köszönet csodálatos támogatóinknak!",
-      "supporters-desc-plural": "Hatalmas köszönet a <b>{count} csodálatos</b> támogatóinknak!",
-      "supporters-loading": "Támogatók betöltése…",
       "system-board": "Alaplap:",
       "system-cpu": "CPU:",
       "system-disk": "Lemez:",
@@ -774,14 +734,7 @@
       "system-title": "Rendszerinformációk",
       "system-uptime": "Működési idő:",
       "system-wm": "WM:",
-      "telemetry-data-copied": "Telemetriai adatok a vágólapra másolva",
-      "telemetry-desc": "Segíts a Noctalia fejlesztésében névtelen rendszerinformációk (képernyőfelbontás, kompozitor, disztribúció) megosztásával. Egyszer kerül elküldésre indításkor, nincs nyomon követés, az adatok 30 nap után automatikusan törlődnek.",
-      "telemetry-enabled": "Névtelen rendszerinformációk küldése",
-      "telemetry-show-data": "Adatok megtekintése",
-      "telemetry-title": "Adatvédelem",
       "title": "Névjegy",
-      "up-to-date": "Naprakész vagy!",
-      "update-available": "Frissítés elérhető",
       "view-commit": "Commit megtekintése a GitHubon"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• A parancsok shellen keresztül futnak (sh -lc)<br>• A parancsok a háttérben futnak (leválasztva)<br>• A tesztgombok az aktuális értékekkel futnak le",
       "info-parameters-description": "• Wallpaper horog: $1 = háttérkép útvonala, $2 = képernyő neve, $3 = téma (sötét/világos)<br>• Témaváltó horog: $1 = igaz/hamis (sötét mód állapot)<br>• Képernyő zárolása/feloldása horgok: $1 = zárolás/feloldás (képernyőzár állapot)<br>• Teljesítménymód horgok: Nincs paraméter<br>• Munkamenet horog: $1 = művelet (leállítás/újraindítás)",
       "info-parameters-label": "Elérhető paraméterek",
-      "noctalia-started-description": "Parancs, ami akkor fut le, amikor a Noctalia betöltése befejeződött.",
-      "noctalia-started-label": "Noctalia elindult",
-      "noctalia-started-placeholder": "pl. notify-send 'Noctalia betöltve'",
-      "performance-mode-disabled-description": "Parancs, amely akkor fut le, ha a Noctalia teljesítmény mód engedélyezve van.",
+      "performance-mode-disabled-description": "Parancs, amely akkor fut le, ha a nosDshell teljesítmény mód engedélyezve van.",
       "performance-mode-disabled-label": "Teljesítmény mód letiltva",
       "performance-mode-disabled-placeholder": "pl. notify-send \"Teljesítmény\" \"Mód letiltva\"",
-      "performance-mode-enabled-description": "Parancs, amely akkor fut le, ha a Noctalia teljesítmény mód engedélyezve van.",
+      "performance-mode-enabled-description": "Parancs, amely akkor fut le, ha a nosDshell teljesítmény mód engedélyezve van.",
       "performance-mode-enabled-label": "Teljesítmény mód engedélyezve",
       "performance-mode-enabled-placeholder": "pl. notify-send \"Teljesítmény\" \"Mód engedélyezve\"",
       "screen-lock-description": "Parancs, amely a képernyő zárolásakor fut le.",
@@ -1283,7 +1233,10 @@
       "title": "Horgok",
       "wallpaper-changed-description": "Parancs, amely a háttérkép megváltozásakor fut le.",
       "wallpaper-changed-label": "Háttérkép megváltozott",
-      "wallpaper-changed-placeholder": "pl. notify-send \"Háttérkép\" \"Megváltozott\""
+      "wallpaper-changed-placeholder": "pl. notify-send \"Háttérkép\" \"Megváltozott\"",
+      "shell-started-description": "Parancs, ami akkor fut le, amikor a nosDshell betöltése befejeződött.",
+      "shell-started-label": "nosDshell elindult",
+      "shell-started-placeholder": "pl. notify-send 'nosDshell betöltve'"
     },
     "idle": {
       "custom-add": "Parancs hozzáadása",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Időjárási effektek megjelenítése",
       "weather-show-in-calendar-description": "A napi időjárás-előrejelzés megjelenítése közvetlenül a naptárnézetben.",
       "weather-show-in-calendar-label": "Időjárás megjelenítése a naptárban",
-      "weather-talia-mascot-always-description": "Talia hangulatjelek használata a Tabler ikonok helyett.",
-      "weather-talia-mascot-always-label": "Mindig jelenítse meg a Talia időjárás hangulatjeleket"
+      "weather-mascot-always-description": "Talia hangulatjelek használata a Tabler ikonok helyett.",
+      "weather-mascot-always-label": "Mindig jelenítse meg a Talia időjárás hangulatjeleket"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Ha az fprintd (ujjlenyomat-hitelesítés) aktív, ez az opció lehetővé teszi, hogy továbbra is jelszóval jelentkezz be ujjlenyomat helyett.",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Sűrűség",
       "settings-desc": "Az értesítések megjelenésének és viselkedésének konfigurálása.",
       "settings-do-not-disturb-description": "Letiltja az összes értesítési felugró ablakot, ha engedélyezve van.",
-      "settings-enabled-description": "Az értesítési daemon engedélyezése vagy letiltása a Noctalia shell újraindítását igényli.",
+      "settings-enabled-description": "Az értesítési daemon engedélyezése vagy letiltása a nosDshell shell újraindítását igényli.",
       "settings-enabled-label": "Értesítések engedélyezése",
       "settings-location-description": "Ahol az értesítések megjelennek a képernyőn.",
       "settings-markdown-description": "Értesítés tartalmának megjelenítése Markdown formázással.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Gyors újratöltés (fejlesztői mód)",
       "hot-reloaded": "Újratöltött bővítmény: {name}",
       "install-error": "Sikertelen telepítés: {error}",
-      "install-incompatible": "A {plugin} bővítményhez Noctalia v{version} vagy újabb verzió szükséges",
       "install-success": "Sikeresen telepítve: {plugin}",
       "installed-description": "Az összes helyileg telepített bővítmény kezelése és beállítása.",
       "installed-label": "Telepített bővítmények",
@@ -1641,7 +1593,7 @@
       "update-available": "Új bővítményfrissítés elérhető",
       "update-available-plural": "Új bővítményfrissítések elérhetők ({count})",
       "update-error": "Nem sikerült frissíteni a bővítményt: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (szükséges Noctalia v{required})",
+      "update-pending": "v{current} → v{new} (szükséges nosDshell v{required})",
       "update-success": "A(z) {plugin} frissítve lett a v{version} verzióra",
       "update-version": "v{current} → v{new}",
       "updating": "Frissítés…"
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Gyorsbillentyűk megjelenítése"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Az asztali widgetek láthatóak maradnak, amíg a Noctalia teljesítmény mód engedélyezve van.",
-      "noctalia-performance-disable-desktop-widgets-label": "Engedélyezi az asztali widgeteket teljesítmény módban",
-      "noctalia-performance-disable-wallpaper-description": "Az asztali, áttekintő és zárolási képernyő háttérképek láthatóak maradnak, amíg a Noctalia teljesítmény mód engedélyezve van.",
-      "noctalia-performance-disable-wallpaper-label": "Engedélyezi a háttérkép renderelését teljesítmény módban",
-      "title": "Rendszer"
+      "title": "Rendszer",
+      "performance-mode-disable-desktop-widgets-description": "Az asztali widgetek láthatóak maradnak, amíg a nosDshell teljesítmény mód engedélyezve van.",
+      "performance-mode-disable-desktop-widgets-label": "Engedélyezi az asztali widgeteket teljesítmény módban",
+      "performance-mode-disable-wallpaper-description": "Az asztali, áttekintő és zárolási képernyő háttérképek láthatóak maradnak, amíg a nosDshell teljesítmény mód engedélyezve van.",
+      "performance-mode-disable-wallpaper-label": "Engedélyezi a háttérkép renderelését teljesítmény módban"
     },
     "system-monitor": {
       "critical-color-label": "Kritikus szín",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Háttérkép gyorsítótár",
       "settings-clear-cache-toast": "Háttérkép gyorsítótár törölve",
       "settings-desc": "Hogyan legyenek kezelve és megjelenítve a háttérképek.",
-      "settings-enable-management-description": "Háttérképek kezelése a Noctalia segítségével. Vedd ki a pipát, ha inkább más alkalmazást használnál.",
+      "settings-enable-management-description": "Háttérképek kezelése a nosDshell segítségével. Vedd ki a pipát, ha inkább más alkalmazást használnál.",
       "settings-enable-management-label": "Háttérkép-kezelés engedélyezése",
       "settings-enable-overview-description": "Elmosódott és elsötétített háttérképet alkalmaz az áttekintő képernyőn.",
       "settings-enable-overview-label": "Áttekintő háttérkép engedélyezése",
@@ -1864,10 +1816,6 @@
       "subheader": "A sáv pozíciója, sűrűsége, méretezése és egyebek."
     },
     "skip-setup": "Beállítás kihagyása",
-    "telemetry-wizard-done": "Értettem!",
-    "telemetry-wizard-note": "Te irányítasz — bármikor engedélyezheted vagy letilthatod a beállításokban",
-    "telemetry-wizard-subtitle": "Névtelen analitikát adtunk hozzá, hogy segítsük a Noctalia fejlesztését",
-    "telemetry-wizard-title": "Adatvédelmi frissítés",
     "wallpaper": {
       "choose-dir": "A könyvtár, amely tartalmazza a háttérképeket",
       "dir-browse": "Háttérkép mappa böngészése",
@@ -1885,7 +1833,7 @@
     "welcome": "Üdvözlünk",
     "welcome-note": "Csak néhány alapvető dolog az induláshoz — a teljes beállítási lehetőség a beállításokban található",
     "welcome-subtitle": "Tegyük egyedivé az asztalod",
-    "welcome-title": "Üdvözöl a Noctalia!"
+    "welcome-title": "Üdvözöl a nosDshell!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "Ne zavarjanak engedélyezve",
       "enabled-desc": "Ezeket az értesítéseket az előzményekben találja"
     },
-    "donation-opened": "Az adományozási oldal megnyílt a böngésződben",
     "internet-limited": "Csatlakoztatva internet nélkül",
     "keyboard-layout": {
       "changed": "Billentyűzetkiosztás megváltozott: {layout}",
@@ -1970,11 +1917,6 @@
       "forced": "Kényszerített aktiválás",
       "normal": "Normál mód",
       "not-installed": "wlsunset nincs telepítve"
-    },
-    "noctalia-performance": {
-      "disabled": "Teljesítmény mód letiltva",
-      "enabled": "Teljesítmény mód engedélyezve",
-      "label": "Noctalia Teljesítmény"
     },
     "power-profile": {
       "changed": "Energia profil megváltozott",
@@ -2000,6 +1942,11 @@
       "disconnected": "Kapcsolat megszakadt a(z) „{ssid}” hálózattal",
       "incorrect-password": "Helytelen jelszó.",
       "network-not-found": "Hálózat nem található"
+    },
+    "performance-mode": {
+      "disabled": "Teljesítmény mód letiltva",
+      "enabled": "Teljesítmény mód engedélyezve",
+      "label": "nosDshell Teljesítmény"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Következő zene",
     "next-month": "Következő hónap",
     "night-light-not-installed": "Éjszakai fény (nem elérhető)",
-    "noctalia-performance-enabled": "Noctalia teljesítmény mód",
     "open-annotation-tool": "Megnyitás jegyzetelő eszközzel",
     "open-control-center": "Vezérlőközpont",
     "open-notification-history-enable-dnd": "Értesítési előzmények",
@@ -2057,7 +2003,8 @@
     "unmute": "Némítás feloldása",
     "up": "Szülőkönyvtár",
     "volume-at": "Kimenet hangereje: {volume}%",
-    "wallpaper-selector": "Háttérképválasztó"
+    "wallpaper-selector": "Háttérképválasztó",
+    "performance-mode-enabled": "nosDshell teljesítmény mód"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "NSFW tartalom eléréséhez API kulcs szükséges.",
       "apikey-label": "API kulcs",
-      "apikey-managed-by-env": "A NOCTALIA_WALLHAVEN_API_KEY környezeti változóval kezelhető.",
+      "apikey-managed-by-env": "A NOSD_WALLHAVEN_API_KEY környezeti változóval kezelhető.",
       "apikey-placeholder": "Add meg a Wallhaven API kulcsod!",
       "appearance-dark-tab": "Sötét",
       "appearance-light-tab": "Világos",

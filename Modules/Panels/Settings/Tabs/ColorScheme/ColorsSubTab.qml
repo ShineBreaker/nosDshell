@@ -19,17 +19,13 @@ ColumnLayout {
   property int cacheVersion: 0
   property var screen
 
-  signal openDownloadPopup
-
   function extractSchemeName(schemePath) {
     var pathParts = schemePath.split("/");
     var filename = pathParts[pathParts.length - 1];
     var schemeName = filename.replace(".json", "");
 
-    if (schemeName === "Noctalia-default") {
-      schemeName = "Noctalia (default)";
-    } else if (schemeName === "Noctalia-legacy") {
-      schemeName = "Noctalia (legacy)";
+    if (schemeName === "nosDshell-default") {
+      schemeName = "nosDshell (default)";
     } else if (schemeName === "Tokyo-Night") {
       schemeName = "Tokyo Night";
     } else if (schemeName === "Rosepine") {
@@ -447,14 +443,6 @@ ColumnLayout {
           }
         }
       }
-    }
-
-    NButton {
-      text: I18n.tr("panels.color-scheme.download-button")
-      icon: "download"
-      onClicked: root.openDownloadPopup()
-      Layout.alignment: Qt.AlignRight
-      Layout.topMargin: Style.marginS
     }
   }
 }

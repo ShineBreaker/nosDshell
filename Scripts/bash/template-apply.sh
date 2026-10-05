@@ -15,17 +15,17 @@ MODE="${2:-}" # Optional second argument for dark/light mode
 case "$APP_NAME" in
 kitty)
     # Many configs use: include ./current-theme.conf
-    # Point it at the generated theme whenever the hook runs (including when noctalia.conf
+    # Point it at the generated theme whenever the hook runs (including when nosdshell.conf
     # was unchanged on disk and the hook was forced from the template processor).
-    NOCTALIA_THEME="$HOME/.config/kitty/themes/noctalia.conf"
+    NOSD_THEME="$HOME/.config/kitty/themes/nosdshell.conf"
     CURRENT_THEME="$HOME/.config/kitty/current-theme.conf"
-    if [ -f "$NOCTALIA_THEME" ]; then
+    if [ -f "$NOSD_THEME" ]; then
         mkdir -p "$HOME/.config/kitty"
-        ln -sf "themes/noctalia.conf" "$CURRENT_THEME"
+        ln -sf "themes/nosdshell.conf" "$CURRENT_THEME"
     fi
     KITTY_CONF="$HOME/.config/kitty/kitty.conf"
     if [ -w "$KITTY_CONF" ]; then
-        kitty +kitten themes --reload-in=all noctalia
+        kitty +kitten themes --reload-in=all nosdshell
     else
         kitty +runpy "from kitty.utils import *; reload_conf_in_all_kitties()"
     fi
@@ -41,15 +41,15 @@ ghostty)
     for CONFIG_FILE in "${CONFIG_FILES[@]}"; do
         if [ -f "$CONFIG_FILE" ]; then
             FOUND_CONFIG=true
-            # Check if theme is already set to noctalia (flexible spacing)
-            if grep -qE "^theme\s*=\s*noctalia$" "$CONFIG_FILE"; then
+            # Check if theme is already set to nosdshell (flexible spacing)
+            if grep -qE "^theme\s*=\s*nosdshell$" "$CONFIG_FILE"; then
                 : # Already correct
             elif grep -qE "^theme\s*=" "$CONFIG_FILE"; then
                 # Replace existing theme line in-place
-                sed -i -E 's/^theme\s*=.*/theme = noctalia/' "$CONFIG_FILE"
+                sed -i -E 's/^theme\s*=.*/theme = nosdshell/' "$CONFIG_FILE"
             else
                 # Add the new theme line to the end of the file
-                echo "theme = noctalia" >>"$CONFIG_FILE"
+                echo "theme = nosdshell" >>"$CONFIG_FILE"
             fi
         fi
     done
@@ -70,22 +70,22 @@ foot)
     if [ ! -f "$CONFIG_FILE" ]; then
         # Create the config directory if it doesn't exist
         mkdir -p "$(dirname "$CONFIG_FILE")"
-        # Create the config file with the noctalia theme
+        # Create the config file with the nosdshell theme
         cat >"$CONFIG_FILE" <<'EOF'
 [main]
-include=~/.config/foot/themes/noctalia
+include=~/.config/foot/themes/nosdshell
 EOF
     else
-        # Check if theme is already set to noctalia
-        if ! grep -q "include.*noctalia" "$CONFIG_FILE"; then
+        # Check if theme is already set to nosdshell
+        if ! grep -q "include.*nosdshell" "$CONFIG_FILE"; then
             # Remove any existing theme include line to prevent duplicates.
             sed -i '/include=.*themes/d' "$CONFIG_FILE"
             if grep -q '^\[main\]' "$CONFIG_FILE"; then
                 # Insert the include line after the existing [main] section header
-                sed -i '/^\[main\]/a include=~/.config/foot/themes/noctalia' "$CONFIG_FILE"
+                sed -i '/^\[main\]/a include=~/.config/foot/themes/nosdshell' "$CONFIG_FILE"
             else
                 # If [main] doesn't exist, create it at the beginning with the include
-                sed -i '1i [main]\ninclude=~/.config/foot/themes/noctalia\n' "$CONFIG_FILE"
+                sed -i '1i [main]\ninclude=~/.config/foot/themes/nosdshell\n' "$CONFIG_FILE"
             fi
         fi
     fi
@@ -93,29 +93,29 @@ EOF
 
 alacritty)
     CONFIG_FILE="$HOME/.config/alacritty/alacritty.toml"
-    NEW_THEME_PATH='~/.config/alacritty/themes/noctalia.toml'
+    NEW_THEME_PATH='~/.config/alacritty/themes/nosdshell.toml'
 
     # Check if the config file exists, create it if it doesn't.
     if [ ! -f "$CONFIG_FILE" ]; then
         # Create the config directory if it doesn't exist
         mkdir -p "$(dirname "$CONFIG_FILE")"
-        # Create the config file with the noctalia theme import
+        # Create the config file with the nosdshell theme import
         cat >"$CONFIG_FILE" <<'EOF'
 [general]
 import = [
-    "~/.config/alacritty/themes/noctalia.toml"
+    "~/.config/alacritty/themes/nosdshell.toml"
 ]
 EOF
     else
-        # Check if noctalia theme is already imported (any path variant)
-        if grep -q 'noctalia\.toml' "$CONFIG_FILE"; then
+        # Check if nosdshell theme is already imported (any path variant)
+        if grep -q 'nosdshell\.toml' "$CONFIG_FILE"; then
             # Update old relative path to new absolute path if needed
-            if grep -q '"themes/noctalia.toml"' "$CONFIG_FILE"; then
-                sed -i 's|"themes/noctalia.toml"|"'"$NEW_THEME_PATH"'"|g' "$CONFIG_FILE"
+            if grep -q '"themes/nosdshell.toml"' "$CONFIG_FILE"; then
+                sed -i 's|"themes/nosdshell.toml"|"'"$NEW_THEME_PATH"'"|g' "$CONFIG_FILE"
             fi
-            # Already has noctalia import with correct path, nothing to do
+            # Already has nosdshell import with correct path, nothing to do
         else
-            # No noctalia import found, add it
+            # No nosdshell import found, add it
             if grep -q '^\[general\]' "$CONFIG_FILE"; then
                 # Check if import line already exists under [general]
                 if grep -q '^import\s*=' "$CONFIG_FILE"; then
@@ -135,17 +135,17 @@ EOF
 
 wezterm)
     CONFIG_FILE="$HOME/.config/wezterm/wezterm.lua"
-    WEZTERM_SCHEME_LINE='config.color_scheme = "Noctalia"'
+    WEZTERM_SCHEME_LINE='config.color_scheme = "NosDshell"'
 
     # Check if the config file exists.
     if [ -f "$CONFIG_FILE" ]; then
 
-        # Check if theme is already set to Noctalia (matches 'Noctalia' or "Noctalia")
-        if ! grep -q "^\s*config\.color_scheme\s*=\s*['\"]Noctalia['\"]\s*" "$CONFIG_FILE"; then
-            # Not set to Noctalia. Check if *any* color_scheme line exists.
+        # Check if theme is already set to NosDshell (matches 'NosDshell' or "NosDshell")
+        if ! grep -q "^\s*config\.color_scheme\s*=\s*['\"]NosDshell['\"]\s*" "$CONFIG_FILE"; then
+            # Not set to NosDshell. Check if *any* color_scheme line exists.
             if grep -q '^\s*config\.color_scheme\s*=' "$CONFIG_FILE"; then
                 # It exists, so we replace it with our desired line.
-                sed -i "s|^\(\s*config\.color_scheme\s*=\s*\).*$|\1\"Noctalia\"|" "$CONFIG_FILE"
+                sed -i "s|^\(\s*config\.color_scheme\s*=\s*\).*$|\1\"NosDshell\"|" "$CONFIG_FILE"
             else
                 # It doesn't exist, so we add it before the 'return config' line.
                 if grep -q '^\s*return\s*config' "$CONFIG_FILE"; then
@@ -174,20 +174,20 @@ fuzzel)
     if [ ! -f "$CONFIG_FILE" ]; then
         # Create the config directory if it doesn't exist
         mkdir -p "$(dirname "$CONFIG_FILE")"
-        # Create the config file with the noctalia theme
+        # Create the config file with the nosdshell theme
         cat >"$CONFIG_FILE" <<'EOF'
-include=~/.config/fuzzel/themes/noctalia
+include=~/.config/fuzzel/themes/nosdshell
 EOF
     else
-        # Check if theme is already set to noctalia
-        if grep -q "^include=~/.config/fuzzel/themes/noctalia$" "$CONFIG_FILE"; then
+        # Check if theme is already set to nosdshell
+        if grep -q "^include=~/.config/fuzzel/themes/nosdshell$" "$CONFIG_FILE"; then
             : # Already correct
         elif grep -q "^include=.*themes" "$CONFIG_FILE"; then
             # Replace existing theme include line in-place
-            sed -i 's|^include=.*themes.*|include=~/.config/fuzzel/themes/noctalia|' "$CONFIG_FILE"
+            sed -i 's|^include=.*themes.*|include=~/.config/fuzzel/themes/nosdshell|' "$CONFIG_FILE"
         else
             # Add the new theme include line
-            echo "include=~/.config/fuzzel/themes/noctalia" >>"$CONFIG_FILE"
+            echo "include=~/.config/fuzzel/themes/nosdshell" >>"$CONFIG_FILE"
         fi
     fi
     ;;
@@ -197,14 +197,14 @@ walker)
 
     # Check if the config file exists.
     if [ -f "$CONFIG_FILE" ]; then
-        # Check if theme is already set to noctalia (flexible spacing)
-        if grep -qE '^theme\s*=\s*"noctalia"' "$CONFIG_FILE"; then
+        # Check if theme is already set to nosdshell (flexible spacing)
+        if grep -qE '^theme\s*=\s*"nosdshell"' "$CONFIG_FILE"; then
             : # Already correct
         elif grep -qE '^theme\s*=' "$CONFIG_FILE"; then
             # Replace existing theme line in-place
-            sed -i -E 's/^theme\s*=.*/theme = "noctalia"/' "$CONFIG_FILE"
+            sed -i -E 's/^theme\s*=.*/theme = "nosdshell"/' "$CONFIG_FILE"
         else
-            echo 'theme = "noctalia"' >>"$CONFIG_FILE"
+            echo 'theme = "nosdshell"' >>"$CONFIG_FILE"
         fi
     else
         echo "Error: walker config file not found at $CONFIG_FILE" >&2
@@ -214,7 +214,7 @@ walker)
 
 vicinae)
     # Apply the theme
-    vicinae theme set noctalia
+    vicinae theme set nosdshell
     ;;
 
 pywalfox)
@@ -238,23 +238,23 @@ cava)
     if [ -f "$CONFIG_FILE" ]; then
         # Check if [color] section exists
         if grep -q '^\[color\]' "$CONFIG_FILE"; then
-            # Check if theme is already set to noctalia under [color] (flexible spacing)
-            if sed -n '/^\[color\]/,/^\[/p' "$CONFIG_FILE" | grep -qE '^theme\s*=\s*"noctalia"'; then
+            # Check if theme is already set to nosdshell under [color] (flexible spacing)
+            if sed -n '/^\[color\]/,/^\[/p' "$CONFIG_FILE" | grep -qE '^theme\s*=\s*"nosdshell"'; then
                 : # Already correct
             elif sed -n '/^\[color\]/,/^\[/p' "$CONFIG_FILE" | grep -qE '^theme\s*='; then
                 # Replace existing theme line under [color]
-                sed -i -E '/^\[color\]/,/^\[/{s/^theme\s*=.*/theme = "noctalia"/}' "$CONFIG_FILE"
+                sed -i -E '/^\[color\]/,/^\[/{s/^theme\s*=.*/theme = "nosdshell"/}' "$CONFIG_FILE"
                 THEME_MODIFIED=true
             else
                 # Add theme line after [color]
-                sed -i '/^\[color\]/a theme = "noctalia"' "$CONFIG_FILE"
+                sed -i '/^\[color\]/a theme = "nosdshell"' "$CONFIG_FILE"
                 THEME_MODIFIED=true
             fi
         else
             # Add [color] section with theme at the end of file
             echo "" >>"$CONFIG_FILE"
             echo "[color]" >>"$CONFIG_FILE"
-            echo 'theme = "noctalia"' >>"$CONFIG_FILE"
+            echo 'theme = "nosdshell"' >>"$CONFIG_FILE"
             THEME_MODIFIED=true
         fi
 
@@ -280,29 +280,29 @@ yazi)
     if [ ! -f "$CONFIG_FILE" ]; then
         cat >"$CONFIG_FILE" <<'EOF'
 [flavor]
-dark  = "noctalia"
-light = "noctalia"
+dark  = "nosdshell"
+light = "nosdshell"
 EOF
     else
         # Check if [flavor] section exists
         if grep -q '^\[flavor\]' "$CONFIG_FILE"; then
             # Update or add dark/light lines under [flavor]
             if sed -n '/^\[flavor\]/,/^\[/p' "$CONFIG_FILE" | grep -q '^dark\s*='; then
-                sed -i '/^\[flavor\]/,/^\[/{s/^dark\s*=.*/dark  = "noctalia"/}' "$CONFIG_FILE"
+                sed -i '/^\[flavor\]/,/^\[/{s/^dark\s*=.*/dark  = "nosdshell"/}' "$CONFIG_FILE"
             else
-                sed -i '/^\[flavor\]/a dark  = "noctalia"' "$CONFIG_FILE"
+                sed -i '/^\[flavor\]/a dark  = "nosdshell"' "$CONFIG_FILE"
             fi
             if sed -n '/^\[flavor\]/,/^\[/p' "$CONFIG_FILE" | grep -q '^light\s*='; then
-                sed -i '/^\[flavor\]/,/^\[/{s/^light\s*=.*/light = "noctalia"/}' "$CONFIG_FILE"
+                sed -i '/^\[flavor\]/,/^\[/{s/^light\s*=.*/light = "nosdshell"/}' "$CONFIG_FILE"
             else
-                sed -i '/^\[flavor\]/,/^dark/a light = "noctalia"' "$CONFIG_FILE"
+                sed -i '/^\[flavor\]/,/^dark/a light = "nosdshell"' "$CONFIG_FILE"
             fi
         else
             # Add [flavor] section at the end
             echo "" >>"$CONFIG_FILE"
             echo "[flavor]" >>"$CONFIG_FILE"
-            echo 'dark  = "noctalia"' >>"$CONFIG_FILE"
-            echo 'light = "noctalia"' >>"$CONFIG_FILE"
+            echo 'dark  = "nosdshell"' >>"$CONFIG_FILE"
+            echo 'light = "nosdshell"' >>"$CONFIG_FILE"
         fi
     fi
     ;;
@@ -314,15 +314,15 @@ labwc)
 
 niri)
     CONFIG_FILE="$HOME/.config/niri/config.kdl"
-    INCLUDE_LINE='include "./noctalia.kdl"'
+    INCLUDE_LINE='include "./nosdshell.kdl"'
 
     # Check if the config file exists.
     if [ ! -f "$CONFIG_FILE" ]; then
         mkdir -p "$(dirname "$CONFIG_FILE")"
         echo -e "\n$INCLUDE_LINE\n" >"$CONFIG_FILE"
     else
-        # Check if noctalia include already exists (flexible: quotes, ./ prefix)
-        if grep -qE 'include\s+["'"'"'](\./)?noctalia\.kdl["'"'"']' "$CONFIG_FILE"; then
+        # Check if nosdshell include already exists (flexible: quotes, ./ prefix)
+        if grep -qE 'include\s+["'"'"'](\./)?nosdshell\.kdl["'"'"']' "$CONFIG_FILE"; then
             : # Already included
         else
             # Add the include line to the end of the file
@@ -332,14 +332,14 @@ niri)
     ;;
 
 hyprland)
-    echo "🎨 Applying 'noctalia' theme to Hyprland..."
+    echo "🎨 Applying 'nosdshell' theme to Hyprland..."
     CONFIG_DIR="$HOME/.config/hypr"
 
     CONF_CONFIG_FILE="$CONFIG_DIR/hyprland.conf"
     LUA_CONFIG_FILE="$CONFIG_DIR/hyprland.lua"
 
-    CONF_THEME_FILE="$CONFIG_DIR/noctalia/noctalia-colors.conf"
-    LUA_THEME_FILE="$CONFIG_DIR/noctalia/noctalia-colors.lua"
+    CONF_THEME_FILE="$CONFIG_DIR/nosdshell/nosdshell-colors.conf"
+    LUA_THEME_FILE="$CONFIG_DIR/nosdshell/nosdshell-colors.lua"
 
     CONF_INCLUDE_LINE="source = $CONF_THEME_FILE"
     LUA_INCLUDE_LINE="dofile(\"$LUA_THEME_FILE\")"
@@ -347,7 +347,7 @@ hyprland)
     # Prefer Lua config when present. .conf file is kept
     # only for legacy compatibility
     if [ -f "$LUA_CONFIG_FILE" ]; then
-      if grep -qF 'noctalia-colors.lua' "$LUA_CONFIG_FILE"; then
+      if grep -qF 'nosdshell-colors.lua' "$LUA_CONFIG_FILE"; then
         echo "Lua theme already included, skipping modification."
       else
         if [ -L "$LUA_CONFIG_FILE" ] && [ ! -w "$LUA_CONFIG_FILE" ]; then
@@ -357,10 +357,10 @@ hyprland)
         fi
 
         printf "\n%s\n%s\n" \
-          "-- This loads Noctalia-generated Hyprland colors." \
+          "-- This loads nosDshell-generated Hyprland colors." \
           "$LUA_INCLUDE_LINE" >> "$LUA_CONFIG_FILE"
 
-        echo "Added Noctalia Lua theme include to config."
+        echo "Added nosDshell Lua theme include to config."
       fi
 
     else
@@ -369,9 +369,9 @@ hyprland)
         echo "Config file not found, creating $CONF_CONFIG_FILE..."
         mkdir -p "$(dirname "$CONF_CONFIG_FILE")"
         printf "\n%s\n" "$CONF_INCLUDE_LINE" > "$CONF_CONFIG_FILE"
-        echo "Created new config file with noctalia theme."
+        echo "Created new config file with nosdshell theme."
       else
-        if grep -qE 'source\s*=\s*.*noctalia.*\.conf' "$CONF_CONFIG_FILE"; then
+        if grep -qE 'source\s*=\s*.*nosdshell.*\.conf' "$CONF_CONFIG_FILE"; then
           echo "Theme already included, skipping modification."
         else
           if [ -L "$CONF_CONFIG_FILE" ] && [ ! -w "$CONF_CONFIG_FILE" ]; then
@@ -381,7 +381,7 @@ hyprland)
           fi
 
           printf "\n%s\n" "$CONF_INCLUDE_LINE" >> "$CONF_CONFIG_FILE"
-          echo "Added noctalia theme include to config."
+          echo "Added nosdshell theme include to config."
         fi
       fi
     fi
@@ -391,20 +391,20 @@ hyprland)
     ;;
 
 sway)
-    echo "🎨 Applying 'noctalia' theme to Sway..."
+    echo "🎨 Applying 'nosdshell' theme to Sway..."
     CONFIG_DIR="$HOME/.config/sway"
     CONFIG_FILE="$CONFIG_DIR/config"
-    INCLUDE_LINE='include ~/.config/sway/noctalia'
+    INCLUDE_LINE='include ~/.config/sway/nosdshell'
 
     # Check if the config file exists.
     if [ ! -f "$CONFIG_FILE" ]; then
         echo "Config file not found, creating $CONFIG_FILE..."
         mkdir -p "$(dirname "$CONFIG_FILE")"
         echo -e "\n$INCLUDE_LINE\n" >"$CONFIG_FILE"
-        echo "Created new config file with noctalia theme."
+        echo "Created new config file with nosdshell theme."
     else
-        # Check if noctalia include already exists (flexible matching)
-        if grep -qE 'include\s+.*noctalia' "$CONFIG_FILE"; then
+        # Check if nosdshell include already exists (flexible matching)
+        if grep -qE 'include\s+.*nosdshell' "$CONFIG_FILE"; then
             echo "Theme already included, skipping modification."
         else
             # Only convert symlink when we actually need to write (NixOS read-only symlinks)
@@ -415,7 +415,7 @@ sway)
             fi
             # Add the include line to the end of the file
             echo -e "\n$INCLUDE_LINE\n" >>"$CONFIG_FILE"
-            echo "✅ Added noctalia theme include to config."
+            echo "✅ Added nosdshell theme include to config."
         fi
     fi
 
@@ -424,20 +424,20 @@ sway)
     ;;
 
 scroll)
-    echo "Applying 'noctalia' theme to Scroll..."
+    echo "Applying 'nosdshell' theme to Scroll..."
     CONFIG_DIR="$HOME/.config/scroll"
     CONFIG_FILE="$CONFIG_DIR/config"
-    INCLUDE_LINE='include ~/.config/scroll/noctalia'
+    INCLUDE_LINE='include ~/.config/scroll/nosdshell'
 
     # Check if the config file exists.
     if [ ! -f "$CONFIG_FILE" ]; then
         echo "Config file not found, creating $CONFIG_FILE..."
         mkdir -p "$(dirname "$CONFIG_FILE")"
         echo -e "\n$INCLUDE_LINE\n" >"$CONFIG_FILE"
-        echo "Created new config file with noctalia theme."
+        echo "Created new config file with nosdshell theme."
     else
-        # Check if noctalia include already exists (flexible matching)
-        if grep -qE 'include\s+.*noctalia' "$CONFIG_FILE"; then
+        # Check if nosdshell include already exists (flexible matching)
+        if grep -qE 'include\s+.*nosdshell' "$CONFIG_FILE"; then
             echo "Theme already included, skipping modification."
         else
             # Only convert symlink when we actually need to write
@@ -448,7 +448,7 @@ scroll)
             fi
             # Add the include line to the end of the file
             echo -e "\n$INCLUDE_LINE\n" >>"$CONFIG_FILE"
-            echo "Added noctalia theme include to config."
+            echo "Added nosdshell theme include to config."
         fi
     fi
 
@@ -459,9 +459,9 @@ scroll)
 mango)
     CONFIG_DIR="$HOME/.config/mango"
     MAIN_CONFIG="$CONFIG_DIR/config.conf"
-    THEME_FILE="$CONFIG_DIR/noctalia.conf"
+    THEME_FILE="$CONFIG_DIR/nosdshell.conf"
     BACKUP_FILE="$CONFIG_DIR/theme.conf.bak"
-    # This sources the noctalia theme file
+    # This sources the nosdshell theme file
     SOURCE_LINE="source = $THEME_FILE"
 
     # Color variables that should be moved to theme file
@@ -510,10 +510,10 @@ mango)
         # Add source line to main config
         if [ -f "$MAIN_CONFIG" ]; then
             echo "" >>"$MAIN_CONFIG"
-            echo "# This sources the noctalia theme" >>"$MAIN_CONFIG"
+            echo "# This sources the nosdshell theme" >>"$MAIN_CONFIG"
             echo -e "\n$SOURCE_LINE\n" >>"$MAIN_CONFIG"
         else
-            echo "# This sources the noctalia theme" >"$MAIN_CONFIG"
+            echo "# This sources the nosdshell theme" >"$MAIN_CONFIG"
             echo -e "\n$SOURCE_LINE\n" >>"$MAIN_CONFIG"
         fi
     fi
@@ -530,14 +530,14 @@ btop)
     CONFIG_FILE="$HOME/.config/btop/btop.conf"
 
     if [ -f "$CONFIG_FILE" ]; then
-        # Check if theme is already set to noctalia (flexible spacing)
-        if grep -qE '^color_theme\s*=\s*"noctalia"' "$CONFIG_FILE"; then
+        # Check if theme is already set to nosdshell (flexible spacing)
+        if grep -qE '^color_theme\s*=\s*"nosdshell"' "$CONFIG_FILE"; then
             : # Already correct
         elif grep -qE '^color_theme\s*=' "$CONFIG_FILE"; then
             # Replace existing color_theme line in-place
-            sed -i -E 's/^color_theme\s*=.*/color_theme = "noctalia"/' "$CONFIG_FILE"
+            sed -i -E 's/^color_theme\s*=.*/color_theme = "nosdshell"/' "$CONFIG_FILE"
         else
-            echo 'color_theme = "noctalia"' >>"$CONFIG_FILE"
+            echo 'color_theme = "nosdshell"' >>"$CONFIG_FILE"
         fi
 
         if pgrep -x btop >/dev/null; then
@@ -568,7 +568,7 @@ zathura)
     ;;
 
 starship)
-            PALETTE_FILE="$HOME/.cache/noctalia/starship-palette.toml"
+            PALETTE_FILE="$HOME/.cache/nosdshell/starship-palette.toml"
 
             # Respect STARSHIP_CONFIG env var, then fall back to standard lookup order
             if [ -n "$STARSHIP_CONFIG" ]; then
@@ -586,14 +586,14 @@ starship)
                 return 1
             fi
 
-            MARKER_BEGIN='# >>> NOCTALIA STARSHIP PALETTE >>>'
-            MARKER_END='# <<< NOCTALIA STARSHIP PALETTE <<<'
+            MARKER_BEGIN='# >>> NOSDSHELL STARSHIP PALETTE >>>'
+            MARKER_END='# <<< NOSDSHELL STARSHIP PALETTE <<<'
 
             # Create config file from scratch if it doesn't exist yet
             if [ ! -f "$CONFIG_FILE" ]; then
                 mkdir -p "$(dirname "$CONFIG_FILE")"
                 {
-                    printf 'palette = "noctalia"\n\n'
+                    printf 'palette = "nosdshell"\n\n'
                     printf '%s\n' "$MARKER_BEGIN"
                     cat "$PALETTE_FILE"
                     printf '%s\n' "$MARKER_END"
@@ -606,13 +606,13 @@ starship)
                 CONFIG_FILE="$(readlink -f "$CONFIG_FILE")"
             fi
 
-            # Set or insert top-level  palette = "noctalia"
+            # Set or insert top-level  palette = "nosdshell"
             if grep -qE '^[[:space:]]*palette[[:space:]]*=' "$CONFIG_FILE"; then
-                sed -i -E 's/^([[:space:]]*)palette([[:space:]]*)=.*/\1palette\2= "noctalia"/' "$CONFIG_FILE"
+                sed -i -E 's/^([[:space:]]*)palette([[:space:]]*)=.*/\1palette\2= "nosdshell"/' "$CONFIG_FILE"
             elif grep -qE '^[[:space:]]*"\$schema"' "$CONFIG_FILE"; then
-                sed -i '/^[[:space:]]*"\$schema"/a palette = "noctalia"' "$CONFIG_FILE"
+                sed -i '/^[[:space:]]*"\$schema"/a palette = "nosdshell"' "$CONFIG_FILE"
             else
-                sed -i '1i palette = "noctalia"' "$CONFIG_FILE"
+                sed -i '1i palette = "nosdshell"' "$CONFIG_FILE"
             fi
 
             # Remove existing palette block using awk for literal string matching
@@ -622,8 +622,8 @@ starship)
                     $0 == begin { skip = 1; next }
                     $0 == end   { skip = 0; next }
                     !skip
-                ' "$CONFIG_FILE" > "${CONFIG_FILE}.noctalia.tmp" \
-                    && mv "${CONFIG_FILE}.noctalia.tmp" "$CONFIG_FILE"
+                ' "$CONFIG_FILE" > "${CONFIG_FILE}.nosdshell.tmp" \
+                    && mv "${CONFIG_FILE}.nosdshell.tmp" "$CONFIG_FILE"
             fi
 
             # Append fresh palette block, ensuring a clean newline boundary

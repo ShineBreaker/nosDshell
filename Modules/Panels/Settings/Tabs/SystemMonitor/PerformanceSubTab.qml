@@ -11,19 +11,19 @@ ColumnLayout {
 
   NToggle {
     Layout.fillWidth: true
-    label: I18n.tr("panels.system.noctalia-performance-disable-wallpaper-label")
-    description: I18n.tr("panels.system.noctalia-performance-disable-wallpaper-description")
-    checked: !Settings.data.noctaliaPerformance.disableWallpaper
-    defaultValue: !Settings.getDefaultValue("noctaliaPerformance.disableWallpaper")
-    onToggled: checked => Settings.data.noctaliaPerformance.disableWallpaper = !checked
+    label: I18n.tr("panels.system.performance-mode-disable-wallpaper-label")
+    description: I18n.tr("panels.system.performance-mode-disable-wallpaper-description")
+    checked: !Settings.data.performance.disableWallpaper
+    defaultValue: !Settings.getDefaultValue("performance.disableWallpaper")
+    onToggled: checked => Settings.data.performance.disableWallpaper = !checked
   }
 
   NToggle {
     Layout.fillWidth: true
-    label: I18n.tr("panels.system.noctalia-performance-disable-desktop-widgets-label")
-    description: I18n.tr("panels.system.noctalia-performance-disable-desktop-widgets-description")
-    checked: !Settings.data.noctaliaPerformance.disableDesktopWidgets
-    defaultValue: !Settings.getDefaultValue("noctaliaPerformance.disableDesktopWidgets")
-    onToggled: checked => Settings.data.noctaliaPerformance.disableDesktopWidgets = !checked
+    label: I18n.tr("panels.system.performance-mode-disable-desktop-widgets-label")
+    description: I18n.tr("panels.system.performance-mode-disable-desktop-widgets-description")
+    checked: !Settings.data.performance.disableDesktopWidgets
+    defaultValue: !Settings.getDefaultValue("performance.disableDesktopWidgets")
+    onToggled: checked => Settings.data.performance.disableDesktopWidgets = !checked
   }
 }

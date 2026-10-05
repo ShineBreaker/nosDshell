@@ -208,7 +208,7 @@ Item {
       color: "transparent"
 
       WlrLayershell.layer: (Settings.data.notifications && Settings.data.notifications.overlayLayer) ? WlrLayer.Overlay : WlrLayer.Top
-      WlrLayershell.namespace: "noctalia-toast-" + (screen?.name || "unknown")
+      WlrLayershell.namespace: "nosdshell-toast-" + (screen?.name || "unknown")
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 

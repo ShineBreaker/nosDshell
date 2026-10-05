@@ -20,7 +20,7 @@ Item {
   property real shadowBlur: shadow ? Math.min(1.0, shadow.blur / _blurMax) : Style.shadowBlur
   property real _blurMax: shadow ? Math.max(Style.shadowBlurMax, shadow.blur) : Style.shadowBlurMax
 
-  layer.enabled: Settings.data.general.enableShadows && !PowerProfileService.noctaliaPerformanceMode
+  layer.enabled: Settings.data.general.enableShadows && !PowerProfileService.performanceMode
   layer.effect: MultiEffect {
     source: root.source
     shadowEnabled: true

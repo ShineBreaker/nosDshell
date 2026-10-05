@@ -62,14 +62,14 @@ DraggableDesktopWidget {
       Layout.alignment: Qt.AlignVCenter
 
       NIcon {
-        visible: !LocationService.taliaWeatherMascotActive || !weatherReady
+        visible: !LocationService.weatherMascotActive || !weatherReady
         anchors.centerIn: parent
         icon: weatherReady ? LocationService.weatherSymbolFromCode(currentWeatherCode) : (LocationService.locationConfigured ? "weather-cloud-off" : "map-pin-off")
         pointSize: Math.round(Style.fontSizeXXXL * 2 * widgetScale)
         color: weatherReady ? Color.mPrimary : Color.mOnSurfaceVariant
       }
       Loader {
-        active: LocationService.taliaWeatherMascotActive && weatherReady
+        active: LocationService.weatherMascotActive && weatherReady
         anchors.fill: parent
         asynchronous: true
         sourceComponent: Component {
@@ -79,7 +79,7 @@ DraggableDesktopWidget {
             smooth: true
             mipmap: true
             asynchronous: true
-            source: Qt.resolvedUrl(LocationService.taliaWeatherImageFromCode(currentWeatherCode))
+            source: Qt.resolvedUrl(LocationService.weatherMascotImageFromCode(currentWeatherCode))
           }
         }
       }

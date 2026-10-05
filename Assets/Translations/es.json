@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Ocultar el widget cuando no se detecte batería en el sistema.",
       "hide-if-not-detected-label": "Ocultar si no se detecta",
       "low-battery-threshold-label": "Umbral de advertencia de batería baja",
-      "show-noctalia-performance-description": "Muestra el interruptor del modo de rendimiento Noctalia en el panel de batería.<br>Desactiva sombras y animaciones en Noctalia para reducir el uso de recursos.",
-      "show-noctalia-performance-label": "Mostrar interruptor Noctalia Rendimiento",
       "show-power-profile-description": "Muestra la selección de perfil de energía en el panel de batería.",
-      "show-power-profile-label": "Mostrar controles de perfil de energía"
+      "show-power-profile-label": "Mostrar controles de perfil de energía",
+      "show-performance-mode-description": "Muestra el interruptor del modo de rendimiento nosDshell en el panel de batería.<br>Desactiva sombras y animaciones en nosDshell para reducir el uso de recursos.",
+      "show-performance-mode-label": "Mostrar interruptor nosDshell Rendimiento"
     },
     "brightness": {
       "apply-all-description": "Cambiar el brillo de todos los monitores al usar la rueda de desplazamiento.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Izquierda",
       "icon-position-right": "Derecha",
       "icon-position-top": "Arriba",
-      "ipc-identifier-description": "Identificador único para comandos IPC. Utiliza este identificador con 'qs -c noctalia-shell ipc call cb [acción] [identificador]' para controlar este botón a través de IPC.",
+      "ipc-identifier-description": "Identificador único para comandos IPC. Utiliza este identificador con 'qs -c nosdshell ipc call cb [acción] [identificador]' para controlar este botón a través de IPC.",
       "ipc-identifier-label": "Identificador IPC",
       "left-click-description": "Comando a ejecutar cuando se hace clic izquierdo en el botón.",
       "left-click-label": "Clic izquierdo",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Señal: Muy mala"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "No se pudieron cargar los datos del registro de cambios. Inténtalo de nuevo más tarde.",
-      "rate-limit": "Se alcanzó el límite de GitHub. Inténtalo de nuevo en unos minutos."
-    },
-    "panel": {
-      "buttons-discord": "Únete a nuestro Discord",
-      "buttons-dismiss": "OK",
-      "buttons-feedback": "Dejar comentario",
-      "empty": "Las notas de la versión aún no están disponibles.",
-      "highlight-title": "Cambios destacados",
-      "released": "Publicado el {date}",
-      "subtitle-fresh": "¡Gracias por instalar Noctalia! Esto es lo que incluye esta compilación.",
-      "subtitle-updated": "Actualizado desde {previousVersion}",
-      "title": "Novedades en {version}",
-      "version": "Versión {version}",
-      "version-new-user": "Instalación nueva"
-    }
-  },
   "common": {
     "actions": "Acciones",
     "active": "Activo",
@@ -421,7 +402,6 @@
     "connected": "Conectado",
     "connecting": "Conectando...",
     "continue": "Continuar",
-    "contributors": "Colaboradores",
     "copied-to-clipboard": "Copiado al portapapeles",
     "countdown": "Cuenta regresiva",
     "customize": "Personalizar",
@@ -538,7 +518,6 @@
     "sources": "Fuentes",
     "start": "Comienzo",
     "stop": "Parar",
-    "supporters": "Patrocinadores",
     "suspend": "Suspender",
     "templates": "Plantillas",
     "tertiary": "Terciario",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Hazte patrocinador",
-      "changelog": "Ver registro de cambios",
-      "changelog-on-startup": "Mostrar registro de cambios al actualizar",
-      "changelog-on-startup-desc": "Mostrar automáticamente el registro de cambios cuando Noctalia se actualice.",
-      "contributors-description": "¡Un saludo a nuestro <b>increíble</b> colaborador número {count}!",
-      "contributors-description-plural": "¡Un saludo a nuestros {count} <b>increíbles</b> colaboradores!",
       "copy-info": "Copiar información",
       "debug-disabled": "Modo de depuración deshabilitado",
       "debug-enabled": "Modo de depuración activado",
       "info-copied": "Información copiada al portapapeles",
-      "noctalia-available": "Disponible:",
-      "noctalia-desc": "Un shell de escritorio elegante y minimalista cuidadosamente diseñado para Wayland, construido con Quickshell.",
-      "noctalia-git-commit": "Commit de Git:",
-      "noctalia-installed-version": "Versión instalada:",
-      "noctalia-latest-version": "Última versión:",
-      "noctalia-qs-version": "Noctalia QS versión:",
-      "noctalia-title": "Shell Noctalia",
-      "privacy-policy": "Política de privacidad",
-      "support": "Apóyanos",
-      "supporter-badge": "Colaborador",
-      "supporters-desc": "¡Un enorme agradecimiento a nuestro increíble colaborador!",
-      "supporters-desc-plural": "¡Muchísimas gracias a nuestros <b>{count} increíbles</b> seguidores!",
-      "supporters-loading": "Cargando patrocinadores...",
       "system-board": "Placa:",
       "system-cpu": "CPU:",
       "system-disk": "Disco:",
@@ -774,14 +734,7 @@
       "system-title": "Información del sistema",
       "system-uptime": "Tiempo de actividad:",
       "system-wm": "WM:",
-      "telemetry-data-copied": "Datos de telemetría copiados al portapapeles",
-      "telemetry-desc": "Ayuda a mejorar Noctalia compartiendo información anónima del sistema (resolución de pantalla, compositor, distribución). Se envía una vez al inicio, sin seguimiento, los datos se eliminan automáticamente después de 30 días.",
-      "telemetry-enabled": "Enviar información anónima del sistema",
-      "telemetry-show-data": "Ver datos",
-      "telemetry-title": "Privacidad",
       "title": "Acerca de",
-      "up-to-date": "¡Estás al día!",
-      "update-available": "Actualización disponible",
       "view-commit": "Ver commit en GitHub"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• Los comandos se ejecutan a través de shell (sh -lc)<br>• Los comandos se ejecutan en segundo plano (desvinculados)<br>• Los botones de prueba se ejecutan con los valores actuales",
       "info-parameters-description": "• Wallpaper hook: $1 = ruta del fondo de pantalla, $2 = nombre de la pantalla, $3 = tema (oscuro/claro)<br>• Theme toggle hook: $1 = true/false (estado del modo oscuro)<br>• Screen lock/unlock hooks: $1 = lock/unlock (estado de bloqueo de pantalla)<br>• Performance mode hooks: Sin parámetros<br>• Session hook: $1 = action (shutdown/reboot)",
       "info-parameters-label": "Parámetros disponibles",
-      "noctalia-started-description": "Comando para ejecutar cuando Noctalia ha terminado de cargarse.",
-      "noctalia-started-label": "Noctalia iniciado",
-      "noctalia-started-placeholder": "p. ej. notify-send 'Noctalia cargado'",
-      "performance-mode-disabled-description": "Comando a ejecutar cuando se deshabilita el modo de rendimiento Noctalia.",
+      "performance-mode-disabled-description": "Comando a ejecutar cuando se deshabilita el modo de rendimiento nosDshell.",
       "performance-mode-disabled-label": "Modo de rendimiento deshabilitado",
       "performance-mode-disabled-placeholder": "p. ej. notify-send \"Rendimiento\" \"Modo deshabilitado\"",
-      "performance-mode-enabled-description": "Comando a ejecutar cuando se habilita el modo de rendimiento Noctalia.",
+      "performance-mode-enabled-description": "Comando a ejecutar cuando se habilita el modo de rendimiento nosDshell.",
       "performance-mode-enabled-label": "Modo de rendimiento habilitado",
       "performance-mode-enabled-placeholder": "p. ej. notify-send \"Rendimiento\" \"Modo habilitado\"",
       "screen-lock-description": "Comando a ejecutar cuando se bloquea la pantalla.",
@@ -1283,7 +1233,10 @@
       "title": "Hooks",
       "wallpaper-changed-description": "Comando a ejecutar cuando cambia el fondo de pantalla.",
       "wallpaper-changed-label": "Fondo de pantalla cambiado",
-      "wallpaper-changed-placeholder": "p. ej. notify-send \"Fondo de pantalla\" \"Cambiado\""
+      "wallpaper-changed-placeholder": "p. ej. notify-send \"Fondo de pantalla\" \"Cambiado\"",
+      "shell-started-description": "Comando para ejecutar cuando nosDshell ha terminado de cargarse.",
+      "shell-started-label": "nosDshell iniciado",
+      "shell-started-placeholder": "p. ej. notify-send 'nosDshell cargado'"
     },
     "idle": {
       "custom-add": "Añadir comando",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Mostrar efectos climáticos",
       "weather-show-in-calendar-description": "Muestra el pronóstico del tiempo diario directamente en la vista de tu calendario.",
       "weather-show-in-calendar-label": "Mostrar el clima en el calendario",
-      "weather-talia-mascot-always-description": "Siempre usa Talia emojis en lugar de tabler icons.",
-      "weather-talia-mascot-always-label": "Mostrar siempre los emojis del tiempo de Talia"
+      "weather-mascot-always-description": "Siempre usa mascot emojis en lugar de tabler icons.",
+      "weather-mascot-always-label": "Mostrar siempre los emojis del tiempo de Talia"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Cuando fprintd (autenticación por huella dactilar) está activo, esta opción te permite iniciar sesión con tu contraseña en lugar de una huella dactilar.",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Densidad",
       "settings-desc": "Configura la apariencia y el comportamiento de las notificaciones.",
       "settings-do-not-disturb-description": "Desactiva todas las ventanas emergentes de notificación cuando está activado.",
-      "settings-enabled-description": "Activar o desactivar el demonio de notificaciones, requiere reiniciar Noctalia shell.",
+      "settings-enabled-description": "Activar o desactivar el demonio de notificaciones, requiere reiniciar nosDshell shell.",
       "settings-enabled-label": "Activar notificaciones",
       "settings-location-description": "Dónde aparecen las notificaciones en la pantalla.",
       "settings-markdown-description": "Renderizar el contenido de las notificaciones usando formato Markdown.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Recarga en caliente (modo desarrollo)",
       "hot-reloaded": "Plugin recargado: {name}",
       "install-error": "Error al instalar: {error}",
-      "install-incompatible": "{plugin} requiere Noctalia v{version} o superior",
       "install-success": "Se instaló {plugin} correctamente",
       "installed-description": "Gestiona y configura todos los plugins instalados localmente.",
       "installed-label": "Plugins instalados",
@@ -1641,7 +1593,7 @@
       "update-available": "Nueva actualización de plugin disponible",
       "update-available-plural": "Nuevas actualizaciones de plugins disponibles ({count})",
       "update-error": "Error al actualizar el plugin: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (requiere Noctalia v{required})",
+      "update-pending": "v{current} → v{new} (requiere nosDshell v{required})",
       "update-success": "{plugin} actualizado a la versión {version}",
       "update-version": "v{current} → v{new}",
       "updating": "Actualizando..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Mostrar atajos de teclado"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Mantener los widgets de escritorio visibles mientras el modo de rendimiento Noctalia esté habilitado.",
-      "noctalia-performance-disable-desktop-widgets-label": "Habilitar widgets de escritorio en modo de rendimiento",
-      "noctalia-performance-disable-wallpaper-description": "Mantén visibles los fondos de pantalla del escritorio, la vista general y la pantalla de bloqueo mientras el modo de rendimiento Noctalia esté activado.",
-      "noctalia-performance-disable-wallpaper-label": "Habilitar el renderizado de fondo de pantalla en modo de rendimiento",
-      "title": "Sistema"
+      "title": "Sistema",
+      "performance-mode-disable-desktop-widgets-description": "Mantener los widgets de escritorio visibles mientras el modo de rendimiento nosDshell esté habilitado.",
+      "performance-mode-disable-desktop-widgets-label": "Habilitar widgets de escritorio en modo de rendimiento",
+      "performance-mode-disable-wallpaper-description": "Mantén visibles los fondos de pantalla del escritorio, la vista general y la pantalla de bloqueo mientras el modo de rendimiento nosDshell esté activado.",
+      "performance-mode-disable-wallpaper-label": "Habilitar el renderizado de fondo de pantalla en modo de rendimiento"
     },
     "system-monitor": {
       "critical-color-label": "Color crítico",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Caché de fondos de pantalla",
       "settings-clear-cache-toast": "Caché de fondos de pantalla borrada",
       "settings-desc": "Controla cómo se gestionan y muestran los fondos de pantalla.",
-      "settings-enable-management-description": "Gestiona fondos de pantalla con Noctalia. Desmarca si prefieres usar otra aplicación.",
+      "settings-enable-management-description": "Gestiona fondos de pantalla con nosDshell. Desmarca si prefieres usar otra aplicación.",
       "settings-enable-management-label": "Activar gestión de fondos de pantalla",
       "settings-enable-overview-description": "Aplica un fondo de pantalla difuminado y atenuado a la pantalla de vista general.",
       "settings-enable-overview-label": "Activar fondo de pantalla de vista general",
@@ -1864,10 +1816,6 @@
       "subheader": "Ajusta la posición de la barra, densidad, escala y más."
     },
     "skip-setup": "Omitir la configuración",
-    "telemetry-wizard-done": "¡Entendido!",
-    "telemetry-wizard-note": "Tienes el control — activa o desactiva esto cuando quieras en los ajustes",
-    "telemetry-wizard-subtitle": "Hemos añadido analíticas anónimas para ayudar a mejorar Noctalia",
-    "telemetry-wizard-title": "Actualización de privacidad",
     "wallpaper": {
       "choose-dir": "Elige un directorio que contenga tus fondos de pantalla",
       "dir-browse": "Seleccionar carpeta",
@@ -1885,7 +1833,7 @@
     "welcome": "Bienvenido",
     "welcome-note": "Solo algunos ajustes básicos para empezar — las opciones al completo están en configuración",
     "welcome-subtitle": "Hagamos que tu escritorio sea único",
-    "welcome-title": "¡Bienvenido a Noctalia!"
+    "welcome-title": "¡Bienvenido a nosDshell!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "'No molestar' activado",
       "enabled-desc": "Encontrarás estas notificaciones en tu historial"
     },
-    "donation-opened": "Página de donación abierta en tu navegador",
     "internet-limited": "Conectado sin Internet",
     "keyboard-layout": {
       "changed": "Distribución de teclado cambiada a {layout}",
@@ -1970,11 +1917,6 @@
       "forced": "Activación forzada",
       "normal": "Modo normal",
       "not-installed": "wlsunset no está instalado"
-    },
-    "noctalia-performance": {
-      "disabled": "Modo de rendimiento desactivado",
-      "enabled": "Modo de rendimiento activado",
-      "label": "Noctalia Rendimiento"
     },
     "power-profile": {
       "changed": "Perfil de energía cambiado",
@@ -2000,6 +1942,11 @@
       "disconnected": "Desconectado de '{ssid}'",
       "incorrect-password": "Contraseña incorrecta",
       "network-not-found": "Red no encontrada"
+    },
+    "performance-mode": {
+      "disabled": "Modo de rendimiento desactivado",
+      "enabled": "Modo de rendimiento activado",
+      "label": "nosDshell Rendimiento"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Siguiente pista",
     "next-month": "Mes siguiente",
     "night-light-not-installed": "Luz nocturna (no disponible)",
-    "noctalia-performance-enabled": "Modo de rendimiento Noctalia",
     "open-annotation-tool": "Abrir con herramienta de anotación",
     "open-control-center": "Centro de control",
     "open-notification-history-enable-dnd": "Historial de notificaciones",
@@ -2057,7 +2003,8 @@
     "unmute": "Activar el audio",
     "up": "Directorio superior",
     "volume-at": "Volumen de salida: {volume}%",
-    "wallpaper-selector": "Selector de fondos de pantalla"
+    "wallpaper-selector": "Selector de fondos de pantalla",
+    "performance-mode-enabled": "Modo de rendimiento nosDshell"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "Se requiere una clave API para acceder a contenido NSFW.",
       "apikey-label": "Clave API",
-      "apikey-managed-by-env": "Gestionado a través de la variable de entorno NOCTALIA_WALLHAVEN_API_KEY.",
+      "apikey-managed-by-env": "Gestionado a través de la variable de entorno NOSD_WALLHAVEN_API_KEY.",
       "apikey-placeholder": "Introduce tu clave API de Wallhaven",
       "appearance-dark-tab": "Oscuro",
       "appearance-light-tab": "Claro",

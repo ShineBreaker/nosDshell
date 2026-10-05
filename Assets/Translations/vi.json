@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Ẩn tiện ích khi không tìm thấy pin trên hệ thống.",
       "hide-if-not-detected-label": "Ẩn khi không được phát hiện",
       "low-battery-threshold-label": "Ngưỡng cảnh báo pin yếu",
-      "show-noctalia-performance-description": "Hiển thị nút chuyển đổi sang chế độ hiệu năng của Noctalia bên trong bảng điều khiển pin.<br>Tắt đổ bóng và hoạt ảnh trong Noctalia để giảm mức sử dụng tài nguyên.",
-      "show-noctalia-performance-label": "Hiển thị công tắc hiệu năng của Noctalia",
       "show-power-profile-description": "Hiển thị lựa chọn cấu hình nguồn bên trong bảng điều khiển pin.",
-      "show-power-profile-label": "Hiển thị điều khiển hồ sơ năng lượng"
+      "show-power-profile-label": "Hiển thị điều khiển hồ sơ năng lượng",
+      "show-performance-mode-description": "Hiển thị nút chuyển đổi sang chế độ hiệu năng của nosDshell bên trong bảng điều khiển pin.<br>Tắt đổ bóng và hoạt ảnh trong nosDshell để giảm mức sử dụng tài nguyên.",
+      "show-performance-mode-label": "Hiển thị công tắc hiệu năng của nosDshell"
     },
     "brightness": {
       "apply-all-description": "Thay đổi độ sáng cho mọi màn hình khi cuộn chuột.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Trái",
       "icon-position-right": "Phải",
       "icon-position-top": "Trên",
-      "ipc-identifier-description": "Mã định danh duy nhất cho các lệnh IPC. Sử dụng mã định danh này với 'qs -c noctalia-shell ipc call cb [action] [identifier]' để điều khiển nút này qua IPC.",
+      "ipc-identifier-description": "Mã định danh duy nhất cho các lệnh IPC. Sử dụng mã định danh này với 'qs -c nosdshell ipc call cb [action] [identifier]' để điều khiển nút này qua IPC.",
       "ipc-identifier-label": "Mã định danh IPC",
       "left-click-description": "Lệnh thực thi khi nút được nhấp chuột trái.",
       "left-click-label": "Nhấp chuột trái",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Tín hiệu: Rất yếu"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "Không thể tải dữ liệu nhật ký thay đổi. Vui lòng thử lại sau.",
-      "rate-limit": "Đã vượt quá giới hạn tốc độ của GitHub. Vui lòng thử lại sau vài phút."
-    },
-    "panel": {
-      "buttons-discord": "Tham gia Discord của chúng tôi",
-      "buttons-dismiss": "Đồng ý",
-      "buttons-feedback": "Gửi phản hồi",
-      "empty": "Ghi chú phát hành chưa có sẵn.",
-      "highlight-title": "Điểm nổi bật",
-      "released": "Phát hành vào {date}",
-      "subtitle-fresh": "Cảm ơn bạn đã cài đặt Noctalia! Đây là những gì có trong bản dựng này.",
-      "subtitle-updated": "Đã cập nhật từ {previousVersion}",
-      "title": "Có gì mới trong {version}",
-      "version": "Phiên bản {version}",
-      "version-new-user": "Cài đặt mới"
-    }
-  },
   "common": {
     "actions": "Hành động",
     "active": "Hoạt động",
@@ -421,7 +402,6 @@
     "connected": "Đã kết nối",
     "connecting": "Đang kết nối...",
     "continue": "Tiếp tục",
-    "contributors": "Người đóng góp",
     "copied-to-clipboard": "Đã sao chép vào bộ nhớ tạm",
     "countdown": "Đếm ngược",
     "customize": "Tùy chỉnh",
@@ -538,7 +518,6 @@
     "sources": "Nguồn",
     "start": "Bắt đầu",
     "stop": "Dừng",
-    "supporters": "Người ủng hộ",
     "suspend": "Tạm dừng",
     "templates": "Mẫu",
     "tertiary": "Thứ ba",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Trở thành người ủng hộ",
-      "changelog": "Xem nhật ký thay đổi",
-      "changelog-on-startup": "Hiển thị nhật ký thay đổi khi cập nhật",
-      "changelog-on-startup-desc": "Tự động hiển thị nhật ký thay đổi khi Noctalia được cập nhật",
-      "contributors-description": "Lời cảm ơn đến {count} <b>người đóng góp tuyệt vời</b> của chúng tôi!",
-      "contributors-description-plural": "Xin gửi lời cảm ơn đến {count} người đóng góp <b>tuyệt vời</b> của chúng tôi!",
       "copy-info": "Sao chép thông tin",
       "debug-disabled": "Chế độ gỡ lỗi đã tắt",
       "debug-enabled": "Chế độ gỡ lỗi đã bật",
       "info-copied": "Thông tin đã sao chép vào bảng tạm",
-      "noctalia-available": "Khả dụng:",
-      "noctalia-desc": "Một giao diện desktop gọn gàng và tối giản, được chế tác tỉ mỉ dành cho Wayland, xây dựng bằng Quickshell.",
-      "noctalia-git-commit": "Git commit:",
-      "noctalia-installed-version": "Phiên bản đã cài đặt:",
-      "noctalia-latest-version": "Phiên bản mới nhất:",
-      "noctalia-qs-version": "Noctalia QS phiên bản:",
-      "noctalia-title": "Giao diện Noctalia",
-      "privacy-policy": "Chính sách quyền riêng tư",
-      "support": "Ủng hộ chúng tôi",
-      "supporter-badge": "Người ủng hộ",
-      "supporters-desc": "Xin chân thành cảm ơn người ủng hộ tuyệt vời của chúng tôi!",
-      "supporters-desc-plural": "Cảm ơn rất nhiều tới <b>{count}</b> người ủng hộ tuyệt vời của chúng tôi!",
-      "supporters-loading": "Đang tải những người ủng hộ...",
       "system-board": "Bảng:",
       "system-cpu": "CPU:",
       "system-disk": "Ổ đĩa:",
@@ -774,14 +734,7 @@
       "system-title": "Thông tin hệ thống",
       "system-uptime": "Thời gian hoạt động:",
       "system-wm": "WM:",
-      "telemetry-data-copied": "Dữ liệu đo từ xa đã sao chép vào bảng tạm",
-      "telemetry-desc": "Giúp cải thiện Noctalia bằng cách chia sẻ thông tin hệ thống ẩn danh (độ phân giải màn hình, compositor, distro). Gửi một lần khi khởi động, không theo dõi, dữ liệu tự động xóa sau 30 ngày.",
-      "telemetry-enabled": "Gửi thông tin hệ thống ẩn danh",
-      "telemetry-show-data": "Xem dữ liệu",
-      "telemetry-title": "Quyền riêng tư",
       "title": "Giới thiệu",
-      "up-to-date": "Bạn đã cập nhật!",
-      "update-available": "Có bản cập nhật mới",
       "view-commit": "Xem commit trên GitHub"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• Lệnh được thực thi qua shell (sh -lc)<br>• Lệnh chạy ngầm (tách rời)<br>• Nút kiểm tra thực thi với các giá trị hiện tại",
       "info-parameters-description": "• Hook hình nền: $1 = đường dẫn hình nền, $2 = tên màn hình, $3 = chủ đề (sáng/tối)<br>• Hook tạo màu: $1 = chủ đề (sáng/tối)<br>• Hook chuyển đổi chủ đề: $1 = true/false (trạng thái Dark Mode)<br>• Hook khóa/mở khóa màn hình: $1 = khóa/mở khóa (trạng thái khóa màn hình)<br>• Hook chế độ hiệu suất: Không có tham số<br>• Hook phiên: $1 = hành động (tắt máy/khởi động lại)",
       "info-parameters-label": "Các tham số có sẵn",
-      "noctalia-started-description": "Lệnh để thực thi khi Noctalia đã tải xong.",
-      "noctalia-started-label": "Noctalia đã khởi chạy",
-      "noctalia-started-placeholder": "Ví dụ: notify-send 'Noctalia Loaded'",
-      "performance-mode-disabled-description": "Lệnh sẽ chạy khi chế độ hiệu suất của Noctalia bị tắt.",
+      "performance-mode-disabled-description": "Lệnh sẽ chạy khi chế độ hiệu suất của nosDshell bị tắt.",
       "performance-mode-disabled-label": "Chế độ hiệu suất đã tắt",
       "performance-mode-disabled-placeholder": "Ví dụ: notify-send \"Performance\" \"Mode disabled\"",
-      "performance-mode-enabled-description": "Lệnh sẽ được chạy khi chế độ hiệu năng của Noctalia được bật.",
+      "performance-mode-enabled-description": "Lệnh sẽ được chạy khi chế độ hiệu năng của nosDshell được bật.",
       "performance-mode-enabled-label": "Chế độ hiệu năng đã bật",
       "performance-mode-enabled-placeholder": "Ví dụ: notify-send \"Performance\" \"Mode enabled\"",
       "screen-lock-description": "Lệnh được thực thi khi màn hình bị khóa.",
@@ -1283,7 +1233,10 @@
       "title": "Móc nối",
       "wallpaper-changed-description": "Lệnh sẽ được thực thi khi hình nền thay đổi.",
       "wallpaper-changed-label": "Hình nền đã thay đổi",
-      "wallpaper-changed-placeholder": "Ví dụ: notify-send \"Wallpaper\" \"Changed\""
+      "wallpaper-changed-placeholder": "Ví dụ: notify-send \"Wallpaper\" \"Changed\"",
+      "shell-started-description": "Lệnh để thực thi khi nosDshell đã tải xong.",
+      "shell-started-label": "nosDshell đã khởi chạy",
+      "shell-started-placeholder": "Ví dụ: notify-send 'nosDshell Loaded'"
     },
     "idle": {
       "custom-add": "Thêm lệnh",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Hiển thị hiệu ứng thời tiết",
       "weather-show-in-calendar-description": "Hiển thị dự báo thời tiết hàng ngày trực tiếp trong chế độ xem lịch của bạn.",
       "weather-show-in-calendar-label": "Hiển thị thời tiết trong lịch",
-      "weather-talia-mascot-always-description": "Luôn sử dụng Talia emojis thay vì tabler icons.",
-      "weather-talia-mascot-always-label": "Luôn hiển thị biểu tượng cảm xúc thời tiết Talia"
+      "weather-mascot-always-description": "Luôn sử dụng mascot emojis thay vì tabler icons.",
+      "weather-mascot-always-label": "Luôn hiển thị biểu tượng cảm xúc thời tiết Talia"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Khi fprintd (xác thực vân tay) đang hoạt động, tùy chọn này cho phép bạn vẫn đăng nhập bằng mật khẩu được thay vì vân tay",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Mật độ",
       "settings-desc": "Cấu hình giao diện và hành vi của thông báo.",
       "settings-do-not-disturb-description": "Tắt tất cả các cửa sổ thông báo bật lên khi được bật.",
-      "settings-enabled-description": "Bật hoặc tắt tiến trình nền thông báo, yêu cầu khởi động lại Noctalia shell.",
+      "settings-enabled-description": "Bật hoặc tắt tiến trình nền thông báo, yêu cầu khởi động lại nosDshell shell.",
       "settings-enabled-label": "Bật thông báo",
       "settings-location-description": "Nơi thông báo xuất hiện trên màn hình.",
       "settings-markdown-description": "Hiển thị nội dung thông báo bằng định dạng Markdown.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Hot reload (chế độ dev)",
       "hot-reloaded": "Đã tải lại tiện ích: {name}",
       "install-error": "Không thể cài đặt: {error}",
-      "install-incompatible": "{plugin} yêu cầu Noctalia v{version} trở lên",
       "install-success": "Đã cài đặt thành công {plugin}",
       "installed-description": "Quản lý và cấu hình tất cả các bổ trợ đã cài đặt cục bộ.",
       "installed-label": "Tiện ích đã cài đặt",
@@ -1641,7 +1593,7 @@
       "update-available": "Có bản cập nhật plugin mới",
       "update-available-plural": "Có {count} bản cập nhật Plugin",
       "update-error": "Cập nhật plugin thất bại: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (yêu cầu Noctalia v{required})",
+      "update-pending": "v{current} → v{new} (yêu cầu nosDshell v{required})",
       "update-success": "Đã cập nhật {plugin} lên v{version}",
       "update-version": "v{current} → v{new}",
       "updating": "Đang cập nhật..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Hiện phím tắt"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Vẫn hiển thị các tiện ích màn hình nền khi chế độ hiệu suất của Noctalia được bật.",
-      "noctalia-performance-disable-desktop-widgets-label": "Bật widget màn hình nền ở chế độ hiệu suất",
-      "noctalia-performance-disable-wallpaper-description": "Giữ hình nền màn hình nền, tổng quan và màn hình khóa hiển thị khi chế độ hiệu suất của Noctalia được bật.",
-      "noctalia-performance-disable-wallpaper-label": "Bật hiển thị hình nền ở chế độ hiệu suất",
-      "title": "Hệ thống"
+      "title": "Hệ thống",
+      "performance-mode-disable-desktop-widgets-description": "Vẫn hiển thị các tiện ích màn hình nền khi chế độ hiệu suất của nosDshell được bật.",
+      "performance-mode-disable-desktop-widgets-label": "Bật widget màn hình nền ở chế độ hiệu suất",
+      "performance-mode-disable-wallpaper-description": "Giữ hình nền màn hình nền, tổng quan và màn hình khóa hiển thị khi chế độ hiệu suất của nosDshell được bật.",
+      "performance-mode-disable-wallpaper-label": "Bật hiển thị hình nền ở chế độ hiệu suất"
     },
     "system-monitor": {
       "critical-color-label": "Màu nguy cấp",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Bộ nhớ đệm hình nền",
       "settings-clear-cache-toast": "Đã xóa bộ nhớ đệm hình nền",
       "settings-desc": "Kiểm soát cách hình nền được quản lý và hiển thị.",
-      "settings-enable-management-description": "Quản lý hình nền với Noctalia. Bỏ chọn nếu bạn thích dùng ứng dụng khác.",
+      "settings-enable-management-description": "Quản lý hình nền với nosDshell. Bỏ chọn nếu bạn thích dùng ứng dụng khác.",
       "settings-enable-management-label": "Bật quản lý hình nền",
       "settings-enable-overview-description": "Áp dụng hình nền mờ và tối vào màn hình tổng quan.",
       "settings-enable-overview-label": "Bật hình nền tổng quan",
@@ -1864,10 +1816,6 @@
       "subheader": "Điều chỉnh vị trí, mật độ, tỉ lệ của Thanh Bar và nhiều hơn nữa."
     },
     "skip-setup": "Bỏ qua thiết lập",
-    "telemetry-wizard-done": "Đã hiểu!",
-    "telemetry-wizard-note": "Bạn có toàn quyền kiểm soát — bật hoặc tắt tính năng này bất cứ lúc nào trong cài đặt",
-    "telemetry-wizard-subtitle": "Chúng tôi đã thêm phân tích ẩn danh để giúp cải thiện Noctalia",
-    "telemetry-wizard-title": "Cập nhật Quyền riêng tư",
     "wallpaper": {
       "choose-dir": "Chọn một thư mục chứa hình nền của bạn",
       "dir-browse": "Duyệt thư mục hình nền",
@@ -1885,7 +1833,7 @@
     "welcome": "Chào mừng",
     "welcome-note": "Chỉ một vài điều cơ bản để bạn bắt đầu — các tùy chọn đầy đủ nằm trong cài đặt",
     "welcome-subtitle": "Hãy cùng cá nhân hóa màn hình của bạn một cách độc đáo.",
-    "welcome-title": "Chào mừng đến với Noctalia!"
+    "welcome-title": "Chào mừng đến với nosDshell!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "Không làm phiền đã bật",
       "enabled-desc": "Bạn sẽ tìm thấy những thông báo này trong lịch sử của mình"
     },
-    "donation-opened": "Trang quyên góp đã mở trong trình duyệt của bạn",
     "internet-limited": "Đã kết nối, không có Internet",
     "keyboard-layout": {
       "changed": "Bố cục bàn phím đã đổi thành {layout}",
@@ -1970,11 +1917,6 @@
       "forced": "Kích hoạt bắt buộc",
       "normal": "Chế độ bình thường",
       "not-installed": "wlsunset chưa cài đặt"
-    },
-    "noctalia-performance": {
-      "disabled": "Chế độ hiệu năng đã tắt",
-      "enabled": "Chế độ hiệu năng đã bật",
-      "label": "Chế độ hiệu năng của Noctalia"
     },
     "power-profile": {
       "changed": "Cấu hình nguồn đã thay đổi",
@@ -2000,6 +1942,11 @@
       "disconnected": "Đã ngắt kết nối khỏi '{ssid}'",
       "incorrect-password": "Mật khẩu không đúng",
       "network-not-found": "Không tìm thấy mạng"
+    },
+    "performance-mode": {
+      "disabled": "Chế độ hiệu năng đã tắt",
+      "enabled": "Chế độ hiệu năng đã bật",
+      "label": "Chế độ hiệu năng của nosDshell"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Bài hát tiếp theo",
     "next-month": "Tháng tới",
     "night-light-not-installed": "Ánh sáng đêm (không khả dụng)",
-    "noctalia-performance-enabled": "Chế độ hiệu năng Noctalia",
     "open-annotation-tool": "Mở bằng công cụ chú thích",
     "open-control-center": "Trung tâm điều khiển",
     "open-notification-history-enable-dnd": "Lịch sử thông báo",
@@ -2057,7 +2003,8 @@
     "unmute": "Bật tiếng",
     "up": "Thư mục cha",
     "volume-at": "Âm lượng đầu ra: {volume}%",
-    "wallpaper-selector": "Bộ chọn hình nền"
+    "wallpaper-selector": "Bộ chọn hình nền",
+    "performance-mode-enabled": "Chế độ hiệu năng nosDshell"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "Cần có khóa API để truy cập nội dung NSFW.",
       "apikey-label": "Khóa API",
-      "apikey-managed-by-env": "Được quản lý thông qua biến môi trường NOCTALIA_WALLHAVEN_API_KEY.",
+      "apikey-managed-by-env": "Được quản lý thông qua biến môi trường NOSD_WALLHAVEN_API_KEY.",
       "apikey-placeholder": "Nhập Wallhaven API Key của bạn",
       "appearance-dark-tab": "Tối",
       "appearance-light-tab": "Sáng",

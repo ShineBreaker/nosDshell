@@ -14,7 +14,7 @@ Item {
   property string resolvedWallpaperPath: ""
   // Pre-blurred variant produced by nosd-blur (empty until ready/unavailable)
   property string resolvedBlurredPath: ""
-  readonly property bool usePreBlurred: resolvedBlurredPath !== "" && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.noctaliaPerformanceMode
+  readonly property bool usePreBlurred: resolvedBlurredPath !== "" && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.performanceMode
   property color tintColor: Settings.data.colorSchemes.darkMode ? Color.mSurface : Color.mOnSurface
 
   required property var screen
@@ -106,7 +106,7 @@ Item {
     });
 
     // Pre-blurred variant replaces the live MultiEffect blur when available
-    if (ImageCacheService.blurToolAvailable && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.noctaliaPerformanceMode) {
+    if (ImageCacheService.blurToolAvailable && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.performanceMode) {
       ImageCacheService.getBlurred(originalPath, targetWidth, targetHeight, function (cachedPath, success) {
         if (success) {
           Logger.d("LockScreen", "Using pre-blurred wallpaper:", cachedPath);
@@ -126,7 +126,7 @@ Item {
 
   Image {
     id: lockBgImage
-    visible: source !== "" && Settings.data.wallpaper.enabled && !Settings.data.wallpaper.useSolidColor && (!PowerProfileService.noctaliaPerformanceMode || !Settings.data.noctaliaPerformance.disableWallpaper) && !root.usePreBlurred
+    visible: source !== "" && Settings.data.wallpaper.enabled && !Settings.data.wallpaper.useSolidColor && (!PowerProfileService.performanceMode || !Settings.data.performance.disableWallpaper) && !root.usePreBlurred
     anchors.fill: parent
     fillMode: Image.PreserveAspectCrop
     source: resolvedWallpaperPath
@@ -135,7 +135,7 @@ Item {
     mipmap: false
     antialiasing: true
 
-    layer.enabled: Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.noctaliaPerformanceMode
+    layer.enabled: Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.performanceMode
     layer.smooth: false
     layer.effect: MultiEffect {
       blurEnabled: true

@@ -151,6 +151,7 @@ Singleton {
     "antenna-bars-5": "antenna-bars-5",
     "antenna-bars-off": "antenna-bars-off",
     "noctalia": "noctalia",
+    "nosdshell": "noctalia",
     "hyprland": "hyprland",
     "filepicker-folder": "folder",
     "filepicker-refresh": "refresh",

@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Скрыть виджет, если в системе не обнаружена батарея.",
       "hide-if-not-detected-label": "Скрывать при отсутствии батареи",
       "low-battery-threshold-label": "Порог предупреждения о низком заряде батареи",
-      "show-noctalia-performance-description": "Отображать переключатель режима производительности Noctalia в панели батареи.<br>Отключает тени и анимации в Noctalia для снижения использования ресурсов.",
-      "show-noctalia-performance-label": "Показывать переключатель Производительность Noctalia",
       "show-power-profile-description": "Отображать выбор профиля питания в панели батареи.",
-      "show-power-profile-label": "Показывать элементы управления профилем питания"
+      "show-power-profile-label": "Показывать элементы управления профилем питания",
+      "show-performance-mode-description": "Отображать переключатель режима производительности nosDshell в панели батареи.<br>Отключает тени и анимации в nosDshell для снижения использования ресурсов.",
+      "show-performance-mode-label": "Показывать переключатель Производительность nosDshell"
     },
     "brightness": {
       "apply-all-description": "Изменять яркость для всех мониторов при использовании колеса прокрутки.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Слева",
       "icon-position-right": "Вправо",
       "icon-position-top": "Сверху",
-      "ipc-identifier-description": "Уникальный идентификатор для команд IPC. Используйте этот идентификатор с 'qs -c noctalia-shell ipc call cb [действие] [идентификатор]', чтобы управлять этой кнопкой через IPC.",
+      "ipc-identifier-description": "Уникальный идентификатор для команд IPC. Используйте этот идентификатор с 'qs -c nosdshell ipc call cb [действие] [идентификатор]', чтобы управлять этой кнопкой через IPC.",
       "ipc-identifier-label": "Идентификатор IPC",
       "left-click-description": "Команда для выполнения при нажатии левой кнопкой мыши.",
       "left-click-label": "Клик левой кнопкой",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Сигнал: Очень слабый"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "Не удалось загрузить данные журнала изменений. Пожалуйста, попробуйте позже.",
-      "rate-limit": "Превышен лимит GitHub. Попробуйте снова через несколько минут."
-    },
-    "panel": {
-      "buttons-discord": "Присоединиться к нашему Discord",
-      "buttons-dismiss": "ОК",
-      "buttons-feedback": "Оставьте отзыв",
-      "empty": "Примечания к выпуску пока недоступны.",
-      "highlight-title": "Основные изменения",
-      "released": "Выпущено {date}",
-      "subtitle-fresh": "Спасибо за установку Noctalia! Вот что входит в эту сборку.",
-      "subtitle-updated": "Обновлено с {previousVersion}",
-      "title": "Что нового в {version}",
-      "version": "Версия {version}",
-      "version-new-user": "Новая установка"
-    }
-  },
   "common": {
     "actions": "Действия",
     "active": "Активный",
@@ -421,7 +402,6 @@
     "connected": "Подключено",
     "connecting": "Соединение...",
     "continue": "Продолжить",
-    "contributors": "Участники",
     "copied-to-clipboard": "Скопировано в буфер обмена",
     "countdown": "Обратный отсчёт",
     "customize": "Настроить",
@@ -538,7 +518,6 @@
     "sources": "Источники",
     "start": "Начать",
     "stop": "Стоп",
-    "supporters": "Поддерживающие",
     "suspend": "Приостановить",
     "templates": "Шаблоны",
     "tertiary": "Третичный",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Стать спонсором",
-      "changelog": "Посмотреть список изменений",
-      "changelog-on-startup": "Показывать журнал изменений при обновлении",
-      "changelog-on-startup-desc": "Автоматически показывать журнал изменений при обновлении Noctalia.",
-      "contributors-description": "Благодарим нашего <b>замечательного</b> участника: {count}!",
-      "contributors-description-plural": "Благодарим наших <b>замечательных</b> участников: {count}!",
       "copy-info": "Копировать информацию",
       "debug-disabled": "Режим отладки отключен",
       "debug-enabled": "Режим отладки включен",
       "info-copied": "Информация скопирована в буфер обмена",
-      "noctalia-available": "Доступно:",
-      "noctalia-desc": "Изящная и минималистичная оболочка рабочего стола, тщательно разработанная для Wayland, созданная с помощью Quickshell.",
-      "noctalia-git-commit": "Git коммит:",
-      "noctalia-installed-version": "Установленная версия:",
-      "noctalia-latest-version": "Последняя версия:",
-      "noctalia-qs-version": "Noctalia QS версия:",
-      "noctalia-title": "Оболочка Noctalia",
-      "privacy-policy": "Политика конфиденциальности",
-      "support": "Поддержать нас",
-      "supporter-badge": "Сторонник",
-      "supporters-desc": "Огромное спасибо нашему замечательному стороннику!",
-      "supporters-desc-plural": "Огромное спасибо нашим <b>{count} замечательным</b> сторонникам!",
-      "supporters-loading": "Загрузка спонсоров...",
       "system-board": "Материнская плата:",
       "system-cpu": "ЦП:",
       "system-disk": "Диск:",
@@ -774,14 +734,7 @@
       "system-title": "Системная информация",
       "system-uptime": "Время работы:",
       "system-wm": "МО:",
-      "telemetry-data-copied": "Данные телеметрии скопированы в буфер обмена.",
-      "telemetry-desc": "Помогите улучшить Noctalia, поделившись анонимной информацией о системе (разрешение экрана, композитор, дистрибутив). Отправляется один раз при запуске, без отслеживания, данные автоматически удаляются через 30 дней.",
-      "telemetry-enabled": "Отправить анонимную системную информацию",
-      "telemetry-show-data": "Просмотр данных",
-      "telemetry-title": "Конфиденциальность",
       "title": "О программе",
-      "up-to-date": "У вас всё актуально!",
-      "update-available": "Доступно обновление",
       "view-commit": "Посмотреть коммит на GitHub"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• Команды выполняются через shell (sh -lc)<br>• Команды выполняются в фоновом режиме (отдельно)<br>• Кнопки 'Тест' выполняются с текущими значениями",
       "info-parameters-description": "• Wallpaper hook: $1 = путь к обоям, $2 = имя экрана, $3 = тема (темная/светлая)<br>• Theme toggle hook: $1 = true/false (состояние тёмного режима)<br>• Screen lock/unlock hooks: $1 = lock/unlock (состояние блокировки экрана)<br>• Performance mode hooks: Без параметров<br>• Session hook: $1 = action (shutdown/reboot)",
       "info-parameters-label": "Доступные параметры",
-      "noctalia-started-description": "Команда для выполнения после завершения загрузки Noctalia.",
-      "noctalia-started-label": "Noctalia запущена",
-      "noctalia-started-placeholder": "напр. notify-send 'Noctalia загружена'",
-      "performance-mode-disabled-description": "Команда для выполнения при выключении режима производительности Noctalia.",
+      "performance-mode-disabled-description": "Команда для выполнения при выключении режима производительности nosDshell.",
       "performance-mode-disabled-label": "Режим производительности выключен",
       "performance-mode-disabled-placeholder": "напр. notify-send \"Производительность\" \"Режим выключен\"",
-      "performance-mode-enabled-description": "Команда для выполнения при включении режима производительности Noctalia.",
+      "performance-mode-enabled-description": "Команда для выполнения при включении режима производительности nosDshell.",
       "performance-mode-enabled-label": "Режим производительности включен",
       "performance-mode-enabled-placeholder": "напр. notify-send \"Производительность\" \"Режим включен\"",
       "screen-lock-description": "Команда для выполнения при блокировке экрана.",
@@ -1283,7 +1233,10 @@
       "title": "Хуки",
       "wallpaper-changed-description": "Команда для выполнения при смене обоев.",
       "wallpaper-changed-label": "Обои изменены",
-      "wallpaper-changed-placeholder": "напр. notify-send \"Обои\" \"Изменены\""
+      "wallpaper-changed-placeholder": "напр. notify-send \"Обои\" \"Изменены\"",
+      "shell-started-description": "Команда для выполнения после завершения загрузки nosDshell.",
+      "shell-started-label": "nosDshell запущена",
+      "shell-started-placeholder": "напр. notify-send 'nosDshell загружена'"
     },
     "idle": {
       "custom-add": "Добавить команду",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Отображать погодные эффекты",
       "weather-show-in-calendar-description": "Показывать ежедневный прогноз погоды непосредственно в вашем календаре.",
       "weather-show-in-calendar-label": "Отображать погоду в календаре",
-      "weather-talia-mascot-always-description": "Всегда используйте Talia emojis вместо tabler icons.",
-      "weather-talia-mascot-always-label": "Всегда показывать погодные эмодзи Talia"
+      "weather-mascot-always-description": "Всегда используйте mascot emojis вместо tabler icons.",
+      "weather-mascot-always-label": "Всегда показывать погодные эмодзи Talia"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Когда fprintd (аутентификация по отпечатку пальца) активен, эта опция позволяет вам входить в систему с помощью пароля вместо отпечатка пальца.",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Плотность",
       "settings-desc": "Настройка внешнего вида и поведения уведомлений.",
       "settings-do-not-disturb-description": "Отключить все всплывающие окна уведомлений, если включено.",
-      "settings-enabled-description": "Включить или отключить демон уведомлений, требуется перезапуск Noctalia shell.",
+      "settings-enabled-description": "Включить или отключить демон уведомлений, требуется перезапуск nosDshell shell.",
       "settings-enabled-label": "Включить уведомления",
       "settings-location-description": "Где уведомления появляются на экране.",
       "settings-markdown-description": "Отображать содержимое уведомлений, используя форматирование Markdown.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Горячая перезагрузка (режим разработки)",
       "hot-reloaded": "Перезагружен плагин: {name}",
       "install-error": "Не удалось установить: {error}",
-      "install-incompatible": "{plugin} требует Noctalia версии {version} или выше",
       "install-success": "Успешно установлен {plugin}",
       "installed-description": "Управляйте и настраивайте все локально установленные плагины.",
       "installed-label": "Установленные плагины",
@@ -1641,7 +1593,7 @@
       "update-available": "Доступно новое обновление плагина",
       "update-available-plural": "Доступны новые обновления плагинов ({count})",
       "update-error": "Не удалось обновить плагин: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (требуется Noctalia v{required})",
+      "update-pending": "v{current} → v{new} (требуется nosDshell v{required})",
       "update-success": "Плагин {plugin} обновлён до версии {version}",
       "update-version": "v{current} → v{new}",
       "updating": "Обновление..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Показать сочетания клавиш"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Оставлять виджеты рабочего стола видимыми, пока режим производительности Noctalia включен.",
-      "noctalia-performance-disable-desktop-widgets-label": "Включить виджеты рабочего стола в режиме производительности",
-      "noctalia-performance-disable-wallpaper-description": "Сохраняйте видимыми обои рабочего стола, обзора и экрана блокировки, пока режим производительности Noctalia включен.",
-      "noctalia-performance-disable-wallpaper-label": "Включить рендеринг обоев в режиме производительности",
-      "title": "Система"
+      "title": "Система",
+      "performance-mode-disable-desktop-widgets-description": "Оставлять виджеты рабочего стола видимыми, пока режим производительности nosDshell включен.",
+      "performance-mode-disable-desktop-widgets-label": "Включить виджеты рабочего стола в режиме производительности",
+      "performance-mode-disable-wallpaper-description": "Сохраняйте видимыми обои рабочего стола, обзора и экрана блокировки, пока режим производительности nosDshell включен.",
+      "performance-mode-disable-wallpaper-label": "Включить рендеринг обоев в режиме производительности"
     },
     "system-monitor": {
       "critical-color-label": "Критический цвет",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Кэш обоев",
       "settings-clear-cache-toast": "Кэш обоев очищен",
       "settings-desc": "Управление тем, как обои управляются и отображаются.",
-      "settings-enable-management-description": "Управлять обоями с помощью Noctalia. Снимите флажок, если предпочитаете использовать другое приложение.",
+      "settings-enable-management-description": "Управлять обоями с помощью nosDshell. Снимите флажок, если предпочитаете использовать другое приложение.",
       "settings-enable-management-label": "Включить управление обоями",
       "settings-enable-overview-description": "Применяет размытые и затемнённые обои к экрану обзора.",
       "settings-enable-overview-label": "Включить обои обзора",
@@ -1864,10 +1816,6 @@
       "subheader": "Настройте положение панели, плотность, масштабирование и многое другое."
     },
     "skip-setup": "Пропустить настройку",
-    "telemetry-wizard-done": "Понял!",
-    "telemetry-wizard-note": "Вы всё контролируете — вы можете включить или отключить это в любое время в настройках",
-    "telemetry-wizard-subtitle": "Мы добавили анонимную аналитику, чтобы помочь улучшить Noctalia",
-    "telemetry-wizard-title": "Обновление конфиденциальности",
     "wallpaper": {
       "choose-dir": "Выберите каталог, содержащий ваши изображения обоев",
       "dir-browse": "Обзор папки с обоями",
@@ -1885,7 +1833,7 @@
     "welcome": "Добро пожаловать",
     "welcome-note": "Всего несколько основ для начала — полные настройки находятся в настройках",
     "welcome-subtitle": "Давайте сделаем ваш рабочий стол уникальным",
-    "welcome-title": "Добро пожаловать в Noctalia!"
+    "welcome-title": "Добро пожаловать в nosDshell!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "Режим 'Не беспокоить' включен",
       "enabled-desc": "Вы найдёте эти уведомления в своей истории"
     },
-    "donation-opened": "Страница пожертвований открыта в вашем браузере",
     "internet-limited": "Подключено без доступа к интернету",
     "keyboard-layout": {
       "changed": "Раскладка клавиатуры изменена на {layout}",
@@ -1970,11 +1917,6 @@
       "forced": "Принудительная активация",
       "normal": "Нормальный режим",
       "not-installed": "wlsunset не установлен"
-    },
-    "noctalia-performance": {
-      "disabled": "Режим производительности Noctalia отключен",
-      "enabled": "Режим производительности Noctalia включен",
-      "label": "Производительность Noctalia"
     },
     "power-profile": {
       "changed": "Профиль питания изменён",
@@ -2000,6 +1942,11 @@
       "disconnected": "Отключено от '{ssid}'",
       "incorrect-password": "Неверный пароль",
       "network-not-found": "Сеть не найдена"
+    },
+    "performance-mode": {
+      "disabled": "Режим производительности nosDshell отключен",
+      "enabled": "Режим производительности nosDshell включен",
+      "label": "Производительность nosDshell"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Следующий трек",
     "next-month": "Следующий месяц",
     "night-light-not-installed": "Ночной свет (недоступен)",
-    "noctalia-performance-enabled": "Режим производительности Noctalia",
     "open-annotation-tool": "Открыть с помощью инструмента аннотирования",
     "open-control-center": "Центр управления",
     "open-notification-history-enable-dnd": "История уведомлений",
@@ -2057,7 +2003,8 @@
     "unmute": "Включить звук",
     "up": "Родительский каталог",
     "volume-at": "Громкость вывода: {volume}%",
-    "wallpaper-selector": "Выбор обоев"
+    "wallpaper-selector": "Выбор обоев",
+    "performance-mode-enabled": "Режим производительности nosDshell"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "Для доступа к контенту NSFW требуется ключ API.",
       "apikey-label": "Ключ API",
-      "apikey-managed-by-env": "Управляется через переменную окружения NOCTALIA_WALLHAVEN_API_KEY.",
+      "apikey-managed-by-env": "Управляется через переменную окружения NOSD_WALLHAVEN_API_KEY.",
       "apikey-placeholder": "Введите свой API-ключ Wallhaven",
       "appearance-dark-tab": "Темный",
       "appearance-light-tab": "Светлый",

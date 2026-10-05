@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "システムでバッテリーが検出されない場合は、ウィジェットを非表示にします。",
       "hide-if-not-detected-label": "検出されなければ隠れる",
       "low-battery-threshold-label": "低バッテリー警告の閾値",
-      "show-noctalia-performance-description": "バッテリーパネルに Noctalia パフォーマンスモードのトグルを表示します。<br>Noctalia のシャドウとアニメーションを無効にしてリソース使用量を削減します。",
-      "show-noctalia-performance-label": "Noctalia パフォーマンストグルを表示",
       "show-power-profile-description": "バッテリーパネルに電源プロファイルの選択項目を表示します。",
-      "show-power-profile-label": "電源プロファイルコントロールを表示"
+      "show-power-profile-label": "電源プロファイルコントロールを表示",
+      "show-performance-mode-description": "バッテリーパネルに nosDshell パフォーマンスモードのトグルを表示します。<br>nosDshell のシャドウとアニメーションを無効にしてリソース使用量を削減します。",
+      "show-performance-mode-label": "nosDshell パフォーマンストグルを表示"
     },
     "brightness": {
       "apply-all-description": "スクロールホイール使用時に、すべてのモニターの輝度を変更します。",
@@ -128,7 +128,7 @@
       "icon-position-left": "左",
       "icon-position-right": "右",
       "icon-position-top": "上",
-      "ipc-identifier-description": "IPCコマンドの一意の識別子。この識別子を「qs -c noctalia-shell ipc call cb [アクション] [識別子]」で使用して、IPC経由でこのボタンを制御します。",
+      "ipc-identifier-description": "IPCコマンドの一意の識別子。この識別子を「qs -c nosdshell ipc call cb [アクション] [識別子]」で使用して、IPC経由でこのボタンを制御します。",
       "ipc-identifier-label": "IPC識別子",
       "left-click-description": "ボタンを左クリックした際に実行するコマンド。",
       "left-click-label": "左クリック",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "信号：非常に悪い"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "変更履歴データを読み込めませんでした。後ほど再試行してください。",
-      "rate-limit": "GitHub のレート制限を超えました。数分待ってから再試行してください。"
-    },
-    "panel": {
-      "buttons-discord": "Discord に参加",
-      "buttons-dismiss": "OK",
-      "buttons-feedback": "フィードバックください",
-      "empty": "リリースノートはまだ利用できません。",
-      "highlight-title": "ハイライト",
-      "released": "{date} リリース",
-      "subtitle-fresh": "Noctalia をインストールしていただきありがとうございます！今回のビルド内容は以下の通りです。",
-      "subtitle-updated": "{previousVersion} からアップデートされました",
-      "title": "バージョン {version} の新機能",
-      "version": "バージョン {version}",
-      "version-new-user": "新規インストール"
-    }
-  },
   "common": {
     "actions": "アクション",
     "active": "アクティブ",
@@ -421,7 +402,6 @@
     "connected": "接続済み",
     "connecting": "接続中...",
     "continue": "続ける",
-    "contributors": "貢献者",
     "copied-to-clipboard": "クリップボードにコピーしました",
     "countdown": "カウントダウン",
     "customize": "カスタマイズ",
@@ -538,7 +518,6 @@
     "sources": "ソース",
     "start": "開始",
     "stop": "停止",
-    "supporters": "サポーター",
     "suspend": "サスペンド",
     "templates": "テンプレート",
     "tertiary": "第三",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "サポーターになる",
-      "changelog": "変更履歴を見る",
-      "changelog-on-startup": "アップデート時に変更履歴を表示",
-      "changelog-on-startup-desc": "Noctaliaが更新されたときに、自動的に変更履歴を表示する。",
-      "contributors-description": "{count}人の<b>素晴らしい</b>コントリビューターに感謝！",
-      "contributors-description-plural": "{count}人の<b>素晴らしい</b>コントリビューターに感謝！",
       "copy-info": "情報をコピー",
       "debug-disabled": "デバッグモードが無効になりました",
       "debug-enabled": "デバッグモードが有効です",
       "info-copied": "クリップボードにコピーしました",
-      "noctalia-available": "利用可能:",
-      "noctalia-desc": "Wayland のために丁寧に作り込まれた、Quickshell 製の洗練されたミニマルなデスクトップシェル。",
-      "noctalia-git-commit": "Git コミット：",
-      "noctalia-installed-version": "現在のバージョン：",
-      "noctalia-latest-version": "最新のバージョン：",
-      "noctalia-qs-version": "Noctalia QS バージョン:",
-      "noctalia-title": "Noctalia shell",
-      "privacy-policy": "プライバシーポリシー",
-      "support": "支援する",
-      "supporter-badge": "サポーター",
-      "supporters-desc": "素晴らしいサポーターに心からの感謝を！",
-      "supporters-desc-plural": "<b>{count}名の素晴らしい</b>サポーターの皆様に心より感謝いたします！",
-      "supporters-loading": "サポーターを読み込み中...",
       "system-board": "マザーボード:",
       "system-cpu": "CPU：",
       "system-disk": "ディスク：",
@@ -774,14 +734,7 @@
       "system-title": "システム情報",
       "system-uptime": "稼働時間：",
       "system-wm": "WM：",
-      "telemetry-data-copied": "テレメトリーデータをクリップボードにコピーしました。",
-      "telemetry-desc": "匿名システム情報（画面解像度、コンポジター、ディストリビューション）を共有して、Noctaliaの改善にご協力ください。起動時に一度送信され、追跡は行われず、データは30日後に自動的に削除されます。",
-      "telemetry-enabled": "匿名でシステム情報を送信する",
-      "telemetry-show-data": "データの表示",
-      "telemetry-title": "プライバシー",
       "title": "バージョン情報",
-      "up-to-date": "最新の状態です！",
-      "update-available": "アップデートがあります",
       "view-commit": "GitHubでコミットを見る"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• コマンドはシェル (sh -lc) 経由で実行されます<br>• コマンドはバックグラウンドで実行されます<br>• テストボタンは現在の設定値を使って実行されます",
       "info-parameters-description": "• Wallpaper hook: $1 = 壁紙のパス, $2 = 画面名, $3 = テーマ (ダーク/ライト)<br>• Theme toggle hook: $1 = true/false (ダークモードの状態)<br>• Screen lock/unlock hooks: $1 = lock/unlock (画面ロックの状態)<br>• Performance mode hooks: パラメータなし<br>• Session hook: $1 = action (shutdown/reboot)",
       "info-parameters-label": "利用可能なパラメータ（引数）",
-      "noctalia-started-description": "Noctaliaのロードが完了したときに実行するコマンド。",
-      "noctalia-started-label": "Noctalia が起動しました",
-      "noctalia-started-placeholder": "例：notify-send 'Noctalia 読み込み完了'",
-      "performance-mode-disabled-description": "Noctalia パフォーマンスモードが無効になった際に実行されるコマンド。",
+      "performance-mode-disabled-description": "nosDshell パフォーマンスモードが無効になった際に実行されるコマンド。",
       "performance-mode-disabled-label": "パフォーマンスモード無効時",
       "performance-mode-disabled-placeholder": "例：notify-send \"Performance\" \"Mode disabled\"",
-      "performance-mode-enabled-description": "Noctalia パフォーマンスモードが有効になった際に実行されるコマンド。",
+      "performance-mode-enabled-description": "nosDshell パフォーマンスモードが有効になった際に実行されるコマンド。",
       "performance-mode-enabled-label": "パフォーマンスモード有効時",
       "performance-mode-enabled-placeholder": "例：notify-send \"Performance\" \"Mode enabled\"",
       "screen-lock-description": "画面がロックされた際に実行されるコマンド。",
@@ -1283,7 +1233,10 @@
       "title": "フック",
       "wallpaper-changed-description": "壁紙が変更された際に実行されるコマンド。",
       "wallpaper-changed-label": "壁紙変更時",
-      "wallpaper-changed-placeholder": "例：notify-send \"Wallpaper\" \"Changed\""
+      "wallpaper-changed-placeholder": "例：notify-send \"Wallpaper\" \"Changed\"",
+      "shell-started-description": "nosDshellのロードが完了したときに実行するコマンド。",
+      "shell-started-label": "nosDshell が起動しました",
+      "shell-started-placeholder": "例：notify-send 'nosDshell 読み込み完了'"
     },
     "idle": {
       "custom-add": "コマンドを追加",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "天気エフェクトを表示",
       "weather-show-in-calendar-description": "カレンダービューに毎日の天気予報を直接表示します。",
       "weather-show-in-calendar-label": "カレンダー",
-      "weather-talia-mascot-always-description": "tabler icons の代わりに常に Talia emojis を使用してください。",
-      "weather-talia-mascot-always-label": "Taliaの天気絵文字を常に表示する"
+      "weather-mascot-always-description": "tabler icons の代わりに常に mascot emojis を使用してください。",
+      "weather-mascot-always-label": "Taliaの天気絵文字を常に表示する"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "fprintd（指紋認証）が有効な場合、このオプションを使用すると、指紋の代わりにパスワードでログインできます。",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "密度",
       "settings-desc": "通知の外観と挙動を設定します。",
       "settings-do-not-disturb-description": "有効にすると、すべての通知ポップアップを無効にします。",
-      "settings-enabled-description": "通知デーモンを有効化・無効化します（Noctalia shellの再起動が必要です）。",
+      "settings-enabled-description": "通知デーモンを有効化・無効化します（nosDshell shellの再起動が必要です）。",
       "settings-enabled-label": "通知を有効化",
       "settings-location-description": "画面上の通知の表示位置。",
       "settings-markdown-description": "Markdown形式を使用して通知コンテンツを表示します。",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "ホットリロード（開発モード）",
       "hot-reloaded": "プラグインをリロードしました：{name}",
       "install-error": "インストールに失敗しました：{error}",
-      "install-incompatible": "{plugin} には Noctalia v{version} 以降が必要です",
       "install-success": "{plugin} をインストールしました",
       "installed-description": "ローカルにインストールされたすべてのプラグインを管理・設定します。",
       "installed-label": "インストール済みプラグイン",
@@ -1641,7 +1593,7 @@
       "update-available": "新しいプラグインアップデートがあります",
       "update-available-plural": "新しいプラグインアップデートがあります（{count}個）",
       "update-error": "プラグインのアップデートに失敗しました：{plugin}：{error}",
-      "update-pending": "v{current} → v{new} (Noctalia v{required}が必要です)",
+      "update-pending": "v{current} → v{new} (nosDshell v{required}が必要です)",
       "update-success": "{plugin} を v{version} にアップデートしました",
       "update-version": "v{current} → v{new}",
       "updating": "更新中..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "キーバインドを表示"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Noctalia パフォーマンスモードが有効な間、デスクトップウィジェットを表示したままにする。",
-      "noctalia-performance-disable-desktop-widgets-label": "パフォーマンスモードでデスクトップウィジェットを有効にする",
-      "noctalia-performance-disable-wallpaper-description": "Noctalia パフォーマンスモードが有効な間、デスクトップ、概要、ロック画面の壁紙を表示したままにします。",
-      "noctalia-performance-disable-wallpaper-label": "パフォーマンスモードで壁紙のレンダリングを有効にする",
-      "title": "システム"
+      "title": "システム",
+      "performance-mode-disable-desktop-widgets-description": "nosDshell パフォーマンスモードが有効な間、デスクトップウィジェットを表示したままにする。",
+      "performance-mode-disable-desktop-widgets-label": "パフォーマンスモードでデスクトップウィジェットを有効にする",
+      "performance-mode-disable-wallpaper-description": "nosDshell パフォーマンスモードが有効な間、デスクトップ、概要、ロック画面の壁紙を表示したままにします。",
+      "performance-mode-disable-wallpaper-label": "パフォーマンスモードで壁紙のレンダリングを有効にする"
     },
     "system-monitor": {
       "critical-color-label": "危険時の色",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "壁紙キャッシュ",
       "settings-clear-cache-toast": "壁紙キャッシュをクリアしました",
       "settings-desc": "壁紙の管理方法や表示方法を制御します。",
-      "settings-enable-management-description": "Noctalia で壁紙を管理します。他のアプリを使用する場合はチェックを外してください。",
+      "settings-enable-management-description": "nosDshell で壁紙を管理します。他のアプリを使用する場合はチェックを外してください。",
       "settings-enable-management-label": "壁紙管理を有効化",
       "settings-enable-overview-description": "オーバービュー画面の壁紙に、ぼかしと暗さしを適用します。",
       "settings-enable-overview-label": "オーバービューの壁紙効果",
@@ -1864,10 +1816,6 @@
       "subheader": "バーの位置や密度、インターフェースのスケールなどを調整します。"
     },
     "skip-setup": "セットアップをスキップ",
-    "telemetry-wizard-done": "了解しました！",
-    "telemetry-wizard-note": "設定でいつでも有効または無効にできます。",
-    "telemetry-wizard-subtitle": "Noctaliaの改善に役立つ匿名分析を追加しました",
-    "telemetry-wizard-title": "プライバシーアップデート",
     "wallpaper": {
       "choose-dir": "壁紙画像が含まれているフォルダを選択します",
       "dir-browse": "壁紙フォルダを参照",
@@ -1885,7 +1833,7 @@
     "welcome": "ようこそ",
     "welcome-note": "まずは基本設定から始めましょう。詳細なオプションは「設定」にあります。",
     "welcome-subtitle": "デスクトップをあなただけのものにしましょう",
-    "welcome-title": "Noctaliaへようこそ！"
+    "welcome-title": "nosDshellへようこそ！"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "おやすみモードを有効化",
       "enabled-desc": "通知は履歴に保存されます"
     },
-    "donation-opened": "寄付ページがブラウザで開かれました",
     "internet-limited": "インターネット未接続",
     "keyboard-layout": {
       "changed": "キーボードレイアウトを {layout} に変更しました",
@@ -1970,11 +1917,6 @@
       "forced": "強制的に有効化",
       "normal": "通常モード",
       "not-installed": "wlsunset がインストールされていません"
-    },
-    "noctalia-performance": {
-      "disabled": "パフォーマンスモード：無効",
-      "enabled": "パフォーマンスモード：有効",
-      "label": "Noctalia パフォーマンス"
     },
     "power-profile": {
       "changed": "電源プロファイルを変更しました",
@@ -2000,6 +1942,11 @@
       "disconnected": "{ssid} から切断しました",
       "incorrect-password": "パスワードが違います",
       "network-not-found": "ネットワークが見つかりません"
+    },
+    "performance-mode": {
+      "disabled": "パフォーマンスモード：無効",
+      "enabled": "パフォーマンスモード：有効",
+      "label": "nosDshell パフォーマンス"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "次のトラック",
     "next-month": "翌月",
     "night-light-not-installed": "夜間モード（利用不可）",
-    "noctalia-performance-enabled": "Noctalia パフォーマンスモード",
     "open-annotation-tool": "注釈ツールで開く",
     "open-control-center": "コントロールセンター",
     "open-notification-history-enable-dnd": "通知履歴",
@@ -2057,7 +2003,8 @@
     "unmute": "ミュート解除",
     "up": "親ディレクトリ",
     "volume-at": "出力音量：{volume}%",
-    "wallpaper-selector": "壁紙選択パネル"
+    "wallpaper-selector": "壁紙選択パネル",
+    "performance-mode-enabled": "nosDshell パフォーマンスモード"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "成人向けコンテンツにアクセスするには、APIキーが必要です。",
       "apikey-label": "APIキー",
-      "apikey-managed-by-env": "NOCTALIA_WALLHAVEN_API_KEY 環境変数経由で管理されます。",
+      "apikey-managed-by-env": "NOSD_WALLHAVEN_API_KEY 環境変数経由で管理されます。",
       "apikey-placeholder": "Wallhaven APIキーを入力してください",
       "appearance-dark-tab": "ダーク",
       "appearance-light-tab": "ライト",

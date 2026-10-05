@@ -14,7 +14,7 @@ import qs.Services.Hardware
 import qs.Services.Location
 import qs.Services.Media
 import qs.Services.Networking
-import qs.Services.Noctalia
+import qs.Services.Plugins
 import qs.Services.Power
 import qs.Services.System
 import qs.Services.Theming
@@ -856,16 +856,16 @@ Singleton {
       }
     }
 
-    function toggleNoctaliaPerformance() {
-      PowerProfileService.toggleNoctaliaPerformance();
+    function togglePerformanceMode() {
+      PowerProfileService.togglePerformanceMode();
     }
 
-    function enableNoctaliaPerformance() {
-      PowerProfileService.setNoctaliaPerformance(true);
+    function enablePerformanceMode() {
+      PowerProfileService.setPerformanceMode(true);
     }
 
-    function disableNoctaliaPerformance() {
-      PowerProfileService.setNoctaliaPerformance(false);
+    function disablePerformanceMode() {
+      PowerProfileService.setPerformanceMode(false);
     }
   }
 

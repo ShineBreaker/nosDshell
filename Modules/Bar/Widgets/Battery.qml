@@ -291,7 +291,7 @@ Item {
     if (panel) {
       panel.panelID = {
         showPowerProfiles: widgetSettings.showPowerProfiles !== undefined ? widgetSettings.showPowerProfiles : widgetMetadata.showPowerProfiles,
-        showNoctaliaPerformance: widgetSettings.showNoctaliaPerformance !== undefined ? widgetSettings.showNoctaliaPerformance : widgetMetadata.showNoctaliaPerformance
+        showPerformanceMode: widgetSettings.showPerformanceMode !== undefined ? widgetSettings.showPerformanceMode : widgetMetadata.showPerformanceMode
       };
     }
     return panel;

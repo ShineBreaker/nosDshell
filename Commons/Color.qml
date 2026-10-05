@@ -349,13 +349,13 @@ Singleton {
 
   // Adaptive opacity calculation: automatically makes light mode more transparent
   function adaptiveOpacity(baseOpacity) {
-    if (PowerProfileService.noctaliaPerformanceMode)
+    if (PowerProfileService.performanceMode)
       return 1.0;
     return Settings.data.colorSchemes.darkMode ? baseOpacity : Math.pow(baseOpacity, 1.5);
   }
 
   function smartAlpha(baseColor, minAlpha = 0.4) {
-    if (PowerProfileService.noctaliaPerformanceMode)
+    if (PowerProfileService.performanceMode)
       return baseColor;
 
     if (!Settings.data.ui.translucentWidgets)
@@ -408,7 +408,7 @@ Singleton {
   readonly property color pressDim: Qt.rgba(0, 0, 0, 0.41)
 
   // True when the compositor-side blur path is enabled (controls mask alpha).
-  readonly property bool blurActive: Settings.data.general.enableBlurBehind && !PowerProfileService.noctaliaPerformanceMode
+  readonly property bool blurActive: Settings.data.general.enableBlurBehind && !PowerProfileService.performanceMode
   // Dark/light mode source of truth, same as the scheme system.
   readonly property bool shellIsDark: Settings.data.colorSchemes.darkMode
 

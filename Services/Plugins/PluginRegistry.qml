@@ -13,8 +13,9 @@ Singleton {
   readonly property string pluginsFile: Settings.configDir + "plugins.json"
 
   readonly property int currentVersion: 2
-  // Main source URL - plugins from this source keep plain IDs
-  readonly property string mainSourceUrl: "https://github.com/noctalia-dev/noctalia-plugins"
+  // Sentinel URL for "local" plugins (installed from disk, no remote source).
+  // Plugins with this source keep plain IDs; plugins from custom sources get "hash:id".
+  readonly property string mainSourceUrl: ""
 
   Component.onCompleted: {
     ensurePluginsDirectory();
@@ -27,9 +28,9 @@ Singleton {
     return hash.substring(0, 6);
   }
 
-  // Check if a source is the main Noctalia plugins repository
+  // Check if a source refers to a local (no remote source) plugin
   function isMainSource(sourceUrl) {
-    return sourceUrl === root.mainSourceUrl;
+    return !sourceUrl || sourceUrl === root.mainSourceUrl;
   }
 
   // Generate composite key: plain ID for official, "hash:id" for custom
@@ -115,18 +116,6 @@ Singleton {
       root.pluginStates = adapter.states || {};
       root.pluginSources = adapter.sources || [];
 
-      // Ensure default repo is in sources
-      if (root.pluginSources.length === 0) {
-        root.pluginSources = [
-          {
-            "name": "Noctalia Plugins",
-            "url": "https://github.com/noctalia-dev/noctalia-plugins",
-            "enabled": true
-          }
-        ];
-        root.save();
-      }
-
       // Migrate from v1 to v2 (add sourceUrl to states)
       root.migratePluginData();
 
@@ -138,13 +127,7 @@ Singleton {
       Logger.w("PluginRegistry", "Failed to load plugins.json, will create it:", error);
       // Initialize defaults and continue
       root.pluginStates = {};
-      root.pluginSources = [
-            {
-              "name": "Noctalia Plugins",
-              "url": "https://github.com/noctalia-dev/noctalia-plugins",
-              "enabled": true
-            }
-          ];
+      root.pluginSources = [];
       // Scan for installed plugins
       root.scanPluginFolder();
     }
@@ -178,28 +161,6 @@ Singleton {
         needsSave = true;
         break;
       }
-    }
-
-    // Migration: rename "Official Noctalia Plugins" -> "Noctalia Plugins"
-    var newSources = [];
-    var sourcesChanged = false;
-    for (var i = 0; i < root.pluginSources.length; i++) {
-      var source = root.pluginSources[i];
-      if (source.name === "Official Noctalia Plugins") {
-        newSources.push({
-                          name: "Noctalia Plugins",
-                          url: source.url,
-                          enabled: source.enabled
-                        });
-        sourcesChanged = true;
-        Logger.i("PluginRegistry", "Migrating source name: 'Official Noctalia Plugins' -> 'Noctalia Plugins'");
-      } else {
-        newSources.push(source);
-      }
-    }
-    if (sourcesChanged) {
-      root.pluginSources = newSources;
-      needsSave = true;
     }
 
     if (needsSave) {

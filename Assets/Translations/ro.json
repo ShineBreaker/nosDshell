@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Ascunde widget-ul când nu este detectată nicio baterie în sistem.",
       "hide-if-not-detected-label": "Ascunde când nu este detectată nicio baterie",
       "low-battery-threshold-label": "Prag de avertizare nivel scăzut al bateriei",
-      "show-noctalia-performance-description": "Afișează comutatorul modului de performanță Noctalia în panoul bateriei.<br>Dezactivează umbrele și animațiile în Noctalia pentru a reduce utilizarea resurselor.",
-      "show-noctalia-performance-label": "Afișează comutatorul Noctalia Performance",
       "show-power-profile-description": "Afișează selecția profilului de alimentare în panoul bateriei.",
-      "show-power-profile-label": "Afișează controalele profilului de alimentare"
+      "show-power-profile-label": "Afișează controalele profilului de alimentare",
+      "show-performance-mode-description": "Afișează comutatorul modului de performanță nosDshell în panoul bateriei.<br>Dezactivează umbrele și animațiile în nosDshell pentru a reduce utilizarea resurselor.",
+      "show-performance-mode-label": "Afișează comutatorul nosDshell Performance"
     },
     "brightness": {
       "apply-all-description": "Schimbă luminozitatea pentru fiecare monitor când folosești rotița de scroll.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Stânga",
       "icon-position-right": "Dreapta",
       "icon-position-top": "Sus",
-      "ipc-identifier-description": "Identificator unic pentru comenzi IPC. Folosește acest identificator cu 'qs -c noctalia-shell ipc call cb [action] [identifier]' pentru a controla acest buton prin IPC.",
+      "ipc-identifier-description": "Identificator unic pentru comenzi IPC. Folosește acest identificator cu 'qs -c nosdshell ipc call cb [action] [identifier]' pentru a controla acest buton prin IPC.",
       "ipc-identifier-label": "Identificator IPC",
       "left-click-description": "Comandă de executat când se face clic stânga pe buton.",
       "left-click-label": "Clic stânga",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Semnal: Foarte slab"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "Nu se pot încărca datele jurnalului de modificări. Vă rugăm să încercați din nou mai târziu.",
-      "rate-limit": "Limita de rată GitHub depășită. Vă rugăm să încercați din nou în câteva minute."
-    },
-    "panel": {
-      "buttons-discord": "Alătură-te pe Discord",
-      "buttons-dismiss": "OK",
-      "buttons-feedback": "Oferă feedback",
-      "empty": "Note de lansare nu sunt încă disponibile.",
-      "highlight-title": "Evidențieri",
-      "released": "Lansat pe {date}",
-      "subtitle-fresh": "Mulțumim pentru instalarea Noctalia! Iată ce este inclus în această versiune.",
-      "subtitle-updated": "Actualizat de la {previousVersion}",
-      "title": "Ce este nou în {version}",
-      "version": "Versiune {version}",
-      "version-new-user": "Instalare nouă"
-    }
-  },
   "common": {
     "actions": "Acțiuni",
     "active": "Activ",
@@ -421,7 +402,6 @@
     "connected": "Conectat",
     "connecting": "Se conectează...",
     "continue": "Continuă",
-    "contributors": "Contribuitori",
     "copied-to-clipboard": "Copiat în clipboard",
     "countdown": "Numărătoare inversă",
     "customize": "Personalizare",
@@ -538,7 +518,6 @@
     "sources": "Surse",
     "start": "Pornire",
     "stop": "Oprește",
-    "supporters": "Susținători",
     "suspend": "Suspendare",
     "templates": "Șabloane",
     "tertiary": "Terțiar",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Devino un susținător",
-      "changelog": "Vezi jurnalul de modificări",
-      "changelog-on-startup": "Afișează jurnalul de modificări la actualizare",
-      "changelog-on-startup-desc": "Afișează automat jurnalul de modificări când Noctalia este actualizată",
-      "contributors-description": "Un salut pentru cei {count} <b>super</b> contribuitori ai noștri!",
-      "contributors-description-plural": "Mulțumiri speciale {count} <b>minunaților</b> noștri contribuitori!",
       "copy-info": "Copiază informații",
       "debug-disabled": "Mod depanare dezactivat",
       "debug-enabled": "Modul de depanare activat",
       "info-copied": "Informații copiate în clipboard",
-      "noctalia-available": "Disponibil:",
-      "noctalia-desc": "Un shell de desktop elegant și minimalist, creat cu grijă pentru Wayland, construit cu Quickshell.",
-      "noctalia-git-commit": "Comitere Git:",
-      "noctalia-installed-version": "Versiune instalată:",
-      "noctalia-latest-version": "Cea mai recentă versiune:",
-      "noctalia-qs-version": "Noctalia QS versiune:",
-      "noctalia-title": "Noctalia Shell",
-      "privacy-policy": "Politica de confidențialitate",
-      "support": "Susține-ne",
-      "supporter-badge": "Susținător",
-      "supporters-desc": "Un mare mulțumesc susținătorului nostru uimitor!",
-      "supporters-desc-plural": "Un mare mulțumesc celor <b>{count} minunați</b> susținători ai noștri!",
-      "supporters-loading": "Se încarcă susținătorii...",
       "system-board": "Tablou:",
       "system-cpu": "CPU:",
       "system-disk": "Disc:",
@@ -774,14 +734,7 @@
       "system-title": "Informații Sistem",
       "system-uptime": "Timp de funcționare:",
       "system-wm": "WM:",
-      "telemetry-data-copied": "Date de telemetrie copiate în clipboard",
-      "telemetry-desc": "Ajută la îmbunătățirea Noctalia prin partajarea informațiilor anonime despre sistem (rezoluție ecran, compositor, distro). Trimis o singură dată la pornire, fără urmărire, datele se șterg automat după 30 de zile.",
-      "telemetry-enabled": "Trimite informații de sistem anonime",
-      "telemetry-show-data": "Vizualizare date",
-      "telemetry-title": "Confidențialitate",
       "title": "Despre",
-      "up-to-date": "Ești la zi!",
-      "update-available": "Actualizare disponibilă",
       "view-commit": "Vezi commit-ul pe GitHub"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• Comenzile sunt executate prin shell (sh -lc)<br>• Comenzile rulează în fundal (detașate)<br>• Butoanele de test se execută cu valorile curente",
       "info-parameters-description": "• Hook pentru fundal: $1 = cale imagine de fundal, $2 = nume ecran, $3 = temă (întunecată/luminoasă)<br>• Hook pentru generarea culorilor: $1 = temă (întunecată/luminoasă)<br>• Hook pentru comutarea temei: $1 = adevărat/fals (stare Dark Mode)<br>• Hook-uri pentru blocare/deblocare ecran: $1 = blocare/deblocare (stare blocare ecran)<br>• Hook-uri pentru modul de performanță: Fără parametri<br>• Hook pentru sesiune: $1 = acțiune (oprire/repornire)",
       "info-parameters-label": "Parametri disponibili",
-      "noctalia-started-description": "Comandă de executat când Noctalia a terminat de încărcat.",
-      "noctalia-started-label": "Noctalia a pornit",
-      "noctalia-started-placeholder": "De exemplu: notify-send 'Noctalia Loaded'",
-      "performance-mode-disabled-description": "Comandă de executat când modul de performanță Noctalia este dezactivat.",
+      "performance-mode-disabled-description": "Comandă de executat când modul de performanță nosDshell este dezactivat.",
       "performance-mode-disabled-label": "Modul performanță dezactivat",
       "performance-mode-disabled-placeholder": "ex. notify-send \"Performance\" \"Mode disabled\"",
-      "performance-mode-enabled-description": "Comandă de executat când modul de performanță Noctalia este activat.",
+      "performance-mode-enabled-description": "Comandă de executat când modul de performanță nosDshell este activat.",
       "performance-mode-enabled-label": "Mod performanță activat",
       "performance-mode-enabled-placeholder": "de ex., notify-send \"Performanță\" \"Mod activat\"",
       "screen-lock-description": "Comandă de executat la blocarea ecranului.",
@@ -1283,7 +1233,10 @@
       "title": "Declanșatori",
       "wallpaper-changed-description": "Comandă de executat la schimbarea imaginii de fundal.",
       "wallpaper-changed-label": "Imagine de fundal schimbată",
-      "wallpaper-changed-placeholder": "ex. notify-send \"Imagine de fundal\" \"Schimbată\""
+      "wallpaper-changed-placeholder": "ex. notify-send \"Imagine de fundal\" \"Schimbată\"",
+      "shell-started-description": "Comandă de executat când nosDshell a terminat de încărcat.",
+      "shell-started-label": "nosDshell a pornit",
+      "shell-started-placeholder": "De exemplu: notify-send 'nosDshell Loaded'"
     },
     "idle": {
       "custom-add": "Adaugă comandă",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Afișează efecte meteo",
       "weather-show-in-calendar-description": "Afișează prognoza meteo zilnică direct în vizualizarea calendarului tău.",
       "weather-show-in-calendar-label": "Afișează vremea în calendar",
-      "weather-talia-mascot-always-description": "Folosește întotdeauna emoji-uri Talia în loc de icoane tabler.",
-      "weather-talia-mascot-always-label": "Afișează mereu emoji-urile meteo Talia"
+      "weather-mascot-always-description": "Folosește întotdeauna emoji-uri Talia în loc de icoane tabler.",
+      "weather-mascot-always-label": "Afișează mereu emoji-urile meteo Talia"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Când fprintd (autentificarea cu amprentă) este activ, această opțiune îți permite să te autentifici în continuare folosind parola ta în loc de amprentă.",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Densitate",
       "settings-desc": "Configurează aspectul și comportamentul notificărilor.",
       "settings-do-not-disturb-description": "Dezactivează toate notificările pop-up când e activat.",
-      "settings-enabled-description": "Activează sau dezactivează daemon-ul de notificări, necesită o repornire a shell-ului Noctalia.",
+      "settings-enabled-description": "Activează sau dezactivează daemon-ul de notificări, necesită o repornire a shell-ului nosDshell.",
       "settings-enabled-label": "Activează notificările",
       "settings-location-description": "Unde apar notificările pe ecran.",
       "settings-markdown-description": "Redă conținutul notificării folosind formatarea Markdown.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Reîncărcare la cald (mod dezvoltator)",
       "hot-reloaded": "Plugin reîncărcat: {name}",
       "install-error": "Instalare eșuată: {error}",
-      "install-incompatible": "{plugin} necesită Noctalia v{version} sau o versiune superioară",
       "install-success": "Instalat cu succes {plugin}",
       "installed-description": "Gestionează și configurează toate plugin-urile instalate local.",
       "installed-label": "Plugin-uri instalate",
@@ -1641,7 +1593,7 @@
       "update-available": "O nouă actualizare de plugin este disponibilă",
       "update-available-plural": "Actualizări de pluginuri disponibile ({count})",
       "update-error": "Nu s-a putut actualiza pluginul: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (necesită Noctalia v{required})",
+      "update-pending": "v{current} → v{new} (necesită nosDshell v{required})",
       "update-success": "Actualizat {plugin} la v{version}",
       "update-version": "v{current} → v{new}",
       "updating": "Se actualizează..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Arată Legăturile de Taste"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Păstrează widget-urile de desktop vizibile în timp ce modul de performanță Noctalia este activat.",
-      "noctalia-performance-disable-desktop-widgets-label": "Activează widget-urile desktop în modul performanță",
-      "noctalia-performance-disable-wallpaper-description": "Păstrează imaginile de fundal de pe desktop, din prezentarea generală și de pe ecranul de blocare vizibile în timp ce modul de performanță Noctalia este activat.",
-      "noctalia-performance-disable-wallpaper-label": "Activează randarea imaginii de fundal în modul performanță",
-      "title": "Sistem"
+      "title": "Sistem",
+      "performance-mode-disable-desktop-widgets-description": "Păstrează widget-urile de desktop vizibile în timp ce modul de performanță nosDshell este activat.",
+      "performance-mode-disable-desktop-widgets-label": "Activează widget-urile desktop în modul performanță",
+      "performance-mode-disable-wallpaper-description": "Păstrează imaginile de fundal de pe desktop, din prezentarea generală și de pe ecranul de blocare vizibile în timp ce modul de performanță nosDshell este activat.",
+      "performance-mode-disable-wallpaper-label": "Activează randarea imaginii de fundal în modul performanță"
     },
     "system-monitor": {
       "critical-color-label": "Culoare critică",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Cache fundal",
       "settings-clear-cache-toast": "Cache-ul tapetului a fost golit",
       "settings-desc": "Controlează cum sunt gestionate și afișate imaginile de fundal.",
-      "settings-enable-management-description": "Gestionați imaginile de fundal cu Noctalia. Debifați dacă preferați să folosiți o altă aplicație.",
+      "settings-enable-management-description": "Gestionați imaginile de fundal cu nosDshell. Debifați dacă preferați să folosiți o altă aplicație.",
       "settings-enable-management-label": "Activează gestionarea imaginii de fundal",
       "settings-enable-overview-description": "Aplică un fundal estompat și întunecat ecranului de prezentare generală.",
       "settings-enable-overview-label": "Activează fundalul vizualizării generale",
@@ -1864,10 +1816,6 @@
       "subheader": "Ajustează poziția barei, densitatea, scalarea și multe altele."
     },
     "skip-setup": "Omite configurarea",
-    "telemetry-wizard-done": "Am înțeles!",
-    "telemetry-wizard-note": "Ești în control — activează sau dezactivează asta oricând din setări",
-    "telemetry-wizard-subtitle": "Am adăugat analize anonime pentru a ajuta la îmbunătățirea Noctalia",
-    "telemetry-wizard-title": "Actualizare de confidențialitate",
     "wallpaper": {
       "choose-dir": "Alege un dosar cu imaginile de fundal",
       "dir-browse": "Răsfoiește pentru folderul de imagini de fundal",
@@ -1885,7 +1833,7 @@
     "welcome": "Bun venit",
     "welcome-note": "Doar câteva elemente de bază pentru a începe — opțiunile complete sunt în setări",
     "welcome-subtitle": "Hai să-ți facem desktopul cu adevărat al tău",
-    "welcome-title": "Bun venit la Noctalia!"
+    "welcome-title": "Bun venit la nosDshell!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "Nu Deranjați activat",
       "enabled-desc": "Vei găsi aceste notificări în istoricul tău"
     },
-    "donation-opened": "Pagină de donații deschisă în browserul tău",
     "internet-limited": "Conectat fără internet",
     "keyboard-layout": {
       "changed": "Aspect tastatură schimbat în {layout}",
@@ -1970,11 +1917,6 @@
       "forced": "Activare forțată",
       "normal": "Mod normal",
       "not-installed": "wlsunset nu este instalat"
-    },
-    "noctalia-performance": {
-      "disabled": "Modul Performanță dezactivat",
-      "enabled": "Mod performanță activat",
-      "label": "Noctalia Performanță"
     },
     "power-profile": {
       "changed": "Profil de alimentare modificat",
@@ -2000,6 +1942,11 @@
       "disconnected": "Deconectat de la '{ssid}'",
       "incorrect-password": "Parolă incorectă",
       "network-not-found": "Rețeaua nu a fost găsită"
+    },
+    "performance-mode": {
+      "disabled": "Modul Performanță dezactivat",
+      "enabled": "Mod performanță activat",
+      "label": "nosDshell Performanță"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Piesa următoare",
     "next-month": "Luna viitoare",
     "night-light-not-installed": "Lumină de noapte (nu este disponibil)",
-    "noctalia-performance-enabled": "Mod de performanță Noctalia",
     "open-annotation-tool": "Deschide cu instrumentul de adnotare",
     "open-control-center": "Centru de control",
     "open-notification-history-enable-dnd": "Istoric notificări",
@@ -2057,7 +2003,8 @@
     "unmute": "Anulează sunetul",
     "up": "Director părinte",
     "volume-at": "Volum: {volume}%",
-    "wallpaper-selector": "Selector de wallpaper"
+    "wallpaper-selector": "Selector de wallpaper",
+    "performance-mode-enabled": "Mod de performanță nosDshell"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "O cheie API este necesară pentru a accesa conținut NSFW.",
       "apikey-label": "Cheie API",
-      "apikey-managed-by-env": "Gestionat prin variabila de mediu NOCTALIA_WALLHAVEN_API_KEY.",
+      "apikey-managed-by-env": "Gestionat prin variabila de mediu NOSD_WALLHAVEN_API_KEY.",
       "apikey-placeholder": "Introdu Wallhaven API Key",
       "appearance-dark-tab": "Întunecat",
       "appearance-light-tab": "Luminos",

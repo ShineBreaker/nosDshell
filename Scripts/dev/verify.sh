@@ -76,9 +76,9 @@ export XDG_CACHE_HOME="$WORK/cache"
 export XDG_STATE_HOME="$WORK/state"
 export XDG_DATA_HOME="$WORK/data"
 export XDG_RUNTIME_DIR="$WORK/runtime"
-export NOCTALIA_CONFIG_DIR="$WORK/config/noctalia/"
-export NOCTALIA_CACHE_DIR="$WORK/cache/noctalia/"
-mkdir -p "$NOCTALIA_CONFIG_DIR" "$NOCTALIA_CACHE_DIR"
+export NOSD_CONFIG_DIR="$WORK/config/nosdshell/"
+export NOSD_CACHE_DIR="$WORK/cache/nosdshell/"
+mkdir -p "$NOSD_CONFIG_DIR" "$NOSD_CACHE_DIR"
 
 # --- seed test .desktop apps into the isolated XDG_DATA_HOME -----------------
 # The headless image has (almost) no .desktop files, so the launcher grid would
@@ -196,8 +196,8 @@ uf=os.environ.get("USER_SETTINGS") or ""
 if uf: merge(base, json.load(open(uf)))
 if os.environ.get("NOSD_AUTOSTART_AUTH") or os.environ.get("NOSD_PAM_BAD"):
     base.setdefault("general",{})["autoStartAuth"]=True
-open(os.environ["NOCTALIA_CONFIG_DIR"].rstrip("/")+"/settings.json","w").write(json.dumps(base))
-open(os.environ["NOCTALIA_CACHE_DIR"].rstrip("/")+"/shell-state.json","w").write(
+open(os.environ["NOSD_CONFIG_DIR"].rstrip("/")+"/settings.json","w").write(json.dumps(base))
+open(os.environ["NOSD_CACHE_DIR"].rstrip("/")+"/shell-state.json","w").write(
   json.dumps({"changelogState":{"lastSeenVersion":"4.7.8"},
               "telemetry":{"instanceId":"verify"},
               "notificationsState":{"lastSeenTs":0}}))
@@ -244,8 +244,8 @@ sleep 1
 # so pam.start() fails (onError -> showFailure) without typing anything; the
 # seed turns on general.autoStartAuth so PAM starts with no user interaction.
 if [ -n "${NOSD_PAM_BAD:-}" ]; then
-  export NOCTALIA_PAM_SERVICE="nosd-verify-nonexistent"
-  echo "NOSD_PAM_BAD set: NOCTALIA_PAM_SERVICE=$NOCTALIA_PAM_SERVICE"
+  export NOSD_PAM_SERVICE="nosd-verify-nonexistent"
+  echo "NOSD_PAM_BAD set: NOSD_PAM_SERVICE=$NOSD_PAM_SERVICE"
 fi
 
 qs -p "$REPO" > "$LOG" 2>&1 &
@@ -288,11 +288,11 @@ run_scene() {
                           call launcher switchMode fullscreen 0.8 ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
     # DDE control center: bell page (3 notifications seeded so the list has content)
-    cc-notifications)     notify-send -a noctalia-verify "Notification one" \
+    cc-notifications)     notify-send -a nosdshell-verify "Notification one" \
                             "First test body for the history list." 2>/dev/null
-                          notify-send -a noctalia-verify "Notification two" \
+                          notify-send -a nosdshell-verify "Notification two" \
                             "Second test body, longer line to check elide." 2>/dev/null
-                          notify-send -a noctalia-verify "Notification three" \
+                          notify-send -a nosdshell-verify "Notification three" \
                             "Third body with an action" 2>/dev/null
                           sleep 1; toggle controlCenter notifications 1.5 cc-notifications ;;
     # quick-control pages: open the frame, select the page, shoot, close
@@ -304,7 +304,7 @@ run_scene() {
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
     settings-*)           call settings openTab "${1#settings-}" 2; shot "$1"; call settings toggle 0.5 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
-    notification)         notify-send -a noctalia-verify "Baseline notification" \
+    notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null
                           sleep 0.8; shot notification ;;
     osd-volume)           call volume increase 0.4; call volume increase 0.4
@@ -316,11 +316,11 @@ run_scene() {
     notification-actions) # notify-send -A blocks until a reply/close, so it
                           # must run in the background with a hard timeout —
                           # in the foreground it would hang the whole scene run.
-                          timeout 8 notify-send -a noctalia-verify -A "yes=好的" -A "no=算了" \
+                          timeout 8 notify-send -a nosdshell-verify -A "yes=好的" -A "no=算了" \
                           "Actions" "Pick one of the action buttons." \
                           > "$WORK/notify-actions.out" 2>&1 &
                           sleep 1.2; shot notification-actions ;;
-    notification-long)    notify-send -a noctalia-verify "Long body" \
+    notification-long)    notify-send -a nosdshell-verify "Long body" \
                           "第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行"$'\n'"第二行 第二行 第二行 第二行 第二行 第二行 第二行 第二行"$'\n'"第三行 第三行 第三行 第三行 第三行 第三行 第三行 第三行" 2>/dev/null
                           sleep 0.8; shot notification-long ;;
     toast)                call toast send '{"title":"Toast 标题","body":"这是 toast 正文","type":"notice"}' 1.5
@@ -333,7 +333,7 @@ run_scene() {
     media-panel)          toggle media toggle 1.5 media-panel ;;
     system-monitor)       toggle systemMonitor toggle 1.5 system-monitor ;;
     notification-history) toggle notifications toggleHistory 1.5 notification-history ;;
-    wallpaper)            call wallpaper set "$REPO/Assets/Wallpaper/noctalia.png" 2
+    wallpaper)            call wallpaper set "$REPO/Assets/Wallpaper/nosdshell.png" 2
                           shot wallpaper ;;
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
     dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;

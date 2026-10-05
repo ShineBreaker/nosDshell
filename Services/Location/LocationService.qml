@@ -9,20 +9,20 @@ import qs.Commons
 Singleton {
   id: root
 
-  property string locationFile: Quickshell.env("NOCTALIA_WEATHER_FILE") || (Settings.cacheDir + "location.json")
+  property string locationFile: Quickshell.env("NOSD_WEATHER_FILE") || (Settings.cacheDir + "location.json")
   property int weatherUpdateFrequency: 30 * 60
   property bool isFetchingWeather: false
 
-  // Talia weather
-  readonly property int taliaMascotWeatherMonth: 3
-  readonly property int taliaMascotWeatherDay: 1
+  // Weather mascot
+  readonly property int mascotWeatherMonth: 3
+  readonly property int mascotWeatherDay: 1
 
-  readonly property bool taliaWeatherMascotDayActive: {
+  readonly property bool weatherMascotDayActive: {
     const d = Time.now;
-    return d.getMonth() === root.taliaMascotWeatherMonth && d.getDate() === root.taliaMascotWeatherDay;
+    return d.getMonth() === root.mascotWeatherMonth && d.getDate() === root.mascotWeatherDay;
   }
 
-  readonly property bool taliaWeatherMascotActive: taliaWeatherMascotDayActive || Settings.data.location.weatherTaliaMascotAlways
+  readonly property bool weatherMascotActive: weatherMascotDayActive || Settings.data.location.weatherMascotAlways
 
   readonly property alias data: adapter
 
@@ -202,15 +202,16 @@ Singleton {
     }
 
     Logger.d("Location", "Geocoding location name");
-    var geoUrl = "https://api.noctalia.dev/geocode?city=" + encodeURIComponent(locationName);
+    var geoUrl = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=" + encodeURIComponent(locationName);
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           try {
             var geoData = JSON.parse(xhr.responseText);
-            if (geoData.lat != null) {
-              callback(geoData.lat, geoData.lng, geoData.name, geoData.country);
+            var hit = geoData.results && geoData.results[0];
+            if (hit && hit.latitude != null) {
+              callback(hit.latitude, hit.longitude, hit.name, hit.country);
             } else {
               errorCallback("Location", "could not resolve location name");
             }
@@ -261,18 +262,18 @@ Singleton {
     xhr.send();
   }
 
-  // Geolocate via IP address using the Noctalia API
+  // Geolocate via IP address
   function geolocate(callback, errorCallback) {
     Logger.d("Location", "Geolocating via IP");
-    var url = "https://api.noctalia.dev/geolocate";
+    var url = "https://ipwho.is/";
     var xhr = new XMLHttpRequest();
     xhr.onreadystatechange = function () {
       if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
           try {
             var data = JSON.parse(xhr.responseText);
-            if (data.lat != null) {
-              callback(data.lat, data.lng, data.city, data.country);
+            if (data.success !== false && data.latitude != null) {
+              callback(data.latitude, data.longitude, data.city, data.country);
             } else {
               errorCallback("Location", "Geolocate: no coordinates returned");
             }
@@ -351,20 +352,20 @@ Singleton {
   }
 
   // --------------------------------
-  function taliaWeatherImageFromCode(code) {
+  function weatherMascotImageFromCode(code) {
     var isDay = data.weather ? data.weather.current_weather.is_day : true;
     if (code >= 40 && code <= 49)
-      return Quickshell.shellDir + "/Assets/Talia/TaliaDazed.png";
+      return Quickshell.shellDir + "/Assets/Mascot/MascotDazed.png";
     if (code >= 95 && code <= 99)
-      return Quickshell.shellDir + "/Assets/Talia/TaliaFear.png";
+      return Quickshell.shellDir + "/Assets/Mascot/MascotFear.png";
     var wet = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || (code >= 71 && code <= 77) || (code >= 85 && code <= 86);
     if (wet)
-      return Quickshell.shellDir + "/Assets/Talia/TaliaSob.png";
+      return Quickshell.shellDir + "/Assets/Mascot/MascotSob.png";
     if ((code === 0 || code === 1 || code === 2) && isDay === false)
-      return Quickshell.shellDir + "/Assets/Talia/TaliaVampire.png";
+      return Quickshell.shellDir + "/Assets/Mascot/MascotVampire.png";
     if ((code === 0 && isDay === true) || code === 1 || code === 2)
-      return Quickshell.shellDir + "/Assets/Talia/TaliaParty.png";
-    return Quickshell.shellDir + "/Assets/Talia/TaliaBlank.png";
+      return Quickshell.shellDir + "/Assets/Mascot/MascotParty.png";
+    return Quickshell.shellDir + "/Assets/Mascot/MascotBlank.png";
   }
 
   // --------------------------------

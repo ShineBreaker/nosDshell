@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Skrýt widget, pokud není detekována žádná baterie.",
       "hide-if-not-detected-label": "Skrýt pokud není detekována",
       "low-battery-threshold-label": "Práh upozornění na nízký stav baterie",
-      "show-noctalia-performance-description": "Zobrazit přepínač výkonnostního režimu Noctalia uvnitř panelu baterie.<br>Vypne stíny a animace v Noctalia pro snížení spotřeby zdrojů.",
-      "show-noctalia-performance-label": "Zobrazit přepínač výkonu Noctalia",
       "show-power-profile-description": "Zobrazit výběr profilu napájení uvnitř panelu baterie.",
-      "show-power-profile-label": "Zobrazit ovládání profilu napájení"
+      "show-power-profile-label": "Zobrazit ovládání profilu napájení",
+      "show-performance-mode-description": "Zobrazit přepínač výkonnostního režimu nosDshell uvnitř panelu baterie.<br>Vypne stíny a animace v nosDshell pro snížení spotřeby zdrojů.",
+      "show-performance-mode-label": "Zobrazit přepínač výkonu nosDshell"
     },
     "brightness": {
       "apply-all-description": "Změnit jas pro každý monitor při použití kolečka myši.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Levé",
       "icon-position-right": "Vpravo",
       "icon-position-top": "Nahoře",
-      "ipc-identifier-description": "Jedinečný identifikátor pro příkazy IPC. Použijte tento identifikátor s 'qs -c noctalia-shell ipc call cb [action] [identifier]' pro ovládání tlačítka přes IPC.",
+      "ipc-identifier-description": "Jedinečný identifikátor pro příkazy IPC. Použijte tento identifikátor s 'qs -c nosdshell ipc call cb [action] [identifier]' pro ovládání tlačítka přes IPC.",
       "ipc-identifier-label": "Identifikátor IPC",
       "left-click-description": "Příkaz spuštěný při kliknutí levým tlačítkem myši.",
       "left-click-label": "Levé kliknutí",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Signál: Velmi slabý"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "Nelze načíst data changelogu. Zkuste to prosím znovu.",
-      "rate-limit": "Byl překročen limit požadavků na GitHub. Zkuste to znovu za několik minut."
-    },
-    "panel": {
-      "buttons-discord": "Přidat se na Discord",
-      "buttons-dismiss": "OK",
-      "buttons-feedback": "Poskytnout zpětnou vazbu",
-      "empty": "Poznámky k vydání zatím nejsou dostupné.",
-      "highlight-title": "Hlavní novinky",
-      "released": "Vydáno {date}",
-      "subtitle-fresh": "Děkujeme za instalaci Noctalia! Zde je obsah tohoto buildu.",
-      "subtitle-updated": "Aktualizováno z {previousVersion}",
-      "title": "Co je nového ve verzi {version}",
-      "version": "Verze {version}",
-      "version-new-user": "Čerstvá instalace"
-    }
-  },
   "common": {
     "actions": "Akce",
     "active": "Aktivní",
@@ -421,7 +402,6 @@
     "connected": "Připojeno",
     "connecting": "Připojování...",
     "continue": "Pokračovat",
-    "contributors": "Přispěvatelé",
     "copied-to-clipboard": "Zkopírováno do schránky",
     "countdown": "Odpočet",
     "customize": "Přizpůsobit",
@@ -538,7 +518,6 @@
     "sources": "Zdroje",
     "start": "Spustit",
     "stop": "Zastavit",
-    "supporters": "Podporovatelé",
     "suspend": "Uspat",
     "templates": "Šablony",
     "tertiary": "Terciární",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Stát se podporovatelem",
-      "changelog": "Zobrazit changelog",
-      "changelog-on-startup": "Zobrazit changelog při aktualizaci",
-      "changelog-on-startup-desc": "Automaticky zobrazit changelog při aktualizaci Noctalia",
-      "contributors-description": "Díky našemu {count} <b>skvělému</b> přispěvateli!",
-      "contributors-description-plural": "Díky našim {count} <b>skvělým</b> přispěvatelům!",
       "copy-info": "Zkopírovat informace",
       "debug-disabled": "Ladicí režim vypnut",
       "debug-enabled": "Ladicí režim zapnut",
       "info-copied": "Informace zkopírovány do schránky",
-      "noctalia-available": "Dostupné:",
-      "noctalia-desc": "Elegantní a minimalistický desktopový shell navržený pro Wayland, postavený na Quickshell.",
-      "noctalia-git-commit": "Git commit:",
-      "noctalia-installed-version": "Nainstalovaná verze:",
-      "noctalia-latest-version": "Nejnovější verze:",
-      "noctalia-qs-version": "Verze Noctalia QS:",
-      "noctalia-title": "Noctalia Shell",
-      "privacy-policy": "Zásady ochrany soukromí",
-      "support": "Podpořte nás",
-      "supporter-badge": "Podporovatel",
-      "supporters-desc": "Velké díky našemu úžasnému podporovateli!",
-      "supporters-desc-plural": "Velké díky našim <b>{count} úžasným</b> podporovatelům!",
-      "supporters-loading": "Načítání podporovatelů...",
       "system-board": "Základní deska:",
       "system-cpu": "CPU:",
       "system-disk": "Disk:",
@@ -774,14 +734,7 @@
       "system-title": "Systémové informace",
       "system-uptime": "Provozní doba:",
       "system-wm": "Správce oken:",
-      "telemetry-data-copied": "Data telemetrie zkopírována do schránky",
-      "telemetry-desc": "Pomozte zlepšit Noctalia sdílením anonymních systémových informací (rozlišení obrazovky, compositor, distribuce). Odesláno jednou při startu, bez sledování, data automaticky smazána po 30 dnech.",
-      "telemetry-enabled": "Odesílat anonymní systémové informace",
-      "telemetry-show-data": "Zobrazit data",
-      "telemetry-title": "Soukromí",
       "title": "O aplikaci",
-      "up-to-date": "Máte nejnovější verzi!",
-      "update-available": "Dostupná aktualizace",
       "view-commit": "Zobrazit commit na GitHubu"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• Příkazy jsou spouštěny přes shell (sh -lc)<br>• Příkazy běží na pozadí (odpojen)<br>• Tlačítka testu spustí s aktuálními hodnotami",
       "info-parameters-description": "• Hook tapety: $1 = cesta k tapetě, $2 = název obrazovky, $3 = motiv (dark/light)<br>• Hook generování barev: $1 = motiv (dark/light)<br>• Hook přepnutí motivu: $1 = true/false (stav tmavého režimu)<br>• Hooky zamknutí/odemknutí: $1 = lock/unlock (stav uzamčení)<br>• Hooky výkonnostního režimu: Bez parametrů<br>• Hook relace: $1 = akce (shutdown/reboot)",
       "info-parameters-label": "Dostupné parametry",
-      "noctalia-started-description": "Příkaz spuštěný po dokončení načítání Noctalia.",
-      "noctalia-started-label": "Noctalia spuštěna",
-      "noctalia-started-placeholder": "např. notify-send 'Noctalia načtena'",
-      "performance-mode-disabled-description": "Příkaz spuštěný při vypnutí výkonnostního režimu Noctalia.",
+      "performance-mode-disabled-description": "Příkaz spuštěný při vypnutí výkonnostního režimu nosDshell.",
       "performance-mode-disabled-label": "Výkonnostní režim vypnut",
       "performance-mode-disabled-placeholder": "např. notify-send \"Výkon\" \"Režim vypnut\"",
-      "performance-mode-enabled-description": "Příkaz spuštěný při zapnutí výkonnostního režimu Noctalia.",
+      "performance-mode-enabled-description": "Příkaz spuštěný při zapnutí výkonnostního režimu nosDshell.",
       "performance-mode-enabled-label": "Výkonnostní režim zapnut",
       "performance-mode-enabled-placeholder": "např. notify-send \"Výkon\" \"Režim zapnut\"",
       "screen-lock-description": "Příkaz spuštěný při zamknutí obrazovky.",
@@ -1283,7 +1233,10 @@
       "title": "Hooky",
       "wallpaper-changed-description": "Příkaz spuštěný při změně tapety.",
       "wallpaper-changed-label": "Tapeta změněna",
-      "wallpaper-changed-placeholder": "např. notify-send \"Tapeta\" \"Změněna\""
+      "wallpaper-changed-placeholder": "např. notify-send \"Tapeta\" \"Změněna\"",
+      "shell-started-description": "Příkaz spuštěný po dokončení načítání nosDshell.",
+      "shell-started-label": "nosDshell spuštěna",
+      "shell-started-placeholder": "např. notify-send 'nosDshell načtena'"
     },
     "idle": {
       "custom-add": "Přidat příkaz",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Zobrazit efekty počasí",
       "weather-show-in-calendar-description": "Zobrazit denní předpověď počasí přímo v zobrazení kalendáře.",
       "weather-show-in-calendar-label": "Zobrazit počasí v kalendáři",
-      "weather-talia-mascot-always-description": "Vždy používejte Talia emojis namísto tabler icons.",
-      "weather-talia-mascot-always-label": "Vždy zobrazovat emotikony počasí Talia"
+      "weather-mascot-always-description": "Vždy používejte mascot emojis namísto tabler icons.",
+      "weather-mascot-always-label": "Vždy zobrazovat emotikony počasí Talia"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Pokud je aktivní fprintd (otisky prstů), tato možnost umožňuje přihlásit se heslem místo otisku prstu.",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Hustota",
       "settings-desc": "Nastavit vzhled a chování oznámení.",
       "settings-do-not-disturb-description": "Zakáže všechna vyskakovací oznámení při zapnutí.",
-      "settings-enabled-description": "Povolit nebo zakázat démona oznámení, vyžaduje restart shellu Noctalia.",
+      "settings-enabled-description": "Povolit nebo zakázat démona oznámení, vyžaduje restart shellu nosDshell.",
       "settings-enabled-label": "Povolit oznámení",
       "settings-location-description": "Kde se oznámení zobrazují na obrazovce.",
       "settings-markdown-description": "Vykreslovat obsah oznámení pomocí formátování Markdown.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Horké načtení (vývojový režim)",
       "hot-reloaded": "Plugin znovu načten: {name}",
       "install-error": "Instalace selhala: {error}",
-      "install-incompatible": "{plugin} vyžaduje Noctalia v{version} nebo novější",
       "install-success": "Úspěšně nainstalován {plugin}",
       "installed-description": "Spravovat a konfigurovat všechny místně nainstalované pluginy.",
       "installed-label": "Nainstalované pluginy",
@@ -1641,7 +1593,7 @@
       "update-available": "Dostupná nová aktualizace pluginu",
       "update-available-plural": "Dostupné aktualizace pluginů ({count})",
       "update-error": "Aktualizace pluginu selhala: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (vyžaduje Noctalia v{required})",
+      "update-pending": "v{current} → v{new} (vyžaduje nosDshell v{required})",
       "update-success": "Plugin {plugin} aktualizován na v{version}",
       "update-version": "v{current} → v{new}",
       "updating": "Aktualizování..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Zobrazit klávesové zkratky"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Udržet widgety plochy viditelné při zapnutém výkonnostním režimu Noctalia.",
-      "noctalia-performance-disable-desktop-widgets-label": "Povolit widgety plochy ve výkonnostním režimu",
-      "noctalia-performance-disable-wallpaper-description": "Udržet tapety plochy, přehledu a zamykací obrazovky viditelné při zapnutém výkonnostním režimu Noctalia.",
-      "noctalia-performance-disable-wallpaper-label": "Povolit vykreslování tapety ve výkonnostním režimu",
-      "title": "Systém"
+      "title": "Systém",
+      "performance-mode-disable-desktop-widgets-description": "Udržet widgety plochy viditelné při zapnutém výkonnostním režimu nosDshell.",
+      "performance-mode-disable-desktop-widgets-label": "Povolit widgety plochy ve výkonnostním režimu",
+      "performance-mode-disable-wallpaper-description": "Udržet tapety plochy, přehledu a zamykací obrazovky viditelné při zapnutém výkonnostním režimu nosDshell.",
+      "performance-mode-disable-wallpaper-label": "Povolit vykreslování tapety ve výkonnostním režimu"
     },
     "system-monitor": {
       "critical-color-label": "Kritická barva",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Mezipaměť tapety",
       "settings-clear-cache-toast": "Mezipaměť tapety vymazána",
       "settings-desc": "Řídit správu a zobrazení tapet.",
-      "settings-enable-management-description": "Spravovat tapety přes Noctalia. Odškrtněte, pokud preferujete jinou aplikaci.",
+      "settings-enable-management-description": "Spravovat tapety přes nosDshell. Odškrtněte, pokud preferujete jinou aplikaci.",
       "settings-enable-management-label": "Povolit správu tapety",
       "settings-enable-overview-description": "Aplikuje rozmazanou a ztmavenou tapetu na obrazovku přehledu.",
       "settings-enable-overview-label": "Povolit tapetu přehledu",
@@ -1864,10 +1816,6 @@
       "subheader": "Upravte pozici lišty, hustotu, škálování a další."
     },
     "skip-setup": "Přeskočit nastavení",
-    "telemetry-wizard-done": "Rozumím!",
-    "telemetry-wizard-note": "Máte plnou kontrolu – kdykoli to zapněte nebo vypněte v nastavení",
-    "telemetry-wizard-subtitle": "Přidali jsme anonymní analytiku pro zlepšení Noctalia",
-    "telemetry-wizard-title": "Aktualizace soukromí",
     "wallpaper": {
       "choose-dir": "Vyberte složku obsahující obrázky tapet",
       "dir-browse": "Procházet složku tapet",
@@ -1885,7 +1833,7 @@
     "welcome": "Vítejte",
     "welcome-note": "Jen pár základů pro začátek – úplné možnosti najdete v nastavení",
     "welcome-subtitle": "Pojďme udělat váš desktop jedinečným",
-    "welcome-title": "Vítejte v Noctalia!"
+    "welcome-title": "Vítejte v nosDshell!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "Nerušit povoleno",
       "enabled-desc": "Tato oznámení najdete v historii"
     },
-    "donation-opened": "Stránka pro podporu otevřena v prohlížeči",
     "internet-limited": "Připojeno bez internetu",
     "keyboard-layout": {
       "changed": "Rozložení klávesnice změněno na {layout}",
@@ -1970,11 +1917,6 @@
       "forced": "Vynucená aktivace",
       "normal": "Normální režim",
       "not-installed": "wlsunset není nainstalován"
-    },
-    "noctalia-performance": {
-      "disabled": "Výkonnostní režim zakázán",
-      "enabled": "Výkonnostní režim povolen",
-      "label": "Výkon Noctalia"
     },
     "power-profile": {
       "changed": "Profil napájení změněn",
@@ -2000,6 +1942,11 @@
       "disconnected": "Odpojeno od '{ssid}'",
       "incorrect-password": "Nesprávné heslo",
       "network-not-found": "Síť nenalezena"
+    },
+    "performance-mode": {
+      "disabled": "Výkonnostní režim zakázán",
+      "enabled": "Výkonnostní režim povolen",
+      "label": "Výkon nosDshell"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Další stopa",
     "next-month": "Další měsíc",
     "night-light-not-installed": "Noční světlo (nedostupné)",
-    "noctalia-performance-enabled": "Výkonnostní režim Noctalia",
     "open-annotation-tool": "Otevřít s nástrojem anotace",
     "open-control-center": "Řídicí centrum",
     "open-notification-history-enable-dnd": "Historie oznámení",
@@ -2057,7 +2003,8 @@
     "unmute": "Zrušit ztlumení",
     "up": "Nadřazená složka",
     "volume-at": "Výstupní hlasitost: {volume}%",
-    "wallpaper-selector": "Výběr tapety"
+    "wallpaper-selector": "Výběr tapety",
+    "performance-mode-enabled": "Výkonnostní režim nosDshell"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "Pro přístup k obsahu NSFW je vyžadován klíč API.",
       "apikey-label": "Klíč API",
-      "apikey-managed-by-env": "Spravováno přes proměnnou prostředí NOCTALIA_WALLHAVEN_API_KEY.",
+      "apikey-managed-by-env": "Spravováno přes proměnnou prostředí NOSD_WALLHAVEN_API_KEY.",
       "apikey-placeholder": "Zadejte váš klíč Wallhaven API",
       "appearance-dark-tab": "Tmavý",
       "appearance-light-tab": "Světlý",

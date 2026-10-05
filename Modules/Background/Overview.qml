@@ -8,7 +8,7 @@ import qs.Services.Power
 import qs.Services.UI
 
 Loader {
-  active: CompositorService.isNiri && Settings.data.wallpaper.enabled && Settings.data.wallpaper.overviewEnabled && (!PowerProfileService.noctaliaPerformanceMode || !Settings.data.noctaliaPerformance.disableWallpaper)
+  active: CompositorService.isNiri && Settings.data.wallpaper.enabled && Settings.data.wallpaper.overviewEnabled && (!PowerProfileService.performanceMode || !Settings.data.performance.disableWallpaper)
 
   sourceComponent: Variants {
     model: Quickshell.screens
@@ -67,7 +67,7 @@ Loader {
       screen: modelData
       WlrLayershell.layer: WlrLayer.Background
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
-      WlrLayershell.namespace: "noctalia-overview-" + (screen?.name || "unknown")
+      WlrLayershell.namespace: "nosdshell-overview-" + (screen?.name || "unknown")
 
       anchors {
         top: true
@@ -101,7 +101,7 @@ Loader {
         cache: true // Shares texture with Background's currentWallpaper
         asynchronous: true
 
-        layer.enabled: Settings.data.wallpaper.overviewBlur > 0 && !PowerProfileService.noctaliaPerformanceMode
+        layer.enabled: Settings.data.wallpaper.overviewBlur > 0 && !PowerProfileService.performanceMode
         layer.smooth: false
         layer.effect: MultiEffect {
           blurEnabled: true

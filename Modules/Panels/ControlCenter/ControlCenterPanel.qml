@@ -7,7 +7,6 @@ import qs.Modules.MainScreen
 import qs.Modules.Panels.ControlCenter
 import qs.Services.Media
 import qs.Services.Networking
-import qs.Services.Noctalia
 import qs.Services.UI
 import qs.Widgets
 
@@ -140,74 +139,7 @@ SmartPanel {
         }
       }
 
-      // 2. Update bar (when an update is available)
-      Rectangle {
-        Layout.fillWidth: true
-        Layout.preferredHeight: Style.detailRowHeight
-        Layout.leftMargin: Style.marginS
-        Layout.rightMargin: Style.marginS
-        Layout.topMargin: Style.marginXXS
-        radius: Style.radiusRow
-        visible: updateAvailable
-        color: updateArea.containsMouse ? Color.overlay("hover") : Color.overlay("idle")
-
-        readonly property bool updateAvailable: {
-          const latest = GitHubService.latestVersion;
-          const current = UpdateService.currentVersion;
-          if (!latest || !current || latest === I18n.tr("common.unknown") || current.endsWith("-git"))
-            return false;
-          return UpdateService.compareVersions(latest, current) > 0;
-        }
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.leftMargin: Style.marginS
-          anchors.rightMargin: Style.marginS
-          spacing: Style.marginS
-
-          NIcon {
-            icon: "refresh"
-            pointSize: Style.fontSizeL
-            color: Color.onShellSecondary
-          }
-
-          NText {
-            Layout.fillWidth: true
-            text: I18n.tr("control-center.update-available", {
-                            "version": GitHubService.latestVersion
-                          })
-            pointSize: Style.fontSizeS
-            color: Color.onShell
-            elide: Text.ElideRight
-          }
-
-          NIcon {
-            icon: "chevron-right"
-            pointSize: Style.fontSizeL
-            color: Color.onShellSecondary
-          }
-        }
-
-        MouseArea {
-          id: updateArea
-          anchors.fill: parent
-          hoverEnabled: true
-          cursorShape: Qt.PointingHandCursor
-          onClicked: {
-            // About module inside the frame (DESIGN §3.5.3)
-            openModule(ControlCenterModules.moduleByName("systeminfo"));
-          }
-        }
-
-        Behavior on color {
-          enabled: !Color.isTransitioning
-          ColorAnimation {
-            duration: Style.animationFast
-          }
-        }
-      }
-
-      // 3. Middle area: home page / module view / notification page.
+      // 2. Middle area: home page / module view / notification page.
       // The home content slides out left while the module view slides in from
       // the right (DESIGN §3.5.3, Style.motionPanel), fading with travel.
       Item {

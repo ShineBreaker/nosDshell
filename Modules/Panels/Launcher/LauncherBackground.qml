@@ -71,9 +71,9 @@ Item {
     antialiasing: true
     visible: source !== "" && !usePreBlurred
 
-    readonly property bool usePreBlurred: preBlurAvailable && Settings.data.general.enableBlurBehind && !PowerProfileService.noctaliaPerformanceMode
+    readonly property bool usePreBlurred: preBlurAvailable && Settings.data.general.enableBlurBehind && !PowerProfileService.performanceMode
 
-    layer.enabled: visible && Settings.data.general.enableBlurBehind && !PowerProfileService.noctaliaPerformanceMode
+    layer.enabled: visible && Settings.data.general.enableBlurBehind && !PowerProfileService.performanceMode
     layer.smooth: false
     layer.effect: MultiEffect {
       blurEnabled: true

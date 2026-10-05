@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import qs.Commons
-import qs.Services.Noctalia
+import qs.Services.Plugins
 import qs.Services.UI
 import qs.Widgets
 
@@ -200,7 +200,7 @@ ColumnLayout {
               elide: Text.ElideRight
             }
 
-            // Official badge (Noctalia Team maintained)
+            // Official badge (marked official by the plugin's registry)
             Rectangle {
               visible: modelData.official === true
               color: Color.mSecondary
@@ -233,14 +233,14 @@ ColumnLayout {
               Layout.fillWidth: true
             }
 
-            // Open plugin page button
+            // Open plugin page button (only when the source publishes one)
             NIconButton {
               icon: "external-link"
               baseSize: Style.baseWidgetSize * 0.7
               tooltipText: I18n.tr("panels.plugins.open-plugin-page")
+              visible: (modelData.source?.url || "") !== ""
               onClicked: {
-                var sourceUrl = modelData.source?.url || "";
-                Qt.openUrlExternally(sourceUrl && !PluginRegistry.isMainSource(sourceUrl) ? sourceUrl : "https://noctalia.dev/plugins/" + modelData.id + "/");
+                Qt.openUrlExternally(modelData.source.url);
               }
             }
 

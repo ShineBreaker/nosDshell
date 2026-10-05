@@ -63,10 +63,10 @@
       "hide-if-not-detected-description": "Sistemde pil algılanmadığında araç çubuğunu gizle.",
       "hide-if-not-detected-label": "Algılanmazsa gizle",
       "low-battery-threshold-label": "Düşük batarya eşiği",
-      "show-noctalia-performance-description": "Pil panelinde Noctalia performans modu anahtarını göster.<br>Kaynak kullanımını azaltmak için Noctalia'da gölgeleri ve animasyonları devre dışı bırakır.",
-      "show-noctalia-performance-label": "Noctalia Performans anahtarını göster",
       "show-power-profile-description": "Pil panelinde güç profili seçimlerini göster.",
-      "show-power-profile-label": "Güç profili denetimlerini göster"
+      "show-power-profile-label": "Güç profili denetimlerini göster",
+      "show-performance-mode-description": "Pil panelinde nosDshell performans modu anahtarını göster.<br>Kaynak kullanımını azaltmak için nosDshell'da gölgeleri ve animasyonları devre dışı bırakır.",
+      "show-performance-mode-label": "nosDshell Performans anahtarını göster"
     },
     "brightness": {
       "apply-all-description": "Kaydırma tekerleğini kullanırken tüm monitörlerin parlaklığını değiştir.",
@@ -128,7 +128,7 @@
       "icon-position-left": "Sol",
       "icon-position-right": "Sağ",
       "icon-position-top": "Üst",
-      "ipc-identifier-description": "IPC komutları için benzersiz tanımlayıcı. Bu tanımlayıcıyı 'qs -c noctalia-shell ipc call cb [eylem] [tanımlayıcı]' ile kullanarak bu düğmeyi IPC aracılığıyla kontrol edin.",
+      "ipc-identifier-description": "IPC komutları için benzersiz tanımlayıcı. Bu tanımlayıcıyı 'qs -c nosdshell ipc call cb [eylem] [tanımlayıcı]' ile kullanarak bu düğmeyi IPC aracılığıyla kontrol edin.",
       "ipc-identifier-label": "IPC Tanımlayıcısı",
       "left-click-description": "Düğmeye sol tıklandığında yürütülecek komut.",
       "left-click-label": "Sol tıklama",
@@ -371,25 +371,6 @@
       "signal-text-very-poor": "Sinyal: Çok zayıf"
     }
   },
-  "changelog": {
-    "error": {
-      "fetch-failed": "Değişiklik günlüğü verileri yüklenemedi. Lütfen daha sonra tekrar dene.",
-      "rate-limit": "GitHub sınırına ulaşıldı. Lütfen birkaç dakika sonra tekrar dene."
-    },
-    "panel": {
-      "buttons-discord": "Discord sunucumuza katıl",
-      "buttons-dismiss": "Tamam",
-      "buttons-feedback": "Geri bildirim verin",
-      "empty": "Sürüm notları henüz hazır değil.",
-      "highlight-title": "Öne çıkanlar",
-      "released": "{date} tarihinde yayımlandı",
-      "subtitle-fresh": "Noctalia’yı kurduğun için teşekkürler! Bu sürümde gelenler bunlar.",
-      "subtitle-updated": "{previousVersion} sürümünden güncellendi",
-      "title": "{version} sürümünde neler yeni",
-      "version": "Sürüm {version}",
-      "version-new-user": "Yeni kurulum"
-    }
-  },
   "common": {
     "actions": "Eylemler",
     "active": "Aktif",
@@ -421,7 +402,6 @@
     "connected": "Bağlı",
     "connecting": "Bağlanıyor...",
     "continue": "Devam Et",
-    "contributors": "Katkıda bulunanlar",
     "copied-to-clipboard": "Panoya kopyalandı",
     "countdown": "Geri sayım",
     "customize": "Özelleştir",
@@ -538,7 +518,6 @@
     "sources": "Kaynaklar",
     "start": "Başlat",
     "stop": "Dur",
-    "supporters": "Destekçiler",
     "suspend": "Askıya al",
     "templates": "Şablonlar",
     "tertiary": "Üçüncül",
@@ -734,29 +713,10 @@
   },
   "panels": {
     "about": {
-      "become-supporter": "Destekçi ol",
-      "changelog": "Değişiklik günlüğünü görüntüle",
-      "changelog-on-startup": "Güncellemede değişiklik günlüğünü göster",
-      "changelog-on-startup-desc": "Noctalia güncellendiğinde değişiklik günlüğünü otomatik olarak göster.",
-      "contributors-description": "{count} <b>harika</b> katılımcımıza <b>teşekkürler</b>!",
-      "contributors-description-plural": "{count} <b>harika</b> katılımcımıza <b>teşekkürler</b>!",
       "copy-info": "Bilgileri kopyala",
       "debug-disabled": "Hata ayıklama modu devre dışı bırakıldı",
       "debug-enabled": "Hata ayıklama modu etkinleştirildi",
       "info-copied": "Bilgi panoya kopyalandı",
-      "noctalia-available": "Mevcut:",
-      "noctalia-desc": "Wayland için düşünülmüş, Quickshell ile inşa edilmiş şık ve minimal masaüstü kabuğu.",
-      "noctalia-git-commit": "Git commit:",
-      "noctalia-installed-version": "Yüklü sürüm:",
-      "noctalia-latest-version": "En son sürüm:",
-      "noctalia-qs-version": "Noctalia QS sürümü:",
-      "noctalia-title": "Noctalia kabuğu",
-      "privacy-policy": "Gizlilik politikası",
-      "support": "Bizi destekleyin",
-      "supporter-badge": "Destekçi",
-      "supporters-desc": "Harika destekçimize kocaman bir teşekkür!",
-      "supporters-desc-plural": "<b>{count} harika</b> destekçimize kocaman teşekkürler!",
-      "supporters-loading": "Destekçiler yükleniyor...",
       "system-board": "Anakart:",
       "system-cpu": "İşlemci:",
       "system-disk": "Disk:",
@@ -774,14 +734,7 @@
       "system-title": "Sistem Bilgisi",
       "system-uptime": "Çalışma süresi:",
       "system-wm": "WM:",
-      "telemetry-data-copied": "Telemetri verileri panoya kopyalandı.",
-      "telemetry-desc": "Anonim sistem bilgisi (ekran çözünürlüğü, kompozitör, dağıtım) paylaşarak Noctalia'yı geliştirmeye yardımcı olun. Başlangıçta bir kez gönderilir, izleme yapılmaz, veriler 30 gün sonra otomatik olarak silinir.",
-      "telemetry-enabled": "Anonim sistem bilgisi gönder.",
-      "telemetry-show-data": "Verileri görüntüle",
-      "telemetry-title": "Gizlilik",
       "title": "Hakkında",
-      "up-to-date": "Güncelsiniz!",
-      "update-available": "Güncelleme mevcut",
       "view-commit": "GitHub'da taahhüdü görüntüle"
     },
     "audio": {
@@ -1255,13 +1208,10 @@
       "info-command-info-description": "• Komutlar kabuk (sh -lc) ile yürütülür<br>• Komutlar arka planda yürütülür (ayrık)<br>• Test düğmeleri mevcut değerlerle yürütülür",
       "info-parameters-description": "• Wallpaper hook: $1 = duvar kağıdı yolu, $2 = ekran adı, $3 = tema (koyu/açık)<br>• Theme toggle hook: $1 = true/false (koyu mod durumu)<br>• Screen lock/unlock hooks: $1 = lock/unlock (ekran kilidi durumu)<br>• Performance mode hooks: Parametre yok<br>• Session hook: $1 = action (shutdown/reboot)",
       "info-parameters-label": "Kullanılabilir parametreler",
-      "noctalia-started-description": "Noctalia yüklendiğinde çalıştırılacak komut.",
-      "noctalia-started-label": "Noctalia başladı",
-      "noctalia-started-placeholder": "örn. notify-send 'Noctalia Yüklendi'",
-      "performance-mode-disabled-description": "Noctalia performans modu devre dışı bırakıldığında çalıştırılacak komut.",
+      "performance-mode-disabled-description": "nosDshell performans modu devre dışı bırakıldığında çalıştırılacak komut.",
       "performance-mode-disabled-label": "Performans modu devre dışı bırakıldı",
       "performance-mode-disabled-placeholder": "örn. notify-send \"Performans\" \"Mod devre dışı\"",
-      "performance-mode-enabled-description": "Noctalia performans modu etkinleştirildiğinde çalıştırılacak komut.",
+      "performance-mode-enabled-description": "nosDshell performans modu etkinleştirildiğinde çalıştırılacak komut.",
       "performance-mode-enabled-label": "Performans modu etkinleştirildi",
       "performance-mode-enabled-placeholder": "örn. notify-send \"Performans\" \"Mod etkin\"",
       "screen-lock-description": "Ekran kilitlendiğinde çalıştırılacak komut.",
@@ -1283,7 +1233,10 @@
       "title": "Kancalar",
       "wallpaper-changed-description": "Duvar kâğıdı değiştiğinde çalıştırılacak komut.",
       "wallpaper-changed-label": "Duvar kâğıdı değişti",
-      "wallpaper-changed-placeholder": "örn. notify-send \"Duvar Kâğıdı\" \"Değişti\""
+      "wallpaper-changed-placeholder": "örn. notify-send \"Duvar Kâğıdı\" \"Değişti\"",
+      "shell-started-description": "nosDshell yüklendiğinde çalıştırılacak komut.",
+      "shell-started-label": "nosDshell başladı",
+      "shell-started-placeholder": "örn. notify-send 'nosDshell Yüklendi'"
     },
     "idle": {
       "custom-add": "Komut Ekle",
@@ -1419,8 +1372,8 @@
       "weather-show-effects-label": "Hava efektlerini göster",
       "weather-show-in-calendar-description": "Günlük hava durumu tahminini doğrudan takvim görünümünüzde gösterin.",
       "weather-show-in-calendar-label": "Takvimde hava durumunu göster",
-      "weather-talia-mascot-always-description": "tabler icons yerine her zaman Talia emojis kullanın.",
-      "weather-talia-mascot-always-label": "Talia hava durumu emojilerini her zaman göster"
+      "weather-mascot-always-description": "tabler icons yerine her zaman mascot emojis kullanın.",
+      "weather-mascot-always-label": "Talia hava durumu emojilerini her zaman göster"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "fprintd (parmak izi kimlik doğrulaması) etkin olduğunda, bu seçenek parmak izi yerine parolanızı kullanarak oturum açmanızı sağlar.",
@@ -1504,7 +1457,7 @@
       "settings-density-label": "Yoğunluk",
       "settings-desc": "Bildirimlerin görünümünü ve davranışını yapılandırın.",
       "settings-do-not-disturb-description": "Etkinleştirildiğinde tüm bildirim açılır pencerelerini devre dışı bırakır.",
-      "settings-enabled-description": "Bildirim arka plan programını etkinleştir veya devre dışı bırak, Noctalia shell'in yeniden başlatılmasını gerektirir.",
+      "settings-enabled-description": "Bildirim arka plan programını etkinleştir veya devre dışı bırak, nosDshell shell'in yeniden başlatılmasını gerektirir.",
       "settings-enabled-label": "Bildirimleri etkinleştir",
       "settings-location-description": "Bildirimlerin ekranda nerede görüneceği.",
       "settings-markdown-description": "Bildirim içeriğini Markdown biçimlendirmesi kullanarak oluştur.",
@@ -1600,7 +1553,6 @@
       "hot-reload-label": "Hızlı yeniden yükleme (geliştirme modu)",
       "hot-reloaded": "Yeniden yüklenen eklenti: {name}",
       "install-error": "Yükleme başarısız oldu: {error}",
-      "install-incompatible": "{plugin} Noctalia v{version} veya daha üstünü gerektiriyor",
       "install-success": "{plugin} başarıyla kuruldu",
       "installed-description": "Yerel olarak yüklenmiş tüm eklentileri yönetin ve yapılandırın.",
       "installed-label": "Yüklü eklentiler",
@@ -1641,7 +1593,7 @@
       "update-available": "Yeni eklenti güncellemesi mevcut",
       "update-available-plural": "Yeni eklenti güncellemeleri mevcut ({count})",
       "update-error": "Eklenti güncellenemedi: {plugin}: {error}",
-      "update-pending": "v{current} → v{new} (Noctalia v{required} gerektirir)",
+      "update-pending": "v{current} → v{new} (nosDshell v{required} gerektirir)",
       "update-success": "{plugin} v{version} sürümüne güncellendi",
       "update-version": "v{current} → v{new}",
       "updating": "Güncelleniyor..."
@@ -1679,11 +1631,11 @@
       "show-keybinds-label": "Klavye kısayollarını göster"
     },
     "system": {
-      "noctalia-performance-disable-desktop-widgets-description": "Noctalia performans modu etkinleştirildiğinde masaüstü widget'larını görünür tut.",
-      "noctalia-performance-disable-desktop-widgets-label": "Performans modunda masaüstü widget'larını etkinleştir",
-      "noctalia-performance-disable-wallpaper-description": "Noctalia performans modu etkinleştirildiğinde masaüstü, genel bakış ve kilit ekranı duvar kağıtlarını görünür tutun.",
-      "noctalia-performance-disable-wallpaper-label": "Performans modunda duvar kağıdı oluşturmayı etkinleştir",
-      "title": "Sistem"
+      "title": "Sistem",
+      "performance-mode-disable-desktop-widgets-description": "nosDshell performans modu etkinleştirildiğinde masaüstü widget'larını görünür tut.",
+      "performance-mode-disable-desktop-widgets-label": "Performans modunda masaüstü widget'larını etkinleştir",
+      "performance-mode-disable-wallpaper-description": "nosDshell performans modu etkinleştirildiğinde masaüstü, genel bakış ve kilit ekranı duvar kağıtlarını görünür tutun.",
+      "performance-mode-disable-wallpaper-label": "Performans modunda duvar kağıdı oluşturmayı etkinleştir"
     },
     "system-monitor": {
       "critical-color-label": "Kritik renk",
@@ -1783,7 +1735,7 @@
       "settings-clear-cache-label": "Duvar kağıdı önbelleği",
       "settings-clear-cache-toast": "Duvar kağıdı önbelleği temizlendi",
       "settings-desc": "Duvar kâğıtlarının nasıl yönetileceğini ve görüntüleneceğini kontrol edin.",
-      "settings-enable-management-description": "Duvar kâğıtlarını Noctalia ile yönetin. Başka bir uygulamayı kullanmayı tercih ediyorsanız işareti kaldırın.",
+      "settings-enable-management-description": "Duvar kâğıtlarını nosDshell ile yönetin. Başka bir uygulamayı kullanmayı tercih ediyorsanız işareti kaldırın.",
       "settings-enable-management-label": "Duvar kâğıdı yönetimini etkinleştir",
       "settings-enable-overview-description": "Genel bakış ekranına bulanık ve karartılmış bir duvar kâğıdı uygular.",
       "settings-enable-overview-label": "Genel bakış duvar kâğıdını etkinleştir",
@@ -1864,10 +1816,6 @@
       "subheader": "Araç çubuğu konumunu, yoğunluğunu, ölçeğini ve daha fazlasını ayarlayın."
     },
     "skip-setup": "Kurulumu Atla",
-    "telemetry-wizard-done": "Anlaşıldı!",
-    "telemetry-wizard-note": "Kontrol sizde — istediğiniz zaman ayarlar'dan etkinleştirebilir veya devre dışı bırakabilirsiniz",
-    "telemetry-wizard-subtitle": "Noctalia'yı geliştirmeye yardımcı olmak için anonim analizler ekledik",
-    "telemetry-wizard-title": "Gizlilik Güncellemesi",
     "wallpaper": {
       "choose-dir": "Duvar kâğıdı görüntülerinizi içeren bir dizin seçin",
       "dir-browse": "Duvar kâğıdı klasörüne göz at",
@@ -1885,7 +1833,7 @@
     "welcome": "Hoş Geldiniz",
     "welcome-note": "Başlamanız için birkaç temel ayar — tam seçenekler ayarlar'da",
     "welcome-subtitle": "Masaüstünüzü size özel yapalım",
-    "welcome-title": "Noctalia'ya hoş geldiniz!"
+    "welcome-title": "nosDshell'ya hoş geldiniz!"
   },
   "system": {
     "cpu-temperature": "{temp}°C",
@@ -1956,7 +1904,6 @@
       "enabled": "'Rahatsız etme' etin",
       "enabled-desc": "Bu bildirimleri geçmişinizde bulacaksınız"
     },
-    "donation-opened": "Bağış sayfası tarayıcınızda açıldı",
     "internet-limited": "İnternetsiz bağlandı",
     "keyboard-layout": {
       "changed": "Klavye düzeni {layout} olarak değiştirildi",
@@ -1970,11 +1917,6 @@
       "forced": "Zorla etkinleştirme",
       "normal": "Normal mod",
       "not-installed": "wlsunset kurulu değil"
-    },
-    "noctalia-performance": {
-      "disabled": "Performans modu devre dışı bırakıldı",
-      "enabled": "Performans modu etkinleştirildi",
-      "label": "Noctalia Performans"
     },
     "power-profile": {
       "changed": "Güç profili değişti",
@@ -2000,6 +1942,11 @@
       "disconnected": "'{ssid}' bağlantısı kesildi",
       "incorrect-password": "Yanlış şifre",
       "network-not-found": "Ağ bulunamadı"
+    },
+    "performance-mode": {
+      "disabled": "Performans modu devre dışı bırakıldı",
+      "enabled": "Performans modu etkinleştirildi",
+      "label": "nosDshell Performans"
     }
   },
   "tooltips": {
@@ -2035,7 +1982,6 @@
     "next-media": "Sonraki parça",
     "next-month": "Sonraki ay",
     "night-light-not-installed": "Gece ışığı (mevcut değil)",
-    "noctalia-performance-enabled": "Noctalia performans modu",
     "open-annotation-tool": "Açıklama aracıyla aç",
     "open-control-center": "Kontrol merkezi",
     "open-notification-history-enable-dnd": "Bildirim geçmişi",
@@ -2057,7 +2003,8 @@
     "unmute": "Sessizliği aç",
     "up": "Üst dizin",
     "volume-at": "Çıkış sesi: %{volume}",
-    "wallpaper-selector": "Duvar kâğıdı seçici"
+    "wallpaper-selector": "Duvar kâğıdı seçici",
+    "performance-mode-enabled": "nosDshell performans modu"
   },
   "wallpaper": {
     "browse": {
@@ -2078,7 +2025,7 @@
     "panel": {
       "apikey-help": "NSFW içeriğe erişmek için bir API anahtarı gereklidir.",
       "apikey-label": "API anahtarı",
-      "apikey-managed-by-env": "NOCTALIA_WALLHAVEN_API_KEY ortam değişkeni aracılığıyla yönetilir.",
+      "apikey-managed-by-env": "NOSD_WALLHAVEN_API_KEY ortam değişkeni aracılığıyla yönetilir.",
       "apikey-placeholder": "Wallhaven API anahtarınızı girin",
       "appearance-dark-tab": "Koyu",
       "appearance-light-tab": "Açık",

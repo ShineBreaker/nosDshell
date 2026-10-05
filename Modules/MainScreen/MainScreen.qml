@@ -14,7 +14,6 @@ import qs.Modules.Panels.Audio
 import qs.Modules.Panels.Battery
 import qs.Modules.Panels.Bluetooth
 import qs.Modules.Panels.Brightness
-import qs.Modules.Panels.Changelog
 import qs.Modules.Panels.Clock
 import qs.Modules.Panels.ControlCenter
 import qs.Modules.Panels.Dock
@@ -43,7 +42,7 @@ PanelWindow {
   }
 
   WlrLayershell.layer: WlrLayer.Top
-  WlrLayershell.namespace: "noctalia-background-" + (screen?.name || "unknown")
+  WlrLayershell.namespace: "nosdshell-background-" + (screen?.name || "unknown")
   WlrLayershell.exclusionMode: ExclusionMode.Ignore // Don't reserve space - BarExclusionZone handles that
   WlrLayershell.keyboardFocus: {
     // No panel open anywhere: no keyboard focus needed
@@ -324,12 +323,6 @@ PanelWindow {
     ControlCenterPanel {
       id: controlCenterPanel
       objectName: "controlCenterPanel-" + (root.screen?.name || "unknown")
-      screen: root.screen
-    }
-
-    ChangelogPanel {
-      id: changelogPanel
-      objectName: "changelogPanel-" + (root.screen?.name || "unknown")
       screen: root.screen
     }
 

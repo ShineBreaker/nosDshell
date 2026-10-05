@@ -1,7 +1,7 @@
 /**
- * @name Noctalia Material
+ * @name nosDshell Material
  * @version 3.0.6
- * @description A fork of 'Material Discord' for Noctalia Shell
+ * @description A fork of 'Material Discord' for nosDshell
  * @author CapnKitten
  *
  * @website http://github.com/CapnKitten
@@ -82,7 +82,7 @@
   --input-text-color: {{colors.on_surface.default.hex}};
 
   /* Misc */
-  --app-watermark-one: "Noctalia";
+  --app-watermark-one: "nosDshell";
   --app-watermark-two: "Discord";
 
   /* Ensure channels-default is different from the active one - works in dark mode / light mode is another story... */

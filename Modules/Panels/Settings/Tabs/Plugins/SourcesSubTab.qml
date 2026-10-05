@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import qs.Commons
-import qs.Services.Noctalia
+import qs.Services.Plugins
 import qs.Services.UI
 import qs.Widgets
 
@@ -58,7 +58,6 @@ ColumnLayout {
           NIconButton {
             icon: "trash"
             tooltipText: I18n.tr("panels.plugins.sources-remove-tooltip")
-            visible: index !== 0 // Cannot remove official source
             baseSize: Style.baseWidgetSize * 0.7
             onClicked: {
               PluginRegistry.removePluginSource(modelData.url);

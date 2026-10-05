@@ -22,11 +22,11 @@ Singleton {
   // notifications.maxVisible default 1).
   readonly property int maxPopups: Math.max(1, Settings.data.notifications?.maxVisible ?? 1)
   property int maxHistory: 100
-  property string historyFile: Quickshell.env("NOCTALIA_NOTIF_HISTORY_FILE") || (Settings.cacheDir + "notifications.json")
+  property string historyFile: Quickshell.env("NOSD_NOTIF_HISTORY_FILE") || (Settings.cacheDir + "notifications.json")
 
   // State
   property real lastSeenTs: 0
-  // Volatile property that doesn't persist to settings (similar to noctaliaPerformanceMode)
+  // Volatile property that doesn't persist to settings (similar to performanceMode)
   property bool doNotDisturb: false
 
   // Models
@@ -152,7 +152,7 @@ Singleton {
 
     trySaveToHistory(data, notification);
 
-    if (root.doNotDisturb || PowerProfileService.noctaliaPerformanceMode)
+    if (root.doNotDisturb || PowerProfileService.performanceMode)
       return;
 
     // Check if this is a replacement notification
@@ -1152,7 +1152,7 @@ Singleton {
     if (!Settings.data.notifications.enableMediaToast || !mediaToastInitialized)
       return;
 
-    if (doNotDisturb || PowerProfileService.noctaliaPerformanceMode)
+    if (doNotDisturb || PowerProfileService.performanceMode)
       return;
 
     // Re-evaluate player identity here to handle race conditions where

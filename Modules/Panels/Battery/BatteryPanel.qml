@@ -27,7 +27,7 @@ SmartPanel {
     readonly property var powerProfiles: [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
     property int profileIndex: profileToIndex(PowerProfileService.profile)
     readonly property bool showPowerProfiles: panelID ? panelID.showPowerProfiles : resolveWidgetSetting("showPowerProfiles", false)
-    readonly property bool showNoctaliaPerformance: panelID ? panelID.showNoctaliaPerformance : resolveWidgetSetting("showNoctaliaPerformance", false)
+    readonly property bool showPerformanceMode: panelID ? panelID.showPerformanceMode : resolveWidgetSetting("showPerformanceMode", false)
 
     function profileToIndex(p) {
       return powerProfiles.indexOf(p) ?? 1;
@@ -256,12 +256,12 @@ SmartPanel {
                    }
         }
 
-        // Noctalia performance mode toggle (opt-in)
+        // Performance mode toggle (opt-in)
         Item {
           Layout.fillWidth: true
           Layout.preferredHeight: 36
           Layout.topMargin: Style.marginS
-          visible: panelContent.showNoctaliaPerformance
+          visible: panelContent.showPerformanceMode
 
           RowLayout {
             anchors.fill: parent
@@ -270,22 +270,22 @@ SmartPanel {
             spacing: Style.marginS
 
             NIcon {
-              icon: PowerProfileService.noctaliaPerformanceMode ? "rocket" : "rocket-off"
+              icon: PowerProfileService.performanceMode ? "rocket" : "rocket-off"
               pointSize: Style.fontSizeXL
-              color: PowerProfileService.noctaliaPerformanceMode ? Color.accent : Color.onShellTertiary
+              color: PowerProfileService.performanceMode ? Color.accent : Color.onShellTertiary
             }
 
             NText {
               Layout.fillWidth: true
-              text: I18n.tr("toast.noctalia-performance.label")
+              text: I18n.tr("toast.performance-mode.label")
               pointSize: Style.fontSizeM
               elide: Text.ElideRight
             }
 
             NToggle {
               Layout.fillWidth: false
-              checked: PowerProfileService.noctaliaPerformanceMode
-              onToggled: checked => PowerProfileService.noctaliaPerformanceMode = checked
+              checked: PowerProfileService.performanceMode
+              onToggled: checked => PowerProfileService.performanceMode = checked
             }
           }
         }

@@ -5,7 +5,6 @@ import Quickshell
 import Quickshell.Io
 import qs.Commons
 import qs.Services.Compositor
-import qs.Services.Noctalia
 import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
@@ -28,39 +27,13 @@ ColumnLayout {
     running: false
   }
 
-  property string latestVersion: GitHubService.latestVersion
-  property string currentVersion: UpdateService.currentVersion
+  property string currentVersion: Version.currentVersion
   property string commitInfo: ""
   property string qsVersion: ""
-  property string qsRevision: ""
 
   readonly property bool isGitVersion: root.currentVersion.endsWith("-git")
   readonly property int gigaB: (1024 * 1024 * 1024)
   readonly property int gigaD: (1000 * 1000 * 1000)
-
-  // Update status: compare versions
-  readonly property bool updateAvailable: {
-    if (!root.latestVersion || !root.currentVersion || root.latestVersion === I18n.tr("common.unknown"))
-      return false;
-    return UpdateService.compareVersions(root.latestVersion, root.currentVersion) > 0 && !root.isGitVersion;
-  }
-  readonly property bool isUpToDate: {
-    if (!root.latestVersion || !root.currentVersion || root.latestVersion === I18n.tr("common.unknown"))
-      return false;
-    return UpdateService.compareVersions(root.latestVersion, root.currentVersion) <= 0;
-  }
-
-  readonly property bool qsUpdateAvailable: {
-    if (!GitHubService.latestQSVersion || !root.qsVersion || GitHubService.latestQSVersion === I18n.tr("common.unknown"))
-      return false;
-    return UpdateService.compareVersions(GitHubService.latestQSVersion, root.qsVersion) > 0;
-  }
-
-  readonly property bool qsIsUpToDate: {
-    if (!GitHubService.latestQSVersion || !root.qsVersion || GitHubService.latestQSVersion === I18n.tr("common.unknown"))
-      return false;
-    return UpdateService.compareVersions(GitHubService.latestQSVersion, root.qsVersion) <= 0;
-  }
 
   // System info properties
   property var systemInfo: null
@@ -90,57 +63,15 @@ ColumnLayout {
     return lines.join(sep);
   }
 
-  function getTelemetryPayload() {
-    const screens = Quickshell.screens || [];
-    const scales = CompositorService.displayScales || {};
-    const monitors = [];
-    for (let i = 0; i < screens.length; i++) {
-      const screen = screens[i];
-      const name = screen.name || "Unknown";
-      const scaleData = scales[name];
-      const scaleValue = (typeof scaleData === "object" && scaleData !== null) ? (scaleData.scale || 1.0) : (scaleData || 1.0);
-      monitors.push({
-                      width: screen.width || 0,
-                      height: screen.height || 0,
-                      scale: scaleValue
-                    });
-    }
-    return {
-      instanceId: TelemetryService.getInstanceId(),
-      version: UpdateService.currentVersion,
-      compositor: TelemetryService.getCompositorType(),
-      os: HostService.osPretty || "Unknown",
-      ramGb: Math.round((root.getModule("Memory")?.result?.total || 0) / root.gigaB),
-      monitors: monitors,
-      ui: {
-        scaleRatio: Settings.data.general.scaleRatio,
-        fontDefaultScale: Settings.data.ui.fontDefaultScale,
-        fontFixedScale: Settings.data.ui.fontFixedScale
-      }
-    };
-  }
-
-  function copyTelemetryData() {
-    const payload = getTelemetryPayload();
-    const json = JSON.stringify(payload, null, 2);
-    Quickshell.execDetached(["wl-copy", json]);
-    ToastService.showNotice(I18n.tr("panels.about.telemetry-title"), I18n.tr("panels.about.telemetry-data-copied"));
-  }
-
   function copyInfoToClipboard() {
-    let info = "Noctalia Shell: " + root.currentVersion;
+    let info = "nosDshell: " + root.currentVersion;
     if (root.isGitVersion && root.commitInfo) {
       info += " (" + root.commitInfo + ")";
     }
     info += "\n";
 
     if (root.qsVersion) {
-      let qsV = root.qsVersion.startsWith("v") ? root.qsVersion : "v" + root.qsVersion;
-      info += "Noctalia QS: " + qsV;
-      if (root.qsRevision) {
-        info += " (" + root.qsRevision + ")";
-      }
-      info += "\n";
+      info += "Quickshell: " + root.qsVersion + "\n";
     }
 
     info += "\nSystem Information\n";
@@ -198,9 +129,9 @@ ColumnLayout {
         var shellDir = Quickshell.shellDir || "";
         Logger.d("VersionSubTab", "Component.onCompleted - NixOS detected, shellDir:", shellDir);
         if (shellDir) {
-          // Extract commit hash from path like: /nix/store/...-noctalia-shell-2025-11-30_225e6d3/share/noctalia-shell
-          // Pattern matches: noctalia-shell-YYYY-MM-DD_<commit_hash>
-          var match = shellDir.match(/noctalia-shell-\d{4}-\d{2}-\d{2}_([0-9a-f]{7,})/i);
+          // Extract commit hash from path like: /nix/store/...-nosdshell-2025-11-30_225e6d3/share/nosdshell
+          // Pattern matches: nosdshell-YYYY-MM-DD_<commit_hash>
+          var match = shellDir.match(/nosdshell-\d{4}-\d{2}-\d{2}_([0-9a-f]{7,})/i);
           if (match && match[1]) {
             // Use first 7 characters of the commit hash
             root.commitInfo = match[1].substring(0, 7);
@@ -257,14 +188,11 @@ ColumnLayout {
 
     onExited: function (exitCode) {
       if (exitCode === 0) {
-        var output = stdout.text.trim();
-        // Format (old): "noctalia-qs 0.3.0, revision abc12345, distributed by: ..."
-        // Format (new): "noctalia-qs 0.0.9 (revision b602b69c81d96a1d7c645328feb7b1e1d4b7b7a4, distributed by Unset)"
-        // Only set if this is actually noctalia-qs; leave empty for upstream quickshell
-        var match = output.match(/noctalia-qs\s+(\S+?)[\s,(]+revision\s*([0-9a-f]*)/i);
-        if (match) {
-          root.qsVersion = match[1];
-          root.qsRevision = match[2] ? match[2].substring(0, 9) : "";
+        // Upstream quickshell reports a single line such as
+        // "Quickshell 0.3.0 (revision ..., distributed by: ...)"
+        var output = stdout.text.trim().split("\n")[0].trim();
+        if (output) {
+          root.qsVersion = output;
         }
       }
     }
@@ -324,9 +252,9 @@ ColumnLayout {
     Layout.alignment: Qt.AlignHCenter
     spacing: Style.marginXL
 
-    // Noctalia logo
+    // nosDshell logo
     Image {
-      source: "../../../../../Assets/noctalia.svg"
+      source: "../../../../../Assets/nosdshell.svg"
       width: 96 * Style.uiScaleRatio
       height: width
       fillMode: Image.PreserveAspectFit
@@ -375,7 +303,7 @@ ColumnLayout {
 
     ColumnLayout {
       NHeader {
-        label: "Noctalia Shell"
+        label: "nosDshell"
       }
 
       // Versions
@@ -386,7 +314,7 @@ ColumnLayout {
 
         // Installed Version (Shell)
         NText {
-          text: "Noctalia Shell:"
+          text: "nosDshell:"
           color: Color.mOnSurfaceVariant
           Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
         }
@@ -422,207 +350,42 @@ ColumnLayout {
               onExited: TooltipService.hide()
               onClicked: {
                 if (root.commitInfo) {
-                  Quickshell.execDetached(["xdg-open", "https://github.com/noctalia-dev/noctalia-shell/commit/" + root.commitInfo]);
+                  Quickshell.execDetached(["xdg-open", "https://github.com/ShineBreaker/nosDshell/commit/" + root.commitInfo]);
                 }
               }
             }
           }
-
-          // Update status indicator
-          NIcon {
-            id: upToDateIcon
-            visible: root.isUpToDate
-            icon: "circle-check"
-            pointSize: Style.fontSizeM
-            color: Color.mPrimary
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              onEntered: TooltipService.show(upToDateIcon, I18n.tr("panels.about.up-to-date"))
-              onExited: TooltipService.hide()
-            }
-          }
-
-          NIcon {
-            id: updateAvailableIcon
-            visible: root.updateAvailable
-            icon: "arrow-up-circle"
-            pointSize: Style.fontSizeS
-            color: Color.mPrimary
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              onEntered: TooltipService.show(updateAvailableIcon, I18n.tr("panels.about.update-available"))
-              onExited: TooltipService.hide()
-            }
-          }
         }
 
-        // Latest Version (Shell)
-        NText {
-          visible: root.updateAvailable
-          text: I18n.tr("panels.about.noctalia-available")
-          color: Color.mOnSurfaceVariant
-          Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-        }
-
-        NText {
-          visible: root.updateAvailable
-          text: root.latestVersion
-          color: Color.mOnSurface
-          font.weight: Style.fontWeightBold
-        }
-
-        // Divider-like spacing
-        Item {
-          visible: root.qsUpdateAvailable || root.updateAvailable
-          Layout.columnSpan: 2
-          Layout.preferredHeight: Style.marginXS
-        }
-
-        // Quickshell Version
+        // Quickshell version
         NText {
           visible: root.qsVersion !== ""
-          text: "Noctalia QS:"
+          text: "Quickshell:"
           color: Color.mOnSurfaceVariant
           Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
         }
 
-        RowLayout {
+        NText {
           visible: root.qsVersion !== ""
-          spacing: Style.marginS
-
-          NText {
-            text: root.qsVersion.startsWith("v") ? root.qsVersion : "v" + root.qsVersion
-            color: Color.mOnSurface
-            font.weight: Style.fontWeightBold
-          }
-
-          // Git revision in parentheses
-          NText {
-            id: qsRevisionText
-            visible: root.qsRevision !== ""
-            text: "(" + root.qsRevision + ")"
-            color: qsRevisionMouseArea.containsMouse ? Color.mPrimary : Color.mOnSurfaceVariant
-            pointSize: Style.fontSizeXS
-            font.underline: qsRevisionMouseArea.containsMouse
-
-            MouseArea {
-              id: qsRevisionMouseArea
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: Qt.PointingHandCursor
-              onEntered: TooltipService.show(qsRevisionText, I18n.tr("panels.about.view-commit"))
-              onExited: TooltipService.hide()
-              onClicked: {
-                Quickshell.execDetached(["xdg-open", "https://github.com/noctalia-dev/noctalia-qs/commit/" + root.qsRevision]);
-              }
-            }
-          }
-
-          // Update status indicator
-          NIcon {
-            id: qsUpToDateIcon
-            visible: root.qsIsUpToDate
-            icon: "circle-check"
-            pointSize: Style.fontSizeM
-            color: Color.mPrimary
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              onEntered: TooltipService.show(qsUpToDateIcon, I18n.tr("panels.about.up-to-date"))
-              onExited: TooltipService.hide()
-            }
-          }
-
-          NIcon {
-            id: qsUpdateAvailableIcon
-            visible: root.qsUpdateAvailable
-            icon: "arrow-up-circle"
-            pointSize: Style.fontSizeS
-            color: Color.mPrimary
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              onEntered: TooltipService.show(qsUpdateAvailableIcon, I18n.tr("panels.about.update-available"))
-              onExited: TooltipService.hide()
-            }
-          }
-        }
-
-        // Latest Quickshell Version
-        NText {
-          visible: root.qsUpdateAvailable
-          text: I18n.tr("panels.about.noctalia-available")
-          color: Color.mOnSurfaceVariant
-          Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-        }
-
-        NText {
-          visible: root.qsUpdateAvailable
-          text: GitHubService.latestQSVersion
+          text: root.qsVersion
           color: Color.mOnSurface
           font.weight: Style.fontWeightBold
+          wrapMode: Text.Wrap
+          Layout.fillWidth: true
         }
       }
     }
   }
 
-  GridLayout {
-    id: actionsGrid
+  NButton {
+    id: copyBtn
+    icon: "copy"
+    text: I18n.tr("panels.about.copy-info")
+    outlined: true
     Layout.alignment: Qt.AlignHCenter
     Layout.topMargin: Style.marginM
     Layout.bottomMargin: Style.marginM
-    rowSpacing: Style.marginM
-    columnSpacing: Style.marginM
-
-    columns: (changelogBtn.implicitWidth + copyBtn.implicitWidth + supportBtn.implicitWidth + 2 * columnSpacing) < root.width ? 3 : 1
-
-    NButton {
-      id: changelogBtn
-      icon: "sparkles"
-      text: I18n.tr("panels.about.changelog")
-      outlined: true
-      Layout.alignment: Qt.AlignHCenter
-      onClicked: {
-        var screen = PanelService.openedPanel?.screen || SettingsPanelService.settingsWindow?.screen || PanelService.findScreenForPanels();
-        SettingsPanelService.close(screen);
-        UpdateService.viewChangelog(screen);
-      }
-    }
-
-    NButton {
-      id: copyBtn
-      icon: "copy"
-      text: I18n.tr("panels.about.copy-info")
-      outlined: true
-      Layout.alignment: Qt.AlignHCenter
-      onClicked: root.copyInfoToClipboard()
-    }
-
-    NButton {
-      id: supportBtn
-      icon: "heart"
-      text: I18n.tr("panels.about.support")
-      outlined: true
-      Layout.alignment: Qt.AlignHCenter
-      onClicked: {
-        Quickshell.execDetached(["xdg-open", "https://buymeacoffee.com/noctalia"]);
-        ToastService.showNotice(I18n.tr("panels.about.support"), I18n.tr("toast.donation-opened"));
-      }
-    }
-  }
-
-  NToggle {
-    Layout.fillWidth: true
-    label: I18n.tr("panels.about.changelog-on-startup")
-    description: I18n.tr("panels.about.changelog-on-startup-desc")
-    checked: Settings.data.general.showChangelogOnStartup
-    onToggled: checked => Settings.data.general.showChangelogOnStartup = checked
+    onClicked: root.copyInfoToClipboard()
   }
 
   // System Information Section
@@ -947,39 +710,4 @@ ColumnLayout {
     }
   }
 
-  // Telemetry Section
-  NDivider {
-    Layout.fillWidth: true
-    Layout.topMargin: Style.marginL
-  }
-
-  NHeader {
-    label: I18n.tr("panels.about.telemetry-title")
-  }
-
-  NToggle {
-    Layout.fillWidth: true
-    label: I18n.tr("panels.about.telemetry-enabled")
-    description: I18n.tr("panels.about.telemetry-desc")
-    checked: Settings.data.general.telemetryEnabled
-    onToggled: checked => Settings.data.general.telemetryEnabled = checked
-  }
-
-  RowLayout {
-    spacing: Style.marginM
-
-    NButton {
-      icon: "eye"
-      text: I18n.tr("panels.about.telemetry-show-data")
-      outlined: true
-      onClicked: root.copyTelemetryData()
-    }
-
-    NButton {
-      icon: "shield-lock"
-      text: I18n.tr("panels.about.privacy-policy")
-      outlined: true
-      onClicked: Quickshell.execDetached(["xdg-open", "https://noctalia.dev/privacy"])
-    }
-  }
 }

@@ -1,23 +1,5 @@
 [
   {
-    "labelKey": "panels.about.changelog-on-startup",
-    "descriptionKey": "panels.about.changelog-on-startup-desc",
-    "widget": "NToggle",
-    "tab": 21,
-    "tabLabel": "panels.about.title",
-    "subTab": 0,
-    "subTabLabel": "common.info"
-  },
-  {
-    "labelKey": "panels.about.telemetry-enabled",
-    "descriptionKey": "panels.about.telemetry-desc",
-    "widget": "NToggle",
-    "tab": 21,
-    "tabLabel": "panels.about.title",
-    "subTab": 0,
-    "subTabLabel": "common.info"
-  },
-  {
     "labelKey": "panels.audio.devices-output-device-label",
     "descriptionKey": "panels.audio.devices-output-device-description",
     "widget": "NLabel",
@@ -840,15 +822,6 @@
     ]
   },
   {
-    "labelKey": "common.position",
-    "descriptionKey": "panels.control-center.position-description",
-    "widget": "NComboBox",
-    "tab": 7,
-    "tabLabel": "panels.control-center.title",
-    "subTab": 0,
-    "subTabLabel": "common.appearance"
-  },
-  {
     "labelKey": "panels.control-center.system-monitor-disk-path-label",
     "descriptionKey": "panels.control-center.system-monitor-disk-path-description",
     "widget": "NComboBox",
@@ -1323,8 +1296,8 @@
     "subTabLabel": "common.general"
   },
   {
-    "labelKey": "panels.hooks.noctalia-started-label",
-    "descriptionKey": "panels.hooks.noctalia-started-description",
+    "labelKey": "panels.hooks.shell-started-label",
+    "descriptionKey": "panels.hooks.shell-started-description",
     "widget": "HookRow",
     "tab": 20,
     "tabLabel": "panels.hooks.title",
@@ -1569,6 +1542,15 @@
     "subTabLabel": "common.execute"
   },
   {
+    "labelKey": "common.position",
+    "descriptionKey": "panels.launcher.settings-position-description",
+    "widget": "NComboBox",
+    "tab": 8,
+    "tabLabel": "panels.launcher.title",
+    "subTab": 0,
+    "subTabLabel": "common.general"
+  },
+  {
     "labelKey": "panels.launcher.settings-overlay-layer-label",
     "descriptionKey": "panels.launcher.settings-overlay-layer-description",
     "widget": "NToggle",
@@ -1713,10 +1695,7 @@
     "tab": 11,
     "tabLabel": "panels.lock-screen.title",
     "subTab": 0,
-    "subTabLabel": "common.appearance",
-    "visibleWhen": [
-      "!Settings.data.general.compactLockScreen"
-    ]
+    "subTabLabel": "common.appearance"
   },
   {
     "labelKey": "panels.lock-screen.lock-screen-animations-label",
@@ -2241,8 +2220,8 @@
     "subTabLabel": "common.location"
   },
   {
-    "labelKey": "panels.location.weather-talia-mascot-always-label",
-    "descriptionKey": "panels.location.weather-talia-mascot-always-description",
+    "labelKey": "panels.location.weather-mascot-always-label",
+    "descriptionKey": "panels.location.weather-mascot-always-description",
     "widget": "NToggle",
     "tab": 17,
     "tabLabel": "panels.region.title",
@@ -2337,8 +2316,8 @@
     "subTabLabel": "system-monitor.title"
   },
   {
-    "labelKey": "panels.system.noctalia-performance-disable-wallpaper-label",
-    "descriptionKey": "panels.system.noctalia-performance-disable-wallpaper-description",
+    "labelKey": "panels.system.performance-mode-disable-wallpaper-label",
+    "descriptionKey": "panels.system.performance-mode-disable-wallpaper-description",
     "widget": "NToggle",
     "tab": 18,
     "tabLabel": "panels.system.title",
@@ -2346,8 +2325,8 @@
     "subTabLabel": "common.performance"
   },
   {
-    "labelKey": "panels.system.noctalia-performance-disable-desktop-widgets-label",
-    "descriptionKey": "panels.system.noctalia-performance-disable-desktop-widgets-description",
+    "labelKey": "panels.system.performance-mode-disable-desktop-widgets-label",
+    "descriptionKey": "panels.system.performance-mode-disable-desktop-widgets-description",
     "widget": "NToggle",
     "tab": 18,
     "tabLabel": "panels.system.title",

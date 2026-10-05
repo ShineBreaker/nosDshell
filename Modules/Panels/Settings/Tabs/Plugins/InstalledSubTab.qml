@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import qs.Commons
-import qs.Services.Noctalia
+import qs.Services.Plugins
 import qs.Services.UI
 import qs.Widgets
 
@@ -181,7 +181,7 @@ ColumnLayout {
               elide: Text.ElideRight
             }
 
-            // Official badge (Noctalia Team maintained)
+            // Official badge (marked official by the plugin's registry)
             Rectangle {
               visible: modelData.official === true
               color: Color.mSecondary
@@ -238,10 +238,12 @@ ColumnLayout {
               icon: "external-link"
               tooltipText: I18n.tr("panels.plugins.open-plugin-page")
               baseSize: Style.baseWidgetSize * 0.7
-              visible: true
-              onClicked: {
+              visible: {
                 var sourceUrl = PluginRegistry.getPluginSourceUrl(modelData.compositeKey) || "";
-                Qt.openUrlExternally(sourceUrl && !PluginRegistry.isMainSource(sourceUrl) ? sourceUrl : "https://noctalia.dev/plugins/" + modelData.id);
+                return sourceUrl !== "" && !PluginRegistry.isMainSource(sourceUrl);
+              }
+              onClicked: {
+                Qt.openUrlExternally(PluginRegistry.getPluginSourceUrl(modelData.compositeKey));
               }
             }
 
@@ -338,7 +340,7 @@ ColumnLayout {
                   return I18n.tr("panels.plugins.update-pending", {
                                    "current": modelData.version,
                                    "new": modelData.pendingUpdateInfo.availableVersion,
-                                   "required": modelData.pendingUpdateInfo.minNoctaliaVersion
+                                   "required": modelData.pendingUpdateInfo.availableVersion
                                  });
                 }
                 return "v" + modelData.version;

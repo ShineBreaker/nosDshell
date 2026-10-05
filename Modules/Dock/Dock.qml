@@ -589,7 +589,7 @@ Loader {
           focusable: false
           color: "transparent"
 
-          WlrLayershell.namespace: "noctalia-dock-" + (screen?.name || "unknown")
+          WlrLayershell.namespace: "nosdshell-dock-" + (screen?.name || "unknown")
           WlrLayershell.exclusionMode: root.autoHide ? ExclusionMode.Ignore : ExclusionMode.Auto
 
           anchors.top: dockPosition === "top" || isVertical

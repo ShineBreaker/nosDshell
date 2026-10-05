@@ -60,10 +60,10 @@
       "hide-if-not-detected-description": "Løyn nøytelen når kjernen ikkje finn eit batteri.",
       "hide-if-not-detected-label": "Løyn når ikkje funne",
       "low-battery-threshold-label": "Åtvaringstreskald for lågt batteri",
-      "show-noctalia-performance-description": "Syn brjotaren for Ytestoda frå Noctalia i batterifjøli.<br>Slær av skuggar og bilætrørslor i Noctalia for å minka emnebruk.",
-      "show-noctalia-performance-label": "Syn brjotaren for Ytestoda frå Noctalia",
       "show-power-profile-description": "Syn veljaren for straumhått i batterifjøli.",
-      "show-power-profile-label": "Syn straumhåttstoli"
+      "show-power-profile-label": "Syn straumhåttstoli",
+      "show-performance-mode-description": "Syn brjotaren for Ytestoda frå nosDshell i batterifjøli.<br>Slær av skuggar og bilætrørslor i nosDshell for å minka emnebruk.",
+      "show-performance-mode-label": "Syn brjotaren for Ytestoda frå nosDshell"
     },
     "brightness": {
       "apply-all-description": "Brigd på ljosstyrke på kvar skjerm når ein nyttar bladhjulet.",
@@ -116,7 +116,7 @@
       "hide-mode-label": "Løyndarluna",
       "hide-mode-max-transparent": "Vidka heilt men klår",
       "icon-description": "Kjos fråmerke frå samningi.",
-      "ipc-identifier-description": "Sermerke for IPC-styrebod. Nytta dette merket med 'qs -c noctalia-shell ipc call cb [gjerning] [merke]' for å styra knappen med IPC.",
+      "ipc-identifier-description": "Sermerke for IPC-styrebod. Nytta dette merket med 'qs -c nosdshell ipc call cb [gjerning] [merke]' for å styra knappen med IPC.",
       "ipc-identifier-label": "IPC-sermerke",
       "left-click-description": "Styrebod som køyrer ved vinstretrykk.",
       "left-click-label": "Vinstretrykk",
