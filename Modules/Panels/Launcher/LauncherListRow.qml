@@ -15,7 +15,7 @@ Item {
   required property int index
   property var listView: null
 
-  signal activated()
+  signal activated
   signal rightClicked(var mouse)
 
   width: listView ? listView.width : 400
@@ -79,11 +79,11 @@ Item {
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: mouse => {
-      if (mouse.button === Qt.RightButton) {
-        root.rightClicked(mouse);
-      } else {
-        root.activated();
-      }
-    }
+                 if (mouse.button === Qt.RightButton) {
+                   root.rightClicked(mouse);
+                 } else {
+                   root.activated();
+                 }
+               }
   }
 }

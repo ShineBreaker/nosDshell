@@ -102,7 +102,7 @@ Item {
     _activeProvider = null;
     for (let provider of _providers) {
       if (provider.onClosed)
-      provider.onClosed();
+        provider.onClosed();
     }
   }
 
@@ -149,7 +149,7 @@ Item {
         let allCommands = [];
         for (let provider of _providers) {
           if (provider.commands)
-          allCommands = allCommands.concat(provider.commands());
+            allCommands = allCommands.concat(provider.commands());
         }
         if (text === ">") {
           _results = allCommands;
@@ -215,7 +215,7 @@ Item {
     _providers.push(provider);
     provider.launcher = root;
     if (provider.init)
-    provider.init();
+      provider.init();
     if (id) {
       _providersById[id] = provider;
       _providersById = _providersById; // trigger property change
@@ -224,7 +224,7 @@ Item {
 
   function registerProviderWithId(provider, id) {
     if (!id)
-    return;
+      return;
     registerProvider(provider, id);
   }
 
@@ -237,7 +237,7 @@ Item {
       if (registeredIds.indexOf(existingId) === -1) {
         const idx = _providers.indexOf(_pluginProviderInstances[existingId]);
         if (idx >= 0)
-        _providers.splice(idx, 1);
+          _providers.splice(idx, 1);
         delete _pluginProviderInstances[existingId];
         Logger.d("Launcher", "Removed plugin provider:", existingId);
         changed = true;
@@ -254,7 +254,7 @@ Item {
           _providers.push(instance);
           instance.launcher = root;
           if (instance.init)
-          instance.init();
+            instance.init();
           _providersById[providerId] = instance;
           _providersById = _providersById;
           Logger.d("Launcher", "Adopted plugin provider:", providerId);
@@ -280,9 +280,9 @@ Item {
   // ---------------------------------------------------------------
   function clampIndex() {
     if (_selectedIndex >= _results.length)
-    _selectedIndex = Math.max(0, _results.length - 1);
+      _selectedIndex = Math.max(0, _results.length - 1);
     if (_selectedIndex < 0)
-    _selectedIndex = 0;
+      _selectedIndex = 0;
   }
 
   function selectNextWrapped() {
@@ -328,7 +328,7 @@ Item {
 
   function selectIndex(index) {
     if (index >= 0 && index < _results.length)
-    _selectedIndex = index;
+      _selectedIndex = index;
   }
 
   // ---------------------------------------------------------------
@@ -337,7 +337,7 @@ Item {
   function activate() {
     clampIndex();
     if (_results.length === 0 || !_results[_selectedIndex])
-    return;
+      return;
 
     const item = _results[_selectedIndex];
     const provider = item.provider || currentProvider;
@@ -350,7 +350,7 @@ Item {
     // Auto-paste (clipboard provider)
     if (Settings.data.appLauncher.autoPasteClipboard && provider && provider.supportsAutoPaste && item.autoPasteText) {
       if (item.onAutoPaste)
-      item.onAutoPaste();
+        item.onAutoPaste();
       closeImmediately();
       Qt.callLater(() => {
                      ClipboardService.pasteText(item.autoPasteText);
@@ -359,7 +359,7 @@ Item {
     }
 
     if (item.onActivate)
-    item.onActivate();
+      item.onActivate();
   }
 
   // Delete selected item (clipboard entries)
@@ -369,7 +369,7 @@ Item {
       const item = _results[_selectedIndex];
       const provider = item.provider || currentProvider;
       if (provider && provider.canDeleteItem && provider.canDeleteItem(item))
-      provider.deleteItem(item);
+        provider.deleteItem(item);
     }
   }
 
