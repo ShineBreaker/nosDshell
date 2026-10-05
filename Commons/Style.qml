@@ -466,4 +466,17 @@ Singleton {
   readonly property int dockItemThickness: Math.round(Settings.data.dock.iconSize * 1.5)
   readonly property int dockItemLength: Math.round(dockItemThickness * 1.1)
   readonly property int dockIconContent: Math.round(Math.min(dockItemThickness, dockItemLength) * 0.8)
+  // DDE fashion clock face geometry, verbatim from
+  // gxde-dock/plugins/datetime/datetimewidget.cpp:123-186. Every step there is
+  // integer arithmetic on int, so the ratios are truncated the same way here.
+  readonly property real dockClockFaceRatio: 0.8 // perfectIconSize = min(w, h) * 0.8
+  readonly property real dockClockBigNumHeightRatio: 0.4 // bigNumHeight = perfectIconSize / 2.5
+  readonly property real dockClockBigNumWidthRatio: 4 / 9 // bigNumWidth = bigNumHeight * 8 / 18
+  readonly property real dockClockSmallNumHeightRatio: 0.5 // smallNumHeight = bigNumHeight / 2
+  readonly property real dockClockSmallNumWidthRatio: 5 / 9 // smallNumWidth = smallNumHeight * 5 / 9
+  readonly property int dockClockBigNumGap: 1 // between the two big digits (line 146)
+  readonly property int dockClockSmallNumGap: 1 // between the two small digits (line 160, 185)
+  readonly property int dockClockBigSmallGap: 2 // big block to small block / am-pm tips (line 154, 173, 179)
+  readonly property int dockClockBigNumLeftBias: 1 // "… - bigNumWidth * 2 + 1" (line 140)
+  readonly property int dockClockAmPmLeftInset: 1 // 12h branch drops the small digits by 1 px (line 154)
 }

@@ -1,0 +1,32 @@
+DDE 15 素材 —— 来源：gxde-dock
+=================================
+
+来源仓库：https://github.com/GXDE-OS/gxde-dock
+分支/版本：浅克隆的默认分支（GXDE-OS 对 deepin 15 的社区维护版）
+上游版权：Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
+上游许可：GPL-3.0（见来源仓库根目录的 LICENSE）
+本仓库许可：GPL-3.0（见仓库根目录的 LICENSE）
+
+复制规则：原样复制，不修改文件名，便于溯源。
+
+文件清单
+--------
+
+全部位于 `plugins/datetime/resources/icons/`，由
+`plugins/datetime/datetimewidget.cpp` 的 `DatetimeWidget::loadSvg()` 在
+时尚模式任务栏时钟插件里加载（`datetimewidget.cpp:106-188`）。
+
+| 仓库内路径 | 用途 |
+|---|---|
+| `plugins/datetime/resources/icons/background.svg` | 表盘底板（48×48 视框，圆形） |
+| `plugins/datetime/resources/icons/big0.svg` … `big9.svg` | 大号数字（8×18 视框） |
+| `plugins/datetime/resources/icons/small0.svg` … `small9.svg` | 小号数字（12 小时制的分钟 / 24 小时制的分钟） |
+| `plugins/datetime/resources/icons/tips-am.svg` | 12 小时制的 AM 提示（10×5 视框） |
+| `plugins/datetime/resources/icons/tips-pm.svg` | 12 小时制的 PM 提示（10×5 视框） |
+
+说明
+----
+
+- 这些 SVG 只在 DDE 的**时尚模式**任务栏时钟插件里使用；高效模式走
+  `datetimewidget.cpp:88-103` 的纯文字分支，不涉及素材。
+- 应用图标和托盘/状态图标不随本仓库分发，仍在运行时从系统图标主题读取。

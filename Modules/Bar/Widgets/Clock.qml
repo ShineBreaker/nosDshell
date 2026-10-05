@@ -66,43 +66,148 @@ Item {
   implicitWidth: fashionMode ? Style.dockItemThickness : contentWidth
   implicitHeight: fashionMode ? Style.dockItemThickness : contentHeight
 
-  // DDE fashion clock tile: dark rounded square with HH over mm digits in
-  // a Light weight (gxde-dock datetimewidget draws an SVG clock face with
-  // big digits h=i/2.5 — re-created in QML, no copied assets).
-  Rectangle {
+  // DDE fashion clock tile: the original gxde-dock clock face with segmented
+  // digits, drawn from the copied SVG artwork. Geometry is taken verbatim from
+  // gxde-dock/plugins/datetime/datetimewidget.cpp:106-188.
+  Item {
     id: fashionTile
     visible: root.fashionMode
     width: Style.dockItemThickness
     height: width
     anchors.centerIn: parent
-    radius: Style.radiusLarge
-    color: Color.overlay("strong")
 
-    Column {
+    readonly property string iconsDir: Quickshell.shellDir + "/Assets/DDE/gxde-dock/plugins/datetime/resources/icons/"
+    // datetimewidget.cpp:123 — the face is min(w, h) * 0.8 of the item
+    readonly property int perfectIconSize: Math.trunc(Math.min(width, height) * Style.dockClockFaceRatio)
+    // datetimewidget.cpp:132-135
+    readonly property int bigNumHeight: Math.trunc(perfectIconSize * Style.dockClockBigNumHeightRatio)
+    readonly property int bigNumWidth: Math.trunc(bigNumHeight * Style.dockClockBigNumWidthRatio)
+    readonly property int smallNumHeight: Math.trunc(bigNumHeight * Style.dockClockSmallNumHeightRatio)
+    readonly property int smallNumWidth: Math.trunc(smallNumHeight * Style.dockClockSmallNumWidthRatio)
+    // datetimewidget.cpp:164-165 — the am/pm tip is two small digits wide, forced even
+    readonly property int tipsWidth: (smallNumWidth * 2 + Style.dockClockBigSmallGap) & ~1
+    readonly property int tipsHeight: Math.trunc(tipsWidth / 2)
+    // DDE keys the widget off a "24HourFormat" setting; nosDshell has no equivalent,
+    // so follow the clock's own format string (HH = 24h, hh/AP = 12h).
+    // The trailing "a" makes the 12h string 5 characters like DDE's "hhmma";
+    // only the first four are digits. Qt.formatDateTime keeps plain 0-9 glyphs,
+    // which is why DDE pins QLocale to Chinese (datetimewidget.cpp:106-108).
+    readonly property bool use24Hour: /H/.test(formatHorizontal)
+    readonly property string digits: Qt.formatDateTime(root.now, use24Hour ? "HHmm" : "hhmma")
+
+    Image {
+      id: face
+      source: fashionTile.iconsDir + "background.svg"
+      sourceSize.width: fashionTile.perfectIconSize
+      sourceSize.height: fashionTile.perfectIconSize
+      width: fashionTile.perfectIconSize
+      height: fashionTile.perfectIconSize
       anchors.centerIn: parent
-      spacing: -2
+      smooth: true
+      asynchronous: true
+      cache: true
+    }
 
-      NText {
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: I18n.locale.toString(root.now, "HH")
-        pointSize: Style.fontSizeXXL
-        font.weight: Font.Light
-        color: Color.onShell
-        applyUiScale: false
-        features: ({
-                     "tnum": 1
-                   })
+    // datetimewidget.cpp:140 — first big digit, horizontally offset so the
+    // "HH" block plus the minutes block sit centred inside the face
+    Item {
+      id: bigNum1
+      width: fashionTile.bigNumWidth
+      height: fashionTile.bigNumHeight
+      x: face.x + Math.trunc(fashionTile.perfectIconSize / 2) - fashionTile.bigNumWidth * 2 + Style.dockClockBigNumLeftBias
+      y: face.y + Math.trunc(fashionTile.perfectIconSize / 2) - Math.trunc(fashionTile.bigNumHeight / 2)
+
+      Image {
+        anchors.fill: parent
+        source: fashionTile.iconsDir + "big" + fashionTile.digits.charAt(0) + ".svg"
+        sourceSize.width: width
+        sourceSize.height: height
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        cache: true
       }
-      NText {
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: I18n.locale.toString(root.now, "mm")
-        pointSize: Style.fontSizeL
-        font.weight: Font.Light
-        color: Color.onShell
-        applyUiScale: false
-        features: ({
-                     "tnum": 1
-                   })
+    }
+
+    // datetimewidget.cpp:146
+    Item {
+      id: bigNum2
+      width: fashionTile.bigNumWidth
+      height: fashionTile.bigNumHeight
+      x: bigNum1.x + fashionTile.bigNumWidth + Style.dockClockBigNumGap
+      y: bigNum1.y
+
+      Image {
+        anchors.fill: parent
+        source: fashionTile.iconsDir + "big" + fashionTile.digits.charAt(1) + ".svg"
+        sourceSize.width: width
+        sourceSize.height: height
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        cache: true
+      }
+    }
+
+    // datetimewidget.cpp:154 (12h) / :179 (24h) — the small block sits on the
+    // big block's baseline in 24h mode, and one pixel higher in 12h mode
+    Item {
+      id: smallNum1
+      width: fashionTile.smallNumWidth
+      height: fashionTile.smallNumHeight
+      x: bigNum2.x + fashionTile.bigNumWidth + Style.dockClockBigSmallGap
+      y: bigNum2.y + (fashionTile.use24Hour ? fashionTile.smallNumHeight : Style.dockClockAmPmLeftInset)
+
+      Image {
+        anchors.fill: parent
+        source: fashionTile.iconsDir + "small" + fashionTile.digits.charAt(2) + ".svg"
+        sourceSize.width: width
+        sourceSize.height: height
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        cache: true
+      }
+    }
+
+    // datetimewidget.cpp:160 / :185
+    Item {
+      id: smallNum2
+      width: fashionTile.smallNumWidth
+      height: fashionTile.smallNumHeight
+      x: smallNum1.x + fashionTile.smallNumWidth + Style.dockClockSmallNumGap
+      y: smallNum1.y
+
+      Image {
+        anchors.fill: parent
+        source: fashionTile.iconsDir + "small" + fashionTile.digits.charAt(3) + ".svg"
+        sourceSize.width: width
+        sourceSize.height: height
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        cache: true
+      }
+    }
+
+    // datetimewidget.cpp:163-174 — am/pm tip, 12h only, sitting on the big baseline
+    Item {
+      id: amPmTip
+      visible: !fashionTile.use24Hour
+      width: fashionTile.tipsWidth
+      height: fashionTile.tipsHeight
+      x: bigNum2.x + fashionTile.bigNumWidth + Style.dockClockBigSmallGap
+      y: bigNum2.y + fashionTile.bigNumHeight - fashionTile.tipsHeight
+
+      Image {
+        anchors.fill: parent
+        source: fashionTile.iconsDir + (root.now.getHours() > 11 ? "tips-pm.svg" : "tips-am.svg")
+        sourceSize.width: width
+        sourceSize.height: height
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        cache: true
       }
     }
   }
