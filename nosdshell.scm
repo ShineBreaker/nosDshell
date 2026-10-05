@@ -57,13 +57,26 @@
 ;;; hunk, which is fork-only).  Both crash the shell when a pipewire node
 ;;; (USB audio, headphones) disappears.  The fork's third engine fix —
 ;;; diffUpdate reordering in core/model — is already upstream at v0.3.0.
+;;;
+;;; Pinned to v0.3.1 (not the channel's 0.3.0): upstream fixed exactly the
+;;; dock-hover crash class there — ScreencopyView creation failure,
+;;; screencopy buffer creation failure, and unsetting PopupAnchor.item.
+;;; Both pipewire patches still apply verbatim (verified against the tag).
 (define quickshell/nosd
   (package
     (inherit quickshell)
     (name "quickshell-nosd")
+    (version "0.3.1")
     (source
      (origin
-       (inherit (package-source quickshell))
+       (method git-fetch)
+       (uri (git-reference
+             (url "https://git.outfoxxed.me/quickshell/quickshell")
+             (commit (string-append "v" version))))
+       (file-name (git-file-name name version))
+       (sha256
+        (base32
+         "1mhpgy7zcyqmqj6h1b0fhbriimkp2563lkgcdj5ipr32krkgdd88"))
        (patches
         (list (local-file
                (string-append %repo-root
