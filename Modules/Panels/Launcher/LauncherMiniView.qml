@@ -368,9 +368,9 @@ Item {
         width: Style.launcherMiniModeToggleSize
         height: Style.launcherMiniModeToggleSize
         iconSize: Style.launcherMiniModeToggleSize
-        normalSource: root.ddeImages + "fullscreen_normal.png"
-        hoverSource: root.ddeImages + "fullscreen_hover.png"
-        pressSource: root.ddeImages + "fullscreen_press.png"
+        normalSource: root.ddeIcons + "fullscreen_normal.png"
+        hoverSource: root.ddeIcons + "fullscreen_hover.png"
+        pressSource: root.ddeIcons + "fullscreen_press.png"
         tooltipText: I18n.tr("launcher.dde.switch-to-fullscreen")
         onClicked: LauncherState.setMode("fullscreen")
       }
