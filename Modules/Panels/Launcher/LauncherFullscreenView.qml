@@ -381,10 +381,12 @@ Item {
       Layout.fillWidth: true
       Layout.fillHeight: true
 
-      // Category navigation column (DESIGN §3.4.1)
+      // Category navigation column (DESIGN §3.4.1). It sits flush against the
+      // taskbar edge when the taskbar is on the left (fullscreenframe.cpp:1348).
       LauncherCategoryNav {
         id: categoryNav
         visible: root.categoryMode
+        x: root.leftInset
         width: root.navWidth
         height: parent.height
         z: 2
@@ -397,9 +399,9 @@ Item {
       Item {
         id: resultsArea
         anchors.left: categoryNav.visible ? categoryNav.right : parent.left
-        anchors.leftMargin: categoryNav.visible ? 0 : root.sidePadding
+        anchors.leftMargin: categoryNav.visible ? 0 : root.sidePadding + root.leftInset
         anchors.right: parent.right
-        anchors.rightMargin: root.sidePadding
+        anchors.rightMargin: root.sidePadding + root.rightInset
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
@@ -450,7 +452,8 @@ Item {
           anchors.right: parent.right
           anchors.bottom: parent.bottom
 
-          // Layout
+          // Layout: square cells (gxde-launcher calculate_util.cpp:104-145),
+          // vertical scroll with the scrollbar hidden (free mode does not page)
           cellWidth: root.cellWidth
           cellHeight: root.cellHeight
           spacing: root.cellSpacing
@@ -467,7 +470,7 @@ Item {
           // Keyboard selection: animates to the new row (NGridView smooth scroll)
           onCurrentIndexChanged: {
             if (currentIndex >= 0)
-            positionViewAtIndex(currentIndex, GridView.Contain);
+              positionViewAtIndex(currentIndex, GridView.Contain);
           }
           delegate: LauncherGridCell {
             width: resultsGrid.effectiveCellWidth
@@ -484,7 +487,7 @@ Item {
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.top: parent.top
-          height: 50
+          height: Style.launcherCategoryTitleHeight
           color: Qt.alpha(Color.mShadow, 0.3)
 
           RowLayout {
@@ -525,8 +528,8 @@ Item {
   // The grid already shows one category's apps, so the pinned title follows
   // the active DDE category; the nav column owns selection.
   Component.onCompleted: Qt.callLater(() => {
-      mainContainer.forceActiveFocus();
-  });
+                                        mainContainer.forceActiveFocus();
+                                      })
 
   Item {
     id: mainContainer

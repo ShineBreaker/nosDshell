@@ -23,10 +23,17 @@ Item {
 
   readonly property bool selected: root.gridView !== null && index === root.gridView.currentIndex
 
+  // Hover/press block inset, from the curve fit in appitemdelegate.cpp:92-97:
+  // margin = (0.26418192 * cellWidth - 0.38890932 * iconWidth) * 0.71
+  readonly property real blockMargin: Math.max(1, (0.26418192 * width - 0.38890932 * root.iconSize) * 0.71)
+
   // Hover/press block
   Rectangle {
     anchors.fill: parent
-    anchors.margins: 2
+    anchors.leftMargin: root.blockMargin
+    anchors.rightMargin: root.blockMargin
+    anchors.topMargin: 1
+    anchors.bottomMargin: root.blockMargin * 2
     radius: Style.radiusLarge
     color: (mouseArea.containsMouse || root.selected) ? Color.pressDim : "transparent"
 
@@ -98,14 +105,14 @@ Item {
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: mouse => {
-      if (root.gridView)
-      root.gridView.currentIndex = root.index;
-      if (mouse.button === Qt.RightButton) {
-        appContextMenu.openAtItem(root, mouse.x, mouse.y);
-      } else {
-        model.activate();
-      }
-    }
+                 if (root.gridView)
+                 root.gridView.currentIndex = root.index;
+                 if (mouse.button === Qt.RightButton) {
+                   appContextMenu.openAtItem(root, mouse.x, mouse.y);
+                 } else {
+                   model.activate();
+                 }
+               }
   }
 
   // Right-click: DDE dark menu without arrow at the cursor (DESIGN §3.4.1)
@@ -137,13 +144,13 @@ Item {
     }
 
     onTriggered: (action, item) => {
-      if (typeof action === "string" && action.startsWith("row:")) {
-        const idx = parseInt(action.substring(4));
-        const actions = appContextMenu.itemActions;
-        if (idx >= 0 && idx < actions.length && actions[idx].action) {
-          actions[idx].action();
-        }
-      }
-    }
+                   if (typeof action === "string" && action.startsWith("row:")) {
+                     const idx = parseInt(action.substring(4));
+                     const actions = appContextMenu.itemActions;
+                     if (idx >= 0 && idx < actions.length && actions[idx].action) {
+                       actions[idx].action();
+                     }
+                   }
+                 }
   }
 }

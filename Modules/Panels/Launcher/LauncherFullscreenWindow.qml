@@ -35,33 +35,41 @@ Variants {
     readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
-    // Cross-axis thickness of the taskbar on its edge; the launcher surface
-    // leaves this band uncovered (plus 6 px) so the dock stays visible and
-    // usable — DDE fullscreen launcher keeps the dock interactive
-    // (gxde-launcher fullscreenframe.cpp dockGeometry passthrough).
-    readonly property real taskbarThickness: hasTaskbar ? (efficient ? Style.barHeight : Style.dockItemThickness) : 0
 
-    // Side paddings: 200 px (DESIGN §3.4.1)
-    readonly property int sidePadding: 200
+    // Side paddings: calculateBesidePadding() — 180 px, 130 px on <= 1366 wide
+    // screens (gxde-launcher calculate_util.cpp:47-54)
+    readonly property int sidePadding: screenWidth > Style.launcherSidePaddingBreakpoint ? Style.launcherSidePaddingWide : Style.launcherSidePaddingNarrow
+
+    // Grid geometry (gxde-launcher calculate_util.cpp:104-145). The cell is a
+    // square and does not stretch to the container height; the row height is
+    // the cell size, so extra vertical space just leaves the grid scrollable.
+    readonly property real screenWidth: modelData?.width ?? 0
+    readonly property real screenHeight: modelData?.height ?? 0
+    readonly property int cellBudget: screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellBudgetNarrow : Style.launcherCellBudgetWide
+    readonly property int cellSpacing: screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellSpacingNarrow : Style.launcherCellSpacingWide
+    readonly property real gridWidth: Math.max(1, screenWidth - (sidePadding * 2))
+    readonly property int columns: Math.max(1, Math.floor(gridWidth / cellBudget))
+    // calc_item_width + 0.5 rounding, then the spacing that makes it fit exactly
+    readonly property real cellSize: Math.floor((gridWidth - cellSpacing * columns * 2) / columns + 0.5)
+    readonly property real cellWidth: cellSize + cellSpacing
+    readonly property real cellHeight: cellSize + cellSpacing
+    readonly property real iconSize: Math.round(cellSize * Settings.data.appLauncher.iconRatio)
 
     // Nav column: 180 px when the screen is wide enough, 130 px otherwise
-    readonly property int navWidth: (modelData?.width ?? 0) > 1366 ? 180 : 130
+    readonly property int navWidth: sidePadding
 
-    // Grid geometry (DESIGN §3.4.1 / gxde-launcher calculate_util.cpp)
-    readonly property real screenWidth: modelData?.width ?? 0
-    readonly property int cellBudget: screenWidth <= 1440 ? 170 : 200
-    readonly property int cellSpacing: screenWidth <= 1440 ? 10 : 14
-    readonly property real gridWidth: Math.max(200, screenWidth - (sidePadding * 2))
-    readonly property int columns: Math.max(1, Math.floor(gridWidth / cellBudget))
-    readonly property real cellWidth: Math.floor(gridWidth / columns)
-    readonly property real cellHeight: cellWidth + 78
-    readonly property real iconSize: Math.round(cellWidth * Settings.data.appLauncher.iconRatio)
-
-    // Band left free on the taskbar's side (thickness + 6 px breathing room)
-    readonly property real bottomGap: barPosition === "bottom" ? taskbarThickness + 6 : 0
-    readonly property real topInset: barPosition === "top" ? taskbarThickness + 6 : 0
-    readonly property real leftGap: barPosition === "left" ? taskbarThickness + 6 : 0
-    readonly property real rightGap: barPosition === "right" ? taskbarThickness + 6 : 0
+    // The launcher covers the whole output, taskbar area included
+    // (fullscreenframe.cpp:1321-1345 only reserves the 60 px bottom band, the
+    // dock keeps rendering above the launcher). Content insets:
+    //   top    30 px, plus the taskbar thickness when the taskbar is on top
+    //   bottom 60 px (VIEWLIST_BOTTOM_MARGIN) plus the thickness when it is at the bottom
+    //   left   the taskbar thickness when the taskbar is on the left
+    //   right  the taskbar thickness when the taskbar is on the right
+    readonly property real taskbarThickness: hasTaskbar ? (efficient ? Style.barHeight : Style.dockItemThickness) : 0
+    readonly property real bottomGap: barPosition === "bottom" ? Style.launcherGridBottomMargin + taskbarThickness : 0
+    readonly property real topInset: barPosition === "top" ? Style.launcherTopBand + taskbarThickness : Style.launcherTopBand
+    readonly property real leftGap: barPosition === "left" ? taskbarThickness : 0
+    readonly property real rightGap: barPosition === "right" ? taskbarThickness : 0
 
     // The surface is created on first open (like OSD) and then reused, so
     // toggling does not drop keyboard focus.
@@ -74,7 +82,7 @@ Variants {
       target: LauncherState
       function onOpened() {
         if (LauncherState.fullscreenScreen === screenItem.modelData)
-        screenItem._surfaceReady = true;
+          screenItem._surfaceReady = true;
       }
     }
 
@@ -91,14 +99,20 @@ Variants {
       implicitHeight: modelData?.height ?? 0
 
       WlrLayershell.namespace: "nosd-launcher-full-" + (screen?.name || "unknown")
-      WlrLayershell.layer: WlrLayer.Overlay
+      // Bottom, not Overlay: the launcher paints the blurred wallpaper itself
+      // (it is opaque), and the taskbar lives on the Top layer so it keeps
+      // drawing above the launcher and stays clickable (DESIGN §3.4.1,
+      // fullscreenframe.cpp updateDockPosition).
+      WlrLayershell.layer: WlrLayer.Bottom
       WlrLayershell.keyboardFocus: screenItem.isActive ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+      // Never reserve space: the launcher must not push the taskbar around
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
       color: Qt.rgba(0, 0, 0, 0.55)
 
-      // Fullscreen layer surface: fill the output minus the taskbar band, so
-      // the dock renders above it and stays clickable (DDE behaviour).
+      // The layer surface covers the whole output, taskbar area included; the
+      // taskbar renders above it (Overlay layer) and stays visible
+      // (gxde-launcher fullscreenframe.cpp updateDockPosition).
       anchors {
         top: true
         left: true
@@ -107,10 +121,10 @@ Variants {
       }
 
       margins {
-        top: screenItem.topInset
-        bottom: screenItem.bottomGap
-        left: screenItem.leftGap
-        right: screenItem.rightGap
+        top: 0
+        bottom: 0
+        left: 0
+        right: 0
       }
 
       // Pre-blurred wallpaper background, black underneath (DESIGN §1.8)
@@ -133,10 +147,8 @@ Variants {
 
         anchors.fill: parent
         screen: screenItem.modelData
-        // The surface itself is already inset by the taskbar band via
-        // `margins` — the view must not inset a second time.
-        topInset: 0
-        bottomGap: 0
+        topInset: screenItem.topInset
+        bottomGap: screenItem.bottomGap
         sidePadding: screenItem.sidePadding
         navWidth: screenItem.navWidth
         columns: screenItem.columns
@@ -145,6 +157,8 @@ Variants {
         cellSpacing: screenItem.cellSpacing
         iconSize: screenItem.iconSize
         barPosition: screenItem.barPosition
+        leftInset: screenItem.leftGap
+        rightInset: screenItem.rightGap
 
         enabled: screenItem.isActive
         opacity: screenItem.isActive ? 1 : 0
