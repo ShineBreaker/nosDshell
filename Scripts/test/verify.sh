@@ -17,7 +17,10 @@
 #   settings, session-menu, notification,
 #   osd-volume, audio-panel, network-panel, bluetooth-panel, battery-panel,
 #   calendar-panel, media-panel, system-monitor, notification-history,
-#   wallpaper, dock, lockscreen
+#   dock, lockscreen
+#   (wallpaper / wallpaper-panel are not scenes: WallpaperPanel.qml is being
+#    rewritten, their shots are not judgement evidence; `call wallpaper *`
+#    still works for manual probing)
 #   taskbar additionally emits a strip crop beside the full shot (below).
 #   plus settings-tab scenes (open the settings panel on a specific tab):
 #   settings-general, settings-userinterface, settings-audio,
@@ -147,14 +150,18 @@ fi
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion:64 skips the v0->64 migration chain (no-op for real users,
-# just noise in verify logs). dock.displayMode gates the fashion dock's
-# auto-hide; efficient (taskbar) mode uses dock.hideMode instead.
+# settingsVersion must match Commons/Settings.qml`settingsVersion` (67): a
+# mismatch makes Settings run the versioned migrations on first load, which
+# rewrite the seed's dock.*/general.* keys back to Assets defaults before the
+# run starts (verified: seed 64 vs runtime 67 lost displayMode/onlySameOutput
+# and let the setup wizard take over the screen). Keep in lockstep.
+# dock.displayMode gates the fashion dock's auto-hide; efficient (taskbar)
+# mode uses dock.hideMode instead.
 # dock.onlySameOutput=false: the headless sway reports toplevel .screens as a
 # list the Quickshell ShellScreen object never satisfies, so leaving the
 # default true silently drops every running app from the dock (verified: with
 # it on, no toplevel reaches dockApps; off, all three appear).
-SEED='{"settingsVersion":64,"dock":{"displayMode":"always_visible","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":67,"dock":{"displayMode":"always_visible","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
@@ -183,7 +190,7 @@ battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
 settings-osd notification-actions notification-long osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu lockscreen" 
+dock dock-menu dock-submenu locksscreen" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -477,9 +484,9 @@ run_scene() {
     media-panel)          toggle media toggle 1.5 media-panel ;;
     system-monitor)       toggle systemMonitor toggle 1.5 system-monitor ;;
     notification-history) toggle notifications toggleHistory 1.5 notification-history ;;
-    wallpaper)            call wallpaper set "$REPO/Assets/Wallpaper/nosdshell.png" 2
-                          shot wallpaper ;;
-    wallpaper-panel)      toggle wallpaper toggle 1.5 wallpaper-panel ;;
+    # wallpaper / wallpaper-panel scenes removed: WallpaperPanel.qml is being
+    # rewritten (intermediate state), their shots are not judgement evidence.
+    # IPC targets (call wallpaper *) stay available for manual probing.
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
     dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
     dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
