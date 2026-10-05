@@ -404,7 +404,9 @@ Variants {
           width: controlsLayout.implicitWidth + Style.margin2XL
           height: controlsLayout.implicitHeight + Style.margin2XL
 
-          color: Qt.rgba(Color.mSurface.r, Color.mSurface.g, Color.mSurface.b, 0.85)
+          // Same mask as the widget cards (§3.12); mSurface@0.85 is a Noctalia
+          // surface colour with no place in a DDE-styled shell.
+          color: Color.maskDark
           radius: Style.radiusL
           border {
             width: Style.borderS

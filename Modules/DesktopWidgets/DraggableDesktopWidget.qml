@@ -1,5 +1,4 @@
 import QtQuick
-import QtQuick.Effects
 import Quickshell
 import qs.Commons
 import qs.Services.Plugins
@@ -297,24 +296,16 @@ Item {
     id: container
     anchors.fill: parent
     radius: root.roundedCorners ? Math.min(Math.round(Style.radiusL * root.widgetScale), Style.radiusL, width / 2, height / 2) : 0
-    color: Qt.alpha(Color.mSurface, Settings.data.ui.panelBackgroundOpacity)
+    // maskDark, not a Noctalia surface colour: §3.12 puts desktop widget cards
+    // on the same mask every other dark surface uses, which also picks up the
+    // no-blur fallback (DESIGN §1.2).
+    color: Color.maskDark
     border {
       width: 1
       color: Qt.alpha(Color.mOutline, 0.12)
     }
     clip: true
     visible: root.showBackground
-
-    layer.enabled: Settings.data.general.enableShadows && !internal.isDragging && root.showBackground
-    layer.effect: MultiEffect {
-      shadowEnabled: true
-      shadowBlur: Style.shadowBlur * 1.5
-      shadowOpacity: Style.shadowOpacity * 0.6
-      shadowColor: "black"
-      shadowHorizontalOffset: Settings.data.general.shadowOffsetX
-      shadowVerticalOffset: Settings.data.general.shadowOffsetY
-      blurMax: Style.shadowBlurMax
-    }
   }
 
   Item {
