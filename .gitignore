@@ -12,3 +12,4 @@ build
 .envrc
 references/
 tools/*/target/
+.agents/
