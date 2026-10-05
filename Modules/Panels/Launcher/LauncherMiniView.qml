@@ -199,7 +199,9 @@ Item {
                 width: 24
                 height: 24
                 pointSize: Style.fontSizeM
-                icon: modelData.icon || "apps"
+                // Shown only when the entry has no icon name at all; keep the
+                // app icon name out of the font path (it would warn).
+                icon: "apps"
                 color: Color.onShell
                 visible: modelData.icon === ""
               }

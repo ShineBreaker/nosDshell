@@ -139,7 +139,7 @@ Item {
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: AudioService.getInputIcon()
     dockPresentation: root.dockPresentation
-    iconSource: root.fashionMode ? ThemeIcons.fashionFor(AudioService.getInputIcon() === "microphone-mute" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : (root.efficientMode ? ThemeIcons.symbolicFor(AudioService.getInputIcon() === "microphone-mute" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : "")
+    iconSource: root.fashionMode ? ThemeIcons.fashionFor(AudioService.getInputIcon() === "microphone-off" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : (root.efficientMode ? ThemeIcons.symbolicFor(AudioService.getInputIcon() === "microphone-off" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : "")
     autoHide: false // Important to be false so we can hover as long as we want
     text: {
       const maxVolume = Settings.data.audio.volumeOverdrive ? 1.5 : 1.0;

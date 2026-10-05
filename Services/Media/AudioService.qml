@@ -1083,19 +1083,19 @@ Singleton {
 
   function getOutputIcon() {
     if (muted) {
-      return "volume-mute";
+      return "volume-off";
     }
 
     const clampedVolume = Math.max(0, Math.min(volume, root.maxVolume));
 
-    // Show volume-x icon when volume is effectively 0% (within rounding threshold)
+    // Show the muted glyph when volume is effectively 0% (within rounding threshold)
     if (clampedVolume < root.epsilon) {
-      return "volume-x";
+      return "volume-off";
     }
     if (clampedVolume <= 0.5) {
-      return "volume-low";
+      return "volume-2";
     }
-    return "volume-high";
+    return "volume";
   }
 
   // Input Control
@@ -1217,7 +1217,7 @@ Singleton {
 
   function getInputIcon() {
     if (inputMuted || inputVolume <= Number.EPSILON) {
-      return "microphone-mute";
+      return "microphone-off";
     }
     return "microphone";
   }

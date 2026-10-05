@@ -65,16 +65,16 @@ SmartPanel {
 
     readonly property string outputIcon: {
       if (localOutputMuted || localOutputVolume <= Number.EPSILON) {
-        return "volume-mute";
+        return "volume-off";
       }
-      return localOutputVolume <= 0.5 ? "volume-low" : "volume-high";
+      return localOutputVolume <= 0.5 ? "volume-2" : "volume";
     }
 
     readonly property string inputIcon: {
       if (localInputMuted || localInputVolume <= Number.EPSILON) {
-        return "mic-mute";
+        return "microphone-off";
       }
-      return localInputVolume <= 0.5 ? "mic-low" : "mic-high";
+      return localInputVolume <= 0.5 ? "microphone-2" : "microphone";
     }
 
     NScrollView {
@@ -252,7 +252,7 @@ SmartPanel {
                 }
 
                 NIconButton {
-                  icon: appBox.appMuted ? "volume-mute" : "volume-low"
+                  icon: appBox.appMuted ? "volume-off" : "volume-2"
                   colorFg: Color.onShell
                   enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
                   tooltipText: appBox.appMuted ? I18n.tr("tooltips.unmute-stream") : I18n.tr("tooltips.mute-stream")

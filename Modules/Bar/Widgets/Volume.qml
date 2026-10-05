@@ -159,11 +159,9 @@ Item {
       if (!root.efficientMode && !root.fashionMode)
         return "";
       switch (AudioService.getOutputIcon()) {
-      case "volume-mute":
+      case "volume-off":
         return resolve("audio-volume-muted");
-      case "volume-x":
-        return resolve("audio-volume-low");
-      case "volume-low":
+      case "volume-2":
         return resolve("audio-volume-medium");
       default:
         return resolve("audio-volume-high");

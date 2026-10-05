@@ -6,7 +6,8 @@ import Quickshell
 Singleton {
   id: root
 
-  readonly property string defaultIcon: "skull"
+  // Neutral fallback glyph: never the skull (DESIGN §1.9, Tabler is UI glyphs only).
+  readonly property string defaultIcon: "point"
 
   readonly property var aliases: {
     "close": "x",

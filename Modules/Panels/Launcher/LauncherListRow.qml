@@ -55,7 +55,9 @@ Item {
     width: 24
     height: 24
     pointSize: Style.fontSizeM
-    icon: modelData.icon || "search"
+    // Fallback when the themed icon fails: only feed real Tabler glyph names
+    // to the font path, app icon names would warn and render the fallback.
+    icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "search"
     color: Color.onShell
     visible: rowIcon.status !== Image.Ready
   }
