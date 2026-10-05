@@ -183,7 +183,7 @@ battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
 settings-osd notification-actions notification-long osd-overdrive toast \
-wallpaper dock dock-menu dock-submenu lockscreen" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu lockscreen" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -479,6 +479,7 @@ run_scene() {
     notification-history) toggle notifications toggleHistory 1.5 notification-history ;;
     wallpaper)            call wallpaper set "$REPO/Assets/Wallpaper/nosdshell.png" 2
                           shot wallpaper ;;
+    wallpaper-panel)      toggle wallpaper toggle 1.5 wallpaper-panel ;;
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
     dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
     dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
