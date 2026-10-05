@@ -11,14 +11,13 @@ mod gtk_refresh;
 mod ical;
 mod kde_apply;
 mod khal_events;
-mod migrate;
 mod vscode_themes;
 
 use std::env;
 use std::process::ExitCode;
 
 fn usage() -> ! {
-    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes|bluetooth-pair|eds-check|eds-calendars|eds-events|apply> [ARGS...]");
+    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|bluetooth-pair|eds-check|eds-calendars|eds-events|apply> [ARGS...]");
     std::process::exit(2);
 }
 
@@ -31,7 +30,6 @@ fn main() -> ExitCode {
         "kde-apply-scheme" => kde_apply::run(&rest),
         "gtk-refresh" => gtk_refresh::run(&rest),
         "khal-events" => khal_events::run(&rest),
-        "migrate-colorschemes" => migrate::run(&rest),
         "bluetooth-pair" => bluetooth::run(&rest),
         "eds-check" => eds::run_check(&rest),
         "eds-calendars" => eds::run_calendars(&rest),

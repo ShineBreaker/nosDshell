@@ -41,13 +41,13 @@ populate() { # $1 = HOME root, $2 = variant
   case "$V" in
   replace)
     mkdir -p "$H/.config/ghostty" && printf 'font-size = 12\ntheme = catppuccin\n' > "$H/.config/ghostty/config"
-    printf 'theme = noctalia\n' > "$H/.config/ghostty/config.ghostty"
+    printf 'theme = nosdshell\n' > "$H/.config/ghostty/config.ghostty"
     mkdir -p "$H/.config/foot" && printf '[main]\ninclude=other themes/x\nfont = mono\n' > "$H/.config/foot/foot.ini"
     mkdir -p "$H/.config/alacritty" && printf '[general]\nimport = ["a"]\n' > "$H/.config/alacritty/alacritty.toml"
     mkdir -p "$H/.config/wezterm" && printf 'local wezterm = require "wezterm"\nconfig.color_scheme = "Old"\nreturn config\n' > "$H/.config/wezterm/wezterm.lua"
     mkdir -p "$H/.config/fuzzel" && printf 'include=old themes/y\n[main]\n' > "$H/.config/fuzzel/fuzzel.ini"
     mkdir -p "$H/.config/walker" && printf 'theme = "old"\n' > "$H/.config/walker/config.toml"
-    mkdir -p "$H/.config/kitty/themes" && : > "$H/.config/kitty/themes/noctalia.conf"
+    mkdir -p "$H/.config/kitty/themes" && : > "$H/.config/kitty/themes/nosdshell.conf"
     printf 'font_size 12\n' > "$H/.config/kitty/kitty.conf"
     mkdir -p "$H/.config/cava" && printf '[general]\n[color]\ntheme = "old"\nforeground = "#fff"\n[other]\n' > "$H/.config/cava/config"
     mkdir -p "$H/.config/yazi" && printf '[flavor]\ndark = "old"\n[mgr]\n' > "$H/.config/yazi/theme.toml"
@@ -59,7 +59,7 @@ populate() { # $1 = HOME root, $2 = variant
     printf 'shadowscolor=#222\n' > "$H/.config/mango/01.conf"
     printf 'nothing here\n' > "$H/.config/mango/02.conf"
     mkdir -p "$H/.config/btop" && printf 'color_theme = "old"\nvim_keys = true\n' > "$H/.config/btop/btop.conf"
-    mkdir -p "$H/.cache/noctalia" && printf 'fg = "#eee"\n' > "$H/.cache/noctalia/starship-palette.toml"
+    mkdir -p "$H/.cache/nosdshell" && printf 'fg = "#eee"\n' > "$H/.cache/nosdshell/starship-palette.toml"
     mkdir -p "$H/.config" && printf 'palette = "old"\nformat = "x"\n' > "$H/.config/starship.toml"
     ;;
   create)
@@ -75,10 +75,10 @@ populate() { # $1 = HOME root, $2 = variant
     printf 'rootcolor = #000\n' > "$H/.config/mango/a.conf"
     printf 'focuscolor #111\nplain\n' > "$H/.config/mango/b.conf"
     ln -s a.conf "$H/.config/mango/c.conf" && chmod a-w "$H/.config/mango/c.conf" 2>/dev/null || true
-    mkdir -p "$H/.cache/noctalia" # palette missing on purpose
+    mkdir -p "$H/.cache/nosdshell" # palette missing on purpose
     mkdir -p "$H/.config" && printf '"$schema" = "x"\n' > "$H/.config/starship.toml"
-    mkdir -p "$H/.config/niri" && printf 'include "./noctalia.kdl"\n' > "$H/.config/niri/config.kdl"
-    mkdir -p "$H/.config/hypr" && printf 'dofile("/x/noctalia-colors.lua")\n' > "$H/.config/hypr/hyprland.lua"
+    mkdir -p "$H/.config/niri" && printf 'include "./nosdshell.kdl"\n' > "$H/.config/niri/config.kdl"
+    mkdir -p "$H/.config/hypr" && printf 'dofile("/x/nosdshell-colors.lua")\n' > "$H/.config/hypr/hyprland.lua"
     ;;
   esac
 }
@@ -123,7 +123,7 @@ for V in replace create special; do
   for side in sh rs; do
     rm -rf "$T/home-$V-$side"
     cp -a "$T/fixture-$V" "$T/home-$V-$side"
-    # drop the pre-existing noctalia ghostty file for rs? no - identical start
+    # drop the pre-existing nosdshell ghostty file for rs? no - identical start
     run_side "$side" "$V"
   done
   # normalize sandbox HOME paths (hypr/mango embed absolute theme paths)

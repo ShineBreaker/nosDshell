@@ -2,7 +2,7 @@
 
 //! GTK refresh helper.
 //! Mirrors Scripts/python/src/theming/gtk-refresh.py:
-//! ensure gtk.css imports nosd.css (GTK3/4), then push the
+//! ensure gtk.css imports nosdshell.css (GTK3/4), then push the
 //! light/dark preference via gsettings (dconf fallback).
 
 use std::env;
@@ -11,7 +11,7 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const GTK_IMPORT: &str = "@import url(\"nosd.css\");";
+const GTK_IMPORT: &str = "@import url(\"nosdshell.css\");";
 
 fn config_dir() -> PathBuf {
     if let Ok(xdg) = env::var("XDG_CONFIG_HOME") {
@@ -69,16 +69,16 @@ fn run_cmd(bin: &str, args: &[&str]) -> Option<String> {
     }
 }
 
-/// Append the nosd.css import to gtk.css unless already present.
+/// Append the nosdshell.css import to gtk.css unless already present.
 /// Returns false when the colors file is missing.
 pub fn ensure_gtk_css_import(gtk_css: &Path, colors_file: &Path, label: &str) -> bool {
     if !colors_file.exists() {
-        eprintln!("Error: {label} nosd.css not found at {}", colors_file.display());
+        eprintln!("Error: {label} nosdshell.css not found at {}", colors_file.display());
         return false;
     }
     if gtk_css.exists() || gtk_css.is_symlink() {
         let content = fs::read_to_string(gtk_css).unwrap_or_default();
-        if content.contains("nosd.css") && content.contains("@import") {
+        if content.contains("nosdshell.css") && content.contains("@import") {
             return true;
         }
         // Symlink-aware write, mirroring the python helper.
@@ -109,7 +109,7 @@ pub fn ensure_gtk_css_import(gtk_css: &Path, colors_file: &Path, label: &str) ->
             let _ = fs::create_dir_all(parent);
         }
         let _ = fs::write(gtk_css, format!("{GTK_IMPORT}\n"));
-        println!("Created {label} gtk.css with nosd.css import");
+        println!("Created {label} gtk.css with nosdshell.css import");
     }
     true
 }
@@ -122,7 +122,7 @@ fn append_import(gtk_css: &Path, target: &Path, content: &str, label: &str) {
     new_content.push_str(&format!("\n{GTK_IMPORT}\n"));
     let dest = if target != gtk_css { target } else { gtk_css };
     let _ = fs::write(dest, new_content);
-    println!("Appended {label} nosd.css import to gtk.css");
+    println!("Appended {label} nosdshell.css import to gtk.css");
 }
 
 fn sync_system_appearance(mode: &str, update_gtk_theme: bool) {
@@ -196,12 +196,12 @@ pub fn run(args: &[String]) -> i32 {
     let _ = fs::create_dir_all(cfg.join("gtk-4.0"));
     let ok3 = ensure_gtk_css_import(
         &cfg.join("gtk-3.0/gtk.css"),
-        &cfg.join("gtk-3.0/nosd.css"),
+        &cfg.join("gtk-3.0/nosdshell.css"),
         "GTK3",
     );
     let ok4 = ensure_gtk_css_import(
         &cfg.join("gtk-4.0/gtk.css"),
-        &cfg.join("gtk-4.0/nosd.css"),
+        &cfg.join("gtk-4.0/nosdshell.css"),
         "GTK4",
     );
     if ok3 && ok4 {
@@ -228,7 +228,7 @@ mod tests {
     #[test]
     fn creates_gtk_css_when_missing() {
         let d = tmpdir("create");
-        let colors = d.join("nosd.css");
+        let colors = d.join("nosdshell.css");
         let css = d.join("gtk.css");
         fs::write(&colors, "/* colors */").unwrap();
         assert!(ensure_gtk_css_import(&css, &colors, "GTK3"));
@@ -240,13 +240,13 @@ mod tests {
     #[test]
     fn keeps_existing_import_untouched() {
         let d = tmpdir("idempotent");
-        let colors = d.join("nosd.css");
+        let colors = d.join("nosdshell.css");
         let css = d.join("gtk.css");
         fs::write(&colors, "x").unwrap();
-        fs::write(&css, "@import url(\"nosd.css\");\nbody{}\n").unwrap();
+        fs::write(&css, "@import url(\"nosdshell.css\");\nbody{}\n").unwrap();
         assert!(ensure_gtk_css_import(&css, &colors, "GTK3"));
         let content = fs::read_to_string(&css).unwrap();
-        assert_eq!(content.matches("nosd.css").count(), 1);
+        assert_eq!(content.matches("nosdshell.css").count(), 1);
         let _ = fs::remove_dir_all(&d);
     }
 
@@ -254,14 +254,14 @@ mod tests {
     fn fails_without_colors_file() {
         let d = tmpdir("nocolors");
         let css = d.join("gtk.css");
-        assert!(!ensure_gtk_css_import(&css, &d.join("nosd.css"), "GTK3"));
+        assert!(!ensure_gtk_css_import(&css, &d.join("nosdshell.css"), "GTK3"));
         let _ = fs::remove_dir_all(&d);
     }
 
     #[test]
     fn appends_to_plain_css() {
         let d = tmpdir("append");
-        let colors = d.join("nosd.css");
+        let colors = d.join("nosdshell.css");
         let css = d.join("gtk.css");
         fs::write(&colors, "x").unwrap();
         fs::write(&css, "body { color: red; }").unwrap();

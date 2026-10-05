@@ -1379,8 +1379,8 @@ fn expand_user(p: &Path) -> PathBuf {
     p.to_path_buf()
 }
 
-fn kitty_needs_current_theme_link(noctalia_theme_path: &Path) -> bool {
-    if !noctalia_theme_path.is_file() {
+fn kitty_needs_current_theme_link(nosdshell_theme_path: &Path) -> bool {
+    if !nosdshell_theme_path.is_file() {
         return false;
     }
     let Ok(home) = std::env::var("HOME") else { return false };

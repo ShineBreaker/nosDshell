@@ -50,9 +50,6 @@ Singleton {
   function edsEventsCmd(startTime, endTime) {
     return root.helperCmd("eds-events", [startTime, endTime]);
   }
-  function migrateCmd(configDir) {
-    return root.helperCmd("migrate-colorschemes", [configDir]);
-  }
   // nosd-theme binary (tools/nosd-theme): PATH install, else the in-tree
   // release binary. Empty until the detector below finishes.
   property string themeBin: ""
