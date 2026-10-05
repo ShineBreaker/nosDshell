@@ -2,7 +2,7 @@
 # Isolated runtime verification for nosDshell (Noctalia v4 / Quickshell).
 #
 # Usage:
-#   Scripts/dev/verify.sh <out-name> [--settings FILE.json] [--scenes a,b,c]
+#   Scripts/test/verify.sh <out-name> [--settings FILE.json] [--scenes a,b,c]
 #
 # Shots land in $NOSD_VERIFY_DIR/shots/<out-name>/, shell log in
 # $NOSD_VERIFY_DIR/logs/<out-name>.log.  NOSD_VERIFY_DIR defaults to

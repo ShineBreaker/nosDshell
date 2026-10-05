@@ -57,7 +57,7 @@ Guix 用户可直接参考仓库根部的 `nosdshell.scm`。
 | 目的 | 命令 |
 |---|---|
 | 静态检查 | `Scripts/dev/lint.sh [--changed]` |
-| 隔离环境运行并截图 | `Scripts/dev/verify.sh <名字> [--settings seed.json] [--scenes a,b]` |
+| 隔离环境运行并截图 | `Scripts/test/verify.sh <名字> [--settings seed.json] [--scenes a,b]` |
 | 格式化 QML | `Scripts/dev/qmlfmt.sh <路径>` |
 
 界面改动一律以 [`DESIGN.md`](./DESIGN.md) 为准；提交与代码约定见 [`AGENTS.md`](./AGENTS.md)。

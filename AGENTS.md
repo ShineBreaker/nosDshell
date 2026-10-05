@@ -12,7 +12,7 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 
 - 这是 GXDE-OS（DDE 15 的社区维护版）的浅克隆，已被 git 忽略，**只读**。
 - 用法：查数值、查结构、查行为，引用格式为 `仓库/路径:行号`。组件和仓库的对应关系见 `references/README.md`。
-- 参考仓库是 GPL-3.0，本仓库同为 GPL-3.0（上游 Noctalia 部分保留 MIT 声明，见 `LICENSE-MIT`）。法律上不再禁止直接引用参考代码和素材，但设计上仍以**重新实现**为默认：装饰元素用 QML 画，应用图标和状态图标在运行时从系统图标主题读取（推荐 Papirus 或 deepin）。确需直接复制 GPL-3.0 素材时，保留其版权声明并在提交说明里注明出处。
+- 参考仓库是 GPL-3.0，本仓库同为 GPL-3.0（上游 Noctalia 部分保留 MIT 声明，见 `LICENSE-MIT`）。**DDE 专属素材（时钟表盘、关机按钮、启动器/控制中心图标等）直接复制原件**，放到 `Assets/DDE/<仓库>/<原相对路径>`，每个仓库目录配一份 `NOTICE`，提交说明里写来源路径（规则见 `DESIGN.md` §1.9）。应用图标和状态图标仍在运行时从系统图标主题读取（推荐 Papirus 或 deepin）。
 
 ## 运行环境与校验
 
@@ -21,9 +21,9 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 | 目的 | 命令 |
 |---|---|
 | 静态检查（只报错误） | `Scripts/dev/lint.sh --changed`（全仓库检查不加参数） |
-| 运行并截图（隔离环境） | `Scripts/dev/verify.sh <名字> [--settings seed.json] [--scenes a,b]` → `$NOSD_VERIFY_DIR/shots/<名字>/`（默认目录为 `/tmp/nosd-verify`） |
+| 运行并截图（隔离环境） | `Scripts/test/verify.sh <名字> [--settings seed.json] [--scenes a,b]` → `$NOSD_VERIFY_DIR/shots/<名字>/`（默认目录为 `/tmp/nosd-verify`；场景列表见脚本头部注释） |
 | 格式化 | `Scripts/dev/qmlfmt.sh <路径>` |
-| 设置搜索索引 | `python3 Scripts/dev/build-settings-search-index.py` |
+| 设置搜索索引 | `python3 Scripts/test/build-settings-search-index.py` |
 | Rust 工具 | `cargo build --release --manifest-path tools/<名字>/Cargo.toml`；`cargo test` 同理 |
 
 - `verify.sh` 在 `dbus-run-session` 里起一个无头 sway，并把 HOME 和所有 XDG 目录都隔离到 `/tmp` 下。**不要**在用户正在使用的 niri 会话里直接运行 `qs`，否则会接管他的通知服务、改动他的配置。
