@@ -4,6 +4,7 @@
 //! Subcommands mirror the Scripts/python helpers; QML callers get a
 //! fallback chain (rust binary -> python script) so rollout is gradual.
 
+mod apply;
 mod bluetooth;
 mod eds;
 mod gtk_refresh;
@@ -17,7 +18,7 @@ use std::env;
 use std::process::ExitCode;
 
 fn usage() -> ! {
-    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes|bluetooth-pair|eds-check|eds-calendars|eds-events> [ARGS...]");
+    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes|bluetooth-pair|eds-check|eds-calendars|eds-events|apply> [ARGS...]");
     std::process::exit(2);
 }
 
@@ -35,6 +36,7 @@ fn main() -> ExitCode {
         "eds-check" => eds::run_check(&rest),
         "eds-calendars" => eds::run_calendars(&rest),
         "eds-events" => eds::run_events(&rest),
+        "apply" => apply::run(&rest),
         _ => usage(),
     };
     ExitCode::from(code as u8)

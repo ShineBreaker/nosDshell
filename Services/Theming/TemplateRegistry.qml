@@ -74,6 +74,14 @@ Singleton {
       return `${root.helpersBin} kde-apply-scheme ${scheme}`;
     return `python3 ${root.kdeApplyScript} ${scheme}`;
   }
+  // Shell one-liner for template-apply post_hook entries (evaluated at
+  // apply time): `nosd-helpers apply` when detected, else template-apply.sh.
+  function applyHook(app, mode) {
+    const tail = (mode !== undefined && mode !== "") ? ` ${mode}` : "";
+    if (root.helpersBin !== "")
+      return `${root.helpersBin} apply ${app}${tail}`;
+    return `${root.templateApplyScript} ${app}${tail}`;
+  }
 
   Process {
     id: helpersDetectProcess
@@ -118,7 +126,7 @@ Singleton {
       "templatePath": "terminal/foot",
       "predefinedTemplatePath": "terminal/foot-predefined",
       "outputPath": "~/.config/foot/themes/noctalia",
-      "postHook": `${templateApplyScript} foot`
+      "postHook": `${applyHook("foot")}`
     },
     {
       "id": "ghostty",
@@ -126,7 +134,7 @@ Singleton {
       "templatePath": "terminal/ghostty",
       "predefinedTemplatePath": "terminal/ghostty-predefined",
       "outputPath": "~/.config/ghostty/themes/noctalia",
-      "postHook": `${templateApplyScript} ghostty`
+      "postHook": `${applyHook("ghostty")}`
     },
     {
       "id": "kitty",
@@ -134,7 +142,7 @@ Singleton {
       "templatePath": "terminal/kitty.conf",
       "predefinedTemplatePath": "terminal/kitty-predefined.conf",
       "outputPath": "~/.config/kitty/themes/noctalia.conf",
-      "postHook": `${templateApplyScript} kitty`
+      "postHook": `${applyHook("kitty")}`
     },
     {
       "id": "alacritty",
@@ -142,7 +150,7 @@ Singleton {
       "templatePath": "terminal/alacritty.toml",
       "predefinedTemplatePath": "terminal/alacritty-predefined.toml",
       "outputPath": "~/.config/alacritty/themes/noctalia.toml",
-      "postHook": `${templateApplyScript} alacritty`
+      "postHook": `${applyHook("alacritty")}`
     },
     {
       "id": "wezterm",
@@ -150,7 +158,7 @@ Singleton {
       "templatePath": "terminal/wezterm.toml",
       "predefinedTemplatePath": "terminal/wezterm-predefined.toml",
       "outputPath": "~/.config/wezterm/colors/Noctalia.toml",
-      "postHook": `${templateApplyScript} wezterm`
+      "postHook": `${applyHook("wezterm")}`
     },
     {
       "id": "starship",
@@ -158,7 +166,7 @@ Singleton {
       "templatePath": "terminal/starship.toml",
       "predefinedTemplatePath": "terminal/starship-predefined.toml",
       "outputPath": "~/.cache/noctalia/starship-palette.toml",
-      "postHook": `${templateApplyScript} starship`
+      "postHook": `${applyHook("starship")}`
     }
   ]
 
@@ -217,7 +225,7 @@ Singleton {
           "path": "~/.config/fuzzel/themes/noctalia"
         }
       ],
-      "postProcess": () => `${templateApplyScript} fuzzel`
+      "postProcess": () => `${applyHook("fuzzel")}`
     },
     {
       "id": "vicinae",
@@ -229,7 +237,7 @@ Singleton {
           "path": "~/.local/share/vicinae/themes/noctalia.toml"
         }
       ],
-      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${templateApplyScript} vicinae`
+      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${applyHook("vicinae")}`,
     },
     {
       "id": "walker",
@@ -241,7 +249,7 @@ Singleton {
           "path": "~/.config/walker/themes/noctalia/style.css"
         }
       ],
-      "postProcess": () => `${templateApplyScript} walker`,
+      "postProcess": () => `${applyHook("walker")}`,
       "strict": true // Use strict mode for palette generation (preserves custom surface/outline values)
     },
     {
@@ -254,7 +262,7 @@ Singleton {
           "path": "~/.cache/wal/colors.json"
         }
       ],
-      "postProcess": mode => `${templateApplyScript} pywalfox ${mode}`
+      "postProcess": mode => `${applyHook("pywalfox", mode)}`
     } // CONSOLIDATED DISCORD CLIENTS
     ,
     {
@@ -394,7 +402,7 @@ Singleton {
           "path": "~/.config/cava/themes/noctalia"
         }
       ],
-      "postProcess": () => `${templateApplyScript} cava`
+      "postProcess": () => `${applyHook("cava")}`
     },
     {
       "id": "yazi",
@@ -406,7 +414,7 @@ Singleton {
           "path": "~/.config/yazi/flavors/noctalia.yazi/flavor.toml"
         }
       ],
-      "postProcess": () => `${templateApplyScript} yazi`
+      "postProcess": () => `${applyHook("yazi")}`
     },
     {
       "id": "emacs",
@@ -425,7 +433,7 @@ Singleton {
           "path": "~/.config/labwc/themerc-override"
         }
       ],
-      "postProcess": () => `${templateApplyScript} labwc`
+      "postProcess": () => `${applyHook("labwc")}`
     },
     {
       "id": "niri",
@@ -437,7 +445,7 @@ Singleton {
           "path": "~/.config/niri/noctalia.kdl"
         }
       ],
-      "postProcess": () => `${templateApplyScript} niri`
+      "postProcess": () => `${applyHook("niri")}`
     },
     {
       "id": "sway",
@@ -449,7 +457,7 @@ Singleton {
           "path": "~/.config/sway/noctalia"
         }
       ],
-      "postProcess": () => `${templateApplyScript} sway`
+      "postProcess": () => `${applyHook("sway")}`
     },
     {
       "id": "scroll",
@@ -461,7 +469,7 @@ Singleton {
           "path": "~/.config/scroll/noctalia"
         }
       ],
-      "postProcess": () => `${templateApplyScript} scroll`
+      "postProcess": () => `${applyHook("scroll")}`
     },
     {
       "id": "hyprland",
@@ -478,7 +486,7 @@ Singleton {
           "input": "hyprland.lua"
         },
       ],
-      "postProcess": () => `${templateApplyScript} hyprland`
+      "postProcess": () => `${applyHook("hyprland")}`
     },
     {
       "id": "hyprtoolkit",
@@ -501,7 +509,7 @@ Singleton {
           "path": "~/.config/mango/noctalia.conf"
         }
       ],
-      "postProcess": () => `${templateApplyScript} mango`
+      "postProcess": () => `${applyHook("mango")}`
     },
     {
       "id": "btop",
@@ -513,7 +521,7 @@ Singleton {
           "path": "~/.config/btop/themes/noctalia.theme"
         }
       ],
-      "postProcess": () => `${templateApplyScript} btop`
+      "postProcess": () => `${applyHook("btop")}`
     },
     {
       "id": "zathura",
@@ -525,7 +533,7 @@ Singleton {
           "path": "~/.config/zathura/noctaliarc"
         }
       ],
-      "postProcess": () => `${templateApplyScript} zathura`
+      "postProcess": () => `${applyHook("zathura")}`
     },
     {
       "id": "steam",
