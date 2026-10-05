@@ -23,21 +23,21 @@ Item {
   Component.onCompleted: Qt.callLater(requestWallpaper)
 
   onWidthChanged: if (width > 0 && height > 0)
-    Qt.callLater(requestWallpaper)
+                    Qt.callLater(requestWallpaper)
   onHeightChanged: if (width > 0 && height > 0)
-    Qt.callLater(requestWallpaper)
+                     Qt.callLater(requestWallpaper)
 
   Connections {
     target: WallpaperService
     function onWallpaperChanged(screenName, path) {
       if (screen && screenName === screen.name)
-      Qt.callLater(requestWallpaper);
+        Qt.callLater(requestWallpaper);
     }
   }
 
   function requestWallpaper() {
     if (!screen || width <= 0 || height <= 0)
-    return;
+      return;
 
     const originalPath = WallpaperService.getWallpaper(screen.name) || "";
     if (originalPath === "" || WallpaperService.isSolidColorPath(originalPath)) {
@@ -46,11 +46,16 @@ Item {
       return;
     }
 
+    // Sharp source for the live-blur fallback: without it the launcher surface
+    // stays translucent until nosd-blur has produced the cached variant
+    // (DESIGN §1.8).
+    resolvedWallpaperPath = originalPath;
+
     const compositorScale = CompositorService.getDisplayScale(screen.name);
     const targetWidth = Math.round(width * compositorScale);
     const targetHeight = Math.round(height * compositorScale);
     if (targetWidth <= 0 || targetHeight <= 0)
-    return;
+      return;
 
     ImageCacheService.getBlurred(originalPath, targetWidth, targetHeight, function (cachedPath, success) {
       if (success)
@@ -94,5 +99,43 @@ Item {
     mipmap: false
     antialiasing: true
     visible: source !== "" && status === Image.Ready
+  }
+
+  // Top and bottom fade bands (DESIGN §1.8). Upstream copies the wallpaper
+  // strip and masks it with a white -> transparent gradient
+  // (gradientlabel.cpp:41-72, TOP_BOTTOM_GRADIENT_HEIGHT in constants.h:41);
+  // over the black base that reads as a fade to black on both ends.
+  Rectangle {
+    anchors.top: parent.top
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: Style.launcherGradientBand
+    gradient: Gradient {
+      GradientStop {
+        position: 0.0
+        color: Color.mShadow
+      }
+      GradientStop {
+        position: 1.0
+        color: Qt.alpha(Color.mShadow, 0)
+      }
+    }
+  }
+
+  Rectangle {
+    anchors.bottom: parent.bottom
+    anchors.left: parent.left
+    anchors.right: parent.right
+    height: Style.launcherGradientBand
+    gradient: Gradient {
+      GradientStop {
+        position: 0.0
+        color: Qt.alpha(Color.mShadow, 0)
+      }
+      GradientStop {
+        position: 1.0
+        color: Color.mShadow
+      }
+    }
   }
 }
