@@ -228,7 +228,9 @@ Variants {
             onPaint: {
               const ctx = getContext("2d");
               ctx.reset();
-              ctx.strokeStyle = Color.mPrimary;
+              // §3.12: the grid is part of the droppable-area indication, so it is a
+              // white@0.1 stroke like the per-widget outline -- not an accent.
+              ctx.strokeStyle = Color.overlay("hover");
               ctx.lineWidth = 1;
 
               // Draw vertical lines
