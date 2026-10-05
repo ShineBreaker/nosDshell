@@ -13,11 +13,8 @@ ColumnLayout {
   spacing: 0
 
   // Profile section
-  // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
-  NHeader {
-    label: I18n.tr("panels.general.tab-basics")
-  }
-
+  // The section head is the NTabBar strip in GeneralTab.qml (groupMode), which
+  // heads this sub-tab; a second NHeader here would just repeat it.
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {

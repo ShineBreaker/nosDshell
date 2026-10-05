@@ -18,6 +18,9 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.bottomMargin: Style.marginM
     distributeEvenly: true
+    // The sub-tab strip is the SettingsGroup header row of the page now
+    // (DESIGN §3.5.3), not a pill strip.
+    groupMode: true
     currentIndex: tabView.currentIndex
 
     NTabButton {
