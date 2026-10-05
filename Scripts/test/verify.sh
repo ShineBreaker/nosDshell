@@ -19,10 +19,15 @@
 #   calendar-panel, media-panel, system-monitor, notification-history,
 #   wallpaper, wallpaper-panel, dock, lockscreen
 #   taskbar additionally emits a strip crop beside the full shot (below).
-#   plus settings-tab scenes (open the settings panel on a specific tab):
+#   plus settings-tab scenes (open the settings panel on a specific tab,
+#   names follow the openTab alias map in ControlCenterModules.qml):
 #   settings-general, settings-userinterface, settings-audio,
 #   settings-colorscheme, settings-dock, settings-launcher,
-#   settings-wallpaper, settings-notifications, settings-osd
+#   settings-wallpaper, settings-notifications, settings-osd,
+#   settings-about, settings-bar, settings-connections, settings-controlcenter,
+#   settings-desktopwidgets, settings-display, settings-hooks, settings-idle,
+#   settings-lockscreen, settings-plugins, settings-sessionmenu,
+#   settings-system, settings-systemmonitor
 #   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
 #
 # IPC targets available (Services/Control/IPCService.qml):
@@ -186,7 +191,10 @@ osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
-settings-osd notification-actions notification-long osd-overdrive toast \
+settings-osd settings-about settings-bar settings-connections
+settings-controlcenter settings-desktopwidgets settings-display settings-hooks
+settings-idle settings-lockscreen settings-plugins settings-sessionmenu
+settings-system settings-systemmonitor notification-actions notification-long osd-overdrive toast \
 wallpaper wallpaper-panel dock dock-menu dock-submenu locksscreen" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
