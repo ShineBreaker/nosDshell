@@ -107,7 +107,7 @@ Singleton {
   readonly property bool _barEffectiveVertical: _barEffectivePosition === "left" || _barEffectivePosition === "right"
   readonly property real barHeight: {
     if (Settings.data.dock.mode === "efficient")
-      return Math.round(Settings.data.dock.iconSize * 1.2);
+    return Math.round(Settings.data.dock.iconSize * 1.2);
     let h;
     switch (Settings.data.bar.density) {
       case "mini":
@@ -134,7 +134,7 @@ Singleton {
   // Qt Quick Rectangle borders are drawn centered on edges (half inside, half outside)
   readonly property real capsuleHeight: {
     if (Settings.data.dock.mode === "efficient")
-      return Math.round(Settings.data.dock.iconSize);
+    return Math.round(Settings.data.dock.iconSize);
     let h;
     switch (Settings.data.bar.density) {
       case "mini":
@@ -531,6 +531,7 @@ Singleton {
   readonly property int dockItemThickness: Math.round(Settings.data.dock.iconSize * 1.5)
   readonly property int dockItemLength: Math.round(dockItemThickness * 1.1)
   readonly property int dockIconContent: Math.round(Math.min(dockItemThickness, dockItemLength) * 0.8)
+
   // DDE fashion clock face geometry, verbatim from
   // gxde-dock/plugins/datetime/datetimewidget.cpp:123-186. Every step there is
   // integer arithmetic on int, so the ratios are truncated the same way here.
