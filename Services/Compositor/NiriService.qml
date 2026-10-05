@@ -1,9 +1,13 @@
 import QtQuick
 import Quickshell
-import Quickshell.Niri
+import Quickshell.Io
 import qs.Commons
 import qs.Services.Keyboard
 
+// Niri backend implemented on top of `niri msg --json` instead of the
+// (archived) noctalia-qs Quickshell.Niri module. The event stream replays the
+// full workspace/window/keyboard-layout state on connect, so one long-lived
+// process plus one-shot queries for outputs cover the whole data surface.
 Item {
   id: root
 
@@ -25,83 +29,224 @@ Item {
   property var outputCache: ({})
   property var workspaceCache: ({})
 
+  property var _keyboardLayoutNames: []
+  property var _rawWindows: []
+  property bool _workspacesDirty: false
+  property bool _windowsDirty: false
+
   function initialize() {
-    Niri.refreshOutputs();
-    Niri.refreshWorkspaces();
-    Niri.refreshWindows();
+    outputsQuery.running = true;
+    eventStream.running = true;
 
-    Qt.callLater(() => {
-                   safeUpdateOutputs();
-                   safeUpdateWorkspaces();
-                   safeUpdateWindows();
-                   queryDisplayScales();
-                 });
-
-    Logger.i("NiriService", "Service started");
+    Logger.i("NiriService", "Service started (niri msg IPC)");
   }
 
-  // Connections to the C++ Niri IPC module
-  Connections {
-    target: Niri
-    function onWorkspacesUpdated() {
-      safeUpdateWorkspaces();
-      workspaceChanged();
+  // All actions go through `niri msg action` (same argv the C++ module used).
+  function dispatch(args) {
+    Quickshell.execDetached(["niri", "msg", "action"].concat(args));
+  }
+
+  // Long-lived event stream; niri sends the full state first, then deltas.
+  Process {
+    id: eventStream
+    command: ["niri", "msg", "--json", "event-stream"]
+    running: false
+
+    stdout: SplitParser {
+      onRead: line => {
+                if (!line || line.length === 0)
+                return;
+                var ev;
+                try {
+                  ev = JSON.parse(line);
+                } catch (e) {
+                  return;
+                }
+                root.handleEvent(ev);
+              }
     }
-    function onWindowsUpdated() {
-      safeUpdateWindows();
-      windowListChanged();
-      activeWindowChanged();
+
+    onExited: (exitCode, exitStatus) => {
+                if (exitCode !== 0) {
+                  Logger.w("NiriService", "event-stream exited with code", exitCode, "- retrying");
+                  streamRetry.restart();
+                }
+              }
+  }
+
+  Timer {
+    id: streamRetry
+    interval: 2000
+    repeat: false
+    onTriggered: {
+      outputsQuery.running = true;
+      eventStream.running = true;
     }
-    function onOutputsUpdated() {
-      safeUpdateOutputs();
+  }
+
+  // Outputs are not replayed by the event stream; query them directly.
+  Process {
+    id: outputsQuery
+    command: ["niri", "msg", "--json", "outputs"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          root.applyOutputs(JSON.parse(text));
+        } catch (e) {
+          Logger.w("NiriService", "Failed to parse outputs:", e);
+        }
+      }
+    }
+  }
+
+  // One-shot refresh queries used for events that only carry a delta.
+  Process {
+    id: workspacesQuery
+    command: ["niri", "msg", "--json", "workspaces"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          root.applyWorkspaces(JSON.parse(text));
+        } catch (e) {
+          Logger.w("NiriService", "Failed to parse workspaces:", e);
+        }
+      }
+    }
+    onExited: {
+      if (root._workspacesDirty)
+        refreshTimer.restart();
+    }
+  }
+
+  Process {
+    id: windowsQuery
+    command: ["niri", "msg", "--json", "windows"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        try {
+          root.applyWindows(JSON.parse(text));
+        } catch (e) {
+          Logger.w("NiriService", "Failed to parse windows:", e);
+        }
+      }
+    }
+    onExited: {
+      if (root._windowsDirty)
+        refreshTimer.restart();
+    }
+  }
+
+  // Coalesce bursty events into a single refresh cycle.
+  Timer {
+    id: refreshTimer
+    interval: 80
+    repeat: false
+    onTriggered: {
+      if (root._workspacesDirty) {
+        if (workspacesQuery.running) {
+          restart();
+        } else {
+          root._workspacesDirty = false;
+          workspacesQuery.running = true;
+        }
+      }
+      if (root._windowsDirty) {
+        if (windowsQuery.running) {
+          restart();
+        } else {
+          root._windowsDirty = false;
+          windowsQuery.running = true;
+        }
+      }
+    }
+  }
+
+  function handleEvent(ev) {
+    if (!ev)
+      return;
+
+    if (ev.WorkspacesChanged) {
+      applyWorkspaces(ev.WorkspacesChanged.workspaces);
+    } else if (ev.WindowsChanged) {
+      applyWindows(ev.WindowsChanged.windows);
+    } else if (ev.WorkspaceActivated !== undefined || ev.WorkspaceActiveWindowChanged !== undefined || ev.WorkspaceUrgencyChanged !== undefined) {
+      _workspacesDirty = true;
+      _windowsDirty = true;
+      refreshTimer.restart();
+    } else if (ev.WindowOpenedOrChanged !== undefined || ev.WindowClosed !== undefined || ev.WindowFocusChanged !== undefined) {
+      _windowsDirty = true;
+      refreshTimer.restart();
+    } else if (ev.KeyboardLayoutsChanged) {
+      applyKeyboardLayouts(ev.KeyboardLayoutsChanged.keyboard_layouts);
+    } else if (ev.KeyboardLayoutSwitched !== undefined) {
+      const name = _keyboardLayoutNames[ev.KeyboardLayoutSwitched.idx];
+      if (name) {
+        KeyboardLayoutService.setCurrentLayout(name);
+      }
+      Logger.d("NiriService", "Keyboard layout switched:", name || ev.KeyboardLayoutSwitched.idx);
+    } else if (ev.OverviewOpenedOrClosed !== undefined) {
+      overviewActive = ev.OverviewOpenedOrClosed.is_open;
+    } else if (ev.OutputsChanged) {
+      applyOutputs(ev.OutputsChanged.outputs);
       queryDisplayScales();
+    } else if (ev.OutputConnected !== undefined || ev.OutputRemoved !== undefined) {
+      outputsQuery.running = true;
     }
-    function onOverviewActiveChanged() {
-      overviewActive = Niri.overviewActive;
-    }
-    function onKeyboardLayoutsChanged() {
-      keyboardLayouts = Niri.keyboardLayoutNames;
-      const layoutName = Niri.currentKeyboardLayoutName;
-      if (layoutName) {
-        KeyboardLayoutService.setCurrentLayout(layoutName);
-      }
-      Logger.d("NiriService", "Keyboard layouts changed:", keyboardLayouts.toString());
-    }
-    function onKeyboardLayoutSwitched() {
-      const layoutName = Niri.currentKeyboardLayoutName;
-      if (layoutName) {
-        KeyboardLayoutService.setCurrentLayout(layoutName);
-      }
-      Logger.d("NiriService", "Keyboard layout switched:", layoutName);
-    }
+    // ConfigLoaded, CastsChanged, WindowFocusTimestampChanged etc. are ignored.
   }
 
-  function safeUpdateOutputs() {
-    const niriOutputs = Niri.outputs.values;
-    outputCache = {};
+  function applyKeyboardLayouts(kbd) {
+    if (!kbd)
+      return;
+    _keyboardLayoutNames = kbd.names || [];
+    keyboardLayouts = _keyboardLayoutNames;
+    const name = _keyboardLayoutNames[kbd.current_idx];
+    if (name) {
+      KeyboardLayoutService.setCurrentLayout(name);
+    }
+    Logger.d("NiriService", "Keyboard layouts changed:", keyboardLayouts.toString());
+  }
 
-    for (var i = 0; i < niriOutputs.length; i++) {
-      const output = niriOutputs[i];
+  function applyOutputs(niriOutputs) {
+    outputCache = {};
+    if (!niriOutputs)
+      return;
+
+    for (var name in niriOutputs) {
+      const output = niriOutputs[name];
+      const logical = output.logical || {};
+      const mode = (output.modes && output.current_mode !== undefined) ? output.modes[output.current_mode] : null;
+      const phys = output.physical_size || [0, 0];
       outputCache[output.name] = {
         "name": output.name,
-        "connected": output.connected,
-        "scale": output.scale,
-        "width": output.width,
-        "height": output.height,
-        "x": output.x,
-        "y": output.y,
-        "physical_width": output.physicalWidth,
-        "physical_height": output.physicalHeight,
-        "refresh_rate": output.refreshRate,
-        "vrr_supported": output.vrrSupported,
-        "vrr_enabled": output.vrrEnabled,
-        "transform": output.transform
+        "connected": true,
+        "scale": logical.scale || 1.0,
+        "width": logical.width || 0,
+        "height": logical.height || 0,
+        "x": logical.x || 0,
+        "y": logical.y || 0,
+        "physical_width": phys[0] || 0,
+        "physical_height": phys[1] || 0,
+        "refresh_rate": mode ? (mode.refresh_rate || 0) / 1000.0 : 0,
+        "vrr_supported": output.vrr_supported || false,
+        "vrr_enabled": output.vrr_enabled || false,
+        "transform": logical.transform || "Normal"
       };
     }
   }
 
-  function safeUpdateWorkspaces() {
-    const niriWorkspaces = Niri.workspaces.values;
+  function _workspaceSortKey(ws) {
+    const output = outputCache[ws.output];
+    // Sort by output position first (like windows), then by workspace index.
+    return ((output ? output.x : 0) * 100000 + (output ? output.y : 0)) * 1000 + ws.idx;
+  }
+
+  function applyWorkspaces(niriWorkspaces) {
+    if (!niriWorkspaces)
+      return;
     workspaceCache = {};
 
     const workspacesList = [];
@@ -112,20 +257,30 @@ Item {
         "idx": ws.idx,
         "name": ws.name,
         "output": ws.output,
-        "isFocused": ws.focused,
-        "isActive": ws.active,
-        "isUrgent": ws.urgent,
-        "isOccupied": ws.occupied
+        "isFocused": ws.is_focused,
+        "isActive": ws.is_active,
+        "isUrgent": ws.is_urgent,
+        "isOccupied": ws.active_window_id !== null || _hasWindowOnWorkspace(ws.id)
       };
       workspacesList.push(wsData);
       workspaceCache[ws.id] = wsData;
     }
 
-    // Workspaces come pre-sorted from C++ (by output then idx)
+    workspacesList.sort((a, b) => _workspaceSortKey(a) - _workspaceSortKey(b));
+
     workspaces.clear();
     for (var j = 0; j < workspacesList.length; j++) {
       workspaces.append(workspacesList[j]);
     }
+    workspaceChanged();
+  }
+
+  function _hasWindowOnWorkspace(workspaceId) {
+    for (var i = 0; i < _rawWindows.length; i++) {
+      if (_rawWindows[i].workspace_id === workspaceId)
+        return true;
+    }
+    return false;
   }
 
   function getWindowOutput(win) {
@@ -172,28 +327,35 @@ Item {
                                   }).map(info => info.window);
   }
 
-  function safeUpdateWindows() {
-    const niriWindows = Niri.windows.values;
+  function applyWindows(niriWindows) {
+    if (!niriWindows)
+      return;
+    _rawWindows = niriWindows;
     const windowsList = [];
 
     for (var i = 0; i < niriWindows.length; i++) {
       const win = niriWindows[i];
+      const pos = (win.layout && win.layout.pos_in_scrolling_layout) || [0, 0];
       windowsList.push({
                          "id": win.id,
                          "title": win.title || "",
-                         "appId": win.appId || "",
-                         "workspaceId": win.workspaceId || -1,
-                         "isFocused": win.focused,
-                         "output": win.output || getWindowOutput(win) || "",
+                         "appId": win.app_id || "",
+                         "workspaceId": win.workspace_id || -1,
+                         "isFocused": win.is_focused,
+                         "output": getWindowOutput({
+                                                     "workspaceId": win.workspace_id
+                                                   }) || "",
                          "position": {
-                           "x": win.isFloating ? floatingWindowPosition : win.positionX,
-                           "y": win.isFloating ? floatingWindowPosition : win.positionY
+                           "x": win.is_floating ? floatingWindowPosition : pos[0],
+                           "y": win.is_floating ? floatingWindowPosition : pos[1]
                          }
                        });
     }
 
     windows = toSortedWindowList(windowsList);
     safeUpdateFocusedWindow();
+    windowListChanged();
+    activeWindowChanged();
   }
 
   function safeUpdateFocusedWindow() {
@@ -214,7 +376,7 @@ Item {
 
   function switchToWorkspace(workspace) {
     try {
-      Niri.dispatch(["focus-workspace", workspace.idx.toString()]);
+      dispatch(["focus-workspace", workspace.idx.toString()]);
     } catch (e) {
       Logger.e("NiriService", "Failed to switch workspace:", e);
     }
@@ -223,7 +385,7 @@ Item {
   function scrollWorkspaceContent(direction) {
     try {
       var action = direction < 0 ? "focus-column-left" : "focus-column-right";
-      Niri.dispatch([action]);
+      dispatch([action]);
     } catch (e) {
       Logger.e("NiriService", "Failed to scroll workspace content:", e);
     }
@@ -231,7 +393,7 @@ Item {
 
   function focusWindow(window) {
     try {
-      Niri.dispatch(["focus-window", "--id", window.id.toString()]);
+      dispatch(["focus-window", "--id", window.id.toString()]);
     } catch (e) {
       Logger.e("NiriService", "Failed to switch window:", e);
     }
@@ -239,7 +401,7 @@ Item {
 
   function closeWindow(window) {
     try {
-      Niri.dispatch(["close-window", "--id", window.id.toString()]);
+      dispatch(["close-window", "--id", window.id.toString()]);
     } catch (e) {
       Logger.e("NiriService", "Failed to close window:", e);
     }
@@ -247,7 +409,7 @@ Item {
 
   function turnOffMonitors() {
     try {
-      Niri.dispatch(["power-off-monitors"]);
+      dispatch(["power-off-monitors"]);
     } catch (e) {
       Logger.e("NiriService", "Failed to turn off monitors:", e);
     }
@@ -255,7 +417,7 @@ Item {
 
   function turnOnMonitors() {
     try {
-      Niri.dispatch(["power-on-monitors"]);
+      dispatch(["power-on-monitors"]);
     } catch (e) {
       Logger.e("NiriService", "Failed to turn on monitors:", e);
     }
@@ -263,7 +425,7 @@ Item {
 
   function logout() {
     try {
-      Niri.dispatch(["quit", "--skip-confirmation"]);
+      dispatch(["quit", "--skip-confirmation"]);
     } catch (e) {
       Logger.e("NiriService", "Failed to logout:", e);
     }
@@ -271,7 +433,7 @@ Item {
 
   function cycleKeyboardLayout() {
     try {
-      Niri.dispatch(["switch-layout", "next"]);
+      dispatch(["switch-layout", "next"]);
     } catch (e) {
       Logger.e("NiriService", "Failed to cycle keyboard layout:", e);
     }
@@ -286,7 +448,7 @@ Item {
     try {
       const niriArgs = ["spawn", "--"].concat(command);
       Logger.d("NiriService", "Calling niri spawn: niri msg action " + niriArgs.join(" "));
-      Niri.dispatch(niriArgs);
+      dispatch(niriArgs);
     } catch (e) {
       Logger.e("NiriService", "Failed to spawn command:", e);
     }
@@ -294,7 +456,7 @@ Item {
 
   function toggleOverview() {
     try {
-      Niri.dispatch(["toggle-overview"]);
+      dispatch(["toggle-overview"]);
     } catch (e) {
       Logger.e("NiriService", "Failed to toggle overview:", e);
     }

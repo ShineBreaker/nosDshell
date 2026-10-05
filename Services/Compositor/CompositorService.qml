@@ -79,7 +79,9 @@ Singleton {
       isMango = true;
       isLabwc = false;
       isExtWorkspace = false;
-      backendLoader.sourceComponent = mangoComponent;
+      // Loaded by URL so a missing Quickshell.DWL module only breaks this
+      // backend on mango, not the whole shell.
+      backendLoader.setSource("MangoService.qml");
     } else if (labwcPid && labwcPid.length > 0) {
       isHyprland = false;
       isNiri = false;
@@ -96,7 +98,9 @@ Singleton {
       isMango = false;
       isLabwc = false;
       isExtWorkspace = false;
-      backendLoader.sourceComponent = niriComponent;
+      // Loaded by URL so a failure here degrades to ext-workspace instead of
+      // breaking the whole shell at parse time.
+      backendLoader.setSource("NiriService.qml");
     } else if (hyprlandSignature && hyprlandSignature.length > 0) {
       isHyprland = true;
       isNiri = false;
@@ -129,6 +133,13 @@ Singleton {
 
   Loader {
     id: backendLoader
+    onStatusChanged: {
+      if (status === Loader.Error && source.toString().indexOf("ExtWorkspaceService") < 0) {
+        Logger.w("CompositorService", "Compositor backend failed to load; falling back to ext-workspace");
+        isExtWorkspace = true;
+        setSource("ExtWorkspaceService.qml");
+      }
+    }
     onLoaded: {
       if (item) {
         if (isScroll) {
@@ -167,13 +178,8 @@ Singleton {
     }
   }
 
-  // Niri backend component
-  Component {
-    id: niriComponent
-    NiriService {
-      id: niriBackend
-    }
-  }
+  // Niri backend component is loaded by URL (see detectCompositor) so that a
+  // missing module degrades to ext-workspace instead of failing at parse time.
 
   // Sway backend component
   Component {
@@ -183,13 +189,7 @@ Singleton {
     }
   }
 
-  // Mango backend component
-  Component {
-    id: mangoComponent
-    MangoService {
-      id: mangoBackend
-    }
-  }
+  // Mango backend component is loaded by URL for the same reason.
 
   // Labwc backend component
   Component {
