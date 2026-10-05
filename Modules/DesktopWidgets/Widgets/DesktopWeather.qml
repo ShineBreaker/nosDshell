@@ -72,7 +72,7 @@ DraggableDesktopWidget {
     NText {
       text: weatherReady ? `${currentTemp}°${tempUnit}` : "--"
       pointSize: Math.round(Style.fontSizeXXXL * widgetScale)
-      font.weight: Style.fontWeightBold
+      font.weight: Style.fontWeightSemiBold
       color: Color.mOnSurface
     }
 
