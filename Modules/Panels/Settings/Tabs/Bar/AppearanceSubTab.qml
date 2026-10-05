@@ -339,10 +339,9 @@ ColumnLayout {
     }
   }
 
-  // SettingsGroup gap (DESIGN §3.5.4)
-  Item {
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
     Layout.fillWidth: true
-    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
   ColumnLayout {
     visible: Settings.data.bar.displayMode === "auto_hide"

@@ -133,10 +133,9 @@ ColumnLayout {
     }
   }
 
-  // SettingsGroup gap (DESIGN §3.5.4)
-  Item {
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
     Layout.fillWidth: true
-    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
   // SettingsGroup 2: the rows sit flush, the 1 px seam
   // between them comes from the dcc row (DESIGN §3.5.4)
@@ -158,10 +157,9 @@ ColumnLayout {
     }
   }
 
-  // SettingsGroup gap (DESIGN §3.5.4)
-  Item {
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
     Layout.fillWidth: true
-    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
   // SettingsGroup 3: the rows sit flush, the 1 px seam
   // between them comes from the dcc row (DESIGN §3.5.4)
@@ -197,10 +195,9 @@ ColumnLayout {
     }
   }
 
-  // SettingsGroup gap (DESIGN §3.5.4)
-  Item {
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
     Layout.fillWidth: true
-    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
   ColumnLayout {
     spacing: 0
