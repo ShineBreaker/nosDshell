@@ -47,46 +47,6 @@ ColumnLayout {
     }
   }
 
-  // Beautiful header with icon
-  RowLayout {
-    Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginL
-    spacing: Style.marginM
-
-    Rectangle {
-      width: 40
-      height: 40
-      radius: Style.radiusL
-      color: Color.mSurfaceVariant
-      opacity: 0.6
-
-      NIcon {
-        icon: "palette"
-        pointSize: Style.fontSizeL
-        color: Color.mPrimary
-        anchors.centerIn: parent
-      }
-    }
-
-    ColumnLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginXS
-
-      NText {
-        text: I18n.tr("common.appearance")
-        pointSize: Style.fontSizeXL
-        font.weight: Style.fontWeightBold
-        color: Color.mPrimary
-      }
-
-      NText {
-        text: I18n.tr("setup.appearance.subheader")
-        pointSize: Style.fontSizeM
-        color: Color.mOnSurfaceVariant
-      }
-    }
-  }
-
   NScrollView {
     id: appearanceScrollView
     Layout.fillWidth: true

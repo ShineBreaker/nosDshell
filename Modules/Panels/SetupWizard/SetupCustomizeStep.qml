@@ -16,46 +16,6 @@ ColumnLayout {
 
   spacing: Style.marginM
 
-  // Beautiful header with icon
-  RowLayout {
-    Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginL
-    spacing: Style.marginM
-
-    Rectangle {
-      width: 40
-      height: 40
-      radius: Style.radiusL
-      color: Color.mSurfaceVariant
-      opacity: 0.6
-
-      NIcon {
-        icon: "palette"
-        pointSize: Style.fontSizeL
-        color: Color.mPrimary
-        anchors.centerIn: parent
-      }
-    }
-
-    ColumnLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginXS
-
-      NText {
-        text: I18n.tr("setup.customize.header")
-        pointSize: Style.fontSizeXL
-        font.weight: Style.fontWeightBold
-        color: Color.mPrimary
-      }
-
-      NText {
-        text: I18n.tr("setup.customize.subheader")
-        pointSize: Style.fontSizeM
-        color: Color.mOnSurfaceVariant
-      }
-    }
-  }
-
   NScrollView {
     id: customizeScrollView
     Layout.fillWidth: true
@@ -144,20 +104,20 @@ ColumnLayout {
 
               property bool isActive: selectedBarPosition === modelData.key
 
-              color: (hoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
-              border.color: (hoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
-              opacity: (hoverHandler.hovered || isActive) ? 1.0 : 0.8
+              color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
+              border.color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
+              opacity: (positionHoverHandler.hovered || isActive) ? 1.0 : 0.8
 
               NText {
                 text: modelData.name
                 pointSize: Style.fontSizeM
-                font.weight: (hoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
-                color: (hoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
+                font.weight: (positionHoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
+                color: (positionHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
                 anchors.centerIn: parent
               }
 
               HoverHandler {
-                id: hoverHandler
+                id: positionHoverHandler
               }
               MouseArea {
                 anchors.fill: parent
@@ -267,21 +227,21 @@ ColumnLayout {
 
               property bool isActive: Settings.data.bar.density === modelData.key
 
-              color: (hoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
-              border.color: (hoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
-              opacity: (hoverHandler.hovered || isActive) ? 1.0 : 0.8
+              color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
+              border.color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
+              opacity: (densityHoverHandler.hovered || isActive) ? 1.0 : 0.8
 
               NText {
                 id: densityText
                 text: modelData.name
                 pointSize: Style.fontSizeS
-                font.weight: (hoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
-                color: (hoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
+                font.weight: (densityHoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
+                color: (densityHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
                 anchors.centerIn: parent
               }
 
               HoverHandler {
-                id: hoverHandler
+                id: densityHoverHandler
               }
               MouseArea {
                 anchors.fill: parent
@@ -451,20 +411,20 @@ ColumnLayout {
 
               property bool isActive: Settings.data.bar.barType === modelData.key
 
-              color: (hoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
-              border.color: (hoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
-              opacity: (hoverHandler.hovered || isActive) ? 1.0 : 0.8
+              color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
+              border.color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
+              opacity: (typeHoverHandler.hovered || isActive) ? 1.0 : 0.8
 
               NText {
                 text: modelData.name
                 pointSize: Style.fontSizeM
-                font.weight: (hoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
-                color: (hoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
+                font.weight: (typeHoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
+                color: (typeHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
                 anchors.centerIn: parent
               }
 
               HoverHandler {
-                id: hoverHandler
+                id: typeHoverHandler
               }
               MouseArea {
                 anchors.fill: parent

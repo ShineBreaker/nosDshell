@@ -315,6 +315,31 @@ Singleton {
                                             "y": 6,
                                             "color": Qt.rgba(0, 0, 0, 0.2)
                                           })
+  // DDialog (DESIGN §3.11): same 20 px black@0.5 drop as the control centre
+  // frame, but cast straight down instead of to the left.
+  readonly property var shadowDialog: ({
+                                           "blur": 20,
+                                           "x": 0,
+                                           "y": 0,
+                                           "color": Qt.rgba(0, 0, 0, 0.5)
+                                         })
+
+  // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
+  // it -- the first-run wizard is the wide one. The 48 px leading icon and the
+  // 5 px gap between the title and the message come from the DDialog top layout
+  // (ddialog.cpp:80-85, textLayout spacing).
+  readonly property int dialogWidth: Math.round(640 * uiScaleRatio)
+  readonly property int dialogNarrowWidth: Math.round(380 * uiScaleRatio)
+  // The wizard's own height: not a DDE constant, sized so the tallest step
+  // (Appearance) fits its scroll view without the dialog growing per step.
+  readonly property int dialogHeight: Math.round(560 * uiScaleRatio)
+  readonly property int dialogIconSize: Math.round(48 * uiScaleRatio)
+  readonly property int dialogTitleSpacing: Math.round(5 * uiScaleRatio)
+  // DDialog action button height. ddialog.cpp:521 gives every button in the row
+  // `setFixedHeight(DIALOG::BUTTON_HEIGHT)`; the constant itself lives in the
+  // dde-dtk ddialog header, which is not cloned, so the DDE action-button height
+  // of 36 from gxde-session-ui/global_util/constants.h:40 stands in for it.
+  readonly property int dialogButtonHeight: Math.round(36 * uiScaleRatio)
 
   // Motion (ms) — 0 when animations are off or in performance mode;
   // panel/enter motions fall back to 150 ms when blur is disabled (DESIGN §1.7)
