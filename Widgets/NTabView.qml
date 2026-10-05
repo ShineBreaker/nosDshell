@@ -13,6 +13,11 @@ Item {
   // a hidden sub-tab scrolls it into view instead of playing a slide transition.
   property bool stacked: false
 
+  // Titles of the stacked groups, read from the sibling NTabBar in group mode.
+  // The bar collapses itself in that mode, so it is the only place the labels
+  // still live; NTabBar has no other way to reach a sibling view.
+  property var stackTitles: []
+
   // Private
   property int previousIndex: 0
   property bool initialized: false
@@ -27,6 +32,10 @@ Item {
   clip: true
   Layout.fillWidth: true
 
+  // A head is only drawn when the bar can name every page one-to-one.
+  readonly property bool stackHeads: stacked && stackTitles.length === contentItems.length && contentItems.length > 0
+  readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.settingsGroupSpacing : 0
+
   // During animation, use max height to prevent clipping. Otherwise use current item height.
   implicitHeight: {
     if (animating)
@@ -35,13 +44,36 @@ Item {
       return contentItems[currentIndex] ? contentItems[currentIndex].implicitHeight : 0;
     let h = 0;
     for (let i = 0; i < contentItems.length; i++)
-      h += contentItems[i].implicitHeight;
+      h += contentItems[i].implicitHeight + root.stackHeadHeight;
     return h;
   }
 
   Item {
     id: container
     anchors.fill: parent
+  }
+
+  // One SettingsHead per stacked page, offset the same way the pages are. It
+  // lives outside `container` so the page list stays exactly the children the
+  // default property put there.
+  Item {
+    id: headLayer
+    anchors.fill: parent
+
+    Repeater {
+      model: root.stackTitles
+
+      delegate: NHeader {
+        required property int index
+        required property string modelData
+
+        x: 0
+        y: root._stackedOffset(index)
+        width: root.width
+        label: modelData
+        visible: root.stackHeads
+      }
+    }
   }
 
   // Set the visible tab to idx without triggering a slide animation.
@@ -76,14 +108,35 @@ Item {
   function _layoutStacked() {
     for (let i = 0; i < contentItems.length; i++) {
       const child = contentItems[i];
-      child.y = Qt.binding(() => {
-        let off = 0;
-        for (let j = 0; j < i; j++)
-          off += contentItems[j].implicitHeight;
-        return off;
-      });
+      child.y = Qt.binding(() => root._stackedOffset(i) + root.stackHeadHeight);
       child.visible = true;
     }
+  }
+
+  function _stackedOffset(index) {
+    let off = 0;
+    for (let j = 0; j < index; j++)
+      off += contentItems[j].implicitHeight + root.stackHeadHeight;
+    return off;
+  }
+
+  // Pick up the sub-tab titles from the sibling NTabBar. Both live in the same
+  // tab component, so the lookup stops one level up.
+  function _syncStackTitles() {
+    const bar = _findTabBar();
+    root.stackTitles = (bar && bar.groupMode === true) ? bar.groupTitles() : [];
+  }
+
+  function _findTabBar() {
+    const p = parent;
+    if (!p || !p.children)
+      return null;
+    for (let i = 0; i < p.children.length; i++) {
+      const child = p.children[i];
+      if (child && child.objectName === "NTabBar")
+        return child;
+    }
+    return null;
   }
 
   function _initializeItems() {
@@ -109,6 +162,7 @@ Item {
   }
 
   onStackedChanged: {
+    _syncStackTitles();
     if (!initialized)
       return;
     if (stacked) {
@@ -118,6 +172,8 @@ Item {
   }
 
   onCurrentIndexChanged: {
+    if (stacked)
+      _syncStackTitles();
     if (!initialized || contentItems.length === 0)
       return;
     if (stacked)

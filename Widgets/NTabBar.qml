@@ -16,10 +16,12 @@ Rectangle {
   property bool distributeEvenly: false
   default property alias content: tabRow.children
 
-  // DDE settings mode (DESIGN §3.5.3–3.5.4): the sub-tab strip becomes the
-  // SettingsGroup headers of a stacked NTabView — one DemiBold 24 px label per
-  // group instead of a pill strip. Pair with `NTabView.stacked`.
+  // DDE settings mode (DESIGN §3.5.3–3.5.4): the horizontal sub-tab strip is
+  // replaced by a SettingsHead above each sub-tab's own group. The paired
+  // NTabView renders those heads while it is `stacked`, so the strip itself
+  // collapses; pair the two with `NTabView.stacked`.
   property bool groupMode: false
+  visible: !groupMode
 
   onGroupModeChanged: _updateGroupMode()
   onDistributeEvenlyChanged: _applyDistribution()
@@ -41,6 +43,19 @@ Rectangle {
       }
     }
     tabRow.spacing = groupMode ? Style.marginS : root.spacing;
+  }
+
+  // The titles a stacked NTabView draws as its per-tab SettingsHeads.
+  function groupTitles() {
+    const titles = [];
+    if (!tabRow || !tabRow.children)
+      return titles;
+    for (let i = 0; i < tabRow.children.length; i++) {
+      const child = tabRow.children[i];
+      if (child && child.isTabButton === true)
+        titles.push(child.text);
+    }
+    return titles;
   }
 
   function _updateFirstLast() {

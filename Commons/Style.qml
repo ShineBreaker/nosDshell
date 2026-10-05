@@ -460,6 +460,10 @@ Singleton {
   // SettingsGroup: 1 px row gap, outer corners radiusItem; SettingsHead 24 high
   readonly property int settingsGroupGap: Math.round(1 * uiScaleRatio)
   readonly property int settingsHeadHeight: Math.round(24 * uiScaleRatio)
+  // SettingsHead insets its title 20 px from the left and 10 px from the right
+  // (settingshead.cpp:78-80, contentsMargins(20, 0, 10, 0)).
+  readonly property int settingsHeadPaddingH: Math.round(20 * uiScaleRatio)
+  readonly property int settingsHeadPaddingRight: Math.round(10 * uiScaleRatio)
   readonly property real settingsHeadAlpha: 0.15
   // SettingsItem (DESIGN §3.5.4): row 36, padding (20, 10)
   readonly property int settingsRowHeight: detailRowHeight
