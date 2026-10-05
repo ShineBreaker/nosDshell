@@ -12,12 +12,13 @@
 # wiped before each run for reproducibility.
 #
 # Scenes (default: all, lockscreen always runs last):
-#   idle, launcher, control-center, cc-notifications, cc-quick-wifi,
+#   idle, taskbar, launcher, control-center, cc-notifications, cc-quick-wifi,
 #   cc-quick-bluetooth, cc-quick-display, cc-quick-vpn, cc-quick-basic,
 #   settings, session-menu, notification,
 #   osd-volume, audio-panel, network-panel, bluetooth-panel, battery-panel,
 #   calendar-panel, media-panel, system-monitor, notification-history,
 #   wallpaper, dock, lockscreen
+#   taskbar additionally emits a strip crop beside the full shot (below).
 #   plus settings-tab scenes (open the settings panel on a specific tab):
 #   settings-general, settings-userinterface, settings-audio,
 #   settings-colorscheme, settings-dock, settings-launcher,
@@ -34,6 +35,20 @@
 # Runs under upstream `quickshell` by default; set QS_PKG=noctalia-qs to
 # compare against the (archived) fork. All packages come from `guix shell` —
 # nothing is installed into any profile.
+#
+# Environment knobs:
+#   NOSD_VERIFY_DIR          isolated root (default /tmp/nosd-verify)
+#   NOSD_SEED_DESKTOP_APPS   1 (default) = write fake .desktop entries into the
+#                            isolated $XDG_DATA_HOME so launcher grids render
+#   NOSD_SPAWN_WINDOWS       1 (default) = after qs is ready, start 2–3 sway
+#                            windows with distinct app_ids so the dock's
+#                            running/active-window states have real toplevels
+#                            (DESIGN §3.1.2 indicator strip, §3.1.3 efficient
+#                            fill + underline). Windows are parked floating at
+#                            the top-right, shrunk, and never cover the dock
+#                            strip. Set 0 to disable. PIDs are killed on exit.
+#   NOSD_PAM_BAD=1           separate run: lockscreen-error scene only
+#   NOSD_AUTOSTART_AUTH=1    seed general.autoStartAuth=true
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -134,7 +149,11 @@ fi
 # settingsVersion:64 skips the v0->64 migration chain (no-op for real users,
 # just noise in verify logs). dock.displayMode gates the fashion dock's
 # auto-hide; efficient (taskbar) mode uses dock.hideMode instead.
-SEED='{"settingsVersion":64,"dock":{"displayMode":"always_visible"},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+# dock.onlySameOutput=false: the headless sway reports toplevel .screens as a
+# list the Quickshell ShellScreen object never satisfies, so leaving the
+# default true silently drops every running app from the dock (verified: with
+# it on, no toplevel reaches dockApps; off, all three appear).
+SEED='{"settingsVersion":64,"dock":{"displayMode":"always_visible","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
@@ -144,7 +163,7 @@ EOF
 
 PKGS="${QS_PKG:-quickshell} sway grim dbus imagemagick libnotify pipewire wireplumber
 font-google-noto font-google-noto-sans-cjk papirus-icon-theme adwaita-icon-theme
-qtwayland qtmultimedia qt5compat qtimageformats python
+qtwayland qtmultimedia qt5compat qtimageformats python foot
 coreutils findutils grep gawk procps"
 
 # --- inner script --------------------------------------------------------
@@ -154,7 +173,7 @@ cat > "$INNER" <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 
-SCENES_ORDER="idle launcher launcher-search launcher-category launcher-mini
+SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini
 control-center cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
@@ -184,6 +203,28 @@ fi
 export SELECTED
 echo "scenes:$SELECTED"
 
+# where is the dock? crop geometry for the taskbar scene + crops.sh default.
+# Read the same merged view the shell gets: Assets/settings-default.json +
+# the user seed, so --settings {"dock":{"position":"top"}} is honoured.
+DOCK_POSITION=$(python3 - "$USER_SETTINGS" <<'PYEOF'
+import json,os,sys
+base=json.load(open(os.environ["REPO"]+"/Assets/settings-default.json"))
+if sys.argv[1]:
+    def merge(a,b):
+        for k,v in b.items():
+            if isinstance(v,dict) and isinstance(a.get(k),dict): merge(a[k],v)
+            else: a[k]=v
+    merge(base, json.load(open(sys.argv[1])))
+sys.stdout.write(base.get("dock",{}).get("position","bottom"))
+PYEOF
+)
+export DOCK_POSITION
+# fashion thickness = iconSize*1.5 (Commons/Style.qml:467); efficient taskbars
+# are ~40 px. 100 px headroom covers both plus the 2 px hidden sliver.
+DOCK_STRIP_PX=100
+export DOCK_STRIP_PX
+echo "dock.position=$DOCK_POSITION strip=${DOCK_STRIP_PX}px"
+
 # seed settings.json (deep-merge user file over built-in seed) + shell-state
 python3 - <<'PYEOF'
 import json, os
@@ -207,11 +248,13 @@ dbus-run-session -- bash <<'DBUSEOF'
 set -uo pipefail
 
 SWAY_PID=""; QS_PID=""; PW_PID=""; WP_PID=""
+FOOT_PIDS=""
 cleanup() {
   [ -n "$QS_PID" ]   && { qs -p "$REPO" kill 2>/dev/null; kill "$QS_PID" 2>/dev/null; }
   [ -n "$WP_PID" ]   && kill "$WP_PID" 2>/dev/null
   [ -n "$PW_PID" ]   && kill "$PW_PID" 2>/dev/null
   [ -n "$SWAY_PID" ] && { swaymsg exit 2>/dev/null; kill "$SWAY_PID" 2>/dev/null; }
+  for P in $FOOT_PIDS; do kill "$P" 2>/dev/null; done
 }
 trap cleanup EXIT
 
@@ -261,9 +304,103 @@ shot() { grim "$OUT/$1.png" && echo "saved $1.png"; }
 call() { local s="${!#}"; set -- "${@:1:$#-1}"; echo "ipc: $*"; qs -p "$REPO" ipc call "$@" 2>&1; sleep "$s"; }
 toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
 
+# --- real windows so the dock shows running/active apps --------------------
+# NOSD_SPAWN_WINDOWS=1 (default): the headless sway starts with no windows, so
+# ToplevelManager.toplevels is empty and the dock's running/active states
+# (DESIGN §3.1.2 indicator strip, §3.1.3 efficient fill + underline) never
+# render. Spawn 3 foot windows with distinct app_ids (last one focused), park
+# them floating at the top-right shrunk:
+#   - ToplevelManager.toplevels is the quickshell global toplevel registry, not
+#     a per-workspace list, so parking beats switching workspaces (Dock.qml:404
+#     reads it directly; a workspace switch would also empty the scene). Floating
+#     keeps them off the desktop area the other scenes shoot.
+#   - the dock itself anchors bottom by default, so top-right parking never
+#     covers the taskbar strip that crop_range() cuts.
+# App_ids are chosen to resolve in papirus/adwaita so the icons differ.
+# NB: specs must be an array, one invocation per element; a single string gets
+# word-split by `for spec in $specs` and each word becomes its own argv.
+spawn_verify_windows() {
+  [ "${NOSD_SPAWN_WINDOWS:-1}" = "1" ] || { echo "NOSD_SPAWN_WINDOWS=0: skipping"; return; }
+  command -v foot >/dev/null || { echo "foot not found: skipping windows"; return; }
+  local specs=(
+    "foot"
+    "foot --app-id=org.gnome.Calculator --title=Calculator"
+    "foot --app-id=org.gnome.Nautilus --title=Files"
+  )
+  # for_window rules must be registered BEFORE the windows exist: sway applies
+  # them at surface-creation time, and a bare `swaymsg ... floating enable`
+  # after the fact misses the already-mapped node ("No matching node").
+  swaymsg 'for_window [app_id="foot"] floating enable' 2>/dev/null
+  swaymsg 'for_window [app_id="org.gnome.Calculator"] floating enable' 2>/dev/null
+  swaymsg 'for_window [app_id="org.gnome.Nautilus"] floating enable' 2>/dev/null
+  # park coordinates + size also up front; sway honours them on map.
+  local k=0
+  for a in org.gnome.Calculator org.gnome.Nautilus foot; do
+    swaymsg "for_window [app_id=\"$a\"] move position 1500 $((60 + k * 220))" 2>/dev/null
+    swaymsg "for_window [app_id=\"$a\"] resize set 360 170" 2>/dev/null
+    k=$((k + 1))
+  done
+  local i=0 spec
+  for spec in "${specs[@]}"; do
+    # shellcheck disable=SC2086 # spec is a deliberate word-split argv
+    foot $spec > "$WORK/logs/foot-$i.log" 2>&1 &
+    FOOT_PIDS="$FOOT_PIDS $!"
+    i=$((i + 1))
+    sleep 0.8
+  done
+  sleep 1.5
+  # con_id lookup needs the tree, and the tree is the only reliable id source
+  # (app_id matching through swaymsg criteria works for rules, not for ad-hoc
+  # commands). Python parses the JSON instead of grep-by-context, which picks
+  # up the wrong node when panes nest.
+  local moved=0
+  for A in org.gnome.Calculator org.gnome.Nautilus foot; do
+    local C
+    C=$(swaymsg -t get_tree 2>/dev/null | python3 -c "
+import json,sys
+t=json.load(sys.stdin)
+def walk(n):
+    if n.get('app_id')=='$A':
+        yield n
+    for c in n.get('nodes',[]):
+        yield from walk(c)
+    for c in n.get('floating_nodes',[]):
+        yield from walk(c)
+ns=list(walk(t))
+print(ns[0]['id'] if ns else '')
+")
+    [ -n "$C" ] || continue
+    swaymsg "[con_id=$C] move position 1500 $((60 + moved * 220))" 2>/dev/null
+    swaymsg "[con_id=$C] resize set 360 170" 2>/dev/null
+    moved=$((moved + 1))
+  done
+  sleep 0.5
+  echo "spawned windows: $FOOT_PIDS (moved $moved)"
+}
+spawn_verify_windows
+
+# dock strip rectangle "<x>,<y> <w>x<h>" for imagemagick, from DOCK_POSITION.
+# Screen is 1920x1080 (sway config + swaymsg create_output above).
+crop_range() {
+  local h="${DOCK_STRIP_PX:-100}" w=1920
+  # imagemagick geometry is WxH+X+Y (offset form needs the 'x' size first);
+  # "X,Y WxH" is PIL syntax and convert silently emits the uncropped image.
+  case "${DOCK_POSITION:-bottom}" in
+    top)    echo "${w}x${h}+0+0" ;;
+    bottom) echo "${w}x${h}+0+$((1080 - h))" ;;
+    left)   echo "${h}x1080+0+0" ;;
+    right)  echo "${h}x1080+$((1920 - h))+0" ;;
+    *)      echo "${w}x${h}+0+$((1080 - h))" ;;
+  esac
+}
 run_scene() {
   case "$1" in
     idle)                 shot idle ;;
+    # Full screen plus the docked-edge strip crop, with the spawned windows
+    # parked top-right so the running/active items are visible.
+    taskbar)              shot taskbar
+                          convert "$OUT/taskbar.png" -crop "$(crop_range)" +repage \
+                                  "$OUT/taskbar-strip.png" && echo "saved taskbar-strip.png" ;;
     launcher)             toggle launcher toggle 1.5 launcher ;;
     # DDE launcher (DESIGN §3.4): app search, command provider, category mode.
     # Each shot is taken while the launcher stays open; the launcher is closed
