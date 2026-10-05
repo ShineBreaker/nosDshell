@@ -55,7 +55,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - **任务栏、控制中心、启动器小窗口、任务栏弹出层、暗色菜单**都用 `maskDark`。其中任务栏弹出层和暗色菜单用 `popupDark`（这两者的面积小，需要更高的不透明度才看得清）。
 - **OSD 和通知气泡**用 `maskLight`，文字为深色（§1.5）。这是 DDE 15 的一个特点：浅色的瞬时提示，叠在暗色的常驻外壳之上。
 - **全屏界面**（全屏启动器、关机界面、锁屏）不用蒙版，背景是**预先模糊好的壁纸**（§1.8）。
-- 通过 `Settings.data.general.enableBlurBehind` 判断有没有模糊；组件只读 `Color.maskDark` 这类令牌，不自己算透明度。
+- "有模糊"= `Settings.data.general.enableBlurBehind` 为真 **且** 合成器确实提供 `ext-background-effect-v1`（启动时探测，见 §4 `nosd-helpers wl-probe`）。合成器不支持时一律按"无模糊"取 0.8 蒙版，否则半透明蒙版下面是清晰的壁纸，文字不可读。组件只读 `Color.maskDark` 这类令牌，不自己算透明度。
 - 组件实际使用的是下列**语义令牌**：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
   - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为白 × 0.9。
@@ -153,7 +153,18 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - **状态与托盘图标**：16 px 的 `*-symbolic` 主题图标（`battery-*-symbolic`、`audio-volume-*-symbolic`、`network-*-symbolic`）。主题里找不到时，退回 Tabler 字形。
 - **界面字形**：继续用 Tabler 线性图标（风格和 DDE 15 的细线图标一致）。常用尺寸 16 / 22 / 24 px，**不用填充（filled）变体**。
 - 控制中心模块图标 24 px，关机按钮图标 75 px，锁屏头像 100 px（§3）。
-- **不得从 `references/` 复制任何图标或位图**。指示条、时钟面、箭头这类小装饰，用 QML 画（`Rectangle`、`Shape`、`Canvas`）。
+- **DDE 专属素材可以直接复用**（本仓库与参考仓库同为 GPL-3.0）。凡是 DDE 15 自带、系统图标主题里没有对应物的界面素材，优先从 `references/` 复制原件，而不是用 Tabler 字形或 QML 重画近似物：
+  - 时尚模式时钟插件的表盘与数字（`gxde-dock/plugins/datetime/resources/icons/*.svg`）
+  - 关机界面按钮（`gxde-session-ui/dde-shutdown/img/*.svg`，含 normal / hover / press 三态）
+  - 锁屏右下角操作按钮（`gxde-session-ui/widgets/img/bottom_actions/*.svg`）
+  - 启动器搜索行按钮、分类图标、小窗口右栏图标（`gxde-launcher/src/skin/icons/*`、`gxde-launcher/src/widgets/images/*`）
+  - 控制中心导航条与模块图标（`gxde-control-center/src/frame/modules/*/themes/dark/icons/*.svg`）
+- 复用规则：
+  - 原样复制到 `Assets/DDE/<参考仓库名>/<原相对路径>`，不改文件名，便于溯源；每个 `Assets/DDE/<仓库>/` 目录放一份 `NOTICE`，列出来源仓库、上游版权声明和许可证。
+  - 有多态素材（normal / hover / press / checked）的，按原逻辑切换，不用透明度或滤镜模拟。
+  - 只复制实际用到的文件。应用图标和托盘/状态图标仍然从系统图标主题读取，不随仓库分发。
+  - 复制的位图如有 `@2x` 版本，一并复制，按屏幕缩放选用。
+- 参考仓库里没有素材的小装饰（运行指示条、弹出层箭头等），继续用 QML 画（`Rectangle`、`Shape`、`Canvas`）。
 
 ---
 
@@ -544,6 +555,12 @@ Noctalia 卡片的对应关系：
   - 找不到 `nosd-blur` 时，退回 `MultiEffect` 实时模糊，并输出一次警告日志。
 - 默认 sigma 〔派生〕：屏幕短边的 3%（1080p 约为 32）。deepin 原版的 `image-blur-helper` 参数没有包含在参考仓库中。
 
+### 4.1 `nosd-helpers wl-probe`
+
+- 作用：探测当前 Wayland 合成器公布的全局接口，供 §1.2 判断"合成器是否支持模糊"。QML 侧拿不到注册表，Quickshell 在不支持时只打印一行警告。
+- 命令行：`nosd-helpers wl-probe`，向 stdout 输出一行 JSON：`{"compositor_blur": true|false, "globals": ["wl_compositor", ...]}`；`compositor_blur` 为真当且仅当存在 `ext_background_effect_manager_v1`。连不上 Wayland 时退出码非 0。
+- 调用方式：shell 启动时调用一次，结果存进 `CompositorService.blurSupported`；`Color.blurActive` = 设置开启 且 `blurSupported`。工具缺失或执行失败时按"支持"处理（保持旧行为），并输出一次 `Logger.w`。
+
 ---
 
 ## 5. 配色方案
@@ -604,5 +621,6 @@ Noctalia 卡片的对应关系：
 - 用彩色区分状态（例外：活动项 `accent`、请求注意 `attention`、错误 `alert`）。
 - 加粗（Bold / ExtraBold）；全大写的标题；字间距不为 0 的正文。
 - 在一个界面里同时出现两个强调色；用渐变给表面着色。
-- 把 `references/` 的代码或素材当成默认来源直接复制。本仓库同为 GPL-3.0，复制在法律上允许，但默认仍是参考数值和结构后重新实现，以保持图标主题可替换、素材可控；确需复制时保留版权声明并注明出处。
+- 复制 `references/` 的素材或代码却不留出处：没有放进 `Assets/DDE/<仓库>/`、缺少 `NOTICE`、提交说明里没有写来源路径。
+- 用 Tabler 字形或 QML 近似重画参考仓库里已有原件的 DDE 专属素材（见 §1.9）。
 - 在组件里写死颜色、尺寸或时长，绕过令牌。
