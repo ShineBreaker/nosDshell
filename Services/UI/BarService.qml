@@ -48,6 +48,34 @@ Singleton {
     return true;
   }
 
+  // ------------------------------------------------------------------
+  // Fashion taskbar geometry bridge. The fashion dock is centred on its
+  // long axis, so its start edge is (screen edge - published length) / 2.
+  // Modules/Dock/DockContent publishes the length of its surface; the mini
+  // launcher reads it to line up with the dock's start edge (DESIGN §3.4.2,
+  // gxde-launcher windowedframe.cpp adjustPosition).
+  // ------------------------------------------------------------------
+  property var dockLengths: ({})
+  property int dockLengthsRevision: 0
+
+  function setDockLength(screenName, length) {
+    if (!screenName || !isFinite(length) || length <= 0) {
+      return;
+    }
+    if (dockLengths[screenName] === length) {
+      return;
+    }
+    dockLengths[screenName] = length;
+    dockLengthsRevision++;
+  }
+
+  function getDockLength(screenName) {
+    if (!screenName) {
+      return 0;
+    }
+    return dockLengths[screenName] || 0;
+  }
+
   property var readyBars: ({})
 
   // Revision counter - increment when widget list structure changes (add/remove/reorder)

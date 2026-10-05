@@ -35,17 +35,25 @@ Variants {
     readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
+    readonly property bool verticalBar: barPosition === "left" || barPosition === "right"
 
-    readonly property real dockLength: Settings.data.dock.iconSize * 1.5 * 1.1
+    readonly property real windowWidth: Style.launcherMiniLeftPaneWidth + Style.launcherMiniRightPaneWidth
+    readonly property real windowHeight: Style.launcherMiniHeight
+    // 1 px off the taskbar (windowedframe.cpp adjustPosition)
+    readonly property real gap: Style.launcherMiniDockGap
 
-    readonly property real windowWidth: 320 + 160
-    readonly property real windowHeight: 502
-    readonly property real gap: 1
+    readonly property real barThickness: hasTaskbar ? (verticalBar ? Style.dockItemThickness : Style.barHeight) : 0
 
-    readonly property real barThickness: hasTaskbar ? Style.barHeight : 0
+    // Long-axis length of the centred fashion dock, published by DockContent.
+    // Bound through dockLengthsRevision so the position follows the dock as
+    // items come and go.
+    readonly property real dockLength: {
+      BarService.dockLengthsRevision;
+      return efficient ? 0 : BarService.getDockLength(modelData?.name ?? "");
+    }
 
-    // Efficient mode: the corner next to the launcher button (the dock's
-    // leading edge is the screen edge in efficient mode)
+    // Efficient mode: the screen corner next to the launcher button, because the
+    // dock fills the whole edge there (windowedframe.cpp:757-772).
     readonly property real cornerX: {
       switch (barPosition) {
       case "left":
@@ -68,7 +76,9 @@ Variants {
       }
     }
 
-    // Fashion mode: the dock is centered, so the panel aligns with its start edge
+    // Fashion mode: line the window up with the dock's start edge on the long
+    // axis and sit flush against the dock on the short one
+    // (windowedframe.cpp:773-789 — p.x / p.y come from dockRect).
     readonly property real fashionX: {
       const screenW = modelData?.width ?? 0;
       switch (barPosition) {
@@ -77,7 +87,7 @@ Variants {
       case "right":
         return screenW - barThickness - gap - windowWidth;
       default:
-        return Math.max(gap, (screenW / 2) - (dockLength / 2));
+        return Math.max(gap, Math.round((screenW - dockLength) / 2));
       }
     }
 
@@ -89,7 +99,7 @@ Variants {
       case "bottom":
         return screenH - barThickness - gap - windowHeight;
       default:
-        return gap;
+        return Math.max(gap, Math.round((screenH - dockLength) / 2));
       }
     }
 

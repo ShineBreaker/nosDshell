@@ -195,6 +195,16 @@ Item {
     width: isVertical ? dockRoot.itemThickness : contentLength
     height: isVertical ? contentLength : dockRoot.itemThickness
 
+    // Publish the surface length so the mini launcher can align with the
+    // dock's start edge (DESIGN §3.4.2); the dock is centred on its long axis.
+    readonly property string _screenName: dockRoot.modelData ? dockRoot.modelData.name : ""
+    function publishLength() {
+      BarService.setDockLength(_screenName, isVertical ? height : width);
+    }
+    onWidthChanged: publishLength()
+    onHeightChanged: publishLength()
+    Component.onCompleted: publishLength()
+
     anchors.horizontalCenter: isVertical ? undefined : parent.horizontalCenter
     anchors.verticalCenter: isVertical ? parent.verticalCenter : undefined
     anchors.bottom: dockRoot.dockPosition === "bottom" ? parent.bottom : undefined
@@ -365,7 +375,7 @@ Item {
           onClicked: mouse => {
                        const targetScreen = dock.screen || null;
                        if (!targetScreen)
-                         return;
+                       return;
 
                        if (mouse.button === Qt.RightButton) {
                          if (dockRoot.currentContextMenu === launcherContextMenu && launcherContextMenu.visible) {
