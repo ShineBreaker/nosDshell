@@ -39,7 +39,7 @@ Singleton {
   property string wallpaperCacheFile: ""
 
   readonly property bool scanning: (scanningCount > 0)
-  readonly property string bundledDefaultWallpaper: Quickshell.shellDir + "/Assets/Wallpaper/nosdshell.png"
+  readonly property string bundledDefaultWallpaper: Quickshell.shellDir + "/Assets/Wallpaper/deepin15-desktop.jpg"
   property string defaultWallpaper: bundledDefaultWallpaper
 
   // Signals for reactive UI updates

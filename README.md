@@ -72,5 +72,5 @@ GPL-3.0 License — 见 [LICENSE](./LICENSE)。
 ## 致谢
 
 - [Noctalia](https://github.com/noctalia-dev/noctalia-shell)：本项目的功能基础（v4 分支）。
-- [GXDE-OS](https://github.com/GXDE-OS)：DDE 15 的社区维护版，全部设计数值的来源。
+- [GXDE-OS](https://github.com/GXDE-OS)：DDE 15 的社区维护版，全部设计数值的来源；默认壁纸 `deepin15-desktop.jpg` 取自其壁纸仓（CC-BY-3.0 © UnionTech）。
 - deepin / DDE 15：这套视觉语言的原创者。

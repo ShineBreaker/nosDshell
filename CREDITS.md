@@ -1,15 +1,16 @@
 # Credits
 
-Noctalia Shell is made possible by the incredible work of many open-source projects and contributors.
+nosDshell is made possible by the incredible work of many open-source projects and contributors.
 
-## Design & Branding
+## Design Reference & Artwork
 
-- **MrDowntempo** - Creator of the Noctalia Owl and moon logo
-- **[SaberJ2X](https://www.reddit.com/user/SaberJ64/)** - Creator of Talia, the Noctalia mascot
+- **[GXDE-OS](https://github.com/GXDE-OS)** - The community continuation of the DDE 15 desktop; our layout, interaction and visual references are reimplemented from its source code
+- **[deepin / UnionTech](https://www.deepin.org/)** - The original DDE design language; `Assets/Wallpaper/deepin15-desktop.jpg` is the genuine deepin 15 default wallpaper, licensed CC-BY-3.0 (see the `.license` sidecar file)
 
 ## Core Framework
 
-- **[Quickshell](https://github.com/outfoxxed/quickshell)** - The Qt/QML-based Wayland shell framework that powers Noctalia
+- **[Quickshell](https://github.com/outfoxxed/quickshell)** - The Qt/QML-based Wayland shell framework that powers nosDshell
+- **[Noctalia](https://github.com/noctalia-dev/noctalia-shell)** - The upstream shell (MIT) this project is derived from; its feature set and service architecture live on here
 
 ## Runtime Dependencies
 
