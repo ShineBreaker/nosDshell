@@ -121,7 +121,7 @@ menu) can skip a live blur pass and just draw the cached image.")
      "nosd-helpers is the single Rust binary behind nosDshell's helper
 subcommands (vscode-themes, kde-apply-scheme, gtk-refresh, khal-events,
 bluetooth-pair, eds-check, eds-calendars,
-eds-events, apply).  QML callers require it; the Scripts/python and
+eds-events, apply, wl-probe).  QML callers require it; the Scripts/python and
 Scripts/bash helpers were removed after the ports reached parity.")
     (license license:gpl3+)))
 

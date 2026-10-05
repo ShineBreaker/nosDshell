@@ -610,6 +610,35 @@
   (crate-source "zvariant_utils" "4.2.0"
                 "18q80094ci64myzvcp0g2l3c6mnx7b3hsii8lfabc853c51jkl5s"))
 
+(define rust-pkg-config-0.3.34
+  (crate-source "pkg-config" "0.3.34"
+                "0j05h08nzg0q8rf6lzw7nry0b7kn7x97vc9n4hwrl52fqzxn9d7n"))
+
+(define rust-quick-xml-0.41.0
+  (crate-source "quick-xml" "0.41.0"
+                "1h9y8zry34r3mxfd5vqfj50vvvzvri4kzbx5d657jkqjalg4aq76"))
+
+(define rust-smallvec-1.16.2
+  (crate-source "smallvec" "1.16.2"
+                "13iai5hhwyp8z0pbn8r11q4j5956jaxhcbvvf2drm17f1q7myfgr"))
+
+(define rust-wayland-backend-0.3.17
+  (crate-source "wayland-backend" "0.3.17"
+                "0y50cw56f09cdcsinbbl94naz91xf7iqaj87s4f7py6zmm71pa9q"))
+
+(define rust-wayland-client-0.31.15
+  (crate-source "wayland-client" "0.31.15"
+                "0ww0d0r6rn2h0sn8ma1f7zvxj40l6930p07j044nvmqshq7nmhz3"))
+
+(define rust-wayland-scanner-0.31.11
+  (crate-source "wayland-scanner" "0.31.11"
+                "1h0al3271l2w124sxlh77s1kmjg0z24ns2mk1vbnfars3d3313ik"))
+
+(define rust-wayland-sys-0.31.11
+  ;; TODO REVIEW: Check bundled sources.
+  (crate-source "wayland-sys" "0.31.11"
+                "1gp3hlkxx13i55lyyi794vnw9a780z3skx0xhj71zr69xwzv5snq"))
+
 (define nosd-theme-cargo-inputs
   (list rust-adler2-2.0.1
         rust-cfg-if-1.0.5
@@ -714,10 +743,12 @@
         rust-phf-shared-0.12.1
         rust-pin-project-lite-0.2.17
         rust-piper-0.2.5
+        rust-pkg-config-0.3.34
         rust-polling-3.11.0
         rust-portable-pty-0.9.0
         rust-proc-macro-crate-3.5.0
         rust-proc-macro2-1.0.107
+        rust-quick-xml-0.41.0
         rust-quote-1.0.47
         rust-r-efi-6.0.0
         rust-ring-0.17.14
@@ -739,6 +770,7 @@
         rust-simd-adler32-0.3.10
         rust-siphasher-1.0.4
         rust-slab-0.4.12
+        rust-smallvec-1.16.2
         rust-subtle-2.6.1
         rust-syn-2.0.119
         rust-syn-3.0.6
@@ -765,6 +797,10 @@
         rust-wasm-bindgen-macro-0.2.129
         rust-wasm-bindgen-macro-support-0.2.129
         rust-wasm-bindgen-shared-0.2.129
+        rust-wayland-backend-0.3.17
+        rust-wayland-client-0.31.15
+        rust-wayland-scanner-0.31.11
+        rust-wayland-sys-0.31.11
         rust-webpki-roots-1.0.9
         rust-winapi-0.3.9
         rust-winapi-i686-pc-windows-gnu-0.4.0

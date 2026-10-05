@@ -12,6 +12,7 @@ portable-pty = "=0.9.0"
 serde_json = { version = "=1.0.151", features = ["preserve_order"] }
 tokio = { version = "=1.53.2", features = ["rt-multi-thread", "macros"] }
 ureq = "=3.4.2"
+wayland-client = "=0.31.15"
 zbus = "=5.19.0"
 
 [[bin]]
