@@ -49,7 +49,7 @@ Singleton {
     running: false
     interval: 200
     onTriggered: {
-      if (settingsFileView.path !== undefined) {
+      if (settingsFileView.path !== "") {
         Logger.d("Settings", "Reloading settings after external change detection");
         reloadSettings = true;
         settingsFileView.reload();
@@ -58,7 +58,7 @@ Singleton {
   }
 
   function scheduleExternalReload() {
-    if (!directoriesCreated || settingsFileView.path === undefined) {
+    if (!directoriesCreated || settingsFileView.path === "") {
       return;
     }
     externalReloadTimer.restart();
@@ -109,7 +109,7 @@ Singleton {
 
   FileView {
     id: settingsFileView
-    path: directoriesCreated ? settingsFile : undefined
+    path: directoriesCreated ? settingsFile : ""
     printErrors: false
     watchChanges: true
     onAdapterUpdated: saveTimer.start()
@@ -118,7 +118,7 @@ Singleton {
 
     // Trigger initial load when path changes from empty to actual path
     onPathChanged: {
-      if (path !== undefined) {
+      if (path !== "") {
         reload();
       }
     }
@@ -170,7 +170,7 @@ Singleton {
   // settings.json may be replaced atomically (e.g., symlink/store-path swap).
   FileView {
     id: settingsDirWatcher
-    path: directoriesCreated ? configDir : undefined
+    path: directoriesCreated ? configDir : ""
     printErrors: false
     watchChanges: true
     onFileChanged: scheduleExternalReload()
