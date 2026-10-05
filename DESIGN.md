@@ -342,8 +342,8 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - 右栏：
   - 左边缘一条 1 px 竖线（白 × 0.1）。
   - 顶部先留 30 px，然后是 **60×60 圆形头像**（`avatar.cpp:42`），左对齐。
-  - 中部：常用位置按钮（计算机、视频、音乐、图片、文档、下载），每个是"图标 + 文字"，字号 max(基础字号 px + 2, **14 px**)（`miniframebutton.cpp:43-48`）；悬停/键盘选中时显示选中底（白 × 0.1，圆角 4）。
-  - 底部：先是时间（**40 px**，白色，`datetimewidget.cpp:35`），下面一行日期；再下面横排"设置"和"电源"两个按钮，都是图标 + 文字（`miniframerightbar.cpp:97-101`）。
+  - 中部：常用位置按钮（计算机、视频、音乐、图片、文档、下载），**纯文字**、无图标（`miniframerightbar.cpp:61-67` 只传 `tr("Computer")` 等文本）；字号 max(基础字号 px + 2, **14 px**)（`miniframebutton.cpp:43-48`）；悬停/键盘选中时显示选中底（白 × 0.1，圆角 4）。DDE 还有第 7 个 "Manual" 项，仅当系统装有 `dman` 时显示（`miniframerightbar.cpp:57`）；nosDshell 没有手册应用，不显示。
+  - 底部：先是时间（**40 px**，白色，`datetimewidget.cpp:35`），下面一行日期；再下面横排"设置"和"电源"两个按钮，文字加左侧图标（原版 `settings.svg` / `power.svg`，`miniframerightbar.cpp:95-96`）。
   - 右上角：24×24 的全屏切换按钮，用原版 `fullscreen_{normal,hover,press}.png`。
   - 内边距 (18, 0, 12, 18)（`miniframerightbar.cpp:144`）。
 - 列表里的分类项：文字白 × 0.6；选中时文字 `accent`，底色 `rgba(21,21,21,0.2)`，圆角 4。
