@@ -60,45 +60,67 @@ SmartPanel {
   // focus, because ids in panelContent are not visible from this scope.
   property bool focusRequested: false
 
+  // DDE ships the button artwork as normal/hover/press SVGs; the mapping below
+  // is the one dde-shutdown/skin/shutdown.qss:1-40 declares per button objectName.
+  // hibernate uses the shared widgets/ list_actions/sleep_*.svg (shutdown.qss:37-40);
+  // rebootToUefi is nosDshell-only and has no DDE artwork, so it reuses reboot_*.
+  readonly property string ddeShutdownIcons: Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/dde-shutdown/img/"
+  readonly property string ddeWidgetIcons: Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/widgets/img/"
   // Action metadata mapping (dde-shutdown contentwidget.cpp order)
   readonly property var actionMetadata: {
     "shutdown": {
       "icon": "power",
+      "artwork": "poweroff",
+      "artworkDir": "shutdown",
       "title": I18n.tr("common.shutdown"),
       "isShutdown": true
     },
     "reboot": {
       "icon": "refresh",
+      "artwork": "reboot",
+      "artworkDir": "shutdown",
       "title": I18n.tr("common.reboot"),
       "isShutdown": false
     },
     "suspend": {
       "icon": "moon",
+      "artwork": "suspend",
+      "artworkDir": "shutdown",
       "title": I18n.tr("common.suspend"),
       "isShutdown": false
     },
     "hibernate": {
       "icon": "snowflake",
+      "artwork": "sleep",
+      "artworkDir": "widgets/list_actions",
       "title": I18n.tr("common.hibernate"),
       "isShutdown": false
     },
     "lock": {
       "icon": "lock",
+      "artwork": "lock",
+      "artworkDir": "shutdown",
       "title": I18n.tr("common.lock"),
       "isShutdown": false
     },
     "switchUser": {
       "icon": "user-switch",
+      "artwork": "userswitch",
+      "artworkDir": "shutdown",
       "title": I18n.tr("session-menu.switch-user"),
       "isShutdown": false
     },
     "logout": {
       "icon": "logout",
+      "artwork": "logout",
+      "artworkDir": "shutdown",
       "title": I18n.tr("common.logout"),
       "isShutdown": false
     },
     "rebootToUefi": {
       "icon": "device-desktop",
+      "artwork": "reboot",
+      "artworkDir": "shutdown",
       "title": I18n.tr("common.reboot-to-uefi"),
       "isShutdown": false
     }
@@ -140,11 +162,16 @@ SmartPanel {
         continue;
       }
       var metadata = actionMetadata[settingOption.action];
+      // Most artwork lives in dde-shutdown/img/; hibernate uses the shared
+      // widgets/ list_actions set (shutdown.qss:37-40)
+      var base = metadata.artworkDir === "shutdown" ? root.ddeShutdownIcons : root.ddeWidgetIcons + "list_actions/";
       options.push({
                      "action": settingOption.action,
                      "icon": metadata.icon,
+                     "artworkUrl": metadata.artwork ? base + metadata.artwork : "",
                      "title": metadata.title,
                      "isShutdown": metadata.isShutdown,
+                     "available": settingOption.action !== "switchUser" || switchUserAvailable,
                      "countdownEnabled": settingOption.countdownEnabled !== undefined ? settingOption.countdownEnabled : true,
                      "command": settingOption.command || "",
                      "keybind": settingOption.keybind || ""
@@ -514,10 +541,12 @@ SmartPanel {
             width: Style.shutdownButtonSize
             height: Style.shutdownButtonSize
             icon: modelData.icon
+            artworkPath: modelData.artworkUrl
             title: modelData.title
             isShutdown: modelData.isShutdown || false
             isSelected: index === root.selectedIndex
             effectiveHover: !root.ignoreMouseHover && buttonMouse.containsMouse
+            available: modelData.available !== false
             pending: root.timerActive && root.pendingAction === modelData.action
             keybind: (Settings.data.sessionMenu.showKeybinds && modelData.keybind) ? modelData.keybind : ""
 
@@ -549,25 +578,36 @@ SmartPanel {
 
   // RoundItemButton (rounditembutton.cpp): 140x140, 75x75 glyph, 10 px gap,
   // white wrapping label; hover/selected = pressDim rounded rect radiusLarge;
-  // disabled = opacity 0.5
+  // disabled = opacity 0.5. The glyph itself is the original 75x75 DDE artwork
+  // and switches between the normal / hover / press SVGs — rounditembutton.cpp
+  // repaints m_itemIcon from a QSvgRenderer in its event filter (lines 173-181),
+  // it does not tint or fade it.
   component ShutdownButton: Rectangle {
     id: button
 
     property string icon: ""
+    // Absolute path prefix of the DDE artwork, e.g. ".../dde-shutdown/img/poweroff"
+    property string artworkPath: ""
     property string title: ""
     property bool isShutdown: false
     property bool isSelected: false
     property bool effectiveHover: false
+    property bool pressed: false
+    property bool available: true
     property bool pending: false
     property string keybind: ""
 
     signal clicked
 
-    readonly property bool dimmed: isSelected || effectiveHover
+    readonly property bool dimmed: isSelected || effectiveHover || pressed
+
+    // rounditembutton.cpp:194-201 — one SVG per state, no overlay
+    readonly property string artworkState: pressed ? "press" : (dimmed ? "hover" : "normal")
 
     radius: Style.radiusLarge
     color: dimmed ? Color.pressDim : "transparent"
-    opacity: 1.0
+    // rounditembutton.cpp:65-74 — setDisabled() drops the whole widget to 0.5
+    opacity: button.available ? 1.0 : 0.5
 
     Behavior on color {
       enabled: !Settings.data.general.animationDisabled
@@ -577,14 +617,40 @@ SmartPanel {
       }
     }
 
+    Behavior on opacity {
+      enabled: !Settings.data.general.animationDisabled
+      NumberAnimation {
+        duration: Style.animationFast
+        easing.type: Easing.OutCubic
+      }
+    }
+
     ColumnLayout {
       anchors.centerIn: parent
-      spacing: Style.marginS
+      // rounditembutton.cpp:104-111 — 10 px of leading space, then the icon,
+      // then the wrapping label below it
+      spacing: Style.shutdownButtonIconTextGap
+
+      Image {
+        Layout.alignment: Qt.AlignHCenter
+        Layout.preferredWidth: Style.shutdownButtonIcon
+        Layout.preferredHeight: Style.shutdownButtonIcon
+        source: button.artworkPath !== "" ? button.artworkPath + "_" + button.artworkState + ".svg" : ""
+        sourceSize.width: Style.shutdownButtonIcon
+        sourceSize.height: Style.shutdownButtonIcon
+        fillMode: Image.PreserveAspectFit
+        smooth: true
+        asynchronous: true
+        cache: true
+        // Fall back to the Tabler glyph only if the artwork is missing
+        visible: source !== ""
+      }
 
       NIcon {
         Layout.alignment: Qt.AlignHCenter
         Layout.preferredWidth: Style.shutdownButtonIcon
         Layout.preferredHeight: Style.shutdownButtonIcon
+        visible: button.artworkPath === ""
         icon: button.icon
         color: "white"
         pointSize: Style.fontSizeXXXL
@@ -614,7 +680,12 @@ SmartPanel {
       id: buttonMouse
       anchors.fill: parent
       hoverEnabled: true
+      enabled: button.available
       cursorShape: Qt.PointingHandCursor
+      onPressed: button.pressed = true
+      onReleased: button.pressed = false
+      onEntered: button.pressed = false
+      onExited: button.pressed = false
       onClicked: button.clicked()
     }
   }
