@@ -1,155 +1,76 @@
-# Noctalia Shell
+# nosDshell
 
-> [!WARNING]
-> This branch contains Noctalia v4, a legacy and unmaintained version. It is no longer developed, supported, or receiving fixes. **Do not use v4 for new installations.**
->
-> **[Noctalia v5](https://docs.noctalia.dev/noctalia/getting-started/installation/)** is the stable, finished, and actively supported version. Use v5 instead. Its installation instructions, documentation, and plugins are not compatible with this v4 branch.
+> 以 deepin 15（DDE 15）的视觉语言呈现的 Wayland 桌面 shell。
 
-**_quiet by design_**
+nosDshell 基于 Noctalia v4（Quickshell/QML）改造：保留 Noctalia 的全部功能，但每个界面都按 DDE 15 的方式呈现——统一的任务栏、全屏启动器、右缘控制中心、带箭头的弹出层、以及 DDE 风格的会话菜单、OSD、通知和锁屏。
 
-<p align="center">
-  <img src="https://assets.noctalia.dev/noctalia-logo.svg?v=2" alt="Noctalia Logo" style="width: 192px" />
-</p>
-
-<p><br/></p>
-
-<p align="center">
-  <a href="https://github.com/noctalia-dev/noctalia-shell/commits">
-    <img src="https://img.shields.io/github/last-commit/noctalia-dev/noctalia-shell?style=for-the-badge&labelColor=0C0D11&color=A8AEFF&logo=git&logoColor=FFFFFF&label=commit" alt="Last commit" />
-  </a>
-  <a href="https://github.com/noctalia-dev/noctalia-shell/stargazers">
-    <img src="https://img.shields.io/github/stars/noctalia-dev/noctalia-shell?style=for-the-badge&labelColor=0C0D11&color=A8AEFF&logo=github&logoColor=FFFFFF" alt="GitHub stars" />
-  </a>
-  <a href="https://discord.noctalia.dev">
-    <img src="https://img.shields.io/badge/discord-A8AEFF?style=for-the-badge&labelColor=0C0D11&logo=discord&logoColor=FFFFFF" alt="Discord" />
-  </a>
-</p>
+设计不是"凭印象致敬"：所有尺寸、透明度、动效时长都取自 GXDE-OS（DDE 15 的社区维护版）源码，规范写在 [`DESIGN.md`](./DESIGN.md)，工程约束写在 [`AGENTS.md`](./AGENTS.md)。
 
 ---
 
-## About this legacy branch
+## 预览
 
-This repository contains the archived Noctalia v4 desktop shell for Wayland. The feature list below describes the historical v4 implementation and is retained for existing users and reference only.
-
-**✨ Key Features:**
-- 🪟 Native support for Niri, Hyprland, Sway, Scroll, Labwc and MangoWC
-- 🎨 Extensive theming with predefined color schemes and automatic color generation from your wallpaper
-- 🖼️ Wallpaper management with Wallhaven integration
-- 🔔 Notification system with history and Do Not Disturb
-- 🖥️ Multi-monitor support
-- 🔒 Lock screen
-- 🧩 Desktop widgets (clock, media player and more)
-- 💡 OSD for volume and brightness
-- 🔌 More than 100 plugins available
-- 🪄 Setup wizard for first-time users
-- ⚡ Built on Quickshell for performance
-
----
-
-## Preview
-
-https://github.com/user-attachments/assets/bf46f233-8d66-439a-a1ae-ab0446270f2d
+![桌面（时尚模式任务栏）](/Assets/Screenshots/nosdshell-desktop.png)
 
 <details>
-<summary>Screenshots</summary>
+<summary>更多截图</summary>
 
-![Dark 1](/Assets/Screenshots/noctalia-dark-1.png)
-![Dark 2](/Assets/Screenshots/noctalia-dark-2.png)
-![Dark 3](/Assets/Screenshots/noctalia-dark-3.png)
-
-![Light 1](/Assets/Screenshots/noctalia-light-1.png)
-![Light 2](/Assets/Screenshots/noctalia-light-2.png)
-![Light 3](/Assets/Screenshots/noctalia-light-3.png)
+![高效模式任务栏](/Assets/Screenshots/nosdshell-efficient.png)
+![全屏启动器](/Assets/Screenshots/nosdshell-launcher.png)
+![迷你启动器](/Assets/Screenshots/nosdshell-launcher-mini.png)
+![控制中心](/Assets/Screenshots/nosdshell-control-center.png)
+![会话菜单](/Assets/Screenshots/nosdshell-session-menu.png)
+![OSD](/Assets/Screenshots/nosdshell-osd.png)
+![锁屏](/Assets/Screenshots/nosdshell-lockscreen.png)
+![通知](/Assets/Screenshots/nosdshell-notification.png)
 
 </details>
 
 ---
 
-## 📋 Requirements
+## 界面构成
 
-- Wayland compositor (see supported compositors below)
-- Quickshell: [noctalia-qs](https://github.com/noctalia-dev/noctalia-qs)
+- **统一任务栏**：高效模式（通栏）与时尚模式（悬浮 dock）两种形态，支持四个停靠方向；弹出层为带箭头的矩形气泡，锚定在触发它的任务栏图标上。
+- **启动器**：DDE 风格全屏启动器（模糊壁纸背景，保留任务栏可交互）与迷你启动器；支持应用 / 命令 / 计算搜索与分类浏览。
+- **控制中心**：408 px 右缘框架，全屏高，毛玻璃蒙版；含 15 模块宫格、快捷开关分页与通知历史。设置页默认嵌入控制中心内（56 px 导航轨 + 模块内容区）。
+- **会话菜单**：居中一排 140×140 按钮（关机 / 重启 / 挂起 / 休眠 / 锁屏 / 退出登录），默认选中锁屏，带数字键提示。
+- **OSD**：底部居中的 140×140 浅色气泡，覆盖音量、亮度与过载状态。
+- **通知与 Toast**：300 px 气泡，逐条显示并排队，DDE 风格动作按钮。
+- **锁屏**：底部信息带（时钟、日期、媒体与电源控制）+ 居中认证区（头像、密码框、错误气泡、Caps Lock 提示）。
 
----
-
-## Existing v4 users
-
-Existing v4 installations may continue to work, but compatibility with current compositors, distributions, plugins, and external services is not maintained. New users should [install Noctalia v5](https://docs.noctalia.dev/noctalia/getting-started/installation/) instead.
-
----
-
-## 🖥️ Wayland Compositors
-
-Noctalia provides native support for **Niri**, **Hyprland**, **Sway**, **Scroll**, **Labwc** and **MangoWC**. Other Wayland compositors may work but could require additional configuration for compositor-specific features like workspaces and window management.
+继承自 Noctalia 的能力：Niri / Hyprland / Sway / Scroll / Labwc / MangoWC 多合成器支持、多显示器、壁纸管理、桌面挂件、插件体系、设置迁移等。
 
 ---
 
-## Scope
+## 运行要求
 
-Noctalia is a **desktop shell**, not a full desktop environment. It provides the visual layer that sits on top of your Wayland compositor (bars, panels, notifications, a dock, and widgets) but it intentionally stays within that boundary. Understanding this helps set the right expectations for feature requests.
+- Wayland 合成器（见上）
+- Quickshell fork：[`noctalia-qs`](https://github.com/noctalia-dev/noctalia-qs)（上游 quickshell 缺 `PwAudioSpectrum`，无法运行）
+- 图标主题推荐 Papirus 或 deepin
 
-### What Noctalia does
-
-Noctalia focuses on the things a shell is responsible for: status bar, panels, application launcher, notifications, lock screen, idle management, OSD, theming, wallpapers, desktop widgets, dock, and multi-monitor support.
-
-### What belongs in a plugin
-
-If a feature is useful to some users but not essential to the core shell experience, it's a great candidate for a plugin. The v4 plugin system can add bar widgets, panels, launcher providers, desktop widgets, and more.
-
-Some examples of features that are better suited as plugins:
-- Compositor-specific extras (e.g., Steam overlay for Hyprland)
-- Hardware-specific controls (e.g., laptop fan profiles, battery thresholds)
-- Third-party service integrations (e.g., smart home controls, Tailscale)
-- Niche productivity tools (e.g., Pomodoro timer, RSS reader, Docker manager)
-- Alternative visualizations or widgets
-
-### What falls outside our scope
-
-Some features go beyond what a desktop shell can or should do. These are typically responsibilities of the compositor, a dedicated application, or the system itself:
-
-- **File management**: use a file manager application
-- **Display/login greeter**: this runs before the shell and is managed separately
-- **Window management and overview**: workspace switching and window tiling are compositor responsibilities
-- **Removable drive mounting**: handled by system services like udisks and desktop applications
-- **Screen mirroring/casting**: managed by the compositor or dedicated tools
-
-We appreciate feature suggestions, but if a request falls into this category, it's likely outside what Noctalia can provide. When in doubt, feel free to ask in our [Discord](https://discord.noctalia.dev).
+Guix 用户可直接参考仓库根部的 `nosdshell.scm`。
 
 ---
 
-## 💜 Credits
+## 开发
 
-A heartfelt thank you to our incredible community of [**contributors**](https://github.com/noctalia-dev/noctalia-shell/graphs/contributors). We are immensely grateful for their dedicated participation and the constructive feedback they provided, which helped shape and improve Noctalia v4.
+| 目的 | 命令 |
+|---|---|
+| 静态检查 | `Scripts/dev/lint.sh [--changed]` |
+| 隔离环境运行并截图 | `Scripts/dev/verify.sh <名字> [--settings seed.json] [--scenes a,b]` |
+| 格式化 QML | `Scripts/dev/qmlfmt.sh <路径>` |
 
----
-
-## ☕ Donations
-
-While all donations are greatly appreciated, they are completely voluntary.
-Thank you to everyone who supports the project! 💜
-
-<p>
-  <a href="https://www.buymeacoffee.com/noctalia">
-    <img src="https://img.shields.io/badge/Buy_Me_a_Coffee-A8AEFF?style=for-the-badge&logo=buymeacoffee&logoColor=FFFFFF&labelColor=0C0D11" alt="Buy Me a Coffee">
-  </a>
-  <a href="https://ko-fi.com/noctaliadev">
-    <img src="https://img.shields.io/badge/Ko--fi-A8AEFF?style=for-the-badge&logo=kofi&logoColor=FFFFFF&labelColor=0C0D11" alt="Ko-fi">
-  </a>
-</p>
+界面改动一律以 [`DESIGN.md`](./DESIGN.md) 为准；提交与代码约定见 [`AGENTS.md`](./AGENTS.md)。
 
 ---
 
-## 📄 License
+## 许可
 
-GPL-3.0 License - see [LICENSE](./LICENSE) for details.
-Portions derived from Noctalia remain under the MIT License - see [LICENSE-MIT](./LICENSE-MIT).
+GPL-3.0 License — 见 [LICENSE](./LICENSE)。
+源自上游 Noctalia 的部分仍按 MIT License 分发 — 见 [LICENSE-MIT](./LICENSE-MIT)。
 
----
+## 致谢
 
-## ⭐ Star History
-
-<p align="center">
-  <a href="https://github.com/noctalia-dev/noctalia-shell/stargazers">
-    <img src="https://api.noctalia.dev/stars" alt="Star History" />
-  </a>
-</p>
+- [Noctalia](https://github.com/noctalia-dev/noctalia-shell)：本项目的功能基础（v4 分支）。
+- [GXDE-OS](https://github.com/GXDE-OS)：DDE 15 的社区维护版，全部设计数值的来源。
+- deepin / DDE 15：这套视觉语言的原创者。
