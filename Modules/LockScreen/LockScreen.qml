@@ -273,9 +273,14 @@ Loader {
                       lockContext.tryUnlock();
                       event.accepted = true;
                     }
-                    if (Keybinds.checkKey(event, 'escape', Settings) && panelComponent.timerActive) {
-                      panelComponent.cancelTimer();
-                      event.accepted = true;
+                    if (Keybinds.checkKey(event, 'escape', Settings)) {
+                      if (panelComponent.timerActive) {
+                        panelComponent.cancelTimer();
+                        event.accepted = true;
+                      } else if (panelComponent.powerRowOpen) {
+                        panelComponent.powerRowOpen = false;
+                        event.accepted = true;
+                      }
                     }
                   }
 
