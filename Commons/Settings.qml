@@ -33,6 +33,8 @@ Singleton {
 
   readonly property string settingsFile: Quickshell.env("NOSD_SETTINGS_FILE") || (configDir + "settings.json")
   readonly property string defaultAvatar: Quickshell.env("HOME") + "/.face"
+  // DDE ships a default face for accounts without ~/.face (gxde-session-ui/session-widgets/userinfo.cpp:259)
+  readonly property string ddeDefaultAvatar: Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/widgets/img/default_avatar.png"
   readonly property string defaultVideosDirectory: Quickshell.env("HOME") + "/Videos"
   readonly property string defaultWallpapersDirectory: Quickshell.env("HOME") + "/Pictures/Wallpapers"
 

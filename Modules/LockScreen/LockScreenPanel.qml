@@ -154,6 +154,7 @@ Item {
           Layout.bottomMargin: 25
           radius: width / 2
           imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
+          fallbackImagePath: Settings.ddeDefaultAvatar
           fallbackIcon: "person"
           fallbackIconSize: Math.round(Style.fontSizeXXXL * Style.uiScaleRatio)
         }

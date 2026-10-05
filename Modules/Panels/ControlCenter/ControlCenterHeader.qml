@@ -78,6 +78,7 @@ Item {
       Layout.alignment: Qt.AlignTop
       radius: Layout.preferredWidth / 2
       imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
+      fallbackImagePath: Settings.ddeDefaultAvatar
       fallbackIcon: "person"
       borderColor: "transparent"
       borderWidth: 0

@@ -1,0 +1,33 @@
+DDE 15 素材 —— 来源：gxde-session-ui
+=====================================
+
+来源仓库：https://github.com/GXDE-OS/gxde-session-ui
+分支/版本：浅克隆的默认分支（GXDE-OS 对 deepin 15 的社区维护版）
+上游版权：Copyright (C) 2011 ~ 2018 Deepin Technology Co., Ltd.
+上游许可：GPL-3.0（见来源仓库根目录的 LICENSE）
+本仓库许可：GPL-3.0（见仓库根目录的 LICENSE）
+
+复制规则：原样复制，不修改文件名，便于溯源。
+
+文件清单
+--------
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `widgets/img/default_avatar.png` | `gxde-session-ui/widgets/img/default_avatar.png` | 用户没有 `~/.face` 时显示的默认头像（100×100）。上游在 `session-widgets/userinfo.cpp:259`（`ADDomainUser::avatarPath()`）里以 Qt 资源 `:/img/default_avatar.png` 引用。 |
+| `widgets/img/bottom_actions/userswitch_normal.svg` | `gxde-session-ui/widgets/img/bottom_actions/userswitch_normal.svg` | dde-lock 右下角"切换用户"按钮，默认态 |
+| `widgets/img/bottom_actions/userswitch_hover.svg` | 同上 | 悬停/键盘选中态 |
+| `widgets/img/bottom_actions/userswitch_press.svg` | 同上 | 按下态 |
+| `widgets/img/bottom_actions/shutdown_normal.svg` | `gxde-session-ui/widgets/img/bottom_actions/shutdown_normal.svg` | dde-lock 右下角"电源"按钮，默认态 |
+| `widgets/img/bottom_actions/shutdown_hover.svg` | 同上 | 悬停/键盘选中态 |
+| `widgets/img/bottom_actions/shutdown_press.svg` | 同上 | 按下态 |
+| `widgets/img/action_icons/unlock_normal.svg` | `gxde-session-ui/widgets/img/action_icons/unlock_normal.svg` | dde-lock 密码框内的解锁按钮，默认态 |
+| `widgets/img/action_icons/unlock_hover.svg` | 同上 | 悬停/键盘选中态 |
+| `widgets/img/action_icons/unlock_press.svg` | 同上 | 按下态 |
+| `dde-shutdown/img/*.svg` | `gxde-session-ui/dde-shutdown/img/*.svg` | dde-shutdown 关机界面按钮图标（normal / hover / press 三态） |
+
+说明
+----
+
+- 休眠（hibernate）和"重启到 UEFI"在 DDE 里没有专用图标：nosDshell 复用 `suspend_*` 和 `reboot_*`。
+- 应用图标和托盘/状态图标不随本仓库分发，仍在运行时从系统图标主题读取。

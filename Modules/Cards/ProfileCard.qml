@@ -29,6 +29,7 @@ NBox {
       Layout.preferredHeight: Math.round(Style.baseWidgetSize * 1.25 * Style.uiScaleRatio)
       radius: Layout.preferredWidth / 2
       imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
+      fallbackImagePath: Settings.ddeDefaultAvatar
       fallbackIcon: "person"
       borderColor: Color.mPrimary
       borderWidth: Style.borderS * 1.5

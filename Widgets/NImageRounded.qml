@@ -9,16 +9,39 @@ Item {
 
   property real radius: 0
   property string imagePath: ""
+  property string fallbackImagePath: ""
   property string fallbackIcon: ""
   property real fallbackIconSize: Style.fontSizeXXL
   property real borderWidth: 0
   property color borderColor: "transparent"
   property int imageFillMode: Image.PreserveAspectCrop
 
-  readonly property bool _isAnimated: imagePath.toLowerCase().endsWith(".gif")
+  // Latched so a failed primary image cannot bounce back once the fallback is showing
+  property bool _primaryFailed: false
+  onImagePathChanged: _primaryFailed = false
+
+  readonly property bool _useFallback: fallbackImagePath !== "" && (imagePath === "" || _primaryFailed)
+  readonly property string _effectiveSource: _useFallback ? fallbackImagePath : imagePath
+  readonly property bool _isAnimated: _effectiveSource.toLowerCase().endsWith(".gif")
   readonly property Item imageSource: imageSourceLoader.item
-  readonly property bool showFallback: fallbackIcon !== "" && (imagePath === "" || (imageSource && imageSource.status === Image.Error))
+  // The glyph is the last resort: no image at all, or the fallback image itself failed
+  readonly property bool showFallback: {
+    if (fallbackIcon === "") {
+      return false;
+    }
+    if (_effectiveSource === "") {
+      return true;
+    }
+    return _useFallback && status === Image.Error;
+  }
   readonly property int status: imageSource ? imageSource.status : Image.Null
+
+  // The Loader only tracks component load, so the image status has to report back here
+  function noteImageStatus(imageStatus) {
+    if (imageStatus === Image.Error && !root._useFallback) {
+      root._primaryFailed = true;
+    }
+  }
 
   Rectangle {
     anchors.fill: parent
@@ -31,7 +54,7 @@ Item {
       id: imageSourceLoader
       anchors.fill: parent
       anchors.margins: root.borderWidth
-      active: root.imagePath !== ""
+      active: root._effectiveSource !== ""
       sourceComponent: root._isAnimated ? animatedComponent : staticComponent
     }
 
@@ -39,12 +62,13 @@ Item {
       id: staticComponent
       Image {
         visible: false
-        source: root.imagePath
+        source: root._effectiveSource
         mipmap: true
         smooth: true
         asynchronous: true
         antialiasing: true
         fillMode: root.imageFillMode
+        onStatusChanged: root.noteImageStatus(status)
       }
     }
 
@@ -52,13 +76,14 @@ Item {
       id: animatedComponent
       AnimatedImage {
         visible: false
-        source: root.imagePath
+        source: root._effectiveSource
         mipmap: true
         smooth: true
         asynchronous: true
         antialiasing: true
         fillMode: root.imageFillMode
         playing: true
+        onStatusChanged: root.noteImageStatus(status)
       }
     }
 
