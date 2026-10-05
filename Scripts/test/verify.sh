@@ -102,38 +102,39 @@ mkdir -p "$NOSD_CONFIG_DIR" "$NOSD_CACHE_DIR"
 # have something to render. Never touches the user's real dirs.
 if [ "${NOSD_SEED_DESKTOP_APPS:-1}" = "1" ]; then
   mkdir -p "$XDG_DATA_HOME/applications"
-  write_app() { # write_app <file> <Name> <Exec> <Categories>
+  write_app() { # write_app <file> <Name> <Icon> <Exec> <Categories> <Comment>
     cat > "$XDG_DATA_HOME/applications/$1.desktop" <<EOF
 [Desktop Entry]
 Type=Application
 Name=$2
-Exec=$3
-Icon=$1
-Categories=$4
+Exec=$4
+Icon=$3
+Comment=$6
+Categories=$5
 Terminal=false
 EOF
   }
-  write_app nosd-firefox       "Firefox"        "firefox"                "Network;WebBrowser"
-  write_app nosd-thunderbird   "Thunderbird"    "thunderbird"            "Network;Email"
-  write_app nosd-telegram      "Telegram"       "telegram-desktop"       "Network;InstantMessaging"
-  write_app nosd-vlc           "VLC Media Player" "vlc"                 "AudioVideo;Video;Player"
-  write_app nosd-rhythmbox     "Rhythmbox"      "rhythmbox"              "AudioVideo;Audio"
-  write_app nosd-gimp          "GIMP"           "gimp"                   "Graphics;2DGraphics"
-  write_app nosd-inkscape      "Inkscape"       "inkscape"               "Graphics;VectorGraphics"
-  write_app nosd-steam         "Steam"          "steam"                  "Game"
-  write_app nosd-0ad           "0 A.D."         "0ad"                    "Game;StrategyGame"
-  write_app nosd-writer        "LibreOffice Writer" "libreoffice --writer" "Office;WordProcessor"
-  write_app nosd-calc          "LibreOffice Calc"   "libreoffice --calc"   "Office;Spreadsheet"
-  write_app nosd-evince        "Document Viewer"    "evince"              "Office;Viewer"
-  write_app nosd-feedreader    "Feed Reader"    "feedreader"             "News;"
-  write_app nosd-okular        "Okular"         "okular"                 "Office;TextEditor"
-  write_app nosd-vscode        "Visual Studio Code" "code"               "Development;IDE"
-  write_app nosd-gitg          "gitg"           "gitg"                   "Development;RevisionControl"
-  write_app nosd-files         "Files"          "nautilus"               "System;FileManager"
-  write_app nosd-terminal      "Terminal"       "alacritty"              "System;TerminalEmulator"
-  write_app nosd-settings      "Settings"       "gnome-control-center"   "System;Settings"
-  write_app nosd-imageviewer   "Image Viewer"   "eog"                    "Graphics;Viewer"
-  write_app nosd-pluma         "Pluma Text Editor" "pluma"         "Utility;TextEditor"
+  write_app nosd-firefox       "Firefox"        "firefox"                 "firefox"                "Network;WebBrowser"     "Browse the web"
+  write_app nosd-thunderbird   "Thunderbird"    "thunderbird"             "thunderbird"            "Network;Email"          "Email and news client"
+  write_app nosd-telegram      "Telegram"       "telegram"                "telegram-desktop"       "Network;InstantMessaging" "Instant messaging"
+  write_app nosd-vlc           "VLC Media Player" "vlc"                   "vlc"                    "AudioVideo;Video;Player" "Play audio and video"
+  write_app nosd-rhythmbox     "Rhythmbox"      "rhythmbox"               "rhythmbox"              "AudioVideo;Audio"       "Music player"
+  write_app nosd-gimp          "GIMP"           "gimp"                    "gimp"                   "Graphics;2DGraphics"    "Image editor"
+  write_app nosd-inkscape      "Inkscape"       "inkscape"                "inkscape"               "Graphics;VectorGraphics" "Vector graphics editor"
+  write_app nosd-steam         "Steam"          "steam"                   "steam"                  "Game"                   "Game platform"
+  write_app nosd-0ad           "0 A.D."         "0ad"                     "0ad"                    "Game;StrategyGame"      "Real-time strategy game"
+  write_app nosd-writer        "LibreOffice Writer" "libreoffice-writer"  "libreoffice --writer"   "Office;WordProcessor"   "Word processor"
+  write_app nosd-calc          "LibreOffice Calc"   "libreoffice-calc"    "libreoffice --calc"     "Office;Spreadsheet"     "Spreadsheet"
+  write_app nosd-evince        "Document Viewer"    "evince"              "evince"                 "Office;Viewer"          "View PDF documents"
+  write_app nosd-feedreader    "Feed Reader"    "internet-news-reader"    "feedreader"             "News;"                  "Read RSS feeds"
+  write_app nosd-okular        "Okular"         "okular"                  "okular"                 "Office;TextEditor"      "Document viewer"
+  write_app nosd-vscode        "Visual Studio Code" "code"                "code"                   "Development;IDE"        "Code editor"
+  write_app nosd-gitg          "gitg"           "git"                     "gitg"                   "Development;RevisionControl" "Git client"
+  write_app nosd-files         "Files"          "system-file-manager"     "nautilus"               "System;FileManager"     "File manager"
+  write_app nosd-terminal      "Terminal"       "utilities-terminal"      "alacritty"              "System;TerminalEmulator" "Terminal emulator"
+  write_app nosd-settings      "Settings"       "preferences-system"      "gnome-control-center"   "System;Settings"        "System settings"
+  write_app nosd-imageviewer   "Image Viewer"   "eog"                     "eog"                    "Graphics;Viewer"        "View images"
+  write_app nosd-pluma         "Pluma Text Editor" "accessories-text-editor" "pluma"               "Utility;TextEditor"     "Text editor"
   update-desktop-database "$XDG_DATA_HOME/applications" 2>/dev/null || true
 fi
 
