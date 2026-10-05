@@ -86,6 +86,11 @@ ColumnLayout {
     saveCards();
   }
 
+  // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
+  NHeader {
+    label: I18n.tr("panels.location.calendar-header")
+  }
+
   // Clock style section
   ColumnLayout {
     spacing: 0

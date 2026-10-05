@@ -22,6 +22,11 @@ ColumnLayout {
     _saveToService();
   }
 
+  // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
+  NHeader {
+    label: I18n.tr("control-center.module.notifications")
+  }
+
   // SettingsGroup 1: the rows sit flush, the 1 px seam
   // between them comes from the dcc row (DESIGN §3.5.4)
   ColumnLayout {
