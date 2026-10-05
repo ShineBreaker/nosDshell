@@ -152,6 +152,49 @@ Singleton {
       Logger.d("Bluetooth", "Enable/Disable skipped: no adapter");
       return;
     }
+    // Upstream quickshell cannot power on an rfkill-blocked adapter: unblock
+    // first, then finish enabling when `blocked` flips back to false
+    if (state && adapter.state === BluetoothAdapter.Blocked) {
+      if (ProgramCheckerService.rfkillAvailable) {
+        Logger.i("Bluetooth", "Adapter is rfkill-blocked - unblocking");
+        _enableAfterUnblock = true;
+        rfkillUnblock.running = true;
+      } else {
+        Logger.w("Bluetooth", "Adapter is rfkill-blocked and rfkill is not available");
+        ToastService.showWarning(I18n.tr("common.bluetooth"), I18n.tr("toast.bluetooth.state-change-failed"));
+      }
+      return;
+    }
+    _enableAfterUnblock = false;
+    _setAdapterEnabled(state);
+  }
+
+  property bool _enableAfterUnblock: false
+
+  onBlockedChanged: {
+    if (!blocked && _enableAfterUnblock) {
+      _enableAfterUnblock = false;
+      _setAdapterEnabled(true);
+    }
+  }
+
+  Process {
+    id: rfkillUnblock
+    command: ["rfkill", "unblock", "bluetooth"]
+    running: false
+    onExited: function (exitCode) {
+      if (exitCode !== 0) {
+        Logger.w("Bluetooth", "rfkill unblock exited with", exitCode);
+        root._enableAfterUnblock = false;
+      } else if (root._enableAfterUnblock && !root.blocked) {
+        // Adapter already left Blocked before the handler saw the transition
+        root._enableAfterUnblock = false;
+        root._setAdapterEnabled(true);
+      }
+    }
+  }
+
+  function _setAdapterEnabled(state) {
     try {
       adapter.enabled = state;
       Logger.i("Bluetooth", "SetBluetoothEnabled", state);

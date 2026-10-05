@@ -17,11 +17,13 @@ Singleton {
   property bool gnomeCalendarAvailable: false
   property bool pythonAvailable: false
   property bool wtypeAvailable: false
+  property bool rfkillAvailable: false
 
   // Programs to check - maps property names to commands
   readonly property var programsToCheck: ({
                                             "bluetoothctlAvailable": ["sh", "-c", "command -v bluetoothctl"],
                                             "nmcliAvailable": ["sh", "-c", "command -v nmcli"],
+                                            "rfkillAvailable": ["sh", "-c", "command -v rfkill"],
                                             "wlsunsetAvailable": ["sh", "-c", "command -v wlsunset"],
                                             "gnomeCalendarAvailable": ["sh", "-c", "command -v gnome-calendar"],
                                             "wtypeAvailable": ["sh", "-c", "command -v wtype"],
