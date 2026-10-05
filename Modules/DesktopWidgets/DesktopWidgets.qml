@@ -152,7 +152,10 @@ Variants {
           sourceComponent: Canvas {
             id: gridOverlay
             anchors.fill: parent
-            opacity: 0.3
+            // The 0.1 is the whole alpha: the canvas used to be an accent
+            // stroke under opacity 0.3, which would compound §3.12's white@0.1
+            // down to 0.03 and vanish against the wallpaper.
+            opacity: 1
 
             // Grid size calculated based on screen resolution - matches DraggableDesktopWidget
             // Ensures grid lines pass through the screen center on both axes
