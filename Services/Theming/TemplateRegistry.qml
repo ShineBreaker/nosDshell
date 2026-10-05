@@ -40,6 +40,15 @@ Singleton {
   function khalEventsCmd(startDate, duration) {
     return root.helperCmd("khal-events", [startDate, duration]);
   }
+  function edsCheckCmd() {
+    return root.helperCmd("eds-check", []);
+  }
+  function edsCalendarsCmd() {
+    return root.helperCmd("eds-calendars", []);
+  }
+  function edsEventsCmd(startTime, endTime) {
+    return root.helperCmd("eds-events", [startTime, endTime]);
+  }
   function migrateCmd(configDir) {
     return root.helperCmd("migrate-colorschemes", [configDir]);
   }

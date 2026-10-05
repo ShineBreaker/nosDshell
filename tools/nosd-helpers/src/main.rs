@@ -5,7 +5,9 @@
 //! fallback chain (rust binary -> python script) so rollout is gradual.
 
 mod bluetooth;
+mod eds;
 mod gtk_refresh;
+mod ical;
 mod kde_apply;
 mod khal_events;
 mod migrate;
@@ -15,7 +17,7 @@ use std::env;
 use std::process::ExitCode;
 
 fn usage() -> ! {
-    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes|bluetooth-pair> [ARGS...]");
+    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes|bluetooth-pair|eds-check|eds-calendars|eds-events> [ARGS...]");
     std::process::exit(2);
 }
 
@@ -30,6 +32,9 @@ fn main() -> ExitCode {
         "khal-events" => khal_events::run(&rest),
         "migrate-colorschemes" => migrate::run(&rest),
         "bluetooth-pair" => bluetooth::run(&rest),
+        "eds-check" => eds::run_check(&rest),
+        "eds-calendars" => eds::run_calendars(&rest),
+        "eds-events" => eds::run_events(&rest),
         _ => usage(),
     };
     ExitCode::from(code as u8)

@@ -5,6 +5,7 @@ import Quickshell
 import Quickshell.Io
 import qs.Commons
 import qs.Services.Location
+import qs.Services.Theming
 
 Singleton {
   id: root
@@ -39,7 +40,7 @@ Singleton {
   Process {
     id: availabilityCheckProcess
     running: false
-    command: ["sh", "-c", "command -v python3 >/dev/null 2>&1 && python3 " + root.checkCalendarAvailableScript + " || echo 'unavailable: python3 not installed'"]
+    command: TemplateRegistry.edsCheckCmd() || ["sh", "-c", "command -v python3 >/dev/null 2>&1 && python3 " + root.checkCalendarAvailableScript + " || echo 'unavailable: python3 not installed'"]
 
     stdout: StdioCollector {
       onStreamFinished: {
@@ -73,7 +74,7 @@ Singleton {
   Process {
     id: listCalendarsProcess
     running: false
-    command: ["python3", root.listCalendarsScript]
+    command: TemplateRegistry.edsCalendarsCmd() || ["python3", root.listCalendarsScript]
 
     stdout: StdioCollector {
       onStreamFinished: {
@@ -110,7 +111,7 @@ Singleton {
     property int startTime: 0
     property int endTime: 0
 
-    command: ["python3", root.calendarEventsScript, startTime.toString(), endTime.toString()]
+    command: TemplateRegistry.edsEventsCmd(startTime.toString(), endTime.toString()) || ["python3", root.calendarEventsScript, startTime.toString(), endTime.toString()]
 
     stdout: StdioCollector {
       onStreamFinished: {
