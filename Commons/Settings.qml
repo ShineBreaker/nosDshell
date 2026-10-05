@@ -62,17 +62,20 @@ Singleton {
     externalReloadTimer.restart();
   }
 
+  // Ensure directories exist before FileView tries to read files.
+  // The flag flips only after mkdir really finishes: binding a FileView
+  // path (or directory watch) to a not-yet-existing directory leaves the
+  // load hanging forever with no onLoaded/onLoadFailed, stalling boot.
+  Process {
+    id: mkdirProcess
+    command: ["sh", "-c", "mkdir -p \"" + configDir + "\" \"" + cacheDir + "\""]
+    running: true
+    onExited: root.directoriesCreated = true
+  }
+
   // -----------------------------------------------------
   // -----------------------------------------------------
-  // Ensure directories exist before FileView tries to read files
   Component.onCompleted: {
-    // ensure settings dir exists
-    Quickshell.execDetached(["mkdir", "-p", configDir]);
-    Quickshell.execDetached(["mkdir", "-p", cacheDir]);
-
-    // Mark directories as created and trigger file loading
-    directoriesCreated = true;
-
     // This should only be activated once when the settings structure has changed
     // Then it should be commented out again, regular users don't need to generate
     // default settings on every start
