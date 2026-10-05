@@ -110,7 +110,10 @@ Variants {
       screen: screenItem.modelData
       visible: screenItem.isActive
       color: "transparent"
-      implicitWidth: screenItem.windowWidth
+      // The right bar widens itself until the settings + power row fits, so the
+      // window follows the view rather than the other way round
+      // (LauncherMiniView.measuredRightPaneWidth, miniframerightbar.cpp updateSize()).
+      implicitWidth: view.implicitWidth
       implicitHeight: screenItem.windowHeight
 
       WlrLayershell.namespace: "nosd-launcher-mini-" + (screen?.name || "unknown")

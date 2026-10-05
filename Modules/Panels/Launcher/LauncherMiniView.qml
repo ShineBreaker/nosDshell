@@ -22,6 +22,13 @@ Item {
 
   readonly property real leftPaneWidth: Style.launcherMiniLeftPaneWidth
   readonly property real rightPaneWidth: Style.launcherMiniRightPaneWidth
+  // Width the right bar settles on: miniframerightbar.cpp updateSize() widens
+  // the bar until the settings + power row and the date both fit, with 160 px
+  // as the floor (DESIGN §3.4.2 "about 160").
+  readonly property real measuredRightPaneWidth: Math.ceil(Math.max(rightPaneWidth, settingsButton.implicitWidth + powerButton.implicitWidth + 38, dateLabel.implicitWidth + 60))
+
+  implicitWidth: leftPaneWidth + measuredRightPaneWidth
+  implicitHeight: Style.launcherMiniHeight
 
   // Original DDE multi-state artwork (DESIGN §1.9)
   readonly property string ddeIcons: Quickshell.shellDir + "/Assets/DDE/gxde-launcher/src/skin/icons/"
@@ -339,7 +346,7 @@ Item {
     // the long date under it and the settings / power row at the bottom.
     // Contents margins are (18, 0, 12, 18) (miniframerightbar.cpp:144).
     Item {
-      Layout.preferredWidth: root.rightPaneWidth
+      Layout.preferredWidth: root.measuredRightPaneWidth
       Layout.fillHeight: true
 
       // 1 px vertical line on the left edge, white x 0.1
@@ -391,7 +398,11 @@ Item {
           Layout.fillHeight: true
         }
 
-        // ---- XDG place buttons ----
+        // ---- XDG place buttons. Text only: upstream builds them with
+        // MiniFrameButton(tr("Computer")) and calls setIcon() only for the
+        // settings and power buttons (miniframerightbar.cpp:59-67,95-98).
+        // "Computer" opens computer:/// upstream; nosDshell has no such
+        // protocol, so it falls back to the filesystem root.
         ColumnLayout {
           Layout.alignment: Qt.AlignHCenter
           Layout.fillWidth: true
@@ -401,32 +412,26 @@ Item {
             model: [
               {
                 "name": I18n.tr("launcher.dde.places.computer"),
-                "icon": "device-desktop",
-                "path": Quickshell.env("HOME")
+                "path": "/"
               },
               {
                 "name": I18n.tr("launcher.dde.places.videos"),
-                "icon": "device-tv",
                 "path": Quickshell.env("HOME") + "/Videos"
               },
               {
                 "name": I18n.tr("launcher.dde.places.music"),
-                "icon": "music",
                 "path": Quickshell.env("HOME") + "/Music"
               },
               {
                 "name": I18n.tr("launcher.dde.places.pictures"),
-                "icon": "photo",
                 "path": Quickshell.env("HOME") + "/Pictures"
               },
               {
                 "name": I18n.tr("launcher.dde.places.documents"),
-                "icon": "file-text",
                 "path": Quickshell.env("HOME") + "/Documents"
               },
               {
                 "name": I18n.tr("launcher.dde.places.downloads"),
-                "icon": "download",
                 "path": Quickshell.env("HOME") + "/Downloads"
               }
             ]
@@ -437,8 +442,6 @@ Item {
               Layout.fillWidth: true
               Layout.preferredHeight: Style.launcherMiniButtonRowHeight
               text: modelData.name
-              icon: modelData.icon
-              iconSize: Style.launcherMiniPlaceIconSize
               onClicked: Qt.openUrlExternally("file://" + modelData.path)
             }
           }
@@ -464,38 +467,40 @@ Item {
           }
 
           NText {
+            id: dateLabel
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: Date.toLocaleString(Qt.locale(), Locale.LongFormat)
+            text: Time.now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
             pointSize: Style.fontSizeBody
             color: Qt.alpha(Color.onShell, Style.launcherMiniClockDateAlpha)
             applyUiScale: false
           }
         }
 
-        // ---- settings + power (miniframerightbar.cpp:97-101) ----
+        // ---- settings + power (miniframerightbar.cpp:95-101). The icons are
+        // 24 px — updateSize() measures the row with iconWidth = 24.
         RowLayout {
           Layout.fillWidth: true
           Layout.topMargin: Style.marginS
-          Layout.leftMargin: Style.marginS
-          Layout.rightMargin: Style.marginS
           spacing: Style.marginS
 
           LauncherRightBarButton {
+            id: settingsButton
             Layout.fillWidth: true
             Layout.preferredHeight: Style.launcherMiniButtonRowHeight
             text: I18n.tr("launcher.dde.open-settings")
             iconSource: root.ddeImages + "settings.svg"
-            iconSize: Style.launcherMiniPlaceIconSize
+            iconSize: Style.launcherMiniModeToggleSize
             onClicked: LauncherState.showSettings(root.screen)
           }
 
           LauncherRightBarButton {
+            id: powerButton
             Layout.fillWidth: true
             Layout.preferredHeight: Style.launcherMiniButtonRowHeight
             text: I18n.tr("launcher.dde.open-session-menu")
             iconSource: root.ddeImages + "power.svg"
-            iconSize: Style.launcherMiniPlaceIconSize
+            iconSize: Style.launcherMiniModeToggleSize
             onClicked: LauncherState.showSessionMenu(root.screen)
           }
         }

@@ -656,8 +656,8 @@
       "toggle-category": "切换分类视图",
       "switch-to-mini": "切换到迷你启动器",
       "switch-to-fullscreen": "切换到全屏启动器",
-      "open-settings": "打开设置",
-      "open-session-menu": "打开会话菜单",
+      "open-settings": "设置",
+      "open-session-menu": "电源",
       "all-apps": "全部应用",
       "categories-label": "分类",
       "categories": {

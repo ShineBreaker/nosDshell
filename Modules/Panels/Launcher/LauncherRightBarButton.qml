@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Layouts
 
 import qs.Commons
 import qs.Widgets
@@ -40,17 +41,17 @@ Item {
     }
   }
 
-  Row {
+  RowLayout {
     id: rowContent
-    anchors.left: parent.left
+    anchors.fill: parent
     anchors.leftMargin: Style.marginS
-    anchors.verticalCenter: parent.verticalCenter
+    anchors.rightMargin: Style.marginS
     spacing: Style.marginS
 
     Image {
       visible: root.iconSource !== ""
-      width: root.iconSize
-      height: root.iconSize
+      Layout.preferredWidth: root.iconSize
+      Layout.preferredHeight: root.iconSize
       source: root.iconSource
       fillMode: Image.PreserveAspectFit
       smooth: true
@@ -59,9 +60,9 @@ Item {
 
     NIcon {
       visible: root.iconSource === "" && root.icon !== ""
-      width: root.iconSize
-      height: root.iconSize
-      anchors.verticalCenter: parent.verticalCenter
+      Layout.preferredWidth: root.iconSize
+      Layout.preferredHeight: root.iconSize
+      Layout.alignment: Qt.AlignVCenter
       icon: root.icon
       // iconSize is in logical px; 96 dpi means 1 px == 0.75 pt
       pointSize: root.iconSize * 0.75
@@ -69,12 +70,14 @@ Item {
     }
 
     NText {
-      anchors.verticalCenter: parent.verticalCenter
+      Layout.fillWidth: true
+      Layout.alignment: Qt.AlignVCenter
       text: root.text
       pointSize: Style.launcherMiniButtonFontSize
       font.weight: Style.fontWeightMedium
       color: mouseArea.pressed ? Color.accent : Color.onShell
       elide: Text.ElideRight
+      horizontalAlignment: Text.AlignLeft
     }
   }
 
