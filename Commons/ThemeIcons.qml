@@ -94,7 +94,20 @@ Singleton {
       return iconFromName(entry.icon, fallback);
     }
 
+    // Reverse-domain app ids (org.gnome.Calculator) are reported in varying
+    // case by compositors; themes like papirus store the capitalised leaf.
+    if (!iconExists(appId) && iconExists(lastSegmentTitleCase(appId)))
+      return iconFromName(lastSegmentTitleCase(appId), fallback);
+
     return iconFromName(appId, fallback);
+  }
+
+  function lastSegmentTitleCase(name) {
+    const dot = name.lastIndexOf(".");
+    if (dot < 0 || dot === name.length - 1)
+      return name;
+    const seg = name.substring(dot + 1);
+    return name.substring(0, dot + 1) + seg.charAt(0).toUpperCase() + seg.slice(1);
   }
 
   // Robust lookup strategy

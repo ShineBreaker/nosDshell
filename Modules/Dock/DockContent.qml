@@ -82,7 +82,7 @@ Item {
   function getAppIcon(appData): string {
     if (!appData || !appData.appId)
       return "";
-    return ThemeIcons.iconForAppId(appData.appId?.toLowerCase());
+    return ThemeIcons.iconForAppId(appData.appId);
   }
 
   function getValidToplevels(appData) {

@@ -863,7 +863,7 @@ Item {
 
               source: {
                 root.iconRevision; // Force re-evaluation when revision changes
-                return ThemeIcons.iconForAppId(modelData?.appId?.toLowerCase());
+                return ThemeIcons.iconForAppId(modelData?.appId);
               }
               smooth: true
               asynchronous: true
