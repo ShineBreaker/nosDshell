@@ -114,11 +114,26 @@ Item {
               anchors.centerIn: parent
               spacing: Style.marginXXS
 
+              // Original nav art where the module has it (normal variant: the
+              // grid has no selected state); Tabler glyph otherwise.
+              readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, false)
+              Image {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: Style.moduleCellIcon
+                Layout.preferredHeight: Style.moduleCellIcon
+                sourceSize.width: Math.round(Style.moduleCellIcon * Style.uiScaleRatio)
+                sourceSize.height: Math.round(Style.moduleCellIcon * Style.uiScaleRatio)
+                source: ddeArt
+                visible: ddeArt !== ""
+                smooth: true
+              }
+
               NIcon {
                 Layout.alignment: Qt.AlignHCenter
                 icon: modelData.icon
                 pointSize: Style.moduleCellIcon
                 applyUiScale: false
+                visible: ddeArt === ""
                 color: cellArea.containsMouse ? Color.onShell : Color.onShellSecondary
               }
 
