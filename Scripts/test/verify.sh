@@ -458,7 +458,7 @@ run_scene() {
                           shot "$1"
                           call controlCenter toggle 0.5 ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
-    settings-*)           call settings openTab "${1#settings-}" 2; shot "$1"; call settings toggle 0.5 ;;
+    settings-*)           call settings openTab "${1#settings-}" 5; shot "$1"; call settings toggle 0.5 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
     notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null
