@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 66
+  readonly property int settingsVersion: 67
   property bool isDebug: Quickshell.env("NOSD_DEBUG") === "1"
   readonly property string shellName: "nosdshell"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOSD_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -323,8 +323,6 @@ Singleton {
       property bool compactLockScreen: false
       property bool lockScreenAnimations: false
       property bool lockOnSuspend: true
-      property bool showSessionButtonsOnLockScreen: true
-      property bool showHibernateOnLockScreen: false
       property bool enableLockScreenMediaControls: false
       property bool enableShadows: true
       property bool enableBlurBehind: true

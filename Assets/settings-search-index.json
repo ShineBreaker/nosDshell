@@ -1752,37 +1752,13 @@
     "subTabLabel": "common.behavior"
   },
   {
-    "labelKey": "panels.lock-screen.show-session-buttons-label",
-    "descriptionKey": "panels.lock-screen.show-session-buttons-description",
-    "widget": "NToggle",
-    "tab": 11,
-    "tabLabel": "panels.lock-screen.title",
-    "subTab": 1,
-    "subTabLabel": "common.behavior"
-  },
-  {
-    "labelKey": "panels.lock-screen.show-hibernate-label",
-    "descriptionKey": "panels.lock-screen.show-hibernate-description",
-    "widget": "NToggle",
-    "tab": 11,
-    "tabLabel": "panels.lock-screen.title",
-    "subTab": 1,
-    "subTabLabel": "common.behavior",
-    "visibleWhen": [
-      "Settings.data.general.showSessionButtonsOnLockScreen"
-    ]
-  },
-  {
     "labelKey": "panels.session-menu.enable-countdown-label",
     "descriptionKey": "panels.session-menu.enable-countdown-description",
     "widget": "NToggle",
     "tab": 11,
     "tabLabel": "panels.lock-screen.title",
     "subTab": 1,
-    "subTabLabel": "common.behavior",
-    "visibleWhen": [
-      "Settings.data.general.showSessionButtonsOnLockScreen"
-    ]
+    "subTabLabel": "common.behavior"
   },
   {
     "labelKey": "panels.session-menu.countdown-duration-label",
@@ -1793,7 +1769,7 @@
     "subTab": 1,
     "subTabLabel": "common.behavior",
     "visibleWhen": [
-      "Settings.data.general.showSessionButtonsOnLockScreen && Settings.data.general.enableLockScreenCountdown"
+      "Settings.data.general.enableLockScreenCountdown"
     ]
   },
   {

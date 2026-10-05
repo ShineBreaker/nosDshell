@@ -1474,10 +1474,6 @@
       "monitors-desc": "Show lock screen on specific monitors. Defaults to all if none are chosen.",
       "password-chars-description": "Cute icons used to hide your password.",
       "password-chars-label": "Random password icons",
-      "show-hibernate-description": "Show the option 'hibernate' in the power controls.",
-      "show-hibernate-label": "Show hibernate",
-      "show-session-buttons-description": "Allow access to power settings from the lock screen.",
-      "show-session-buttons-label": "Power controls",
       "title": "Lock Screen"
     },
     "network": {

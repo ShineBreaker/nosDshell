@@ -121,15 +121,18 @@ Item {
     radius: Style.radiusL
     color: "transparent"
 
-    width: Settings.data.general.showHibernateOnLockScreen ? 860 : 810
+    // Wrap the content: the power row below is driven by sessionMenu.powerOptions
+    // and can hold anywhere from one to all eight DDE actions, so no fixed width
+    // fits. (Replaces the old showHibernateOnLockScreen ? 860 : 810 hack.)
+    width: bottomColumn.implicitWidth + 28
 
     ColumnLayout {
+      id: bottomColumn
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
       anchors.margins: 14
       spacing: Style.marginL
-
 
       // DDE centre block (DESIGN §3.9, userinputwidget.cpp): 100 px ringless
       // avatar, user name 16 px 25 px below, then the password field 20 px below.
@@ -621,16 +624,15 @@ Item {
         NText {
           Layout.alignment: Qt.AlignHCenter
           text: root.timerActive ? I18n.tr("session-menu.action-in-seconds", {
-                                          "action": root.lockPowerOptions.find(function (o) {
-                                                                    return o.action === root.pendingAction;
-                                                                  })?.title || "",
-                                          "seconds": Math.ceil(root.timeRemaining / 1000)
-                                        }) : ""
+                                             "action": root.lockPowerOptions.find(function (o) {
+                                               return o.action === root.pendingAction;
+                                             })?.title || "",
+                                             "seconds": Math.ceil(root.timeRemaining / 1000)
+                                           }) : ""
           pointSize: Style.fontSizeL
           color: "white"
         }
       }
-
     }
   }
 }
