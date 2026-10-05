@@ -271,9 +271,10 @@ Item {
 
   // Called by every tab Loader when it finishes: while a snap target is
   // pending, keep its header stable as heights above or below it still change.
-  // The snap clears only once the target section and everything above it are
-  // really Ready (active flags alone are not enough: async instantiation
-  // lags behind the idle fill).
+  // The snap is cleared only by user scroll, a new open, module changes, or
+  // the quiet timer — never by load bookkeeping: any late height shift
+  // (placeholder estimate taller than the real tab collapses contentHeight,
+  // Flickable clamps contentY down) must still find the target waiting.
   function _onTabLoaded(secIdx) {
     // Open-latency probe, independent of the re-snap lifecycle.
     if (secIdx === root._targetSec && !root._snapLogged) {
@@ -288,18 +289,6 @@ Item {
       return;
     snapQuietTimer.restart();
     _resnapToTarget();
-    if (_aboveReady(snap.sec))
-      root._pendingSnap = null;
-  }
-
-  // Everything above section sec fully instantiated?
-  function _aboveReady(sec) {
-    for (var i = 0; i < sec; i++) {
-      const s = sectionsRepeater.itemAt(i);
-      if (!s || !s.tabsReady || !s.tabsReady())
-        return false;
-    }
-    return true;
   }
 
   // Move contentY onto the pending target when it drifted off by more
@@ -727,6 +716,10 @@ Item {
 
           // User scroll cancels programmatic scroll + pending re-snap; scroll
           // stops (debounced) sync the rail highlight (commit: nav sync).
+          // NOTE: contentY also changes when Flickable auto-clamps after the
+          // content above shrinks (placeholder estimate taller than the real
+          // tab). That is NOT user intent, so the snap must survive it — the
+          // pending target is dropped only on explicit drag/flick/wheel.
           Connections {
             target: contentScroll.contentItem
             function onDraggingChanged() {
@@ -740,11 +733,25 @@ Item {
             function onContentYChanged() {
               if (root._programmatic || root._snapping)
                 return;
-              // Genuine user scroll: drop any pending target, then debounce
-              // the rail highlight sync.
-              root._pendingSnap = null;
               scrollSettleTimer.restart();
             }
+            // Any height shift (late font/image/layout polish that arrives with
+            // no Loader event) moves the pending target: re-snap while the user
+            // is not dragging. This is what finally closes shrink-clamp drift.
+            function onContentHeightChanged() {
+              const f = contentScroll.contentItem;
+              if (!root._pendingSnap || !f || f.dragging || f.flicking)
+                return;
+              root._resnapToTarget();
+            }
+          }
+
+          // Wheel takeover: NScrollView consumes the event for smooth scrolling;
+          // this sibling handler only cancels our programmatic state (it never
+          // accepts, so default processing continues untouched).
+          WheelHandler {
+            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+            onWheel: root._cancelProgrammatic()
           }
 
           Column {
