@@ -104,7 +104,9 @@ Item {
   // right, inset by the taskbar when that is on the right too.
   // ------------------------------------------------------------------
   property bool edgeSheet: false
-  readonly property string edgeSheetEdge: "right"
+  // Edge the sheet is pinned to: "right" (default, vertical sheet),
+// "left", or "bottom" (the §3.10 wallpaper filmstrip).
+  property string edgeSheetEdge: "right"
 
   // Square corners; PanelBackground reads this for both corner states and radius
   readonly property bool squareCorners: edgeSheet
@@ -463,6 +465,17 @@ Item {
     // that is on the same side. No grow/shrink animation: it slides along the
     // edge axis instead (see panelBackground.x).
     if (root.edgeSheet) {
+      // Bottom edge sheet (DESIGN §3.10 wallpaper filmstrip): full screen
+      // width, flush to the bottom edge. Content is responsible for clearing
+      // the taskbar itself, so this branch only pins the sheet to the edge.
+      if (root.edgeSheetEdge === "bottom") {
+        panelBackground.slidesAlongEdge = false;
+        panelBackground.targetWidth = root.width;
+        panelBackground.targetHeight = Math.min(h, root.height);
+        panelBackground.targetX = 0;
+        panelBackground.targetY = root.height - panelBackground.targetHeight;
+        return;
+      }
       panelBackground.slidesAlongEdge = true;
       // Edge sheets span the full screen height, no bar/margin deduction.
       panelBackground.targetWidth = panelWidth;
