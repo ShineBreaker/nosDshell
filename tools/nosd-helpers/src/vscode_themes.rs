@@ -6,8 +6,8 @@
 use std::env;
 use std::path::{Path, PathBuf};
 
-const DEFAULT_PREFIX: &str = "noctalia.noctaliatheme-";
-const THEME_SUFFIX: [&str; 2] = ["themes", "NoctaliaTheme-color-theme.json"];
+const DEFAULT_PREFIX: &str = "nosd.nosdtheme-";
+const THEME_SUFFIX: [&str; 2] = ["themes", "NosdTheme-color-theme.json"];
 
 /// Expand a leading `~` against $HOME (mirrors Path.expanduser).
 fn expanduser(p: &str) -> PathBuf {
@@ -75,11 +75,11 @@ mod tests {
     #[test]
     fn finds_matching_prefix_only() {
         let d = tmpdir("match");
-        std::fs::create_dir_all(d.join("noctalia.noctaliatheme-1.0.0")).unwrap();
+        std::fs::create_dir_all(d.join("nosd.nosdtheme-1.0.0")).unwrap();
         std::fs::create_dir_all(d.join("other.theme-2.0.0")).unwrap();
         let got = find_themes(&d, DEFAULT_PREFIX);
         assert_eq!(got.len(), 1);
-        assert!(got[0].ends_with("themes/NoctaliaTheme-color-theme.json"));
+        assert!(got[0].ends_with("themes/NosdTheme-color-theme.json"));
         let _ = std::fs::remove_dir_all(&d);
     }
 

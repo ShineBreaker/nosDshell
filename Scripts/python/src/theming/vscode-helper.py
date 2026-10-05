@@ -12,13 +12,13 @@ def find_all_noctalia_themes(extensions_dir: Path, prefix: str) -> list[str]:
     # Collect all directories matching the extension prefix
     candidates = [d for d in extensions_dir.iterdir() if d.is_dir() and d.name.startswith(prefix)]
     # Return theme file paths for all matching extensions
-    return [str(d / "themes" / "NoctaliaTheme-color-theme.json") for d in candidates]
+    return [str(d / "themes" / "NosdTheme-color-theme.json") for d in candidates]
 
 
 if __name__ == "__main__":
     # Resolve ~ in the provided extensions directory path
     extensions_dir = Path(sys.argv[1]).expanduser()
-    prefix = sys.argv[2] if len(sys.argv) > 2 else "noctalia.noctaliatheme-"
+    prefix = sys.argv[2] if len(sys.argv) > 2 else "nosd.nosdtheme-"
 
     # Print the resolved paths to stdout for the QML Process to capture
     results = find_all_noctalia_themes(extensions_dir, prefix)

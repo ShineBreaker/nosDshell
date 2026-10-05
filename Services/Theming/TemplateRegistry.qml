@@ -18,7 +18,54 @@ Singleton {
   readonly property string kdeApplyScript: Quickshell.shellDir + '/Scripts/python/src/theming/kde-apply-scheme.py'
   readonly property string vscodeHelperScript: Quickshell.shellDir + '/Scripts/python/src/theming/vscode-helper.py'
 
-  // Dynamically resolved VSCode extension theme paths (all matching noctalia extensions)
+  // Rust helpers (tools/nosd-helpers): PATH install, else the in-tree
+  // release binary. Empty until the detector below finishes; callers use
+  // helperCmd() so they fall back to the python scripts either way.
+  property string helpersBin: ""
+
+  function helperCmd(sub, args) {
+    if (root.helpersBin !== "")
+      return [root.helpersBin, sub].concat(args);
+    return null;
+  }
+  function gtkRefreshCmd(mode) {
+    return root.helperCmd("gtk-refresh", [mode]) || ["python3", root.gtkRefreshScript, mode];
+  }
+  function kdeApplyCmd(scheme) {
+    return root.helperCmd("kde-apply-scheme", [scheme]) || ["python3", root.kdeApplyScript, scheme];
+  }
+  function vscodeCmd(extensionsDir) {
+    return root.helperCmd("vscode-themes", [extensionsDir]) || ["python3", root.vscodeHelperScript, extensionsDir];
+  }
+  // Shell one-liners for template post_hook entries (evaluated at apply time).
+  function gtkRefreshHook(mode) {
+    if (root.helpersBin !== "")
+      return `${root.helpersBin} gtk-refresh ${mode}`;
+    return `python3 ${root.gtkRefreshScript} ${mode}`;
+  }
+  function kdeApplyHook(scheme) {
+    if (root.helpersBin !== "")
+      return `${root.helpersBin} kde-apply-scheme ${scheme}`;
+    return `python3 ${root.kdeApplyScript} ${scheme}`;
+  }
+
+  Process {
+    id: helpersDetectProcess
+    command: ["sh", "-c", "command -v nosd-helpers || { p=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/release/nosd-helpers\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    running: true
+    stdout: StdioCollector {}
+    onExited: {
+      root.helpersBin = stdout.text.trim();
+      if (root.helpersBin !== "")
+        Logger.i("Theming", "nosd-helpers available:", root.helpersBin);
+      else
+        Logger.w("Theming", "nosd-helpers not found, falling back to python helpers");
+      codeResolverProcess.running = true;
+      codiumResolverProcess.running = true;
+    }
+  }
+
+  // Dynamically resolved VSCode extension theme paths (all matching nosd extensions)
   property var resolvedCodePaths: []
   property var resolvedCodiumPaths: []
 
@@ -84,15 +131,15 @@ Singleton {
       "input": "gtk4.css",
       "outputs": [
         {
-          "path": "~/.config/gtk-3.0/noctalia.css",
+          "path": "~/.config/gtk-3.0/nosd.css",
           "input": "gtk3.css"
         },
         {
-          "path": "~/.config/gtk-4.0/noctalia.css",
+          "path": "~/.config/gtk-4.0/nosd.css",
           "input": "gtk4.css"
         }
       ],
-      "postProcess": mode => `python3 ${gtkRefreshScript} ${mode}`
+      "postProcess": mode => root.gtkRefreshHook(mode)
     },
     {
       "id": "qt",
@@ -115,10 +162,10 @@ Singleton {
       "input": "kcolorscheme.colors",
       "outputs": [
         {
-          "path": "~/.local/share/color-schemes/noctalia.colors"
+          "path": "~/.local/share/color-schemes/nosd.colors"
         }
       ],
-      "postProcess": () => `${kdeApplyScript} noctalia`
+      "postProcess": () => root.kdeApplyHook("nosd")
     },
     {
       "id": "fuzzel",
@@ -226,11 +273,11 @@ Singleton {
       "clients": [
         {
           "name": "code",
-          "path": "~/.vscode/extensions/noctalia.noctaliatheme-0.0.5/themes/NoctaliaTheme-color-theme.json"
+          "path": "~/.vscode/extensions/nosd.nosdtheme-0.0.5/themes/NosdTheme-color-theme.json"
         },
         {
           "name": "codium",
-          "path": "~/.vscode-oss/extensions/noctalia.noctaliatheme-0.0.5-universal/themes/NoctaliaTheme-color-theme.json"
+          "path": "~/.vscode-oss/extensions/nosd.nosdtheme-0.0.5-universal/themes/NosdTheme-color-theme.json"
         }
       ]
     },
@@ -504,11 +551,12 @@ Singleton {
     return clients;
   }
 
-  // Resolve VSCode extension paths dynamically
+  // Resolve VSCode extension paths dynamically (after helpers detection,
+  // so the Rust binary is preferred with python as fallback)
   Process {
     id: codeResolverProcess
-    command: ["python3", vscodeHelperScript, "~/.vscode/extensions"]
-    running: true
+    command: root.vscodeCmd("~/.vscode/extensions")
+    running: false
     property var paths: []
     stdout: SplitParser {
       onRead: data => {
@@ -524,8 +572,8 @@ Singleton {
 
   Process {
     id: codiumResolverProcess
-    command: ["python3", vscodeHelperScript, "~/.vscode-oss/extensions"]
-    running: true
+    command: root.vscodeCmd("~/.vscode-oss/extensions")
+    running: false
     property var paths: []
     stdout: SplitParser {
       onRead: data => {
