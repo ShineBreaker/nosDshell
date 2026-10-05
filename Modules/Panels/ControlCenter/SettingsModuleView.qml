@@ -63,6 +63,7 @@ Item {
   onModulesChanged: {
     root._loadedMap = ({});
     root._pendingSnap = null;
+    snapQuietTimer.stop();
     const i = moduleIndex(module);
     if (i >= 0) {
       _ensureLoaded(i);
@@ -147,6 +148,7 @@ Item {
       scrollAnim.stop();
     root._programmatic = false;
     root._pendingSnap = null;
+    snapQuietTimer.stop();
   }
 
   // User scroll stopped (short debounce) → highlight the first module whose
@@ -160,6 +162,19 @@ Item {
     interval: 180
     repeat: false
     onTriggered: root._syncModuleToScroll()
+  }
+
+  // Final alignment: fires after a quiet period with no tab loads (covers
+  // late shifts like font-driven height changes that arrive after every
+  // Loader already reported Ready). Re-armed by openModuleAt and every load.
+  Timer {
+    id: snapQuietTimer
+    interval: 1500
+    repeat: false
+    onTriggered: {
+      root._resnapToTarget();
+      root._pendingSnap = null;
+    }
   }
 
   function _syncModuleToScroll() {
@@ -271,6 +286,7 @@ Item {
     const snap = root._pendingSnap;
     if (!snap)
       return;
+    snapQuietTimer.restart();
     _resnapToTarget();
     if (_aboveReady(snap.sec))
       root._pendingSnap = null;
@@ -332,6 +348,7 @@ Item {
     module = mod;
     _ensureLoaded(idx);
     idleFillTimer.start();
+    snapQuietTimer.start();
     Qt.callLater(() => _scrollToSection(idx, subTab, true));
   }
 
