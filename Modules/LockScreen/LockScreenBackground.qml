@@ -96,22 +96,30 @@ Item {
 
     // Don't set resolvedWallpaperPath until cache is ready
     // This prevents loading the original huge image
+    // Async callbacks may outlive this component (the lock screen Loader unloads us
+    // on unlock). Capture root: after destruction the reference reads null, so stale
+    // callbacks bail out instead of writing to the read-only global object.
+    const self = root;
     ImageCacheService.getLarge(originalPath, targetWidth, targetHeight, function (cachedPath, success) {
+      if (!self) {
+        return;
+      }
       if (success) {
-        resolvedWallpaperPath = cachedPath;
+        self.resolvedWallpaperPath = cachedPath;
       } else {
         // Only fall back to original if caching failed
-        resolvedWallpaperPath = originalPath;
+        self.resolvedWallpaperPath = originalPath;
       }
     });
 
     // Pre-blurred variant replaces the live MultiEffect blur when available
     if (ImageCacheService.blurToolAvailable && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.performanceMode) {
       ImageCacheService.getBlurred(originalPath, targetWidth, targetHeight, function (cachedPath, success) {
-        if (success) {
-          Logger.d("LockScreen", "Using pre-blurred wallpaper:", cachedPath);
-          resolvedBlurredPath = cachedPath;
+        if (!self || !success) {
+          return;
         }
+        Logger.d("LockScreen", "Using pre-blurred wallpaper:", cachedPath);
+        self.resolvedBlurredPath = cachedPath;
       });
     } else {
       resolvedBlurredPath = "";
