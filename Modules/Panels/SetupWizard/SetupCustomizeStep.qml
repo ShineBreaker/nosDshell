@@ -57,7 +57,7 @@ ColumnLayout {
             NText {
               text: I18n.tr("panels.bar.appearance-position-label")
               pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightBold
+              font.weight: Style.fontWeightSemiBold
               color: Color.mOnSurface
             }
 
@@ -111,7 +111,7 @@ ColumnLayout {
               NText {
                 text: modelData.name
                 pointSize: Style.fontSizeM
-                font.weight: (positionHoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
+                font.weight: (positionHoverHandler.hovered || parent.isActive) ? Style.fontWeightSemiBold : Style.fontWeightMedium
                 color: (positionHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
                 anchors.centerIn: parent
               }
@@ -182,7 +182,7 @@ ColumnLayout {
           NText {
             text: I18n.tr("panels.bar.appearance-density-label")
             pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
+            font.weight: Style.fontWeightSemiBold
             color: Color.mOnSurface
           }
           NText {
@@ -235,7 +235,7 @@ ColumnLayout {
                 id: densityText
                 text: modelData.name
                 pointSize: Style.fontSizeS
-                font.weight: (densityHoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
+                font.weight: (densityHoverHandler.hovered || parent.isActive) ? Style.fontWeightSemiBold : Style.fontWeightMedium
                 color: (densityHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
                 anchors.centerIn: parent
               }
@@ -307,7 +307,7 @@ ColumnLayout {
             NText {
               text: I18n.tr("panels.user-interface.scaling-label")
               pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightBold
+              font.weight: Style.fontWeightSemiBold
               color: Color.mOnSurface
             }
             NText {
@@ -372,7 +372,7 @@ ColumnLayout {
             NText {
               text: I18n.tr("panels.bar.appearance-type-label") ?? "Bar Type"
               pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightBold
+              font.weight: Style.fontWeightSemiBold
               color: Color.mOnSurface
             }
 
@@ -418,7 +418,7 @@ ColumnLayout {
               NText {
                 text: modelData.name
                 pointSize: Style.fontSizeM
-                font.weight: (typeHoverHandler.hovered || parent.isActive) ? Style.fontWeightBold : Style.fontWeightMedium
+                font.weight: (typeHoverHandler.hovered || parent.isActive) ? Style.fontWeightSemiBold : Style.fontWeightMedium
                 color: (typeHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
                 anchors.centerIn: parent
               }
@@ -496,7 +496,7 @@ ColumnLayout {
           NText {
             text: I18n.tr("panels.user-interface.dimmer-opacity-label")
             pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
+            font.weight: Style.fontWeightSemiBold
             color: Color.mOnSurface
           }
           NText {
@@ -551,7 +551,7 @@ ColumnLayout {
           NText {
             text: I18n.tr("panels.user-interface.shadows-label")
             pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
+            font.weight: Style.fontWeightSemiBold
             color: Color.mOnSurface
           }
           NText {

@@ -259,7 +259,7 @@ ColumnLayout {
         NText {
           text: filteredWallpapers.length === 0 && selectedDirectory !== "" ? I18n.tr("setup.wallpaper.none-in-dir") : I18n.tr("setup.wallpaper.no-dir")
           pointSize: Style.fontSizeM
-          font.weight: Style.fontWeightBold
+          font.weight: Style.fontWeightSemiBold
           color: Color.mOnSurfaceVariant
         }
         NText {

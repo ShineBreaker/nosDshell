@@ -84,7 +84,7 @@ ColumnLayout {
           NText {
             text: I18n.tr("tooltips.switch-to-dark-mode")
             pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
+            font.weight: Style.fontWeightSemiBold
             color: Color.mOnSurface
           }
 
@@ -139,7 +139,7 @@ ColumnLayout {
           NText {
             text: I18n.tr("panels.color-scheme.color-source-use-wallpaper-colors-label")
             pointSize: Style.fontSizeL
-            font.weight: Style.fontWeightBold
+            font.weight: Style.fontWeightSemiBold
             color: Color.mOnSurface
           }
 
@@ -210,7 +210,7 @@ ColumnLayout {
             NText {
               text: I18n.tr("panels.color-scheme.predefined-title")
               pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightBold
+              font.weight: Style.fontWeightSemiBold
               color: Color.mOnSurface
             }
 
