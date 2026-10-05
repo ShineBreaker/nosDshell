@@ -80,9 +80,10 @@ Singleton {
         return;
       }
       if (ccPanel.isPanelOpen)
-        ccPanel.openModule(module);
+        ccPanel.openModule(module, subTabId);
       else {
         ccPanel.pendingModule = module;
+        ccPanel.pendingSubTab = subTabId;
         ccPanel.open();
       }
     } else {

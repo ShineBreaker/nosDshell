@@ -34,8 +34,10 @@ FloatingWindow {
     const tabId = tab !== undefined ? tab : 0;
     const subTabId = (subTab !== undefined && subTab !== null && subTab >= 0) ? subTab : -1;
     const module = ControlCenterModules.moduleForTab(tabId, subTabId);
-    if (module)
+    if (module) {
       activeModule = module;
+      settingsModuleView.openModuleAt(module, subTabId);
+    }
   }
 
   // Navigate to a search result entry.
@@ -87,7 +89,8 @@ FloatingWindow {
       anchors.fill: parent
       anchors.margins: Style.marginS
       contentWidth: Style.settingsWindowContentWidth
-      module: root.activeModule
+      // Highlight/scroll target is pushed imperatively via openModuleAt (see
+      // navigateTo); a binding here would fight the view's scroll-sync.
       // The window has no home page to go back to; Esc closes it instead.
       onBackRequested: SettingsPanelService.closeWindow()
     }

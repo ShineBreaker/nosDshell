@@ -62,8 +62,16 @@ Item {
   implicitHeight: contentLayout.implicitHeight
 
   function selectModule(mod) {
-    if (mod && mod !== activeModule)
-      module = mod;
+    openModuleAt(mod, -1);
+  }
+
+  // External entry point for routing (panel openModule, window navigateTo).
+  // Sets the highlighted module; scrolling to it lands with the all-settings
+  // page rewrite (next commit) — until then this only switches the module.
+  function openModuleAt(mod, subTab) {
+    if (!mod)
+      return;
+    module = mod;
   }
 
   function moduleIndex(mod) {

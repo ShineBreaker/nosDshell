@@ -44,14 +44,23 @@ SmartPanel {
 
   // Module requested from IPC (applied when the frame opens)
   property var pendingModule: null
+  property int pendingSubTab: -1
 
-  // Open a module in the module view (DESIGN §3.5.3, from the home grid, IPC
-  // "settings openTab", or the header settings button).
-  function openModule(module) {
+  // The settings view registers itself here: panelContent is a separate
+  // Component scope, so ids inside it are invisible to root functions.
+  property var _moduleView: null
+
+  // Open the all-settings page scrolled to a module (DESIGN §3.5.3, from the
+  // home grid, IPC "settings openTab", or the header settings button).
+  // subTab scrolls to the matching tab section inside the module.
+  function openModule(module, subTab) {
     if (!module)
       return;
     notificationPage = false;
     activeModule = module;
+    pendingSubTab = (subTab === undefined || subTab === null) ? -1 : subTab;
+    if (root._moduleView)
+      root._moduleView.openModuleAt(module, pendingSubTab);
   }
 
   // Page state resets on close. This must live at the root: the closed signal
@@ -82,6 +91,8 @@ SmartPanel {
     anchors.fill: parent
     focus: true
 
+    Component.onCompleted: root._moduleView = moduleView
+
     readonly property var contentPreferredWidth: undefined
     readonly property var contentPreferredHeight: undefined
 
@@ -101,8 +112,9 @@ SmartPanel {
         MediaService.autoSwitchingPaused = true;
         // A module requested while closed (IPC) is applied on open.
         if (root.pendingModule) {
-          root.openModule(root.pendingModule);
+          root.openModule(root.pendingModule, root.pendingSubTab);
           root.pendingModule = null;
+          root.pendingSubTab = -1;
         }
       }
       function onNotificationPageChanged() {
@@ -122,10 +134,12 @@ SmartPanel {
       anchors.fill: parent
       spacing: 0
 
-      // 1. Header (140 px)
+      // 1. Header (140 px); hidden while the all-settings page is open
+      // so the two settings columns take the full frame height (§3.5.3).
       ControlCenterHeader {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.controlCenterHeaderHeight
+        visible: root.activeModule === null
         screen: root.screen
         notificationPage: root.notificationPage
         onNotificationToggled: root.notificationPage = !root.notificationPage
@@ -165,8 +179,7 @@ SmartPanel {
           visible: opacity > 0
           x: middleArea.moduleShown ? -middleArea.travel : 0
           onModuleSelected: function (module) {
-            root.notificationPage = false;
-            root.activeModule = module;
+            root.openModule(module, -1);
           }
 
           Behavior on x {
@@ -190,7 +203,8 @@ SmartPanel {
           id: moduleView
           anchors.fill: parent
           contentWidth: Style.settingsModuleContentWidth
-          module: root.activeModule
+          // Highlight/scroll target is pushed imperatively via openModuleAt so
+          // scroll-sync inside the view never fights an outside binding.
           opacity: middleArea.moduleShown ? 1 : 0
           visible: opacity > 0
           enabled: middleArea.moduleShown
@@ -230,18 +244,22 @@ SmartPanel {
         }
       }
 
-      // 4. Quick control panel (bottom, fixed): basic page + page indicator
+      // 4. Quick control panel (bottom, fixed): hidden while the all-settings
+      // page is open so the two settings columns take the full height (§3.5.3).
       ControlCenterQuickControl {
         id: quickControl
         Layout.fillWidth: true
         Layout.preferredHeight: Style.quickControlPanelHeight + Style.pageIndicatorHeight
+        visible: root.activeModule === null
         screen: root.screen
         Layout.alignment: Qt.AlignBottom
 
         // IPC-requested page: applied on load and whenever it changes
         property string requestedPage: root.pendingQuickPage
-        onRequestedPageChanged: if (requestedPage) quickControl.openPage(requestedPage);
-        Component.onCompleted: if (requestedPage) quickControl.openPage(requestedPage);
+        onRequestedPageChanged: if (requestedPage)
+                                  quickControl.openPage(requestedPage)
+        Component.onCompleted: if (requestedPage)
+                                 quickControl.openPage(requestedPage)
       }
     }
   }
