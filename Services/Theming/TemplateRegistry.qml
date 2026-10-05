@@ -17,6 +17,7 @@ Singleton {
   readonly property string gtkRefreshScript: Quickshell.shellDir + '/Scripts/python/src/theming/gtk-refresh.py'
   readonly property string kdeApplyScript: Quickshell.shellDir + '/Scripts/python/src/theming/kde-apply-scheme.py'
   readonly property string vscodeHelperScript: Quickshell.shellDir + '/Scripts/python/src/theming/vscode-helper.py'
+  readonly property string themeProcessorScript: Quickshell.shellDir + '/Scripts/python/src/theming/template-processor.py'
 
   // Rust helpers (tools/nosd-helpers): PATH install, else the in-tree
   // release binary. Empty until the detector below finishes; callers use
@@ -52,6 +53,16 @@ Singleton {
   function migrateCmd(configDir) {
     return root.helperCmd("migrate-colorschemes", [configDir]);
   }
+  // nosd-theme binary (tools/nosd-theme): PATH install, else the in-tree
+  // release binary. Empty until the detector below finishes.
+  property string themeBin: ""
+  // Shell prefix for template-processor invocations: the Rust binary when
+  // detected, otherwise the python implementation. Same CLI on both sides.
+  function themeProcessorCmd() {
+    if (root.themeBin !== "")
+      return root.themeBin;
+    return `python3 ${root.themeProcessorScript}`;
+  }
   // Shell one-liners for template post_hook entries (evaluated at apply time).
   function gtkRefreshHook(mode) {
     if (root.helpersBin !== "")
@@ -72,11 +83,25 @@ Singleton {
     onExited: {
       root.helpersBin = stdout.text.trim();
       if (root.helpersBin !== "")
-        Logger.i("Theming", "nosd-helpers available:", root.helpersBin);
+      Logger.i("Theming", "nosd-helpers available:", root.helpersBin);
       else
-        Logger.w("Theming", "nosd-helpers not found, falling back to python helpers");
+      Logger.w("Theming", "nosd-helpers not found, falling back to python helpers");
       codeResolverProcess.running = true;
       codiumResolverProcess.running = true;
+    }
+  }
+
+  Process {
+    id: themeDetectProcess
+    command: ["sh", "-c", "command -v nosd-theme || { p=\"" + Quickshell.shellDir + "/tools/nosd-theme/target/release/nosd-theme\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    running: true
+    stdout: StdioCollector {}
+    onExited: {
+      root.themeBin = stdout.text.trim();
+      if (root.themeBin !== "")
+      Logger.i("Theming", "nosd-theme available:", root.themeBin);
+      else
+      Logger.w("Theming", "nosd-theme not found, falling back to template-processor.py");
     }
   }
 
