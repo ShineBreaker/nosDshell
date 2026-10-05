@@ -114,11 +114,6 @@ Loader {
                 property string icon: BatteryService.batteryIcon
               }
 
-              Item {
-                id: keyboardLayout
-                property string currentLayout: KeyboardLayoutService.currentLayout
-              }
-
               // Background with wallpaper, gradient, and screen corners
               LockScreenBackground {
                 id: backgroundComponent
@@ -287,8 +282,6 @@ Loader {
                 LockScreenPanel {
                   id: panelComponent
                   lockControl: lockContext
-                  batteryIndicator: batteryIndicator
-                  keyboardLayout: keyboardLayout
                   passwordInput: passwordInput
                 }
               }

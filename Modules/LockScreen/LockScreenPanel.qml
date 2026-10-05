@@ -17,8 +17,6 @@ Item {
   anchors.fill: parent
 
   required property var lockControl
-  required property var batteryIndicator
-  required property var keyboardLayout
   required property TextInput passwordInput
 
   // Whether to enable lock screen animations (smooth cursor blink).
@@ -110,104 +108,6 @@ Item {
       timeRemaining -= interval;
       if (timeRemaining <= 0) {
         executeAction(pendingAction);
-      }
-    }
-  }
-
-  // Compact status indicators container (compact mode only)
-  Rectangle {
-    width: {
-      var hasBattery = batteryIndicator.isReady;
-      var hasKeyboard = keyboardLayout.currentLayout !== "Unknown";
-      var hasCaps = LockKeysService.capsLockOn;
-      var hasCapsSlot = hasBattery || hasKeyboard || hasCaps;
-
-      var visibleCount = 0;
-      if (hasBattery)
-        visibleCount++;
-      if (hasKeyboard)
-        visibleCount++;
-      if (hasCapsSlot)
-        visibleCount++;
-
-      if (visibleCount >= 3) {
-        return 280;
-      } else if (visibleCount === 2) {
-        return 200;
-      } else if (visibleCount === 1) {
-        return 120;
-      } else {
-        return 0;
-      }
-    }
-    height: 40
-    anchors.horizontalCenter: parent.horizontalCenter
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: 96 + 220
-    topLeftRadius: Style.radiusL
-    topRightRadius: Style.radiusL
-    color: Color.mSurface
-    visible: (batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn)
-
-    RowLayout {
-      id: compactStatusRow
-      anchors.centerIn: parent
-      spacing: Style.marginL
-
-      // Battery indicator
-      RowLayout {
-        spacing: Style.marginS
-        visible: batteryIndicator.isReady
-
-        NIcon {
-          icon: batteryIndicator.icon
-          pointSize: Style.fontSizeM
-          color: batteryIndicator.charging ? Color.mPrimary : Color.mOnSurfaceVariant
-        }
-
-        NText {
-          text: Math.round(batteryIndicator.percent) + "%"
-          color: Color.mOnSurfaceVariant
-          pointSize: Style.fontSizeM
-        }
-      }
-
-      // Keyboard layout indicator
-      RowLayout {
-        spacing: 6
-        visible: keyboardLayout.currentLayout !== "Unknown"
-
-        NIcon {
-          icon: "keyboard"
-          pointSize: Style.fontSizeM
-          color: Color.mOnSurfaceVariant
-        }
-
-        NText {
-          text: keyboardLayout.currentLayout
-          color: Color.mOnSurfaceVariant
-          pointSize: Style.fontSizeM
-          elide: Text.ElideRight
-        }
-      }
-
-      // Caps Lock indicator
-      RowLayout {
-        spacing: 6
-        visible: batteryIndicator.isReady || keyboardLayout.currentLayout !== "Unknown" || LockKeysService.capsLockOn
-
-        NIcon {
-          icon: "lock"
-          pointSize: Style.fontSizeM
-          color: LockKeysService.capsLockOn ? Color.mPrimary : Qt.alpha(Color.mOnSurfaceVariant, 0.5)
-        }
-
-        NText {
-          text: I18n.tr("bar.lock-keys.show-caps-lock-label")
-          color: LockKeysService.capsLockOn ? Color.mOnSurfaceVariant : Qt.alpha(Color.mOnSurfaceVariant, 0.65)
-          pointSize: Style.fontSizeM
-          elide: Text.ElideRight
-        }
       }
     }
   }
