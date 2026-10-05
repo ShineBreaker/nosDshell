@@ -459,6 +459,66 @@ Singleton {
   readonly property int switchKnob: Math.round(18 * uiScaleRatio)
   readonly property int switchDuration: 150
 
+  // ----------------------------------------------------------------
+  // §3.4.1 fullscreen launcher (gxde-launcher fullscreenframe.cpp:1319-1341,
+  // searchwidget.cpp:81-103, calculate_util.cpp:47-54,104-145, constants.h)
+  // ----------------------------------------------------------------
+  // Search row: 30 px band, left/right margins 30, 30 px between the right-hand
+  // buttons (searchwidget.cpp:82-102); top band 30, + dock height when the taskbar
+  // sits on top (fullscreenframe.cpp:1321-1334)
+  readonly property int launcherTopBand: 30
+  readonly property int launcherSearchWidth: 290
+  readonly property int launcherSearchButtonSize: 22 // category / unfullscreen
+  readonly property int launcherSearchButtonSizeAlt: 24 // settings
+  readonly property int launcherSearchButtonGap: 30
+  readonly property int launcherAppsAreaTopMargin: 20 // APPS_AREA_TOP_MARGIN
+  // calculateBesidePadding(): 180 px, 130 px when the screen is <= 1366 wide
+  readonly property int launcherSidePaddingWide: 180
+  readonly property int launcherSidePaddingNarrow: 130
+  readonly property int launcherSidePaddingBreakpoint: 1366
+  // calculateAppLayout(): cell budget 170/200 and spacing 10/14 at the 1440 breakpoint
+  readonly property int launcherCellBudgetWide: 200
+  readonly property int launcherCellBudgetNarrow: 170
+  readonly property int launcherCellBudgetBreakpoint: 1440
+  readonly property int launcherCellSpacingWide: 14
+  readonly property int launcherCellSpacingNarrow: 10
+  readonly property int launcherGridBottomMargin: 60 // VIEWLIST_BOTTOM_MARGIN
+  readonly property int launcherGradientBand: 60 // §1.8 fade band
+
+  // Category navigation (navigationwidget.cpp, categorybutton.cpp, constants.h)
+  readonly property int launcherCategoryIconSize: 22 // *_22px.svg
+  readonly property int launcherCategoryRowHeight: 42 // NAVIGATION_ICON_HEIGHT 50/1.2
+  readonly property int launcherCategoryTitleHeight: 50 // CATEGORY_TITLE_WIDGET_HEIGHT
+  readonly property real launcherNavZoom: 1.2 // enterEvent zoom level
+
+  // ----------------------------------------------------------------
+  // §3.4.2 mini launcher (windowedframe.cpp:158-171, miniframerightbar.cpp:144,
+  // avatar.cpp:42, datetimewidget.cpp:35, miniframebutton.cpp:43-48)
+  // ----------------------------------------------------------------
+  readonly property int launcherMiniHeight: 502
+  readonly property int launcherMiniLeftPaneWidth: 320
+  readonly property int launcherMiniRightPaneWidth: 160
+  readonly property int launcherMiniDockGap: 1 // adjustPosition(): +1 px off the taskbar
+  readonly property int launcherMiniRowHeight: 36 // app rows and the switch button
+  readonly property int launcherMiniAvatarSize: 60 // avatar.cpp:42
+  readonly property int launcherMiniTopBand: 30 // right bar top spacing
+  readonly property int launcherMiniModeToggleSize: 24 // fullscreen_normal.png
+  readonly property int launcherMiniPaddingLeft: 18 // miniframerightbar.cpp:144
+  readonly property int launcherMiniPaddingRight: 12
+  readonly property int launcherMiniPaddingBottom: 18
+  // Left pane bottom band (windowedframe.cpp:156 addSpacing(15))
+  readonly property int launcherMiniBottomGap: 15
+  // MiniFrameButton::updateFont(): max(base px + 2, 14). 14 px at 96 dpi == 10.5 pt
+  readonly property real launcherMiniButtonFontSize: 10.5
+  // Row pitch measured off the DDE 15.5 mini launcher (references/menu2.png):
+  // the six place rows sit 30 px apart (14 px label + 2/2 px padding from
+  // skin/qss/miniframe.qss `#MiniFrameButton`)
+  readonly property int launcherMiniButtonRowHeight: 30
+  // DatetimeWidget: 40 px clock, then the long-format date at white 0.6
+  readonly property real launcherMiniClockSize: 40
+  readonly property real launcherMiniClockDateAlpha: 0.6
+  readonly property int launcherMiniPlaceIconSize: 22
+
   // Dock icon size presets
   readonly property int dockIconSmall: 30
   readonly property int dockIconMedium: 36
