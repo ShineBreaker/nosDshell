@@ -98,6 +98,11 @@ Item {
             // Only pad the trailing empty cells in the last row so the grid
             // stays flush on its outer edges.
             readonly property bool spacerCell: modelData === undefined || modelData === null
+            // Original nav art where the module has it (normal variant: the grid
+            // has no selected state); "" → Tabler glyph. Hoisted to the delegate
+            // root: properties on layout containers (Row/ColumnLayout) are not
+            // reliably visible to their children on first evaluation.
+            readonly property string ddeArt: (modelData === undefined || modelData === null) ? "" : ControlCenterModules.navIconUrl(modelData, false)
 
             Layout.fillWidth: true
             Layout.preferredWidth: cellWidth
@@ -114,9 +119,7 @@ Item {
               anchors.centerIn: parent
               spacing: Style.marginXXS
 
-              // Original nav art where the module has it (normal variant: the
-              // grid has no selected state); Tabler glyph otherwise.
-              readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, false)
+              // (ddeArt lives on the delegate root.)
               Image {
                 Layout.alignment: Qt.AlignHCenter
                 Layout.preferredWidth: Style.moduleCellIcon
