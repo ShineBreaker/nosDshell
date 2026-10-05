@@ -1,6 +1,6 @@
 #![forbid(unsafe_code)]
 
-//! Find installed Noctalia theme extensions for VSCode/VSCodium.
+//! Find installed Nosd theme extensions for VSCode/VSCodium.
 //! Mirrors Scripts/python/src/theming/vscode-helper.py.
 
 use std::env;

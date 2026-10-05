@@ -6,13 +6,15 @@
 
 mod gtk_refresh;
 mod kde_apply;
+mod khal_events;
+mod migrate;
 mod vscode_themes;
 
 use std::env;
 use std::process::ExitCode;
 
 fn usage() -> ! {
-    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh> [ARGS...]");
+    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes> [ARGS...]");
     std::process::exit(2);
 }
 
@@ -24,6 +26,8 @@ fn main() -> ExitCode {
         "vscode-themes" => vscode_themes::run(&rest),
         "kde-apply-scheme" => kde_apply::run(&rest),
         "gtk-refresh" => gtk_refresh::run(&rest),
+        "khal-events" => khal_events::run(&rest),
+        "migrate-colorschemes" => migrate::run(&rest),
         _ => usage(),
     };
     ExitCode::from(code as u8)

@@ -2,8 +2,13 @@
 name = "nosd-helpers"
 version = "0.1.0"
 edition = "2021"
-description = "Small nosDshell helper tools (vscode themes, KDE scheme, GTK refresh)"
+description = "Small nosDshell helper tools (theming, calendar, system)"
 license = "GPL-3.0-or-later"
+
+[dependencies]
+chrono = "=0.4.45"
+serde_json = { version = "=1.0.151", features = ["preserve_order"] }
+ureq = "=3.4.2"
 
 [[bin]]
 name = "nosd-helpers"

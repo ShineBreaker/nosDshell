@@ -37,6 +37,12 @@ Singleton {
   function vscodeCmd(extensionsDir) {
     return root.helperCmd("vscode-themes", [extensionsDir]) || ["python3", root.vscodeHelperScript, extensionsDir];
   }
+  function khalEventsCmd(startDate, duration) {
+    return root.helperCmd("khal-events", [startDate, duration]);
+  }
+  function migrateCmd(configDir) {
+    return root.helperCmd("migrate-colorschemes", [configDir]);
+  }
   // Shell one-liners for template post_hook entries (evaluated at apply time).
   function gtkRefreshHook(mode) {
     if (root.helpersBin !== "")
