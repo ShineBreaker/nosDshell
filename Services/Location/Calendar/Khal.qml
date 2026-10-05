@@ -10,8 +10,6 @@ import qs.Services.Theming
 Singleton {
   id: root
 
-  readonly property string khalEventsScript: Quickshell.shellDir + '/Scripts/python/src/calendar/khal-events.py'
-
   function init() {
     availabilityCheckProcess.running = true;
   }
@@ -36,7 +34,7 @@ Singleton {
   Process {
     id: availabilityCheckProcess
     running: false
-    command: ["sh", "-c", "command -v khal >/dev/null 2>&1 && { command -v nosd-helpers >/dev/null 2>&1 || command -v python3 >/dev/null 2>&1; }"]
+    command: ["sh", "-c", "command -v khal >/dev/null 2>&1 && command -v nosd-helpers"]
     onExited: function (exitCode) {
       if (exitCode === 0) {
         CalendarService.available = true;
@@ -95,7 +93,7 @@ Singleton {
     property string startTime: ""
     property string duration: ""
 
-    command: TemplateRegistry.khalEventsCmd(startTime, duration) || ["python3", root.khalEventsScript, startTime, duration]
+    command: TemplateRegistry.khalEventsCmd(startTime, duration)
 
     stdout: StdioCollector {
       onStreamFinished: {

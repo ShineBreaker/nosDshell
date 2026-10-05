@@ -234,7 +234,8 @@ Singleton {
       return;
     }
     try {
-      if (active || adapter.discovering) { // Only attempt to set if activating, or if deactivating and currently currently discovering
+      if (active || adapter.discovering) {
+        // Only attempt to set if activating, or if deactivating and currently currently discovering
         adapter.discovering = active;
       }
     } catch (e) {
@@ -418,9 +419,8 @@ Singleton {
       root.setScanActive(false);
     }
 
-    const scriptPath = Quickshell.shellDir + "/Scripts/python/src/network/bluetooth-pair.py";
     const helperArgs = [String(addr), String(pairWait), String(attempts), String(intervalSec)];
-    pairingProcess.command = TemplateRegistry.helperCmd("bluetooth-pair", helperArgs) || ["python3", scriptPath].concat(helperArgs);
+    pairingProcess.command = TemplateRegistry.helperCmd("bluetooth-pair", helperArgs);
     pairingProcess.running = true;
   }
 

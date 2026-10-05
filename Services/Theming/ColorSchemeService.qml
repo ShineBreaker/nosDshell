@@ -27,7 +27,11 @@ Singleton {
     if (TemplateProcessor.isTemplateEnabled("gtk"))
       return;
     const mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
-    Quickshell.execDetached(TemplateRegistry.gtkRefreshCmd("--appearance-only").concat([mode]));
+    const cmd = TemplateRegistry.gtkRefreshCmd("--appearance-only");
+    if (cmd)
+      Quickshell.execDetached(cmd.concat([mode]));
+    else
+      Logger.w("ColorScheme", "nosd-helpers unavailable; skipping GTK refresh");
   }
 
   Connections {

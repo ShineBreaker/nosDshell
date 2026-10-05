@@ -26,8 +26,7 @@ Singleton {
                                             "rfkillAvailable": ["sh", "-c", "command -v rfkill"],
                                             "wlsunsetAvailable": ["sh", "-c", "command -v wlsunset"],
                                             "gnomeCalendarAvailable": ["sh", "-c", "command -v gnome-calendar"],
-                                            "wtypeAvailable": ["sh", "-c", "command -v wtype"],
-                                            "pythonAvailable": ["sh", "-c", "command -v python3"]
+                                            "wtypeAvailable": ["sh", "-c", "command -v wtype"]
                                           })
 
   // Discord client auto-detection

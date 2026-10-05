@@ -13,15 +13,11 @@ Singleton {
     writeUserTemplatesToml();
   }
 
-  readonly property string templateApplyScript: Quickshell.shellDir + '/Scripts/bash/template-apply.sh'
-  readonly property string gtkRefreshScript: Quickshell.shellDir + '/Scripts/python/src/theming/gtk-refresh.py'
-  readonly property string kdeApplyScript: Quickshell.shellDir + '/Scripts/python/src/theming/kde-apply-scheme.py'
-  readonly property string vscodeHelperScript: Quickshell.shellDir + '/Scripts/python/src/theming/vscode-helper.py'
-  readonly property string themeProcessorScript: Quickshell.shellDir + '/Scripts/python/src/theming/template-processor.py'
-
   // Rust helpers (tools/nosd-helpers): PATH install, else the in-tree
-  // release binary. Empty until the detector below finishes; callers use
-  // helperCmd() so they fall back to the python scripts either way.
+  // release binary. Empty until the detector below finishes; the *Cmd
+  // builders below return null until then, and callers must tolerate it.
+  // There is no script fallback: the python helpers were removed once the
+  // Rust ports reached parity.
   property string helpersBin: ""
 
   function helperCmd(sub, args) {
@@ -30,13 +26,13 @@ Singleton {
     return null;
   }
   function gtkRefreshCmd(mode) {
-    return root.helperCmd("gtk-refresh", [mode]) || ["python3", root.gtkRefreshScript, mode];
+    return root.helperCmd("gtk-refresh", [mode]);
   }
   function kdeApplyCmd(scheme) {
-    return root.helperCmd("kde-apply-scheme", [scheme]) || ["python3", root.kdeApplyScript, scheme];
+    return root.helperCmd("kde-apply-scheme", [scheme]);
   }
   function vscodeCmd(extensionsDir) {
-    return root.helperCmd("vscode-themes", [extensionsDir]) || ["python3", root.vscodeHelperScript, extensionsDir];
+    return root.helperCmd("vscode-themes", [extensionsDir]);
   }
   function khalEventsCmd(startDate, duration) {
     return root.helperCmd("khal-events", [startDate, duration]);
@@ -53,31 +49,23 @@ Singleton {
   // nosd-theme binary (tools/nosd-theme): PATH install, else the in-tree
   // release binary. Empty until the detector below finishes.
   property string themeBin: ""
-  // Shell prefix for template-processor invocations: the Rust binary when
-  // detected, otherwise the python implementation. Same CLI on both sides.
+  // Command prefix for template-processor invocations: the Rust binary.
+  // Same CLI the python implementation had.
   function themeProcessorCmd() {
-    if (root.themeBin !== "")
-      return root.themeBin;
-    return `python3 ${root.themeProcessorScript}`;
+    return root.themeBin;
   }
   // Shell one-liners for template post_hook entries (evaluated at apply time).
   function gtkRefreshHook(mode) {
-    if (root.helpersBin !== "")
-      return `${root.helpersBin} gtk-refresh ${mode}`;
-    return `python3 ${root.gtkRefreshScript} ${mode}`;
+    return `${root.helpersBin} gtk-refresh ${mode}`;
   }
   function kdeApplyHook(scheme) {
-    if (root.helpersBin !== "")
-      return `${root.helpersBin} kde-apply-scheme ${scheme}`;
-    return `python3 ${root.kdeApplyScript} ${scheme}`;
+    return `${root.helpersBin} kde-apply-scheme ${scheme}`;
   }
   // Shell one-liner for template-apply post_hook entries (evaluated at
-  // apply time): `nosd-helpers apply` when detected, else template-apply.sh.
+  // apply time): `nosd-helpers apply`.
   function applyHook(app, mode) {
     const tail = (mode !== undefined && mode !== "") ? ` ${mode}` : "";
-    if (root.helpersBin !== "")
-      return `${root.helpersBin} apply ${app}${tail}`;
-    return `${root.templateApplyScript} ${app}${tail}`;
+    return `${root.helpersBin} apply ${app}${tail}`;
   }
 
   Process {
@@ -90,7 +78,7 @@ Singleton {
       if (root.helpersBin !== "")
       Logger.i("Theming", "nosd-helpers available:", root.helpersBin);
       else
-      Logger.w("Theming", "nosd-helpers not found, falling back to python helpers");
+      Logger.w("Theming", "nosd-helpers not found; theming helpers are unavailable");
       codeResolverProcess.running = true;
       codiumResolverProcess.running = true;
     }
@@ -106,7 +94,7 @@ Singleton {
       if (root.themeBin !== "")
       Logger.i("Theming", "nosd-theme available:", root.themeBin);
       else
-      Logger.w("Theming", "nosd-theme not found, falling back to template-processor.py");
+      Logger.w("Theming", "nosd-theme not found; template processing is unavailable");
     }
   }
 
@@ -234,7 +222,7 @@ Singleton {
           "path": "~/.local/share/vicinae/themes/nosdshell.toml"
         }
       ],
-      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${applyHook("vicinae")}`,
+      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${applyHook("vicinae")}`
     },
     {
       "id": "walker",

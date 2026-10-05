@@ -10,11 +10,6 @@ import qs.Services.Theming
 Singleton {
   id: root
 
-  // Python scripts
-  readonly property string checkCalendarAvailableScript: Quickshell.shellDir + '/Scripts/python/src/calendar/check-calendar.py'
-  readonly property string listCalendarsScript: Quickshell.shellDir + '/Scripts/python/src/calendar/list-calendars.py'
-  readonly property string calendarEventsScript: Quickshell.shellDir + '/Scripts/python/src/calendar/calendar-events.py'
-
   function init() {
     availabilityCheckProcess.running = true;
   }
@@ -40,7 +35,7 @@ Singleton {
   Process {
     id: availabilityCheckProcess
     running: false
-    command: TemplateRegistry.edsCheckCmd() || ["sh", "-c", "command -v python3 >/dev/null 2>&1 && python3 " + root.checkCalendarAvailableScript + " || echo 'unavailable: python3 not installed'"]
+    command: TemplateRegistry.edsCheckCmd()
 
     stdout: StdioCollector {
       onStreamFinished: {
@@ -74,7 +69,7 @@ Singleton {
   Process {
     id: listCalendarsProcess
     running: false
-    command: TemplateRegistry.edsCalendarsCmd() || ["python3", root.listCalendarsScript]
+    command: TemplateRegistry.edsCalendarsCmd()
 
     stdout: StdioCollector {
       onStreamFinished: {
@@ -111,7 +106,7 @@ Singleton {
     property int startTime: 0
     property int endTime: 0
 
-    command: TemplateRegistry.edsEventsCmd(startTime.toString(), endTime.toString()) || ["python3", root.calendarEventsScript, startTime.toString(), endTime.toString()]
+    command: TemplateRegistry.edsEventsCmd(startTime.toString(), endTime.toString())
 
     stdout: StdioCollector {
       onStreamFinished: {
