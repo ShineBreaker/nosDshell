@@ -20,8 +20,12 @@ Item {
   property bool efficient: false
   property string barPosition: "bottom"
 
-  readonly property real leftPaneWidth: 320
-  readonly property real rightPaneWidth: 160
+  readonly property real leftPaneWidth: Style.launcherMiniLeftPaneWidth
+  readonly property real rightPaneWidth: Style.launcherMiniRightPaneWidth
+
+  // Original DDE multi-state artwork (DESIGN §1.9)
+  readonly property string ddeIcons: Quickshell.shellDir + "/Assets/DDE/gxde-launcher/src/skin/icons/"
+  readonly property string ddeImages: Quickshell.shellDir + "/Assets/DDE/gxde-launcher/src/widgets/images/"
 
   // App list vs category list (DESIGN §3.4.2 two-level list)
   property bool showCategoryList: false
@@ -34,7 +38,7 @@ Item {
   readonly property var listApps: {
     const all = appsProvider ? (appsProvider.allApps || []) : [];
     if (!inCategory)
-    return all;
+      return all;
     return all.filter(app => appsProvider.appMatchesDDECategory(app, activeCategory));
   }
 
@@ -56,38 +60,38 @@ Item {
     focus: true
 
     Keys.onPressed: event => {
-      if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
-        LauncherState.close(root.screen);
-        event.accepted = true;
-        return;
-      }
+                      if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
+                        LauncherState.close(root.screen);
+                        event.accepted = true;
+                        return;
+                      }
 
-      // Typing anywhere goes to search
-      if (event.text !== "" && event.text >= " " && !(event.modifiers & Qt.ControlModifier)) {
-        if (!searchField.textInput.activeFocus)
-        searchField.textInput.forceActiveFocus();
-        searchField.textInput.text = searchField.textInput.text + event.text;
-        model.setSearchText(searchField.textInput.text);
-        event.accepted = true;
-        return;
-      }
+                      // Typing anywhere goes to search
+                      if (event.text !== "" && event.text >= " " && !(event.modifiers & Qt.ControlModifier)) {
+                        if (!searchField.textInput.activeFocus)
+                        searchField.textInput.forceActiveFocus();
+                        searchField.textInput.text = searchField.textInput.text + event.text;
+                        model.setSearchText(searchField.textInput.text);
+                        event.accepted = true;
+                        return;
+                      }
 
-      switch (event.key) {
-      case Qt.Key_Up:
-        model.selectPreviousRow(1);
-        event.accepted = true;
-        break;
-      case Qt.Key_Down:
-        model.selectNextRow(1);
-        event.accepted = true;
-        break;
-      case Qt.Key_Enter:
-      case Qt.Key_Return:
-        model.activate();
-        event.accepted = true;
-        break;
-      }
-    }
+                      switch (event.key) {
+                        case Qt.Key_Up:
+                        model.selectPreviousRow(1);
+                        event.accepted = true;
+                        break;
+                        case Qt.Key_Down:
+                        model.selectNextRow(1);
+                        event.accepted = true;
+                        break;
+                        case Qt.Key_Enter:
+                        case Qt.Key_Return:
+                        model.activate();
+                        event.accepted = true;
+                        break;
+                      }
+                    }
   }
 
   RowLayout {
@@ -99,16 +103,22 @@ Item {
       Layout.preferredWidth: root.leftPaneWidth
       Layout.fillHeight: true
 
+      // Spacing after gxde-launcher windowedframe.cpp:143-156: 10 px around the
+      // search row, then the 1 px separator, 4 px, the app list, the switch
+      // button and 15 px at the bottom.
       ColumnLayout {
         anchors.fill: parent
-        anchors.margins: 10
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        anchors.topMargin: Style.marginM
+        anchors.bottomMargin: Style.launcherMiniBottomGap
         spacing: 0
 
         // Search field
         LauncherSearchField {
           id: searchField
           Layout.fillWidth: true
-          Layout.preferredWidth: 290
+          Layout.preferredWidth: Style.launcherSearchWidth
           Layout.preferredHeight: 30
           text: model.searchText
           onTextEdited: txt => model.setSearchText(txt)
@@ -150,7 +160,7 @@ Item {
               required property int index
 
               width: appList.width
-              height: 36
+              height: Style.launcherMiniRowHeight
 
               Rectangle {
                 anchors.fill: parent
@@ -214,7 +224,7 @@ Item {
 
             onCountChanged: {
               if (currentIndex >= count)
-              model.selectIndex(0);
+                model.selectIndex(0);
             }
           }
 
@@ -258,40 +268,54 @@ Item {
           }
         }
 
-        Item {
-          Layout.preferredHeight: 15
-        }
-
-        // "全部应用 ⇄ 分类" switch button (pressed text accent)
+        // "全部应用 ⇄ 分类" switch button. 36 px tall, 24 px all.svg at 10 px
+        // from the left, 12 px gap, the label, then the 20 px enter arrow shown
+        // in the "all categories" state (miniframeswitchbtn.cpp:32-52).
         Rectangle {
           Layout.fillWidth: true
-          Layout.preferredHeight: 28
+          Layout.preferredHeight: Style.launcherMiniRowHeight
           radius: Style.radiusRow
           color: switchRowMouse.containsMouse || switchRowMouse.pressed ? Color.overlay("hover") : "transparent"
+
+          Behavior on color {
+            ColorAnimation {
+              duration: Style.animationFast
+            }
+          }
 
           RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Style.marginM
+            anchors.rightMargin: Style.marginM
             spacing: Style.marginS
 
-            NIcon {
-              icon: root.showCategoryList ? "apps" : "category"
-              pointSize: Style.fontSizeBody
-              color: switchRowMouse.pressed ? Color.accent : Color.onShell
+            Image {
+              Layout.preferredWidth: 24
+              Layout.preferredHeight: 24
+              source: root.ddeImages + "all.svg"
+              fillMode: Image.PreserveAspectFit
+              smooth: true
+              asynchronous: true
+              opacity: switchRowMouse.pressed ? 0.6 : 1.0
             }
 
             NText {
               Layout.fillWidth: true
               text: root.showCategoryList ? I18n.tr("launcher.dde.all-apps") : I18n.tr("launcher.dde.categories-label")
               pointSize: Style.fontSizeBody
+              font.weight: Style.fontWeightMedium
               color: switchRowMouse.pressed ? Color.accent : Color.onShell
               elide: Text.ElideRight
             }
 
-            NIcon {
-              icon: "arrows-repeat"
-              pointSize: Style.fontSizeBody
-              color: switchRowMouse.pressed ? Color.accent : Color.onShellTertiary
+            Image {
+              Layout.preferredWidth: 20
+              Layout.preferredHeight: 20
+              source: root.ddeImages + "enter_details_normal.svg"
+              fillMode: Image.PreserveAspectFit
+              smooth: true
+              asynchronous: true
+              visible: root.showCategoryList
             }
           }
 
@@ -310,63 +334,66 @@ Item {
     }
 
     // ---------------- Right bar ----------------
+    // After gxde-launcher miniframerightbar.cpp: 30 px top band, the 60 px
+    // avatar top-left, the XDG place buttons centred, then the 40 px clock with
+    // the long date under it and the settings / power row at the bottom.
+    // Contents margins are (18, 0, 12, 18) (miniframerightbar.cpp:144).
     Item {
       Layout.preferredWidth: root.rightPaneWidth
       Layout.fillHeight: true
 
-      // 1 px vertical line on the left edge
+      // 1 px vertical line on the left edge, white x 0.1
+      // (miniframerightbar.cpp:204-212)
       Rectangle {
         x: 0
         width: 1
         height: parent.height
-        color: Color.overlay("hover")
+        color: Qt.alpha(Color.onShell, 0.1)
+      }
+
+      // 24x24 fullscreen toggle, 5 px from the right edge and 12 px from the
+      // top (miniframerightbar.cpp:368), fullscreen_{normal,hover,press}.png
+      LauncherImageButton {
+        x: parent.width - width - 5
+        y: 12
+        width: Style.launcherMiniModeToggleSize
+        height: Style.launcherMiniModeToggleSize
+        iconSize: Style.launcherMiniModeToggleSize
+        normalSource: root.ddeImages + "fullscreen_normal.png"
+        hoverSource: root.ddeImages + "fullscreen_hover.png"
+        pressSource: root.ddeImages + "fullscreen_press.png"
+        tooltipText: I18n.tr("launcher.dde.switch-to-fullscreen")
+        onClicked: LauncherState.setMode("fullscreen")
       }
 
       ColumnLayout {
         anchors.fill: parent
-        anchors.topMargin: 18
-        anchors.bottomMargin: 18
-        anchors.rightMargin: 12
-        anchors.leftMargin: 0
+        anchors.leftMargin: Style.launcherMiniPaddingLeft
+        anchors.rightMargin: Style.launcherMiniPaddingRight
+        anchors.bottomMargin: Style.launcherMiniPaddingBottom
         spacing: 0
 
-        // top spacing 30 before the first row
         Item {
-          Layout.preferredHeight: 30 - 18
+          Layout.preferredHeight: Style.launcherMiniTopBand
         }
 
-        // 24x24 fullscreen toggle at the top-right (width - 29, 12)
-        NIconButton {
-          Layout.alignment: Qt.AlignRight
-          Layout.preferredWidth: 24
-          Layout.preferredHeight: 24
-          icon: "enlarge"
-          tooltipText: I18n.tr("launcher.dde.switch-to-fullscreen")
-          colorBg: "transparent"
-          colorBgHover: Color.overlay("hover")
-          onClicked: LauncherState.setMode("fullscreen")
-        }
-
-        Item {
-          Layout.preferredHeight: 12
-        }
-
-        // Circular avatar
+        // ---- avatar (avatar.cpp:42, 60x60 circular, top-left) ----
         NImageRounded {
-          Layout.alignment: Qt.AlignHCenter
-          Layout.preferredWidth: 64
-          Layout.preferredHeight: 64
+          Layout.alignment: Qt.AlignLeft
+          Layout.preferredWidth: Style.launcherMiniAvatarSize
+          Layout.preferredHeight: Style.launcherMiniAvatarSize
           radius: width / 2
           imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
-          fallbackIcon: "person"
+          fallbackImagePath: Settings.ddeDefaultAvatar
         }
 
         Item {
-          Layout.preferredHeight: 12
+          Layout.fillHeight: true
         }
 
-        // Place buttons (XDG user dirs)
+        // ---- XDG place buttons ----
         ColumnLayout {
+          Layout.alignment: Qt.AlignHCenter
           Layout.fillWidth: true
           spacing: 0
 
@@ -376,70 +403,43 @@ Item {
                 "name": I18n.tr("launcher.dde.places.computer"),
                 "icon": "device-desktop",
                 "path": Quickshell.env("HOME")
-              }, {
+              },
+              {
                 "name": I18n.tr("launcher.dde.places.videos"),
                 "icon": "device-tv",
                 "path": Quickshell.env("HOME") + "/Videos"
-              }, {
+              },
+              {
                 "name": I18n.tr("launcher.dde.places.music"),
                 "icon": "music",
                 "path": Quickshell.env("HOME") + "/Music"
-              }, {
+              },
+              {
                 "name": I18n.tr("launcher.dde.places.pictures"),
                 "icon": "photo",
                 "path": Quickshell.env("HOME") + "/Pictures"
-              }, {
+              },
+              {
                 "name": I18n.tr("launcher.dde.places.documents"),
                 "icon": "file-text",
                 "path": Quickshell.env("HOME") + "/Documents"
-              }, {
+              },
+              {
                 "name": I18n.tr("launcher.dde.places.downloads"),
                 "icon": "download",
                 "path": Quickshell.env("HOME") + "/Downloads"
               }
             ]
 
-            delegate: Rectangle {
+            delegate: LauncherRightBarButton {
               required property var modelData
 
               Layout.fillWidth: true
-              Layout.preferredHeight: 28
-              radius: Style.radiusRow
-              color: placeRowMouse.containsMouse || placeRowMouse.pressed ? Color.overlay("hover") : "transparent"
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-
-              RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: Style.marginM
-                spacing: Style.marginS
-
-                NIcon {
-                  icon: modelData.icon
-                  pointSize: Style.fontSizeBody
-                  color: Color.onShell
-                }
-
-                NText {
-                  text: modelData.name
-                  pointSize: Style.fontSizeBody
-                  color: placeRowMouse.pressed ? Color.accent : Color.onShell
-                  elide: Text.ElideRight
-                  Layout.fillWidth: true
-                }
-              }
-
-              MouseArea {
-                id: placeRowMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                acceptedButtons: Qt.LeftButton
-                onClicked: Qt.openUrlExternally("file://" + modelData.path)
-              }
+              Layout.preferredHeight: Style.launcherMiniButtonRowHeight
+              text: modelData.name
+              icon: modelData.icon
+              iconSize: Style.launcherMiniPlaceIconSize
+              onClicked: Qt.openUrlExternally("file://" + modelData.path)
             }
           }
         }
@@ -448,52 +448,54 @@ Item {
           Layout.fillHeight: true
         }
 
-        // Date/time (two lines)
-        NText {
+        // ---- date and time (datetimewidget.cpp:35) ----
+        ColumnLayout {
           Layout.fillWidth: true
-          horizontalAlignment: Text.AlignHCenter
-          text: I18n.locale.toString(Time.now, Locale.ShortFormat)
-          pointSize: Style.fontSizeBody
-          color: Color.onShell
-          applyUiScale: false
+          spacing: 2
+
+          NText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: I18n.locale.toString(Time.now, "HH:mm")
+            pointSize: Style.launcherMiniClockSize / (96 / 72)
+            font.weight: Style.fontWeightRegular
+            color: Color.onShell
+            applyUiScale: false
+          }
+
+          NText {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: Date.toLocaleString(Qt.locale(), Locale.LongFormat)
+            pointSize: Style.fontSizeBody
+            color: Qt.alpha(Color.onShell, Style.launcherMiniClockDateAlpha)
+            applyUiScale: false
+          }
         }
 
-        NText {
-          Layout.fillWidth: true
-          horizontalAlignment: Text.AlignHCenter
-          text: I18n.locale.toString(Time.now, "HH:mm")
-          pointSize: Style.fontSizeTitle
-          font.weight: Style.fontWeightBold
-          color: Color.onShell
-          applyUiScale: false
-        }
-
-        Item {
-          Layout.preferredHeight: Style.marginM
-        }
-
-        // Settings + power
+        // ---- settings + power (miniframerightbar.cpp:97-101) ----
         RowLayout {
-          Layout.alignment: Qt.AlignHCenter
+          Layout.fillWidth: true
+          Layout.topMargin: Style.marginS
+          Layout.leftMargin: Style.marginS
+          Layout.rightMargin: Style.marginS
           spacing: Style.marginS
 
-          NIconButton {
-            Layout.preferredWidth: 24
-            Layout.preferredHeight: 24
-            icon: "settings"
-            tooltipText: I18n.tr("launcher.dde.open-settings")
-            colorBg: "transparent"
-            colorBgHover: Color.overlay("hover")
+          LauncherRightBarButton {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Style.launcherMiniButtonRowHeight
+            text: I18n.tr("launcher.dde.open-settings")
+            iconSource: root.ddeImages + "settings.svg"
+            iconSize: Style.launcherMiniPlaceIconSize
             onClicked: LauncherState.showSettings(root.screen)
           }
 
-          NIconButton {
-            Layout.preferredWidth: 24
-            Layout.preferredHeight: 24
-            icon: "power"
-            tooltipText: I18n.tr("launcher.dde.open-session-menu")
-            colorBg: "transparent"
-            colorBgHover: Color.overlay("hover")
+          LauncherRightBarButton {
+            Layout.fillWidth: true
+            Layout.preferredHeight: Style.launcherMiniButtonRowHeight
+            text: I18n.tr("launcher.dde.open-session-menu")
+            iconSource: root.ddeImages + "power.svg"
+            iconSize: Style.launcherMiniPlaceIconSize
             onClicked: LauncherState.showSessionMenu(root.screen)
           }
         }
