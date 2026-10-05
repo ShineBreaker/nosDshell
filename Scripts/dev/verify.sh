@@ -31,9 +31,9 @@
 #   bluetooth, airplaneMode, battery, powerProfile, media, state,
 #   desktopWidgets, location, systemMonitor, plugin
 #
-# Requires the `noctalia-qs` fork (stock quickshell lacks PwAudioSpectrum and
-# fails to load this repo). All packages come from `guix shell` — nothing is
-# installed into any profile.
+# Runs under upstream `quickshell` by default; set QS_PKG=noctalia-qs to
+# compare against the (archived) fork. All packages come from `guix shell` —
+# nothing is installed into any profile.
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -142,7 +142,7 @@ output * resolution 1920x1080 position 0 0
 output * bg #1d2430 solid_color
 EOF
 
-PKGS="noctalia-qs sway grim dbus imagemagick libnotify pipewire wireplumber
+PKGS="${QS_PKG:-quickshell} sway grim dbus imagemagick libnotify pipewire wireplumber
 font-google-noto font-google-noto-sans-cjk papirus-icon-theme adwaita-icon-theme
 qtwayland qtmultimedia qt5compat qtimageformats python
 coreutils findutils grep gawk procps"

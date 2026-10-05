@@ -10,7 +10,7 @@
 # Mirror tree: $NOSD_VERIFY_DIR/qmlimp/qs/... with a generated `qmldir` per
 # dir (qmllint requires qmldir to resolve directory imports; Quickshell
 # itself doesn't need it). Quickshell.* qmltypes come from the guix
-# noctalia-qs package (stock quickshell lacks PwAudioSpectrum etc.).
+# quickshell package; noctalia-qs is accepted as a fallback for comparison.
 #
 # Prints only Error:/Critical:/Fatal: diagnostics; full output for failing
 # files goes to $NOSD_VERIFY_DIR/logs/lint-errors.log. Exits non-zero if any
@@ -27,9 +27,9 @@ QMLLINT="${QMLLINT:-$HOME/.guix-home/profile/bin/qmllint}"
 [ -x "$QMLLINT" ] || QMLLINT=$(command -v qmllint) || { echo "qmllint not found" >&2; exit 2; }
 QTQML="$HOME/.guix-home/profile/lib/qt6/qml"
 
-# noctalia-qs qml dir (fork): has PwAudioSpectrum; fall back to stock
+# upstream quickshell qml dir; noctalia-qs kept as fallback for comparison
 QSQML=""
-for pkg in noctalia-qs quickshell; do
+for pkg in quickshell noctalia-qs; do
   d=$(guix build "$pkg" 2>/dev/null | tail -1)/lib/qt6/qml
   [ -d "$d" ] && { QSQML="$d"; break; }
 done

@@ -45,7 +45,7 @@ nosDshell 基于 Noctalia v4（Quickshell/QML）改造：保留 Noctalia 的全�
 ## 运行要求
 
 - Wayland 合成器（见上）
-- Quickshell fork：[`noctalia-qs`](https://github.com/noctalia-dev/noctalia-qs)（上游 quickshell 缺 `PwAudioSpectrum`，无法运行）
+- [Quickshell](https://quickshell.outfoxxed.me)（上游；频谱由 cava 子进程提供）
 - 图标主题推荐 Papirus 或 deepin
 
 Guix 用户可直接参考仓库根部的 `nosdshell.scm`。

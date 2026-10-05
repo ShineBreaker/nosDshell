@@ -16,7 +16,7 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 
 ## 运行环境与校验
 
-本机是 Guix，没有 Nix。Noctalia v4 依赖 **`noctalia-qs`**，它在 Guix 频道里能找到。普通的 `quickshell` 缺少 `PwAudioSpectrum`，跑不起来。
+本机是 Guix，没有 Nix。shell 运行在**上游 `quickshell`** 上（Guix 频道里的 `quickshell` 包）。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`），不要重新引入对 `noctalia-qs` fork 的依赖——它已归档停更。
 
 | 目的 | 命令 |
 |---|---|
