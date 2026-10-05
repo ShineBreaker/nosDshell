@@ -174,11 +174,18 @@ RowLayout {
 
     opacity: enabled ? 1.0 : 0.6
     Layout.margins: Style.borderS
-    // In narrow contexts (the 352 px module view, §3.5.3) the fixed minimum
-    // would starve the label column; cap it at half the row's width.
-    Layout.minimumWidth: Math.min(Math.round(root.minimumWidth * Style.uiScaleRatio), Math.max(120, Math.round(root.width * 0.5)))
+    // Fixed width trio: minimum/preferred/maximum depend only on the plain
+    // root.minimumWidth property and Style tokens. Never read root.width
+    // (the RowLayout's own laid-out width) here, and never feed an attached
+    // Layout value back into implicitWidth: that round-trip
+    // (layout result -> attached minimum -> implicit size -> layout result)
+    // was the recursive-rearrange feedback loop.
+    // In narrow contexts (the 352 px module view, §3.5.3) the row squeezes
+    // the box toward the 120 floor instead of starving the label column.
+    Layout.minimumWidth: Math.round(120 * Style.uiScaleRatio)
+    Layout.preferredWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
+    Layout.maximumWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.preferredHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
-    implicitWidth: Layout.minimumWidth
     model: root.activeModel
     textRole: "name"
     currentIndex: findIndexInActiveModel(currentKey)
