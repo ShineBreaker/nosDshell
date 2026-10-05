@@ -12,7 +12,7 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 
 - 这是 GXDE-OS（DDE 15 的社区维护版）的浅克隆，已被 git 忽略，**只读**。
 - 用法：查数值、查结构、查行为，引用格式为 `仓库/路径:行号`。组件和仓库的对应关系见 `references/README.md`。
-- 参考仓库是 GPL-3.0，本仓库是 MIT。我们只**重新实现**数值和结构；代码、SVG、PNG、字体都不能复制进来。装饰元素用 QML 画；应用图标和状态图标在运行时从系统图标主题读取（推荐 Papirus 或 deepin）。
+- 参考仓库是 GPL-3.0，本仓库同为 GPL-3.0（上游 Noctalia 部分保留 MIT 声明，见 `LICENSE-MIT`）。法律上不再禁止直接引用参考代码和素材，但设计上仍以**重新实现**为默认：装饰元素用 QML 画，应用图标和状态图标在运行时从系统图标主题读取（推荐 Papirus 或 deepin）。确需直接复制 GPL-3.0 素材时，保留其版权声明并在提交说明里注明出处。
 
 ## 运行环境与校验
 

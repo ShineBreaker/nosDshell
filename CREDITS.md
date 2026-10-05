@@ -43,6 +43,7 @@ Noctalia Shell is made possible by the incredible work of many open-source proje
 - All the contributors and users who have helped make Noctalia better
 
 ## License
-Noctalia Shell is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+nosDshell is licensed under the GPL-3.0 License. See [LICENSE](LICENSE) for details.
+Portions derived from upstream Noctalia remain under the MIT License. See [LICENSE-MIT](LICENSE-MIT).
 
 Each dependency listed above is governed by its own respective license. Please refer to their individual projects for licensing information.

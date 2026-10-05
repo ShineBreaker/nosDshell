@@ -141,7 +141,8 @@ Thank you to everyone who supports the project! 💜
 
 ## 📄 License
 
-MIT License - see [LICENSE](./LICENSE) for details.
+GPL-3.0 License - see [LICENSE](./LICENSE) for details.
+Portions derived from Noctalia remain under the MIT License - see [LICENSE-MIT](./LICENSE-MIT).
 
 ---
 

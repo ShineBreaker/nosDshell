@@ -152,4 +152,4 @@ exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
 @code{quickshell} framework.  It offers a customizable and clean user interface,
 supporting various Wayland compositors like @code{niri}, @code{hyprland}, and
 @code{sway}.")
-    (license license:expat)))
+    (license license:gpl3+)))
