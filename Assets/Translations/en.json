@@ -1892,6 +1892,9 @@
       "header": "Customize your experience",
       "subheader": "Adjust bar position, density, scaling and more."
     },
+    "dock": {
+      "subheader": "Choose the screens the dock shows on and how it behaves."
+    },
     "skip-setup": "Skip Setup",
     "wallpaper": {
       "choose-dir": "Choose a directory containing your wallpaper images",

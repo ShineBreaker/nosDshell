@@ -26,6 +26,11 @@ Item {
   // 10 px strip along the bar's long axis plus a 1 px gap before it
   readonly property int stripThickness: 10
   readonly property int stripGap: 1
+  // The strip keeps its full 10 px thickness but is inset 1 px on both sides
+  // of the cross axis so it never touches the taskbar's outer edges
+  // (gxde-dock showdesktopitem.cpp:77-86 marginsRemoved; same rule as the
+  // efficient app-item fill in Taskbar.qml)
+  readonly property int crossInset: 1
 
   implicitWidth: isVertical ? barHeight : stripThickness + stripGap
   implicitHeight: isVertical ? stripThickness + stripGap : barHeight
@@ -53,10 +58,10 @@ Item {
 
   Rectangle {
     id: strip
-    x: root.isVertical ? 0 : root.stripGap
-    y: root.isVertical ? root.stripGap : 0
-    width: root.isVertical ? parent.width : root.stripThickness
-    height: root.isVertical ? root.stripThickness : parent.height
+    x: root.isVertical ? root.crossInset : root.stripGap
+    y: root.isVertical ? root.stripGap : root.crossInset
+    width: root.isVertical ? Math.max(0, parent.width - root.crossInset * 2) : root.stripThickness
+    height: root.isVertical ? root.stripThickness : Math.max(0, parent.height - root.crossInset * 2)
     color: mouseArea.pressed ? Color.accent : (mouseArea.containsMouse ? Color.overlay("strong") : Color.overlay("hover"))
 
     Behavior on color {

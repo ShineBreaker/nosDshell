@@ -1890,6 +1890,9 @@
       "header": "自定义体验",
       "subheader": "调整状态栏位置、密度、缩放等。"
     },
+    "dock": {
+      "subheader": "选择 Dock 出现的屏幕及其行为。"
+    },
     "skip-setup": "跳过设置",
     "wallpaper": {
       "choose-dir": "选择包含壁纸图片的目录",
