@@ -23,20 +23,33 @@ SmartPanel {
 
   panelBackgroundColor: Color.maskDark
 
+  // panelContent is created lazily by SmartPanel's content loader, so these
+  // key handlers must not assume the strip exists yet — the same guard the
+  // grid panel used before this rewrite.
   function onLeftPressed() {
-    stripView.moveCurrentIndexLeft();
+    if (!root.contentItem)
+      return;
+    root.contentItem.stripView.moveCurrentIndexLeft();
   }
   function onRightPressed() {
-    stripView.moveCurrentIndexRight();
+    if (!root.contentItem)
+      return;
+    root.contentItem.stripView.moveCurrentIndexRight();
   }
   function onDownPressed() {
-    stripView.moveCurrentIndexRight();
+    if (!root.contentItem)
+      return;
+    root.contentItem.stripView.moveCurrentIndexRight();
   }
   function onUpPressed() {
-    stripView.moveCurrentIndexLeft();
+    if (!root.contentItem)
+      return;
+    root.contentItem.stripView.moveCurrentIndexLeft();
   }
   function onReturnPressed() {
-    stripView.applyCurrentIndex();
+    if (!root.contentItem)
+      return;
+    root.contentItem.stripView.applyCurrentIndex();
   }
   function onEnterPressed() {
     onReturnPressed();
@@ -48,6 +61,10 @@ SmartPanel {
     // SmartPanel reads this optional property off the content item to decide
     // whether the panel may sit flush against the bar.
     property bool allowAttachToBar: true
+
+    // Exposed so the panel's key handlers can reach the strip without
+    // depending on an id that only exists once the loader has run.
+    property alias stripView: stripView
 
     // panelContent is instantiated lazily, so publish the content item from
     // here rather than from the panel's own Component.onCompleted.
