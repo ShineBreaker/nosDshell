@@ -377,6 +377,7 @@ Item {
       // Try to find workspace ID from our cached map by trying all workspaces
       let workspaceId = -1;
       let foundWorkspaceNum = -1;
+      let outputName = "";
 
       // Build base key for this window
       const baseKey = `${appId}:${title}`;
@@ -406,6 +407,7 @@ Item {
         if (windowWorkspaceMap[uniqueKey] !== undefined) {
           foundWorkspaceNum = windowWorkspaceMap[uniqueKey];
           workspaceId = ws.id;
+          outputName = ws.output || "";
 
           // Increment the usage count for this workspace
           windowUsageCountsPerWorkspace[wsNum][baseKey]++;
@@ -419,6 +421,7 @@ Item {
         "isFocused": focused,
         "isUrgent": safeGetProperty(toplevel, "urgent", "false") === "true",
         "workspaceId": workspaceId,
+        "output": outputName,
         "handle": toplevel
       };
     } catch (e) {

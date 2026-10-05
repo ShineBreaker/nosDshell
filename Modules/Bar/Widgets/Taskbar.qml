@@ -378,8 +378,11 @@ Item {
         var w = CompositorService.windows.get(i);
         if (!w)
           continue;
-        var passOutput = (!onlySameOutput) || (w.output == screen?.name);
-        var passWorkspace = (!onlyActiveWorkspaces) || (activeIds.includes(w.workspaceId));
+        // Unknown output/workspace passes the gate: backends that don't report
+        // them must not empty the taskbar (hermes-03: enumerate failures made
+        // hideMode:"hidden" drop the whole strip).
+        var passOutput = (!onlySameOutput) || (!w.output) || (w.output === screen?.name);
+        var passWorkspace = (!onlyActiveWorkspaces) || (w.workspaceId === undefined || w.workspaceId < 0) || (activeIds.includes(w.workspaceId));
         if (passOutput && passWorkspace) {
           const isPinned = isAppIdPinned(w.appId, pinnedApps);
           runningWindows.push({
