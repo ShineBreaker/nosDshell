@@ -82,7 +82,9 @@ PopupWindow {
       return;
     anchorItem = item;
     _provider = provider;
-    screen = screenObj;
+    // NOTE: do not assign `screen` here. With anchor.item set the popup
+    // screen is controlled by the parent window; assigning it only logs
+    // "Cannot set screen of popup window" and changes nothing.
     refresh();
     if (entries.length === 0)
       return;
@@ -90,8 +92,24 @@ PopupWindow {
     visible = true;
   }
 
+  // Entries are [{toplevel, title, urgent}]; skip the assignment when the
+  // list is equivalent so the Repeater does not destroy (and recreate) the
+  // tiles under the cursor. Destroying the hovered delegate while Qt is
+  // delivering hover events segfaults inside QQuickItem::isVisible().
+  function entriesEqual(a, b) {
+    if (a.length !== b.length)
+      return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i].toplevel !== b[i].toplevel || a[i].title !== b[i].title || !!a[i].urgent !== !!b[i].urgent)
+        return false;
+    }
+    return true;
+  }
+
   function refresh() {
     var e = _provider ? _provider() : [];
+    if (entriesEqual(entries, e))
+      return;
     entries = e;
     if (visible && e.length === 0)
       hide();
@@ -103,9 +121,11 @@ PopupWindow {
   }
 
   function hide() {
+    // Hide first; keep entries (and their delegates) alive so nothing is
+    // destroyed from under the cursor mid-hover (see refresh()). The next
+    // show() refreshes before becoming visible, so stale tiles never flash.
     visible = false;
     anchorItem = null;
-    entries = [];
     _provider = null;
   }
 
