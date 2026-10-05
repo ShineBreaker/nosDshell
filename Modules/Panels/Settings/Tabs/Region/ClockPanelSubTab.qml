@@ -6,7 +6,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   property list<var> cardsModel: []
@@ -88,7 +88,7 @@ ColumnLayout {
 
   // Clock style section
   ColumnLayout {
-    spacing: Style.marginM
+    spacing: 0
     Layout.fillWidth: true
 
     NToggle {
@@ -113,13 +113,15 @@ ColumnLayout {
     }
   }
 
-  NDivider {
-    Layout.fillWidth: true
-  }
-
   // Calendar Cards Management Section
+
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
+  }
   ColumnLayout {
-    spacing: Style.marginXXS
+    spacing: 0
     Layout.fillWidth: true
 
     Connections {

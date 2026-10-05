@@ -10,73 +10,81 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
+  spacing: 0
 
   // Profile section
-  RowLayout {
+  // SettingsGroup 1: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
     Layout.fillWidth: true
-    spacing: Style.marginL
+    spacing: 0
+    RowLayout {
+      Layout.fillWidth: true
+      spacing: Style.marginL
 
-    // Avatar preview
-    NImageRounded {
-      Layout.preferredWidth: 128 * Style.uiScaleRatio
-      Layout.preferredHeight: width
-      radius: width / 2
-      imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
-      fallbackIcon: "person"
-      borderColor: Color.mPrimary
-      borderWidth: Style.borderM
-      Layout.alignment: Qt.AlignTop
-    }
-
-    ColumnLayout {
-      NText {
-        text: HostService.displayName
-        pointSize: Style.fontSizeM
-        color: Color.mPrimary
+      // Avatar preview
+      NImageRounded {
+        Layout.preferredWidth: 128 * Style.uiScaleRatio
+        Layout.preferredHeight: width
+        radius: width / 2
+        imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
+        fallbackIcon: "person"
+        borderColor: Color.mPrimary
+        borderWidth: Style.borderM
+        Layout.alignment: Qt.AlignTop
       }
 
-      NTextInputButton {
-        label: I18n.tr("panels.general.profile-picture-label")
-        description: I18n.tr("panels.general.profile-picture-description")
-        text: Settings.data.general.avatarImage
-        placeholderText: '~/.face' // don't translate path
-        buttonIcon: "photo"
-        buttonTooltip: I18n.tr("panels.general.profile-tooltip")
-        onInputTextChanged: text => Settings.data.general.avatarImage = text
-        onButtonClicked: {
-          avatarPicker.openFilePicker();
+      ColumnLayout {
+        spacing: 0
+        NText {
+          text: HostService.displayName
+          pointSize: Style.fontSizeM
+          color: Color.mPrimary
+        }
+
+        NTextInputButton {
+          label: I18n.tr("panels.general.profile-picture-label")
+          description: I18n.tr("panels.general.profile-picture-description")
+          text: Settings.data.general.avatarImage
+          placeholderText: '~/.face' // don't translate path
+          buttonIcon: "photo"
+          buttonTooltip: I18n.tr("panels.general.profile-tooltip")
+          onInputTextChanged: text => Settings.data.general.avatarImage = text
+          onButtonClicked: {
+            avatarPicker.openFilePicker();
+          }
         }
       }
     }
-  }
 
-  NFilePicker {
-    id: avatarPicker
-    title: I18n.tr("panels.general.profile-select-avatar")
-    selectionMode: "files"
-    initialPath: Settings.preprocessPath(Settings.data.general.avatarImage).substr(0, Settings.preprocessPath(Settings.data.general.avatarImage).lastIndexOf("/")) || Quickshell.env("HOME")
-    nameFilters: ImageCacheService.basicImageFilters
-    onAccepted: paths => {
-                  if (paths.length > 0) {
-                    Settings.data.general.avatarImage = paths[0];
+    NFilePicker {
+      id: avatarPicker
+      title: I18n.tr("panels.general.profile-select-avatar")
+      selectionMode: "files"
+      initialPath: Settings.preprocessPath(Settings.data.general.avatarImage).substr(0, Settings.preprocessPath(Settings.data.general.avatarImage).lastIndexOf("/")) || Quickshell.env("HOME")
+      nameFilters: ImageCacheService.basicImageFilters
+      onAccepted: paths => {
+                    if (paths.length > 0) {
+                      Settings.data.general.avatarImage = paths[0];
+                    }
                   }
-                }
-  }
-
-  NDivider {
-    Layout.fillWidth: true
-    Layout.topMargin: Style.marginM
-    Layout.bottomMargin: Style.marginM
+    }
   }
 
   // Fonts
+
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
+  }
   ColumnLayout {
-    spacing: Style.marginL
+    spacing: 0
     Layout.fillWidth: true
 
     // Font configuration section
     ColumnLayout {
-      spacing: Style.marginL
+      spacing: 0
       Layout.fillWidth: true
 
       NSearchableComboBox {
@@ -135,86 +143,96 @@ ColumnLayout {
     }
   }
 
-  NDivider {
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
     Layout.fillWidth: true
-    Layout.topMargin: Style.marginM
-    Layout.bottomMargin: Style.marginM
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
-
-  NToggle {
+  // SettingsGroup 3: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
     Layout.fillWidth: true
-    label: I18n.tr("panels.general.reverse-scrolling-label")
-    description: I18n.tr("panels.general.reverse-scrolling-description")
-    checked: Settings.data.general.reverseScroll
-    defaultValue: Settings.getDefaultValue("general.reverseScroll")
-    onToggled: checked => Settings.data.general.reverseScroll = checked
-  }
-
-  NToggle {
-    Layout.fillWidth: true
-    label: I18n.tr("panels.general.smooth-scrolling-label")
-    description: I18n.tr("panels.general.smooth-scrolling-description")
-    checked: Settings.data.general.smoothScrollEnabled
-    defaultValue: Settings.getDefaultValue("general.smoothScrollEnabled")
-    onToggled: checked => Settings.data.general.smoothScrollEnabled = checked
-  }
-
-  NDivider {
-    Layout.fillWidth: true
-    Layout.topMargin: Style.marginM
-    Layout.bottomMargin: Style.marginM
-  }
-
-  RowLayout {
-    spacing: Style.marginL
-    Layout.fillWidth: true
-
-    NButton {
-      icon: "wand"
-      text: I18n.tr("panels.general.launch-setup-wizard")
-      outlined: true
+    spacing: 0
+    NToggle {
       Layout.fillWidth: true
-      onClicked: {
-        var targetScreen = PanelService.openedPanel ? PanelService.openedPanel.screen : (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
-        if (!targetScreen) {
-          return;
-        }
-        var setupPanel = PanelService.getPanel("setupWizardPanel", targetScreen);
-        if (setupPanel) {
-          setupPanel.telemetryOnlyMode = false;
-          setupPanel.open();
-        } else {
-          Qt.callLater(() => {
-                         var sp = PanelService.getPanel("setupWizardPanel", targetScreen);
-                         if (sp) {
-                           sp.telemetryOnlyMode = false;
-                           sp.open();
-                         }
-                       });
-        }
-      }
+      label: I18n.tr("panels.general.reverse-scrolling-label")
+      description: I18n.tr("panels.general.reverse-scrolling-description")
+      checked: Settings.data.general.reverseScroll
+      defaultValue: Settings.getDefaultValue("general.reverseScroll")
+      onToggled: checked => Settings.data.general.reverseScroll = checked
     }
 
-    NButton {
-      icon: "external-link"
-      text: I18n.tr("common.documentation")
-      outlined: true
+    NToggle {
       Layout.fillWidth: true
-      onClicked: {
-        Qt.openUrlExternally("https://github.com/ShineBreaker/nosDshell");
-      }
+      label: I18n.tr("panels.general.smooth-scrolling-label")
+      description: I18n.tr("panels.general.smooth-scrolling-description")
+      checked: Settings.data.general.smoothScrollEnabled
+      defaultValue: Settings.getDefaultValue("general.smoothScrollEnabled")
+      onToggled: checked => Settings.data.general.smoothScrollEnabled = checked
     }
+  }
 
-    NButton {
-      icon: "json"
-      text: I18n.tr("panels.general.copy-settings")
-      outlined: true
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
+  }
+  // SettingsGroup 4: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: 0
+    RowLayout {
+      spacing: Style.marginL
       Layout.fillWidth: true
-      onClicked: {
-        var plainData = QtObj2JS.qtObjectToPlainObject(Settings.data);
-        var json = JSON.stringify(plainData, null, 2);
-        Quickshell.execDetached(["wl-copy", json]);
-        ToastService.showNotice(I18n.tr("panels.general.settings-copied"));
+
+      NButton {
+        icon: "wand"
+        text: I18n.tr("panels.general.launch-setup-wizard")
+        outlined: true
+        Layout.fillWidth: true
+        onClicked: {
+          var targetScreen = PanelService.openedPanel ? PanelService.openedPanel.screen : (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
+          if (!targetScreen) {
+            return;
+          }
+          var setupPanel = PanelService.getPanel("setupWizardPanel", targetScreen);
+          if (setupPanel) {
+            setupPanel.telemetryOnlyMode = false;
+            setupPanel.open();
+          } else {
+            Qt.callLater(() => {
+                           var sp = PanelService.getPanel("setupWizardPanel", targetScreen);
+                           if (sp) {
+                             sp.telemetryOnlyMode = false;
+                             sp.open();
+                           }
+                         });
+          }
+        }
+      }
+
+      NButton {
+        icon: "external-link"
+        text: I18n.tr("common.documentation")
+        outlined: true
+        Layout.fillWidth: true
+        onClicked: {
+          Qt.openUrlExternally("https://github.com/ShineBreaker/nosDshell");
+        }
+      }
+
+      NButton {
+        icon: "json"
+        text: I18n.tr("panels.general.copy-settings")
+        outlined: true
+        Layout.fillWidth: true
+        onClicked: {
+          var plainData = QtObj2JS.qtObjectToPlainObject(Settings.data);
+          var json = JSON.stringify(plainData, null, 2);
+          Quickshell.execDetached(["wl-copy", json]);
+          ToastService.showNotice(I18n.tr("panels.general.settings-copied"));
+        }
       }
     }
   }

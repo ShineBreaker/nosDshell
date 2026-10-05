@@ -7,41 +7,48 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
   enabled: Settings.data.wallpaper.enabled
 
   property var screen
 
-  NComboBox {
-    label: I18n.tr("panels.wallpaper.look-feel-fill-mode-label")
-    description: I18n.tr("panels.wallpaper.look-feel-fill-mode-description")
-    model: WallpaperService.fillModeModel
-    currentKey: Settings.data.wallpaper.fillMode
-    onSelected: key => Settings.data.wallpaper.fillMode = key
-    defaultValue: Settings.getDefaultValue("wallpaper.fillMode")
-  }
-
-  RowLayout {
-    NLabel {
-      label: I18n.tr("bar.audio-visualizer.color-name-label")
-      description: I18n.tr("panels.wallpaper.look-feel-fill-color-description")
-      Layout.alignment: Qt.AlignTop
-    }
-
-    NColorPicker {
-      screen: root.screen
-      selectedColor: Settings.data.wallpaper.fillColor
-      onColorSelected: color => Settings.data.wallpaper.fillColor = color
-    }
-  }
-
-  NDivider {
-    Layout.fillWidth: true
-  }
-
+  // SettingsGroup 1: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
   ColumnLayout {
-    spacing: Style.marginS
+    Layout.fillWidth: true
+    spacing: 0
+    NComboBox {
+      label: I18n.tr("panels.wallpaper.look-feel-fill-mode-label")
+      description: I18n.tr("panels.wallpaper.look-feel-fill-mode-description")
+      model: WallpaperService.fillModeModel
+      currentKey: Settings.data.wallpaper.fillMode
+      onSelected: key => Settings.data.wallpaper.fillMode = key
+      defaultValue: Settings.getDefaultValue("wallpaper.fillMode")
+    }
+
+    RowLayout {
+      NLabel {
+        label: I18n.tr("bar.audio-visualizer.color-name-label")
+        description: I18n.tr("panels.wallpaper.look-feel-fill-color-description")
+        Layout.alignment: Qt.AlignTop
+      }
+
+      NColorPicker {
+        screen: root.screen
+        selectedColor: Settings.data.wallpaper.fillColor
+        onColorSelected: color => Settings.data.wallpaper.fillColor = color
+      }
+    }
+  }
+
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
+  }
+  ColumnLayout {
+    spacing: 0
     Layout.fillWidth: true
 
     NLabel {
@@ -74,41 +81,48 @@ ColumnLayout {
     }
   }
 
-  NDivider {
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
     Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
-
-  NToggle {
-    label: I18n.tr("panels.wallpaper.look-feel-skip-startup-transition-label")
-    description: I18n.tr("panels.wallpaper.look-feel-skip-startup-transition-description")
-    checked: Settings.data.wallpaper.skipStartupTransition
-    onToggled: Settings.data.wallpaper.skipStartupTransition = checked
-  }
-
-  NValueSlider {
+  // SettingsGroup 3: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
     Layout.fillWidth: true
-    label: I18n.tr("panels.wallpaper.look-feel-transition-duration-label")
-    description: I18n.tr("panels.wallpaper.look-feel-transition-duration-description")
-    from: 500
-    to: 10000
-    stepSize: 100
-    showReset: true
-    value: Settings.data.wallpaper.transitionDuration
-    onMoved: value => Settings.data.wallpaper.transitionDuration = value
-    text: (Settings.data.wallpaper.transitionDuration / 1000).toFixed(1) + "s"
-    defaultValue: Settings.getDefaultValue("wallpaper.transitionDuration")
-  }
+    spacing: 0
+    NToggle {
+      label: I18n.tr("panels.wallpaper.look-feel-skip-startup-transition-label")
+      description: I18n.tr("panels.wallpaper.look-feel-skip-startup-transition-description")
+      checked: Settings.data.wallpaper.skipStartupTransition
+      onToggled: Settings.data.wallpaper.skipStartupTransition = checked
+    }
 
-  NValueSlider {
-    Layout.fillWidth: true
-    label: I18n.tr("panels.wallpaper.look-feel-edge-smoothness-label")
-    description: I18n.tr("panels.wallpaper.look-feel-edge-smoothness-description")
-    from: 0.0
-    to: 1.0
-    showReset: true
-    value: Settings.data.wallpaper.transitionEdgeSmoothness
-    onMoved: value => Settings.data.wallpaper.transitionEdgeSmoothness = value
-    text: Math.round(Settings.data.wallpaper.transitionEdgeSmoothness * 100) + "%"
-    defaultValue: Settings.getDefaultValue("wallpaper.transitionEdgeSmoothness")
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.wallpaper.look-feel-transition-duration-label")
+      description: I18n.tr("panels.wallpaper.look-feel-transition-duration-description")
+      from: 500
+      to: 10000
+      stepSize: 100
+      showReset: true
+      value: Settings.data.wallpaper.transitionDuration
+      onMoved: value => Settings.data.wallpaper.transitionDuration = value
+      text: (Settings.data.wallpaper.transitionDuration / 1000).toFixed(1) + "s"
+      defaultValue: Settings.getDefaultValue("wallpaper.transitionDuration")
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.wallpaper.look-feel-edge-smoothness-label")
+      description: I18n.tr("panels.wallpaper.look-feel-edge-smoothness-description")
+      from: 0.0
+      to: 1.0
+      showReset: true
+      value: Settings.data.wallpaper.transitionEdgeSmoothness
+      onMoved: value => Settings.data.wallpaper.transitionEdgeSmoothness = value
+      text: Math.round(Settings.data.wallpaper.transitionEdgeSmoothness * 100) + "%"
+      defaultValue: Settings.getDefaultValue("wallpaper.transitionEdgeSmoothness")
+    }
   }
 }

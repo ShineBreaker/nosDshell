@@ -10,7 +10,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   // Helper to format path description
@@ -186,133 +186,146 @@ ColumnLayout {
     }
   }
 
-  NText {
-    text: I18n.tr("panels.color-scheme.templates-desc")
-    wrapMode: Text.WordWrap
+  // SettingsGroup 1: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
     Layout.fillWidth: true
-  }
-
-  // Category filter chips
-  NTagFilter {
-    tags: root.availableCategories
-    selectedTag: root.selectedCategory
-    onSelectedTagChanged: root.selectedCategory = selectedTag
-    label: I18n.tr("panels.color-scheme.templates-filter-label")
-    description: I18n.tr("panels.color-scheme.templates-filter-description")
-    expanded: true
-  }
-
-  // Search/filter input row
-  RowLayout {
-    Layout.fillWidth: true
-    spacing: Style.marginS
-
-    NTextInput {
+    spacing: 0
+    NText {
+      text: I18n.tr("panels.color-scheme.templates-desc")
+      wrapMode: Text.WordWrap
       Layout.fillWidth: true
-      placeholderText: I18n.tr("placeholders.search")
-      text: root.searchText
-      onTextChanged: root.searchText = text
     }
 
-    NIconButton {
-      icon: "filter"
-      tooltipText: root.showOnlyActive ? I18n.tr("actions.show-all") : I18n.tr("actions.show-active-only")
-
-      colorBg: root.showOnlyActive ? Color.mPrimary : Color.mSurface
-      colorFg: root.showOnlyActive ? Color.mOnPrimary : Color.mOnSurface
-
-      onClicked: root.showOnlyActive = !root.showOnlyActive
+    // Category filter chips
+    NTagFilter {
+      tags: root.availableCategories
+      selectedTag: root.selectedCategory
+      onSelectedTagChanged: root.selectedCategory = selectedTag
+      label: I18n.tr("panels.color-scheme.templates-filter-label")
+      description: I18n.tr("panels.color-scheme.templates-filter-description")
+      expanded: true
     }
-  }
 
-  // Chip grid - uniform columns
-  GridLayout {
-    Layout.fillWidth: true
-    columns: 4
-    columnSpacing: Style.marginS
-    rowSpacing: Style.marginS
+    // Search/filter input row
+    RowLayout {
+      Layout.fillWidth: true
+      spacing: Style.marginS
 
-    Repeater {
-      model: filteredTemplates
-
-      Rectangle {
-        id: chip
+      NTextInput {
         Layout.fillWidth: true
-        Layout.preferredHeight: Math.round(Style.baseWidgetSize * 0.9)
-        radius: Style.iRadiusM
-        color: chipMouse.containsMouse ? Color.mHover : (isActive ? Color.mPrimary : Color.mSurface)
-        border.color: isActive ? Color.mPrimary : Color.mOutline
-        border.width: Style.borderS
+        placeholderText: I18n.tr("placeholders.search")
+        text: root.searchText
+        onTextChanged: root.searchText = text
+      }
 
-        required property int index
-        required property var modelData
-        readonly property bool isActive: root.isTemplateActive(modelData.id)
+      NIconButton {
+        icon: "filter"
+        tooltipText: root.showOnlyActive ? I18n.tr("actions.show-all") : I18n.tr("actions.show-active-only")
 
-        Behavior on color {
-          ColorAnimation {
-            duration: Style.animationFast
-          }
-        }
+        colorBg: root.showOnlyActive ? Color.mPrimary : Color.mSurface
+        colorFg: root.showOnlyActive ? Color.mOnPrimary : Color.mOnSurface
 
-        NText {
-          id: chipText
-          anchors.centerIn: parent
-          width: parent.width - Style.margin2L
-          text: chip.modelData.name
-          pointSize: Style.fontSizeS
-          color: chipMouse.containsMouse ? Color.mOnHover : (isActive ? Color.mOnPrimary : Color.mOnSurface)
-          horizontalAlignment: Text.AlignHCenter
-          elide: Text.ElideRight
+        onClicked: root.showOnlyActive = !root.showOnlyActive
+      }
+    }
+
+    // Chip grid - uniform columns
+    GridLayout {
+      Layout.fillWidth: true
+      columns: 4
+      columnSpacing: Style.marginS
+      rowSpacing: Style.marginS
+
+      Repeater {
+        model: filteredTemplates
+
+        Rectangle {
+          id: chip
+          Layout.fillWidth: true
+          Layout.preferredHeight: Math.round(Style.baseWidgetSize * 0.9)
+          radius: Style.iRadiusM
+          color: chipMouse.containsMouse ? Color.mHover : (isActive ? Color.mPrimary : Color.mSurface)
+          border.color: isActive ? Color.mPrimary : Color.mOutline
+          border.width: Style.borderS
+
+          required property int index
+          required property var modelData
+          readonly property bool isActive: root.isTemplateActive(modelData.id)
 
           Behavior on color {
             ColorAnimation {
               duration: Style.animationFast
             }
           }
-        }
 
-        MouseArea {
-          id: chipMouse
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          hoverEnabled: true
-          onClicked: root.toggleTemplate(chip.modelData.id)
-          onEntered: {
-            if (chip.modelData.tooltip) {
-              TooltipService.show(chip, chip.modelData.tooltip, "bottom");
+          NText {
+            id: chipText
+            anchors.centerIn: parent
+            width: parent.width - Style.margin2L
+            text: chip.modelData.name
+            pointSize: Style.fontSizeS
+            color: chipMouse.containsMouse ? Color.mOnHover : (isActive ? Color.mOnPrimary : Color.mOnSurface)
+            horizontalAlignment: Text.AlignHCenter
+            elide: Text.ElideRight
+
+            Behavior on color {
+              ColorAnimation {
+                duration: Style.animationFast
+              }
             }
           }
-          onExited: {
-            TooltipService.hide();
+
+          MouseArea {
+            id: chipMouse
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
+            onClicked: root.toggleTemplate(chip.modelData.id)
+            onEntered: {
+              if (chip.modelData.tooltip) {
+                TooltipService.show(chip, chip.modelData.tooltip, "bottom");
+              }
+            }
+            onExited: {
+              TooltipService.hide();
+            }
           }
         }
       }
     }
-  }
 
-  // No results message
-  NText {
-    visible: filteredTemplates.length === 0 && searchText.trim() !== ""
-    text: I18n.tr("common.no-results")
-    color: Color.mOnSurfaceVariant
-  }
-
-  NDivider {
-    Layout.fillWidth: true
-    Layout.topMargin: Style.marginM
+    // No results message
+    NText {
+      visible: filteredTemplates.length === 0 && searchText.trim() !== ""
+      text: I18n.tr("common.no-results")
+      color: Color.mOnSurfaceVariant
+    }
   }
 
   // User templates checkbox
-  NCheckbox {
-    label: I18n.tr("panels.color-scheme.templates-misc-user-templates-label")
-    description: I18n.tr("panels.color-scheme.templates-misc-user-templates-description")
-    checked: Settings.data.templates.enableUserTheming
-    onToggled: checked => {
-                 Settings.data.templates.enableUserTheming = checked;
-                 if (checked) {
-                   TemplateRegistry.writeUserTemplatesToml();
+
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
+  }
+  // SettingsGroup 2: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: 0
+    NCheckbox {
+      label: I18n.tr("panels.color-scheme.templates-misc-user-templates-label")
+      description: I18n.tr("panels.color-scheme.templates-misc-user-templates-description")
+      checked: Settings.data.templates.enableUserTheming
+      onToggled: checked => {
+                   Settings.data.templates.enableUserTheming = checked;
+                   if (checked) {
+                     TemplateRegistry.writeUserTemplatesToml();
+                   }
+                   AppThemeService.generate();
                  }
-                 AppThemeService.generate();
-               }
+    }
   }
 }

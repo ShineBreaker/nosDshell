@@ -9,7 +9,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   property var screen
@@ -17,156 +17,162 @@ ColumnLayout {
   signal openMainFolderPicker
   signal openMonitorFolderPicker(string monitorName)
 
-  NToggle {
-    label: I18n.tr("panels.wallpaper.settings-enable-management-label")
-    description: I18n.tr("panels.wallpaper.settings-enable-management-description")
-    checked: Settings.data.wallpaper.enabled
-    onToggled: checked => Settings.data.wallpaper.enabled = checked
-    defaultValue: Settings.getDefaultValue("wallpaper.enabled")
-  }
-
+  // SettingsGroup 1: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
   ColumnLayout {
-    enabled: Settings.data.wallpaper.enabled
-    spacing: Style.marginL
     Layout.fillWidth: true
-
-    RowLayout {
-
-      NLabel {
-        label: I18n.tr("tooltips.wallpaper-selector")
-        description: I18n.tr("panels.wallpaper.settings-selector-description")
-        Layout.alignment: Qt.AlignTop
-      }
-
-      NIconButton {
-        icon: "wallpaper-selector"
-        tooltipText: I18n.tr("tooltips.wallpaper-selector")
-        onClicked: PanelService.getPanel("wallpaperPanel", root.screen)?.toggle()
-      }
-    }
-
-    NComboBox {
-      label: I18n.tr("common.position")
-      description: I18n.tr("panels.wallpaper.settings-selector-position-description")
-      Layout.fillWidth: true
-      model: [
-        {
-          "key": "follow_bar",
-          "name": I18n.tr("positions.follow-bar")
-        },
-        {
-          "key": "center",
-          "name": I18n.tr("positions.center")
-        },
-        {
-          "key": "top_center",
-          "name": I18n.tr("positions.top-center")
-        },
-        {
-          "key": "top_left",
-          "name": I18n.tr("positions.top-left")
-        },
-        {
-          "key": "top_right",
-          "name": I18n.tr("positions.top-right")
-        },
-        {
-          "key": "bottom_left",
-          "name": I18n.tr("positions.bottom-left")
-        },
-        {
-          "key": "bottom_right",
-          "name": I18n.tr("positions.bottom-right")
-        },
-        {
-          "key": "bottom_center",
-          "name": I18n.tr("positions.bottom-center")
-        }
-      ]
-      currentKey: Settings.data.wallpaper.panelPosition
-      onSelected: key => Settings.data.wallpaper.panelPosition = key
-      defaultValue: Settings.getDefaultValue("wallpaper.panelPosition")
-    }
-
-    NComboBox {
-      label: I18n.tr("panels.wallpaper.settings-view-mode-label")
-      description: I18n.tr("panels.wallpaper.settings-view-mode-description")
-      Layout.fillWidth: true
-      model: [
-        {
-          "key": "single",
-          "name": I18n.tr("panels.wallpaper.view-mode-single")
-        },
-        {
-          "key": "recursive",
-          "name": I18n.tr("panels.wallpaper.view-mode-recursive")
-        },
-        {
-          "key": "browse",
-          "name": I18n.tr("panels.wallpaper.view-mode-browse")
-        }
-      ]
-      currentKey: Settings.data.wallpaper.viewMode
-      onSelected: key => Settings.data.wallpaper.viewMode = key
-      defaultValue: Settings.getDefaultValue("wallpaper.viewMode")
-    }
-
-    NTextInputButton {
-      id: wallpaperPathInput
-      label: I18n.tr("panels.wallpaper.settings-folder-label")
-      description: I18n.tr("panels.wallpaper.settings-folder-description")
-      text: Settings.data.wallpaper.directory
-      buttonIcon: "folder-open"
-      buttonTooltip: I18n.tr("panels.wallpaper.settings-folder-label")
-      Layout.fillWidth: true
-      onInputTextChanged: text => Settings.data.wallpaper.directory = text
-      onButtonClicked: root.openMainFolderPicker()
-    }
-
+    spacing: 0
     NToggle {
-      label: I18n.tr("panels.wallpaper.settings-monitor-specific-label")
-      description: I18n.tr("panels.wallpaper.settings-monitor-specific-description")
-      checked: Settings.data.wallpaper.enableMultiMonitorDirectories
-      onToggled: checked => Settings.data.wallpaper.enableMultiMonitorDirectories = checked
-      defaultValue: Settings.getDefaultValue("wallpaper.enableMultiMonitorDirectories")
+      label: I18n.tr("panels.wallpaper.settings-enable-management-label")
+      description: I18n.tr("panels.wallpaper.settings-enable-management-description")
+      checked: Settings.data.wallpaper.enabled
+      onToggled: checked => Settings.data.wallpaper.enabled = checked
+      defaultValue: Settings.getDefaultValue("wallpaper.enabled")
     }
 
-    NBox {
-      visible: Settings.data.wallpaper.enableMultiMonitorDirectories
+    ColumnLayout {
+      enabled: Settings.data.wallpaper.enabled
+      spacing: Style.marginL
       Layout.fillWidth: true
-      radius: Style.radiusM
-      color: Color.mSurface
-      border.color: Color.mOutline
-      border.width: Style.borderS
-      implicitHeight: contentCol.implicitHeight + Style.margin2L
-      clip: true
 
-      ColumnLayout {
-        id: contentCol
-        anchors.fill: parent
-        anchors.margins: Style.marginL
-        spacing: Style.marginM
-        Repeater {
-          model: Quickshell.screens || []
-          delegate: ColumnLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginS
+      RowLayout {
 
-            NText {
-              text: (modelData.name || "Unknown")
-              color: Color.mPrimary
-              font.weight: Style.fontWeightBold
-              pointSize: Style.fontSizeM
-            }
+        NLabel {
+          label: I18n.tr("tooltips.wallpaper-selector")
+          description: I18n.tr("panels.wallpaper.settings-selector-description")
+          Layout.alignment: Qt.AlignTop
+        }
 
-            NTextInputButton {
-              id: monitorDirInput
-              text: WallpaperService.getMonitorDirectory(modelData.name)
-              buttonIcon: "folder-open"
-              buttonTooltip: I18n.tr("panels.wallpaper.settings-monitor-specific-tooltip")
+        NIconButton {
+          icon: "wallpaper-selector"
+          tooltipText: I18n.tr("tooltips.wallpaper-selector")
+          onClicked: PanelService.getPanel("wallpaperPanel", root.screen)?.toggle()
+        }
+      }
+
+      NComboBox {
+        label: I18n.tr("common.position")
+        description: I18n.tr("panels.wallpaper.settings-selector-position-description")
+        Layout.fillWidth: true
+        model: [
+          {
+            "key": "follow_bar",
+            "name": I18n.tr("positions.follow-bar")
+          },
+          {
+            "key": "center",
+            "name": I18n.tr("positions.center")
+          },
+          {
+            "key": "top_center",
+            "name": I18n.tr("positions.top-center")
+          },
+          {
+            "key": "top_left",
+            "name": I18n.tr("positions.top-left")
+          },
+          {
+            "key": "top_right",
+            "name": I18n.tr("positions.top-right")
+          },
+          {
+            "key": "bottom_left",
+            "name": I18n.tr("positions.bottom-left")
+          },
+          {
+            "key": "bottom_right",
+            "name": I18n.tr("positions.bottom-right")
+          },
+          {
+            "key": "bottom_center",
+            "name": I18n.tr("positions.bottom-center")
+          }
+        ]
+        currentKey: Settings.data.wallpaper.panelPosition
+        onSelected: key => Settings.data.wallpaper.panelPosition = key
+        defaultValue: Settings.getDefaultValue("wallpaper.panelPosition")
+      }
+
+      NComboBox {
+        label: I18n.tr("panels.wallpaper.settings-view-mode-label")
+        description: I18n.tr("panels.wallpaper.settings-view-mode-description")
+        Layout.fillWidth: true
+        model: [
+          {
+            "key": "single",
+            "name": I18n.tr("panels.wallpaper.view-mode-single")
+          },
+          {
+            "key": "recursive",
+            "name": I18n.tr("panels.wallpaper.view-mode-recursive")
+          },
+          {
+            "key": "browse",
+            "name": I18n.tr("panels.wallpaper.view-mode-browse")
+          }
+        ]
+        currentKey: Settings.data.wallpaper.viewMode
+        onSelected: key => Settings.data.wallpaper.viewMode = key
+        defaultValue: Settings.getDefaultValue("wallpaper.viewMode")
+      }
+
+      NTextInputButton {
+        id: wallpaperPathInput
+        label: I18n.tr("panels.wallpaper.settings-folder-label")
+        description: I18n.tr("panels.wallpaper.settings-folder-description")
+        text: Settings.data.wallpaper.directory
+        buttonIcon: "folder-open"
+        buttonTooltip: I18n.tr("panels.wallpaper.settings-folder-label")
+        Layout.fillWidth: true
+        onInputTextChanged: text => Settings.data.wallpaper.directory = text
+        onButtonClicked: root.openMainFolderPicker()
+      }
+
+      NToggle {
+        label: I18n.tr("panels.wallpaper.settings-monitor-specific-label")
+        description: I18n.tr("panels.wallpaper.settings-monitor-specific-description")
+        checked: Settings.data.wallpaper.enableMultiMonitorDirectories
+        onToggled: checked => Settings.data.wallpaper.enableMultiMonitorDirectories = checked
+        defaultValue: Settings.getDefaultValue("wallpaper.enableMultiMonitorDirectories")
+      }
+
+      NBox {
+        visible: Settings.data.wallpaper.enableMultiMonitorDirectories
+        Layout.fillWidth: true
+        radius: Style.radiusM
+        color: Color.mSurface
+        border.color: Color.mOutline
+        border.width: Style.borderS
+        implicitHeight: contentCol.implicitHeight + Style.margin2L
+        clip: true
+
+        ColumnLayout {
+          id: contentCol
+          anchors.fill: parent
+          anchors.margins: Style.marginL
+          spacing: Style.marginM
+          Repeater {
+            model: Quickshell.screens || []
+            delegate: ColumnLayout {
               Layout.fillWidth: true
-              onInputEditingFinished: WallpaperService.setMonitorDirectory(modelData.name, monitorDirInput.text)
-              onButtonClicked: root.openMonitorFolderPicker(modelData.name)
+              spacing: Style.marginS
+
+              NText {
+                text: (modelData.name || "Unknown")
+                color: Color.mPrimary
+                font.weight: Style.fontWeightBold
+                pointSize: Style.fontSizeM
+              }
+
+              NTextInputButton {
+                id: monitorDirInput
+                text: WallpaperService.getMonitorDirectory(modelData.name)
+                buttonIcon: "folder-open"
+                buttonTooltip: I18n.tr("panels.wallpaper.settings-monitor-specific-tooltip")
+                Layout.fillWidth: true
+                onInputEditingFinished: WallpaperService.setMonitorDirectory(modelData.name, monitorDirInput.text)
+                onButtonClicked: root.openMonitorFolderPicker(modelData.name)
+              }
             }
           }
         }
@@ -174,50 +180,57 @@ ColumnLayout {
     }
   }
 
-  NDivider {
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
     Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
-
-  NToggle {
-    label: I18n.tr("panels.wallpaper.settings-use-original-images-label")
-    description: I18n.tr("panels.wallpaper.settings-use-original-images-description")
-    checked: Settings.data.wallpaper.useOriginalImages
-    enabled: Settings.data.wallpaper.enabled
-    onToggled: checked => Settings.data.wallpaper.useOriginalImages = checked
-    defaultValue: Settings.getDefaultValue("wallpaper.useOriginalImages")
-  }
-
-  RowLayout {
-    spacing: Style.marginM
+  // SettingsGroup 2: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
     Layout.fillWidth: true
-    enabled: Settings.data.wallpaper.enabled
-
-    NLabel {
-      label: I18n.tr("panels.wallpaper.settings-clear-cache-label")
-      description: I18n.tr("panels.wallpaper.settings-clear-cache-description")
-      Layout.fillWidth: true
+    spacing: 0
+    NToggle {
+      label: I18n.tr("panels.wallpaper.settings-use-original-images-label")
+      description: I18n.tr("panels.wallpaper.settings-use-original-images-description")
+      checked: Settings.data.wallpaper.useOriginalImages
+      enabled: Settings.data.wallpaper.enabled
+      onToggled: checked => Settings.data.wallpaper.useOriginalImages = checked
+      defaultValue: Settings.getDefaultValue("wallpaper.useOriginalImages")
     }
 
-    NButton {
-      icon: "trash"
-      text: I18n.tr("panels.wallpaper.settings-clear-cache-button")
-      outlined: true
-      onClicked: {
-        ImageCacheService.clearLarge();
-        ToastService.showNotice(I18n.tr("panels.wallpaper.settings-clear-cache-toast"));
+    RowLayout {
+      spacing: Style.marginM
+      Layout.fillWidth: true
+      enabled: Settings.data.wallpaper.enabled
+
+      NLabel {
+        label: I18n.tr("panels.wallpaper.settings-clear-cache-label")
+        description: I18n.tr("panels.wallpaper.settings-clear-cache-description")
+        Layout.fillWidth: true
+      }
+
+      NButton {
+        icon: "trash"
+        text: I18n.tr("panels.wallpaper.settings-clear-cache-button")
+        outlined: true
+        onClicked: {
+          ImageCacheService.clearLarge();
+          ToastService.showNotice(I18n.tr("panels.wallpaper.settings-clear-cache-toast"));
+        }
       }
     }
   }
 
-  NDivider {
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
     Layout.fillWidth: true
-    visible: CompositorService.isNiri
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
-
   ColumnLayout {
     visible: CompositorService.isNiri
     enabled: Settings.data.wallpaper.enabled
-    spacing: Style.marginL
+    spacing: 0
     Layout.fillWidth: true
 
     NToggle {

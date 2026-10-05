@@ -40,7 +40,7 @@ ColumnLayout {
   property bool systemInfoLoading: true
   property bool systemInfoAvailable: true
 
-  spacing: Style.marginL
+  spacing: 0
 
   function getModule(type) {
     if (!root.systemInfo)
@@ -158,556 +158,580 @@ ColumnLayout {
     gitProcess.running = true;
   }
 
-  Process {
-    id: gitProcess
-    command: ["git", "rev-parse", "--short", "HEAD"]
-    running: false
+  // SettingsGroup 1: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: 0
+    Process {
+      id: gitProcess
+      command: ["git", "rev-parse", "--short", "HEAD"]
+      running: false
 
-    onExited: function (exitCode) {
-      Logger.d("VersionSubTab", "gitProcess - Process exited with code:", exitCode);
-      if (exitCode === 0) {
-        var gitOutput = stdout.text.trim();
-        Logger.d("VersionSubTab", "gitProcess - gitOutput:", gitOutput);
-        if (gitOutput) {
-          root.commitInfo = gitOutput;
-          Logger.d("VersionSubTab", "gitProcess - Set commitInfo to:", root.commitInfo);
-        }
-      } else {
-        Logger.d("VersionSubTab", "gitProcess - Git command failed. Exit code:", exitCode);
-      }
-    }
-
-    stdout: StdioCollector {}
-    stderr: StdioCollector {}
-  }
-
-  Process {
-    id: qsVersionProcess
-    command: ["qs", "--version"]
-    running: false
-
-    onExited: function (exitCode) {
-      if (exitCode === 0) {
-        // Upstream quickshell reports a single line such as
-        // "Quickshell 0.3.0 (revision ..., distributed by: ...)"
-        var output = stdout.text.trim().split("\n")[0].trim();
-        if (output) {
-          root.qsVersion = output;
+      onExited: function (exitCode) {
+        Logger.d("VersionSubTab", "gitProcess - Process exited with code:", exitCode);
+        if (exitCode === 0) {
+          var gitOutput = stdout.text.trim();
+          Logger.d("VersionSubTab", "gitProcess - gitOutput:", gitOutput);
+          if (gitOutput) {
+            root.commitInfo = gitOutput;
+            Logger.d("VersionSubTab", "gitProcess - Set commitInfo to:", root.commitInfo);
+          }
+        } else {
+          Logger.d("VersionSubTab", "gitProcess - Git command failed. Exit code:", exitCode);
         }
       }
+
+      stdout: StdioCollector {}
+      stderr: StdioCollector {}
     }
 
-    stdout: StdioCollector {}
-    stderr: StdioCollector {}
-  }
+    Process {
+      id: qsVersionProcess
+      command: ["qs", "--version"]
+      running: false
 
-  // Check if fastfetch is available before attempting to run it
-  Process {
-    id: checkFastfetchProcess
-    command: ["sh", "-c", "command -v fastfetch"]
-    running: false
-
-    onExited: function (exitCode) {
-      if (exitCode === 0) {
-        // fastfetch is available, run it
-        Logger.d("VersionSubTab", "fastfetch found, running it");
-        fastfetchProcess.running = true;
-      } else {
-        // fastfetch not found, show error state immediately
-        Logger.w("VersionSubTab", "fastfetch not found");
-        root.systemInfoLoading = false;
-        root.systemInfoAvailable = false;
+      onExited: function (exitCode) {
+        if (exitCode === 0) {
+          // Upstream quickshell reports a single line such as
+          // "Quickshell 0.3.0 (revision ..., distributed by: ...)"
+          var output = stdout.text.trim().split("\n")[0].trim();
+          if (output) {
+            root.qsVersion = output;
+          }
+        }
       }
+
+      stdout: StdioCollector {}
+      stderr: StdioCollector {}
     }
 
-    stdout: StdioCollector {}
-    stderr: StdioCollector {}
-  }
+    // Check if fastfetch is available before attempting to run it
+    Process {
+      id: checkFastfetchProcess
+      command: ["sh", "-c", "command -v fastfetch"]
+      running: false
 
-  Process {
-    id: fastfetchProcess
-    command: ["fastfetch", "--format", "json", "--config", Quickshell.shellDir + "/Assets/Services/fastfetch/system-info.jsonc"]
-    running: false
-
-    onExited: function (exitCode) {
-      root.systemInfoLoading = false;
-      if (exitCode === 0) {
-        try {
-          root.systemInfo = JSON.parse(stdout.text);
-          root.systemInfoAvailable = true;
-        } catch (e) {
-          Logger.w("VersionSubTab", "Failed to parse fastfetch JSON: " + e);
+      onExited: function (exitCode) {
+        if (exitCode === 0) {
+          // fastfetch is available, run it
+          Logger.d("VersionSubTab", "fastfetch found, running it");
+          fastfetchProcess.running = true;
+        } else {
+          // fastfetch not found, show error state immediately
+          Logger.w("VersionSubTab", "fastfetch not found");
+          root.systemInfoLoading = false;
           root.systemInfoAvailable = false;
         }
-      } else {
-        root.systemInfoAvailable = false;
       }
+
+      stdout: StdioCollector {}
+      stderr: StdioCollector {}
     }
 
-    stdout: StdioCollector {}
-    stderr: StdioCollector {}
-  }
+    Process {
+      id: fastfetchProcess
+      command: ["fastfetch", "--format", "json", "--config", Quickshell.shellDir + "/Assets/Services/fastfetch/system-info.jsonc"]
+      running: false
 
-  RowLayout {
-    Layout.alignment: Qt.AlignHCenter
-    spacing: Style.marginXL
-
-    // nosDshell logo
-    Image {
-      source: "../../../../../Assets/nosdshell.svg"
-      width: 96 * Style.uiScaleRatio
-      height: width
-      fillMode: Image.PreserveAspectFit
-      sourceSize.width: width
-      sourceSize.height: height
-      mipmap: true
-      smooth: true
-      Layout.alignment: Qt.AlignBottom
-      rotation: Settings.isDebug ? 180 : 0
-
-      Behavior on rotation {
-        NumberAnimation {
-          duration: Style.animationSlowest
-          easing.type: Easing.OutBack
+      onExited: function (exitCode) {
+        root.systemInfoLoading = false;
+        if (exitCode === 0) {
+          try {
+            root.systemInfo = JSON.parse(stdout.text);
+            root.systemInfoAvailable = true;
+          } catch (e) {
+            Logger.w("VersionSubTab", "Failed to parse fastfetch JSON: " + e);
+            root.systemInfoAvailable = false;
+          }
+        } else {
+          root.systemInfoAvailable = false;
         }
       }
 
-      property int debugTapCount: 0
+      stdout: StdioCollector {}
+      stderr: StdioCollector {}
+    }
 
-      Timer {
-        id: debugTapTimer
-        interval: 5000
-        onTriggered: parent.debugTapCount = 0
-      }
+    RowLayout {
+      Layout.alignment: Qt.AlignHCenter
+      spacing: Style.marginXL
 
-      MouseArea {
-        anchors.fill: parent
-        onClicked: {
-          if (parent.debugTapCount === 0) {
-            debugTapTimer.restart();
+      // nosDshell logo
+      Image {
+        source: "../../../../../Assets/nosdshell.svg"
+        width: 96 * Style.uiScaleRatio
+        height: width
+        fillMode: Image.PreserveAspectFit
+        sourceSize.width: width
+        sourceSize.height: height
+        mipmap: true
+        smooth: true
+        Layout.alignment: Qt.AlignBottom
+        rotation: Settings.isDebug ? 180 : 0
+
+        Behavior on rotation {
+          NumberAnimation {
+            duration: Style.animationSlowest
+            easing.type: Easing.OutBack
           }
-          parent.debugTapCount++;
-          if (parent.debugTapCount >= 8) {
-            parent.debugTapCount = 0;
-            debugTapTimer.stop();
-            Settings.isDebug = !Settings.isDebug;
-            if (Settings.isDebug) {
-              ToastService.showNotice("Debug", I18n.tr("panels.about.debug-enabled"));
-            } else {
-              ToastService.showNotice("Debug", I18n.tr("panels.about.debug-disabled"));
+        }
+
+        property int debugTapCount: 0
+
+        Timer {
+          id: debugTapTimer
+          interval: 5000
+          onTriggered: parent.debugTapCount = 0
+        }
+
+        MouseArea {
+          anchors.fill: parent
+          onClicked: {
+            if (parent.debugTapCount === 0) {
+              debugTapTimer.restart();
+            }
+            parent.debugTapCount++;
+            if (parent.debugTapCount >= 8) {
+              parent.debugTapCount = 0;
+              debugTapTimer.stop();
+              Settings.isDebug = !Settings.isDebug;
+              if (Settings.isDebug) {
+                ToastService.showNotice("Debug", I18n.tr("panels.about.debug-enabled"));
+              } else {
+                ToastService.showNotice("Debug", I18n.tr("panels.about.debug-disabled"));
+              }
             }
           }
         }
       }
-    }
 
-    ColumnLayout {
-      NHeader {
-        label: "nosDshell"
-      }
-
-      // Versions
-      GridLayout {
-        columns: 2
-        rowSpacing: Style.marginXS
-        columnSpacing: Style.marginM
-
-        // Installed Version (Shell)
-        NText {
-          text: "nosDshell:"
-          color: Color.mOnSurfaceVariant
-          Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+      ColumnLayout {
+        NHeader {
+          label: "nosDshell"
         }
 
-        RowLayout {
-          spacing: Style.marginS
+        // Versions
+        GridLayout {
+          columns: 2
+          rowSpacing: Style.marginXS
+          columnSpacing: Style.marginM
+
+          // Installed Version (Shell)
+          NText {
+            text: "nosDshell:"
+            color: Color.mOnSurfaceVariant
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+          }
+
+          RowLayout {
+            spacing: Style.marginS
+
+            NText {
+              text: root.currentVersion
+              color: Color.mOnSurface
+              font.weight: Style.fontWeightBold
+            }
+
+            // Git commit in parentheses
+            NText {
+              id: commitText
+              visible: root.isGitVersion
+              text: "(" + (root.commitInfo || I18n.tr("common.loading")) + ")"
+              color: commitMouseArea.containsMouse ? Color.mPrimary : Color.mOnSurfaceVariant
+              pointSize: Style.fontSizeXS
+              font.underline: commitMouseArea.containsMouse && root.commitInfo
+
+              MouseArea {
+                id: commitMouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: root.commitInfo ? Qt.PointingHandCursor : Qt.ArrowCursor
+                onEntered: {
+                  if (root.commitInfo) {
+                    TooltipService.show(commitText, I18n.tr("panels.about.view-commit"));
+                  }
+                }
+                onExited: TooltipService.hide()
+                onClicked: {
+                  if (root.commitInfo) {
+                    Quickshell.execDetached(["xdg-open", "https://github.com/ShineBreaker/nosDshell/commit/" + root.commitInfo]);
+                  }
+                }
+              }
+            }
+          }
+
+          // Quickshell version
+          NText {
+            visible: root.qsVersion !== ""
+            text: "Quickshell:"
+            color: Color.mOnSurfaceVariant
+            Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
+          }
 
           NText {
-            text: root.currentVersion
+            visible: root.qsVersion !== ""
+            text: root.qsVersion
             color: Color.mOnSurface
             font.weight: Style.fontWeightBold
+            wrapMode: Text.Wrap
+            Layout.fillWidth: true
           }
-
-          // Git commit in parentheses
-          NText {
-            id: commitText
-            visible: root.isGitVersion
-            text: "(" + (root.commitInfo || I18n.tr("common.loading")) + ")"
-            color: commitMouseArea.containsMouse ? Color.mPrimary : Color.mOnSurfaceVariant
-            pointSize: Style.fontSizeXS
-            font.underline: commitMouseArea.containsMouse && root.commitInfo
-
-            MouseArea {
-              id: commitMouseArea
-              anchors.fill: parent
-              hoverEnabled: true
-              cursorShape: root.commitInfo ? Qt.PointingHandCursor : Qt.ArrowCursor
-              onEntered: {
-                if (root.commitInfo) {
-                  TooltipService.show(commitText, I18n.tr("panels.about.view-commit"));
-                }
-              }
-              onExited: TooltipService.hide()
-              onClicked: {
-                if (root.commitInfo) {
-                  Quickshell.execDetached(["xdg-open", "https://github.com/ShineBreaker/nosDshell/commit/" + root.commitInfo]);
-                }
-              }
-            }
-          }
-        }
-
-        // Quickshell version
-        NText {
-          visible: root.qsVersion !== ""
-          text: "Quickshell:"
-          color: Color.mOnSurfaceVariant
-          Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
-        }
-
-        NText {
-          visible: root.qsVersion !== ""
-          text: root.qsVersion
-          color: Color.mOnSurface
-          font.weight: Style.fontWeightBold
-          wrapMode: Text.Wrap
-          Layout.fillWidth: true
         }
       }
     }
   }
 
-  NButton {
-    id: copyBtn
-    icon: "copy"
-    text: I18n.tr("panels.about.copy-info")
-    outlined: true
-    Layout.alignment: Qt.AlignHCenter
-    Layout.topMargin: Style.marginM
-    Layout.bottomMargin: Style.marginM
-    onClicked: root.copyInfoToClipboard()
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
+    Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
+  }
+  // SettingsGroup 2: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: 0
+    NButton {
+      id: copyBtn
+      icon: "copy"
+      text: I18n.tr("panels.about.copy-info")
+      outlined: true
+      Layout.alignment: Qt.AlignHCenter
+      Layout.topMargin: Style.marginM
+      Layout.bottomMargin: Style.marginM
+      onClicked: root.copyInfoToClipboard()
+    }
   }
 
   // System Information Section
-  NDivider {
+
+  // SettingsGroup gap (DESIGN §3.5.4)
+  Item {
     Layout.fillWidth: true
+    Layout.preferredHeight: Style.settingsGroupSpacing ?? 15
   }
-
-  NHeader {
-    label: I18n.tr("panels.about.system-title")
-  }
-
-  // Error state (fastfetch not installed)
+  // SettingsGroup 3: the rows sit flush, the 1 px seam
+  // between them comes from the dcc row (DESIGN §3.5.4)
   ColumnLayout {
-    visible: !root.systemInfoAvailable
     Layout.fillWidth: true
-    spacing: Style.marginS
-
-    NText {
-      text: I18n.tr("panels.about.system-not-installed")
-      color: Color.mOnSurfaceVariant
+    spacing: 0
+    NHeader {
+      label: I18n.tr("panels.about.system-title")
     }
 
-    NText {
-      text: I18n.tr("panels.about.system-install-hint")
-      color: Color.mOnSurfaceVariant
-      pointSize: Style.fontSizeXS
-    }
-  }
-
-  // System info grid
-  GridLayout {
-    id: sysInfo
-    readonly property real textSize: Style.fontSizeS
-
-    visible: root.systemInfoAvailable && root.systemInfo
-    Layout.fillWidth: true
-    columns: 2
-    rowSpacing: Style.marginXS
-    columnSpacing: Style.marginM
-
-    // OS
-    NText {
-      text: I18n.tr("panels.about.system-os")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const os = root.getModule("OS");
-        return os?.result?.prettyName || "N/A";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
+    // Error state (fastfetch not installed)
+    ColumnLayout {
+      visible: !root.systemInfoAvailable
       Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Kernel
-    NText {
-      text: I18n.tr("panels.about.system-kernel")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const kernel = root.getModule("Kernel");
-        return kernel?.result?.release || "N/A";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Host
-    NText {
-      text: I18n.tr("panels.about.system-host")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const title = root.getModule("Title");
-        return title?.result?.hostName || "N/A";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Product name
-    NText {
-      text: I18n.tr("panels.about.system-product")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const title = root.getModule("Host");
-        return title?.result?.name || "N/A";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Board name
-    NText {
-      text: I18n.tr("panels.about.system-board")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const title = root.getModule("Board");
-        return title?.result?.name || "N/A";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Uptime
-    NText {
-      text: I18n.tr("panels.about.system-uptime")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const value = root.getModule("Uptime")?.result?.uptime;
-        return value ? Time.formatVagueHumanReadableDuration(value / 1000) : "-";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // CPU
-    NText {
-      text: I18n.tr("panels.about.system-cpu")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const cpu = root.getModule("CPU");
-        if (!cpu?.result)
-          return "N/A";
-        let cpuText = cpu.result.cpu || "N/A";
-        const cores = cpu.result.cores;
-        if (cores?.logical) {
-          cpuText += " (" + cores.logical + " threads)";
-        }
-        return cpuText;
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // GPU
-    NText {
-      text: I18n.tr("panels.about.system-gpu")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const gpu = root.getModule("GPU");
-        if (!gpu?.result || !Array.isArray(gpu.result) || gpu.result.length === 0)
-          return "N/A";
-        return gpu.result.map(g => g.name || "Unknown").join(", ");
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Memory
-    NText {
-      text: I18n.tr("panels.about.system-memory")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const mem = root.getModule("Memory");
-        if (!mem?.result)
-          return "N/A";
-        const used = (mem.result.used / root.gigaB).toFixed(1);
-        const total = (mem.result.total / root.gigaB).toFixed(1);
-        return used + " GiB / " + total + " GiB";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Disk
-    NText {
-      text: I18n.tr("panels.about.system-disk")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const disk = root.getModule("Disk");
-        if (!disk?.result || !Array.isArray(disk.result) || disk.result.length === 0)
-          return "N/A";
-        const rootDisk = disk.result.find(d => d.mountpoint === "/");
-        if (!rootDisk?.bytes)
-          return "N/A";
-        const used = (rootDisk.bytes.used / root.gigaD).toFixed(1);
-        const total = (rootDisk.bytes.total / root.gigaD).toFixed(1);
-        return used + " GB / " + total + " GB" + " (" + rootDisk.filesystem + ")";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // WM
-    NText {
-      text: I18n.tr("panels.about.system-wm")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const wm = root.getModule("WM");
-        if (!wm?.result)
-          return "N/A";
-        let wmText = wm.result.prettyName || wm.result.processName || "N/A";
-        if (wm.result.protocolName) {
-          wmText += " (" + wm.result.protocolName + ")";
-        }
-        return wmText;
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Packages
-    NText {
-      text: I18n.tr("panels.about.system-packages")
-      color: Color.mOnSurfaceVariant
-      pointSize: sysInfo.textSize
-    }
-    NText {
-      text: {
-        const pkg = root.getModule("Packages");
-        if (!pkg?.result)
-          return "N/A";
-        const result = pkg.result;
-        if (result.all) {
-          const managers = [];
-          if (result.rpm > 0)
-            managers.push("rpm: " + result.rpm);
-          if (result.pacman > 0)
-            managers.push("pacman: " + result.pacman);
-          if (result.dpkg > 0)
-            managers.push("dpkg: " + result.dpkg);
-          if (result.flatpakSystem > 0 || result.flatpakUser > 0) {
-            const flatpak = (result.flatpakSystem || 0) + (result.flatpakUser || 0);
-            managers.push("flatpak: " + flatpak);
-          }
-          if (result.snap > 0)
-            managers.push("snap: " + result.snap);
-          if (result.nixSystem > 0 || result.nixUser > 0 || result.nixDefault > 0) {
-            const nix = (result.nixSystem || 0) + (result.nixUser || 0) + (result.nixDefault || 0);
-            managers.push("nix: " + nix);
-          }
-          if (result.brew > 0)
-            managers.push("brew: " + result.brew);
-          if (managers.length > 0) {
-            return result.all + " (" + managers.join(", ") + ")";
-          }
-          return result.all.toString();
-        }
-        return "N/A";
-      }
-      color: Color.mOnSurface
-      pointSize: sysInfo.textSize
-      Layout.fillWidth: true
-      wrapMode: Text.Wrap
-    }
-
-    // Monitors (2 items per screen: label + value)
-    Repeater {
-      model: Quickshell.screens.length * 2
+      spacing: Style.marginS
 
       NText {
-        readonly property int screenIndex: Math.floor(index / 2)
-        readonly property bool isLabel: index % 2 === 0
-        readonly property var screen: Quickshell.screens[screenIndex]
+        text: I18n.tr("panels.about.system-not-installed")
+        color: Color.mOnSurfaceVariant
+      }
 
-        text: {
-          if (isLabel)
-            return I18n.tr("panels.about.system-monitor");
-          const name = screen?.name || "Unknown";
-          const scales = CompositorService.displayScales || {};
-          const scaleData = scales[name];
-          const scaleValue = (typeof scaleData === "object" && scaleData !== null) ? (scaleData.scale || 1.0) : (scaleData || 1.0);
-          return name + ": " + (screen?.width || 0) + "x" + (screen?.height || 0) + " @ " + scaleValue + "x";
-        }
-        color: isLabel ? Color.mOnSurfaceVariant : Color.mOnSurface
+      NText {
+        text: I18n.tr("panels.about.system-install-hint")
+        color: Color.mOnSurfaceVariant
+        pointSize: Style.fontSizeXS
+      }
+    }
+
+    // System info grid
+    GridLayout {
+      id: sysInfo
+      readonly property real textSize: Style.fontSizeS
+
+      visible: root.systemInfoAvailable && root.systemInfo
+      Layout.fillWidth: true
+      columns: 2
+      rowSpacing: Style.marginXS
+      columnSpacing: Style.marginM
+
+      // OS
+      NText {
+        text: I18n.tr("panels.about.system-os")
+        color: Color.mOnSurfaceVariant
         pointSize: sysInfo.textSize
-        Layout.fillWidth: !isLabel
+      }
+      NText {
+        text: {
+          const os = root.getModule("OS");
+          return os?.result?.prettyName || "N/A";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
         wrapMode: Text.Wrap
+      }
+
+      // Kernel
+      NText {
+        text: I18n.tr("panels.about.system-kernel")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const kernel = root.getModule("Kernel");
+          return kernel?.result?.release || "N/A";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Host
+      NText {
+        text: I18n.tr("panels.about.system-host")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const title = root.getModule("Title");
+          return title?.result?.hostName || "N/A";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Product name
+      NText {
+        text: I18n.tr("panels.about.system-product")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const title = root.getModule("Host");
+          return title?.result?.name || "N/A";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Board name
+      NText {
+        text: I18n.tr("panels.about.system-board")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const title = root.getModule("Board");
+          return title?.result?.name || "N/A";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Uptime
+      NText {
+        text: I18n.tr("panels.about.system-uptime")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const value = root.getModule("Uptime")?.result?.uptime;
+          return value ? Time.formatVagueHumanReadableDuration(value / 1000) : "-";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // CPU
+      NText {
+        text: I18n.tr("panels.about.system-cpu")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const cpu = root.getModule("CPU");
+          if (!cpu?.result)
+            return "N/A";
+          let cpuText = cpu.result.cpu || "N/A";
+          const cores = cpu.result.cores;
+          if (cores?.logical) {
+            cpuText += " (" + cores.logical + " threads)";
+          }
+          return cpuText;
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // GPU
+      NText {
+        text: I18n.tr("panels.about.system-gpu")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const gpu = root.getModule("GPU");
+          if (!gpu?.result || !Array.isArray(gpu.result) || gpu.result.length === 0)
+            return "N/A";
+          return gpu.result.map(g => g.name || "Unknown").join(", ");
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Memory
+      NText {
+        text: I18n.tr("panels.about.system-memory")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const mem = root.getModule("Memory");
+          if (!mem?.result)
+            return "N/A";
+          const used = (mem.result.used / root.gigaB).toFixed(1);
+          const total = (mem.result.total / root.gigaB).toFixed(1);
+          return used + " GiB / " + total + " GiB";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Disk
+      NText {
+        text: I18n.tr("panels.about.system-disk")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const disk = root.getModule("Disk");
+          if (!disk?.result || !Array.isArray(disk.result) || disk.result.length === 0)
+            return "N/A";
+          const rootDisk = disk.result.find(d => d.mountpoint === "/");
+          if (!rootDisk?.bytes)
+            return "N/A";
+          const used = (rootDisk.bytes.used / root.gigaD).toFixed(1);
+          const total = (rootDisk.bytes.total / root.gigaD).toFixed(1);
+          return used + " GB / " + total + " GB" + " (" + rootDisk.filesystem + ")";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // WM
+      NText {
+        text: I18n.tr("panels.about.system-wm")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const wm = root.getModule("WM");
+          if (!wm?.result)
+            return "N/A";
+          let wmText = wm.result.prettyName || wm.result.processName || "N/A";
+          if (wm.result.protocolName) {
+            wmText += " (" + wm.result.protocolName + ")";
+          }
+          return wmText;
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Packages
+      NText {
+        text: I18n.tr("panels.about.system-packages")
+        color: Color.mOnSurfaceVariant
+        pointSize: sysInfo.textSize
+      }
+      NText {
+        text: {
+          const pkg = root.getModule("Packages");
+          if (!pkg?.result)
+            return "N/A";
+          const result = pkg.result;
+          if (result.all) {
+            const managers = [];
+            if (result.rpm > 0)
+              managers.push("rpm: " + result.rpm);
+            if (result.pacman > 0)
+              managers.push("pacman: " + result.pacman);
+            if (result.dpkg > 0)
+              managers.push("dpkg: " + result.dpkg);
+            if (result.flatpakSystem > 0 || result.flatpakUser > 0) {
+              const flatpak = (result.flatpakSystem || 0) + (result.flatpakUser || 0);
+              managers.push("flatpak: " + flatpak);
+            }
+            if (result.snap > 0)
+              managers.push("snap: " + result.snap);
+            if (result.nixSystem > 0 || result.nixUser > 0 || result.nixDefault > 0) {
+              const nix = (result.nixSystem || 0) + (result.nixUser || 0) + (result.nixDefault || 0);
+              managers.push("nix: " + nix);
+            }
+            if (result.brew > 0)
+              managers.push("brew: " + result.brew);
+            if (managers.length > 0) {
+              return result.all + " (" + managers.join(", ") + ")";
+            }
+            return result.all.toString();
+          }
+          return "N/A";
+        }
+        color: Color.mOnSurface
+        pointSize: sysInfo.textSize
+        Layout.fillWidth: true
+        wrapMode: Text.Wrap
+      }
+
+      // Monitors (2 items per screen: label + value)
+      Repeater {
+        model: Quickshell.screens.length * 2
+
+        NText {
+          readonly property int screenIndex: Math.floor(index / 2)
+          readonly property bool isLabel: index % 2 === 0
+          readonly property var screen: Quickshell.screens[screenIndex]
+
+          text: {
+            if (isLabel)
+              return I18n.tr("panels.about.system-monitor");
+            const name = screen?.name || "Unknown";
+            const scales = CompositorService.displayScales || {};
+            const scaleData = scales[name];
+            const scaleValue = (typeof scaleData === "object" && scaleData !== null) ? (scaleData.scale || 1.0) : (scaleData || 1.0);
+            return name + ": " + (screen?.width || 0) + "x" + (screen?.height || 0) + " @ " + scaleValue + "x";
+          }
+          color: isLabel ? Color.mOnSurfaceVariant : Color.mOnSurface
+          pointSize: sysInfo.textSize
+          Layout.fillWidth: !isLabel
+          wrapMode: Text.Wrap
+        }
       }
     }
   }
-
 }
