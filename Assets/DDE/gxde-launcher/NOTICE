@@ -1,0 +1,72 @@
+DDE 15 素材 —— 来源：gxde-launcher
+=====================================
+
+来源仓库：https://github.com/GXDE-OS/gxde-launcher
+分支/版本：浅克隆的默认分支（GXDE-OS 对 deepin 15 的社区维护版）
+上游版权：Copyright (C) 2017 ~ 2018 Deepin Technology Co., Ltd.（src/widgets/searchwidget.cpp 头部声明等）
+上游许可：GPL-3.0（见来源仓库根目录的 LICENSE）
+本仓库许可：GPL-3.0（见仓库根目录的 LICENSE）
+
+复制规则：原样复制，不修改文件名，便于溯源（DESIGN §1.9）。
+
+文件清单
+--------
+
+### `src/skin/icons/` —— 全屏启动器搜索行按钮
+
+上游在 `src/widgets/searchwidget.cpp:44-62` 用 `DImageButton` 逐个设置 normal / hover / press 三态，
+位图另有 `@2x` 版本，按屏幕缩放选用。
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `src/skin/icons/category_{normal,hover,active}_22px.png`（含 `@2x`） | `gxde-launcher/src/skin/icons/` | 搜索行最左侧"分类/全部应用"切换按钮，22 px（`searchwidget.cpp:46-48`） |
+| `src/skin/icons/unfullscreen_{normal,hover,press}.png`（含 `@2x`） | 同上 | 搜索行右侧"切换到小窗口"按钮（`searchwidget.cpp:57-59`） |
+| `src/skin/icons/settings_{normal,hover,press}_24px.svg`（含 `@2x`） | 同上 | 搜索行"控制中心设置"按钮，24 px（`searchwidget.cpp:61-63`） |
+| `src/skin/icons/poweroff_{normal,hover,press}.png`（含 `@2x`） | 同上 | 搜索行"关机"按钮（`searchwidget.cpp:50-52`） |
+
+### `src/skin/icons/` —— 小窗口启动器右栏
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `src/skin/icons/fullscreen_{normal,hover,press}.png`（含 `@2x`） | 同上 | 小窗口右栏右上角 24×24"切换到全屏"按钮（`src/widgets/miniframerightbar.cpp:50-52`） |
+
+### `src/skin/icons/` —— 分类导航图标（normal / hover / active 三态，22 px SVG）
+
+上游在 `src/widgets/categorybutton.cpp:130-190`（`setInfoByCategory()` / `updateState()`）按
+`AppsListModel::AppCategory` 拼出 `<iconName>_<normal|hover|active>_22px.svg`。
+分类 → 图标名的对应关系如下（`Video` 类的图标名是 `multimedia`）：
+
+| DDE 分类 | 图标名 | nosDshell 分类键 |
+|---|---|---|
+| 网络 | `internet` | `Internet` |
+| 社交 | `chat` | `Chat` |
+| 音乐 | `music` | `Music` |
+| 视频 | `multimedia` | `Video` |
+| 图像 | `graphics` | `Graphics` |
+| 游戏 | `game` | `Game` |
+| 办公 | `office` | `Office` |
+| 阅读 | `reading` | `Reading` |
+| 编程 | `development` | `Development` |
+| 系统 | `system` | `System` |
+| 其他 | `others` | `Others` |
+
+### `src/widgets/images/` —— 小窗口右栏与切换按钮
+
+清单见上游 `src/widgets/images.qrc`。
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `src/widgets/images/settings.svg` | `gxde-launcher/src/widgets/images/` | 右栏底部"设置"按钮图标（`miniframerightbar.cpp:97`） |
+| `src/widgets/images/power.svg` | 同上 | 右栏底部"电源"按钮图标（`miniframerightbar.cpp:98`） |
+| `src/widgets/images/all.svg` | 同上 | 左下角"所有应用 ⇄ 分类"切换按钮图标，24 px（`miniframeswitchbtn.cpp:32`） |
+| `src/widgets/images/enter_details_normal.svg` | 同上 | 同上按钮右端的 20×20 箭头（`miniframeswitchbtn.cpp:31`，仅"所有应用"态显示） |
+
+说明
+----
+
+- 应用图标和托盘/状态图标不随本仓库分发，仍在运行时从系统图标主题读取。
+- 右栏"计算机/视频/音乐/图片/文档/下载"六个位置按钮在上游是纯文字（`miniframerightbar.cpp:59-64`
+  只对 `m_settingsBtn` / `m_powerBtn` 调了 `setIcon`），因此这六个按钮的图标在 nosDshell 里沿用
+  Tabler 字形（DESIGN §1.9："参考仓库里没有素材的，继续用既有方案"）。
+- 上游 `widgets/images/drag_indicator.svg`（拖拽排序指示器，`src/delegate/applistdelegate.cpp:68`）
+  未复制：nosDshell 的小窗口列表没有实现拖拽排序。
