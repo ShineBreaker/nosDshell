@@ -150,6 +150,16 @@ Singleton {
                                           });
   }
 
+  // Helper for the launcher IpcHandler (kept at root scope because functions
+  // inside IpcHandler become IPC-callable and can't take a screen object).
+  function applyLauncherText(screen, text) {
+    var model = LauncherState.modelForScreen(screen);
+    if (!model)
+      PanelService.openLauncherWithSearch(screen, text);
+    else
+      model.setSearchText(text);
+  }
+
   IpcHandler {
     target: "settings"
 
@@ -189,7 +199,7 @@ Singleton {
       root.screenDetector.withCurrentScreen(screen => {
                                               var cc = PanelService.getPanel("controlCenterPanel", screen);
                                               if (!cc)
-                                                return;
+                                              return;
                                               if (cc.isPanelOpen) {
                                                 cc.notificationPage = !cc.notificationPage;
                                               } else {
@@ -335,19 +345,19 @@ Singleton {
     target: "launcher"
     function toggle() {
       root.screenDetector.withCurrentScreen(screen => {
-                                                var searchText = PanelService.getLauncherSearchText(screen);
-                                                var isInAppMode = !searchText.startsWith(">");
-                                                if (!PanelService.isLauncherOpen(screen)) {
-                                                  // Closed -> open in app mode
-                                                  PanelService.openLauncherWithSearch(screen, "");
-                                                } else if (isInAppMode) {
-                                                  // Already in app mode -> close
-                                                  PanelService.closeLauncher(screen);
-                                                } else {
-                                                  // In another mode -> switch to app mode
-                                                  PanelService.setLauncherSearchText(screen, "");
-                                                }
-                                              }, Settings.data.appLauncher.overviewLayer);
+                                              var searchText = PanelService.getLauncherSearchText(screen);
+                                              var isInAppMode = !searchText.startsWith(">");
+                                              if (!PanelService.isLauncherOpen(screen)) {
+                                                // Closed -> open in app mode
+                                                PanelService.openLauncherWithSearch(screen, "");
+                                              } else if (isInAppMode) {
+                                                // Already in app mode -> close
+                                                PanelService.closeLauncher(screen);
+                                              } else {
+                                                // In another mode -> switch to app mode
+                                                PanelService.setLauncherSearchText(screen, "");
+                                              }
+                                            }, Settings.data.appLauncher.overviewLayer);
     }
     function setSearchText(text: string) {
       // Prefer the launcher that is actually open (its screen), otherwise the
@@ -356,20 +366,13 @@ Singleton {
       var screen = LauncherState.fullscreenScreen || LauncherState.miniScreen;
       if (!screen) {
         root.screenDetector.withCurrentScreen(s => {
-                                                applyText(s, text);
+                                                root.applyLauncherText(s, text);
                                               });
         return;
       }
-      applyText(screen, text);
+      root.applyLauncherText(screen, text);
     }
 
-    function applyText(screen, text) {
-      var model = LauncherState.modelForScreen(screen);
-      if (!model)
-      PanelService.openLauncherWithSearch(screen, text);
-      else
-      model.setSearchText(text);
-    }
     // Cycle Settings.data.appLauncher.displayMode ("free" <-> "category")
     function switchDisplayMode() {
       var mode = Settings.data.appLauncher.displayMode === "category" ? "free" : "category";
@@ -380,7 +383,7 @@ Singleton {
     function selectCategory(category: string) {
       var model = LauncherState.activeModel;
       if (model && model.appsProvider)
-      model.appsProvider.selectDDECategory(category);
+        model.appsProvider.selectDDECategory(category);
     }
     // Switch the launcher mode (persisted): "fullscreen" | "mini"
     function switchMode(mode: string) {
@@ -391,7 +394,7 @@ Singleton {
         if (wasOpen && screen) {
           LauncherState.close(screen);
           if (mode === "mini")
-          LauncherState.open(screen);
+            LauncherState.open(screen);
         }
       }
     }
@@ -654,10 +657,10 @@ Singleton {
       root.screenDetector.withCurrentScreen(screen => {
                                               var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
                                               if (!controlCenterPanel)
-                                                return;
+                                              return;
                                               controlCenterPanel.notificationPage = true;
                                               if (!controlCenterPanel.isPanelOpen)
-                                                controlCenterPanel.open();
+                                              controlCenterPanel.open();
                                             });
     }
 
@@ -666,10 +669,10 @@ Singleton {
       root.screenDetector.withCurrentScreen(screen => {
                                               var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
                                               if (!controlCenterPanel)
-                                                return;
+                                              return;
                                               controlCenterPanel.pendingQuickPage = page;
                                               if (!controlCenterPanel.isPanelOpen)
-                                                controlCenterPanel.open();
+                                              controlCenterPanel.open();
                                             });
     }
   }
