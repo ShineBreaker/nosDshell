@@ -15,12 +15,8 @@ Text {
     if ((icon === undefined) || (icon === "")) {
       return "";
     }
-    if (Icons.get(icon) === undefined) {
-      Logger.w("Icon", `"${icon}"`, "doesn't exist in the icons font");
-      Logger.callStack();
-      return Icons.get(Icons.defaultIcon);
-    }
-    return Icons.get(icon);
+    const glyph = Icons.get(icon);
+    return glyph !== undefined ? glyph : Icons.get(Icons.defaultIcon);
   }
   font.family: Icons.fontFamily
   font.pointSize: Math.max(1, applyUiScale ? root.pointSize * Style.uiScaleRatio : root.pointSize)

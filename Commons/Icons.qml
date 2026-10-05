@@ -38,15 +38,26 @@ Singleton {
     }
   }
 
+  // Missing-icon warnings are emitted once per icon name: NIcon bindings
+  // re-evaluate constantly and the same gap would flood the log otherwise
+  property var _missingIconWarned: ({})
+
   // ---------------------------------------
   function get(iconName) {
+    const requested = iconName;
+
     // Check in aliases first
     if (aliases[iconName] !== undefined) {
       iconName = aliases[iconName];
     }
 
     // Find the appropriate codepoint
-    return icons[iconName];
+    const glyph = icons[iconName];
+    if (glyph === undefined && iconName && !_missingIconWarned[iconName]) {
+      _missingIconWarned[iconName] = true;
+      Logger.w("Icon", `"${requested}"`, "doesn't exist in the icons font");
+    }
+    return glyph;
   }
 
   function loadFontWithCacheBusting() {
