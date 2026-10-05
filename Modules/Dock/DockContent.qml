@@ -311,8 +311,13 @@ Item {
             return launcherMetadata.useDistroLogo;
           return false;
         }
-        // DDE launcher tile: prefer the deepin-launcher themed icon
-        readonly property string themedLauncherIcon: ThemeIcons.fashionForAny(["deepin-launcher", "start-here", "deepin-toggle-desktop"])
+        // DDE launcher tile: prefer the deepin-launcher themed icon, fall back
+        // to the bundled DDE artwork when the icon theme lacks it
+        // (gxde-dock/frame/item/launcheritem.cpp:56-60)
+        readonly property string themedLauncherIcon: {
+          const t = ThemeIcons.fashionForAny(["deepin-launcher", "start-here", "deepin-toggle-desktop"]);
+          return t !== "" ? t : Quickshell.shellDir + "/Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg";
+        }
 
         Item {
           id: launcherIconContainer

@@ -1,0 +1,17 @@
+DDE 15 素材 —— 来源：deepin-icon-theme
+======================================
+
+来源仓库：https://github.com/GXDE-OS/deepin-icon-theme
+上游项目：https://github.com/linuxdeepin/deepin-icon-theme
+上游版权：Copyright (C) 2011 ~ 2023 Deepin Technology Co., Ltd.
+上游许可：GPL-3.0（见来源仓库根目录的 LICENSE）
+本仓库许可：GPL-3.0（见仓库根目录的 LICENSE）
+
+复制规则：原样复制，不修改文件名，便于溯源。
+
+文件清单
+--------
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `deepin/places/96/deepin-launcher.svg` | `deepin-icon-theme/deepin/places/96/deepin-launcher.svg` | 任务栏启动器按钮的回退图标：系统图标主题里没有 `deepin-launcher` 时使用（上游在 `gxde-dock/frame/item/launcheritem.cpp:56-60` 用 `ThemeAppIcon::getIcon("deepin-launcher", ...)` 读取）。 |
