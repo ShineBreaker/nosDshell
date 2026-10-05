@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
 
-//! End-to-end CLI parity: nosd-theme vs template-processor.py on identical inputs.
+//! End-to-end CLI checks for nosd-theme (Rust-only; the python oracle left
+//! with Scripts/python after the port reached parity).
 
 use std::path::PathBuf;
 use std::process::Command;
@@ -53,60 +54,38 @@ fn test_png(path: &std::path::Path) {
     std::fs::write(path, out).unwrap();
 }
 
-fn python_processor() -> Option<PathBuf> {
-    // Workspace layout: <root>/Scripts/python/src/theming/template-processor.py
-    // with crate at <root>/tools/nosd-theme.
-    let here = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let p = here.join("../../Scripts/python/src/theming/template-processor.py");
-    p.exists().then_some(p)
-}
-
 #[test]
-fn cli_image_json_matches_python() {
-    let Some(py) = python_processor() else { return };
+fn cli_image_emits_both_modes() {
     let dir = scratch("img");
     let img = dir.join("w.png");
     test_png(&img);
     for scheme in ["tonal-spot", "content", "vibrant", "faithful", "muted"] {
-        let rs_out = dir.join(format!("rs-{scheme}.json"));
-        let py_out = dir.join(format!("py-{scheme}.json"));
+        let out = dir.join(format!("rs-{scheme}.json"));
         let rs = Command::new(bin())
             .args([img.to_str().unwrap(), "--scheme-type", scheme, "-o"])
-            .arg(&rs_out)
+            .arg(&out)
             .output()
             .unwrap();
         assert!(rs.status.success(), "rs {scheme}: {rs:?}");
-        let ps = Command::new("python3")
-            .args([py.to_str().unwrap(), img.to_str().unwrap(), "--scheme-type", scheme, "-o"])
-            .arg(&py_out)
-            .output()
-            .unwrap();
-        assert!(ps.status.success(), "py {scheme}: {ps:?}");
-        assert_eq!(
-            std::fs::read_to_string(&rs_out).unwrap(),
-            std::fs::read_to_string(&py_out).unwrap(),
-            "scheme {scheme}"
-        );
+        let text = std::fs::read_to_string(&out).unwrap();
+        for key in ["\"dark\"", "\"light\"", "\"primary\""] {
+            assert!(text.contains(key), "scheme {scheme} missing {key}");
+        }
     }
 }
 
 #[test]
-fn cli_error_paths_match_python() {
-    let Some(py) = python_processor() else { return };
-    let dir = scratch("err");
+fn cli_error_paths() {
     // Missing image.
     let rs = Command::new(bin()).args(["/nope.png"]).output().unwrap();
-    let ps = Command::new("python3")
-        .args([py.to_str().unwrap(), "/nope.png"])
-        .output()
-        .unwrap();
     assert!(!rs.status.success());
-    assert!(!ps.status.success());
-    assert_eq!(String::from_utf8_lossy(&rs.stderr), String::from_utf8_lossy(&ps.stderr));
+    assert!(
+        String::from_utf8_lossy(&rs.stderr).contains("Error: Image not found")
+    );
     // No args at all.
     let rs = Command::new(bin()).output().unwrap();
-    let ps = Command::new("python3").arg(py.to_str().unwrap()).output().unwrap();
     assert!(!rs.status.success());
-    assert!(!ps.status.success());
-    assert_eq!(String::from_utf8_lossy(&rs.stderr), String::from_utf8_lossy(&ps.stderr));
+    assert!(
+        String::from_utf8_lossy(&rs.stderr).contains("Error: Image path is required")
+    );
 }

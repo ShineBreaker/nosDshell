@@ -10,8 +10,12 @@ import qs.Services.Theming
 Singleton {
   id: root
 
+  // Set once by init(); the check itself waits for the helpers detector so
+  // a missing binary never spawns an empty command (which only warns).
+  property bool _wantAvailabilityCheck: false
+
   function init() {
-    availabilityCheckProcess.running = true;
+    root._wantAvailabilityCheck = true;
   }
   function loadCalendars() {
     listCalendarsProcess.running = true;
@@ -34,7 +38,7 @@ Singleton {
   // Process to check for evolution-data-server libraries
   Process {
     id: availabilityCheckProcess
-    running: false
+    running: root._wantAvailabilityCheck && TemplateRegistry.helpersBin !== ""
     command: TemplateRegistry.edsCheckCmd()
 
     stdout: StdioCollector {

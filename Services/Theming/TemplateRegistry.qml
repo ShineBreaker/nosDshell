@@ -79,8 +79,8 @@ Singleton {
       Logger.i("Theming", "nosd-helpers available:", root.helpersBin);
       else
       Logger.w("Theming", "nosd-helpers not found; theming helpers are unavailable");
-      codeResolverProcess.running = true;
-      codiumResolverProcess.running = true;
+      codeResolverProcess.running = root.helpersBin !== "";
+      codiumResolverProcess.running = root.helpersBin !== "";
     }
   }
 
@@ -585,7 +585,7 @@ Singleton {
   }
 
   // Resolve VSCode extension paths dynamically (after helpers detection,
-  // so the Rust binary is preferred with python as fallback)
+  // so resolution is skipped when the Rust binary is unavailable)
   Process {
     id: codeResolverProcess
     command: root.vscodeCmd("~/.vscode/extensions")

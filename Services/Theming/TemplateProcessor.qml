@@ -16,7 +16,6 @@ Singleton {
   signal colorsGenerated
 
   readonly property string dynamicConfigPath: Settings.cacheDir + "theming.dynamic.toml"
-  readonly property string templateProcessorScript: Quickshell.shellDir + "/Scripts/python/src/theming/template-processor.py"
 
   // Debounce state for wallpaper processing
   property var pendingWallpaperRequest: null
@@ -97,6 +96,10 @@ Singleton {
 
   function executeWallpaperColors(wallpaperPath, mode) {
     Logger.d("TemplateProcessor", `executeWallpaperColors: path=${wallpaperPath}, mode=${mode}`);
+    if (TemplateRegistry.themeBin === "") {
+      Logger.w("TemplateProcessor", "nosd-theme unavailable; skipping wallpaper processing");
+      return;
+    }
     const content = buildThemeConfig();
     if (!content && !Settings.data.templates.enableUserTheming) {
       Logger.d("TemplateProcessor", "executeWallpaperColors: no config content and no user theming, aborting");
@@ -127,6 +130,10 @@ Singleton {
   }
 
   function executePredefinedScheme(schemeData, mode, wallpaperPath) {
+    if (TemplateRegistry.themeBin === "") {
+      Logger.w("TemplateProcessor", "nosd-theme unavailable; skipping predefined scheme");
+      return;
+    }
     // 1. Build TOML config for application templates (including terminals)
     const tomlContent = buildPredefinedTemplateConfig(mode);
     if (!tomlContent && !Settings.data.templates.enableUserTheming) {
@@ -155,7 +162,7 @@ Singleton {
       script += tomlContent + "\n";
       script += `${tomlDelimiter}\n`;
 
-      // Run Python template processor with --scheme flag
+      // Run the nosd-theme template processor with --scheme flag
       // Don't pass --mode so templates get both dark and light colors (e.g., zed.json needs both)
       // Pass --default-mode so "default" in templates resolves to the current theme mode
       // Pass wallpaper as positional arg so image_path is available in templates (no extraction occurs when --scheme is used)
@@ -345,7 +352,7 @@ Singleton {
       const delimiter = "THEME_CONFIG_EOF_" + Math.random().toString(36).substr(2, 9);
       script += `cat > '${pathEsc}' << '${delimiter}'\n${content}\n${delimiter}\n`;
 
-      // Use template-processor.py (Python implementation)
+      // Use the nosd-theme template processor binary
       // Don't pass --mode so templates get both dark and light colors (e.g., zed.json needs both)
       // Pass --default-mode so "default" in templates resolves to the current theme mode
       const schemeType = getSchemeType();

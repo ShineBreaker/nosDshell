@@ -121,8 +121,8 @@ menu) can skip a live blur pass and just draw the cached image.")
      "nosd-helpers is the single Rust binary behind nosDshell's helper
 subcommands (vscode-themes, kde-apply-scheme, gtk-refresh, khal-events,
 bluetooth-pair, eds-check, eds-calendars,
-eds-events, apply), replacing the Scripts/python and Scripts/bash
-helpers.  QML callers prefer it over the scripts when present.")
+eds-events, apply).  QML callers require it; the Scripts/python and
+Scripts/bash helpers were removed after the ports reached parity.")
     (license license:gpl3+)))
 
 (define-public nosd-theme
@@ -139,8 +139,9 @@ helpers.  QML callers prefer it over the scripts when present.")
     (home-page "https://github.com/ShineBreaker/nosDshell")
     (synopsis "Material theme processor for nosDshell")
     (description
-     "nosd-theme ports Scripts/python/src/theming (template-processor.py
-plus lib/) to Rust: wallpaper color extraction, Material tonal schemes
+     "nosd-theme is the Rust port of the former
+Scripts/python/src/theming tree (template-processor.py plus lib/):
+wallpaper color extraction, Material tonal schemes
 and Matugen-compatible template rendering.")
     (license license:gpl3+)))
 
