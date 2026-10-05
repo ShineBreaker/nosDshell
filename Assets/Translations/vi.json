@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "Hiển thị các hiệu ứng hình ảnh bổ sung (như mưa, tuyết, hoặc sấm sét) trên thẻ thời tiết.",
       "weather-show-effects-label": "Hiển thị hiệu ứng thời tiết",
       "weather-show-in-calendar-description": "Hiển thị dự báo thời tiết hàng ngày trực tiếp trong chế độ xem lịch của bạn.",
-      "weather-show-in-calendar-label": "Hiển thị thời tiết trong lịch",
-      "weather-mascot-always-description": "Luôn sử dụng mascot emojis thay vì tabler icons.",
-      "weather-mascot-always-label": "Luôn hiển thị biểu tượng cảm xúc thời tiết Talia"
+      "weather-show-in-calendar-label": "Hiển thị thời tiết trong lịch"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Khi fprintd (xác thực vân tay) đang hoạt động, tùy chọn này cho phép bạn vẫn đăng nhập bằng mật khẩu được thay vì vân tay",

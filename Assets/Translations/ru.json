@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "Отображает дополнительные визуальные эффекты (например, дождь, снег или молнию) на карточке погоды.",
       "weather-show-effects-label": "Отображать погодные эффекты",
       "weather-show-in-calendar-description": "Показывать ежедневный прогноз погоды непосредственно в вашем календаре.",
-      "weather-show-in-calendar-label": "Отображать погоду в календаре",
-      "weather-mascot-always-description": "Всегда используйте mascot emojis вместо tabler icons.",
-      "weather-mascot-always-label": "Всегда показывать погодные эмодзи Talia"
+      "weather-show-in-calendar-label": "Отображать погоду в календаре"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Когда fprintd (аутентификация по отпечатку пальца) активен, эта опция позволяет вам входить в систему с помощью пароля вместо отпечатка пальца.",

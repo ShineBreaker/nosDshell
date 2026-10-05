@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "天気カードに視覚効果（雨、雪、雷など）を追加表示します。",
       "weather-show-effects-label": "天気エフェクトを表示",
       "weather-show-in-calendar-description": "カレンダービューに毎日の天気予報を直接表示します。",
-      "weather-show-in-calendar-label": "カレンダー",
-      "weather-mascot-always-description": "tabler icons の代わりに常に mascot emojis を使用してください。",
-      "weather-mascot-always-label": "Taliaの天気絵文字を常に表示する"
+      "weather-show-in-calendar-label": "カレンダー"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "fprintd（指紋認証）が有効な場合、このオプションを使用すると、指紋の代わりにパスワードでログインできます。",

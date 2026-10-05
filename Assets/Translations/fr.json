@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "Afficher des effets visuels supplémentaires (comme la pluie, la neige ou la foudre) sur la carte météo.",
       "weather-show-effects-label": "Afficher les effets météorologiques",
       "weather-show-in-calendar-description": "Afficher les prévisions météo quotidiennes directement dans votre vue calendrier.",
-      "weather-show-in-calendar-label": "Afficher la météo dans le calendrier",
-      "weather-mascot-always-description": "Toujours utiliser les mascot emojis au lieu des tabler icons.",
-      "weather-mascot-always-label": "Toujours afficher les emojis météo de Talia"
+      "weather-show-in-calendar-label": "Afficher la météo dans le calendrier"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Lorsque fprintd (authentification par empreinte digitale) est actif, cette option vous permet de vous connecter avec votre mot de passe au lieu d'une empreinte digitale.",

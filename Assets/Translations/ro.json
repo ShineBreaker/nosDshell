@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "Afișează efecte vizuale suplimentare (cum ar fi ploaia, zăpada sau fulgerele) pe cardul meteo.",
       "weather-show-effects-label": "Afișează efecte meteo",
       "weather-show-in-calendar-description": "Afișează prognoza meteo zilnică direct în vizualizarea calendarului tău.",
-      "weather-show-in-calendar-label": "Afișează vremea în calendar",
-      "weather-mascot-always-description": "Folosește întotdeauna emoji-uri Talia în loc de icoane tabler.",
-      "weather-mascot-always-label": "Afișează mereu emoji-urile meteo Talia"
+      "weather-show-in-calendar-label": "Afișează vremea în calendar"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Când fprintd (autentificarea cu amprentă) este activ, această opțiune îți permite să te autentifici în continuare folosind parola ta în loc de amprentă.",

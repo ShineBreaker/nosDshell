@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "További vizuális effektek (például eső, hó vagy villámlás) megjelenítése az időjárás kártyán.",
       "weather-show-effects-label": "Időjárási effektek megjelenítése",
       "weather-show-in-calendar-description": "A napi időjárás-előrejelzés megjelenítése közvetlenül a naptárnézetben.",
-      "weather-show-in-calendar-label": "Időjárás megjelenítése a naptárban",
-      "weather-mascot-always-description": "Talia hangulatjelek használata a Tabler ikonok helyett.",
-      "weather-mascot-always-label": "Mindig jelenítse meg a Talia időjárás hangulatjeleket"
+      "weather-show-in-calendar-label": "Időjárás megjelenítése a naptárban"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Ha az fprintd (ujjlenyomat-hitelesítés) aktív, ez az opció lehetővé teszi, hogy továbbra is jelszóval jelentkezz be ujjlenyomat helyett.",

@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "在氣象卡片顯示額外的視覺效果 (像是下雨, 下雪或閃電)",
       "weather-show-effects-label": "顯示天氣特效",
       "weather-show-in-calendar-description": "在檢視行事曆時一同顯示每日天氣",
-      "weather-show-in-calendar-label": "在行事曆中顯示天氣",
-      "weather-mascot-always-description": "始終使用 mascot emojis 而不是 tabler icons。",
-      "weather-mascot-always-label": "始終顯示天氣吉祥物表情符號"
+      "weather-show-in-calendar-label": "在行事曆中顯示天氣"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "當 fprintd（指紋認證）處於活動狀態時，此選項允許您使用密碼而非指紋登入。",

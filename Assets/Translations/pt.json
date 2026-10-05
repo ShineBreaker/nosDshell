@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "Mostra efeitos visuais adicionais (como chuva, neve ou relâmpagos) no cartão de clima.",
       "weather-show-effects-label": "Exibir efeitos climáticos",
       "weather-show-in-calendar-description": "Mostre a previsão do tempo diária diretamente na sua visualização de calendário.",
-      "weather-show-in-calendar-label": "Exibir clima no calendário",
-      "weather-mascot-always-description": "Sempre use mascot emojis em vez de tabler icons.",
-      "weather-mascot-always-label": "Sempre mostrar os emojis de clima da Talia"
+      "weather-show-in-calendar-label": "Exibir clima no calendário"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Quando o fprintd (autenticação por impressão digital) está ativo, esta opção permite-lhe iniciar sessão com a sua palavra-passe em vez de uma impressão digital.",

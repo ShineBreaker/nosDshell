@@ -13,17 +13,6 @@ Singleton {
   property int weatherUpdateFrequency: 30 * 60
   property bool isFetchingWeather: false
 
-  // Weather mascot
-  readonly property int mascotWeatherMonth: 3
-  readonly property int mascotWeatherDay: 1
-
-  readonly property bool weatherMascotDayActive: {
-    const d = Time.now;
-    return d.getMonth() === root.mascotWeatherMonth && d.getDate() === root.mascotWeatherDay;
-  }
-
-  readonly property bool weatherMascotActive: weatherMascotDayActive || Settings.data.location.weatherMascotAlways
-
   readonly property alias data: adapter
 
   // True when the user has set a location name or enabled auto-locate
@@ -349,23 +338,6 @@ Singleton {
     if (code >= 95 && code <= 99)
       return "weather-cloud-lightning";
     return "weather-cloud";
-  }
-
-  // --------------------------------
-  function weatherMascotImageFromCode(code) {
-    var isDay = data.weather ? data.weather.current_weather.is_day : true;
-    if (code >= 40 && code <= 49)
-      return Quickshell.shellDir + "/Assets/Mascot/MascotDazed.png";
-    if (code >= 95 && code <= 99)
-      return Quickshell.shellDir + "/Assets/Mascot/MascotFear.png";
-    var wet = (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || (code >= 71 && code <= 77) || (code >= 85 && code <= 86);
-    if (wet)
-      return Quickshell.shellDir + "/Assets/Mascot/MascotSob.png";
-    if ((code === 0 || code === 1 || code === 2) && isDay === false)
-      return Quickshell.shellDir + "/Assets/Mascot/MascotVampire.png";
-    if ((code === 0 && isDay === true) || code === 1 || code === 2)
-      return Quickshell.shellDir + "/Assets/Mascot/MascotParty.png";
-    return Quickshell.shellDir + "/Assets/Mascot/MascotBlank.png";
   }
 
   // --------------------------------

@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 65
+  readonly property int settingsVersion: 66
   property bool isDebug: Quickshell.env("NOSD_DEBUG") === "1"
   readonly property string shellName: "nosdshell"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOSD_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -372,7 +372,6 @@ Singleton {
       property string name: ""
       property bool weatherEnabled: true
       property bool weatherShowEffects: true
-      property bool weatherMascotAlways: false
       property bool useFahrenheit: false
       property bool use12hourFormat: false
       property bool showWeekNumberInCalendar: false

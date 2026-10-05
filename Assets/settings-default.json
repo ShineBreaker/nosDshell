@@ -160,7 +160,6 @@
     "name": "",
     "weatherEnabled": true,
     "weatherShowEffects": true,
-    "weatherMascotAlways": false,
     "useFahrenheit": false,
     "use12hourFormat": false,
     "showWeekNumberInCalendar": false,

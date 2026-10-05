@@ -1371,9 +1371,7 @@
       "weather-show-effects-description": "Показує додаткові візуальні ефекти (наприклад, дощ, сніг або блискавку) на картці погоди.",
       "weather-show-effects-label": "Відображати погодні ефекти",
       "weather-show-in-calendar-description": "Показувати щоденний прогноз погоди безпосередньо в календарі.",
-      "weather-show-in-calendar-label": "Відображати погоду в календарі",
-      "weather-mascot-always-description": "Завжди використовуйте mascot emojis замість tabler icons.",
-      "weather-mascot-always-label": "Завжди показувати погодні емодзі Talia"
+      "weather-show-in-calendar-label": "Відображати погоду в календарі"
     },
     "lock-screen": {
       "allow-password-with-fprintd-description": "Коли fprintd (автентифікація за відбитком пальця) активний, ця опція дозволяє входити в систему за допомогою пароля замість відбитка пальця.",
