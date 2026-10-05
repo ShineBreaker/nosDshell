@@ -4,6 +4,7 @@
 //! Subcommands mirror the Scripts/python helpers; QML callers get a
 //! fallback chain (rust binary -> python script) so rollout is gradual.
 
+mod bluetooth;
 mod gtk_refresh;
 mod kde_apply;
 mod khal_events;
@@ -14,7 +15,7 @@ use std::env;
 use std::process::ExitCode;
 
 fn usage() -> ! {
-    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes> [ARGS...]");
+    eprintln!("Usage: nosd-helpers <vscode-themes|kde-apply-scheme|gtk-refresh|khal-events|migrate-colorschemes|bluetooth-pair> [ARGS...]");
     std::process::exit(2);
 }
 
@@ -28,6 +29,7 @@ fn main() -> ExitCode {
         "gtk-refresh" => gtk_refresh::run(&rest),
         "khal-events" => khal_events::run(&rest),
         "migrate-colorschemes" => migrate::run(&rest),
+        "bluetooth-pair" => bluetooth::run(&rest),
         _ => usage(),
     };
     ExitCode::from(code as u8)

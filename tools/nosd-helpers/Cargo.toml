@@ -7,6 +7,7 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 chrono = "=0.4.45"
+portable-pty = "=0.9.0"
 serde_json = { version = "=1.0.151", features = ["preserve_order"] }
 ureq = "=3.4.2"
 
