@@ -106,13 +106,5 @@ ColumnLayout {
                     }
                   }
     }
-
-    NToggle {
-      label: I18n.tr("panels.user-interface.settings-panel-sidebar-card-style-label")
-      description: I18n.tr("panels.user-interface.settings-panel-sidebar-card-style-description")
-      checked: Settings.data.ui.settingsPanelSideBarCardStyle
-      defaultValue: Settings.getDefaultValue("ui.settingsPanelSideBarCardStyle")
-      onToggled: checked => Settings.data.ui.settingsPanelSideBarCardStyle = checked
-    }
   }
 }

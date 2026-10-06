@@ -80,20 +80,6 @@ ColumnLayout {
 
     NValueSlider {
       Layout.fillWidth: true
-      label: I18n.tr("panels.osd.background-opacity-label")
-      description: I18n.tr("panels.osd.background-opacity-description")
-      from: 0
-      to: 100
-      stepSize: 1
-      showReset: true
-      value: Settings.data.osd.backgroundOpacity * 100
-      defaultValue: (Settings.getDefaultValue("osd.backgroundOpacity") || 1) * 100
-      onMoved: value => Settings.data.osd.backgroundOpacity = value / 100
-      text: Math.round(Settings.data.osd.backgroundOpacity * 100) + "%"
-    }
-
-    NValueSlider {
-      Layout.fillWidth: true
       label: I18n.tr("panels.osd.duration-auto-hide-label")
       description: I18n.tr("panels.osd.duration-auto-hide-description")
       from: 500
