@@ -25,9 +25,10 @@ Rectangle {
 
   onGroupModeChanged: _updateGroupMode()
   onDistributeEvenlyChanged: _applyDistribution()
+  // Deferred: children walks during async incubation can crash in the QV4 GC.
   Component.onCompleted: {
-    _updateGroupMode();
-    _applyDistribution();
+    Qt.callLater(_updateGroupMode);
+    Qt.callLater(_applyDistribution);
   }
 
   function _updateGroupMode() {
@@ -117,13 +118,13 @@ Rectangle {
     anchors.margins: margins
     spacing: root.spacing
 
-    onChildrenChanged: {
+    onChildrenChanged: Qt.callLater(function () {
       for (var i = 0; i < children.length; i++) {
         var child = children[i];
         child.visibleChanged.connect(root._updateFirstLast);
       }
       root._updateFirstLast();
       root._applyDistribution();
-    }
+    })
   }
 }

@@ -99,9 +99,8 @@ Item {
     }
   }
 
-  Component.onCompleted: {
-    _initializeItems();
-  }
+  // Deferred: children walks during async incubation can crash in the QV4 GC.
+  Component.onCompleted: Qt.callLater(_initializeItems)
 
   // Position every sub-tab so they stack vertically. Each y is a binding so the
   // stack re-flows when an earlier page changes height.
@@ -116,7 +115,7 @@ Item {
   function _stackedOffset(index) {
     let off = 0;
     for (let j = 0; j < index; j++)
-      off += contentItems[j].implicitHeight + root.stackHeadHeight;
+      off += (contentItems[j] ? contentItems[j].implicitHeight : 0) + root.stackHeadHeight;
     return off;
   }
 
