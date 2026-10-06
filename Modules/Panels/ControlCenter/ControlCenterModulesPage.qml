@@ -88,6 +88,7 @@ Item {
           model: root.modules
 
           delegate: Rectangle {
+            id: cell
             required property var modelData
             required property int index
 
@@ -142,7 +143,7 @@ Item {
 
               NText {
                 Layout.alignment: Qt.AlignHCenter
-                Layout.maximumWidth: parent.width
+                Layout.maximumWidth: cell.width - Style.marginS
                 text: ControlCenterModules.tr(modelData.label)
                 pointSize: Style.fontSizeS
                 color: Color.onShell
