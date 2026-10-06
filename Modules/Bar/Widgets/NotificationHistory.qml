@@ -62,14 +62,15 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  // Fashion plugins are a 36 px rounded tile with a 16 px symbolic icon —
+  // the DDE plugin-button look (onboard tile), not a bare colored icon.
+  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled", "bell"] : ["notification", "preferences-system-notifications", "bell"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification",
-                                                                                                                                                                                                                                                                                                                                                            "preferences-system-notifications"]) :
-                                                                                                                                                                                                                                       "")
-  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
-  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : ""
+  recolorIcon: onShellSurface
+  iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
     if (PanelService.getPanel("controlCenterPanel", screen)?.isPanelOpen) {
       return "";
@@ -78,7 +79,7 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
-  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
+  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

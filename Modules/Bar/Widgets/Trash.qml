@@ -31,13 +31,14 @@ NIconButton {
   property bool isFull: false
 
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
+  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: isFull ? "trash-x" : "trash"
-  iconSource: fashionMode ? ThemeIcons.fashionFor(isFull ? "user-trash-full" : "user-trash") : (efficientMode ? ThemeIcons.symbolicOnly(isFull ? "user-trash-full" : "user-trash") : "")
-  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
-  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
-  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnly(isFull ? "user-trash-full" : "user-trash") : ""
+  recolorIcon: onShellSurface
+  iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
+  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
   colorFg: onShellSurface ? Color.onShell : Color.mOnSurface
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

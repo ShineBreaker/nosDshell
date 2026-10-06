@@ -39,12 +39,13 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
+  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: "power"
-  iconSource: fashionMode ? ThemeIcons.fashionFor("system-shutdown") : (efficientMode ? ThemeIcons.symbolicOnlyAny(["system-shutdown", "system-log-out"]) : "")
-  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
-  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny(["system-shutdown", "system-log-out"]) : ""
+  recolorIcon: onShellSurface
+  iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
     if (PanelService.getPanel("sessionMenuPanel", screen)?.isPanelOpen)
       return "";
@@ -52,7 +53,7 @@ NIconButton {
       return I18n.tr("tooltips.session-menu");
   }
   tooltipDirection: BarService.getTooltipDirection(screenName)
-  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
+  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

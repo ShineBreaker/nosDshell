@@ -8,6 +8,9 @@ Item {
   id: root
 
   property real baseSize: Style.baseWidgetSize
+  // Painted tile size (-1 = same as buttonSize). The dock's fashion plugin
+  // buttons are a smaller rounded square inside the item slot.
+  property real bgSize: -1
   property bool applyUiScale: true
 
   property string icon
@@ -56,11 +59,12 @@ Item {
 
   opacity: enabled ? 1.0 : 0.6
 
-  // Visual button - stays at buttonSize, centered in parent
+  // Visual button - stays at buttonSize, centered in parent (or the smaller
+  // bgSize tile when set, e.g. the fashion plugin chip)
   Rectangle {
     id: visualButton
-    width: root.buttonSize
-    height: root.buttonSize
+    width: root.bgSize >= 0 ? Math.round(root.bgSize * Style.uiScaleRatio) : root.buttonSize
+    height: width
     anchors.centerIn: parent
 
     readonly property bool pressed: mouseArea.pressed

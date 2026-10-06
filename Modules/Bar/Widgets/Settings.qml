@@ -39,9 +39,9 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   icon: "settings"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(["preferences-system", "applications-system"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(["preferences-system", "applications-system"]) : "")
-  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
-  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny(["preferences-system", "applications-system"]) : ""
+  recolorIcon: onShellSurface
+  iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
     if (PanelService.getPanel("settingsPanel", screen)?.isPanelOpen) {
       return "";
@@ -51,9 +51,10 @@ NIconButton {
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
+  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
   colorFg: onShellSurface ? Color.onShell : iconColor
   colorBgHover: onShellSurface ? Color.overlay("hover") : Color.mHover
   colorFgHover: onShellSurface ? Color.onShell : Color.mOnHover

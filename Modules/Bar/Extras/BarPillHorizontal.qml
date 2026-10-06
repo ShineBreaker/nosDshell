@@ -60,15 +60,20 @@ Item {
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   // Always prioritize hover color, then the custom one and finally the fallback color.
-  // Efficient (DDE taskbar) hover: overlay("hover") fill, onShell content
+  // DDE dock plugin buttons are a rounded tile (efficient = full 26px cell,
+  // fashion = smaller chip inside the item) with overlay("subtle") fill.
   readonly property bool onShellSurface: efficientMode || fashionMode
-  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor))
+  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (onShellSurface ? Color.overlay("subtle") : Style.capsuleColor)
   readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   readonly property color iconFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   readonly property color textFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
 
-  // DDE status icons are 16 px (efficient); fashion plugins render at 0.8 of the item
-  readonly property real iconSize: efficientMode ? 16 : (fashionMode ? Math.round(pillHeight * 0.8) : Style.toOdd(pillHeight * 0.48))
+  // Painted tile size: efficient fills the 26px cell; fashion is a 36px chip
+  // inside the 54px item slot (same ratio as the tray pill).
+  readonly property real tileSize: fashionMode ? Math.round(pillHeight * 0.66) : pillHeight
+
+  // DDE status icons are 16 px in both dock modes
+  readonly property real iconSize: onShellSurface ? 16 : Style.toOdd(pillHeight * 0.48)
 
   // Content width calculation (for implicit sizing)
   readonly property real contentWidth: {
@@ -98,10 +103,12 @@ Item {
   // Unified background for the entire pill area to avoid overlapping opacity
   Rectangle {
     id: pillBackground
-    width: collapseToIcon ? pillHeight : root.width
-    height: pillHeight
+    width: collapseToIcon ? tileSize : root.width
+    height: tileSize
+    // Fashion tile is a smaller chip centered in the item slot
+    x: collapseToIcon ? Math.round((root.width - width) / 2) : 0
     // DDE plugin-item hover: rounded overlay sized to the widget's own content area
-    radius: root.efficientMode ? Style.radiusPopup : Style.radiusM
+    radius: onShellSurface ? Style.radiusPopup : Style.radiusM
     color: root.bgColor
     anchors.verticalCenter: parent.verticalCenter
     border.color: Style.capsuleBorderColor
@@ -209,9 +216,8 @@ Item {
       y: (iconCircle.height - height) / 2
 
       // DDE plugin icons are monochrome white — recolor themed *-symbolic
-      // icons to the on-shell foreground. Fashion shows full-color themed
-      // icons and only tints when the theme could only provide a symbolic one.
-      layer.enabled: root.iconSource !== "" && (root.efficientMode || (root.fashionMode && root.iconSource.indexOf("-symbolic") >= 0))
+      // icons to the on-shell foreground.
+      layer.enabled: root.iconSource !== "" && root.onShellSurface
       layer.effect: ShaderEffect {
         property color targetColor: Color.onShell
         property real colorizeMode: 3.0

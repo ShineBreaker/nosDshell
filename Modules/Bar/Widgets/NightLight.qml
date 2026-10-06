@@ -40,17 +40,18 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : (Settings.data.nightLight.enabled ? Color.mPrimary : Style.capsuleColor))
+  colorBg: onShellSurface ? Color.overlay("subtle") : (Settings.data.nightLight.enabled ? Color.mPrimary : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : (Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
   icon: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? "nightlight-forced" : "nightlight-on") : "nightlight-off"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(["night-light-enabled", "night-light", "redshift-status-on"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(["night-light-enabled", "night-light", "redshift-status-on"]) : "")
-  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
-  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny(["night-light-enabled", "night-light", "redshift-status-on"]) : ""
+  recolorIcon: onShellSurface
+  iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? I18n.tr("common.night-light") : I18n.tr("common.night-light")) : I18n.tr("common.night-light")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   onClicked: {

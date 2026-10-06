@@ -34,15 +34,16 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   icon: "dark-mode"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(["dark-mode", "preferences-desktop-theme"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(["dark-mode", "preferences-desktop-theme"]) : "")
-  recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
-  iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny(["dark-mode", "preferences-desktop-theme"]) : ""
+  recolorIcon: onShellSurface
+  iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.colorSchemes.darkMode ? I18n.tr("tooltips.switch-to-light-mode") : I18n.tr("tooltips.switch-to-dark-mode")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
+  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   onClicked: Settings.data.colorSchemes.darkMode = !Settings.data.colorSchemes.darkMode
 

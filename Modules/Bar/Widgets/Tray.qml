@@ -669,8 +669,9 @@ Item {
     radius: 10
     // gxde-dock fashiontraycontrolwidget.cpp: expanded control shares the
     // dark (40,40,40)@0.5 surface (hover 60/60/60, pressed 20/20/20) with a
-    // light arrow; collapsed control is white@0.5 with a dark arrow
-    color: root.trayExpanded ? (collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(0.078, 0.078, 0.078, 0.5) : Qt.rgba(0.235, 0.235, 0.235, 0.5)) : Qt.rgba(0.157, 0.157, 0.157, 0.5)) : (collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(1, 1, 1, 0.3) : Qt.rgba(1, 1, 1, 0.6)) : Qt.rgba(1, 1, 1, 0.5))
+    // light arrow; the collapsed control is the same subtle tile as the
+    // plugin buttons so expanding doesn't invert the button's colors.
+    color: root.trayExpanded ? (collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(0.078, 0.078, 0.078, 0.5) : Qt.rgba(0.235, 0.235, 0.235, 0.5)) : Qt.rgba(0.157, 0.157, 0.157, 0.5)) : (collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : Color.overlay("subtle"))
 
     NIcon {
       anchors.centerIn: parent
@@ -681,7 +682,7 @@ Item {
       }
       pointSize: Style.fontSizeL
       applyUiScale: false
-      color: root.trayExpanded ? Qt.rgba(1, 1, 1, 0.9) : Qt.rgba(0, 0, 0, 0.7)
+      color: Color.onShell
     }
 
     MouseArea {

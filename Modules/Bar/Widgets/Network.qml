@@ -120,7 +120,7 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: NetworkService.getIcon()
-    iconSource: root.fashionMode ? ThemeIcons.fashionFor(root.symbolicName()) : (root.efficientMode ? ThemeIcons.symbolicOnly(root.symbolicName()) : "")
+    iconSource: root.onShellSurface ? ThemeIcons.symbolicOnly(root.symbolicName()) : ""
     dockPresentation: root.dockPresentation
     text: NetworkService.getStatusText(false)
     autoHide: false

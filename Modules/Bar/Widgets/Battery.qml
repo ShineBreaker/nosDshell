@@ -44,20 +44,6 @@ Item {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property string displayMode: widgetSettings.displayMode !== undefined ? widgetSettings.displayMode : widgetMetadata.displayMode
 
-  // Fashion battery icon: full-color themed icon by charge level (symbolic
-  // fallback is tinted by the pill), glyph fallback.
-  function fashionBatterySource() {
-    var candidates = [];
-    if (root.isCharging || root.isPluggedIn) {
-      var bucket = Math.max(0, Math.min(100, Math.round(root.percent / 10) * 10));
-      candidates = ["battery-level-" + bucket + "-charging", "battery-full-charging", "battery-good-charging"];
-    } else {
-      var bucket2 = Math.max(10, Math.min(100, Math.round(root.percent / 10) * 10));
-      candidates = ["battery-level-" + bucket2, (root.percent > 60) ? "battery-full" : (root.percent > 30 ? "battery-good" : (root.percent > 10 ? "battery-low" : "battery-caution"))];
-    }
-    return ThemeIcons.fashionForAny(candidates);
-  }
-
   // DDE battery icon: *-symbolic theme icon by charge level only (never the
   // colored variant — DDE battery icons are monochrome), glyph fallback.
   function symbolicBatterySource() {
@@ -269,7 +255,7 @@ Item {
     oppositeDirection: BarService.getPillDirection(root)
     icon: BatteryService.getIcon(root.percent, root.isCharging, root.isPluggedIn, root.isReady)
     dockPresentation: root.dockPresentation
-    iconSource: root.fashionMode ? root.fashionBatterySource() : (root.efficientMode ? root.symbolicBatterySource() : "")
+    iconSource: root.fashionMode || root.efficientMode ? root.symbolicBatterySource() : ""
     text: root.isReady ? root.percent : "-"
     suffix: "%"
     autoHide: false
