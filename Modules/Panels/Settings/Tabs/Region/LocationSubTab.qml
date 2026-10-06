@@ -11,10 +11,6 @@ ColumnLayout {
   Layout.fillWidth: true
 
   // Language
-  // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
-  NHeader {
-    label: I18n.tr("control-center.module.datetime")
-  }
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)

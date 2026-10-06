@@ -66,7 +66,11 @@ ColumnLayout {
     text: root.description
     pointSize: Style.fontSizeS
     color: root.descriptionColor
+    // DDE rows keep a uniform rhythm: at 352 px a 3-line description makes
+    // every row a different height. Cap at two lines, eliding the tail.
     wrapMode: Text.WordWrap
+    maximumLineCount: 2
+    elide: Text.ElideRight
     textFormat: Text.StyledText
   }
 }
