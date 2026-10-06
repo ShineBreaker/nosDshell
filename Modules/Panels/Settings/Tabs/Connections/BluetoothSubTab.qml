@@ -78,7 +78,6 @@ Item {
 
   // For managing expanded device details
   property string expandedDeviceKey: ""
-  property bool detailsGrid: (Settings.data.network.bluetoothDetailsViewMode === "grid")
 
   // Combined visibility check: tab must be visible AND the window must be visible
   readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
@@ -108,7 +107,7 @@ Item {
       if (!isScanningActive) {
         BluetoothService.setScanActive(true);
       }
-      if (!Settings.data.network.disableDiscoverability && !isDiscoverable) {
+      if (!isDiscoverable) {
         BluetoothService.setDiscoverable(true);
       }
     } else {
@@ -330,16 +329,6 @@ Item {
           onToggled: checked => Settings.data.network.bluetoothHideUnnamedDevices = checked
         }
 
-        NToggle {
-          label: I18n.tr("panels.connections.disable-discoverability-label")
-          description: I18n.tr("panels.connections.disable-discoverability-description")
-          checked: Settings.data.network.disableDiscoverability
-          onToggled: checked => {
-                       Settings.data.network.disableDiscoverability = checked;
-                       BluetoothService.setDiscoverable(!checked);
-                     }
-        }
-
         // RSSI Polling
         NToggle {
           label: I18n.tr("panels.connections.bluetooth-rssi-polling-label")
@@ -554,27 +543,13 @@ Item {
           border.color: Style.boxBorderColor
           clip: true
 
-          NIconButton {
-            anchors.top: parent.top
-            anchors.right: parent.right
-            anchors.margins: Style.marginS
-            icon: root.detailsGrid ? "layout-list" : "layout-grid"
-            tooltipText: root.detailsGrid ? I18n.tr("tooltips.list-view") : I18n.tr("tooltips.grid-view")
-            baseSize: Style.baseWidgetSize * 0.65
-            onClicked: {
-              root.detailsGrid = !root.detailsGrid;
-              Settings.data.network.bluetoothDetailsViewMode = root.detailsGrid ? "grid" : "list";
-            }
-            z: 1
-          }
-
           GridLayout {
             id: infoColumn
             anchors.fill: parent
             anchors.margins: Style.marginS
-            flow: root.detailsGrid ? GridLayout.TopToBottom : GridLayout.LeftToRight
-            rows: root.detailsGrid ? 3 : 6
-            columns: root.detailsGrid ? 2 : 1
+            flow: GridLayout.TopToBottom
+            rows: 3
+            columns: 2
             columnSpacing: Style.marginM
             rowSpacing: Style.marginXS
 
