@@ -385,18 +385,10 @@ Singleton {
       if (model && model.appsProvider)
         model.appsProvider.selectDDECategory(category);
     }
-    // Switch the launcher mode (persisted): "fullscreen" | "mini"
+    // Switch the launcher mode (persisted): "fullscreen" | "mini".
+    // LauncherState.setMode swaps the live window when one is open.
     function switchMode(mode: string) {
-      if (mode === "fullscreen" || mode === "mini") {
-        var wasOpen = LauncherState.isOpenOnAnyScreen();
-        var screen = LauncherState.fullscreenScreen || LauncherState.miniScreen;
-        LauncherState.setMode(mode);
-        if (wasOpen && screen) {
-          LauncherState.close(screen);
-          if (mode === "mini")
-            LauncherState.open(screen);
-        }
-      }
+      LauncherState.setMode(mode);
     }
     function clipboard() {
       root.screenDetector.withCurrentScreen(screen => {

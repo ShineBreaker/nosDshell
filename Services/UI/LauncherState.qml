@@ -36,11 +36,11 @@ Singleton {
 
   function isOpen(screen) {
     if (!screen)
-    return false;
+      return false;
     if (fullscreenOpen && fullscreenScreen === screen)
-    return true;
+      return true;
     if (miniOpen && miniScreen === screen)
-    return true;
+      return true;
     return false;
   }
 
@@ -50,9 +50,9 @@ Singleton {
 
   function modelForScreen(screen) {
     if (!screen)
-    return null;
+      return null;
     if (!isOpen(screen))
-    return null;
+      return null;
     return activeModel;
   }
 
@@ -64,11 +64,11 @@ Singleton {
 
   function openWithSearch(screen, searchText) {
     if (!screen)
-    return;
+      return;
 
     if (isOpen(screen)) {
       if (searchText && activeModel)
-      activeModel.setSearchText(searchText);
+        activeModel.setSearchText(searchText);
       return;
     }
 
@@ -99,11 +99,11 @@ Singleton {
 
   function close(screen) {
     if (screen && !isOpen(screen))
-    return;
+      return;
     const wasOpen = anyOpen;
     closeAll();
     if (wasOpen)
-    closed();
+      closed();
   }
 
   function closeAll() {
@@ -137,30 +137,53 @@ Singleton {
     // Don't consume pending until the target model exists — the view may
     // register a beat after openWithSearch primed the search.
     if (!pending || !activeModel)
-    return;
+      return;
     _pendingSearch = null;
     activeModel.setSearchText(pending.text);
   }
 
-  // Switch mode (persisted) — used by the toggle buttons inside both views
+  // Switch mode (persisted) — used by the toggle buttons inside both views.
+  // Upstream swaps the live window when the launcher is open
+  // (gxde-launcher launchersys.cpp:238-246); do the same and carry the search
+  // text across so a mid-search switch doesn't lose the query.
   function setMode(newMode) {
     if (newMode !== "fullscreen" && newMode !== "mini")
-    return;
+      return;
     if (Settings.data.appLauncher.mode === newMode)
-    return;
+      return;
+
+    const carryText = activeModel ? activeModel.searchText : "";
+    const screen = miniOpen ? miniScreen : fullscreenScreen;
 
     Settings.data.appLauncher.mode = newMode;
+
+    if (!screen)
+      return;
+
+    closeAll();
+    if (newMode === "mini") {
+      miniScreen = screen;
+      miniOpen = true;
+    } else {
+      fullscreenScreen = screen;
+      fullscreenOpen = true;
+    }
+    _pendingSearch = {
+      "text": carryText
+    };
+    takePendingSearch();
+    opened();
   }
 
   function showSessionMenu(screen) {
     const panel = PanelService.getPanel("sessionMenuPanel", screen);
     if (panel)
-    panel.toggle();
+      panel.toggle();
   }
 
   function showSettings(screen) {
     const panel = PanelService.getPanel("settingsPanel", screen);
     if (panel)
-    panel.openToTab(SettingsPanel.Tab.Launcher);
+      panel.openToTab(SettingsPanel.Tab.Launcher);
   }
 }
