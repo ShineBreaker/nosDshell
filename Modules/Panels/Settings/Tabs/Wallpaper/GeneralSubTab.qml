@@ -226,6 +226,68 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
+  // Library display + apply behaviour: one DDE SettingsGroup -- rows stack
+  // with the 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
+  ColumnLayout {
+    Layout.fillWidth: true
+    enabled: Settings.data.wallpaper.enabled
+    spacing: Style.settingsGroupGap
+    NToggle {
+      label: I18n.tr("panels.wallpaper.settings-show-hidden-files-label")
+      description: I18n.tr("panels.wallpaper.settings-show-hidden-files-description")
+      checked: Settings.data.wallpaper.showHiddenFiles
+      onToggled: checked => Settings.data.wallpaper.showHiddenFiles = checked
+      defaultValue: Settings.getDefaultValue("wallpaper.showHiddenFiles")
+    }
+    NComboBox {
+      label: I18n.tr("panels.wallpaper.settings-sort-order-label")
+      description: I18n.tr("panels.wallpaper.settings-sort-order-description")
+      Layout.fillWidth: true
+      model: [
+        {
+          "key": "name",
+          "name": I18n.tr("panels.wallpaper.sort-order-name")
+        },
+        {
+          "key": "name_desc",
+          "name": I18n.tr("panels.wallpaper.sort-order-name-desc")
+        },
+        {
+          "key": "date_desc",
+          "name": I18n.tr("panels.wallpaper.sort-order-date-desc")
+        },
+        {
+          "key": "date_asc",
+          "name": I18n.tr("panels.wallpaper.sort-order-date-asc")
+        },
+        {
+          "key": "random",
+          "name": I18n.tr("panels.wallpaper.sort-order-random")
+        }
+      ]
+      currentKey: Settings.data.wallpaper.sortOrder
+      onSelected: key => Settings.data.wallpaper.sortOrder = key
+      defaultValue: Settings.getDefaultValue("wallpaper.sortOrder")
+    }
+    NToggle {
+      label: I18n.tr("panels.wallpaper.settings-set-all-monitors-label")
+      description: I18n.tr("panels.wallpaper.settings-set-all-monitors-description")
+      checked: Settings.data.wallpaper.setWallpaperOnAllMonitors
+      onToggled: checked => Settings.data.wallpaper.setWallpaperOnAllMonitors = checked
+      defaultValue: Settings.getDefaultValue("wallpaper.setWallpaperOnAllMonitors")
+    }
+    NToggle {
+      label: I18n.tr("panels.wallpaper.settings-link-light-dark-label")
+      description: I18n.tr("panels.wallpaper.settings-link-light-dark-description")
+      checked: Settings.data.wallpaper.linkLightAndDarkWallpapers
+      onToggled: checked => Settings.data.wallpaper.linkLightAndDarkWallpapers = checked
+      defaultValue: Settings.getDefaultValue("wallpaper.linkLightAndDarkWallpapers")
+    }
+  }
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   ColumnLayout {
     visible: CompositorService.isNiri
     enabled: Settings.data.wallpaper.enabled
