@@ -76,6 +76,14 @@ done
 [ -n "$OUT_NAME" ] || { echo "usage: verify.sh <out-name> [--settings F.json] [--scenes a,b,c]" >&2; exit 2; }
 [[ "$OUT_NAME" =~ ^[A-Za-z0-9._-]+$ && "$OUT_NAME" != "." && "$OUT_NAME" != ".." ]] || { echo "out-name must be a plain name: $OUT_NAME" >&2; exit 2; }
 
+# --settings must survive the `cd "$WORK"` below: canonicalize to an absolute
+# path now and fail loudly if missing (a silently-unread seed leaves
+# settings.json absent -> fresh install -> SetupWizard eats the whole run).
+if [ -n "$USER_SETTINGS" ]; then
+  USER_SETTINGS="$(readlink -f "$USER_SETTINGS" 2>/dev/null || echo "$USER_SETTINGS")"
+  [ -f "$USER_SETTINGS" ] || { echo "--settings file not found or unreadable: $USER_SETTINGS" >&2; exit 2; }
+fi
+
 # --- safety: never wipe real dirs ----------------------------------------
 WORK_REAL=$(readlink -f "$WORK" 2>/dev/null || echo "$WORK")
 case "$WORK_REAL" in
@@ -240,7 +248,10 @@ export DOCK_STRIP_PX
 echo "dock.position=$DOCK_POSITION strip=${DOCK_STRIP_PX}px"
 
 # seed settings.json (deep-merge user file over built-in seed) + shell-state
-python3 - <<'PYEOF'
+# Fail fast: without -e a python traceback would otherwise leave settings.json
+# absent and the run would silently degrade into the SetupWizard fresh-install
+# path (see hermes verify-matrix §0.1/§3.3).
+python3 - <<'PYEOF' || { echo "FATAL: settings seed write failed" >&2; exit 1; }
 import json, os
 def merge(a,b):
     for k,v in b.items():
