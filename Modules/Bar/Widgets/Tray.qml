@@ -68,10 +68,10 @@ Item {
   property string dockPresentation: ""
   readonly property bool fashionMode: dockPresentation === "fashion"
   property bool trayExpanded: true
-  // DDE efficient: 16 px tray icons in 24 px cells with 10 px spacing;
+  // DDE efficient: 16 px tray icons in 26 px cells with 10 px spacing;
   // fashion: 16 px icons with 10 px spacing on a slim dark pill
   readonly property int iconSize: (efficientMode || fashionMode) ? 16 : Style.toOdd(capsuleHeight * 0.65)
-  readonly property int cellSize: efficientMode ? 24 : (fashionMode ? 16 : capsuleHeight)
+  readonly property int cellSize: efficientMode ? Style.dockPluginSize : (fashionMode ? 16 : capsuleHeight)
   readonly property int fashionPillHeight: Math.max(24, Math.round(Style.dockItemThickness * 0.66))
   readonly property var fashionItems: filteredItems.concat(dropdownItems)
 
@@ -394,17 +394,19 @@ Item {
       colorFg: efficientMode ? Color.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
+      // DDE efficient uses thin outline arrows; caret-* are filled triangles
       icon: {
+        const prefix = root.efficientMode ? "chevron" : "caret";
         switch (barPosition) {
         case "bottom":
-          return "caret-up";
+          return prefix + "-up";
         case "left":
-          return "caret-right";
+          return prefix + "-right";
         case "right":
-          return "caret-left";
+          return prefix + "-left";
         case "top":
         default:
-          return "caret-down";
+          return prefix + "-down";
         }
       }
       onClicked: toggleDrawer(this)
@@ -608,17 +610,19 @@ Item {
       colorFg: efficientMode ? Color.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
+      // DDE efficient uses thin outline arrows; caret-* are filled triangles
       icon: {
+        const prefix = root.efficientMode ? "chevron" : "caret";
         switch (barPosition) {
         case "bottom":
-          return "caret-up";
+          return prefix + "-up";
         case "left":
-          return "caret-right";
+          return prefix + "-right";
         case "right":
-          return "caret-left";
+          return prefix + "-left";
         case "top":
         default:
-          return "caret-down";
+          return prefix + "-down";
         }
       }
       onClicked: toggleDrawer(this)
@@ -663,7 +667,10 @@ Item {
     width: root.isVertical ? root.fashionPillHeight : 20
     height: root.isVertical ? 20 : root.fashionPillHeight
     radius: 10
-    color: collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(1, 1, 1, 0.3) : Qt.rgba(1, 1, 1, 0.6)) : Qt.rgba(1, 1, 1, 0.5)
+    // gxde-dock fashiontraycontrolwidget.cpp: expanded control shares the
+    // dark (40,40,40)@0.5 surface (hover 60/60/60, pressed 20/20/20) with a
+    // light arrow; collapsed control is white@0.5 with a dark arrow
+    color: root.trayExpanded ? (collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(0.078, 0.078, 0.078, 0.5) : Qt.rgba(0.235, 0.235, 0.235, 0.5)) : Qt.rgba(0.157, 0.157, 0.157, 0.5)) : (collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(1, 1, 1, 0.3) : Qt.rgba(1, 1, 1, 0.6)) : Qt.rgba(1, 1, 1, 0.5))
 
     NIcon {
       anchors.centerIn: parent
@@ -674,7 +681,7 @@ Item {
       }
       pointSize: Style.fontSizeL
       applyUiScale: false
-      color: Qt.rgba(0, 0, 0, 0.7)
+      color: root.trayExpanded ? Qt.rgba(1, 1, 1, 0.9) : Qt.rgba(0, 0, 0, 0.7)
     }
 
     MouseArea {
