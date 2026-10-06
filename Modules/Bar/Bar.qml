@@ -229,7 +229,6 @@ Item {
         readonly property string barWheelAction: {
           return Settings.data.bar.mouseWheelAction || "none";
         }
-        readonly property string barRightClickAction: Settings.data.bar.rightClickAction || "controlCenter"
 
         // Position and size the bar content based on orientation
         x: (root.barPosition === "right") ? (parent.width - root.barHeight) : 0

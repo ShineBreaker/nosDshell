@@ -234,10 +234,12 @@ Singleton {
   }
 
   // update bar's hidden state when mode changes
+  // The live key is dock.hideMode (DDE hide-mode); the legacy
+  // bar.displayMode write is dead. getBarDisplayModeForScreen maps it.
   Connections {
-    target: Settings.data.bar
-    function onDisplayModeChanged() {
-      Logger.d("BarService", "Display mode changed to:", Settings.data.bar.displayMode);
+    target: Settings.data.dock
+    function onHideModeChanged() {
+      Logger.d("BarService", "Hide mode changed to:", Settings.data.dock.hideMode);
 
       // Only affect screens without displayMode overrides
       for (let screenName in screenAutoHideState) {
@@ -253,11 +255,14 @@ Singleton {
         }
       }
     }
+  }
 
+  // Screen overrides live under bar.* (compat layout), not dock.*
+  Connections {
+    target: Settings.data.bar
     function onScreenOverridesChanged() {
       Logger.d("BarService", "Screen overrides changed, re-evaluating auto-hide states");
 
-      // Re-evaluate auto-hide state for all screens
       for (let screenName in screenAutoHideState) {
         var displayMode = Settings.getBarDisplayModeForScreen(screenName);
         if (displayMode === "auto_hide") {
@@ -301,13 +306,15 @@ Singleton {
     function onWorkspaceChanged() {
       if (!Settings.data.bar.showOnWorkspaceSwitch)
         return;
-      if (Settings.data.bar.displayMode !== "auto_hide")
-        return;
 
       var ws = CompositorService.getCurrentWorkspace();
       if (!ws || !ws.output) {
         return;
       }
+      // Live key is dock.hideMode (mapped via screen overrides); the legacy
+      // bar.displayMode write is dead, so gating on it never fired.
+      if (Settings.getBarDisplayModeForScreen(ws.output) !== "auto_hide")
+        return;
 
       // Only trigger if workspace actually changed
       var currentWsId = ws.id;
