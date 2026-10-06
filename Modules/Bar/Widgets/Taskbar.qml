@@ -679,12 +679,28 @@ Item {
   implicitWidth: contentWidth
   implicitHeight: contentHeight
 
-  // Visual capsule centered in parent
+  // Right-click on empty taskbar space (the stretched remainder in efficient
+  // mode, or padding around the capsule otherwise) opens the DDE light dock
+  // settings menu — the bar-level handler skips points it considers over a
+  // widget, so the widget itself must claim them.
+  MouseArea {
+    z: -1
+    anchors.fill: parent
+    acceptedButtons: Qt.RightButton
+    onClicked: {
+      TooltipService.hideImmediately();
+      DockSettingsMenu.openAtItemPoint(screen, this, mouse.x, mouse.y);
+    }
+  }
+
+  // Visual capsule centered in parent (efficient mode packs items from the
+  // start edge — Win10/DDE taskbar style — instead of centering them)
   Rectangle {
     id: visualCapsule
     width: root.contentWidth
     height: root.contentHeight
-    anchors.centerIn: parent
+    x: (root.efficientMode && !isVerticalBar) ? 0 : Style.pixelAlignCenter(parent.width, width)
+    y: (root.efficientMode && isVerticalBar) ? 0 : Style.pixelAlignCenter(parent.height, height)
     radius: Style.radiusM
     color: Style.capsuleColor
     border.color: Style.capsuleBorderColor
@@ -1006,10 +1022,9 @@ Item {
               return mx >= cx && mx <= cx + s && my >= cy && my <= cy + s;
             }
 
-            onPressed: {
-              // Constrain drag to roughly the taskbar area but allow some freedom
-              // Or just let it be free since we only care about drops
-            }
+            // Constrain drag to roughly the taskbar area but allow some freedom
+            // Or just let it be free since we only care about drops
+            onPressed: {}
 
             onReleased: {
               if (draggableContent.Drag.active) {
