@@ -25,11 +25,6 @@ ColumnLayout {
       tabIndex: 1
       checked: subTabBar.currentIndex === 1
     }
-    NTabButton {
-      text: I18n.tr("common.screen-corners")
-      tabIndex: 2
-      checked: subTabBar.currentIndex === 2
-    }
   }
 
   Item {
@@ -43,6 +38,5 @@ ColumnLayout {
 
     AppearanceSubTab {}
     PanelsSubTab {}
-    ScreenCornersSubTab {}
   }
 }

@@ -710,5 +710,20 @@ ColumnLayout {
       defaultValue: Settings.getDefaultValue("general.forceBlackScreenCorners")
       onToggled: checked => Settings.data.general.forceBlackScreenCorners = checked
     }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.general.screen-corners-radius-label")
+      description: I18n.tr("panels.general.screen-corners-radius-description")
+      enabled: Settings.data.general.showScreenCorners
+      from: 0
+      to: 2
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.general.screenRadiusRatio
+      defaultValue: Settings.getDefaultValue("general.screenRadiusRatio")
+      onMoved: value => Settings.data.general.screenRadiusRatio = value
+      text: Math.floor(Settings.data.general.screenRadiusRatio * 100) + "%"
+    }
   }
 }

@@ -485,6 +485,14 @@
     "subTab": null
   },
   {
+    "labelKey": "panels.general.screen-corners-radius-label",
+    "descriptionKey": "panels.general.screen-corners-radius-description",
+    "widget": "NValueSlider",
+    "tab": 0,
+    "tabLabel": "control-center.module.advanced",
+    "subTab": null
+  },
+  {
     "labelKey": "panels.audio.devices-output-device-label",
     "descriptionKey": "panels.audio.devices-output-device-description",
     "widget": "NLabel",
@@ -2497,15 +2505,6 @@
     "tabLabel": "panels.user-interface.title",
     "subTab": 1,
     "subTabLabel": "common.panels"
-  },
-  {
-    "labelKey": "panels.general.screen-corners-radius-label",
-    "descriptionKey": "panels.general.screen-corners-radius-description",
-    "widget": "NValueSlider",
-    "tab": 21,
-    "tabLabel": "panels.user-interface.title",
-    "subTab": 2,
-    "subTabLabel": "common.screen-corners"
   },
   {
     "labelKey": "panels.wallpaper.automation-scheduled-change-label",
