@@ -120,7 +120,8 @@ Singleton {
                                     "customFont": "",
                                     "formatHorizontal": "HH:mm ddd, MMM dd",
                                     "formatVertical": "HH mm - dd MM",
-                                    "tooltipFormat": "HH:mm ddd, MMM dd"
+                                    "tooltipFormat": "HH:mm ddd, MMM dd",
+                                    "lineSpacing": 2
                                   },
                                   "ControlCenter": {
                                     "useDistroLogo": false,

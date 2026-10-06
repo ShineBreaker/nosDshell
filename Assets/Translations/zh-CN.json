@@ -84,6 +84,8 @@
       "custom-font-search-placeholder": "搜索字体...",
       "horizontal-bar-description": "提示：使用 \\n 创建换行。",
       "horizontal-bar-label": "水平栏",
+      "line-spacing-description": "两行时钟（高效任务栏模式）中时间行与日期行之间的垂直间距。",
+      "line-spacing-label": "行距",
       "preview": "预览",
       "tooltip-format-description": "自定义鼠标悬停在时钟上时显示的提示信息，可以使用格式化字符串。留空以使用默认提示信息。",
       "tooltip-format-label": "提示信息格式",

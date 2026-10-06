@@ -24,6 +24,7 @@ ColumnLayout {
   property string valueFormatHorizontal: widgetData.formatHorizontal !== undefined ? widgetData.formatHorizontal : widgetMetadata.formatHorizontal
   property string valueFormatVertical: widgetData.formatVertical !== undefined ? widgetData.formatVertical : widgetMetadata.formatVertical
   property string valueTooltipFormat: widgetData.tooltipFormat !== undefined ? widgetData.tooltipFormat : widgetMetadata.tooltipFormat
+  property int valueLineSpacing: widgetData.lineSpacing !== undefined ? widgetData.lineSpacing : widgetMetadata.lineSpacing
 
   readonly property color textColor: Color.resolveColorKey(valueClockColor)
 
@@ -41,6 +42,7 @@ ColumnLayout {
     settings.formatHorizontal = valueFormatHorizontal.trim();
     settings.formatVertical = valueFormatVertical.trim();
     settings.tooltipFormat = valueTooltipFormat.trim();
+    settings.lineSpacing = valueLineSpacing;
     settingsChanged(settings);
   }
 
@@ -205,6 +207,20 @@ ColumnLayout {
           }
         }
         defaultValue: widgetMetadata.tooltipFormat
+      }
+
+      NSpinBox {
+        Layout.fillWidth: true
+        label: I18n.tr("bar.clock.line-spacing-label")
+        description: I18n.tr("bar.clock.line-spacing-description")
+        from: -10
+        to: 20
+        value: valueLineSpacing
+        onValueChanged: {
+          valueLineSpacing = value;
+          saveSettings();
+        }
+        defaultValue: widgetMetadata.lineSpacing
       }
     }
 

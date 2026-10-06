@@ -45,6 +45,9 @@ Item {
   readonly property string formatVertical: widgetSettings.formatVertical !== undefined ? widgetSettings.formatVertical : widgetMetadata.formatVertical
   readonly property string tooltipFormat: widgetSettings.tooltipFormat !== undefined ? widgetSettings.tooltipFormat : widgetMetadata.tooltipFormat
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  // DDE efficient clock keeps a visible gap between its two lines; the legacy
+  // negative spacing below stays for the single-capsule Noctalia look.
+  readonly property int lineSpacing: widgetSettings.lineSpacing !== undefined ? widgetSettings.lineSpacing : widgetMetadata.lineSpacing
   // "fashion" = DDE fashion dock presentation: rounded-square clock tile
   // (big HH over mm digits — derived from the gxde-dock datetimewidget layout)
   property string dockPresentation: ""
@@ -236,7 +239,7 @@ Item {
         anchors.centerIn: parent
         sourceComponent: ColumnLayout {
           anchors.centerIn: parent
-          spacing: Settings.data.bar.showCapsule ? -5 : -3
+          spacing: root.efficientMode ? root.lineSpacing : (Settings.data.bar.showCapsule ? -5 : -3)
           Repeater {
             id: repeater
             model: I18n.locale.toString(now, effectiveFormatHorizontal).split("\\n")

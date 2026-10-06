@@ -86,6 +86,8 @@
       "custom-font-search-placeholder": "Search fonts...",
       "horizontal-bar-description": "Tip: Use \\n to create a line break.",
       "horizontal-bar-label": "Horizontal bar",
+      "line-spacing-description": "Vertical gap between the time and date lines of the two-line clock (efficient taskbar mode).",
+      "line-spacing-label": "Line spacing",
       "preview": "Preview",
       "tooltip-format-description": "Format string for the tooltip shown when hovering over the clock. Leave empty to use the default tooltip.",
       "tooltip-format-label": "Tooltip format",
