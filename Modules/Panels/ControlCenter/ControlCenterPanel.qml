@@ -103,6 +103,9 @@ SmartPanel {
   preferredHeight: root.screen?.height ?? 0
 
   panelBackgroundColor: Color.maskShell
+  // maskShell already carries the final alpha (blur ? setting : 0.8 fallback);
+  // rendering under the effectivePanelOpacity layer would multiply it again.
+  ownBackgroundAlpha: true
   // The frame's own corners are square; PanelBackground needs state -1.
   panelContent: Item {
     id: frameContent

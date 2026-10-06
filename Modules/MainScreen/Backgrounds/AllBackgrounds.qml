@@ -74,7 +74,7 @@ Item {
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
             // Only render if this panel belongs to this screen
-            return (p && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
           }
           shapeContainer: unifiedBackgroundsShape
           defaultBackgroundColor: panelBackgroundColor
@@ -85,7 +85,7 @@ Item {
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
             // Only render if this panel belongs to this screen
-            return (p && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
           }
           shapeContainer: unifiedBackgroundsShape
           defaultBackgroundColor: panelBackgroundColor
@@ -139,7 +139,7 @@ Item {
             assignedPanel: {
               var p = PanelService.backgroundSlotAssignments[0];
               // Only render if this panel belongs to this screen
-              return (p && p.screen === root.windowRoot.screen) ? p : null;
+              return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
             }
             shapeContainer: panelBackgroundsShape
             defaultBackgroundColor: panelBackgroundColor
@@ -150,7 +150,7 @@ Item {
             assignedPanel: {
               var p = PanelService.backgroundSlotAssignments[1];
               // Only render if this panel belongs to this screen
-              return (p && p.screen === root.windowRoot.screen) ? p : null;
+              return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
             }
             shapeContainer: panelBackgroundsShape
             defaultBackgroundColor: panelBackgroundColor
@@ -203,6 +203,56 @@ Item {
           anchors.fill: parent
           source: barBackgroundShape
           visible: !root.efficientMode
+        }
+      }
+    }
+
+    // Panels whose background color already carries its final alpha
+    // (maskShell-style edge sheets) render outside the effectivePanelOpacity
+    // layer — same treatment as the efficient-mode bar, otherwise the alpha
+    // would be multiplied twice.
+    Item {
+      anchors.fill: parent
+
+      Shape {
+        id: ownAlphaPanelShape
+        anchors.fill: parent
+        preferredRendererType: Shape.CurveRenderer
+        asynchronous: true
+        enabled: false
+
+        // Slot 0: Currently open/opening panel
+        PanelBackground {
+          assignedPanel: {
+            var p = PanelService.backgroundSlotAssignments[0];
+            return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+          }
+          shapeContainer: ownAlphaPanelShape
+          defaultBackgroundColor: panelBackgroundColor
+        }
+
+        // Slot 1: Closing panel (during transitions)
+        PanelBackground {
+          assignedPanel: {
+            var p = PanelService.backgroundSlotAssignments[1];
+            return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+          }
+          shapeContainer: ownAlphaPanelShape
+          defaultBackgroundColor: panelBackgroundColor
+        }
+      }
+
+      NDropShadow {
+        anchors.fill: parent
+        source: ownAlphaPanelShape
+
+        readonly property var shadow: {
+          var p = PanelService.backgroundSlotAssignments[0];
+          var c = PanelService.backgroundSlotAssignments[1];
+          var own = (p && p.screen === root.windowRoot.screen) ? p.panelShadow : undefined;
+          if (own === undefined)
+            own = (c && c.screen === root.windowRoot.screen) ? c.panelShadow : undefined;
+          return own !== undefined ? own : null;
         }
       }
     }

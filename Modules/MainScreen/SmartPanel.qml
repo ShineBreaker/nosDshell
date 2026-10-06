@@ -24,6 +24,9 @@ Item {
   property real preferredWidthRatio
   property real preferredHeightRatio
   property color panelBackgroundColor: Color.mSurface
+  // When true the panel background renders outside the Style.effectivePanelOpacity
+  // layer: the color's own alpha is final (like the bar in efficient mode).
+  property bool ownBackgroundAlpha: false
   property color panelBorderColor: Color.mOutline
   property var buttonItem: null
   property bool forceAttachToBar: false
