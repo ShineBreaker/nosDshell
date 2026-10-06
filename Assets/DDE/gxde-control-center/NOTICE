@@ -36,3 +36,14 @@ Tabler 字形，见 DESIGN §3.5.3）。
 | `src/frame/modules/power/themes/dark/icons/nav_power{,_normal}.svg` | 同左 | 电源模块导航/头图 |
 | `src/frame/modules/keyboard/themes/dark/icons/nav_keyboard{,_normal}.svg` | 同左 | 键盘模块导航/头图 |
 | `src/frame/modules/systeminfo/themes/dark/icons/nav_systeminfo{,_normal}.svg` | 同左 | 系统信息模块导航/头图 |
+
+### `src/frame/themes/dark/icons/` —— 首页头部铃铛切换钮
+
+上游在 `src/frame/mainwidget.cpp:107-110` 用 `DImageButton` 按
+`notifications_toggle_{normal,hover,checked,checkedhover}.svg` 四态切换
+（press 态复用 checked 图），用于首页模块网格/通知页切换。
+SVG 均为 32×32（`viewBox="0 0 32 32"`），QML 侧用 `Image` 原大显示。
+
+| 仓库内路径 | 来源路径 | 用途 |
+|---|---|---|
+| `src/frame/themes/dark/icons/notifications_toggle_{normal,hover,checked,checkedhover}.svg` | 同左 | 控制中心头部铃铛切换钮 |

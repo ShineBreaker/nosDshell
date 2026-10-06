@@ -143,6 +143,7 @@ SmartPanel {
         screen: root.screen
         notificationPage: root.notificationPage
         onNotificationToggled: root.notificationPage = !root.notificationPage
+        onAvatarRequested: root.openModule(ControlCenterModules.moduleByName("accounts"))
         onSettingsRequested: {
           // Open the accounts module inside the frame (DESIGN §3.5.3)
           openModule(ControlCenterModules.moduleForTab(SettingsPanel.Tab.General, 1) ?? ControlCenterModules.moduleByName("accounts"));

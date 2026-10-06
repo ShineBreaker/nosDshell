@@ -441,6 +441,12 @@ Singleton {
   readonly property int controlCenterHeaderHeight: Math.round(140 * uiScaleRatio)
   readonly property int controlCenterHeaderMarginLeft: Math.round(40 * uiScaleRatio)
   readonly property int controlCenterHeaderMarginTop: Math.round(10 * uiScaleRatio)
+  // Header column spacing + avatar (gxde-control-center mainwidget.cpp:140,
+  // avatarwidget.h:34)
+  readonly property int controlCenterHeaderSpacing: Math.round(30 * uiScaleRatio)
+  readonly property int controlCenterAvatarSize: Math.round(60 * uiScaleRatio)
+  // Trailing space after the header's right-side buttons (mainwidget.cpp:146)
+  readonly property int controlCenterHeaderMarginRight: Math.round(20 * uiScaleRatio)
   // Module grid cell inset (navdelegate.cpp:41-57) and icon 24 px
   readonly property int moduleCellInset: Math.round(5 * uiScaleRatio)
   readonly property int moduleCellIcon: Math.round(24 * uiScaleRatio)
