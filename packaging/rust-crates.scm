@@ -630,6 +630,14 @@
   (crate-source "wayland-client" "0.31.15"
                 "0ww0d0r6rn2h0sn8ma1f7zvxj40l6930p07j044nvmqshq7nmhz3"))
 
+(define rust-wayland-protocols-0.32.13
+  (crate-source "wayland-protocols" "0.32.13"
+                "1dn4injzx1lnmacnhl3q60m743lvshxmmy0aabb2xaixvq9wil13"))
+
+(define rust-wayland-protocols-wlr-0.3.9
+  (crate-source "wayland-protocols-wlr" "0.3.9"
+                "1v3qbg18vsb3i62c6042xhjm7dcflmylzjlhl0w9kks3xmilkngg"))
+
 (define rust-wayland-scanner-0.31.11
   (crate-source "wayland-scanner" "0.31.11"
                 "1h0al3271l2w124sxlh77s1kmjg0z24ns2mk1vbnfars3d3313ik"))
@@ -799,6 +807,8 @@
         rust-wasm-bindgen-shared-0.2.129
         rust-wayland-backend-0.3.17
         rust-wayland-client-0.31.15
+        rust-wayland-protocols-0.32.13
+        rust-wayland-protocols-wlr-0.3.9
         rust-wayland-scanner-0.31.11
         rust-wayland-sys-0.31.11
         rust-webpki-roots-1.0.9
