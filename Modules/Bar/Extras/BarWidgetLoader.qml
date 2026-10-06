@@ -34,6 +34,8 @@ Item {
     }
   }
 
+  Component.onDestruction: Logger.w("HoverUAF", "BarWidgetLoader destroyed: id=" + widgetId + " section=" + section + " index=" + sectionIndex)
+
   // Bar orientation and height for extended click areas
   readonly property string barPosition: Settings.getBarPositionForScreen(widgetScreen?.name)
   readonly property bool isVerticalBar: barPosition === "left" || barPosition === "right"

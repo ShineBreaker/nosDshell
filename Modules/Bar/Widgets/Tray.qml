@@ -118,6 +118,7 @@ Item {
     model: SystemTray.items && SystemTray.items.values ? SystemTray.items.values : []
 
     delegate: Item {
+      Component.onDestruction: Logger.w("HoverUAF", "tray statusConn destroyed: index=" + index)
       Connections {
         target: modelData
         enabled: modelData !== null && modelData !== undefined
@@ -131,6 +132,7 @@ Item {
   }
 
   function _performFilteredItemsUpdate() {
+    Logger.w("HoverUAF", "_performFilteredItemsUpdate, oldCount=" + (root.filteredItems ? root.filteredItems.length : -1));
     // Force a fresh read of settings to ensure we have the latest blacklist
     var currentSettings = {};
     if (section && sectionWidgetIndex >= 0 && screenName) {
@@ -427,6 +429,7 @@ Item {
         id: trayDelegate
         required property var modelData
         required property int index
+        Component.onDestruction: Logger.w("HoverUAF", "trayDelegate destroyed: index=" + index + " id=" + (modelData ? (modelData.id || "?") : "?"))
         width: isVertical ? (root.fashionMode ? root.fashionPillHeight : barHeight) : cellSize
         height: isVertical ? cellSize : (root.fashionMode ? root.fashionPillHeight : barHeight)
         visible: modelData

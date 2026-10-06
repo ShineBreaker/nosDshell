@@ -363,6 +363,7 @@ Item {
 
   // Function to update the combined model
   function updateCombinedModel() {
+    Logger.w("HoverUAF", "updateCombinedModel called, oldCount=" + (root.combinedModel ? root.combinedModel.length : -1));
     const runningWindows = [];
     const pinnedApps = Settings.data.dock.pinnedApps || [];
     const processedAppIds = new Set();
@@ -711,6 +712,8 @@ Item {
           required property var modelData
           required property int index
           property ShellScreen screen: root.screen
+
+          Component.onDestruction: Logger.w("HoverUAF", "taskbarItem destroyed: index=" + index + " appId=" + (modelData ? modelData.appId : "?"))
 
           readonly property bool isRunning: modelData.window !== null
           readonly property bool isPinned: modelData.type === "pinned" || modelData.type === "pinned-running"

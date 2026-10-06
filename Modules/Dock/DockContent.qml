@@ -427,6 +427,7 @@ Item {
 
         delegate: Item {
           id: appButton
+          Component.onDestruction: Logger.w("HoverUAF", "dock appButton destroyed: appId=" + appId + " index=" + index)
           readonly property real appItemLength: Math.round(dockRoot.itemLength * shrinkFactor)
           readonly property real appIconContent: Math.round(Math.min(appItemLength, dockRoot.itemThickness) * 0.8)
           Layout.preferredWidth: isVertical ? dockRoot.itemThickness : appItemLength
