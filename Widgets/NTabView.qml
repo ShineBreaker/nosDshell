@@ -44,7 +44,7 @@ Item {
       return contentItems[currentIndex] ? contentItems[currentIndex].implicitHeight : 0;
     let h = 0;
     for (let i = 0; i < contentItems.length; i++)
-      h += contentItems[i].implicitHeight + root.stackHeadHeight;
+      h += contentItems[i].implicitHeight + root.stackHeadHeight + (i > 0 ? Style.settingsGroupSpacing : 0);
     return h;
   }
 
@@ -112,10 +112,13 @@ Item {
     }
   }
 
+  // Between groups the spacing must land ABOVE the next head — heads are the
+  // visual separators, so butt-joining them to the previous group's last row
+  // is what made stacked pages read as one cramped block.
   function _stackedOffset(index) {
     let off = 0;
     for (let j = 0; j < index; j++)
-      off += (contentItems[j] ? contentItems[j].implicitHeight : 0) + root.stackHeadHeight;
+      off += (contentItems[j] ? contentItems[j].implicitHeight : 0) + root.stackHeadHeight + Style.settingsGroupSpacing;
     return off;
   }
 
