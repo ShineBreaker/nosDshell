@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 67
+  readonly property int settingsVersion: 68
   property bool isDebug: Quickshell.env("NOSD_DEBUG") === "1"
   readonly property string shellName: "nosdshell"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOSD_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
@@ -635,7 +635,6 @@ Singleton {
       property bool pinnedStatic: false
       property bool inactiveIndicators: false
       property bool groupApps: true // DDE: one item per application
-      property bool windowPreviews: true // DDE: hovering app items shows live window previews
       property string groupContextMenuMode: "extended" // "list", "extended"
       property string groupClickAction: "cycle" // "cycle", "list"
       property string groupIndicatorStyle: "dots" // "number", "dots"
