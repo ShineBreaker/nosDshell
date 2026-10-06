@@ -1128,7 +1128,7 @@
   },
   {
     "labelKey": "dock-menu.size",
-    "descriptionKey": null,
+    "descriptionKey": "settings.taskbar.size-description",
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",

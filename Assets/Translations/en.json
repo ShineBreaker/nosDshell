@@ -2357,6 +2357,7 @@
       "plugins": "Plugins",
       "monitors": "Monitors",
       "mode-description": "Fashion mode floats centered; Efficient mode spans the screen edge.",
+      "size-description": "Taskbar icon size.",
       "state-description": "Smart hide falls back to Keep hidden when the compositor does not support it.",
       "plugins-description": "Choose which plugins appear on the taskbar. Drag to reorder."
     },

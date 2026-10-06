@@ -74,6 +74,7 @@ ColumnLayout {
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("dock-menu.size")
+      description: I18n.tr("settings.taskbar.size-description")
       model: [
         {
           "key": "30",

@@ -2357,6 +2357,7 @@
       "plugins": "插件",
       "monitors": "显示器",
       "mode-description": "时尚模式悬浮居中，高效模式贴边通栏。",
+      "size-description": "任务栏图标大小。",
       "state-description": "合成器不支持时，智能隐藏按一直隐藏处理。",
       "plugins-description": "选择显示在任务栏上的插件，可拖拽排序。"
     },
