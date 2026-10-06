@@ -268,7 +268,8 @@ Item {
   function _scrollToSection(i, subTab, inner, animated) {
     var tab = (subTab === undefined || subTab === null) ? -1 : subTab;
     var innerIdx = (inner === undefined || inner === null) ? -1 : inner;
-    const y = tab >= 0 ? _tabSlotY(i, tab, innerIdx) : _sectionY(i);
+    // Slot 0 with no inner group == "the module": keep its header in view.
+    const y = (tab > 0 || innerIdx > 0) ? _tabSlotY(i, tab, innerIdx) : _sectionY(i);
     root._pendingSnap = {
       "sec": i,
       "tab": tab,
@@ -308,7 +309,8 @@ Item {
     const snap = root._pendingSnap;
     if (!snap)
       return;
-    const y = _clampY(snap.tab >= 0 ? _tabSlotY(snap.sec, snap.tab, snap.inner ?? -1) : _sectionY(snap.sec));
+    const inner = snap.inner ?? -1;
+    const y = _clampY((snap.tab > 0 || inner > 0) ? _tabSlotY(snap.sec, snap.tab, inner) : _sectionY(snap.sec));
     if (scrollAnim.running) {
       scrollAnim.to = y;
       return;
