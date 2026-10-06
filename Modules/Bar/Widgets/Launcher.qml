@@ -82,9 +82,7 @@ NIconButton {
                    PanelService.closeContextMenu(screen);
 
                    if (action === "launcher-settings") {
-                     var panel = PanelService.getPanel("settingsPanel", screen);
-                     panel.requestedTab = SettingsPanel.Tab.Launcher;
-                     panel.toggle();
+                     SettingsPanelService.toggle(SettingsPanel.Tab.Launcher, -1, screen);
                    } else if (action === "widget-settings") {
                      BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
                    }

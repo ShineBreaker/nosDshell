@@ -3,6 +3,7 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import qs.Commons
+import qs.Modules.Panels.Settings
 import qs.Services.UI
 
 // Single owner of the DDE launcher (DESIGN §3.4). Both views — the fullscreen
@@ -182,8 +183,6 @@ Singleton {
   }
 
   function showSettings(screen) {
-    const panel = PanelService.getPanel("settingsPanel", screen);
-    if (panel)
-      panel.openToTab(SettingsPanel.Tab.Launcher);
+    SettingsPanelService.openToTab(SettingsPanel.Tab.Launcher, -1, screen);
   }
 }

@@ -209,11 +209,7 @@ Singleton {
       return true;
     }
     if (action === "settings") {
-      var panel = PanelService.getPanel("settingsPanel", screen);
-      if (panel) {
-        panel.requestedTab = SettingsPanel.Tab.Dock;
-        panel.toggle();
-      }
+      SettingsPanelService.openToTab(SettingsPanel.Tab.Dock, -1, screen);
       return false;
     }
     return false;

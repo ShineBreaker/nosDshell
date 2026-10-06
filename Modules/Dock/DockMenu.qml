@@ -548,20 +548,14 @@ PopupWindow {
   }
 
   function handleLauncherSettings() {
-    if (targetScreen) {
-      var panel = PanelService.getPanel("settingsPanel", targetScreen);
-      panel.requestedTab = SettingsPanel.Tab.Launcher;
-      panel.toggle();
-    }
+    if (targetScreen)
+      SettingsPanelService.openToTab(SettingsPanel.Tab.Launcher, -1, targetScreen);
     closeAndReset();
   }
 
   function handleDockSettings() {
-    if (targetScreen) {
-      var panel = PanelService.getPanel("settingsPanel", targetScreen);
-      panel.requestedTab = SettingsPanel.Tab.Dock;
-      panel.toggle();
-    }
+    if (targetScreen)
+      SettingsPanelService.openToTab(SettingsPanel.Tab.Dock, -1, targetScreen);
     closeAndReset();
   }
 

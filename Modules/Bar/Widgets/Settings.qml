@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import qs.Commons
+import qs.Modules.Panels.Settings
 import qs.Services.UI
 import qs.Widgets
 
@@ -43,11 +44,17 @@ NIconButton {
   recolorIcon: onShellSurface
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
-    if (PanelService.getPanel("settingsPanel", screen)?.isPanelOpen) {
-      return "";
-    } else {
-      return I18n.tr("tooltips.open-settings");
-    }
+    // The settings surface depends on the panel mode (controlCenter → the
+    // frame's all-settings page; window → FloatingWindow; else this panel).
+    const mode = Settings.data.ui.settingsPanelMode;
+    var open = false;
+    if (mode === "controlCenter")
+      open = PanelService.getPanel("controlCenterPanel", screen)?.isPanelOpen ?? false;
+    else if (mode === "window")
+      open = SettingsPanelService.isWindowOpen;
+    else
+      open = PanelService.getPanel("settingsPanel", screen)?.isPanelOpen ?? false;
+    return open ? "" : I18n.tr("tooltips.open-settings");
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
@@ -83,11 +90,9 @@ NIconButton {
   }
 
   onClicked: {
-    if (Settings.data.ui.settingsPanelMode === "attached") {
-      PanelService.getPanel("settingsPanel", screen)?.toggle(this);
-    } else {
-      PanelService.getPanel("settingsPanel", screen)?.toggle();
-    }
+    // Route through the service: "controlCenter" opens the DDE all-settings
+    // page inside the control-center frame, not this panel.
+    SettingsPanelService.toggle(SettingsPanel.Tab.General, -1, screen);
   }
   onRightClicked: {
     PanelService.showContextMenu(contextMenu, root, screen);

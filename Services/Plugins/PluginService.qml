@@ -1428,19 +1428,11 @@ Singleton {
           // Open settings panel to Plugins tab on the screen where the cursor is
           if (root.screenDetector) {
             root.screenDetector.withCurrentScreen(function (screen) {
-              var panel = PanelService.getPanel("settingsPanel", screen);
-              if (panel) {
-                panel.requestedTab = SettingsPanel.Tab.Plugins;
-                panel.open();
-              }
+              SettingsPanelService.openToTab(SettingsPanel.Tab.Plugins, -1, screen);
             });
           } else {
             // Fallback to primary screen if screen detector is not available
-            var panel = PanelService.getPanel("settingsPanel", Quickshell.screens[0]);
-            if (panel) {
-              panel.requestedTab = SettingsPanel.Tab.Plugins;
-              panel.open();
-            }
+            SettingsPanelService.openToTab(SettingsPanel.Tab.Plugins, -1, Quickshell.screens[0]);
           }
         });
       }

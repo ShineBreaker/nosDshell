@@ -385,8 +385,7 @@ Item {
             controlCenterPanel?.toggle();
             mouse.accepted = true;
           } else if (action === "settings") {
-            var settingsPanel = PanelService.getPanel("settingsPanel", screen);
-            settingsPanel?.toggle(null, followMouse ? mapToItem(null, mouse.x, mouse.y) : null);
+            SettingsPanelService.toggle(SettingsPanel.Tab.General, -1, screen);
             mouse.accepted = true;
           } else if (action === "launcherPanel") {
             PanelService.toggleLauncher(screen);

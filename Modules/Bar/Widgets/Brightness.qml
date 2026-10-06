@@ -131,9 +131,7 @@ Item {
                    PanelService.closeContextMenu(screen);
 
                    if (action === "open-display-settings") {
-                     var settingsPanel = PanelService.getPanel("settingsPanel", screen);
-                     settingsPanel.requestedTab = SettingsPanel.Tab.Display;
-                     settingsPanel.open();
+                     SettingsPanelService.openToTab(SettingsPanel.Tab.Display, -1, screen);
                    } else if (action === "widget-settings") {
                      BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
                    }

@@ -36,6 +36,22 @@ Singleton {
         windowOpened();
         settingsWindow.navigateToEntry(entry);
       }
+    } else if (Settings.data.ui.settingsPanelMode === "controlCenter") {
+      if (!screen || !entry || entry.tab === undefined) {
+        Logger.w("SettingsPanelService", "Screen and entry required for controlCenter mode");
+        return;
+      }
+      var ccPanel = PanelService.getPanel("controlCenterPanel", screen);
+      var module = ControlCenterModules.moduleForTab(entry.tab, entry.subTab);
+      if (!ccPanel || !module)
+        return;
+      if (ccPanel.isPanelOpen)
+        ccPanel.openModule(module, entry.subTab ?? -1);
+      else {
+        ccPanel.pendingModule = module;
+        ccPanel.pendingSubTab = entry.subTab ?? -1;
+        ccPanel.open();
+      }
     } else {
       if (!screen) {
         Logger.w("SettingsPanelService", "Screen parameter required for panel mode");
