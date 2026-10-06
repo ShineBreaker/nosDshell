@@ -34,6 +34,20 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
   - 已知的离线噪声（没有 NetworkManager、天气数据为 null）不算回归。
 - 改到两种任务栏模式、四个停靠方向、亮色/暗色、模糊开关时，要用 `--settings` 把这些组合分别截图验证。
 
+## 调试
+
+开关（四等价）：设置 → 关于 → 调试 开关；关于页 logo 连点 8 次；`qs ipc call debug toggle`；`NOSD_DEBUG=1`（启动前强制开，用于启动期取证）。持久化字段在 `debug.enabled`，`Settings.isDebug` 是 env ∥ 设置的有效值。
+
+- `debug.modules`：`Logger.d` 的模块白名单（逗号分隔，空=全部），如 `"Dock,Tray"`。
+- `debug.logLevel`：`"warn"` 时 `Logger.i` 静默，只剩 w/e——禁用调试时的最小化日志。
+- 场景取证（`Services/Debug/DebugService.qml`，经 IPC 使用）：
+  - `qs ipc call debug list` — 已注册的场景根（`dock-<屏>`、`bar-<屏>`；bar 只在 efficient 模式加载）。
+  - `qs ipc call debug tree dock-HEADLESS-1` — 按绘制序 dump `children[]`，即 Qt hover 投递快照的同一份列表；layer 的 effectSource/effect 这类幽灵子项直接可见，地址可对 gdb。
+  - `qs ipc call debug watch <名字>` — 给整棵子树挂 `Component.destruction` 探针，谁在投递途中销毁，`DbgWatch` 日志会报名字。
+  - `qs ipc call debug status|dump|unwatch`。
+- Qt 侧类别日志必须**启动前**用 env 打开（QML 无法运行时改）：`QT_LOGGING_RULES="qt.quick.hover.trace=true"`（逐 item hover 投递）、`qt.qml.binding.removal=true` 等；core 验尸：`QS_DISABLE_CRASH_HANDLER=1` + `ulimit -c unlimited`，Guix 下调试符号用 `add-symbol-file` 绕过 `.gnu_debuglink` CRC。
+- 现成脚本：`Scripts/test/debug-smoke.sh`（debug 面全链路冒烟）、`Scripts/test/repro-hover-crash.sh`（嵌套 niri 指针扫描 + 周期重启 + core 验尸）。
+
 ## 代码约定（Noctalia 已有、配置文件里看不出来的）
 
 - **令牌优先。** 颜色从 `Color.*` 取，尺寸、圆角、时长从 `Style.*` 取；DDE 专用的表面和叠加色用 `Color.maskDark`、`Color.overlay(level)` 这类语义令牌。组件内部只做布局。
