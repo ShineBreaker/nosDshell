@@ -13,10 +13,6 @@ ColumnLayout {
   Layout.fillWidth: true
 
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
-  NHeader {
-    label: I18n.tr("panels.user-interface.panels-header")
-  }
-
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   ColumnLayout {
