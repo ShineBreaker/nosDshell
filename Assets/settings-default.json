@@ -1,5 +1,5 @@
 {
-  "settingsVersion": 70,
+  "settingsVersion": 71,
   "bar": {
     "barType": "simple",
     "position": "top",
@@ -132,6 +132,12 @@
       ],
       "keyEscape": [
         "Esc"
+      ],
+      "keyHome": [
+        "Home"
+      ],
+      "keyEnd": [
+        "End"
       ],
       "keyRemove": [
         "Del"

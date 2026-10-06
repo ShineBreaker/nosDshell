@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 70
+  readonly property int settingsVersion: 71
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -351,6 +351,8 @@ Singleton {
         property list<string> keyRight: ["Right"]
         property list<string> keyEnter: ["Return", "Enter"]
         property list<string> keyEscape: ["Esc"]
+        property list<string> keyHome: ["Home"]
+        property list<string> keyEnd: ["End"]
         property list<string> keyRemove: ["Del"]
       }
       property bool reverseScroll: false

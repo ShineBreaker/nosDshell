@@ -72,10 +72,19 @@ ColumnLayout {
 
   NKeybindRecorder {
     Layout.fillWidth: true
-    label: I18n.tr("panels.general.keybinds-remove")
-    currentKeybinds: Settings.data.general.keybinds.keyRemove
-    defaultKeybind: "Del"
-    settingsPath: "general.keybinds.keyRemove"
-    onKeybindsChanged: newKeybinds => Settings.data.general.keybinds.keyRemove = newKeybinds
+    label: I18n.tr("panels.general.keybinds-home")
+    currentKeybinds: Settings.data.general.keybinds.keyHome
+    defaultKeybind: "Home"
+    settingsPath: "general.keybinds.keyHome"
+    onKeybindsChanged: newKeybinds => Settings.data.general.keybinds.keyHome = newKeybinds
+  }
+
+  NKeybindRecorder {
+    Layout.fillWidth: true
+    label: I18n.tr("panels.general.keybinds-end")
+    currentKeybinds: Settings.data.general.keybinds.keyEnd
+    defaultKeybind: "End"
+    settingsPath: "general.keybinds.keyEnd"
+    onKeybindsChanged: newKeybinds => Settings.data.general.keybinds.keyEnd = newKeybinds
   }
 }
