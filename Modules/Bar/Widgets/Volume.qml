@@ -155,7 +155,7 @@ Item {
     icon: AudioService.getOutputIcon()
     dockPresentation: root.dockPresentation
     iconSource: {
-      var resolve = root.fashionMode ? ThemeIcons.fashionFor : ThemeIcons.symbolicFor;
+      var resolve = root.fashionMode ? ThemeIcons.fashionFor : ThemeIcons.symbolicOnly;
       if (!root.efficientMode && !root.fashionMode)
         return "";
       switch (AudioService.getOutputIcon()) {

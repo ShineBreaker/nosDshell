@@ -318,11 +318,11 @@ Singleton {
   // DDialog (DESIGN §3.11): same 20 px black@0.5 drop as the control centre
   // frame, but cast straight down instead of to the left.
   readonly property var shadowDialog: ({
-                                           "blur": 20,
-                                           "x": 0,
-                                           "y": 0,
-                                           "color": Qt.rgba(0, 0, 0, 0.5)
-                                         })
+                                         "blur": 20,
+                                         "x": 0,
+                                         "y": 0,
+                                         "color": Qt.rgba(0, 0, 0, 0.5)
+                                       })
 
   // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
   // it -- the first-run wizard is the wide one. The 48 px leading icon and the
@@ -594,6 +594,10 @@ Singleton {
   readonly property int dockItemThickness: Math.round(Settings.data.dock.iconSize * 1.5)
   readonly property int dockItemLength: Math.round(dockItemThickness * 1.1)
   readonly property int dockIconContent: Math.round(Math.min(dockItemThickness, dockItemLength) * 0.8)
+
+  // DDE plugin-item sizeHint (DESIGN §3.1.4; gxde-dock plugin widgets all
+  // report 26x26, e.g. plugins/shutdown/pluginwidget.cpp:35)
+  readonly property int dockPluginSize: 26
 
   // DDE fashion clock face geometry, verbatim from
   // gxde-dock/plugins/datetime/datetimewidget.cpp:123-186. Every step there is

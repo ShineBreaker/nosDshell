@@ -49,7 +49,7 @@ Item {
   property bool shouldAnimateHide: false
 
   // Sizing logic for vertical bars
-  readonly property int buttonSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
+  readonly property int buttonSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   readonly property real barFontSize: Style.getBarFontSizeForScreen(screen?.name)
   readonly property int pillHeight: buttonSize
   readonly property int pillOverlap: Math.round(buttonSize * 0.5)

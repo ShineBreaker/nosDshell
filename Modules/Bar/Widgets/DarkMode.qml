@@ -34,12 +34,12 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   icon: "dark-mode"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(["dark-mode", "preferences-desktop-theme"]) : (efficientMode ? ThemeIcons.symbolicForAny(["dark-mode", "preferences-desktop-theme"]) : "")
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(["dark-mode", "preferences-desktop-theme"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(["dark-mode", "preferences-desktop-theme"]) : "")
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.colorSchemes.darkMode ? I18n.tr("tooltips.switch-to-light-mode") : I18n.tr("tooltips.switch-to-dark-mode")
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
-  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   colorBg: fashionMode ? "transparent" : Style.capsuleColor

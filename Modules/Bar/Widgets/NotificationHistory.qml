@@ -61,11 +61,13 @@ NIconButton {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled", "bell"] : ["notification", "preferences-system-notifications", "bell"]) : (efficientMode ? ThemeIcons.symbolicForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : "")
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled", "bell"] : ["notification", "preferences-system-notifications", "bell"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(NotificationService.doNotDisturb ? ["notification-disabled", "notifications-disabled"] : ["notification",
+                                                                                                                                                                                                                                                                                                                                                            "preferences-system-notifications"]) :
+                                                                                                                                                                                                                                       "")
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {

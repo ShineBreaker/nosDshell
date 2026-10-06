@@ -149,7 +149,7 @@ Item {
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: getIcon()
     dockPresentation: root.dockPresentation
-    iconSource: root.fashionMode ? ThemeIcons.fashionFor(getIcon() === "sun-off" ? "display-brightness-off" : "display-brightness") : (root.efficientMode ? ThemeIcons.symbolicFor(getIcon() === "sun-off" ? "display-brightness-off" : "display-brightness") : "")
+    iconSource: root.fashionMode ? ThemeIcons.fashionFor(getIcon() === "sun-off" ? "display-brightness-off" : "display-brightness") : (root.efficientMode ? ThemeIcons.symbolicOnly(getIcon() === "sun-off" ? "display-brightness-off" : "display-brightness") : "")
     autoHide: false // Important to be false so we can hover as long as we want
     text: {
       var monitor = brightnessMonitor;

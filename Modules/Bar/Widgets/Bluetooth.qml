@@ -91,7 +91,7 @@ Item {
     icon: !BluetoothService.enabled ? "bluetooth-off" : ((BluetoothService.connectedDevices && BluetoothService.connectedDevices.length > 0) ? "bluetooth-connected" : "bluetooth")
     dockPresentation: root.dockPresentation
     iconSource: {
-      var resolve = root.fashionMode ? ThemeIcons.fashionForAny : ThemeIcons.symbolicForAny;
+      var resolve = root.fashionMode ? ThemeIcons.fashionForAny : ThemeIcons.symbolicOnlyAny;
       if (!root.efficientMode && !root.fashionMode)
         return "";
       if (!BluetoothService.enabled)

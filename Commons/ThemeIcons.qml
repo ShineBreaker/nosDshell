@@ -298,6 +298,29 @@ Singleton {
     return "";
   }
 
+  // Strict variant for the efficient taskbar: only the *-symbolic icon is
+  // acceptable. Status icons are flattened by alpha when recolored, so a
+  // full-color fallback (e.g. a filled panel icon) would paint a solid blob.
+  // "" falls back to the caller's glyph, keeping every plugin icon at the
+  // same thin stroke weight.
+  function symbolicOnly(baseName) {
+    if (!baseName || baseName.length === 0)
+      return "";
+    const sym = baseName + "-symbolic";
+    return iconExists(sym) ? iconFromName(sym, "") : "";
+  }
+
+  function symbolicOnlyAny(names) {
+    if (!names)
+      return "";
+    for (var i = 0; i < names.length; i++) {
+      var path = symbolicOnly(names[i]);
+      if (path !== "")
+        return path;
+    }
+    return "";
+  }
+
   // Resolve a themed status icon for the fashion dock: prefer the plain
   // (full-color) name, fall back to the "*-symbolic" variant.
   // Returns "" when the theme has neither (caller falls back to a glyph).

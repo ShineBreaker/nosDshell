@@ -39,7 +39,7 @@ NIconButton {
   readonly property bool onShellSurface: efficientMode || fashionMode
 
   icon: "settings"
-  iconSource: fashionMode ? ThemeIcons.fashionForAny(["preferences-system", "applications-system"]) : (efficientMode ? ThemeIcons.symbolicForAny(["preferences-system", "applications-system"]) : "")
+  iconSource: fashionMode ? ThemeIcons.fashionForAny(["preferences-system", "applications-system"]) : (efficientMode ? ThemeIcons.symbolicOnlyAny(["preferences-system", "applications-system"]) : "")
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
@@ -50,7 +50,7 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name)
-  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   colorBg: fashionMode ? "transparent" : Style.capsuleColor

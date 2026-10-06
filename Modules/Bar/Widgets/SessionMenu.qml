@@ -38,11 +38,11 @@ NIconButton {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screenName)
+  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: "power"
-  iconSource: fashionMode ? ThemeIcons.fashionFor("system-shutdown") : (efficientMode ? ThemeIcons.symbolicForAny(["system-shutdown", "system-log-out"]) : "")
+  iconSource: fashionMode ? ThemeIcons.fashionFor("system-shutdown") : (efficientMode ? ThemeIcons.symbolicOnlyAny(["system-shutdown", "system-log-out"]) : "")
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {

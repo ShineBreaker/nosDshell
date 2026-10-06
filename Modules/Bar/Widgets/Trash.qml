@@ -30,11 +30,11 @@ NIconButton {
   readonly property string trashFilesDir: (Quickshell.env("XDG_DATA_HOME") || (Quickshell.env("HOME") + "/.local/share")) + "/Trash/files"
   property bool isFull: false
 
-  baseSize: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screenName)
+  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: isFull ? "trash-x" : "trash"
-  iconSource: fashionMode ? ThemeIcons.fashionFor(isFull ? "user-trash-full" : "user-trash") : (efficientMode ? ThemeIcons.symbolicFor(isFull ? "user-trash-full" : "user-trash") : "")
+  iconSource: fashionMode ? ThemeIcons.fashionFor(isFull ? "user-trash-full" : "user-trash") : (efficientMode ? ThemeIcons.symbolicOnly(isFull ? "user-trash-full" : "user-trash") : "")
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
   colorBg: fashionMode ? "transparent" : Style.capsuleColor
@@ -72,7 +72,7 @@ NIconButton {
     onExited: (exitCode, exitStatus) => {
                 // Missing trash directory just means the trash is empty
                 if (exitCode !== 0)
-                  root.isFull = false;
+                root.isFull = false;
               }
   }
 

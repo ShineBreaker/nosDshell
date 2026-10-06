@@ -51,7 +51,7 @@ Item {
   property bool showPill: false
   property bool shouldAnimateHide: false
 
-  readonly property int pillHeight: fashionMode ? Style.dockItemThickness : Style.getCapsuleHeightForScreen(screen?.name)
+  readonly property int pillHeight: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   readonly property real barFontSize: Style.getBarFontSizeForScreen(screen?.name)
   readonly property int pillPaddingHorizontal: Math.round(pillHeight * 0.2)
   readonly property int pillOverlap: Math.round(pillHeight * 0.5)
