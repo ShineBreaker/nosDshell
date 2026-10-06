@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
+import qs.Services.UI
 
 // Simple context menu PopupWindow (similar to TrayMenu)
 // Designed to be rendered inside a PopupMenuWindow for click-outside-to-close
@@ -56,6 +57,25 @@ PopupWindow {
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
+
+  // Thickness of the strip the taskbar surface actually occupies on the
+  // barPosition edge of this screen: the efficient bar (barHeight) or the
+  // fashion dock window (dockItemThickness). Context menus must never extend
+  // into this strip — the bar/dock layer paints above popups, so any overlap
+  // renders the menu partially hidden.
+  readonly property real occupiedEdge: {
+    if (!Settings.data.dock.enabled)
+      return 0;
+    if (Settings.data.dock.mode === "fashion") {
+      var dockMonitors = Settings.data.dock.monitors || [];
+      if (dockMonitors.length > 0 && !dockMonitors.includes(screen?.name))
+        return 0;
+      return Style.dockItemThickness;
+    }
+    if (!BarService.hasBarOnScreen(screen?.name))
+      return 0;
+    return barHeight;
+  }
 
   signal triggered(string action, var item)
 
@@ -204,35 +224,29 @@ PopupWindow {
       const effectiveWidth = targetWidth > 0 ? targetWidth : anchorItem.width;
       const targetGlobalX = anchorGlobalPos.x + targetOffsetX;
 
-      // For right bar: position menu to the left of target
+      let baseX;
       if (root.barPosition === "right") {
-        let baseX = targetOffsetX - implicitWidth - Style.marginM;
-        return baseX;
+        // For right bar: position menu to the left of target
+        baseX = targetOffsetX - implicitWidth - Style.marginM;
+      } else if (root.barPosition === "left") {
+        // For left bar: position menu to the right of target
+        baseX = targetOffsetX + effectiveWidth + Style.marginM;
+      } else {
+        // For top/bottom bar: center horizontally on target
+        const targetCenterScreenX = targetGlobalX + (effectiveWidth / 2);
+        baseX = targetCenterScreenX - (implicitWidth / 2) - anchorGlobalPos.x;
       }
 
-      // For left bar: position menu to the right of target
-      if (root.barPosition === "left") {
-        let baseX = targetOffsetX + effectiveWidth + Style.marginM;
-        return baseX;
-      }
-
-      // For top/bottom bar: center horizontally on target
-      const targetCenterScreenX = targetGlobalX + (effectiveWidth / 2);
-      const menuScreenX = targetCenterScreenX - (implicitWidth / 2);
-      let baseX = menuScreenX - anchorGlobalPos.x;
-
-      const menuRight = menuScreenX + implicitWidth;
-
-      // Adjust if menu would clip on the right
-      if (menuRight > screen.width - Style.marginM) {
-        const overflow = menuRight - (screen.width - Style.marginM);
-        return baseX - overflow;
-      }
-      // Adjust if menu would clip on the left
-      if (menuScreenX < Style.marginM) {
-        return baseX + (Style.marginM - menuScreenX);
-      }
-      return baseX;
+      // Clamp inside the screen, additionally keeping clear of the strip the
+      // bar/dock occupies on a vertical edge (the menu would paint under it)
+      const leftLimit = (root.barPosition === "left") ? root.occupiedEdge + Style.marginS : Style.marginM;
+      const rightLimit = screen.width - ((root.barPosition === "right") ? root.occupiedEdge + Style.marginS : Style.marginM) - implicitWidth;
+      let menuScreenX = anchorGlobalPos.x + baseX;
+      if (menuScreenX > rightLimit)
+        menuScreenX = rightLimit;
+      if (menuScreenX < leftLimit)
+        menuScreenX = leftLimit;
+      return menuScreenX - anchorGlobalPos.x;
     }
     return 0;
   }
@@ -259,14 +273,37 @@ PopupWindow {
       const isAbsolutePosition = anchorItem.width <= 1 && anchorItem.height <= 1;
 
       if (isAbsolutePosition) {
-        // For absolute positioning, show menu directly at anchor Y
-        // Only adjust if menu would clip at bottom
         const anchorGlobalPos = anchorItem.mapToItem(null, 0, 0);
+        const menuTop = anchorGlobalPos.y;
         const menuBottom = anchorGlobalPos.y + implicitHeight;
 
+        // Keep the menu out of the strip the bar/dock occupies on this edge —
+        // anchoring at the click point alone leaves the menu bottom inside the
+        // bar whenever the click lands on the taskbar.
+        if (root.barPosition === "bottom") {
+          const bottomLimit = screen.height - root.occupiedEdge - Style.marginS;
+          if (menuBottom > bottomLimit) {
+            return bottomLimit - implicitHeight - menuTop;
+          }
+          return 0;
+        }
+        if (root.barPosition === "top") {
+          const topLimit = root.occupiedEdge + Style.marginS;
+          if (menuTop < topLimit) {
+            return topLimit - menuTop;
+          }
+          if (menuBottom > screen.height - Style.marginM) {
+            return -implicitHeight;
+          }
+          return 0;
+        }
+        // left/right bars: no vertical strip constraint
         if (menuBottom > screen.height - Style.marginM) {
           // Position above the click point instead
           return -implicitHeight;
+        }
+        if (menuTop < Style.marginM) {
+          return Style.marginM - menuTop;
         }
         return 0;
       }
@@ -295,9 +332,10 @@ PopupWindow {
       const menuScreenY = anchorGlobalPos.y + baseY;
       const menuBottom = menuScreenY + implicitHeight;
 
-      // Define clipping boundaries based on bar position
-      const topLimit = Style.marginM;
-      const bottomLimit = root.barPosition === "bottom" ? screen.height - barHeight - Style.marginS : screen.height - Style.marginM;
+      // Define clipping boundaries based on bar position; the occupied strip
+      // covers the fashion dock too, not just the efficient bar
+      const topLimit = root.barPosition === "top" ? root.occupiedEdge + Style.marginS : Style.marginM;
+      const bottomLimit = root.barPosition === "bottom" ? screen.height - root.occupiedEdge - Style.marginS : screen.height - Style.marginM;
 
       // Adjust if menu would clip at top (skip for bottom bar - don't push menu down over bar)
       if (menuScreenY < topLimit && root.barPosition !== "bottom") {
@@ -436,15 +474,15 @@ PopupWindow {
             if (menuItem.subMenu || !menuItem.hasSubmenu)
               return;
             var sub = Qt.createComponent("NPopupContextMenu.qml").createObject(root, {
-                                                                               "isSubmenu": true,
-                                                                               "variant": root.variant,
-                                                                               "screen": root.screen,
-                                                                               "minWidth": root.minWidth,
-                                                                               "submenuAnchorX": menuItem.width - Style.marginS,
-                                                                               "submenuAnchorY": 0,
-                                                                               "anchorItem": menuItem,
-                                                                               "model": menuItem.modelData.submenu || []
-                                                                             });
+                                                                                 "isSubmenu": true,
+                                                                                 "variant": root.variant,
+                                                                                 "screen": root.screen,
+                                                                                 "minWidth": root.minWidth,
+                                                                                 "submenuAnchorX": menuItem.width - Style.marginS,
+                                                                                 "submenuAnchorY": 0,
+                                                                                 "anchorItem": menuItem,
+                                                                                 "model": menuItem.modelData.submenu || []
+                                                                               });
             if (!sub)
               return;
             menuItem.subMenu = sub;
@@ -454,7 +492,7 @@ PopupWindow {
             sub.visible = true;
             Qt.callLater(() => {
                            if (menuItem.subMenu)
-                             menuItem.subMenu.anchor.updateAnchor();
+                           menuItem.subMenu.anchor.updateAnchor();
                          });
           }
 

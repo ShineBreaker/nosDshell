@@ -15,12 +15,7 @@ Singleton {
   // Widget ids that make sense as dock/taskbar plugin entries. Taskbar,
   // Launcher, Spacer and ShowDesktop are structural (taskbar built-ins or
   // ignored in fashion mode) and are intentionally not offered here.
-  readonly property var pluginCandidates: [
-    "Tray", "NotificationHistory", "Network", "Volume", "Microphone",
-    "Brightness", "Bluetooth", "Battery", "Clock", "DarkMode", "NightLight",
-    "KeepAwake", "KeyboardLayout", "LockKeys", "PowerProfile", "VPN",
-    "SessionMenu", "Settings", "Trash", "Workspace", "SystemMonitor"
-  ]
+  readonly property var pluginCandidates: ["Tray", "NotificationHistory", "Network", "Volume", "Microphone", "Brightness", "Bluetooth", "Battery", "Clock", "DarkMode", "NightLight", "KeepAwake", "KeyboardLayout", "LockKeys", "PowerProfile", "VPN", "SessionMenu", "Settings", "Trash", "Workspace", "SystemMonitor"]
 
   property var _openMenu: null
   property var _openScreen: null
@@ -245,7 +240,7 @@ Singleton {
     openAtDockCenter(screen);
     Qt.callLater(() => {
                    if (!_openMenu || !_openMenu.model)
-                     return;
+                   return;
                    for (var i = 0; i < _openMenu.model.length; i++) {
                      var item = _openMenu.model[i];
                      if (item && item.hasSubmenu === true) {
@@ -273,7 +268,9 @@ Singleton {
     if (!screen)
       return;
     var dock = Settings.data.dock;
-    var thickness = Math.round(dock.iconSize * 1.5);
+    // Efficient bar thickness is iconSize*1.2; the fashion dock window is
+    // iconSize*1.5 (DESIGN §3.1)
+    var thickness = dock.mode === "efficient" ? Style.getBarHeightForScreen(screen.name) : Math.round(dock.iconSize * 1.5);
     var cx = screen.width / 2;
     var cy = screen.height / 2;
     switch (dock.position) {
