@@ -45,10 +45,12 @@ PanelWindow {
   // when hideOnOverview is enabled, but isVisible remains true)
   WlrLayershell.exclusionMode: (autoHide || nonExclusive || !BarService.isVisible) ? ExclusionMode.Ignore : ExclusionMode.Auto
 
-  // Anchor based on specified edge
+  // Anchor based on specified edge: the long axis anchors both ends so the
+  // compositor stretches the surface — a vertical zone anchored only on the
+  // left with implicitHeight 0 would reserve nothing.
   anchors {
-    top: edge === "top"
-    bottom: edge === "bottom"
+    top: edge === "top" || edge === "left" || edge === "right"
+    bottom: edge === "bottom" || edge === "left" || edge === "right"
     left: edge === "left" || edge === "top" || edge === "bottom"
     right: edge === "right" || edge === "top" || edge === "bottom"
   }

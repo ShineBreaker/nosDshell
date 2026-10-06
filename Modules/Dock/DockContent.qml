@@ -36,8 +36,9 @@ Item {
   property real extraLeft: 0
   property real extraRight: 0
   // Dock.qml passes the ShellScreen as modelData; the legacy StaticDockPanel
-  // exposes it as `screen` instead
-  readonly property var screen: dockRoot ? (dockRoot.modelData || dockRoot.screen || null) : null
+  // exposes it as `screen` instead. liveScreen wins: the injected modelData
+  // can be a stale ShellScreen with frozen dimensions (PanelService.liveScreen).
+  readonly property var screen: dockRoot ? (dockRoot.liveScreen || dockRoot.modelData || dockRoot.screen || null) : null
   readonly property bool isVertical: dockRoot.isVertical
   readonly property string tooltipDirection: dockRoot.dockPosition === "left" ? "right" : (dockRoot.dockPosition === "right" ? "left" : (dockRoot.dockPosition === "top" ? "bottom" : "top"))
   readonly property int itemSpacing: Style.marginXXS

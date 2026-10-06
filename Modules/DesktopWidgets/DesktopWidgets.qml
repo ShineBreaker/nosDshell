@@ -34,6 +34,9 @@ Variants {
     id: screenLoader
     required property ShellScreen modelData
 
+    // modelData can hold a stale ShellScreen (PanelService.liveScreen)
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
+
     // Reactive property for widgets on this specific screen
     // Returns a fresh array whenever Settings changes
     property var screenWidgets: {
@@ -56,7 +59,7 @@ Variants {
     sourceComponent: PanelWindow {
       id: window
       color: "transparent"
-      screen: screenLoader.modelData
+      screen: screenLoader.liveScreen
       mask: DesktopWidgetRegistry.editMode ? null : widgetsMask
 
       // Dynamic mask: combine clickable regions for each loaded widget
@@ -524,7 +527,7 @@ Variants {
                 icon: "settings"
                 tooltipText: I18n.tr("actions.open-settings")
                 onClicked: {
-                  SettingsPanelService.toggle(SettingsPanel.Tab.DesktopWidgets, -1, screenLoader.modelData);
+                  SettingsPanelService.toggle(SettingsPanel.Tab.DesktopWidgets, -1, screenLoader.liveScreen);
                 }
               }
 

@@ -15,6 +15,11 @@ Variants {
     id: windowItem
     required property ShellScreen modelData
 
+    // modelData can hold a ShellScreen the compositor later replaced (name
+    // survives, width/height freeze) — resolve the live object for anything
+    // that feeds geometry or PanelWindow.screen (PanelService.liveScreen).
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
+
     property bool shouldBeActive: {
       if (!modelData || !modelData.name) {
         return false;
@@ -40,7 +45,7 @@ Variants {
       active: parent.shouldBeActive
       asynchronous: false
 
-      property ShellScreen loaderScreen: modelData
+      property ShellScreen loaderScreen: windowItem.liveScreen
 
       onLoaded: {
         // Signal that window is loaded so exclusion zone can be created
@@ -67,7 +72,7 @@ Variants {
       asynchronous: false
 
       sourceComponent: BarContentWindow {
-        screen: modelData
+        screen: windowItem.liveScreen
       }
 
       onLoaded: {
@@ -91,7 +96,7 @@ Variants {
       asynchronous: false
 
       sourceComponent: BarTriggerZone {
-        screen: modelData
+        screen: windowItem.liveScreen
       }
 
       onLoaded: {
@@ -116,7 +121,7 @@ Variants {
         asynchronous: false
 
         sourceComponent: BarExclusionZone {
-          screen: windowItem.modelData
+          screen: windowItem.liveScreen
           edge: modelData
         }
 
@@ -145,7 +150,7 @@ Variants {
       asynchronous: false
 
       sourceComponent: PopupMenuWindow {
-        screen: modelData
+        screen: windowItem.liveScreen
       }
 
       onLoaded: {

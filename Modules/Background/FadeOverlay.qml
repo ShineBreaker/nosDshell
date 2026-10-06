@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Services.Power
+import qs.Services.UI
 
 /**
 * IdleFadeOverlay — full-screen fade-to-black shown before each idle action.
@@ -24,7 +25,7 @@ Item {
       delegate: PanelWindow {
         id: overlay
         required property ShellScreen modelData
-        screen: modelData
+        screen: PanelService.liveScreen(modelData)
 
         color: Qt.rgba(0, 0, 0, 0)
 

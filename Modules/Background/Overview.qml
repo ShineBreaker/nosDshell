@@ -64,7 +64,7 @@ Loader {
       }
 
       color: "transparent"
-      screen: modelData
+      screen: PanelService.liveScreen(modelData)
       WlrLayershell.layer: WlrLayer.Background
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
       WlrLayershell.namespace: "nosdshell-overview-" + (screen?.name || "unknown")

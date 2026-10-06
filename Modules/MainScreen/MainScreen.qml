@@ -478,10 +478,13 @@ PanelWindow {
         }
       }
 
+      // Geometry derives from the window's own size — the bound screen
+      // object may carry stale dimensions (PanelService.liveScreen) and the
+      // surface always fills its output anyway.
       x: {
         var bx;
         if (barPosition === "right")
-          bx = (screen?.width ?? 0) - barHeight - barMarginH;
+          bx = root.width - barHeight - barMarginH;
         else if (isFramed && !barIsVertical)
           bx = frameThickness;
         else
@@ -491,7 +494,7 @@ PanelWindow {
       y: {
         var by;
         if (barPosition === "bottom")
-          by = (screen?.height ?? 0) - barHeight - barMarginV;
+          by = root.height - barHeight - barMarginV;
         else if (isFramed && barIsVertical)
           by = frameThickness;
         else
@@ -503,16 +506,16 @@ PanelWindow {
           return barHeight;
         }
         if (isFramed)
-          return (screen?.width ?? 0) - frameThickness * 2;
-        return (screen?.width ?? 0) - barMarginH * 2;
+          return root.width - frameThickness * 2;
+        return root.width - barMarginH * 2;
       }
       height: {
         if (!barIsVertical) {
           return barHeight;
         }
         if (isFramed)
-          return (screen?.height ?? 0) - frameThickness * 2;
-        return (screen?.height ?? 0) - barMarginV * 2;
+          return root.height - frameThickness * 2;
+        return root.height - barMarginV * 2;
       }
 
       // Corner states (same as Bar.qml)

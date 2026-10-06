@@ -27,6 +27,8 @@ Variants {
   delegate: Loader {
     id: root
     required property ShellScreen modelData
+    // modelData can hold a stale ShellScreen (PanelService.liveScreen)
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
     property ListModel notificationModel: NotificationService.popupModel
 
     // Deferred activation via Qt.callLater to avoid activating the Loader
@@ -62,7 +64,7 @@ Variants {
 
     sourceComponent: PanelWindow {
       id: notifWindow
-      screen: modelData
+      screen: root.liveScreen
 
       WlrLayershell.namespace: "nosdshell-notifications-" + (screen?.name || "unknown")
       WlrLayershell.layer: (Settings.data.notifications?.overlayLayer) ? WlrLayer.Overlay : WlrLayer.Top

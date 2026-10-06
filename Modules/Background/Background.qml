@@ -11,8 +11,12 @@ Variants {
   model: Quickshell.screens
 
   delegate: Loader {
+    id: bgLoader
 
     required property ShellScreen modelData
+
+    // modelData can hold a stale ShellScreen (PanelService.liveScreen)
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
 
     active: modelData && Settings.data.wallpaper.enabled && (!PowerProfileService.performanceMode || !Settings.data.performance.disableWallpaper)
 
@@ -110,8 +114,8 @@ Variants {
           if (isStartupTransition) {
             // During startup, just ensure the correct cache exists without visual changes
             const compositorScale = CompositorService.getDisplayScale(modelData.name);
-            const targetWidth = Math.round(modelData.width * compositorScale);
-            const targetHeight = Math.round(modelData.height * compositorScale);
+            const targetWidth = Math.round(bgLoader.liveScreen.width * compositorScale);
+            const targetHeight = Math.round(bgLoader.liveScreen.height * compositorScale);
             ImageCacheService.getLarge(currentPath, targetWidth, targetHeight, function (cachedPath, success) {
               WallpaperService.wallpaperProcessingComplete(modelData.name, currentPath, success ? cachedPath : "");
             });
@@ -123,7 +127,7 @@ Variants {
       }
 
       color: "transparent"
-      screen: modelData
+      screen: bgLoader.liveScreen
       WlrLayershell.layer: WlrLayer.Background
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
       WlrLayershell.namespace: "nosdshell-wallpaper-" + (screen?.name || "unknown")
@@ -503,8 +507,8 @@ Variants {
         }
 
         const compositorScale = CompositorService.getDisplayScale(modelData.name);
-        const targetWidth = Math.round(modelData.width * compositorScale);
-        const targetHeight = Math.round(modelData.height * compositorScale);
+        const targetWidth = Math.round(bgLoader.liveScreen.width * compositorScale);
+        const targetHeight = Math.round(bgLoader.liveScreen.height * compositorScale);
 
         ImageCacheService.getLarge(wallpaperPath, targetWidth, targetHeight, function (cachedPath, success) {
           if (success) {
@@ -538,8 +542,8 @@ Variants {
         }
 
         const compositorScale = CompositorService.getDisplayScale(modelData.name);
-        const targetWidth = Math.round(modelData.width * compositorScale);
-        const targetHeight = Math.round(modelData.height * compositorScale);
+        const targetWidth = Math.round(bgLoader.liveScreen.width * compositorScale);
+        const targetHeight = Math.round(bgLoader.liveScreen.height * compositorScale);
 
         ImageCacheService.getLarge(originalPath, targetWidth, targetHeight, function (cachedPath, success) {
           // Ignore stale callback if we've moved on to a different wallpaper

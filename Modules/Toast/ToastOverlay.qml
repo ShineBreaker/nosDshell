@@ -3,6 +3,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import qs.Commons
+import qs.Services.UI
 import qs.Widgets
 
 Variants {
@@ -17,6 +18,6 @@ Variants {
 
   delegate: ToastScreen {
     required property ShellScreen modelData
-    screen: modelData
+    screen: PanelService.liveScreen(modelData)
   }
 }

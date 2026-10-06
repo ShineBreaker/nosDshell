@@ -200,16 +200,22 @@ PanelWindow {
     right: (barPosition === "right") ? barMarginH : (isFramed ? frameThickness : barMarginH)
   }
 
-  // Set a tight window size
-  implicitWidth: barIsVertical ? barHeight : barWindow.screen.width
-  implicitHeight: barIsVertical ? barWindow.screen.height : barHeight
+  // Set a tight window size: 0 on the anchored dimension lets the compositor
+  // stretch the surface (screen objects may carry stale dimensions — see
+  // PanelService.liveScreen).
+  implicitWidth: barIsVertical ? barHeight : 0
+  implicitHeight: barIsVertical ? 0 : barHeight
+
+  // The bound screen prop can hold a stale ShellScreen with frozen
+  // dimensions — re-resolve the live object for coordinate math.
+  readonly property ShellScreen liveScreen: PanelService.liveScreen(barWindow.screen)
 
   // Window origin in screen coordinates (screen's top-left = 0,0).
   // Layer-shell surfaces can't report their own position, so it's computed
   // from the anchor/margin geometry; PanelService.screenRectOf uses it.
   readonly property point screenOrigin: Qt.point(
-                                            (barWindow.barPosition === "right") ? barWindow.screen.width - margins.right - implicitWidth : margins.left,
-                                            (barWindow.barPosition === "bottom") ? barWindow.screen.height - margins.bottom - implicitHeight : margins.top)
+                                            (barWindow.barPosition === "right") ? (barWindow.liveScreen?.width ?? 0) - margins.right - implicitWidth : margins.left,
+                                            (barWindow.barPosition === "bottom") ? (barWindow.liveScreen?.height ?? 0) - margins.bottom - implicitHeight : margins.top)
 
   // Bar content loader - loaded once, stays active for lifetime
   Loader {

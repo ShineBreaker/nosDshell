@@ -268,6 +268,24 @@ Singleton {
     return null;
   }
 
+  // A Variants-injected modelData can hold a ShellScreen object the
+  // compositor later replaced during output negotiation: the dead object
+  // keeps its name but freezes width/height at a transient value, which
+  // silently breaks every geometry binding that reads it. Geometry must
+  // re-resolve the live object from Quickshell.screens by name — read the
+  // list inside this function so callers' bindings keep tracking it.
+  function liveScreen(screen) {
+    if (!screen || !screen.name)
+      return screen;
+    const list = Quickshell.screens || [];
+    for (let i = 0; i < list.length; i++) {
+      if (list[i] && list[i].name === screen.name) {
+        return list[i];
+      }
+    }
+    return screen;
+  }
+
   // Timer to switch from Exclusive to OnDemand keyboard focus on Hyprland
   Timer {
     id: keyboardInitTimer

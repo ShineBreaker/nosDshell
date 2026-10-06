@@ -244,7 +244,7 @@ ColumnLayout {
             // Inline widget configuration
             BarSettings.MonitorWidgetsConfig {
               visible: widgetConfigButton.expanded
-              screen: monitorCard.modelData
+              screen: PanelService.liveScreen(monitorCard.modelData)
               Layout.fillWidth: true
               Layout.topMargin: Style.marginS
             }

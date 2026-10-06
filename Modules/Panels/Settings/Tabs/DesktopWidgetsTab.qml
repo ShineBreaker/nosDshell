@@ -94,7 +94,7 @@ ColumnLayout {
         }
 
         sectionId: modelData.name
-        screen: modelData
+        screen: PanelService.liveScreen(modelData)
         settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/DesktopWidgets/DesktopWidgetSettingsDialog.qml")
         widgetRegistry: DesktopWidgetRegistry
         widgetModel: getWidgetsForMonitor(modelData.name)

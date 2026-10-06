@@ -28,9 +28,14 @@ Variants {
 
     required property ShellScreen modelData
 
+    // modelData can hold a ShellScreen the compositor later replaced —
+    // geometry and screen matching go through the live object by name
+    // (PanelService.liveScreen).
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
+
     // The layer surface exists for the whole session; LauncherState decides
     // whether it shows and takes keyboard focus.
-    readonly property bool isActive: modelData !== null && LauncherState.fullscreenOpen && LauncherState.fullscreenScreen === modelData
+    readonly property bool isActive: modelData !== null && LauncherState.fullscreenOpen && LauncherState.fullscreenScreen?.name === modelData?.name
 
     readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
@@ -43,8 +48,8 @@ Variants {
     // Grid geometry (gxde-launcher calculate_util.cpp:104-145). The cell is a
     // square and does not stretch to the container height; the row height is
     // the cell size, so extra vertical space just leaves the grid scrollable.
-    readonly property real screenWidth: modelData?.width ?? 0
-    readonly property real screenHeight: modelData?.height ?? 0
+    readonly property real screenWidth: liveScreen?.width ?? 0
+    readonly property real screenHeight: liveScreen?.height ?? 0
     readonly property int cellBudget: screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellBudgetNarrow : Style.launcherCellBudgetWide
     readonly property int cellSpacing: screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellSpacingNarrow : Style.launcherCellSpacingWide
     readonly property real gridWidth: Math.max(1, screenWidth - (sidePadding * 2))
@@ -81,7 +86,7 @@ Variants {
     Connections {
       target: LauncherState
       function onOpened() {
-        if (LauncherState.fullscreenScreen === screenItem.modelData)
+        if (LauncherState.fullscreenScreen?.name === screenItem.modelData?.name)
           screenItem._surfaceReady = true;
       }
     }
@@ -90,13 +95,13 @@ Variants {
     sourceComponent: PanelWindow {
       id: window
 
-      screen: screenItem.modelData
+      screen: screenItem.liveScreen
       visible: screenItem.isActive
 
       // The layer surface fills the output; give the window an implicit size so
       // the content item (and the layouts inside it) is laid out.
-      implicitWidth: modelData?.width ?? 0
-      implicitHeight: modelData?.height ?? 0
+      implicitWidth: screenItem.liveScreen?.width ?? 0
+      implicitHeight: screenItem.liveScreen?.height ?? 0
 
       WlrLayershell.namespace: "nosd-launcher-full-" + (screen?.name || "unknown")
       // Top: every layer-shell layer is above application windows, and this one
@@ -132,7 +137,7 @@ Variants {
       LauncherBackground {
         id: background
         anchors.fill: parent
-        screen: screenItem.modelData
+        screen: screenItem.liveScreen
         opacity: screenItem.isActive ? 1 : 0
 
         Behavior on opacity {
@@ -147,7 +152,7 @@ Variants {
         id: view
 
         anchors.fill: parent
-        screen: screenItem.modelData
+        screen: screenItem.liveScreen
         topInset: screenItem.topInset
         bottomGap: screenItem.bottomGap
         sidePadding: screenItem.sidePadding
@@ -171,8 +176,8 @@ Variants {
           }
         }
 
-        onRequestClose: LauncherState.close(screenItem.modelData)
-        onRequestCloseImmediately: LauncherState.close(screenItem.modelData)
+        onRequestClose: LauncherState.close(screenItem.liveScreen)
+        onRequestCloseImmediately: LauncherState.close(screenItem.liveScreen)
       }
     }
   }

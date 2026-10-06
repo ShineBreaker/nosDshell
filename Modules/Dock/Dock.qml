@@ -28,6 +28,12 @@ Loader {
 
       required property ShellScreen modelData
 
+      // The injected modelData can hold a ShellScreen the compositor
+      // replaced after this delegate was created (its name survives but
+      // width/height freeze at a transient value). All geometry must go
+      // through the live object — see PanelService.liveScreen.
+      readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
+
       // ------------------------------------------------------------------
       // DDE fashion geometry (gxde-dock mainpanel / dockitem sizing)
       // ------------------------------------------------------------------
@@ -39,7 +45,7 @@ Loader {
       readonly property int iconContent: Style.dockIconContent
       // Fashion dock is centered and capped to the screen edge minus 30 px on
       // each side (gxde-dock DockPanel::m_itemManager margins)
-      readonly property int maxLength: Math.max(0, (isVertical ? (modelData?.height ?? 0) : (modelData?.width ?? 0)) - 60)
+      readonly property int maxLength: Math.max(0, (isVertical ? (liveScreen?.height ?? 0) : (liveScreen?.width ?? 0)) - 60)
 
       // ------------------------------------------------------------------
       // Hide behaviour: keep-showing reserves space; keep-hidden leaves a
@@ -314,18 +320,30 @@ Loader {
         return appId;
       }
 
+      // onlySameOutput predicate against the live ShellScreen — a stale
+      // modelData makes identity includes() permanently false.
+      function onLiveScreen(screens) {
+        if (!Settings.data.dock.onlySameOutput || !screens || !liveScreen)
+          return true;
+        for (var i = 0; i < screens.length; i++) {
+          if (screens[i] === liveScreen || (screens[i] && screens[i].name === liveScreen.name))
+            return true;
+        }
+        return false;
+      }
+
       function getToplevelsForEntry(appData) {
         if (!appData)
           return [];
 
         if (appData.toplevels && appData.toplevels.length > 0) {
-          return appData.toplevels.filter(toplevel => toplevel && (!Settings.data.dock.onlySameOutput || !toplevel.screens || toplevel.screens.includes(modelData)));
+          return appData.toplevels.filter(toplevel => toplevel && onLiveScreen(toplevel.screens));
         }
 
         if (!appData.toplevel)
           return [];
 
-        if (Settings.data.dock.onlySameOutput && appData.toplevel.screens && !appData.toplevel.screens.includes(modelData))
+        if (!onLiveScreen(appData.toplevel.screens))
           return [];
 
         return [appData.toplevel];
@@ -417,7 +435,7 @@ Loader {
             if (processedToplevels.has(toplevel)) {
               return; // Already processed this toplevel instance
             }
-            if (Settings.data.dock.onlySameOutput && toplevel.screens && !toplevel.screens.includes(modelData)) {
+            if (!onLiveScreen(toplevel.screens)) {
               return; // Filtered out by onlySameOutput setting
             }
             combined.push({
@@ -580,12 +598,13 @@ Loader {
       // keep-showing reserves screen space; hidden modes don't.
       // ------------------------------------------------------------------
       Loader {
-        active: modelData && (Settings.data.dock.monitors.length === 0 || Settings.data.dock.monitors.includes(modelData.name))
+        id: windowLoader
+        active: liveScreen && (Settings.data.dock.monitors.length === 0 || Settings.data.dock.monitors.includes(liveScreen.name))
 
         sourceComponent: PanelWindow {
           id: dockWindow
 
-          screen: modelData
+          screen: root.liveScreen
           focusable: false
           color: "transparent"
 
@@ -610,8 +629,8 @@ Loader {
           // computed from the anchor geometry; PanelService.screenRectOf
           // uses it to place arrow popups and previews over dock items.
           readonly property point screenOrigin: Qt.point(
-                                                    dockPosition === "right" ? modelData.width - itemThickness : 0,
-                                                    dockPosition === "bottom" ? modelData.height - itemThickness : 0)
+                                                    dockPosition === "right" ? (root.liveScreen?.width ?? 0) - itemThickness : 0,
+                                                    dockPosition === "bottom" ? (root.liveScreen?.height ?? 0) - itemThickness : 0)
 
           // Slide the visual rect off the edge when hidden, leaving a
           // hiddenSliver-thick strip visible on the docked edge.

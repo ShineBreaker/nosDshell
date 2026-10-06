@@ -27,6 +27,8 @@ Variants {
   delegate: Loader {
     id: root
     required property ShellScreen modelData
+    // modelData can hold a stale ShellScreen (PanelService.liveScreen)
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
     active: false
 
     // OSD State
@@ -352,7 +354,7 @@ Variants {
     // Visual Component
     sourceComponent: PanelWindow {
       id: panel
-      screen: modelData
+      screen: root.liveScreen
 
       // Position configuration
       readonly property string location: Settings.data.osd?.location || "bottom_center"

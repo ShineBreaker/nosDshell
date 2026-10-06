@@ -14,7 +14,9 @@ Singleton {
   property list<var> availableBacklightDevices: []
 
   function getMonitorForScreen(screen: ShellScreen): var {
-    return monitors.find(m => m.modelData === screen);
+    // Compare by name: Variants delegates can hold a ShellScreen the
+    // compositor later replaced, so object identity is unreliable here.
+    return monitors.find(m => m.modelData === screen || (screen && m.modelData?.name === screen.name));
   }
 
   // Signal emitted when a specific monitor's brightness changes, includes monitor context

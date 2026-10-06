@@ -25,9 +25,14 @@ Variants {
     active: true
     asynchronous: false
 
+    // modelData can hold a ShellScreen the compositor later replaced —
+    // geometry and screen matching go through the live object by name
+    // (PanelService.liveScreen).
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
+
     // The layer surface exists for the whole session; LauncherState decides
     // whether it shows and takes keyboard focus.
-    readonly property bool isActive: modelData !== null && LauncherState.miniOpen && LauncherState.miniScreen === modelData
+    readonly property bool isActive: modelData !== null && LauncherState.miniOpen && LauncherState.miniScreen?.name === modelData?.name
 
     // -----------------------------------------------------------
     // Geometry (gxde-launcher windowedframe.cpp adjustPosition)
@@ -60,7 +65,7 @@ Variants {
       case "left":
         return barThickness + gap;
       case "right":
-        return (modelData?.width ?? 0) - barThickness - gap - windowWidth;
+        return (liveScreen?.width ?? 0) - barThickness - gap - windowWidth;
       default:
         return gap;
       }
@@ -71,7 +76,7 @@ Variants {
       case "top":
         return barThickness + gap;
       case "bottom":
-        return (modelData?.height ?? 0) - barThickness - gap - windowHeight;
+        return (liveScreen?.height ?? 0) - barThickness - gap - windowHeight;
       default:
         return gap;
       }
@@ -81,7 +86,7 @@ Variants {
     // axis and sit flush against the dock on the short one
     // (windowedframe.cpp:773-789 — p.x / p.y come from dockRect).
     readonly property real fashionX: {
-      const screenW = modelData?.width ?? 0;
+      const screenW = liveScreen?.width ?? 0;
       switch (barPosition) {
       case "left":
         return barThickness + gap;
@@ -93,7 +98,7 @@ Variants {
     }
 
     readonly property real fashionY: {
-      const screenH = modelData?.height ?? 0;
+      const screenH = liveScreen?.height ?? 0;
       switch (barPosition) {
       case "top":
         return barThickness + gap;
@@ -107,7 +112,7 @@ Variants {
     sourceComponent: PanelWindow {
       id: window
 
-      screen: screenItem.modelData
+      screen: screenItem.liveScreen
       visible: screenItem.isActive
       color: "transparent"
       // The right bar widens itself until the settings + power row fits, so the
@@ -151,7 +156,7 @@ Variants {
         id: view
 
         anchors.fill: parent
-        screen: screenItem.modelData
+        screen: screenItem.liveScreen
         barPosition: screenItem.barPosition
 
         enabled: screenItem.isActive
@@ -182,8 +187,8 @@ Variants {
           }
         }
 
-        onRequestClose: LauncherState.close(screenItem.modelData)
-        onRequestCloseImmediately: LauncherState.close(screenItem.modelData)
+        onRequestClose: LauncherState.close(screenItem.liveScreen)
+        onRequestCloseImmediately: LauncherState.close(screenItem.liveScreen)
       }
     }
   }

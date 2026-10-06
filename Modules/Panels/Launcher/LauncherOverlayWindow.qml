@@ -20,11 +20,15 @@ Variants {
 
     required property ShellScreen modelData
 
-    active: PanelService.overlayLauncherOpen && PanelService.overlayLauncherScreen === modelData
+    // modelData can hold a ShellScreen the compositor later replaced —
+    // match by name and resolve the live object (PanelService.liveScreen).
+    readonly property ShellScreen liveScreen: PanelService.liveScreen(modelData)
+
+    active: PanelService.overlayLauncherOpen && PanelService.overlayLauncherScreen?.name === modelData?.name
 
     sourceComponent: PanelWindow {
       id: launcherWindow
-      screen: windowLoader.modelData
+      screen: windowLoader.liveScreen
 
       anchors {
         top: true
@@ -330,7 +334,7 @@ Variants {
         LauncherCore {
           id: launcherCore
           anchors.fill: parent
-          screen: windowLoader.modelData
+          screen: windowLoader.liveScreen
           isOpen: true
           onRequestClose: PanelService.closeOverlayLauncher()
           onRequestCloseImmediately: PanelService.closeOverlayLauncherImmediately()
