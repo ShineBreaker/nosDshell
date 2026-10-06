@@ -122,7 +122,6 @@ Item {
 
     if (structureChanged) {
       // Rebuild model - IDs changed
-      Logger.w("HoverUAF", "syncWidgetModel clearing ListModel, count=" + model.count);
       model.clear();
       for (var i = 0; i < validWidgets.length; i++) {
         model.append(validWidgets[i]);

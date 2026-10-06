@@ -363,7 +363,6 @@ Item {
 
   // Function to update the combined model
   function updateCombinedModel() {
-    Logger.w("HoverUAF", "updateCombinedModel called, oldCount=" + (root.combinedModel ? root.combinedModel.length : -1));
     const runningWindows = [];
     const pinnedApps = Settings.data.dock.pinnedApps || [];
     const processedAppIds = new Set();
@@ -713,8 +712,6 @@ Item {
           required property int index
           property ShellScreen screen: root.screen
 
-          Component.onDestruction: Logger.w("HoverUAF", "taskbarItem destroyed: index=" + index + " appId=" + (modelData ? modelData.appId : "?"))
-
           readonly property bool isRunning: modelData.window !== null
           readonly property bool isPinned: modelData.type === "pinned" || modelData.type === "pinned-running"
           readonly property bool isFocused: isRunning && modelData.window && modelData.window.isFocused
@@ -914,10 +911,14 @@ Item {
                   Layout.preferredHeight: root.efficientMode ? root.itemIconSize : root.itemSize
                   Layout.alignment: Qt.AlignCenter
 
-                  // DDE: hovering a taskbar item brightens the icon, no extra background
-                  layer.enabled: root.efficientMode && taskbarItem.isHovered
+                  // DDE: hovering a taskbar item brightens the icon, no extra background.
+                  // layer.enabled must never toggle from hover-driven bindings: Qt
+                  // reparents the layer's effectSource/effect into our parent item and
+                  // deletes them synchronously on disable — a use-after-free for any
+                  // in-flight hover delivery snapshot.
+                  layer.enabled: root.efficientMode
                   layer.effect: MultiEffect {
-                    brightness: 0.15
+                    brightness: taskbarItem.isHovered ? 0.15 : 0.0
                   }
 
                   IconImage {

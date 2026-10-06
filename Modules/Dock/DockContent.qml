@@ -151,7 +151,6 @@ Item {
 
   // Hover bookkeeping shared by every interactive item
   function itemEntered() {
-    Logger.w("HoverUAF", "itemEntered");
     dockRoot.anyAppHovered = true;
     if (dockRoot.autoHide) {
       dockRoot.showTimer.stop();
@@ -161,7 +160,6 @@ Item {
   }
 
   function itemExited() {
-    Logger.w("HoverUAF", "itemExited");
     dockRoot.anyAppHovered = false;
     TooltipService.hide();
     if (dockRoot.autoHide && !dockRoot.dockHovered && !dockRoot.menuHovered && dockRoot.dragSourceIndex === -1) {
@@ -171,8 +169,6 @@ Item {
 
   Rectangle {
     id: dockContainer
-
-    Component.onDestruction: Logger.w("HoverUAF", "dockContainer destroyed")
 
     // DDE fashion surface: maskShell rounded rect flush to the screen edge
     // (radiusItem = 5 px when compositing is on), no border, no shadow.
@@ -212,7 +208,6 @@ Item {
       z: -1
 
       onEntered: {
-        Logger.w("HoverUAF", "dockBg onEntered");
         dockRoot.dockHovered = true;
         if (dockRoot.autoHide) {
           dockRoot.showTimer.stop();
@@ -222,7 +217,6 @@ Item {
       }
 
       onExited: {
-        Logger.w("HoverUAF", "dockBg onExited");
         dockRoot.dockHovered = false;
         if (dockRoot.autoHide && !dockRoot.anyAppHovered && !dockRoot.menuHovered && dockRoot.dragSourceIndex === -1) {
           dockRoot.hideTimer.restart();
@@ -242,7 +236,6 @@ Item {
 
     GridLayout {
       id: dockLayout
-      Component.onDestruction: Logger.w("HoverUAF", "dockLayout destroyed")
       columns: isVertical ? 1 : -1
       rows: isVertical ? -1 : 1
       rowSpacing: itemSpacing
@@ -254,7 +247,6 @@ Item {
       // ---------------- Launcher item (always first) ----------------
       Item {
         id: launcherItem
-        Component.onDestruction: Logger.w("HoverUAF", "launcherItem destroyed")
         Layout.preferredWidth: isVertical ? dockRoot.itemThickness : appItemLength
         Layout.preferredHeight: isVertical ? appItemLength : dockRoot.itemThickness
         Layout.alignment: Qt.AlignCenter
@@ -348,10 +340,14 @@ Item {
             }
           }
 
-          // DDE hover: brighten the icon, no hover background (DESIGN §3.1.2)
-          layer.enabled: launcherMouseArea.containsMouse
+          // DDE hover: brighten the icon, no hover background (DESIGN §3.1.2).
+          // layer.enabled must never toggle from hover-driven bindings: Qt
+          // reparents the layer's effectSource/effect into our parent item and
+          // deletes them synchronously on disable — a use-after-free for any
+          // in-flight hover delivery snapshot.
+          layer.enabled: true
           layer.effect: MultiEffect {
-            brightness: 0.15
+            brightness: launcherMouseArea.containsMouse ? 0.15 : 0.0
           }
         }
 
@@ -435,7 +431,6 @@ Item {
 
         delegate: Item {
           id: appButton
-          Component.onDestruction: Logger.w("HoverUAF", "dock appButton destroyed: appId=" + appId + " index=" + index)
           readonly property real appItemLength: Math.round(dockRoot.itemLength * shrinkFactor)
           readonly property real appIconContent: Math.round(Math.min(appItemLength, dockRoot.itemThickness) * 0.8)
           Layout.preferredWidth: isVertical ? dockRoot.itemThickness : appItemLength
@@ -662,10 +657,11 @@ Item {
               opacity: appButton.isRunning ? 1.0 : 0.6
             }
 
-            // DDE hover: brighten the icon, no hover background (DESIGN §3.1.2)
-            layer.enabled: appButton.hovered && !iconContainer.dragging
+            // DDE hover: brighten the icon, no hover background (DESIGN §3.1.2).
+            // Keep layer.enabled constant — see launcherIconContainer above.
+            layer.enabled: true
             layer.effect: MultiEffect {
-              brightness: 0.15
+              brightness: appButton.hovered && !iconContainer.dragging ? 0.15 : 0.0
             }
           }
 

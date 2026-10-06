@@ -401,7 +401,6 @@ Loader {
 
       // Function to update the combined dock apps model
       function updateDockApps() {
-        Logger.w("HoverUAF", "updateDockApps called, oldCount=" + (dockApps ? dockApps.length : -1));
         const runningApps = ToplevelManager ? (ToplevelManager.toplevels.values || []) : [];
         const pinnedApps = Settings.data.dock.pinnedApps || [];
         const combined = [];
