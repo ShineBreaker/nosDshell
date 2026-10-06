@@ -146,7 +146,7 @@ SmartPanel {
         onAvatarRequested: root.openModule(ControlCenterModules.moduleByName("accounts"))
         onSettingsRequested: {
           // Open the accounts module inside the frame (DESIGN §3.5.3)
-          openModule(ControlCenterModules.moduleForTab(SettingsPanel.Tab.General, 1) ?? ControlCenterModules.moduleByName("accounts"));
+          openModule(ControlCenterModules.moduleByName("accounts"));
         }
         onSessionRequested: {
           PanelService.getPanel("sessionMenuPanel", root.screen)?.open();

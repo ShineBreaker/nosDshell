@@ -293,35 +293,35 @@ Singleton {
     return null;
   }
 
-  // ipc-friendly name -> module id (same strings verify.sh's settings-* use)
+  // ipc-friendly name or module id -> module (same strings verify.sh's settings-* use)
   readonly property var aliasMap: ({
-                                   "about": "systeminfo",
-                                   "audio": "sound",
-                                   "bar": "dock",
-                                   "colorscheme": "personalization",
-                                   "connections": "network",
-                                   "controlcenter": "controlcenter",
-                                   "desktopwidgets": "desktopwidgets",
-                                   "display": "display",
-                                   "dock": "dock",
-                                   "general": "accounts",
-                                   "hooks": "advanced",
-                                   "idle": "power",
-                                   "launcher": "launcher",
-                                   "location": "datetime",
-                                   "lockscreen": "power",
-                                   "notifications": "notifications",
-                                   "osd": "sound",
-                                   "plugins": "plugins",
-                                   "sessionmenu": "power",
-                                   "system": "systemmonitor",
-                                   "systemmonitor": "systemmonitor",
-                                   "userinterface": "personalization",
-                                   "wallpaper": "personalization"
-                                 })
+                                     "about": "systeminfo",
+                                     "audio": "sound",
+                                     "bar": "dock",
+                                     "colorscheme": "personalization",
+                                     "connections": "network",
+                                     "controlcenter": "controlcenter",
+                                     "desktopwidgets": "desktopwidgets",
+                                     "display": "display",
+                                     "dock": "dock",
+                                     "general": "accounts",
+                                     "hooks": "advanced",
+                                     "idle": "power",
+                                     "launcher": "launcher",
+                                     "location": "datetime",
+                                     "lockscreen": "power",
+                                     "notifications": "notifications",
+                                     "osd": "sound",
+                                     "plugins": "plugins",
+                                     "sessionmenu": "power",
+                                     "system": "systemmonitor",
+                                     "systemmonitor": "systemmonitor",
+                                     "userinterface": "personalization",
+                                     "wallpaper": "personalization"
+                                   })
 
   function moduleByName(name) {
-    const id = aliasMap[name];
+    const id = aliasMap[name] ?? name;
     if (id === undefined)
       return null;
     for (var i = 0; i < modules.length; i++) {
