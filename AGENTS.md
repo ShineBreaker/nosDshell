@@ -41,11 +41,15 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 - `debug.modules`：`Logger.d` 的模块白名单（逗号分隔，空=全部），如 `"Dock,Tray"`。
 - `debug.logLevel`：`"warn"` 时 `Logger.i` 静默，只剩 w/e——禁用调试时的最小化日志。
 - 场景取证（`Services/Debug/DebugService.qml`，经 IPC 使用）：
-  - `qs ipc call debug list` — 已注册的场景根（`dock-<屏>`、`bar-<屏>`；bar 只在 efficient 模式加载）。
-  - `qs ipc call debug tree dock-HEADLESS-1` — 按绘制序 dump `children[]`，即 Qt hover 投递快照的同一份列表；layer 的 effectSource/effect 这类幽灵子项直接可见，地址可对 gdb。
+  - `qs ipc call debug list` — 已注册的场景根（`dock-<屏>`、`bar-<屏>`、`cc-<屏>`、`main-<屏>`；bar 只在 efficient 模式加载，cc 是控制中心面板，main 是整个 shell surface）。
+  - `qs ipc call debug tree <根> [深度]` — 按绘制序 dump `children[]`，即 Qt hover 投递快照的同一份列表；layer 的 effectSource/effect 这类幽灵子项直接可见，地址可对 gdb。
+  - `qs ipc call debug hit <根> <x> <y>` — 沿 `childAt` 命中测试到最深节点并列出每层所有盖住该点的子项；回答"这个坐标的 press 会落到谁手上"。
+  - `qs ipc call debug opened [深度]` — dump `PanelService.openedPanel`，多屏注册错名时用它拿"当前真正打开的面板"。
   - `qs ipc call debug watch <名字>` — 给整棵子树挂 `Component.destruction` 探针，谁在投递途中销毁，`DbgWatch` 日志会报名字。
   - `qs ipc call debug status|dump|unwatch`。
+- 真指针注入（只用于 verify 的隔离 sway，**不要**在真机会话用）：`tools/nosd-helpers/target/release/nosd-helpers vinput click|jclick <x> <y> [dx dy]`——走 `zwlr_virtual_pointer_v1`，进程存活期间虚拟指针有效。`verify.sh` 的 `settings-tree` 场景是现成示例（rail 命中探针 + 注入点击 + 外点关面板）。
 - Qt 侧类别日志必须**启动前**用 env 打开（QML 无法运行时改）：`QT_LOGGING_RULES="qt.quick.hover.trace=true"`（逐 item hover 投递）、`qt.qml.binding.removal=true` 等；core 验尸：`QS_DISABLE_CRASH_HANDLER=1` + `ulimit -c unlimited`，Guix 下调试符号用 `add-symbol-file` 绕过 `.gnu_debuglink` CRC。
+- `Logger.d` 受 `debug.enabled` 门控——临时探针在关调试的验证环境里要用 `Logger.i` 才会打出来。
 - 现成脚本：`Scripts/test/debug-smoke.sh`（debug 面全链路冒烟）、`Scripts/test/repro-hover-crash.sh`（嵌套 niri 指针扫描 + 周期重启 + core 验尸）。
 
 ## 代码约定（Noctalia 已有、配置文件里看不出来的）
@@ -55,6 +59,7 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 - **界面文字全部用 `I18n.tr("key")`。** 新增的 key 至少写进 `Assets/Translations/en.json` 和 `zh-CN.json`。
 - **日志用 `Logger.d/i/w/e("模块名", ...)`。** 不要用 `console.log`。
 - **面板注册。** 面板通过 `PanelService` 注册和打开，任务栏挂件通过 `BarWidgetRegistry` 注册。新增的东西复用这套机制，不要另起一套。
+- **`modelData` 不要 `===` 比对。** JS 对象数组进 `Repeater`/`ListView` model 会被 QVariant 包装，`modelData` 拿到的是副本，与原数组元素 `===` 恒 false——选中态、按引用查下标会静默失效。一律按稳定字段比（`modelData.id === x.id`），需要存对象时先归一化回原数组元素。已踩坑：`SettingsModuleView` 的 rail 点击与高亮。
 - 改完的文件用 `qmlformat` 格式化（缩进 2、行宽 360）。
 - 现有注释保留不动；新代码只在不显而易见的地方加一行注释。
 
@@ -63,6 +68,8 @@ nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标�
 - 需要 QML 做不好的事（重计算、图像处理、系统级辅助）时，写成 **Rust** 命令行工具，放在 `tools/<名字>/`。
 - 工具要求：参数只用 argv，结果写文件或 stdout，用退出码表示成败。shell 侧找不到工具时要能退回到其他方案，并输出一次 `Logger.w`。
 - 依赖选择：优先用发布超过 7 天的 crate 版本，并锁定版本。`Cargo.lock` 要提交。
+- **改 `tools/*/` 的依赖必须同步 vendor 清单。** `packaging/rust-crates.scm` 是 Guix 离线构建的全部 crate 源，缺一条就报 `no matching package named ...`。流程：`guix import crate --lockfile=tools/<名>/Cargo.lock <名>`，拆进文件并对前面各段去重；`nosd-<名>-cargo-inputs` 必须覆盖 lockfile 每一项。手工补单条也行：crate 哈希可对本地缓存跑 `guix hash $CARGO_HOME/registry/cache/*/<名>-<版本>.crate` 得到（本机 `CARGO_HOME=~/.local/share/cargo`）。
+- 单独构建某个工具包验证：`guix build -L . -e '(@ (nosdshell) nosd-<名>)'`。
 
 ## 提交
 
