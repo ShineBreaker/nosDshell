@@ -33,10 +33,10 @@ FloatingWindow {
   function navigateTo(tab, subTab) {
     const tabId = tab !== undefined ? tab : 0;
     const subTabId = (subTab !== undefined && subTab !== null && subTab >= 0) ? subTab : -1;
-    const module = ControlCenterModules.moduleForTab(tabId, subTabId);
-    if (module) {
-      activeModule = module;
-      settingsModuleView.openModuleAt(module, subTabId);
+    const target = ControlCenterModules.targetForTab(tabId, subTabId);
+    if (target) {
+      activeModule = target.module;
+      settingsModuleView.openModuleAt(target.module, target.slot, target.inner);
     }
   }
 

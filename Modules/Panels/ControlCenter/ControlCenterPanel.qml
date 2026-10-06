@@ -60,9 +60,12 @@ SmartPanel {
   // immediately when it is already open)
   property string pendingQuickPage: ""
 
-  // Module requested from IPC (applied when the frame opens)
+  // Module requested from IPC (applied when the frame opens). pendingSubTab
+  // is the tab slot inside the module; pendingInner the stacked sub-group
+  // inside that tab (see ControlCenterModules.targetForTab).
   property var pendingModule: null
   property int pendingSubTab: -1
+  property int pendingInner: -1
 
   // The settings view registers itself here: panelContent is a separate
   // Component scope, so ids inside it are invisible to root functions.
@@ -70,15 +73,17 @@ SmartPanel {
 
   // Open the all-settings page scrolled to a module (DESIGN §3.5.3, from the
   // home grid, IPC "settings openTab", or the header settings button).
-  // subTab scrolls to the matching tab section inside the module.
-  function openModule(module, subTab) {
+  // subTab scrolls to the matching tab section inside the module, inner to
+  // a stacked sub-group inside that tab.
+  function openModule(module, subTab, inner) {
     if (!module)
       return;
     notificationPage = false;
     activeModule = module;
     pendingSubTab = (subTab === undefined || subTab === null) ? -1 : subTab;
+    pendingInner = (inner === undefined || inner === null) ? -1 : inner;
     if (root._moduleView)
-      root._moduleView.openModuleAt(module, pendingSubTab);
+      root._moduleView.openModuleAt(module, pendingSubTab, pendingInner);
   }
 
   // Page state resets on close. This must live at the root: the closed signal
@@ -133,9 +138,10 @@ SmartPanel {
         MediaService.autoSwitchingPaused = true;
         // A module requested while closed (IPC) is applied on open.
         if (root.pendingModule) {
-          root.openModule(root.pendingModule, root.pendingSubTab);
+          root.openModule(root.pendingModule, root.pendingSubTab, root.pendingInner);
           root.pendingModule = null;
           root.pendingSubTab = -1;
+          root.pendingInner = -1;
         }
       }
       function onNotificationPageChanged() {

@@ -281,13 +281,32 @@ Singleton {
   // First module carrying `tab`, optionally on the given sub-tab. Used by
   // `settings openTab` routing so IPC lands on the right module.
   function moduleForTab(tab, subTab) {
+    const t = targetForTab(tab, subTab);
+    return t ? t.module : null;
+  }
+
+  // Resolve a (tab, subTab) request to a concrete scroll target:
+  //   module — owning module
+  //   slot   — index into module.tabs (the tab section inside the module)
+  //   inner  — sub-group index inside that tab's stacked NTabView
+  // A module entry's own `subTab` is the semantic inner index it stands for
+  // (e.g. bluetooth = Connections inner 1); -1 means "the whole tab" and
+  // matches any requested subTab as a wildcard. Returns null when no module
+  // carries the tab at all.
+  function targetForTab(tab, subTab) {
+    const want = (subTab === undefined || subTab === null) ? -1 : subTab;
     for (var i = 0; i < modules.length; i++) {
       const tabs = modules[i].tabs ?? [];
       for (var j = 0; j < tabs.length; j++) {
         if (tabs[j].tab !== tab)
           continue;
-        if (subTab === undefined || subTab < 0 || tabs[j].subTab === subTab)
-          return modules[i];
+        const decl = tabs[j].subTab ?? -1;
+        if (want < 0 || decl < 0 || decl === want)
+          return {
+            "module": modules[i],
+            "slot": j,
+            "inner": want >= 0 ? want : decl
+          };
       }
     }
     return null;

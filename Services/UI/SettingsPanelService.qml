@@ -42,14 +42,15 @@ Singleton {
         return;
       }
       var ccPanel = PanelService.getPanel("controlCenterPanel", screen);
-      var module = ControlCenterModules.moduleForTab(entry.tab, entry.subTab);
-      if (!ccPanel || !module)
+      var target = ControlCenterModules.targetForTab(entry.tab, entry.subTab);
+      if (!ccPanel || !target)
         return;
       if (ccPanel.isPanelOpen)
-        ccPanel.openModule(module, entry.subTab ?? -1);
+        ccPanel.openModule(target.module, target.slot, target.inner);
       else {
-        ccPanel.pendingModule = module;
-        ccPanel.pendingSubTab = entry.subTab ?? -1;
+        ccPanel.pendingModule = target.module;
+        ccPanel.pendingSubTab = target.slot;
+        ccPanel.pendingInner = target.inner;
         ccPanel.open();
       }
     } else {
@@ -90,16 +91,17 @@ Singleton {
       if (!ccPanel)
         return;
       // The frame carries the module view; open it (or apply immediately).
-      var module = ControlCenterModules.moduleForTab(tabId, subTabId);
-      if (!module) {
+      var target = ControlCenterModules.targetForTab(tabId, subTabId);
+      if (!target) {
         Logger.w("SettingsPanelService", "No module maps to tab", tabId, "subTab", subTabId);
         return;
       }
       if (ccPanel.isPanelOpen)
-        ccPanel.openModule(module, subTabId);
+        ccPanel.openModule(target.module, target.slot, target.inner);
       else {
-        ccPanel.pendingModule = module;
-        ccPanel.pendingSubTab = subTabId;
+        ccPanel.pendingModule = target.module;
+        ccPanel.pendingSubTab = target.slot;
+        ccPanel.pendingInner = target.inner;
         ccPanel.open();
       }
     } else {

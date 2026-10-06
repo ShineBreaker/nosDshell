@@ -234,11 +234,16 @@ Item {
     return s ? s.y : 0;
   }
 
-  function _tabSlotY(i, j) {
+  // j = tab-slot index inside the module; inner = sub-group index inside
+  // that tab's stacked NTabView (-1 = slot top).
+  function _tabSlotY(i, j, inner) {
     const s = sectionsRepeater.itemAt(i);
     if (!s || typeof s.tabSlotY !== "function")
       return _sectionY(i);
-    return s.y + s.tabSlotY(j);
+    var y = s.tabSlotY(j);
+    if (inner > 0 && typeof s.innerSlotY === "function")
+      y += s.innerSlotY(j, inner);
+    return s.y + y;
   }
 
   function _scrollToY(y, animated) {
@@ -260,12 +265,14 @@ Item {
     }
   }
 
-  function _scrollToSection(i, subTab, animated) {
+  function _scrollToSection(i, subTab, inner, animated) {
     var tab = (subTab === undefined || subTab === null) ? -1 : subTab;
-    const y = tab >= 0 ? _tabSlotY(i, tab) : _sectionY(i);
+    var innerIdx = (inner === undefined || inner === null) ? -1 : inner;
+    const y = tab >= 0 ? _tabSlotY(i, tab, innerIdx) : _sectionY(i);
     root._pendingSnap = {
       "sec": i,
-      "tab": tab
+      "tab": tab,
+      "inner": innerIdx
     };
     _scrollToY(y, animated);
     // Already fully loaded (e.g. reopening): settle immediately.
@@ -301,7 +308,7 @@ Item {
     const snap = root._pendingSnap;
     if (!snap)
       return;
-    const y = _clampY(snap.tab >= 0 ? _tabSlotY(snap.sec, snap.tab) : _sectionY(snap.sec));
+    const y = _clampY(snap.tab >= 0 ? _tabSlotY(snap.sec, snap.tab, snap.inner ?? -1) : _sectionY(snap.sec));
     if (scrollAnim.running) {
       scrollAnim.to = y;
       return;
@@ -327,8 +334,9 @@ Item {
 
   // External entry point for routing (panel openModule, window navigateTo,
   // rail clicks, search results): highlight + scroll to the module header,
-  // or to a tab section when subTab >= 0.
-  function openModuleAt(mod, subTab) {
+  // to a tab section when subTab >= 0, and to a stacked sub-group inside
+  // that tab when inner > 0.
+  function openModuleAt(mod, subTab, inner) {
     if (!mod)
       return;
     const idx = moduleIndex(mod);
@@ -341,7 +349,7 @@ Item {
     _ensureLoaded(idx);
     idleFillTimer.start();
     snapQuietTimer.start();
-    Qt.callLater(() => _scrollToSection(idx, subTab, true));
+    Qt.callLater(() => _scrollToSection(idx, subTab, inner, true));
   }
 
   // modelData reaching delegates may be a QVariant-wrapped copy (Repeater
@@ -754,9 +762,9 @@ Item {
           }
 
           function searchResultClicked(entry) {
-            const mod = ControlCenterModules.moduleForTab(entry.tab, entry.subTab);
-            if (mod)
-              root.selectModule(mod);
+            const t = ControlCenterModules.targetForTab(entry.tab, entry.subTab);
+            if (t)
+              root.openModuleAt(t.module, t.slot, t.inner);
             searchInput.text = "";
           }
         }
@@ -840,6 +848,13 @@ Item {
                   const t = tabsRepeater.itemAt(j);
                   return t ? t.y : 0;
                 }
+                // Y of stacked sub-group `inner` inside tab slot `j`, relative
+                // to the slot top (0 when the tab has no stacked view).
+                function innerSlotY(j, inner) {
+                  const t = tabsRepeater.itemAt(j);
+                  const view = t ? t.stackedView() : null;
+                  return view ? view.groupOffset(inner) : 0;
+                }
                 // Every tab slot loaded?
                 function tabsReady() {
                   for (var k = 0; k < tabsRepeater.count; k++) {
@@ -899,6 +914,12 @@ Item {
 
                     function tabReady() {
                       return tabLoader.status === Loader.Ready && tabLoader.item !== null;
+                    }
+                    // The tab's internal NTabView once loaded (null before /
+                    // when the component has none). Used for inner sub-group
+                    // scroll targets.
+                    function stackedView() {
+                      return tabLoader.item ? root._findByObjectName(tabLoader.item, "NTabView") : null;
                     }
 
                     Loader {

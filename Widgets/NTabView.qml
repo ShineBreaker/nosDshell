@@ -122,6 +122,12 @@ Item {
     return off;
   }
 
+  // Y of stacked group `index`'s head inside this view; 0 when not stacked.
+  // SettingsModuleView uses it to scroll to a sub-group (search/IPC routing).
+  function groupOffset(index) {
+    return stacked ? _stackedOffset(index) : 0;
+  }
+
   // Pick up the sub-tab titles from the sibling NTabBar. Both live in the same
   // tab component, so the lookup stops one level up.
   function _syncStackTitles() {
