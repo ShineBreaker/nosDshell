@@ -44,85 +44,93 @@ DraggableDesktopWidget {
     return chunks[0];
   }
 
-  implicitWidth: Math.round(Math.max(240 * widgetScale, contentLayout.implicitWidth + Style.margin2M * widgetScale))
-  implicitHeight: Math.round(64 * widgetScale + Style.margin2M * widgetScale)
+  implicitWidth: Math.round(Math.max(240 * widgetScale, contentLayout.implicitWidth + (root.showBackground ? Style.margin2M * widgetScale : 0)))
+  implicitHeight: Math.round(64 * widgetScale + (root.showBackground ? Style.margin2M * widgetScale : 0))
   width: implicitWidth
   height: implicitHeight
 
-  RowLayout {
-    id: contentLayout
+  // Content clip matching the card's rounded corners; the base draws the background.
+  Rectangle {
+    id: weatherMask
     anchors.fill: parent
-    anchors.margins: Math.round(Style.marginM * widgetScale)
-    spacing: Math.round(Style.marginM * widgetScale)
-    z: 2
+    color: "transparent"
+    radius: root.roundedCorners ? Math.min(Math.round(Style.radiusL * root.widgetScale), Style.radiusL, width / 2, height / 2) : 0
+    clip: true
+    RowLayout {
+      id: contentLayout
+      anchors.fill: parent
+      anchors.margins: root.showBackground ? Math.round(Style.marginM * widgetScale) : 0
+      spacing: Math.round(Style.marginM * widgetScale)
+      z: 2
 
-    Item {
-      Layout.preferredWidth: Math.round(64 * widgetScale)
-      Layout.preferredHeight: Math.round(64 * widgetScale)
-      Layout.alignment: Qt.AlignVCenter
+      Item {
+        Layout.preferredWidth: Math.round(64 * widgetScale)
+        Layout.preferredHeight: Math.round(64 * widgetScale)
+        Layout.alignment: Qt.AlignVCenter
 
-      NIcon {
-        anchors.centerIn: parent
-        icon: weatherReady ? LocationService.weatherSymbolFromCode(currentWeatherCode) : (LocationService.locationConfigured ? "weather-cloud-off" : "map-pin-off")
-        pointSize: Math.round(Style.fontSizeXXXL * 2 * widgetScale)
-        color: weatherReady ? Color.mPrimary : Color.mOnSurfaceVariant
+        NIcon {
+          anchors.centerIn: parent
+          icon: weatherReady ? LocationService.weatherSymbolFromCode(currentWeatherCode) : (LocationService.locationConfigured ? "weather-cloud-off" : "map-pin-off")
+          pointSize: Math.round(Style.fontSizeXXXL * 2 * widgetScale)
+          color: weatherReady ? Color.mPrimary : Color.mOnSurfaceVariant
+        }
       }
-    }
-
-    NText {
-      text: weatherReady ? `${currentTemp}°${tempUnit}` : "--"
-      pointSize: Math.round(Style.fontSizeXXXL * widgetScale)
-      font.weight: Style.fontWeightSemiBold
-      color: Color.mOnSurface
-    }
-
-    ColumnLayout {
-      Layout.fillWidth: true
-      spacing: Math.round(Style.marginXXS * widgetScale)
-      Layout.alignment: Qt.AlignVCenter
 
       NText {
-        Layout.fillWidth: true
-        text: locationName || I18n.tr("common.weather-no-location")
-        pointSize: Math.round(Style.fontSizeS * widgetScale)
-        font.weight: Style.fontWeightRegular
-        color: Color.mOnSurfaceVariant
-        elide: Text.ElideRight
-        maximumLineCount: 1
-        visible: !Settings.data.location.hideWeatherCityName
+        text: weatherReady ? `${currentTemp}°${tempUnit}` : "--"
+        pointSize: Math.round(Style.fontSizeXXXL * widgetScale)
+        font.weight: Style.fontWeightSemiBold
+        color: Color.mOnSurface
       }
 
-      RowLayout {
-        spacing: Math.round(Style.marginXS * widgetScale)
-        visible: weatherReady && todayMax > 0 && todayMin > 0
+      ColumnLayout {
+        Layout.fillWidth: true
+        spacing: Math.round(Style.marginXXS * widgetScale)
+        Layout.alignment: Qt.AlignVCenter
 
         NText {
-          text: "H:"
-          pointSize: Math.round(Style.fontSizeXS * widgetScale)
+          Layout.fillWidth: true
+          text: locationName || I18n.tr("common.weather-no-location")
+          pointSize: Math.round(Style.fontSizeS * widgetScale)
+          font.weight: Style.fontWeightRegular
           color: Color.mOnSurfaceVariant
-        }
-        NText {
-          text: `${todayMax}°`
-          pointSize: Math.round(Style.fontSizeXS * widgetScale)
-          color: Color.mOnSurface
-        }
-
-        NText {
-          text: "•"
-          pointSize: Math.round(Style.fontSizeXXS * widgetScale)
-          color: Color.mOnSurfaceVariant
-          opacity: 0.5
+          elide: Text.ElideRight
+          maximumLineCount: 1
+          visible: !Settings.data.location.hideWeatherCityName
         }
 
-        NText {
-          text: "L:"
-          pointSize: Math.round(Style.fontSizeXS * widgetScale)
-          color: Color.mOnSurfaceVariant
-        }
-        NText {
-          text: `${todayMin}°`
-          pointSize: Math.round(Style.fontSizeXS * widgetScale)
-          color: Color.mOnSurfaceVariant
+        RowLayout {
+          spacing: Math.round(Style.marginXS * widgetScale)
+          visible: weatherReady && todayMax > 0 && todayMin > 0
+
+          NText {
+            text: "H:"
+            pointSize: Math.round(Style.fontSizeXS * widgetScale)
+            color: Color.mOnSurfaceVariant
+          }
+          NText {
+            text: `${todayMax}°`
+            pointSize: Math.round(Style.fontSizeXS * widgetScale)
+            color: Color.mOnSurface
+          }
+
+          NText {
+            text: "•"
+            pointSize: Math.round(Style.fontSizeXXS * widgetScale)
+            color: Color.mOnSurfaceVariant
+            opacity: 0.5
+          }
+
+          NText {
+            text: "L:"
+            pointSize: Math.round(Style.fontSizeXS * widgetScale)
+            color: Color.mOnSurfaceVariant
+          }
+          NText {
+            text: `${todayMin}°`
+            pointSize: Math.round(Style.fontSizeXS * widgetScale)
+            color: Color.mOnSurfaceVariant
+          }
         }
       }
     }

@@ -59,7 +59,7 @@ DraggableDesktopWidget {
   readonly property int visibleButtonCount: root.showButtons ? (1 + (showPrev ? 1 : 0) + (showNext ? 1 : 0)) : 0
 
   implicitWidth: Math.round(400 * widgetScale)
-  implicitHeight: Math.round(64 * widgetScale + Style.margin2M * widgetScale)
+  implicitHeight: Math.round(64 * widgetScale + (root.showBackground ? Style.margin2M * widgetScale : 0))
   width: implicitWidth
   height: implicitHeight
 
@@ -76,9 +76,9 @@ DraggableDesktopWidget {
   // Completely disabled during scaling to avoid expensive canvas redraws
   Loader {
     anchors.fill: parent
-    anchors.leftMargin: Math.round(Style.marginXS * widgetScale)
-    anchors.rightMargin: Math.round(Style.marginXS * widgetScale)
-    anchors.topMargin: Math.round(Style.marginXS * widgetScale)
+    anchors.leftMargin: root.showBackground ? Math.round(Style.marginXS * widgetScale) : 0
+    anchors.rightMargin: root.showBackground ? Math.round(Style.marginXS * widgetScale) : 0
+    anchors.topMargin: root.showBackground ? Math.round(Style.marginXS * widgetScale) : 0
     anchors.bottomMargin: 0
     z: 0
     clip: true
@@ -89,8 +89,8 @@ DraggableDesktopWidget {
       maskEnabled: root.roundedCorners
       maskSource: ShaderEffectSource {
         sourceItem: Rectangle {
-          width: root.width - Math.round(Style.marginXS * widgetScale) * 2
-          height: root.height - Math.round(Style.marginXS * widgetScale)
+          width: root.showBackground ? root.width - Math.round(Style.marginXS * widgetScale) * 2 : root.width
+          height: root.showBackground ? root.height - Math.round(Style.marginXS * widgetScale) : root.height
           radius: root.roundedCorners ? Math.round(Math.max(0, (Style.radiusL - Style.marginXS) * widgetScale)) : 0
           color: "white"
         }
@@ -186,7 +186,7 @@ DraggableDesktopWidget {
         }
       }
     ]
-    anchors.margins: Math.round(Style.marginM * widgetScale)
+    anchors.margins: root.showBackground ? Math.round(Style.marginM * widgetScale) : 0
     spacing: Math.round(Style.marginS * widgetScale)
     z: 2
 

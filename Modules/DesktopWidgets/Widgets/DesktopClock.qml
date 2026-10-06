@@ -21,7 +21,7 @@ DraggableDesktopWidget {
   readonly property string customFont: widgetData.customFont !== undefined ? widgetData.customFont : widgetMetadata.customFont
   readonly property string format: widgetData.format !== undefined ? widgetData.format : widgetMetadata.format
 
-  readonly property real contentPadding: Math.round((clockStyle === "minimal" ? Style.marginL : Style.marginXL) * widgetScale)
+  readonly property real contentPadding: root.showBackground ? Math.round((clockStyle === "minimal" ? Style.marginL : Style.marginXL) * widgetScale) : 0
   implicitWidth: contentLoader.item ? Math.round((contentLoader.item.implicitWidth || contentLoader.item.width || 0) + contentPadding * 2) : 0
   implicitHeight: contentLoader.item ? Math.round((contentLoader.item.implicitHeight || contentLoader.item.height || 0) + contentPadding * 2) : 0
   width: implicitWidth
@@ -81,10 +81,18 @@ DraggableDesktopWidget {
     }
   }
 
-  Loader {
-    id: contentLoader
-    anchors.centerIn: parent
-    z: 2
-    sourceComponent: clockStyle === "minimal" ? minimalClockComponent : nclockComponent
+  // Content clip matching the card's rounded corners; the base draws the background.
+  Rectangle {
+    id: clockMask
+    anchors.fill: parent
+    color: "transparent"
+    radius: root.roundedCorners ? Math.min(Math.round(Style.radiusL * root.widgetScale), Style.radiusL, width / 2, height / 2) : 0
+    clip: true
+    Loader {
+      id: contentLoader
+      anchors.centerIn: parent
+      z: 2
+      sourceComponent: clockStyle === "minimal" ? minimalClockComponent : nclockComponent
+    }
   }
 }

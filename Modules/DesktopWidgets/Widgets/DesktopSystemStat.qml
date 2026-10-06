@@ -204,99 +204,107 @@ DraggableDesktopWidget {
   }
 
   // Side layout: icon + legend on left, graph on right
-  RowLayout {
+  // Content clip matching the card's rounded corners; the base draws the background.
+  Rectangle {
+    id: statMask
     anchors.fill: parent
-    anchors.margins: Math.round(Style.marginM * widgetScale)
-    spacing: Math.round(Style.marginL * widgetScale)
-    visible: root.layout === "side"
+    color: "transparent"
+    radius: root.roundedCorners ? Math.min(Math.round(Style.radiusL * root.widgetScale), Style.radiusL, width / 2, height / 2) : 0
+    clip: true
+    RowLayout {
+      anchors.fill: parent
+      anchors.margins: root.showBackground ? Math.round(Style.marginM * widgetScale) : 0
+      spacing: Math.round(Style.marginL * widgetScale)
+      visible: root.layout === "side"
 
-    ColumnLayout {
-      Layout.alignment: Qt.AlignVCenter
-      Layout.fillHeight: true
-      Layout.preferredWidth: Math.round(64 * widgetScale)
-      spacing: Style.marginXS * root.widgetScale
+      ColumnLayout {
+        Layout.alignment: Qt.AlignVCenter
+        Layout.fillHeight: true
+        Layout.preferredWidth: Math.round(64 * widgetScale)
+        spacing: Style.marginXS * root.widgetScale
 
-      Repeater {
-        model: root.legendItems
-        delegate: RowLayout {
-          Layout.alignment: Qt.AlignHCenter
-          spacing: Math.round(Style.marginXXS * root.widgetScale)
+        Repeater {
+          model: root.legendItems
+          delegate: RowLayout {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: Math.round(Style.marginXXS * root.widgetScale)
 
-          NIcon {
-            visible: !!modelData.icon
-            icon: modelData.icon || ""
-            color: modelData.color
-            pointSize: Style.fontSizeS * root.widgetScale
-            opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
-          }
+            NIcon {
+              visible: !!modelData.icon
+              icon: modelData.icon || ""
+              color: modelData.color
+              pointSize: Style.fontSizeS * root.widgetScale
+              opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
+            }
 
-          NText {
-            text: modelData.text
-            color: modelData.color
-            pointSize: Style.fontSizeS * root.widgetScale
-            font.family: Settings.data.ui.fontFixed
-            font.weight: modelData.bold ? Style.fontWeightSemiBold : Style.fontWeightRegular
-            opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
-            elide: modelData.elide ? Text.ElideMiddle : Text.ElideNone
-            Layout.maximumWidth: modelData.elide ? Math.round(56 * root.widgetScale) : -1
-            horizontalAlignment: Text.AlignHCenter
+            NText {
+              text: modelData.text
+              color: modelData.color
+              pointSize: Style.fontSizeS * root.widgetScale
+              font.family: Settings.data.ui.fontFixed
+              font.weight: modelData.bold ? Style.fontWeightSemiBold : Style.fontWeightRegular
+              opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
+              elide: modelData.elide ? Text.ElideMiddle : Text.ElideNone
+              Layout.maximumWidth: modelData.elide ? Math.round(56 * root.widgetScale) : -1
+              horizontalAlignment: Text.AlignHCenter
+            }
           }
         }
       }
+
+      Loader {
+        active: root.layout === "side"
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        sourceComponent: graphComponent
+      }
     }
 
-    Loader {
-      active: root.layout === "side"
-      Layout.fillWidth: true
-      Layout.fillHeight: true
-      sourceComponent: graphComponent
-    }
-  }
+    // Bottom layout: full-width graph, horizontal legend at bottom
+    ColumnLayout {
+      anchors.fill: parent
+      anchors.margins: root.showBackground ? Math.round(Style.marginM * widgetScale) : 0
+      spacing: Math.round(Style.marginS * widgetScale)
+      visible: root.layout === "bottom"
 
-  // Bottom layout: full-width graph, horizontal legend at bottom
-  ColumnLayout {
-    anchors.fill: parent
-    anchors.margins: Math.round(Style.marginM * widgetScale)
-    spacing: Math.round(Style.marginS * widgetScale)
-    visible: root.layout === "bottom"
+      Loader {
+        active: root.layout === "bottom"
+        Layout.fillWidth: true
+        Layout.fillHeight: true
+        sourceComponent: graphComponent
+      }
 
-    Loader {
-      active: root.layout === "bottom"
-      Layout.fillWidth: true
-      Layout.fillHeight: true
-      sourceComponent: graphComponent
-    }
+      RowLayout {
+        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignHCenter
+        spacing: Math.round(Style.marginM * widgetScale)
 
-    RowLayout {
-      Layout.fillWidth: true
-      Layout.alignment: Qt.AlignHCenter
-      spacing: Math.round(Style.marginM * widgetScale)
-
-      Repeater {
-        model: root.legendItems
-        delegate: RowLayout {
-          Layout.alignment: Qt.AlignVCenter
-          spacing: Math.round(Style.marginXXS * root.widgetScale)
-
-          NIcon {
+        Repeater {
+          model: root.legendItems
+          delegate: RowLayout {
             Layout.alignment: Qt.AlignVCenter
-            visible: !!modelData.icon
-            icon: modelData.icon || ""
-            color: modelData.color
-            pointSize: Style.fontSizeS * root.widgetScale
-            opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
-          }
+            spacing: Math.round(Style.marginXXS * root.widgetScale)
 
-          NText {
-            Layout.alignment: Qt.AlignVCenter
-            text: modelData.text
-            color: modelData.color
-            pointSize: Style.fontSizeS * root.widgetScale
-            font.family: Settings.data.ui.fontFixed
-            font.weight: modelData.bold ? Style.fontWeightSemiBold : Style.fontWeightRegular
-            opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
-            elide: modelData.elide ? Text.ElideMiddle : Text.ElideNone
-            Layout.maximumWidth: modelData.elide ? Math.round(56 * root.widgetScale) : -1
+            NIcon {
+              Layout.alignment: Qt.AlignVCenter
+              visible: !!modelData.icon
+              icon: modelData.icon || ""
+              color: modelData.color
+              pointSize: Style.fontSizeS * root.widgetScale
+              opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
+            }
+
+            NText {
+              Layout.alignment: Qt.AlignVCenter
+              text: modelData.text
+              color: modelData.color
+              pointSize: Style.fontSizeS * root.widgetScale
+              font.family: Settings.data.ui.fontFixed
+              font.weight: modelData.bold ? Style.fontWeightSemiBold : Style.fontWeightRegular
+              opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
+              elide: modelData.elide ? Text.ElideMiddle : Text.ElideNone
+              Layout.maximumWidth: modelData.elide ? Math.round(56 * root.widgetScale) : -1
+            }
           }
         }
       }
