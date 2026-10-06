@@ -111,12 +111,26 @@ Item {
   // Square corners; PanelBackground reads this for both corner states and radius
   readonly property bool squareCorners: edgeSheet
 
+  // Same-edge inset only: the sheet hugs the taskbar's inner edge when they
+  // share a screen edge (§3.5.1). An efficient bar on the bottom must not
+  // push the sheet off the right edge.
   readonly property real edgeSheetInset: {
-    if (!edgeSheet || edgeSheetEdge !== "right" || !BarService.hasTaskbarOnScreen(screen?.name || ""))
+    if (!edgeSheet || !taskbarPresent)
       return 0;
-    if (Settings.data.dock.mode === "efficient")
-      return Style.getBarHeightForScreen(screen?.name);
-    return Settings.getBarPositionForScreen(screen?.name) === "right" ? Style.dockItemThickness : 0;
+    return Settings.getBarPositionForScreen(screen?.name || "") === edgeSheetEdge ? taskbarThickness : 0;
+  }
+
+  // gxde sizes the frame to the primary rect (frame.cpp:471), which already
+  // excludes the efficient bar's exclusive zone — so a horizontal efficient
+  // bar trims the sheet's span on that side. The fashion dock floats over
+  // panels and claims no edge, so it never cuts the sheet.
+  readonly property real edgeSheetTopCut: edgeSheetSpanCut("top")
+  readonly property real edgeSheetBottomCut: edgeSheetSpanCut("bottom")
+
+  function edgeSheetSpanCut(edge) {
+    if (!edgeSheet || edgeSheetEdge === "bottom" || !taskbarPresent || Settings.data.dock.mode !== "efficient")
+      return 0;
+    return Settings.getBarPositionForScreen(screen?.name || "") === edge ? taskbarThickness : 0;
   }
 
   readonly property bool useArrowPopup: {
@@ -477,11 +491,12 @@ Item {
         return;
       }
       panelBackground.slidesAlongEdge = true;
-      // Edge sheets span the full screen height, no bar/margin deduction.
+      // Edge sheets span the work area: full screen height minus the strip an
+      // exclusive efficient bar claims on the top/bottom edge.
       panelBackground.targetWidth = panelWidth;
-      panelBackground.targetHeight = Math.min(h, root.height);
+      panelBackground.targetHeight = Math.min(h, root.height - root.edgeSheetTopCut - root.edgeSheetBottomCut);
       panelBackground.targetX = Math.round(root.edgeSheetEdge === "right" ? root.width - root.edgeSheetInset - panelWidth : root.edgeSheetInset);
-      panelBackground.targetY = 0;
+      panelBackground.targetY = root.edgeSheetTopCut;
       return;
     }
 
