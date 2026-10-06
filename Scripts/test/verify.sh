@@ -12,7 +12,8 @@
 # wiped before each run for reproducibility.
 #
 # Scenes (default: all, lockscreen always runs last):
-#   idle, taskbar, launcher, control-center, cc-notifications, cc-quick-wifi,
+#   idle, taskbar, launcher, launcher-search, launcher-category, launcher-mini,
+#   launcher-modeswap, control-center, cc-notifications, cc-quick-wifi,
 #   cc-quick-bluetooth, cc-quick-display, cc-quick-vpn, cc-quick-basic,
 #   settings, session-menu, notification,
 #   osd-volume, audio-panel, network-panel, bluetooth-panel, battery-panel,
@@ -183,7 +184,7 @@ cat > "$INNER" <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 
-SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini
+SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap
 control-center cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
@@ -439,6 +440,16 @@ run_scene() {
     launcher-mini)        call launcher switchMode mini 1
                           call launcher toggle 1.5; shot launcher-mini-open
                           call launcher setSearchText "chr" 1.2; shot launcher-mini-search
+                          call launcher setSearchText "" 0.5
+                          call launcher toggle 0.5
+                          call launcher switchMode fullscreen 0.8 ;;
+    # Live mode swap: switch while the view is open (gxde-launcher
+    # launchersys.cpp:238-246). The query must carry across both ways.
+    launcher-modeswap)    call launcher switchMode mini 1
+                          call launcher toggle 1.5
+                          call launcher setSearchText "chr" 0.8
+                          call launcher switchMode fullscreen 1.5; shot launcher-modeswap-full
+                          call launcher switchMode mini 1.5;        shot launcher-modeswap-mini
                           call launcher setSearchText "" 0.5
                           call launcher toggle 0.5
                           call launcher switchMode fullscreen 0.8 ;;
