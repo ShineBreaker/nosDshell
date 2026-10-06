@@ -38,7 +38,7 @@ NIconButton {
   iconSource: onShellSurface ? ThemeIcons.symbolicOnly(isFull ? "user-trash-full" : "user-trash") : ""
   recolorIcon: onShellSurface
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
-  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
+  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.mOnSurface
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

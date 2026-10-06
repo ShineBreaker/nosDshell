@@ -60,16 +60,17 @@ Item {
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
   // Always prioritize hover color, then the custom one and finally the fallback color.
-  // DDE dock plugin buttons are a rounded tile (efficient = full 26px cell,
-  // fashion = smaller chip inside the item) with overlay("subtle") fill.
+  // DDE plugin buttons: fashion draws a rounded "subtle" tile chip inside
+  // the item slot; efficient is bare icon with an overlay("hover") hover fill
+  // (gxde-dock pluginsitem.cpp paints no idle background).
   readonly property bool onShellSurface: efficientMode || fashionMode
-  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (onShellSurface ? Color.overlay("subtle") : Style.capsuleColor)
+  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor))
   readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   readonly property color iconFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   readonly property color textFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
 
-  // Painted tile size: efficient fills the 26px cell; fashion is a 36px chip
-  // inside the 54px item slot (same ratio as the tray pill).
+  // Painted tile size: fashion is a 36px chip inside the 54px item slot
+  // (same ratio as the tray pill); efficient covers the full 26px cell.
   readonly property real tileSize: fashionMode ? Math.round(pillHeight * 0.66) : pillHeight
 
   // DDE status icons are 16 px in both dock modes

@@ -54,7 +54,7 @@ NIconButton {
   bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: onShellSurface ? Color.overlay("subtle") : Style.capsuleColor
+  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : iconColor
   colorBgHover: onShellSurface ? Color.overlay("hover") : Color.mHover
   colorFgHover: onShellSurface ? Color.onShell : Color.mOnHover
