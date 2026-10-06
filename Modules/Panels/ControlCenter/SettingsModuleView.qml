@@ -337,16 +337,20 @@ Item {
     root._openStamp = Date.now();
     root._snapLogged = false;
     root._targetSec = idx;
-    module = mod;
+    module = modules[idx];
     _ensureLoaded(idx);
     idleFillTimer.start();
     snapQuietTimer.start();
     Qt.callLater(() => _scrollToSection(idx, subTab, true));
   }
 
+  // modelData reaching delegates may be a QVariant-wrapped copy (Repeater
+  // converts JS-object models), so identity can fail; compare by id.
   function moduleIndex(mod) {
+    if (!mod)
+      return -1;
     for (var i = 0; i < modules.length; i++) {
-      if (modules[i] === mod)
+      if (modules[i] === mod || modules[i].id === mod.id)
         return i;
     }
     return -1;
@@ -527,7 +531,7 @@ Item {
                 required property var modelData
                 required property int index
 
-                readonly property bool selected: root.module === modelData
+                readonly property bool selected: root.module !== null && modelData !== null && root.module.id === modelData.id
                 readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, selected)
 
                 width: Style.settingsRailWidth
@@ -628,13 +632,16 @@ Item {
           }
 
           NText {
-            anchors.centerIn: parent
+            anchors.left: backButton.right
+            anchors.right: parent.right
+            anchors.rightMargin: backButton.width + backButton.anchors.leftMargin
+            anchors.verticalCenter: parent.verticalCenter
+            horizontalAlignment: Text.AlignHCenter
             text: root.title
             pointSize: Style.settingsModuleTitleSize
             font.weight: Style.fontWeightMedium
             color: Color.onShell
             elide: Text.ElideRight
-            width: parent.width - Style.baseWidgetSize
           }
         }
 
