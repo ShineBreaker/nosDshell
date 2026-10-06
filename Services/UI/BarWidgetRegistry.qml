@@ -127,9 +127,7 @@ Singleton {
                                     "useDistroLogo": false,
                                     "icon": "nosdshell",
                                     "customIconPath": "",
-                                    "colorizeDistroLogo": false,
                                     "colorizeSystemIcon": "none",
-                                    "colorizeSystemText": "none",
                                     "enableColorization": false
                                   },
                                   "CustomButton": {
@@ -193,9 +191,7 @@ Singleton {
                                     "icon": "rocket",
                                     "customIconPath": "",
                                     "colorizeSystemIcon": "none",
-                                    "colorizeSystemText": "none",
-                                    "enableColorization": false,
-                                    "iconColor": "none"
+                                    "enableColorization": false
                                   },
                                   "MediaMini": {
                                     "hideMode": "hidden",
@@ -209,7 +205,6 @@ Singleton {
                                     "showProgressRing": true,
                                     "visualizerType": "linear",
                                     "textColor": "none",
-                                    "compactMode": false,
                                     "panelShowAlbumArt": true
                                   },
                                   "Microphone": {

@@ -28,7 +28,6 @@ ColumnLayout {
   property int valueMaxWidth: widgetData.maxWidth !== undefined ? widgetData.maxWidth : widgetMetadata.maxWidth
   property bool valueUseFixedWidth: widgetData.useFixedWidth !== undefined ? widgetData.useFixedWidth : widgetMetadata.useFixedWidth
   property bool valueShowProgressRing: widgetData.showProgressRing !== undefined ? widgetData.showProgressRing : widgetMetadata.showProgressRing
-  property bool valueCompactMode: widgetData.compactMode !== undefined ? widgetData.compactMode : widgetMetadata.compactMode
   property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
 
   Component.onCompleted: {
@@ -50,7 +49,6 @@ ColumnLayout {
     settings.maxWidth = parseInt(widthInput.text) || widgetMetadata.maxWidth;
     settings.useFixedWidth = valueUseFixedWidth;
     settings.showProgressRing = valueShowProgressRing;
-    settings.compactMode = valueCompactMode;
     settings.textColor = valueTextColor;
     settingsChanged(settings);
   }
@@ -235,14 +233,4 @@ ColumnLayout {
     defaultValue: widgetMetadata.panelShowAlbumArt
   }
 
-  NToggle {
-    label: I18n.tr("bar.media-mini.compact-mode-label")
-    description: I18n.tr("bar.media-mini.compact-mode-description")
-    checked: valueCompactMode
-    onToggled: checked => {
-                 valueCompactMode = checked;
-                 saveSettings();
-               }
-    defaultValue: widgetMetadata.compactMode
-  }
 }
