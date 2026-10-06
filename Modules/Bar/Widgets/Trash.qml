@@ -37,7 +37,7 @@ NIconButton {
   iconSource: fashionMode ? ThemeIcons.fashionFor(isFull ? "user-trash-full" : "user-trash") : (efficientMode ? ThemeIcons.symbolicOnly(isFull ? "user-trash-full" : "user-trash") : "")
   recolorIcon: efficientMode || (fashionMode && iconSource.indexOf("-symbolic") >= 0)
   iconRatio: fashionMode ? 0.8 : (efficientMode ? 16.0 / baseSize : 0.48)
-  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.mOnSurface
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

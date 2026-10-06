@@ -62,7 +62,7 @@ Item {
   // Always prioritize hover color, then the custom one and finally the fallback color.
   // Efficient (DDE taskbar) hover: overlay("hover") fill, onShell content
   readonly property bool onShellSurface: efficientMode || fashionMode
-  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? "transparent" : Style.capsuleColor)
+  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor))
   readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   readonly property color iconFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   readonly property color textFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)

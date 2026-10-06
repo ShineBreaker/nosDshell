@@ -390,7 +390,7 @@ Item {
       baseSize: efficientMode ? 24 : capsuleHeight
       applyUiScale: false
       customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
-      colorBg: "transparent"
+      colorBg: efficientMode ? Color.overlay("subtle") : "transparent"
       colorFg: efficientMode ? Color.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
@@ -606,7 +606,7 @@ Item {
       baseSize: efficientMode ? 24 : capsuleHeight
       applyUiScale: false
       customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
-      colorBg: "transparent"
+      colorBg: efficientMode ? Color.overlay("subtle") : "transparent"
       colorFg: efficientMode ? Color.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"

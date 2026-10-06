@@ -52,7 +52,7 @@ NIconButton {
       return I18n.tr("tooltips.session-menu");
   }
   tooltipDirection: BarService.getTooltipDirection(screenName)
-  colorBg: fashionMode ? "transparent" : Style.capsuleColor
+  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

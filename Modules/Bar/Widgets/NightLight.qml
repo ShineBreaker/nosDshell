@@ -42,7 +42,7 @@ NIconButton {
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? "transparent" : (Settings.data.nightLight.enabled && !efficientMode ? Color.mPrimary : Style.capsuleColor)
+  colorBg: fashionMode ? "transparent" : (efficientMode ? Color.overlay("subtle") : (Settings.data.nightLight.enabled ? Color.mPrimary : Style.capsuleColor))
   colorFg: onShellSurface ? Color.onShell : (Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
