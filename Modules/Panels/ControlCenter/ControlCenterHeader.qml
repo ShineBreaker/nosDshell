@@ -38,12 +38,14 @@ Item {
     anchors.bottomMargin: Style.controlCenterHeaderMarginTop
     spacing: Style.controlCenterHeaderSpacing
 
-    // 60x60 circular avatar, 10 px from the top (avatarwidget.h:34)
+    // 60x60 circular avatar. gxde pins it 10 px from the top
+    // (avatarwidget.h:34) because their widget also draws the username below
+    // the circle; we render the circle alone, so centring keeps it on the
+    // same visual line as the clock and the button row.
     NImageRounded {
       Layout.preferredWidth: Style.controlCenterAvatarSize
       Layout.preferredHeight: Style.controlCenterAvatarSize
-      Layout.alignment: Qt.AlignTop
-      Layout.topMargin: Style.controlCenterHeaderMarginTop
+      Layout.alignment: Qt.AlignVCenter
       radius: Layout.preferredWidth / 2
       imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
       fallbackImagePath: Settings.ddeDefaultAvatar
