@@ -107,6 +107,17 @@ ColumnLayout {
       text: Math.round(Settings.data.notifications.backgroundOpacity * 100) + "%"
       defaultValue: Settings.getDefaultValue("notifications.backgroundOpacity")
     }
+    NSpinBox {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.notifications.settings-max-visible-label")
+      description: I18n.tr("panels.notifications.settings-max-visible-description")
+      minimum: 1
+      maximum: 10
+      value: Settings.data.notifications.maxVisible
+      stepSize: 1
+      defaultValue: Settings.getDefaultValue("notifications.maxVisible")
+      onValueChanged: Settings.data.notifications.maxVisible = value
+    }
 
     NDccGap {
       Layout.fillWidth: true
