@@ -10,6 +10,7 @@ import qs.Modules.Dock
 import qs.Modules.Notification
 import qs.Modules.Panels.Settings
 import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.Media
 import qs.Services.UI
 import qs.Widgets
@@ -92,7 +93,15 @@ Item {
   // during/after teardown (avoids SIGSEGV in QV4::Object::insertMember when rapid
   // workspace switch causes load/unload overlap with async widget incubation)
   property bool _destroyed: false
-  Component.onDestruction: root._destroyed = true
+  // Name this bar registered its scene under in DebugService ("" = not yet —
+  // screen lands after Component.onCompleted).
+  property string _dbgName: ""
+  Component.onDestruction: {
+    root._destroyed = true;
+    if (root._dbgName !== "") {
+      DebugService.unregisterRoot(root._dbgName);
+    }
+  }
 
   // Sync a ListModel with widget data, preserving delegates when only settings change
   function syncWidgetModel(model, newWidgets) {
@@ -190,6 +199,8 @@ Item {
       Logger.d("Bar", "Bar screen set to:", screen.name);
       Logger.d("Bar", "  Position:", barPosition, "Floating:", barFloating);
       BarService.registerBar(screen.name);
+      root._dbgName = "bar-" + screen.name;
+      DebugService.registerRoot(root._dbgName, root);
     }
   }
 

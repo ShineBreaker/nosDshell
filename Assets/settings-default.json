@@ -587,5 +587,10 @@
     "gridSnap": false,
     "gridSnapScale": false,
     "monitorWidgets": []
+  },
+  "debug": {
+    "enabled": false,
+    "modules": "",
+    "logLevel": "info"
   }
 }

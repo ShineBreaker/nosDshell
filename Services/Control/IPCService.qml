@@ -10,6 +10,7 @@ import qs.Commons
 import qs.Modules.Dock
 import qs.Modules.Panels.Settings
 import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.Hardware
 import qs.Services.Location
 import qs.Services.Media
@@ -1034,6 +1035,60 @@ Singleton {
       root.screenDetector.withCurrentScreen(screen => {
                                               PluginService.togglePluginPanel(key, screen, null);
                                             });
+    }
+  }
+
+  IpcHandler {
+    target: "debug"
+
+    function toggle() {
+      Settings.data.debug.enabled = !Settings.data.debug.enabled;
+      Logger.i("Debug", "debug.enabled=" + Settings.data.debug.enabled);
+    }
+
+    function enable() {
+      Settings.data.debug.enabled = true;
+    }
+
+    function disable() {
+      Settings.data.debug.enabled = false;
+    }
+
+    function setModules(modules: string) {
+      Settings.data.debug.modules = modules;
+    }
+
+    function setLogLevel(level: string) {
+      if (level === "info" || level === "warn") {
+        Settings.data.debug.logLevel = level;
+      } else {
+        Logger.w("Debug", "unknown logLevel '" + level + "' (info|warn)");
+      }
+    }
+
+    function status(): string {
+      return DebugService.statusText();
+    }
+
+    function list(): string {
+      return DebugService.rootNames();
+    }
+
+    function tree(name: string): string {
+      return DebugService.dumpRegisteredRoot(name);
+    }
+
+    function watch(name: string): string {
+      return DebugService.watchTree(name);
+    }
+
+    function unwatch(name: string): string {
+      DebugService.unwatchTree(name);
+      return "unwatched " + name;
+    }
+
+    function dump(): string {
+      return DebugService.dumpAllRoots();
     }
   }
 }

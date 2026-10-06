@@ -25,8 +25,11 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 68
-  property bool isDebug: Quickshell.env("NOSD_DEBUG") === "1"
+  readonly property int settingsVersion: 69
+  // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
+  // is readable (boot forensics); the persisted toggle is the runtime switch.
+  readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
+  property bool isDebug: envDebug || adapter.debug.enabled
   readonly property string shellName: "nosdshell"
   readonly property string configDir: ensureTrailingSlash(Quickshell.env("NOSD_CONFIG_DIR") || (Quickshell.env("XDG_CONFIG_HOME") || Quickshell.env("HOME") + "/.config") + "/" + shellName + "/")
   readonly property string cacheDir: ensureTrailingSlash(Quickshell.env("NOSD_CACHE_DIR") || (Quickshell.env("XDG_CACHE_HOME") || Quickshell.env("HOME") + "/.cache") + "/" + shellName + "/")
@@ -581,6 +584,13 @@ Singleton {
     property JsonObject performance: JsonObject {
       property bool disableWallpaper: true
       property bool disableDesktopWidgets: true
+    }
+
+    // debug
+    property JsonObject debug: JsonObject {
+      property bool enabled: false
+      property string modules: "" // "" = all modules; "Dock,Tray" = Logger.d allowlist
+      property string logLevel: "info" // "info" | "warn" (minimal: warnings + errors only)
     }
 
     // dock

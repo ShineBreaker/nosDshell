@@ -45,7 +45,7 @@ mkdir -p "$NOSD_CONFIG_DIR" "$NOSD_CACHE_DIR"
 # sweep and is part of the trigger space being tested.
 python3 - <<'PYEOF'
 import json, os
-base = {"settingsVersion": 68,
+base = {"settingsVersion": 69,
         "dock": {"displayMode": "auto_hide", "onlySameOutput": False},
         "general": {"telemetryEnabled": False, "showChangelogOnStartup": False}}
 cfg = os.environ["NOSD_CONFIG_DIR"].rstrip("/")

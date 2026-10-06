@@ -25,16 +25,38 @@ Singleton {
     }
   }
 
-  // Debug log (only when Settings.isDebug is true)
+  // Whether a debug message passes the module allowlist in
+  // Settings.data.debug.modules ("" = everything passes). The first arg is
+  // the module tag whenever there is more than one arg.
+  function _debugModuleAllowed(args) {
+    var filter = (Settings?.data?.debug?.modules ?? "").trim();
+    if (filter === "" || args.length < 2) {
+      return true;
+    }
+    var module = String(args[0]);
+    var wanted = filter.split(",");
+    for (var i = 0; i < wanted.length; i++) {
+      if (wanted[i].trim() === module) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Debug log: gated by Settings.isDebug, narrowed by the modules allowlist.
   function d(...args) {
-    if (Settings?.isDebug) {
+    if (Settings?.isDebug && _debugModuleAllowed(args)) {
       var msg = _formatMessage(...args);
       console.debug(msg);
     }
   }
 
-  // Info log (always visible)
+  // Info log (suppressed by debug.logLevel="warn" for a minimal stream;
+  // debug mode always restores the full stream so nothing is lost)
   function i(...args) {
+    if (!Settings?.isDebug && (Settings?.data?.debug?.logLevel ?? "info") === "warn") {
+      return;
+    }
     var msg = _formatMessage(...args);
     console.info(msg);
   }

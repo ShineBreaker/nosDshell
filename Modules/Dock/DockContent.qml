@@ -8,6 +8,7 @@ import Quickshell.Widgets
 import qs.Commons
 import qs.Modules.Bar.Extras
 import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
@@ -146,6 +147,22 @@ Item {
       } else {
         Logger.w("Dock", `Could not launch: ${app.name}. No valid launch method.`);
       }
+    }
+  }
+
+  // Volunteer this scene for DebugService dumps/destruction watches
+  // (qs ipc call debug tree|watch dock-<screen>). The screen binding may
+  // still be null at Component.onCompleted — register when it lands.
+  property string _dbgName: ""
+  onScreenChanged: {
+    if (screen?.name && _dbgName === "") {
+      _dbgName = "dock-" + screen.name;
+      DebugService.registerRoot(_dbgName, dock);
+    }
+  }
+  Component.onDestruction: {
+    if (_dbgName !== "") {
+      DebugService.unregisterRoot(_dbgName);
     }
   }
 
