@@ -410,7 +410,7 @@ Noctalia 卡片的对应关系：
 | 账户 accounts | General（头像、用户名） |
 | 显示 display | Display（亮度、夜灯） |
 | 个性化 personalization | ColorScheme、Wallpaper、UserInterface |
-| 任务栏 dock | Bar、Dock（合并） |
+| 任务栏 dock | Bar、Dock（合并）。该模块暴露的就是 §3.1.1 设置菜单的五项——模式、位置、大小、状态、插件开关，外加插件分组和多屏覆盖。原 Noctalia 的 `bar.*`/`dock.*` 细节设置（密度、间距、指示器、点击动作等）DDE 不暴露，收进"高级"组 |
 | 启动器 launcher | Launcher |
 | 控制中心 | ControlCenter |
 | 网络 network | Connections / Wi-Fi |
@@ -523,6 +523,7 @@ Noctalia 卡片的对应关系：
 - 认证进行中：在密码框内显示一个白 × 0.35 的加载动画。
 - 指纹（`allowPasswordWithFprintd`）：密码框里的占位文字显示"验证指纹或输入密码"。
 - Noctalia 锁屏上的天气、电池、倒计时等附加信息：以白 × 0.8 的小号文字放在时钟右侧；默认关闭。
+- Noctalia 的紧凑锁屏布局（`general.compactLockScreen`）在 DDE 中没有对应物：字段保留为兼容数据但不生效，不提供设置项。
 
 ### 3.10 壁纸选择〔派生〕
 
