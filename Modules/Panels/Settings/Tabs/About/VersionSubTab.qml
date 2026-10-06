@@ -300,7 +300,7 @@ ColumnLayout {
             if (parent.debugTapCount >= 8) {
               parent.debugTapCount = 0;
               debugTapTimer.stop();
-              Settings.isDebug = !Settings.isDebug;
+              Settings.data.debug.enabled = !Settings.data.debug.enabled;
               if (Settings.isDebug) {
                 ToastService.showNotice("Debug", I18n.tr("panels.about.debug-enabled"));
               } else {
@@ -735,6 +735,43 @@ ColumnLayout {
           wrapMode: Text.Wrap
         }
       }
+    }
+  }
+
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
+  // Debug group: master switch, module allowlist, minimal logging.
+  // Scene forensics live behind `qs ipc call debug …` (DebugService).
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+    NHeader {
+      label: I18n.tr("panels.about.debug-title")
+    }
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.about.debug-enabled-label")
+      description: I18n.tr("panels.about.debug-enabled-description")
+      checked: Settings.data.debug.enabled
+      defaultValue: Settings.getDefaultValue("debug.enabled")
+      onToggled: checked => Settings.data.debug.enabled = checked
+    }
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.about.debug-minimal-label")
+      description: I18n.tr("panels.about.debug-minimal-description")
+      checked: Settings.data.debug.logLevel === "warn"
+      onToggled: checked => Settings.data.debug.logLevel = checked ? "warn" : "info"
+    }
+    NTextInput {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.about.debug-modules-label")
+      description: I18n.tr("panels.about.debug-modules-description")
+      placeholderText: "Dock, Tray, Taskbar"
+      text: Settings.data.debug.modules
+      onTextChanged: Settings.data.debug.modules = text
     }
   }
 }

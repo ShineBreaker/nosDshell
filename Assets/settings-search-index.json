@@ -1,5 +1,29 @@
 [
   {
+    "labelKey": "panels.about.debug-enabled-label",
+    "descriptionKey": "panels.about.debug-enabled-description",
+    "widget": "NToggle",
+    "tab": 21,
+    "tabLabel": "panels.about.title",
+    "subTab": null
+  },
+  {
+    "labelKey": "panels.about.debug-minimal-label",
+    "descriptionKey": "panels.about.debug-minimal-description",
+    "widget": "NToggle",
+    "tab": 21,
+    "tabLabel": "panels.about.title",
+    "subTab": null
+  },
+  {
+    "labelKey": "panels.about.debug-modules-label",
+    "descriptionKey": "panels.about.debug-modules-description",
+    "widget": "NTextInput",
+    "tab": 21,
+    "tabLabel": "panels.about.title",
+    "subTab": null
+  },
+  {
     "labelKey": "panels.audio.devices-output-device-label",
     "descriptionKey": "panels.audio.devices-output-device-description",
     "widget": "NLabel",
