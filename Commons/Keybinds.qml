@@ -158,7 +158,9 @@ QtObject {
       "keyLeft": "Navigation: Left",
       "keyRight": "Navigation: Right",
       "keyEnter": "Navigation: Enter",
-      "keyEscape": "Navigation: Escape"
+      "keyEscape": "Navigation: Escape",
+      "keyHome": "Navigation: Home",
+      "keyEnd": "Navigation: End"
     };
 
     if (navKeybinds) {
