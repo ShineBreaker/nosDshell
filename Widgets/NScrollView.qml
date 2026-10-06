@@ -26,6 +26,12 @@ ScrollView {
   // Keep scrollbars visible whenever overflow exists (without forcing visibility when not scrollable)
   property bool showScrollbarWhenScrollable: Settings.data.ui.scrollbarAlwaysVisible
 
+  // When false the internal Flickable never grabs presses for a drag: a real
+  // mouse jitters a few pixels during a click, and an interactive flickable
+  // reads that as a drag start and eats the click. Wheel scrolling is
+  // unaffected (WheelHandler scrolls imperatively).
+  property bool flickableInteractive: true
+
   // Scroll speed multiplier for mouse wheel (1.0 = default, higher = faster)
   property real wheelScrollMultiplier: 2.0
   property int smoothWheelAnimationDuration: Style.animationNormal
@@ -163,6 +169,7 @@ ScrollView {
       if (child.toString().indexOf("Flickable") !== -1) {
         // Configure the flickable to prevent horizontal scrolling
         child.boundsBehavior = root.boundsBehavior;
+        child.interactive = root.flickableInteractive;
         root._internalFlickable = child;
 
         if (root.preventHorizontalScroll) {

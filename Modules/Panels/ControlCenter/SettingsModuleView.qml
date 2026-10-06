@@ -133,7 +133,9 @@ Item {
 
   NumberAnimation {
     id: scrollAnim
-    target: contentScroll.contentItem
+    // target is assigned lazily in _scrollToY: contentScroll is declared
+    // later in this file, so a declarative binding here risks evaluating
+    // before its contentItem exists.
     property: "contentY"
     duration: Style.motionSettingsScroll
     easing.type: Easing.OutQuint
@@ -247,6 +249,7 @@ Item {
     scrollAnim.stop();
     if (animated && Style.motionSettingsScroll > 0 && Math.abs(f.contentY - y) > 1) {
       root._programmatic = true;
+      scrollAnim.target = f;
       scrollAnim.to = y;
       scrollAnim.start();
     } else {
@@ -495,6 +498,10 @@ Item {
         reserveScrollbarSpace: false
         showGradientMasks: false
         ScrollBar.vertical.visible: false
+        // The flickable must never grab presses: a real mouse jitters a few
+        // pixels during a click, the flickable interprets it as a drag start
+        // and eats the click. Wheel scrolling still works via WheelHandler.
+        flickableInteractive: false
 
         Column {
           width: parent.width
@@ -516,6 +523,7 @@ Item {
               model: root.modules
 
               delegate: Item {
+                id: railDelegate
                 required property var modelData
                 required property int index
 
@@ -524,6 +532,18 @@ Item {
 
                 width: Style.settingsRailWidth
                 height: Style.settingsModuleHeadIcon + 2 * Style.settingsRailButtonPadV
+
+                // The whole 56 px column cell is clickable (the visible tile
+                // is narrower); the side insets must not be dead zones.
+                MouseArea {
+                  id: railArea
+                  anchors.fill: parent
+                  hoverEnabled: true
+                  cursorShape: Qt.PointingHandCursor
+                  onEntered: TooltipService.show(railDelegate, ControlCenterModules.tr(modelData.label), "left")
+                  onExited: TooltipService.hide()
+                  onClicked: root.selectModule(modelData)
+                }
 
                 Rectangle {
                   anchors.centerIn: parent
@@ -563,16 +583,6 @@ Item {
                     applyUiScale: false
                     visible: ddeArt === ""
                     color: selected ? Color.onShell : Qt.rgba(1, 1, 1, Style.settingsRailIconDim)
-                  }
-
-                  MouseArea {
-                    id: railArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onEntered: TooltipService.show(parent, ControlCenterModules.tr(modelData.label), "left")
-                    onExited: TooltipService.hide()
-                    onClicked: root.selectModule(modelData)
                   }
                 }
               }
