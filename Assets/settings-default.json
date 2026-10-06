@@ -355,6 +355,11 @@
     "disableWallpaper": true,
     "disableDesktopWidgets": true
   },
+  "debug": {
+    "enabled": false,
+    "modules": "",
+    "logLevel": "info"
+  },
   "dock": {
     "enabled": true,
     "mode": "fashion",
@@ -593,10 +598,5 @@
     "gridSnap": false,
     "gridSnapScale": false,
     "monitorWidgets": []
-  },
-  "debug": {
-    "enabled": false,
-    "modules": "",
-    "logLevel": "info"
   }
 }

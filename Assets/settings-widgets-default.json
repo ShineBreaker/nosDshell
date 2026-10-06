@@ -40,13 +40,13 @@
       "customFont": "",
       "formatHorizontal": "HH:mm ddd, MMM dd",
       "formatVertical": "HH mm - dd MM",
-      "tooltipFormat": "HH:mm ddd, MMM dd"
+      "tooltipFormat": "HH:mm ddd, MMM dd",
+      "lineSpacing": 2
     },
     "ControlCenter": {
       "useDistroLogo": false,
       "icon": "nosdshell",
       "customIconPath": "",
-      "colorizeDistroLogo": false,
       "colorizeSystemIcon": "none",
       "enableColorization": false
     },
@@ -81,6 +81,7 @@
         "vertical": 10
       },
       "colorizeSystemIcon": "none",
+      "colorizeSystemText": "none",
       "ipcIdentifier": ""
     },
     "DarkMode": {
@@ -110,8 +111,7 @@
       "icon": "rocket",
       "customIconPath": "",
       "colorizeSystemIcon": "none",
-      "enableColorization": false,
-      "iconColor": "none"
+      "enableColorization": false
     },
     "MediaMini": {
       "hideMode": "hidden",
@@ -125,7 +125,6 @@
       "showProgressRing": true,
       "visualizerType": "linear",
       "textColor": "none",
-      "compactMode": false,
       "panelShowAlbumArt": true
     },
     "Microphone": {
