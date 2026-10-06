@@ -506,6 +506,8 @@ run_scene() {
                             # panel closes the whole injection path works and
                             # the rail alone is broken; if it stays open the
                             # injector itself is at fault.
+                            qs -p "$REPO" ipc call debug hit opened 400 400 >> "$WORK/logs/cc-hit.txt" 2>&1 || true
+                            qs -p "$REPO" ipc call debug hit main-HEADLESS-1 400 400 >> "$WORK/logs/cc-hit.txt" 2>&1 || true
                             "$VINPUT" vinput click 400 400 2>>"$WORK/logs/vinput.log" || true
                             sleep 1
                             shot settings-outside-click

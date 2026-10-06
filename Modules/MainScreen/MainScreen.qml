@@ -28,6 +28,7 @@ import qs.Modules.Panels.SystemStats
 import qs.Modules.Panels.Tray
 import qs.Modules.Panels.Wallpaper
 import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.Power
 import qs.Services.UI
 
@@ -37,7 +38,26 @@ import qs.Services.UI
 PanelWindow {
   id: root
 
+  // Scene forensics root: `qs ipc call debug tree main-<screen>` / hit tests.
+  property string _dbgName: ""
+  Component.onDestruction: {
+    if (root._dbgName !== "")
+      DebugService.unregisterRoot(root._dbgName);
+  }
+  onScreenChanged: {
+    if (root._dbgName !== "")
+      DebugService.unregisterRoot(root._dbgName);
+    if (screen && screen.name) {
+      root._dbgName = "main-" + screen.name;
+      DebugService.registerRoot(root._dbgName, root);
+    }
+  }
+
   Component.onCompleted: {
+    if (screen && screen.name) {
+      root._dbgName = "main-" + screen.name;
+      DebugService.registerRoot(root._dbgName, root);
+    }
     Logger.d("MainScreen", "Initialized for screen:", screen?.name, "- Dimensions:", screen?.width, "x", screen?.height, "- Position:", screen?.x, ",", screen?.y);
   }
 
