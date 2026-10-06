@@ -99,19 +99,18 @@ swaymsg "output HEADLESS-1 resolution 1920x1080 position 0 0" 2>/dev/null || swa
 
 pipewire > "$WORK/logs/pipewire.log" 2>&1 &
 sleep 0.5
+
+# The real-world crash fires during qs STARTUP (~2s in, services still
+# loading, dock delegates incubating) while the pointer is already parked
+# on the dock strip. So: park the virtual pointer on the strip FIRST, then
+# start sweeping the moment qs launches — never wait for it to be ready.
+wlrctl pointer move -5000 -5000   # clamp to (0,0) before any surface exists
+wlrctl pointer move 200 1055      # onto where the dock strip will appear
+swaymsg 'for_window [app_id=".*"] floating enable, resize set 360 170, move position 1400 60' 2>/dev/null
+for i in 0 1 2; do foot --app-id="repro-$i" --title="win-$i" >/dev/null 2>&1 & sleep 0.4; done
+
 qs -p "$REPO" > "$LOG" 2>&1 &
 QS_PID=$!
-for i in $(seq 1 60); do
-  qs -p "$REPO" ipc call state all >/dev/null 2>&1 && break
-  kill -0 "$QS_PID" 2>/dev/null || { echo "qs exited early — see $LOG"; exit 1; }
-  sleep 0.5
-done
-sleep 4
-
-# Running windows so the dock has multiple app items to sweep across.
-swaymsg 'for_window [app_id=".*"] floating enable, resize set 360 170, move position 1400 60' 2>/dev/null
-for i in 0 1 2; do foot --app-id="repro-$i" --title="win-$i" >/dev/null 2>&1 & sleep 0.6; done
-sleep 1
 
 # Background churn: keep opening/closing windows so the app-item Repeater's
 # model is rebuilt while the pointer is mid-sweep. If qs dies, the loop's

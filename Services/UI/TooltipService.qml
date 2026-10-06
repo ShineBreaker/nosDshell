@@ -59,6 +59,7 @@ Singleton {
       return null;
     }
 
+    Logger.w("HoverUAF", "TooltipService.show -> tip.show/update, visible=" + tip.visible);
     // If we already have a tooltip for this target, just update it
     if (tip.targetItem === target && tip.visible) {
       tip.updateContent(content);
@@ -70,6 +71,7 @@ Singleton {
   }
 
   function hide(target) {
+    Logger.w("HoverUAF", "TooltipService.hide");
     // If target is provided, only hide if tooltip belongs to that target
     if (!_instance) {
       return;

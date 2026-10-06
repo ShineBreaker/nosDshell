@@ -151,6 +151,7 @@ Item {
 
   // Hover bookkeeping shared by every interactive item
   function itemEntered() {
+    Logger.w("HoverUAF", "itemEntered");
     dockRoot.anyAppHovered = true;
     if (dockRoot.autoHide) {
       dockRoot.showTimer.stop();
@@ -160,6 +161,7 @@ Item {
   }
 
   function itemExited() {
+    Logger.w("HoverUAF", "itemExited");
     dockRoot.anyAppHovered = false;
     TooltipService.hide();
     if (dockRoot.autoHide && !dockRoot.dockHovered && !dockRoot.menuHovered && dockRoot.dragSourceIndex === -1) {
@@ -169,6 +171,8 @@ Item {
 
   Rectangle {
     id: dockContainer
+
+    Component.onDestruction: Logger.w("HoverUAF", "dockContainer destroyed")
 
     // DDE fashion surface: maskShell rounded rect flush to the screen edge
     // (radiusItem = 5 px when compositing is on), no border, no shadow.
@@ -208,6 +212,7 @@ Item {
       z: -1
 
       onEntered: {
+        Logger.w("HoverUAF", "dockBg onEntered");
         dockRoot.dockHovered = true;
         if (dockRoot.autoHide) {
           dockRoot.showTimer.stop();
@@ -217,6 +222,7 @@ Item {
       }
 
       onExited: {
+        Logger.w("HoverUAF", "dockBg onExited");
         dockRoot.dockHovered = false;
         if (dockRoot.autoHide && !dockRoot.anyAppHovered && !dockRoot.menuHovered && dockRoot.dragSourceIndex === -1) {
           dockRoot.hideTimer.restart();
@@ -236,6 +242,7 @@ Item {
 
     GridLayout {
       id: dockLayout
+      Component.onDestruction: Logger.w("HoverUAF", "dockLayout destroyed")
       columns: isVertical ? 1 : -1
       rows: isVertical ? -1 : 1
       rowSpacing: itemSpacing
@@ -247,6 +254,7 @@ Item {
       // ---------------- Launcher item (always first) ----------------
       Item {
         id: launcherItem
+        Component.onDestruction: Logger.w("HoverUAF", "launcherItem destroyed")
         Layout.preferredWidth: isVertical ? dockRoot.itemThickness : appItemLength
         Layout.preferredHeight: isVertical ? appItemLength : dockRoot.itemThickness
         Layout.alignment: Qt.AlignCenter

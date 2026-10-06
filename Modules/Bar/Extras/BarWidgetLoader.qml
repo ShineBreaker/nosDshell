@@ -130,6 +130,7 @@ Item {
     anchors.fill: parent
     asynchronous: true
     active: root.checkWidgetExists() && (root.reloadCounter >= 0)
+    onItemChanged: Logger.w("HoverUAF", "BWL item swapped: id=" + root.widgetId + " now=" + (item ? "set" : "null"))
 
     // All widgets use setSource() so that screen and widget properties
     // are set as initial properties, available during Component.onCompleted.
