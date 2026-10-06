@@ -583,7 +583,9 @@ Item {
                   NIcon {
                     anchors.centerIn: parent
                     icon: modelData.icon
-                    pointSize: Style.fontSizeL
+                    // Same size as the DDE artwork box (module head fallback
+                    // uses this too) so the rail column reads uniform.
+                    pointSize: Style.settingsModuleHeadIcon
                     applyUiScale: false
                     visible: ddeArt === ""
                     color: selected ? Color.onShell : Qt.rgba(1, 1, 1, Style.settingsRailIconDim)
