@@ -185,7 +185,7 @@ set -uo pipefail
 cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap
-control-center cc-notifications cc-quick-wifi
+control-center cc-switch cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
@@ -196,7 +196,7 @@ settings-osd settings-about settings-bar settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-long osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu locksscreen" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu locksscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -293,9 +293,9 @@ echo "SWAYSOCK=$SWAYSOCK WAYLAND_DISPLAY=$WAYLAND_DISPLAY"
 swaymsg "output HEADLESS-1 resolution 1920x1080 position 0 0" 2>/dev/null || swaymsg create_output 2>/dev/null
 # wlroots headless can expose a second HEADLESS-n at the same position; a second
 # surface splits panels/OSD and grim only captures one. Keep HEADLESS-1 only.
-for OUT in $(swaymsg -t get_outputs 2>/dev/null | grep -o '"name":"[^"]*"' | cut -d'"' -f4 | grep -v '^HEADLESS-1$'); do
-  echo "disabling extra output: $OUT"
-  swaymsg "output $OUT disable" 2>/dev/null
+for EXTRA_OUT in $(swaymsg -t get_outputs 2>/dev/null | grep -o '"name":[[:space:]]*"[^"]*"' | grep -o '"[^"]*"[[:space:]]*$' | tr -d '"' | grep -v '^HEADLESS-1$'); do
+  echo "disabling extra output: $EXTRA_OUT"
+  swaymsg "output $EXTRA_OUT disable" 2>/dev/null
 done
 
 # pipewire on the private bus so AudioService / volume OSD work
@@ -454,6 +454,17 @@ run_scene() {
                           call launcher toggle 0.5
                           call launcher switchMode fullscreen 0.8 ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
+    # Quick-switch row: inject a real click on the first switch cell
+    # (bottom-left of the quick-control strip) and compare before/after.
+    cc-switch)            call controlCenter toggle 1.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          qs -p "$REPO" ipc call debug hit opened 1610 1015 > "$WORK/logs/cc-switch-hit.txt" 2>&1 || true
+                          shot cc-switch-before
+                          "$VINPUT" vinput click 1610 1015 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2
+                          shot cc-switch-after
+                          qs -p "$REPO" ipc call debug opened 1 > "$WORK/logs/cc-switch-opened.txt" 2>&1 || true
+                          call controlCenter toggle 0.5 ;;
     # DDE control center: bell page (3 notifications seeded so the list has content)
     cc-notifications)     notify-send -a nosdshell-verify "Notification one" \
                             "First test body for the history list." 2>/dev/null
@@ -469,6 +480,40 @@ run_scene() {
                           shot "$1"
                           call controlCenter toggle 0.5 ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
+    # Forensics: open the all-settings page in the frame, dump the paint-order
+    # scene tree, then inject REAL pointer events (zwlr_virtual_pointer via
+    # tools/nosd-helpers vinput) at the rail column: hit-test probe -> click ->
+    # jitter-click -> screenshot. If a click lands, the scrolled module header
+    # in settings-click.png differs from settings-tree.png.
+    settings-tree)        call settings openTab general 5
+                          shot settings-tree
+                          swaymsg -t get_outputs > "$WORK/logs/sway-outputs.json" 2>&1
+                          qs -p "$REPO" ipc call debug list > "$WORK/logs/cc-roots.txt" 2>&1
+                          qs -p "$REPO" ipc call debug opened 16 > "$WORK/logs/cc-tree.txt" 2>&1
+                          echo "tree → $WORK/logs/cc-tree.txt"
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          if [ -x "$VINPUT" ]; then
+                            for y in 105 159 213 267 321; do
+                              qs -p "$REPO" ipc call debug hit opened 1540 "$y" >> "$WORK/logs/cc-hit.txt" 2>&1 || true
+                            done
+                            "$VINPUT" vinput click 1540 267 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot settings-click
+                            "$VINPUT" vinput jclick 1540 105 2 2 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot settings-jclick
+                            # Branch test: click outside the panel. If the
+                            # panel closes the whole injection path works and
+                            # the rail alone is broken; if it stays open the
+                            # injector itself is at fault.
+                            "$VINPUT" vinput click 400 400 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1
+                            shot settings-outside-click
+                            qs -p "$REPO" ipc call debug opened 1 > "$WORK/logs/cc-after-outside.txt" 2>&1 || true
+                          else
+                            echo "vinput binary missing: cargo build --release --manifest-path tools/nosd-helpers/Cargo.toml"
+                          fi
+                          call settings toggle 0.5 ;;
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$1"; call settings toggle 0.5 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
     notification)         notify-send -a nosdshell-verify "Baseline notification" \

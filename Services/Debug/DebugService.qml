@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Services.Compositor
+import qs.Services.UI
 
 // DebugService — shell-side forensics for live debugging.
 //
@@ -54,11 +55,31 @@ Singleton {
       if (item.visible === false) {
         s += " hidden";
       }
+      if (item.enabled === false) {
+        s += " disabled";
+      }
+      if (item.opacity !== undefined && item.opacity < 1) {
+        s += " opacity:" + Number(item.opacity).toFixed(2);
+      }
+      if (item.clip === true) {
+        s += " clip";
+      }
       if (item.z) {
         s += " z:" + item.z;
       }
       if (item.layer && item.layer.enabled) {
         s += " layer";
+      }
+      // Pointer-relevant state: a Flickable still grabbing presses, or a
+      // MouseArea that is enabled but never sees events, shows up here.
+      if (item.interactive !== undefined) {
+        s += " interactive:" + item.interactive;
+      }
+      if (item.containsMouse !== undefined) {
+        s += " containsMouse:" + item.containsMouse;
+      }
+      if (item.containsPress !== undefined) {
+        s += " containsPress:" + item.containsPress;
       }
     } catch (e) {}
     return s;
@@ -98,6 +119,69 @@ Singleton {
       return "unknown root '" + name + "' (known: " + rootNames() + ")";
     }
     return dumpItemTree(item, maxDepth);
+  }
+
+  // The panel actually on screen: PanelService.openedPanel. Names lie when a
+  // screen binding races registration — the open panel is the truth.
+  function dumpOpenedPanel(maxDepth) {
+    var p = null;
+    try {
+      p = PanelService.openedPanel;
+    } catch (e) {}
+    if (!p)
+      return "no panel open";
+    var head = describe(p) + " isPanelOpen=" + p.isPanelOpen + " isPanelVisible=" + p.isPanelVisible;
+    return head + "\n" + dumpItemTree(p, maxDepth);
+  }
+
+  // Pointer forensics: walk childAt() from a root item down to the deepest
+  // item under the window coordinate (gx, gy). This is the same hit path Qt's
+  // pointer delivery computes, minus event acceptance — so it answers "which
+  // item is topmost at this pixel" when clicks land somewhere unexpected.
+  // rootName "" or "opened" = PanelService.openedPanel.
+  function hitTest(rootName, gx, gy, maxDepth) {
+    var root = null;
+    try {
+      root = (rootName === "" || rootName === "opened") ? PanelService.openedPanel : roots[rootName];
+    } catch (e) {}
+    if (!root)
+      return "no such root '" + rootName + "' (known: " + rootNames() + ", opened=" + (PanelService.openedPanel ? PanelService.openedPanel.objectName : "none") + ")";
+    var p = root.mapFromItem(null, gx, gy);
+    var lines = ["hit(" + gx + "," + gy + ") →"];
+    var cur = root;
+    lines.push("  " + describe(cur) + " @" + Math.round(p.x) + "," + Math.round(p.y));
+    for (var d = 0; d < (maxDepth || 24); d++) {
+      // List EVERY child containing the point (paint order → delivery order);
+      // the topmost acceptor wins, so a covering item shows up before it.
+      var kids = [];
+      try {
+        kids = cur.children || [];
+      } catch (e) {}
+      var hitKids = [];
+      for (var i = 0; i < kids.length; i++) {
+        var k = kids[i];
+        try {
+          if (k.visible === false)
+            continue;
+          var lp = cur.mapToItem(k, p.x, p.y);
+          if (lp.x >= 0 && lp.y >= 0 && lp.x <= k.width && lp.y <= k.height)
+            hitKids.push([k, lp]);
+        } catch (e) {}
+      }
+      if (hitKids.length === 0)
+        break;
+      for (var j = hitKids.length - 1; j >= 0; j--) {
+        var tag = j === hitKids.length - 1 ? "=>" : "  ";
+        lines.push(tag + " " + describe(hitKids[j][0]) + " @" + Math.round(hitKids[j][1].x) + "," + Math.round(hitKids[j][1].y));
+      }
+      // Descend through the topmost child (paint-order last)
+      var top = hitKids[hitKids.length - 1][0];
+      p = hitKids[hitKids.length - 1][1];
+      cur = top;
+    }
+    var out = lines.join("\n");
+    console.info(out);
+    return out;
   }
 
   function dumpAllRoots(maxDepth) {
@@ -175,7 +259,10 @@ Singleton {
     try {
       toplevels = ToplevelManager ? (ToplevelManager.toplevels.values || []).length : -1;
     } catch (e) {}
-    var lines = ["isDebug=" + Settings.isDebug + " (env=" + Settings.envDebug + " persisted=" + (Settings.data.debug.enabled ?? false) + ")", "modules='" + Settings.data.debug.modules + "' logLevel=" + Settings.data.debug.logLevel, "screens=" + screens.join(" | "), "toplevels=" + toplevels, "roots=" + (rootNames() || "<none>"), "watches=" + (Object.keys(_watches).join(", ") || "<none>"), "qtTrace= QT_LOGGING_RULES env must be set before launch — e.g. qt.quick.hover.trace=true"];
+    var lines = ["isDebug=" + Settings.isDebug + " (env=" + Settings.envDebug + " persisted=" + (Settings.data.debug.enabled ?? false) + ")", "modules='" + Settings.data.debug.modules + "' logLevel=" + Settings.data.debug.logLevel, "screens=" + screens.join(" | "), "toplevels=" + toplevels, "roots=" + (rootNames() || "<none>"), "watches=" + (Object.keys(
+                                                                                                                                                                                                                                                                                                                                                          _watches).join(
+                                                                                                                                                                                                                                                                                                                                                          ", ") || "<none>"),
+                 "qtTrace= QT_LOGGING_RULES env must be set before launch — e.g. qt.quick.hover.trace=true"];
     return lines.join("\n");
   }
 }

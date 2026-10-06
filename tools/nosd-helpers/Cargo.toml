@@ -13,6 +13,7 @@ serde_json = { version = "=1.0.151", features = ["preserve_order"] }
 tokio = { version = "=1.53.2", features = ["rt-multi-thread", "macros"] }
 ureq = "=3.4.2"
 wayland-client = "=0.31.15"
+wayland-protocols-wlr = { version = "=0.3.9", features = ["client"] }
 zbus = "=5.19.0"
 
 [[bin]]

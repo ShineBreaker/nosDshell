@@ -1074,8 +1074,8 @@ Singleton {
       return DebugService.rootNames();
     }
 
-    function tree(name: string): string {
-      return DebugService.dumpRegisteredRoot(name);
+    function tree(name: string, depth: int): string {
+      return DebugService.dumpRegisteredRoot(name, depth);
     }
 
     function watch(name: string): string {
@@ -1089,6 +1089,14 @@ Singleton {
 
     function dump(): string {
       return DebugService.dumpAllRoots();
+    }
+
+    function opened(depth: int): string {
+      return DebugService.dumpOpenedPanel(depth);
+    }
+
+    function hit(root: string, x: real, y: real): string {
+      return DebugService.hitTest(root, x, y, 24);
     }
   }
 }

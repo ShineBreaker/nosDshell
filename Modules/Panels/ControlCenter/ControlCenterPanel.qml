@@ -5,6 +5,7 @@ import Quickshell
 import qs.Commons
 import qs.Modules.MainScreen
 import qs.Modules.Panels.ControlCenter
+import qs.Services.Debug
 import qs.Services.Media
 import qs.Services.Networking
 import qs.Services.UI
@@ -34,6 +35,23 @@ SmartPanel {
 
   // Which middle page the bell shows
   property bool notificationPage: false
+
+  // Scene forensics: the whole frame registers as "cc-<screen>" so
+  // `qs ipc call debug tree cc-HEADLESS-1` dumps the paint/delivery order.
+  property string _dbgName: ""
+  Component.onDestruction: {
+    if (root._dbgName !== "")
+      DebugService.unregisterRoot(root._dbgName);
+  }
+  onScreenChanged: {
+    if (root._dbgName !== "")
+      DebugService.unregisterRoot(root._dbgName);
+    if (screen && screen.name) {
+      root._dbgName = "cc-" + screen.name;
+      DebugService.registerRoot(root._dbgName, root);
+      Logger.d("Debug", "registered", root._dbgName, "for", root.objectName);
+    }
+  }
 
   // Which module the middle area shows (null = home page, DESIGN §3.5.3)
   property var activeModule: null
