@@ -17,7 +17,8 @@ Singleton {
     if (!Settings.data.dock.enabled || Settings.data.dock.mode !== "efficient") {
       return false;
     }
-    var monitors = Settings.data.bar.monitors || [];
+    // Single multi-screen list: dock.monitors serves both modes (DDE "one taskbar").
+    var monitors = Settings.data.dock.monitors || [];
     return monitors.length === 0 || monitors.includes(screenName);
   }
 

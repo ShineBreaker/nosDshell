@@ -78,10 +78,6 @@ Singleton {
       "icon": "layout-bottombar",
       "tabs": [
         {
-          "tab": SettingsPanel.Tab.Bar,
-          "subTab": -1
-        },
-        {
           "tab": SettingsPanel.Tab.Dock,
           "subTab": -1
         }
@@ -244,6 +240,10 @@ Singleton {
       "tabs": [
         {
           "tab": SettingsPanel.Tab.Hooks,
+          "subTab": -1
+        },
+        {
+          "tab": SettingsPanel.Tab.Advanced,
           "subTab": -1
         }
       ]

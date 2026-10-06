@@ -73,6 +73,7 @@ SmartPanel {
 
   // Tabs enumeration, order is NOT relevant
   enum Tab {
+    Advanced,
     About,
     Audio,
     Bar,

@@ -136,7 +136,7 @@ PanelWindow {
 
     Component.onCompleted: {
       selectedScaleRatio = Settings.data.general.scaleRatio;
-      selectedBarPosition = Settings.data.bar.position;
+      selectedBarPosition = Settings.data.dock.position;
       selectedWallpaperDirectory = Settings.data.wallpaper.directory || Settings.defaultWallpapersDirectory;
     }
 
@@ -185,7 +185,7 @@ PanelWindow {
         }
 
         Settings.data.general.scaleRatio = selectedScaleRatio;
-        Settings.data.bar.position = selectedBarPosition;
+        Settings.data.dock.position = selectedBarPosition;
 
         // Save settings immediately and wait for settingsSaved signal before closing
         Settings.saveImmediate();
@@ -214,7 +214,7 @@ PanelWindow {
 
     function applyUISettings() {
       Settings.data.general.scaleRatio = selectedScaleRatio;
-      Settings.data.bar.position = selectedBarPosition;
+      Settings.data.dock.position = selectedBarPosition;
     }
 
     // Blurred wallpaper (DESIGN §1.8). LockScreenBackground already owns

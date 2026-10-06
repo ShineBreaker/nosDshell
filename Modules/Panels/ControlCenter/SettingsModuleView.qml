@@ -6,8 +6,8 @@ import qs.Commons
 import qs.Modules.Panels.Settings
 import qs.Modules.Panels.Settings.Tabs
 import qs.Modules.Panels.Settings.Tabs.About
+import qs.Modules.Panels.Settings.Tabs.Advanced
 import qs.Modules.Panels.Settings.Tabs.Audio
-import qs.Modules.Panels.Settings.Tabs.Bar
 import qs.Modules.Panels.Settings.Tabs.ColorScheme
 import qs.Modules.Panels.Settings.Tabs.Connections
 import qs.Modules.Panels.Settings.Tabs.ControlCenter
@@ -367,6 +367,8 @@ Item {
     switch (tab) {
     case SettingsPanel.Tab.About:
       return aboutTab;
+    case SettingsPanel.Tab.Advanced:
+      return advancedTab;
     case SettingsPanel.Tab.Audio:
       return audioTab;
     case SettingsPanel.Tab.Bar:
@@ -931,12 +933,16 @@ Item {
     AboutTab {}
   }
   Component {
+    id: advancedTab
+    AdvancedTab {}
+  }
+  Component {
     id: audioTab
     AudioTab {}
   }
   Component {
     id: barTab
-    BarTab {}
+    AdvancedTab {}
   }
   Component {
     id: colorSchemeTab

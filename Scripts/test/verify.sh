@@ -25,7 +25,7 @@
 #   settings-general, settings-userinterface, settings-audio,
 #   settings-colorscheme, settings-dock, settings-launcher,
 #   settings-wallpaper, settings-notifications, settings-osd,
-#   settings-about, settings-bar, settings-connections, settings-controlcenter,
+#   settings-about, settings-advanced, settings-bar, settings-connections, settings-controlcenter, 
 #   settings-desktopwidgets, settings-display, settings-hooks, settings-idle,
 #   settings-lockscreen, settings-plugins, settings-sessionmenu,
 #   settings-system, settings-systemmonitor
@@ -158,13 +158,13 @@ fi
 # rewrite the seed's dock.*/general.* keys back to Assets defaults before the
 # run starts (verified: seed 64 vs runtime 67 lost displayMode/onlySameOutput
 # and let the setup wizard take over the screen). Keep in lockstep.
-# dock.displayMode gates the fashion dock's auto-hide; efficient (taskbar)
-# mode uses dock.hideMode instead.
+# dock.hideMode gates the taskbar auto-hide in both modes (DESIGN §3.1.1):
+# keep-showing reserves space, keep-hidden auto-hides, smart-hide hides on overlap.
 # dock.onlySameOutput=false: the headless sway reports toplevel .screens as a
 # list the Quickshell ShellScreen object never satisfies, so leaving the
 # default true silently drops every running app from the dock (verified: with
 # it on, no toplevel reaches dockApps; off, all three appear).
-SEED='{"settingsVersion":69,"dock":{"displayMode":"always_visible","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":69,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
@@ -192,7 +192,7 @@ osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
-settings-osd settings-about settings-bar settings-connections
+settings-osd settings-about settings-advanced settings-bar settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-long osd-overdrive toast \

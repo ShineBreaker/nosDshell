@@ -103,7 +103,8 @@ Singleton {
 
   // Bar Height
   // Efficient (DDE taskbar) mode: thickness = dock.iconSize x 1.2 (36 -> 43), density is inert
-  readonly property string _barEffectivePosition: Settings.data.dock.mode === "efficient" ? Settings.data.dock.position : Settings.data.bar.position
+  // Single taskbar position for both modes (DDE "one taskbar"); bar.position is compat data.
+  readonly property string _barEffectivePosition: Settings.data.dock.position
   readonly property bool _barEffectiveVertical: _barEffectivePosition === "left" || _barEffectivePosition === "right"
   readonly property real barHeight: {
     if (Settings.data.dock.mode === "efficient")

@@ -31,7 +31,26 @@ ColumnLayout {
         onToggled: checked => Settings.data.dock.enabled = checked
       }
 
-      // Display behavior
+      // 任务栏模式（DESIGN §3.1）：fashion 悬浮居中，efficient 通栏贴边
+      NComboBox {
+        visible: Settings.data.dock.enabled
+        Layout.fillWidth: true
+        label: I18n.tr("dock-menu.mode")
+        model: [
+          {
+            "key": "fashion",
+            "name": I18n.tr("dock-menu.mode-fashion")
+          },
+          {
+            "key": "efficient",
+            "name": I18n.tr("dock-menu.mode-efficient")
+          }
+        ]
+        currentKey: Settings.data.dock.mode
+        onSelected: key => Settings.data.dock.mode = key
+      }
+
+      // 显示行为：DDE hide-mode 三态（DESIGN §3.1.1）；旧 dock.displayMode 在 fashion 下 inert
       NComboBox {
         visible: Settings.data.dock.enabled
         Layout.fillWidth: true
@@ -39,20 +58,20 @@ ColumnLayout {
         description: I18n.tr("panels.dock.appearance-display-description")
         model: [
           {
-            "key": "always_visible",
-            "name": I18n.tr("hide-modes.visible")
+            "key": "keep-showing",
+            "name": I18n.tr("dock-menu.state-keep-showing")
           },
           {
-            "key": "auto_hide",
-            "name": I18n.tr("panels.dock.appearance-display-auto-hide")
+            "key": "keep-hidden",
+            "name": I18n.tr("dock-menu.state-keep-hidden")
           },
           {
-            "key": "exclusive",
-            "name": I18n.tr("panels.dock.appearance-display-exclusive")
+            "key": "smart-hide",
+            "name": I18n.tr("dock-menu.state-smart-hide")
           }
         ]
-        currentKey: Settings.data.dock.displayMode
-        onSelected: key => Settings.data.dock.displayMode = key
+        currentKey: Settings.data.dock.hideMode
+        onSelected: key => Settings.data.dock.hideMode = key
       }
 
       // Background opacity
@@ -75,44 +94,28 @@ ColumnLayout {
         }
       }
 
-      // Floating distance
-      ColumnLayout {
+      // 图标尺寸：DDE 三档 30/36/48（DESIGN §3.1.1）；旧 dock.size 是 0–2 比例，已改写 iconSize
+      NComboBox {
         visible: Settings.data.dock.enabled
-        spacing: Style.marginXXS
         Layout.fillWidth: true
-        NLabel {
-          label: I18n.tr("panels.dock.appearance-floating-distance-label")
-          description: I18n.tr("panels.dock.appearance-floating-distance-description")
-        }
-        NValueSlider {
-          Layout.fillWidth: true
-          from: 0
-          to: 4
-          stepSize: 0.01
-          value: Settings.data.dock.floatingRatio
-          onMoved: value => Settings.data.dock.floatingRatio = value
-          text: Math.floor(Settings.data.dock.floatingRatio * 100) + "%"
-        }
-      }
-
-      // Icon size
-      ColumnLayout {
-        visible: Settings.data.dock.enabled
-        spacing: Style.marginXXS
-        Layout.fillWidth: true
-        NLabel {
-          label: I18n.tr("panels.dock.appearance-icon-size-label")
-          description: I18n.tr("panels.dock.appearance-icon-size-description")
-        }
-        NValueSlider {
-          Layout.fillWidth: true
-          from: 0
-          to: 2
-          stepSize: 0.01
-          value: Settings.data.dock.size
-          onMoved: value => Settings.data.dock.size = value
-          text: Math.floor(Settings.data.dock.size * 100) + "%"
-        }
+        label: I18n.tr("panels.dock.appearance-icon-size-label")
+        description: I18n.tr("panels.dock.appearance-icon-size-description")
+        model: [
+          {
+            "key": "30",
+            "name": I18n.tr("dock-menu.size-small")
+          },
+          {
+            "key": "36",
+            "name": I18n.tr("dock-menu.size-medium")
+          },
+          {
+            "key": "48",
+            "name": I18n.tr("dock-menu.size-large")
+          }
+        ]
+        currentKey: Settings.data.dock.iconSize
+        onSelected: key => Settings.data.dock.iconSize = parseInt(key)
       }
 
       NToggle {

@@ -63,12 +63,8 @@ Singleton {
     function setDisplayMode(mode: string, screen: string) {
       if (mode === "always_visible" || mode === "non_exclusive" || mode === "auto_hide") {
         if (!screen || screen === "all") {
-          if (Settings.data.dock.mode === "efficient") {
-            // Map to the DDE hide-mode vocabulary
-            Settings.data.dock.hideMode = (mode === "auto_hide") ? "keep-hidden" : "keep-showing";
-          } else {
-            Settings.data.bar.displayMode = mode;
-          }
+          // 两种模式都落到生效键 dock.hideMode（bar.displayMode 已被 getter 绕过，见 Settings.getBarDisplayModeForScreen）
+          Settings.data.dock.hideMode = (mode === "auto_hide") ? "keep-hidden" : "keep-showing";
         } else {
           Settings.setScreenOverride(screen, "displayMode", mode);
         }
@@ -81,11 +77,8 @@ Singleton {
         return;
       }
       if (!screen || screen === "all") {
-        if (Settings.data.dock.mode === "efficient") {
-          Settings.data.dock.position = position;
-        } else {
-          Settings.data.bar.position = position;
-        }
+        // 两种模式都落到生效键 dock.position（bar.position 已被 getter 绕过，见 Settings.getBarPositionForScreen）
+        Settings.data.dock.position = position;
       } else {
         Settings.setScreenOverride(screen, "position", position);
       }
@@ -95,6 +88,7 @@ Singleton {
   // Settings IPC helpers (outside IpcHandler to avoid QVariant IPC warnings)
   readonly property var _settingsTabMap: ({
                                             "about": SettingsPanel.Tab.About,
+                                            "advanced": SettingsPanel.Tab.Advanced,
                                             "audio": SettingsPanel.Tab.Audio,
                                             "bar": SettingsPanel.Tab.Bar,
                                             "colorscheme": SettingsPanel.Tab.ColorScheme,

@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 69
+  readonly property int settingsVersion: 70
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"

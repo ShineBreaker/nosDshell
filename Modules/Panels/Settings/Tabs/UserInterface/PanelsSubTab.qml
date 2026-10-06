@@ -19,14 +19,6 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
     NToggle {
-      label: I18n.tr("panels.user-interface.panels-attached-to-bar-label")
-      description: I18n.tr("panels.user-interface.panels-attached-to-bar-description")
-      checked: Settings.data.ui.panelsAttachedToBar
-      defaultValue: Settings.getDefaultValue("ui.panelsAttachedToBar")
-      onToggled: checked => Settings.data.ui.panelsAttachedToBar = checked
-    }
-
-    NToggle {
       visible: (Quickshell.screens.length > 1)
       label: I18n.tr("panels.user-interface.allow-panels-without-bar-label")
       description: I18n.tr("panels.user-interface.allow-panels-without-bar-description")

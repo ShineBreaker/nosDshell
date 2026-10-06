@@ -16,14 +16,19 @@ ColumnLayout {
     currentIndex: tabView.currentIndex
 
     NTabButton {
-      text: I18n.tr("common.appearance")
+      text: I18n.tr("settings.taskbar.general")
       tabIndex: 0
       checked: subTabBar.currentIndex === 0
     }
     NTabButton {
-      text: I18n.tr("common.monitors")
+      text: I18n.tr("settings.taskbar.plugins")
       tabIndex: 1
       checked: subTabBar.currentIndex === 1
+    }
+    NTabButton {
+      text: I18n.tr("settings.taskbar.monitors")
+      tabIndex: 2
+      checked: subTabBar.currentIndex === 2
     }
   }
 
@@ -36,7 +41,8 @@ ColumnLayout {
     id: tabView
     currentIndex: subTabBar.currentIndex
 
-    AppearanceSubTab {}
+    GeneralSubTab {}
+    PluginsSubTab {}
     MonitorsSubTab {}
   }
 }

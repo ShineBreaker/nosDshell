@@ -13,8 +13,6 @@ ColumnLayout {
   spacing: Style.marginL
   Layout.fillWidth: true
 
-  property var addMonitor
-  property var removeMonitor
 
   NText {
     text: I18n.tr("panels.bar.monitors-desc-new")
@@ -37,7 +35,6 @@ ColumnLayout {
         const info = CompositorService.displayScales[screenName];
         return (info && info.scale) ? info.scale : 1.0;
       }
-      readonly property bool barEnabled: (Settings.data.bar.monitors || []).indexOf(screenName) !== -1
       readonly property bool hasOverride: Settings.hasScreenOverride(screenName)
 
       // Track if override is enabled (controls both visibility AND whether overrides are applied)
@@ -83,30 +80,13 @@ ColumnLayout {
             }
           }
 
-          // Enable bar toggle
-          NToggle {
-            Layout.fillWidth: true
-            checked: monitorCard.barEnabled
-            onToggled: checked => {
-                         if (checked) {
-                           Settings.data.bar.monitors = root.addMonitor(Settings.data.bar.monitors, monitorCard.screenName);
-                         } else {
-                           Settings.data.bar.monitors = root.removeMonitor(Settings.data.bar.monitors, monitorCard.screenName);
-                         }
-                       }
-          }
         }
 
-        NDccGap {
-          Layout.fillWidth: true
-          visible: Settings.data.bar.monitors.includes(monitorCard.screenName)
-        }
 
-        // Override section (only visible when bar is enabled)
+        // Per-screen override section
         ColumnLayout {
           Layout.fillWidth: true
           spacing: Style.marginS
-          visible: monitorCard.barEnabled
 
           // Override toggle
           NToggle {

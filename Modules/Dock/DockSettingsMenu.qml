@@ -166,7 +166,7 @@ Singleton {
       var entry = {
         "id": id
       };
-      // Fill per-widget default settings the same way BarTab._addWidgetToSection does
+      // Fill per-widget defaults the same way the taskbar PluginsSubTab editor does
       if (BarWidgetRegistry.widgetHasUserSettings(id)) {
         var metadata = BarWidgetRegistry.widgetMetadata[id];
         if (metadata) {

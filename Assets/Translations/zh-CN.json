@@ -933,7 +933,7 @@
       "monitor-reset-all": "全部重置",
       "monitor-widgets-title": "小部件配置 - {monitor}",
       "monitors-desc": "在特定显示器上显示状态栏。如果未选择，则默认为全部。",
-      "monitors-desc-new": "配置哪些显示器显示 Bar，并自定义每个显示器的设置。",
+      "monitors-desc-new": "在“任务栏 / 显示器”中选择哪些显示器显示任务栏，这里可以按显示器覆盖位置、密度、显示模式和挂件。", 
       "monitors-title": "显示器显示",
       "title": "状态栏",
       "tray-blacklist-description": "添加托盘排除规则，支持通配符 (*)。",
@@ -2320,5 +2320,24 @@
     "state-smart-hide": "智能隐藏",
     "plugins": "插件",
     "settings": "Dock 设置"
+  },
+  "settings": {
+    "taskbar": {
+      "general": "常规",
+      "plugins": "插件",
+      "monitors": "显示器",
+      "mode-description": "时尚模式悬浮居中，高效模式贴边通栏。",
+      "state-description": "合成器不支持时，智能隐藏按一直隐藏处理。",
+      "plugins-description": "选择显示在任务栏上的插件，可拖拽排序。"
+    },
+    "advanced": {
+      "dock-appearance": "任务栏外观",
+      "dock-grouping": "窗口分组",
+      "bar-appearance": "顶栏外观",
+      "bar-behavior": "顶栏行为",
+      "bar-autohide": "自动隐藏",
+      "bar-monitors": "分屏覆盖", 
+      "panels-corners": "面板与圆角"
+    }
   }
 }

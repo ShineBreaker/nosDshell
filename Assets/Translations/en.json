@@ -935,7 +935,7 @@
       "monitor-reset-all": "Reset all",
       "monitor-widgets-title": "Widget Configuration - {monitor}",
       "monitors-desc": "Show bar on specific monitors. Defaults to all if none are chosen.",
-      "monitors-desc-new": "Configure which monitors display the bar and customize settings per monitor.",
+      "monitors-desc-new": "Which monitors show the taskbar is chosen under Taskbar / Monitors. Here you can override position, density, display mode and widgets for each monitor.", 
       "monitors-title": "Monitors display",
       "title": "Bar",
       "tray-blacklist-description": "Add tray exclusion rules, supports wildcards (*).",
@@ -2322,5 +2322,24 @@
     "state-smart-hide": "Smart hide",
     "plugins": "Plugins",
     "settings": "Dock settings"
+  },
+  "settings": {
+    "taskbar": {
+      "general": "General",
+      "plugins": "Plugins",
+      "monitors": "Monitors",
+      "mode-description": "Fashion mode floats centered; Efficient mode spans the screen edge.",
+      "state-description": "Smart hide falls back to Keep hidden when the compositor does not support it.",
+      "plugins-description": "Choose which plugins appear on the taskbar. Drag to reorder."
+    },
+    "advanced": {
+      "dock-appearance": "Dock appearance",
+      "dock-grouping": "Window grouping",
+      "bar-appearance": "Top bar appearance",
+      "bar-behavior": "Top bar behavior",
+      "bar-autohide": "Auto hide",
+      "bar-monitors": "Per-screen overrides", 
+      "panels-corners": "Panels and corners"
+    }
   }
 }
