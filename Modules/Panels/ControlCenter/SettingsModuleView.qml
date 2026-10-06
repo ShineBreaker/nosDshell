@@ -412,6 +412,41 @@ Item {
       openModuleAt(modules[i - 1], -1);
   }
 
+  // Keyboard scrolling for the standalone panel/window surfaces
+  // (SettingsPanel's SmartPanel keymap delegates here).
+  function scrollBy(dy) {
+    const f = _flickable();
+    if (f)
+      _scrollToY(_clampY(f.contentY + dy), true);
+  }
+
+  function scrollDown() {
+    scrollBy(Style.margin2L * 4);
+  }
+
+  function scrollUp() {
+    scrollBy(-Style.margin2L * 4);
+  }
+
+  function scrollPageDown() {
+    scrollBy(contentScroll.height * 0.8);
+  }
+
+  function scrollPageUp() {
+    scrollBy(-contentScroll.height * 0.8);
+  }
+
+  // Search field state + result selection for the panel's Up/Down keys.
+  readonly property alias searchText: searchInput.text
+
+  function searchSelectNext() {
+    searchResults.incrementCurrentIndex();
+  }
+
+  function searchSelectPrevious() {
+    searchResults.decrementCurrentIndex();
+  }
+
   // Sub-tabs of a tab are shown as SettingsGroups on one scrollable page
   // (DESIGN §3.5.3): find the tab's NTabBar / NTabView by objectName and flip
   // both into group mode. objectName lookup keeps tab files untouched.
@@ -658,6 +693,12 @@ Item {
             })
             z: 10
 
+            // Up/Down + Enter from the field: first result selected by default
+            onCountChanged: {
+              if (count > 0 && currentIndex < 0)
+                currentIndex = 0;
+            }
+
             function selectFirst() {
               if (currentItem)
                 searchResultClicked(currentItem.entry);
@@ -669,7 +710,7 @@ Item {
               width: searchResults.width
               height: Style.detailRowHeight
               radius: itemMouse.containsMouse ? Style.radiusRow : 0
-              color: itemMouse.containsMouse ? Color.overlay("checked") : Color.overlay("strong")
+              color: (itemMouse.containsMouse || ListView.isCurrentItem) ? Color.overlay("checked") : Color.overlay("strong")
 
               NText {
                 anchors.left: parent.left

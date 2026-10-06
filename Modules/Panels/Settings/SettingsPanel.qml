@@ -4,16 +4,19 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Modules.MainScreen
+import qs.Modules.Panels.ControlCenter
 import qs.Services.UI
 import qs.Widgets
 
 SmartPanel {
   id: root
 
-  preferredWidth: Math.round(840 * Style.uiScaleRatio)
+  // The "centered"/"attached" settings surface hosts the same two-column DDE
+  // module view as the control-center frame (rail + 640 px content).
+  preferredWidth: Style.settingsRailWidth + Style.settingsWindowContentWidth
   preferredHeight: Math.round(910 * Style.uiScaleRatio)
 
-  // Settings panel mode: "centered", "attached", "window"
+  // Settings panel mode: "controlCenter", "centered", "attached", "window"
   readonly property string settingsPanelMode: Settings.data.ui.settingsPanelMode
   readonly property bool isWindowMode: settingsPanelMode === "window"
   readonly property bool attachToBar: settingsPanelMode === "attached"
@@ -98,16 +101,15 @@ SmartPanel {
   property int requestedSubTab: -1
   property var requestedEntry: null
 
-  // Content state - these are synced with SettingsContent when panel opens
-  property int currentTabIndex: 0
-  property var tabsModel: []
-  property var activeScrollView: null
-
-  // Internal reference to the content (set when panel content loads)
+  // Internal reference to the module view (set when panel content loads)
   property var _settingsContent: null
 
-  // Override toggle to handle window mode
+  // Override toggle to handle window and controlCenter modes
   function toggle(buttonItem, buttonName) {
+    if (settingsPanelMode === "controlCenter") {
+      SettingsPanelService.toggle(requestedTab, requestedSubTab, screen);
+      return;
+    }
     if (isWindowMode) {
       SettingsPanelService.toggleWindow(requestedTab);
       return;
@@ -120,8 +122,14 @@ SmartPanel {
     }
   }
 
-  // Override open to handle window mode
+  // Override open to handle window and controlCenter modes
   function open(buttonItem, buttonName) {
+    if (settingsPanelMode === "controlCenter") {
+      // This surface never shows in controlCenter mode; the frame carries the
+      // all-settings page instead (DESIGN §3.5.3).
+      SettingsPanelService.openToTab(requestedTab, requestedSubTab, screen);
+      return;
+    }
     if (isWindowMode) {
       SettingsPanelService.openWindow(requestedTab);
       return;
@@ -163,24 +171,21 @@ SmartPanel {
     open(buttonItem, buttonName);
   }
 
-  // When the panel opens, initialize content
+  // When the panel opens, highlight and scroll to the requested module
   onOpened: {
-    if (_settingsContent) {
-      if (requestedEntry) {
-        _settingsContent.requestedTab = requestedEntry.tab;
-        _settingsContent.initialize();
-        const entry = requestedEntry;
-        requestedEntry = null;
-        Qt.callLater(() => _settingsContent.navigateToResult(entry));
-      } else {
-        _settingsContent.requestedTab = requestedTab;
-        if (requestedSubTab >= 0) {
-          _settingsContent._pendingSubTab = requestedSubTab;
-          requestedSubTab = -1;
-        }
-        _settingsContent.initialize();
-      }
+    if (!_settingsContent)
+      return;
+    var tab = requestedTab;
+    var sub = requestedSubTab;
+    if (requestedEntry) {
+      tab = requestedEntry.tab;
+      sub = (requestedEntry.subTab !== undefined && requestedEntry.subTab !== null) ? requestedEntry.subTab : -1;
+      requestedEntry = null;
     }
+    requestedSubTab = -1;
+    const mod = ControlCenterModules.moduleForTab(tab, sub);
+    if (mod)
+      _settingsContent.openModuleAt(mod, sub);
   }
 
   // Scroll functions - delegate to content
@@ -204,15 +209,15 @@ SmartPanel {
       _settingsContent.scrollPageUp();
   }
 
-  // Navigation functions - delegate to content
+  // Navigation functions - delegate to the module view
   function selectNextTab() {
     if (_settingsContent)
-      _settingsContent.selectNextTab();
+      _settingsContent.selectNextModule();
   }
 
   function selectPreviousTab() {
     if (_settingsContent)
-      _settingsContent.selectPreviousTab();
+      _settingsContent.selectPreviousModule();
   }
 
   // Override keyboard handlers from SmartPanel
@@ -268,22 +273,15 @@ SmartPanel {
     id: panelContent
     color: "transparent"
 
-    SettingsContent {
-      id: settingsContent
+    SettingsModuleView {
+      id: moduleView
       anchors.fill: parent
-      screen: root.screen
-      onCloseRequested: root.close()
+      anchors.margins: Style.marginS
+      contentWidth: Style.settingsWindowContentWidth
+      // The standalone panel has no home page; back closes it.
+      onBackRequested: root.close()
       Component.onCompleted: {
-        root._settingsContent = settingsContent;
-        root.tabsModel = Qt.binding(function () {
-          return settingsContent.tabsModel;
-        });
-        root.currentTabIndex = Qt.binding(function () {
-          return settingsContent.currentTabIndex;
-        });
-        root.activeScrollView = Qt.binding(function () {
-          return settingsContent.activeScrollView;
-        });
+        root._settingsContent = moduleView;
       }
     }
   }
