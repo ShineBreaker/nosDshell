@@ -34,9 +34,10 @@ ColumnLayout {
     spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.hooks.info-parameters-label")
       description: I18n.tr("panels.hooks.info-parameters-description")
+      enableDescriptionRichText: true
     }
   }
 }
