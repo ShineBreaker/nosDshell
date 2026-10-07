@@ -59,7 +59,6 @@ Item {
   readonly property bool isVertical: barPosition === "left" || barPosition === "right"
   readonly property real barHeight: Style.getBarHeightForScreen(screenName)
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
-  readonly property bool density: Settings.data.bar.density
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   // "fashion" = DDE fashion dock presentation: collapsible pill tray —
   // the second permitted pill usage (gxde-dock fashiontraycontrolwidget.cpp:

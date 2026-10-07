@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQml.Models
 import Quickshell
 import qs.Commons
 import qs.Services.System
@@ -56,6 +57,42 @@ Item {
     if (diffDays === 1)
       return 1;
     return 2;
+  }
+
+  // Model-layer range filter: only matching notifications instantiate
+  // delegates (a Repeater over the full history with visible:false would
+  // still create up to maxHistory rich items). Roles stay live, so async
+  // image-cache updates (setProperty) keep reaching the delegates.
+  DelegateModel {
+    id: visualModel
+    model: root.historyModel
+    groups: DelegateModelGroup {
+      id: shownGroup
+      name: "shown"
+      includeByDefault: true
+    }
+    filterOnGroup: "shown"
+  }
+
+  function applyRangeFilter() {
+    for (var i = 0; i < visualModel.items.count; i++) {
+      const item = visualModel.items.get(i);
+      if (item)
+        item.inShown = root.isInCurrentRange(item.model.timestamp);
+    }
+  }
+
+  onCurrentRangeChanged: root.applyRangeFilter()
+  // Late arrivals (history loaded from disk after startup) default to shown;
+  // filter once they land.
+  Component.onCompleted: Qt.callLater(root.applyRangeFilter)
+
+  Connections {
+    target: root.historyModel
+    function onCountChanged() {
+      // New arrivals default to shown; re-filter in the same frame.
+      root.applyRangeFilter();
+    }
   }
 
   function isInCurrentRange(ts) {
@@ -141,11 +178,12 @@ Item {
       }
     }
 
-    // The list itself
+    // The list itself; clip so a removing row sliding out stays inside.
     Item {
       id: listBox
       Layout.fillWidth: true
       Layout.preferredHeight: notificationColumn.implicitHeight
+      clip: true
       visible: root.hasNotificationsInCurrentRange()
 
       Column {
@@ -154,13 +192,12 @@ Item {
         spacing: Style.marginS
 
         Repeater {
-          model: root.historyModel
+          model: visualModel
 
           delegate: Item {
             id: delegateItem
             width: parent.width
-            visible: root.isInCurrentRange(model.timestamp)
-            height: visible && !isRemoving ? contentColumn.implicitHeight + Style.margin2S : 0
+            height: contentColumn.implicitHeight + Style.margin2S
 
             readonly property string notificationId: model.id
             readonly property string appName: model.appName || ""
@@ -196,7 +233,12 @@ Item {
               onTriggered: NotificationService.removeFromHistory(delegateItem.notificationId)
             }
 
-            Behavior on height {
+            // Deleting slides the row out along the width axis
+            // (gxde-control-center notifymodel.cpp: timerEvent, 20 px/10 ms);
+            // the reflow after removal is instant, no height collapse.
+            x: isRemoving ? width : 0
+
+            Behavior on x {
               enabled: !Settings.data.general.animationDisabled && delegateItem.isRemoving
               NumberAnimation {
                 duration: delegateItem.removeAnimationDuration
@@ -209,16 +251,8 @@ Item {
               anchors.fill: parent
               radius: Style.radiusItem
               color: Color.overlay("strong")
-              opacity: delegateItem.isRemoving ? 0 : 1
               border.color: delegateItem.isFocused ? Color.accent : "transparent"
               border.width: Style.borderS
-
-              Behavior on opacity {
-                enabled: !Settings.data.general.animationDisabled && delegateItem.isRemoving
-                NumberAnimation {
-                  duration: delegateItem.removeAnimationDuration
-                }
-              }
             }
 
             MouseArea {

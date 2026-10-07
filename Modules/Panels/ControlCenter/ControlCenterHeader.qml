@@ -90,7 +90,7 @@ Item {
         text: Qt.locale().toString(Time.now, Locale.LongFormat)
         pointSize: Style.fontSizeM
         fontSizeMode: Text.HorizontalFit
-        minimumPointSize: Style.fontSizeXS
+        minimumPointSize: Style.fontSizeXXS
         color: Color.onShell
         elide: Text.ElideRight
       }
