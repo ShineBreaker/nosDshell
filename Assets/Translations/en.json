@@ -518,6 +518,7 @@
     "select-color-description": "Apply theme colors for emphasis.",
     "select-icon-color": "Select icon color",
     "select-text-color": "Select text color",
+    "switchUser": "Switch user",
     "settings": "Settings",
     "shortcuts": "Shortcuts",
     "shutdown": "Shutdown",
@@ -2064,6 +2065,7 @@
     "forget-network": "Forget network",
     "grid-view": "Grid view",
     "hidden-files-hide": "Hidden files",
+    "hidden-files-show": "Show hidden files",
     "hide-unnamed-devices": "Hide unnamed devices",
     "home": "Home directory",
     "input-muted": "Toggle input mute",
@@ -2108,7 +2110,8 @@
     "up": "Parent directory",
     "volume-at": "Output volume: {volume}%",
     "wallpaper-selector": "Wallpaper selector",
-    "performance-mode-enabled": "Performance mode"
+    "performance-mode-enabled": "Performance mode",
+    "performance-mode-disabled": "Enable performance mode"
   },
   "wallpaper": {
     "browse": {

@@ -518,6 +518,7 @@
     "select-color-description": "应用主题颜色以示强调。",
     "select-icon-color": "选择图标颜色",
     "select-text-color": "选择文本颜色",
+    "switchUser": "切换用户",
     "settings": "设置",
     "shortcuts": "快捷方式",
     "shutdown": "关机",
@@ -2064,6 +2065,7 @@
     "forget-network": "忘记网络",
     "grid-view": "网格视图",
     "hidden-files-hide": "隐藏文件",
+    "hidden-files-show": "显示隐藏文件",
     "hide-unnamed-devices": "隐藏未命名的设备",
     "home": "主目录",
     "input-muted": "切换输入静音",
@@ -2108,7 +2110,8 @@
     "up": "上级目录",
     "volume-at": "输出音量：{volume}%",
     "wallpaper-selector": "壁纸选择器",
-    "performance-mode-enabled": "性能模式"
+    "performance-mode-enabled": "性能模式",
+    "performance-mode-disabled": "启用性能模式"
   },
   "wallpaper": {
     "browse": {

@@ -388,7 +388,7 @@ Popup {
           }
           NIconButton {
             icon: root.showHiddenFiles ? "filepicker-eye-off" : "filepicker-eye"
-            tooltipText: root.showHiddenFiles ? I18n.tr("tooltips.hidden-files-hide") : I18n.tr("tooltips.hidden-files-hide")
+            tooltipText: root.showHiddenFiles ? I18n.tr("tooltips.hidden-files-hide") : I18n.tr("tooltips.hidden-files-show")
             baseSize: Style.baseWidgetSize * 0.8
             onClicked: {
               root.showHiddenFiles = !root.showHiddenFiles;

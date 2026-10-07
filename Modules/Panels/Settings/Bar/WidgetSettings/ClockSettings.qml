@@ -74,6 +74,7 @@ ColumnLayout {
   }
 
   NColorChoice {
+    label: I18n.tr("common.select-text-color")
     currentKey: valueClockColor
     onSelected: key => {
                   valueClockColor = key;

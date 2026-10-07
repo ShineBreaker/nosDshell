@@ -79,7 +79,9 @@ ColumnLayout {
   }
 
   function saveSettings() {
-    return _settings.saveSettings();
+    var settings = _settings.saveSettings();
+    settingsChanged(settings);
+    return settings;
   }
 
   function updateStateCheck(index, command, icon) {
@@ -87,12 +89,12 @@ ColumnLayout {
                                           "command": command,
                                           "icon": icon
                                         });
-    _settings.saveSettings();
+    saveSettings();
   }
 
   function removeStateCheck(index) {
     _settings._stateChecksListModel.remove(index);
-    _settings.saveSettings();
+    saveSettings();
   }
 
   function addStateCheck() {
@@ -100,7 +102,7 @@ ColumnLayout {
                                              "command": "",
                                              "icon": ""
                                            });
-    _settings.saveSettings();
+    saveSettings();
   }
 
   RowLayout {

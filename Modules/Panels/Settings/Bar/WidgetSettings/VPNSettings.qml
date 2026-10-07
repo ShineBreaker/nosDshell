@@ -49,6 +49,7 @@ ColumnLayout {
                   root.valueDisplayMode = key;
                   saveSettings();
                 }
+    defaultValue: widgetMetadata.displayMode
   }
 
   NColorChoice {
@@ -58,13 +59,16 @@ ColumnLayout {
                   valueIconColor = key;
                   saveSettings();
                 }
+    defaultValue: widgetMetadata.iconColor
   }
 
   NColorChoice {
+    label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
                   valueTextColor = key;
                   saveSettings();
                 }
+    defaultValue: widgetMetadata.textColor
   }
 }

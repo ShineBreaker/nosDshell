@@ -43,7 +43,7 @@ NIconButton {
   border.width: Style.capsuleBorderWidth
 
   icon: PowerProfileService.performanceMode ? "rocket" : "rocket-off"
-  tooltipText: PowerProfileService.performanceMode ? I18n.tr("tooltips.performance-mode-enabled") : I18n.tr("tooltips.performance-mode-enabled")
+  tooltipText: PowerProfileService.performanceMode ? I18n.tr("tooltips.performance-mode-enabled") : I18n.tr("tooltips.performance-mode-disabled")
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   onClicked: PowerProfileService.togglePerformanceMode()
 

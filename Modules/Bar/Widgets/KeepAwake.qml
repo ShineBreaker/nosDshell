@@ -69,7 +69,7 @@ Item {
     customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
     customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
     icon: IdleInhibitorService.isInhibited ? "keep-awake-on" : "keep-awake-off"
-    tooltipText: IdleInhibitorService.isInhibited ? I18n.tr("tooltips.keep-awake") : I18n.tr("tooltips.keep-awake")
+    tooltipText: I18n.tr("tooltips.keep-awake")
     onClicked: IdleInhibitorService.manualToggle()
     onRightClicked: {
       PanelService.showContextMenu(contextMenu, pill, screen);

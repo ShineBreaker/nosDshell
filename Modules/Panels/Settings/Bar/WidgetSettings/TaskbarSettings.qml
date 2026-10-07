@@ -22,7 +22,7 @@ ColumnLayout {
   property bool valueOnlyActiveWorkspaces: widgetData.onlyActiveWorkspaces !== undefined ? widgetData.onlyActiveWorkspaces : widgetMetadata.onlyActiveWorkspaces
   property bool valueOnlySameOutput: widgetData.onlySameOutput !== undefined ? widgetData.onlySameOutput : widgetMetadata.onlySameOutput
   property bool valueColorizeIcons: widgetData.colorizeIcons !== undefined ? widgetData.colorizeIcons : widgetMetadata.colorizeIcons
-  property bool valueShowTitle: isVerticalBar ? false : widgetData.showTitle !== undefined ? widgetData.showTitle : widgetMetadata.showTitle
+  property bool valueShowTitle: widgetData.showTitle !== undefined ? widgetData.showTitle : widgetMetadata.showTitle
   property bool valueSmartWidth: widgetData.smartWidth !== undefined ? widgetData.smartWidth : widgetMetadata.smartWidth
   property int valueMaxTaskbarWidth: widgetData.maxTaskbarWidth !== undefined ? widgetData.maxTaskbarWidth : widgetMetadata.maxTaskbarWidth
   property int valueTitleWidth: widgetData.titleWidth !== undefined ? widgetData.titleWidth : widgetMetadata.titleWidth
@@ -43,7 +43,9 @@ ColumnLayout {
     settings.onlySameOutput = valueOnlySameOutput;
     settings.onlyActiveWorkspaces = valueOnlyActiveWorkspaces;
     settings.colorizeIcons = valueColorizeIcons;
-    settings.showTitle = valueShowTitle;
+    if (!isVerticalBar) {
+      settings.showTitle = valueShowTitle;
+    }
     settings.smartWidth = valueSmartWidth;
     settings.maxTaskbarWidth = valueMaxTaskbarWidth;
     settings.titleWidth = parseInt(titleWidthInput.text) || widgetMetadata.titleWidth;

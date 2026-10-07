@@ -20,7 +20,7 @@ ColumnLayout {
   property string valueClockStyle: widgetData.clockStyle !== undefined ? widgetData.clockStyle : widgetMetadata.clockStyle
   property string valueClockColor: widgetData.clockColor !== undefined ? widgetData.clockColor : widgetMetadata.clockColor
   property bool valueUseCustomFont: widgetData.useCustomFont !== undefined ? widgetData.useCustomFont : widgetMetadata.useCustomFont
-  property string valueCustomFont: widgetData.customFont !== undefined ? widgetData.customFont : widgetMetadata.custonFont
+  property string valueCustomFont: widgetData.customFont !== undefined ? widgetData.customFont : widgetMetadata.customFont
   property string valueFormat: widgetData.format !== undefined ? widgetData.format : widgetMetadata.format
 
   // Track the currently focused input field

@@ -275,7 +275,7 @@ Item {
             lines.push(I18n.tr("bar.custom-button.wheel-up") + `: ${wheelUpExec}`);
           }
           if (wheelDownExec !== "") {
-            lines.push(I18n.tr("bar.custom-button.wheel-down") + `Wheel down: ${wheelDownExec}`);
+            lines.push(I18n.tr("bar.custom-button.wheel-down") + `: ${wheelDownExec}`);
           }
         }
       }
