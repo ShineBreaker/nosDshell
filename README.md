@@ -60,7 +60,7 @@ Guix 用户可直接参考仓库根部的 `nosdshell.scm`。
 | 隔离环境运行并截图 | `Scripts/test/verify.sh <名字> [--settings seed.json] [--scenes a,b]` |
 | 格式化 QML | `Scripts/dev/qmlfmt.sh <路径>` |
 
-界面改动一律以 [`DESIGN.md`](./DESIGN.md) 为准；提交与代码约定见 [`AGENTS.md`](./AGENTS.md)。
+界面改动一律以 [`DESIGN.md`](./DESIGN.md) 为准；工程约定索引见 [`AGENTS.md`](./AGENTS.md)，代码约定见 [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)。
 
 ---
 
