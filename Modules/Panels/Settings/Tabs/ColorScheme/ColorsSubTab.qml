@@ -19,6 +19,8 @@ ColumnLayout {
   property int cacheVersion: 0
   property var screen
 
+  signal openDownloadPopup
+
   function extractSchemeName(schemePath) {
     var pathParts = schemePath.split("/");
     var filename = pathParts[pathParts.length - 1];
@@ -463,6 +465,14 @@ ColumnLayout {
           }
         }
       }
+    }
+
+    NButton {
+      text: I18n.tr("panels.color-scheme.download-button")
+      icon: "download"
+      onClicked: root.openDownloadPopup()
+      Layout.alignment: Qt.AlignRight
+      Layout.topMargin: Style.marginS
     }
   }
 }
