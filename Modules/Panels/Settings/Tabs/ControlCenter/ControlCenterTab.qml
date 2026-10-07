@@ -58,7 +58,7 @@ ColumnLayout {
     var sortedEntries = ControlCenterWidgetRegistry.getAvailableWidgets().slice().sort();
     sortedEntries.forEach(entry => {
                             const isPlugin = ControlCenterWidgetRegistry.isPluginWidget(entry);
-                            let displayName = entry;
+                            let displayName = ControlCenterWidgetRegistry.widgetDisplayName(entry);
                             let badges = [];
                             if (isPlugin) {
                               const pluginId = entry.replace("plugin:", "");

@@ -144,6 +144,21 @@ Singleton {
     return widgetMetadata[id] !== undefined;
   }
 
+  // Localised display name, mirroring BarWidgetRegistry.widgetDisplayName:
+  // camelCase/PascalCase id -> kebab-case key under `bar-widgets.label-`, with
+  // the raw id as fallback when the key is untranslated or absent.
+  function widgetDisplayName(id) {
+    if (!id)
+      return id;
+    if (isPluginWidget(id))
+      return id;
+    const key = "bar-widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+    const name = I18n.tr(key);
+    if (!name || name === key || name === "!!" + key + "!!")
+      return id;
+    return name;
+  }
+
   function isCpuIntensive(id) {
     if (pluginWidgetMetadata[id]?.cpuIntensive)
       return true;

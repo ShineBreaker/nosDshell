@@ -69,7 +69,7 @@ ColumnLayout {
       if (BarWidgetRegistry.hasWidget(ids[i]))
         availablePlugins.append({
           "key": ids[i],
-          "name": ids[i]
+          "name": BarWidgetRegistry.widgetDisplayName(ids[i])
         });
     }
   }

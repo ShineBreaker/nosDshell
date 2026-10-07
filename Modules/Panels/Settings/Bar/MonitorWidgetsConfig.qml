@@ -116,7 +116,7 @@ NBox {
       return;
     for (var i = 0; i < widgetIds.length; i++) {
       var id = widgetIds[i];
-      var displayName = id;
+      var displayName = BarWidgetRegistry.widgetDisplayName(id);
       const badges = [];
       if (BarWidgetRegistry.isPluginWidget(id)) {
         var pluginId = id.replace("plugin:", "");

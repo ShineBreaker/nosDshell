@@ -185,7 +185,7 @@ ColumnLayout {
       }
       for (var i = 0; i < widgetIds.length; i++) {
         var widgetId = widgetIds[i];
-        var displayName = widgetId;
+        var displayName = DesktopWidgetRegistry.widgetDisplayName(widgetId);
 
         // Get plugin name for plugin widgets
         var isPlugin = false;

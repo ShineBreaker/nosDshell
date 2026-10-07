@@ -586,6 +586,11 @@ NBox {
                     // Fallback: just strip the prefix
                     return pluginId;
                   }
+                  // Localised label from the registry; falls back to the raw id
+                  // when no widgetDisplayName is available.
+                  if (root.widgetRegistry && typeof root.widgetRegistry.widgetDisplayName === "function") {
+                    return root.widgetRegistry.widgetDisplayName(modelData.id);
+                  }
                   return modelData.id;
                 }
                 pointSize: Style.fontSizeXS
