@@ -131,7 +131,21 @@ Item {
     updateResults();
   }
 
+  // Provider change events (desktop-entry rescans, clipboard, pinned edits)
+  // can arrive in bursts; coalescing through callLater collapses a burst into
+  // one recompute and turns nested re-entry during the _results write into an
+  // iteration instead of recursion.
+  property bool _updateQueued: false
+
   function updateResults() {
+    if (_updateQueued)
+      return;
+    _updateQueued = true;
+    Qt.callLater(_updateResultsNow);
+  }
+
+  function _updateResultsNow() {
+    _updateQueued = false;
     const text = _searchText;
     _results = [];
     let newActiveProvider = null;

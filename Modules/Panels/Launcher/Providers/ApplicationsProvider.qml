@@ -190,12 +190,23 @@ Item {
     showsCategories = true;
   }
 
-  // Reload applications when desktop entries change on disk
+  // Reload applications when desktop entries change on disk. DesktopEntries
+  // emits valuesChanged once per discovered entry during its async scan, so
+  // reloads are debounced — reloading the full list per emission is O(n²) and
+  // stalls the UI thread for minutes on a cold start.
+  Timer {
+    id: rescanDebounce
+    interval: 400
+    onTriggered: {
+      Logger.d("ApplicationsProvider", "Desktop entries changed, reloading applications");
+      loadApplications();
+    }
+  }
+
   Connections {
     target: typeof DesktopEntries !== 'undefined' ? DesktopEntries.applications : null
     function onValuesChanged() {
-      Logger.d("ApplicationsProvider", "Desktop entries changed, reloading applications");
-      loadApplications();
+      rescanDebounce.restart();
     }
   }
 

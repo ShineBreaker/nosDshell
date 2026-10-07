@@ -43,7 +43,7 @@ Item {
 
   // Apps to show: the full list, or the active category's apps
   readonly property var listApps: {
-    const all = appsProvider ? (appsProvider.allApps || []) : [];
+    const all = appsProvider ? (appsProvider.entries || []) : [];
     if (!inCategory)
       return all;
     return all.filter(app => appsProvider.appMatchesDDECategory(app, activeCategory));
