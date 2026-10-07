@@ -175,7 +175,8 @@ NDccRow {
   ComboBox {
     id: combo
 
-    opacity: enabled ? 1.0 : 0.6
+    // Same disabled treatment as NComboBox: full opacity, color swap
+    // (textDisabledDark) instead of a blanket alpha that brightens the field.
     Layout.margins: Style.borderS
     // Fixed width trio: minimum/preferred/maximum depend only on the plain
     // root.minimumWidth property and Style tokens. Never read root.width
@@ -203,7 +204,7 @@ NDccRow {
       // §3.5.4: the drop-down looks like a text field — field fill, radius 5,
       // 1 px accent outline on focus.
       implicitHeight: Style.settingsFieldHeight
-      color: Color.overlay("field")
+      color: combo.enabled ? Color.overlay("field") : Color.overlay("idle")
       border.color: combo.activeFocus ? Color.accent : "transparent"
       border.width: Style.borderS
       radius: Style.settingsFieldRadius
@@ -226,7 +227,9 @@ NDccRow {
       readonly property int sourceIndex: root.findIndexByKey(root.currentKey)
       readonly property bool hasSelection: root.model && sourceIndex >= 0 && sourceIndex < root.model.count
 
-      color: hasSelection ? Color.onShell : Color.onShellTertiary
+      // Stay opaque: the disabled signal is the color swap, not extra alpha.
+      opacity: 1.0
+      color: combo.enabled ? (hasSelection ? Color.onShell : Color.onShellTertiary) : Color.textDisabledDark
       text: hasSelection ? root.model.get(sourceIndex).name : root.placeholder
     }
 
@@ -235,7 +238,7 @@ NDccRow {
       y: combo.topPadding + (combo.availableHeight - height) / 2
       icon: "caret-down"
       pointSize: Style.fontSizeL
-      color: Color.onShellSecondary
+      color: combo.enabled ? Color.onShellSecondary : Color.textDisabledDark
     }
 
     popup: Popup {

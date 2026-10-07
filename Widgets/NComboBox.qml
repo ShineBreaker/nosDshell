@@ -139,7 +139,9 @@ NDccRow {
   ComboBox {
     id: combo
 
-    opacity: enabled ? 1.0 : 0.6
+    // Disabled keeps full opacity and swaps colors instead: a 0.6 alpha over
+    // the field's dark fill blends toward the row and looks *brighter*
+    // (DDE uses textDisabledDark, DESIGN §1.1).
     Layout.margins: Style.borderS
     // Fixed width trio: minimum/preferred/maximum depend only on the plain
     // root.minimumWidth property and Style tokens. Never read root.width (the
@@ -207,7 +209,7 @@ NDccRow {
       // §3.5.4: the drop-down looks like a text field — field fill, radius 5,
       // 1 px accent outline on focus.
       implicitHeight: Style.settingsFieldHeight
-      color: Color.overlay("field")
+      color: combo.enabled ? Color.overlay("field") : Color.overlay("idle")
       border.color: combo.activeFocus ? Color.accent : "transparent"
       border.width: Style.borderS
       radius: Style.settingsFieldRadius
@@ -241,7 +243,9 @@ NDccRow {
       pointSize: Style.fontSizeM
       verticalAlignment: Text.AlignVCenter
       elide: Text.ElideRight
-      color: combo.currentIndex >= 0 ? Color.onShell : Color.onShellTertiary
+      // Stay opaque: the disabled signal is the color swap, not extra alpha.
+      opacity: 1.0
+      color: combo.enabled ? (combo.currentIndex >= 0 ? Color.onShell : Color.onShellTertiary) : Color.textDisabledDark
       text: {
         if (combo.currentIndex >= 0 && combo.currentIndex < root.itemCount()) {
           var item = root.getItem(combo.currentIndex);
@@ -256,7 +260,7 @@ NDccRow {
       y: combo.topPadding + (combo.availableHeight - height) / 2
       icon: "caret-down"
       pointSize: Style.fontSizeL
-      color: Color.onShellSecondary
+      color: combo.enabled ? Color.onShellSecondary : Color.textDisabledDark
     }
 
     popup: Popup {
