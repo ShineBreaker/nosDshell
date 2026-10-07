@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 73
+  readonly property int settingsVersion: 74
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -322,9 +322,8 @@ Singleton {
       property real screenRadiusRatio: 1.0
       property real animationSpeed: 1.0
       property bool animationDisabled: false
-      // Inert under the DDE lock layout (DESIGN §3.9): the setting is kept so
-      // existing configs and the Settings UI keep working, but the lock screen
-      // no longer has a compact variant to switch to.
+      // Inert under the DDE lock layout (DESIGN §3.9): no compact variant
+      // exists and no UI control is exposed; kept for config compatibility only.
       property bool compactLockScreen: false
       property bool lockScreenAnimations: false
       property bool lockOnSuspend: true
@@ -645,6 +644,7 @@ Singleton {
       property int bluetoothRssiPollIntervalMs: 60000 // Polling interval in milliseconds for RSSI queries
       property string networkPanelView: "wifi"
       property string wifiDetailsViewMode: "grid"   // "grid" or "list"
+      property string ethernetDetailsViewMode: "grid"   // "grid" or "list"
       property bool bluetoothHideUnnamedDevices: false
       property bool bluetoothAutoConnect: true
     }
@@ -702,6 +702,7 @@ Singleton {
     // notifications
     property JsonObject notifications: JsonObject {
       property bool enabled: true
+      property bool doNotDisturb: false
       property bool enableMarkdown: false
       property string density: "default" // "default", "compact"
       property list<string> monitors: [] // holds notifications visibility per monitor

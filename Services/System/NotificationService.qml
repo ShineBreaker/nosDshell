@@ -26,8 +26,10 @@ Singleton {
 
   // State
   property real lastSeenTs: 0
-  // Volatile property that doesn't persist to settings (similar to performanceMode)
+  // Persisted via Settings (notifications.doNotDisturb); startup takes the setting value.
   property bool doNotDisturb: false
+  // True while applying the persisted value at startup (skips writeback + toggle toast).
+  property bool _syncingDnd: false
 
   // Models
   property ListModel popupModel: ListModel {}
@@ -121,10 +123,27 @@ Singleton {
   Connections {
     target: Settings
     function onSettingsLoaded() {
+      _syncingDnd = true;
+      root.doNotDisturb = Settings.data.notifications?.doNotDisturb ?? false;
+      _syncingDnd = false;
       updateNotificationServer();
     }
     function onSettingsSaved() {
       updateNotificationServer();
+    }
+  }
+
+  // Follow Settings writes from UI (DND switch writes Settings directly).
+  // Writeback in onDoNotDisturbChanged covers the IPC path.
+  Connections {
+    target: Settings.data.notifications
+    function onDoNotDisturbChanged() {
+      const v = Settings.data.notifications?.doNotDisturb ?? false;
+      if (root.doNotDisturb === v)
+        return;
+      root._syncingDnd = true;
+      root.doNotDisturb = v;
+      root._syncingDnd = false;
     }
   }
 
@@ -1119,6 +1138,10 @@ Singleton {
   signal animateAndRemove(string notificationId)
 
   onDoNotDisturbChanged: {
+    if (_syncingDnd)
+      return;
+    if (Settings.data.notifications.doNotDisturb !== doNotDisturb)
+      Settings.data.notifications.doNotDisturb = doNotDisturb;
     ToastService.showNotice(doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled") : I18n.tr("toast.do-not-disturb.disabled"), doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled-desc") : I18n.tr("toast.do-not-disturb.disabled-desc"), doNotDisturb ? "bell-off" : "bell");
   }
 

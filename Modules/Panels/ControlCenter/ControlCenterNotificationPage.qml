@@ -42,22 +42,22 @@ Item {
         spacing: Style.marginS
 
         NIcon {
-          icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
+          icon: (Settings.data.notifications.doNotDisturb ?? false) ? "bell-off" : "bell"
           pointSize: Style.fontSizeXL
-          color: NotificationService.doNotDisturb ? Color.accent : Color.onShellSecondary
+          color: (Settings.data.notifications.doNotDisturb ?? false) ? Color.accent : Color.onShellSecondary
         }
 
         NText {
           Layout.fillWidth: true
-          text: NotificationService.doNotDisturb ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd")
+          text: (Settings.data.notifications.doNotDisturb ?? false) ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd")
           pointSize: Style.fontSizeM
           elide: Text.ElideRight
         }
 
         NToggle {
           label: ""
-          checked: NotificationService.doNotDisturb
-          onToggled: checked => NotificationService.doNotDisturb = checked
+          checked: Settings.data.notifications.doNotDisturb ?? false
+          onToggled: checked => Settings.data.notifications.doNotDisturb = checked
         }
       }
     }

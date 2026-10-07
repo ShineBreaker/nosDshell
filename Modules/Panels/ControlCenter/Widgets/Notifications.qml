@@ -8,8 +8,8 @@ import qs.Widgets
 NIconButtonHot {
   property ShellScreen screen
 
-  icon: NotificationService.doNotDisturb ? "bell-off" : "bell"
-  hot: NotificationService.doNotDisturb
+  icon: (Settings.data.notifications.doNotDisturb ?? false) ? "bell-off" : "bell"
+  hot: Settings.data.notifications.doNotDisturb ?? false
   tooltipText: I18n.tr("common.notifications")
   onClicked: {
     // DDE §3.5.2: notifications live on the control center's notification page
@@ -19,5 +19,5 @@ NIconButtonHot {
     cc.notificationPage = true;
     cc.open?.();
   }
-  onRightClicked: NotificationService.doNotDisturb = !NotificationService.doNotDisturb
+  onRightClicked: Settings.data.notifications.doNotDisturb = !(Settings.data.notifications.doNotDisturb ?? false)
 }

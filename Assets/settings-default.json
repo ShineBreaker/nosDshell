@@ -1,5 +1,5 @@
 {
-  "settingsVersion": 73,
+  "settingsVersion": 74,
   "bar": {
     "enabled": false,
     "barType": "simple",
@@ -398,6 +398,7 @@
     "bluetoothRssiPollIntervalMs": 60000,
     "networkPanelView": "wifi",
     "wifiDetailsViewMode": "grid",
+    "ethernetDetailsViewMode": "grid",
     "bluetoothHideUnnamedDevices": false,
     "bluetoothAutoConnect": true
   },
@@ -449,6 +450,7 @@
   },
   "notifications": {
     "enabled": true,
+    "doNotDisturb": false,
     "enableMarkdown": false,
     "density": "default",
     "monitors": [],

@@ -757,16 +757,31 @@ Item {
         ];
   }
 
+  // 产品语义:启动器 Pinned 分类与任务栏 pinnedApps 是两套独立存储(不重构)。
+  // 置顶 ID 以 normalizeAppId(小写+trim)比对,与 DockMenu.getDesktopEntryId
+  // 归一化后的 desktop entry ID 同一口径。启动器置顶单向同步到 dock:
+  // pin 时若 dock 缺该 ID 则追加;launcher 取消置顶不碰 dock(dock 由 DockMenu 单独管理)。
   function togglePin(appId) {
     if (!appId)
       return;
     const normalizedId = normalizeAppId(appId);
     let arr = (Settings.data.appLauncher.pinnedApps || []).slice();
     const idx = arr.findIndex(pinnedId => normalizeAppId(pinnedId) === normalizedId);
-    if (idx >= 0)
+    if (idx >= 0) {
       arr.splice(idx, 1);
-    else
+    } else {
       arr.push(appId);
+      try {
+        const dockPinned = (Settings.data.dock.pinnedApps || []).slice();
+        const dockHit = dockPinned.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);
+        if (!dockHit) {
+          dockPinned.push(appId);
+          Settings.data.dock.pinnedApps = dockPinned;
+        }
+      } catch (e) {
+        Logger.w("ApplicationsProvider", "sync pin to dock failed: " + e);
+      }
+    }
     Settings.data.appLauncher.pinnedApps = arr;
   }
 
