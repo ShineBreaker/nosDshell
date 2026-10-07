@@ -63,7 +63,14 @@ Singleton {
     function setDisplayMode(mode: string, screen: string) {
       if (mode === "always_visible" || mode === "non_exclusive" || mode === "auto_hide") {
         if (!screen || screen === "all") {
-          // 两种模式都落到生效键 dock.hideMode（bar.displayMode 已被 getter 绕过，见 Settings.getBarDisplayModeForScreen）
+          // Upstream vocabulary lands on the fashion status bar verbatim; the
+          // dock strip maps onto keep-showing/keep-hidden — it has no
+          // "visible but non-exclusive" mode, so non_exclusive degrades to
+          // keep-showing there.
+          Settings.data.bar.displayMode = mode;
+          if (mode === "non_exclusive") {
+            Logger.w("IPC", "non_exclusive has no dock equivalent; the dock keeps reserving space (keep-showing)");
+          }
           Settings.data.dock.hideMode = (mode === "auto_hide") ? "keep-hidden" : "keep-showing";
         } else {
           Settings.setScreenOverride(screen, "displayMode", mode);
