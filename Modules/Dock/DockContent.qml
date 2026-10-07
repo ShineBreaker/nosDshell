@@ -248,6 +248,9 @@ Item {
                      mouse.accepted = true;
                      return;
                    }
+                   if (LauncherState.anyOpen) {
+                     LauncherState.close(null);
+                   }
                    dockRoot.closeAllContextMenus();
                  }
     }
@@ -790,6 +793,9 @@ Item {
                            return;
                          }
 
+                         if (LauncherState.anyOpen) {
+                           LauncherState.close(null);
+                         }
                          dockRoot.closeAllContextMenus();
 
                          const runningToplevels = dock.getValidToplevels(modelData);
