@@ -419,9 +419,7 @@ Singleton {
                      overlayLauncherCore.setSearchText(searchText);
                    });
     } else {
-      var model = LauncherState.openWithSearch(screen, searchText);
-      if (!model)
-        return;
+      LauncherState.openWithSearch(screen, searchText);
     }
   }
 
