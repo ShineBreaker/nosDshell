@@ -31,6 +31,12 @@ QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这�
 
 面板通过 `PanelService` 注册和打开，任务栏挂件通过 `BarWidgetRegistry` 注册；新增的面板或挂件沿用同一套注册机制。
 
+## 服务语义守恒
+
+- `Services/`、`Commons/` 是 Noctalia 的业务内核：重写样式时不要改动它们的属性签名、信号时机和副作用。上游语义被替换必须写出依据（平台差异，如 niri/PipeWire），否则视为回归。
+- `Assets/settings-default.json` 的每个键都要有消费方；注册表里每个挂件要有可用的配置入口。发现"数据活着、界面死了"先恢复接入，而不是当死代码删掉（参考 `bar.widgets` 的教训：服务链路活着，只是 UI 被砍）。
+- 删功能要连带清数据键并写迁移（`Commons/Migrations/`）；留着孤儿键就是留一颗哑弹。
+
 ## `modelData` 按稳定字段比对
 
 JS 对象数组进 `Repeater` / `ListView` 的 model 会被 QVariant 包装，`modelData` 拿到的是副本，与原数组元素 `===` 恒 false——选中态和按引用查下标会静默失效（不报错，只是不亮）。一律按稳定字段比（`modelData.id === x.id`）；需要把对象存下来时，先归一化回原数组元素。已踩坑：`SettingsModuleView` 的 rail 点击与高亮。

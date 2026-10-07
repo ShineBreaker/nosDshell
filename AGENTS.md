@@ -1,6 +1,14 @@
 # AGENTS.md — nosDshell
 
-nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标是**以 DDE 15（deepin 15）的风格呈现 Noctalia 的全部功能**。
+nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标是**以 DDE 15（deepin 15）的风格呈现 Noctalia 的全部功能**——Noctalia 的业务内核（Services、设置数据、挂件体系、插件机制）原样继承，改造只发生在表现层和交互编排。
+
+## 业务保真（先于一切样式工作）
+
+- 分叉点是 `a08ff3619`（上游 `legacy-v4` 末梢），上游完整历史就在本仓库里。比较基线：`git diff a08ff3619..HEAD`——**拿不准"上游本来怎么做"时先查它，而不是猜或重写**。
+- **不许另起炉灶**：功能先复用 `Services/`、`Commons/`、注册表里的现有实现。改 UI 时不得顺手改 Service 的属性签名、信号语义、副作用；Service 的行为改动必须能在 commit 里说清"为什么上游语义在这里不适用"（如 niri/PipeWire 补丁这类平台差异）。
+- **数据活着 UI 死了 = bug**。`settings-default.json` 的键、注册表的挂件、Service 的接口一旦没有 UI/消费方，要么恢复接入，要么连同数据一起清理（带迁移）；最常见的退化形态就是"上游功能被砍成只剩数据"。
+- **砍掉上游能力需要显式理由**：noctalia 身份类（遥测、版本更新检查、GitHub/赞助者服务、吉祥物）是已记录的例外；其他任何上游能力的删除都要在提交正文写依据，并在 `DESIGN.md` 相应章节注明落点（或"不落地"）。
+- 排查顺序：业务问题先查本仓库 git 历史和上游实现，表现问题再查 `references/` 的 DDE 源码。
 
 ## 必读
 
