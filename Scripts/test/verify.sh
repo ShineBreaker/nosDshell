@@ -25,7 +25,7 @@
 #   settings-general, settings-userinterface, settings-audio,
 #   settings-colorscheme, settings-dock, settings-launcher,
 #   settings-wallpaper, settings-notifications, settings-osd,
-#   settings-about, settings-advanced, settings-bar, settings-connections, settings-controlcenter, 
+#   settings-about, settings-advanced, settings-connections, settings-controlcenter, 
 #   settings-desktopwidgets, settings-display, settings-hooks, settings-idle,
 #   settings-lockscreen, settings-plugins, settings-sessionmenu,
 #   settings-system, settings-systemmonitor
@@ -200,7 +200,7 @@ osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
-settings-osd settings-about settings-advanced settings-bar settings-connections
+settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-long osd-overdrive toast \
