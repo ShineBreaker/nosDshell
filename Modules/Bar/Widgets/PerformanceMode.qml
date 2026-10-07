@@ -44,7 +44,7 @@ NIconButton {
 
   icon: PowerProfileService.performanceMode ? "rocket" : "rocket-off"
   tooltipText: PowerProfileService.performanceMode ? I18n.tr("tooltips.performance-mode-enabled") : I18n.tr("tooltips.performance-mode-enabled")
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   onClicked: PowerProfileService.togglePerformanceMode()
 
   NPopupContextMenu {

@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 72
+  readonly property int settingsVersion: 73
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -210,6 +210,9 @@ Singleton {
 
     // bar
     property JsonObject bar: JsonObject {
+      // Optional status bar (DESIGN §3.7): fashion mode only — efficient mode
+      // already renders the taskbar as its bar. Independent of dock.enabled.
+      property bool enabled: false
       property string barType: "simple" // "simple", "floating", "framed"
       property string position: "top" // "top", "bottom", "left", or "right"
       property list<string> monitors: [] // holds bar visibility per monitor
@@ -242,8 +245,9 @@ Singleton {
       property bool hideOnOverview: false
 
       // Auto-hide settings
-      // legacy: getBarDisplayModeForScreen() maps dock.hideMode; only the
-      // screenOverride "displayMode" field is still read
+      // displayMode is live again for the optional status bar (fashion mode);
+      // in efficient mode getBarDisplayModeForScreen() maps dock.hideMode.
+      // The screenOverride "displayMode" field still wins on both paths.
       property string displayMode: "always_visible"
       property int autoHideDelay: 500 // ms before hiding after mouse leaves
       property int autoShowDelay: 150 // ms before showing when mouse enters
@@ -1002,14 +1006,28 @@ Singleton {
   }
 
   // -----------------------------------------------------
-  // Get effective bar position for a screen (with inheritance)
-  // If the screen has a position override and overrides are enabled, use it; otherwise use the dock position
-  function getBarPositionForScreen(screenName) {
+  // Edge of the taskbar/dock on this screen (screen override, else dock.position).
+  // This is the "taskbar edge" semantic — launchers, dock panels and the
+  // screen-override editor follow it regardless of the optional status bar.
+  function getTaskbarPositionForScreen(screenName) {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.position !== undefined) {
       return override.position;
     }
     return data.dock.position || "bottom";
+  }
+
+  // -----------------------------------------------------
+  // Edge of the bar window on this screen. In efficient mode the taskbar IS
+  // the bar. In fashion mode the bar window only exists when the optional
+  // status bar is enabled, where it sits on bar.position (bar.monitors picks
+  // which screens); with no status bar there is no bar window, so fall back
+  // to the taskbar edge — callers on widgets that never render stay harmless.
+  function getBarPositionForScreen(screenName) {
+    if (data.dock.mode === "fashion" && data.bar.enabled) {
+      return data.bar.position || "top";
+    }
+    return getTaskbarPositionForScreen(screenName);
   }
 
   // -----------------------------------------------------
@@ -1080,6 +1098,11 @@ Singleton {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.displayMode !== undefined) {
       return override.displayMode;
+    }
+    // The optional status bar owns its own display mode — dock.hideMode is
+    // the dock's, not the bar's (the dock auto-hide path reads it directly).
+    if (data.dock.mode === "fashion" && data.bar.enabled) {
+      return data.bar.displayMode || "always_visible";
     }
     switch (data.dock.hideMode) {
     case "keep-hidden":

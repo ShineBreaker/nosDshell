@@ -51,7 +51,7 @@ Variants {
     // Geometry (gxde-launcher windowedframe.cpp adjustPosition)
     // -----------------------------------------------------------
     // The mini launcher hugs the taskbar/dock edge, not the optional status bar
-    readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
+    readonly property string barPosition: Settings.getTaskbarPositionForScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
 

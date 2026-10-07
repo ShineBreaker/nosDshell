@@ -40,7 +40,7 @@ NIconButton {
   tooltipText: I18n.tr("tooltips.power-profile", {
                          "profile": PowerProfileService.getName()
                        })
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   colorBg: (PowerProfileService.profile === PowerProfile.Balanced) ? Style.capsuleColor : Color.mPrimary
   colorFg: (PowerProfileService.profile === PowerProfile.Balanced) ? Color.resolveColorKey(iconColorKey) : Color.mOnPrimary
   border.color: Style.capsuleBorderColor

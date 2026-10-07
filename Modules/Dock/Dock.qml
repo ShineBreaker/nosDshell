@@ -37,7 +37,7 @@ Loader {
       // ------------------------------------------------------------------
       // DDE fashion geometry (gxde-dock mainpanel / dockitem sizing)
       // ------------------------------------------------------------------
-      readonly property string dockPosition: Settings.data.dock.position
+      readonly property string dockPosition: Settings.getTaskbarPositionForScreen(liveScreen?.name)
       readonly property bool isVertical: dockPosition === "left" || dockPosition === "right"
       readonly property int iconSize: Settings.data.dock.iconSize // 30/36/48 presets
       readonly property int itemThickness: Style.dockItemThickness

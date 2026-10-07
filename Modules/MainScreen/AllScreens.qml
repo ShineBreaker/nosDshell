@@ -66,7 +66,8 @@ Variants {
         if (!parent.windowLoaded || !parent.shouldBeActive)
           return false;
 
-        // The Bar only exists in efficient (taskbar) mode
+        // The bar window is the efficient-mode taskbar, or the optional
+        // fashion-mode status bar (DESIGN §3.13).
         return BarService.hasBarOnScreen(modelData?.name);
       }
       asynchronous: false

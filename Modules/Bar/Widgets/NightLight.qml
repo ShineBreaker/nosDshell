@@ -53,7 +53,7 @@ NIconButton {
   recolorIcon: onShellSurface
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.nightLight.enabled ? (Settings.data.nightLight.forced ? I18n.tr("common.night-light") : I18n.tr("common.night-light")) : I18n.tr("common.night-light")
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   onClicked: {
     // Check if wlsunset is available before enabling night light
     if (!ProgramCheckerService.wlsunsetAvailable) {

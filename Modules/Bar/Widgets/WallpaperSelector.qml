@@ -44,7 +44,7 @@ NIconButton {
       return I18n.tr("tooltips.wallpaper-selector");
     }
   }
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   colorBg: Style.capsuleColor
   colorFg: Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor

@@ -77,7 +77,8 @@ Singleton {
         return;
       }
       if (!screen || screen === "all") {
-        // 两种模式都落到生效键 dock.position（bar.position 已被 getter 绕过，见 Settings.getBarPositionForScreen）
+        // 任务栏/dock 边——两种模式共用 dock.position；状态栏另走 bar.position
+        // （见 Settings.getTaskbarPositionForScreen / getBarPositionForScreen）。
         Settings.data.dock.position = position;
       } else {
         Settings.setScreenOverride(screen, "position", position);

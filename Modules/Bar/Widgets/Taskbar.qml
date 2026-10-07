@@ -1064,7 +1064,7 @@ Item {
                        }
             onEntered: {
               root.hoveredWindowId = taskbarItem.modelData.id;
-              TooltipService.show(taskbarItem, taskbarItem.title, BarService.getTooltipDirection(root.screen?.name));
+              TooltipService.show(taskbarItem, taskbarItem.title, BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
             }
             onExited: {
               root.hoveredWindowId = "";

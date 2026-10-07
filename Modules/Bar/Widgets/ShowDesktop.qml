@@ -77,7 +77,7 @@ Item {
     hoverEnabled: true
     cursorShape: Qt.PointingHandCursor
     acceptedButtons: Qt.LeftButton
-    onEntered: TooltipService.show(strip, I18n.tr("tooltips.show-desktop"), BarService.getTooltipDirection(root.screen?.name))
+    onEntered: TooltipService.show(strip, I18n.tr("tooltips.show-desktop"), BarService.getTooltipDirection(root.screen?.name, root.section === "dock"))
     onExited: TooltipService.hide()
     onClicked: {
       TooltipService.hide();

@@ -49,7 +49,7 @@ NIconButton {
   // If we have a custom path or are using distro logo, don't show the theme icon.
   icon: (customIconPath === "" && !useDistroLogo) ? customIcon : ""
   tooltipText: I18n.tr("actions.open-launcher")
-  tooltipDirection: BarService.getTooltipDirection(screenName)
+  tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
   baseSize: efficientMode ? Style.getBarHeightForScreen(screenName) : Style.getCapsuleHeightForScreen(screenName)
   iconRatio: efficientMode ? 0.7 : 0.48
   applyUiScale: false

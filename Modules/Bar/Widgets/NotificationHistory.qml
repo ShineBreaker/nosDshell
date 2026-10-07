@@ -78,7 +78,7 @@ NIconButton {
       return I18n.tr("tooltips.open-notification-history-enable-dnd");
     }
   }
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor

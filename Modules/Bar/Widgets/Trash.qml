@@ -43,7 +43,7 @@ NIconButton {
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
   tooltipText: I18n.tr("tooltips.trash")
-  tooltipDirection: BarService.getTooltipDirection(screenName)
+  tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
   onClicked: root.openTrash()
   onRightClicked: PanelService.showContextMenu(contextMenu, root, screen)
 

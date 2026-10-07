@@ -1,6 +1,7 @@
 {
-  "settingsVersion": 72,
+  "settingsVersion": 73,
   "bar": {
+    "enabled": false,
     "barType": "simple",
     "position": "top",
     "monitors": [],

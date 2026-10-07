@@ -54,7 +54,8 @@ SmartPanel {
   preferredHeightRatio: 0.5
 
   // Positioning
-  readonly property string screenBarPosition: Settings.getBarPositionForScreen(screen?.name)
+  // "follow_bar" follows the taskbar/dock edge, not the optional status bar.
+  readonly property string screenBarPosition: Settings.getTaskbarPositionForScreen(screen?.name)
   readonly property string panelPosition: {
     if (Settings.data.appLauncher.position === "follow_bar") {
       if (screenBarPosition === "left" || screenBarPosition === "right") {

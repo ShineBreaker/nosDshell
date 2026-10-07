@@ -2351,7 +2351,13 @@
       "mode-description": "时尚模式悬浮居中，高效模式贴边通栏。",
       "size-description": "任务栏图标大小。",
       "state-description": "合成器不支持时，智能隐藏按一直隐藏处理。",
-      "plugins-description": "选择显示在任务栏上的插件，可拖拽排序。"
+      "plugins-description": "选择显示在任务栏上的插件，可拖拽排序。",
+      "statusbar": "状态栏",
+      "statusbar-enabled-label": "启用状态栏",
+      "statusbar-enabled-description": "独立于任务栏的 macOS 式状态栏，有独立挂件与位置。仅时尚模式可用——高效模式的任务栏已承担此角色。",
+      "statusbar-position": "位置",
+      "statusbar-state": "显示",
+      "statusbar-monitors": "在以下显示器上显示状态栏"
     },
     "advanced": {
       "dock-appearance": "任务栏外观",

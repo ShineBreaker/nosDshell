@@ -351,7 +351,7 @@ Item {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onEntered: {
       if (!PanelService.getPanel("clockPanel", screen)?.isPanelOpen) {
-        TooltipService.show(root, buildTooltipText(), BarService.getTooltipDirection(root.screen?.name));
+        TooltipService.show(root, buildTooltipText(), BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
         tooltipRefreshTimer.start();
       }
     }

@@ -58,23 +58,28 @@ PopupWindow {
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
 
-  // Thickness of the strip the taskbar surface actually occupies on the
-  // barPosition edge of this screen: the efficient bar (barHeight) or the
+  // Thickness of the shell strip occupying `edge` on this screen: the bar
+  // surface (efficient taskbar or fashion status bar, barHeight) or the
   // fashion dock window (dockItemThickness). Context menus must never extend
-  // into this strip — the bar/dock layer paints above popups, so any overlap
+  // into that strip — the bar/dock layer paints above popups, so any overlap
   // renders the menu partially hidden.
-  readonly property real occupiedEdge: {
-    if (!Settings.data.dock.enabled)
+  function _edgeOccupancy(edge) {
+    var screenName = screen?.name;
+    if (!screenName)
       return 0;
-    if (Settings.data.dock.mode === "fashion") {
-      var dockMonitors = Settings.data.dock.monitors || [];
-      if (dockMonitors.length > 0 && !dockMonitors.includes(screen?.name))
-        return 0;
-      return Style.dockItemThickness;
+    if (BarService.hasBarOnScreen(screenName) && barPosition === edge)
+      return barHeight;
+    if (Settings.data.dock.enabled && Settings.getTaskbarPositionForScreen(screenName) === edge) {
+      if (Settings.data.dock.mode === "fashion") {
+        var dockMonitors = Settings.data.dock.monitors || [];
+        if (dockMonitors.length > 0 && !dockMonitors.includes(screenName))
+          return 0;
+        return Style.dockItemThickness;
+      }
+      if (BarService.hasBarOnScreen(screenName))
+        return barHeight;
     }
-    if (!BarService.hasBarOnScreen(screen?.name))
-      return 0;
-    return barHeight;
+    return 0;
   }
 
   signal triggered(string action, var item)
@@ -237,10 +242,12 @@ PopupWindow {
         baseX = targetCenterScreenX - (implicitWidth / 2) - anchorGlobalPos.x;
       }
 
-      // Clamp inside the screen, additionally keeping clear of the strip the
-      // bar/dock occupies on a vertical edge (the menu would paint under it)
-      const leftLimit = (root.barPosition === "left") ? root.occupiedEdge + Style.marginS : Style.marginM;
-      const rightLimit = screen.width - ((root.barPosition === "right") ? root.occupiedEdge + Style.marginS : Style.marginM) - implicitWidth;
+      // Clamp inside the screen, additionally keeping clear of whatever shell
+      // strip occupies each vertical edge (the menu would paint under it)
+      const leftOcc = root._edgeOccupancy("left");
+      const rightOcc = root._edgeOccupancy("right");
+      const leftLimit = leftOcc > 0 ? leftOcc + Style.marginS : Style.marginM;
+      const rightLimit = screen.width - (rightOcc > 0 ? rightOcc + Style.marginS : Style.marginM) - implicitWidth;
       let menuScreenX = anchorGlobalPos.x + baseX;
       if (menuScreenX > rightLimit)
         menuScreenX = rightLimit;
@@ -277,33 +284,22 @@ PopupWindow {
         const menuTop = anchorGlobalPos.y;
         const menuBottom = anchorGlobalPos.y + implicitHeight;
 
-        // Keep the menu out of the strip the bar/dock occupies on this edge —
-        // anchoring at the click point alone leaves the menu bottom inside the
-        // bar whenever the click lands on the taskbar.
-        if (root.barPosition === "bottom") {
-          const bottomLimit = screen.height - root.occupiedEdge - Style.marginS;
-          if (menuBottom > bottomLimit) {
-            return bottomLimit - implicitHeight - menuTop;
-          }
-          return 0;
+        // Keep the menu out of the strip any shell surface occupies on either
+        // horizontal edge — anchoring at the click point alone leaves the menu
+        // inside the taskbar/dock whenever the click lands on it.
+        const topOcc = root._edgeOccupancy("top");
+        const bottomOcc = root._edgeOccupancy("bottom");
+        const absTopLimit = topOcc > 0 ? topOcc + Style.marginS : Style.marginM;
+        const absBottomLimit = screen.height - (bottomOcc > 0 ? bottomOcc + Style.marginS : Style.marginM);
+        if (menuTop < absTopLimit) {
+          return absTopLimit - menuTop;
         }
-        if (root.barPosition === "top") {
-          const topLimit = root.occupiedEdge + Style.marginS;
-          if (menuTop < topLimit) {
-            return topLimit - menuTop;
+        if (menuBottom > absBottomLimit) {
+          if (bottomOcc > 0) {
+            return absBottomLimit - implicitHeight - menuTop;
           }
-          if (menuBottom > screen.height - Style.marginM) {
-            return -implicitHeight;
-          }
-          return 0;
-        }
-        // left/right bars: no vertical strip constraint
-        if (menuBottom > screen.height - Style.marginM) {
           // Position above the click point instead
           return -implicitHeight;
-        }
-        if (menuTop < Style.marginM) {
-          return Style.marginM - menuTop;
         }
         return 0;
       }
@@ -332,13 +328,16 @@ PopupWindow {
       const menuScreenY = anchorGlobalPos.y + baseY;
       const menuBottom = menuScreenY + implicitHeight;
 
-      // Define clipping boundaries based on bar position; the occupied strip
-      // covers the fashion dock too, not just the efficient bar
-      const topLimit = root.barPosition === "top" ? root.occupiedEdge + Style.marginS : Style.marginM;
-      const bottomLimit = root.barPosition === "bottom" ? screen.height - root.occupiedEdge - Style.marginS : screen.height - Style.marginM;
+      // Define clipping boundaries per edge; the occupied strips cover the
+      // status bar and the fashion dock alike
+      const topOcc2 = root._edgeOccupancy("top");
+      const bottomOcc2 = root._edgeOccupancy("bottom");
+      const topLimit = topOcc2 > 0 ? topOcc2 + Style.marginS : Style.marginM;
+      const bottomLimit = bottomOcc2 > 0 ? screen.height - bottomOcc2 - Style.marginS : screen.height - Style.marginM;
 
-      // Adjust if menu would clip at top (skip for bottom bar - don't push menu down over bar)
-      if (menuScreenY < topLimit && root.barPosition !== "bottom") {
+      // Adjust if menu would clip at top (skip when the bottom edge is
+      // occupied - don't push the menu down over the taskbar/dock)
+      if (menuScreenY < topLimit && bottomOcc2 === 0) {
         const adjustment = topLimit - menuScreenY;
         return baseY + adjustment;
       }
@@ -421,7 +420,7 @@ PopupWindow {
     borderColor: root._borderColor
     borderWidth: Style.borderS
     shadow: root._shadow
-    opacity: root.visible ? 1.0 : 0.0
+    opacity: root.visible && !root._closing ? 1.0 : 0.0
 
     Behavior on opacity {
       NumberAnimation {
@@ -440,7 +439,7 @@ PopupWindow {
     contentHeight: columnLayout.implicitHeight
     interactive: true
     clip: true
-    opacity: root.visible ? 1.0 : 0.0
+    opacity: root.visible && !root._closing ? 1.0 : 0.0
 
     Behavior on opacity {
       NumberAnimation {
@@ -662,6 +661,10 @@ PopupWindow {
     // Calculate menu width after anchor is set
     calculateWidth();
 
+    // Reopening while the fade-out is still running
+    _closing = false;
+    hideTimer.stop();
+
     visible = true;
 
     // Force anchor recalculation after showing
@@ -675,9 +678,24 @@ PopupWindow {
       _closeSubmenus();
   }
 
+  // Fade-out before the popup surface unmaps: _closing drops the content
+  // opacity (the Behavior animates it), the timer then flips visible.
+  property bool _closing: false
+  Timer {
+    id: hideTimer
+    interval: Style.animationFast
+    onTriggered: {
+      root.visible = false;
+      root._closing = false;
+    }
+  }
+
   function close() {
+    if (_closing)
+      return;
+    _closing = true;
     _closeSubmenus();
-    visible = false;
+    hideTimer.restart();
   }
 
   function closeMenu() {

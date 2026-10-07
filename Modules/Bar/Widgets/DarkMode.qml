@@ -38,7 +38,7 @@ NIconButton {
   recolorIcon: onShellSurface
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.colorSchemes.darkMode ? I18n.tr("tooltips.switch-to-light-mode") : I18n.tr("tooltips.switch-to-dark-mode")
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false

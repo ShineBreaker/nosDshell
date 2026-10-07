@@ -19,6 +19,11 @@ PopupWindow {
   property string widgetSection: ""
   property int widgetIndex: -1
 
+  // Edge of the surface hosting the anchor widget: the dock plugins section
+  // sits on the taskbar/dock edge; bar sections sit on the bar/status-bar edge
+  // (they differ in fashion mode once the status bar is enabled).
+  readonly property string hostEdge: widgetSection === "dock" ? Settings.getTaskbarPositionForScreen(root.screen?.name) : Settings.getBarPositionForScreen(root.screen?.name)
+
   // Derive menu from trayItem (only used for non-submenus)
   readonly property QsMenuHandle menu: isSubMenu ? null : (trayItem ? trayItem.menu : null)
 
@@ -98,7 +103,7 @@ PopupWindow {
   }
   anchor.rect.y: {
     if (anchorItem && screen) {
-      const barPosition = Settings.getBarPositionForScreen(root.screen?.name);
+      const barPosition = root.hostEdge;
 
       let baseY = anchorY;
 
@@ -160,7 +165,9 @@ PopupWindow {
     if (isSubMenu) {
       return anchorY;
     }
-    return anchorY + (Settings.getBarPositionForScreen(root.screen?.name) === "bottom" ? -implicitHeight : Style.getBarHeightForScreen(root.screen?.name));
+    // The offset below the anchor is the host surface's thickness — the dock
+    // item strip for dock plugins, the bar height for bar widgets.
+    return anchorY + (root.hostEdge === "bottom" ? -implicitHeight : (widgetSection === "dock" ? Style.dockItemThickness : Style.getBarHeightForScreen(root.screen?.name)));
   }
 
   function showAt(item, x, y) {
@@ -179,6 +186,10 @@ PopupWindow {
     anchorX = x;
     anchorY = y;
 
+    // Reopening while the fade-out is still running
+    _closing = false;
+    hideTimer.stop();
+
     visible = true;
     forceActiveFocus();
 
@@ -188,8 +199,23 @@ PopupWindow {
                  });
   }
 
+  // Fade-out before the popup surface unmaps: _closing drops the content
+  // opacity (the Behavior animates it), the timer then flips visible.
+  property bool _closing: false
+  Timer {
+    id: hideTimer
+    interval: Style.animationFast
+    onTriggered: {
+      root.visible = false;
+      root._closing = false;
+    }
+  }
+
   function hideMenu() {
-    visible = false;
+    if (_closing)
+      return;
+    _closing = true;
+    hideTimer.restart();
 
     // Clean up all submenus recursively
     for (var i = 0; i < columnLayout.children.length; i++) {
@@ -222,7 +248,7 @@ PopupWindow {
     shadow: Style.shadowPopup
 
     // Fade-in animation
-    opacity: root.visible ? 1.0 : 0.0
+    opacity: root.visible && !root._closing ? 1.0 : 0.0
 
     Behavior on opacity {
       NumberAnimation {
@@ -242,7 +268,7 @@ PopupWindow {
     interactive: true
 
     // Fade-in animation
-    opacity: root.visible ? 1.0 : 0.0
+    opacity: root.visible && !root._closing ? 1.0 : 0.0
 
     Behavior on opacity {
       NumberAnimation {
@@ -441,7 +467,7 @@ PopupWindow {
 
                                  // Determine submenu opening direction
                                  let openLeft = false;
-                                 const barPosition = Settings.getBarPositionForScreen(root.screen?.name);
+                                 const barPosition = root.hostEdge;
                                  const globalPos = entry.mapToItem(null, 0, 0);
 
                                  if (barPosition === "right") {

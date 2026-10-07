@@ -56,7 +56,7 @@ NIconButton {
       return I18n.tr("tooltips.open-control-center");
     }
   }
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   baseSize: Style.getCapsuleHeightForScreen(screen?.name)
   applyUiScale: false
   customRadius: Style.radiusL

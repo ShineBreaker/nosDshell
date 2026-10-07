@@ -415,7 +415,7 @@ Item {
       if ((isVertical || scrollMode === "never")) {
         var panel = PanelService.getPanel("mediaPlayerPanel", screen);
         if (panel && !panel.isPanelOpen) {
-          TooltipService.show(root, title, BarService.getTooltipDirection(root.screen?.name));
+          TooltipService.show(root, title, BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
         }
       }
     }

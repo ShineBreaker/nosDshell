@@ -347,7 +347,7 @@ Item {
     onEntered: {
       hovered = true;
       root.entered();
-      TooltipService.show(root, root.tooltipText, BarService.getTooltipDirection(root.screen?.name), root.onShellSurface ? Style.tooltipDelayDock : ((forceOpen || forceClose) ? Style.tooltipDelay : Style.tooltipDelayLong));
+      TooltipService.show(root, root.tooltipText, BarService.getTooltipDirection(root.screen?.name, root.fashionMode), root.onShellSurface ? Style.tooltipDelayDock : ((forceOpen || forceClose) ? Style.tooltipDelay : Style.tooltipDelayLong));
       if (forceClose) {
         return;
       }

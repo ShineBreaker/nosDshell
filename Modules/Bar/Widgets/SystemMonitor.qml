@@ -944,7 +944,7 @@ Item {
                }
     onEntered: {
       if (!PanelService.getPanel("systemStatsPanel", screen).isPanelOpen) {
-        TooltipService.show(root, buildTooltipContent(), BarService.getTooltipDirection(root.screen?.name));
+        TooltipService.show(root, buildTooltipContent(), BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
         tooltipRefreshTimer.start();
       }
     }

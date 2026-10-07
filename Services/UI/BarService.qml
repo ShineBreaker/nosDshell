@@ -12,9 +12,18 @@ Singleton {
   property bool isVisible: true
 
   // Central "is there a bar window on this screen" check.
-  // The Noctalia Bar only renders in efficient mode with the dock enabled.
+  // Efficient mode: the taskbar is the bar (dock.enabled + dock.monitors).
+  // Fashion mode: the optional status bar (bar.enabled + bar.monitors,
+  // independent of the dock — DESIGN §3.7).
   function hasBarOnScreen(screenName) {
-    if (!Settings.data.dock.enabled || Settings.data.dock.mode !== "efficient") {
+    if (Settings.data.dock.mode === "fashion") {
+      if (!Settings.data.bar.enabled) {
+        return false;
+      }
+      var barMonitors = Settings.data.bar.monitors || [];
+      return barMonitors.length === 0 || barMonitors.includes(screenName);
+    }
+    if (!Settings.data.dock.enabled) {
       return false;
     }
     // Single multi-screen list: dock.monitors serves both modes (DDE "one taskbar").
@@ -40,7 +49,11 @@ Singleton {
     if (!isVisible) {
       return false;
     }
-    if (!Settings.data.dock.enabled || Settings.data.dock.mode !== "efficient") {
+    if (Settings.data.dock.mode === "fashion") {
+      if (!Settings.data.bar.enabled) {
+        return false;
+      }
+    } else if (!Settings.data.dock.enabled) {
       return false;
     }
     if (Settings.data.bar.hideOnOverview && CompositorService.overviewActive) {
@@ -556,8 +569,10 @@ Singleton {
     return true;
   }
 
-  function getTooltipDirection(screenName) {
-    const position = Settings.getBarPositionForScreen(screenName);
+  // dockHosted: the widget lives in the fashion dock, so its tooltip must
+  // point away from the taskbar edge rather than the status-bar edge.
+  function getTooltipDirection(screenName, dockHosted) {
+    const position = dockHosted ? Settings.getTaskbarPositionForScreen(screenName) : Settings.getBarPositionForScreen(screenName);
     switch (position) {
     case "right":
       return "left";

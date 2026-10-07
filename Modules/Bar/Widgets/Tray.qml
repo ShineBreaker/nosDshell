@@ -386,7 +386,7 @@ Item {
           return I18n.tr("tooltips.open-tray-dropdown");
         }
       }
-      tooltipDirection: BarService.getTooltipDirection(root.screen?.name)
+      tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
       baseSize: efficientMode ? 24 : capsuleHeight
       applyUiScale: false
       customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
@@ -520,7 +520,7 @@ Item {
                 popupMenuWindow.close();
               }
               root.hoveredItemIndex = trayDelegate.index;
-              TooltipService.show(tooltipAnchor, modelData.tooltipTitle || modelData.name || modelData.id || "Tray Item", BarService.getTooltipDirection(root.screen?.name));
+              TooltipService.show(tooltipAnchor, modelData.tooltipTitle || modelData.name || modelData.id || "Tray Item", BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
             } else if (root.hoveredItemIndex === trayDelegate.index) {
               root.hoveredItemIndex = -1;
               TooltipService.hide(tooltipAnchor);
@@ -602,7 +602,7 @@ Item {
       width: efficientMode ? 24 : (isVertical ? barHeight : capsuleHeight)
       height: efficientMode ? 24 : (isVertical ? capsuleHeight : barHeight)
       tooltipText: I18n.tr("tooltips.open-tray-dropdown")
-      tooltipDirection: BarService.getTooltipDirection(root.screen?.name)
+      tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
       baseSize: efficientMode ? 24 : capsuleHeight
       applyUiScale: false
       customRadius: efficientMode ? Style.radiusPopup : Style.radiusL

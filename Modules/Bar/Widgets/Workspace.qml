@@ -648,7 +648,7 @@ Item {
                         PanelService.showContextMenu(contextMenu, squareDelegate, screen);
                       }
                     }
-        onEntered: TooltipService.show(squareDelegate, squareDelegate.model.name || squareDelegate.model.idx.toString(), BarService.getTooltipDirection(root.screenName))
+        onEntered: TooltipService.show(squareDelegate, squareDelegate.model.name || squareDelegate.model.idx.toString(), BarService.getTooltipDirection(root.screenName, root.section === "dock"))
         onExited: TooltipService.hide()
       }
     }
@@ -914,7 +914,7 @@ Item {
               onEntered: {
                 if (!modelData)
                   return;
-                TooltipService.show(groupedTaskbarItem, modelData.title || modelData.appId || "Unknown app.", BarService.getTooltipDirection(root.screenName));
+                TooltipService.show(groupedTaskbarItem, modelData.title || modelData.appId || "Unknown app.", BarService.getTooltipDirection(root.screenName, root.section === "dock"));
               }
               onExited: {
                 TooltipService.hide();

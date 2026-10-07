@@ -13,7 +13,6 @@ ColumnLayout {
   spacing: Style.marginL
   Layout.fillWidth: true
 
-
   NText {
     text: I18n.tr("panels.bar.monitors-desc-new")
     wrapMode: Text.WordWrap
@@ -41,7 +40,7 @@ ColumnLayout {
       readonly property bool overrideEnabled: Settings.isScreenOverrideEnabled(screenName)
 
       // Get effective values for this screen
-      readonly property string effectivePosition: Settings.getBarPositionForScreen(screenName)
+      readonly property string effectivePosition: Settings.getTaskbarPositionForScreen(screenName)
       readonly property string effectiveDensity: Settings.getBarDensityForScreen(screenName)
 
       ColumnLayout {
@@ -79,9 +78,7 @@ ColumnLayout {
               color: Color.mOnSurfaceVariant
             }
           }
-
         }
-
 
         // Per-screen override section
         ColumnLayout {

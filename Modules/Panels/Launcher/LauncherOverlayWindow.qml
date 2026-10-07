@@ -70,8 +70,9 @@ Variants {
         }
       }
 
-      // Positioning logic (respects settings but doesn't attach to bar)
-      readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
+      // Positioning logic (respects settings but doesn't attach to bar);
+      // "follow_bar" tracks the taskbar/dock edge, not the status bar.
+      readonly property string barPosition: Settings.getTaskbarPositionForScreen(screen?.name)
       readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
       readonly property int barThickness: Math.round(Style.barHeight + Style.marginL)
 

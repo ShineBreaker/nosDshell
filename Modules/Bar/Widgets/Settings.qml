@@ -56,7 +56,7 @@ NIconButton {
       open = PanelService.getPanel("settingsPanel", screen)?.isPanelOpen ?? false;
     return open ? "" : I18n.tr("tooltips.open-settings");
   }
-  tooltipDirection: BarService.getTooltipDirection(screen?.name)
+  tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
   applyUiScale: false

@@ -397,7 +397,7 @@
     "tabLabel": "control-center.module.advanced",
     "subTab": null,
     "visibleWhen": [
-      "Settings.data.bar.middleClickAction !== \"none\" && Settings.data.bar.middleClickAction !== \"command\" && !(Settings.data.bar.middleClickAction === \"settings\" && Settings.data.ui.settingsPanelMode === \"window\")"
+      "Settings.data.bar.middleClickAction !== \"none\" && Settings.data.bar.middleClickAction !== \"command\""
     ]
   },
   {
@@ -1138,6 +1138,42 @@
   {
     "labelKey": "dock-menu.state",
     "descriptionKey": "settings.taskbar.state-description",
+    "widget": "NComboBox",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "settings.taskbar.statusbar",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "settings.taskbar.statusbar-enabled-label",
+    "descriptionKey": "settings.taskbar.statusbar-enabled-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "settings.taskbar.statusbar-position",
+    "descriptionKey": null,
+    "widget": "NComboBox",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "settings.taskbar.statusbar-state",
+    "descriptionKey": null,
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",

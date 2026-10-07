@@ -427,7 +427,7 @@ Item {
 
         MouseArea {
           anchors.fill: parent
-          acceptedButtons: Qt.RightButton | Qt.MiddleButton
+          acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
           // Keep enabled even when actions are "none" so we still swallow right/middle on
           // empty bar gaps. Otherwise Qt Quick's context-menu path can crash on Wayland
           // (QQuickDeliveryAgentPrivate::contextMenuTargets / mapToScene).
@@ -435,13 +435,28 @@ Item {
           hoverEnabled: false
           preventStealing: true
           onClicked: mouse => {
+                       if (mouse.button === Qt.LeftButton) {
+                         if (bar.isPointOverWidget(mouse.x, mouse.y))
+                         return;
+                         // Left-click on an empty taskbar gap retracts the
+                         // launcher (outside click, DESIGN §3.4).
+                         if (LauncherState.anyOpen) {
+                           LauncherState.close(null);
+                           mouse.accepted = true;
+                         }
+                         return;
+                       }
                        if (mouse.button === Qt.RightButton) {
                          if (bar.isPointOverWidget(mouse.x, mouse.y))
                          return;
                          // DDE: right-click on empty taskbar space opens the
                          // light dock settings menu (widget-level right-click
-                         // actions are unchanged).
-                         DockSettingsMenu.openAtItemPoint(screen, bar, mouse.x, mouse.y);
+                         // actions are unchanged). In fashion mode this bar
+                         // surface is the optional status bar, not the taskbar
+                         // — swallow the click instead of showing dock options.
+                         if (bar.efficientMode) {
+                           DockSettingsMenu.openAtItemPoint(screen, bar, mouse.x, mouse.y);
+                         }
                          mouse.accepted = true;
                          return;
                        }

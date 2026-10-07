@@ -217,7 +217,7 @@ Item {
     cursorShape: Qt.PointingHandCursor
     onEntered: {
       if (!getBatteryPanel()?.isPanelOpen && root.tooltipContent) {
-        TooltipService.show(root, root.tooltipContent, BarService.getTooltipDirection(root.screen?.name));
+        TooltipService.show(root, root.tooltipContent, BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
         tooltipRefreshTimer.start();
       }
     }

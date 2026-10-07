@@ -350,7 +350,7 @@ Item {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onEntered: {
       if ((windowTitle !== "") && isVerticalBar || (scrollingMode === "never")) {
-        TooltipService.show(root, windowTitle, BarService.getTooltipDirection(root.screen?.name));
+        TooltipService.show(root, windowTitle, BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
       }
     }
     onExited: {

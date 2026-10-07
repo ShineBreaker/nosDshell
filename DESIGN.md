@@ -549,6 +549,17 @@ Noctalia 卡片的对应关系：
 - 时钟挂件采用控制中心时钟的样式（46 px Light）。
 - 拖拽时只用白 × 0.1 的描边表示可放置区域，不要发光效果。
 
+### 3.13 状态栏〔nosd 扩展〕
+
+- DDE 15 本体没有状态栏；本条是借 Noctalia 的 bar 管线提供的可选扩展，定位类似 macOS 的菜单栏（显示系统信息与全局挂件，不承担窗口任务列表）。
+- **仅时尚模式可用**：高效模式下任务栏本身就是通栏条，状态栏不再出现；切换模式时自动失效/恢复，不需要用户重选。
+- 开关：`bar.enabled`（默认关）。位置：`bar.position`（默认 `top`），独立于 `dock.position`；显示器选择走 `bar.monitors`（空 = 全部）。显示模式走 `bar.displayMode`（`always_visible` / `auto_hide`，沿用 `bar.autoHideDelay` / `bar.autoShowDelay` / `bar.showOnWorkspaceSwitch`）。
+- 挂件内容：`bar.widgets` 三段式布局（默认左侧启动器/时钟/系统监视器/活动窗口/迷你媒体，中间工作区，右侧托盘/通知/电量/音量/亮度等）。
+- 语义拆分：`getBarPositionForScreen()` 指**bar 窗口所在边**（时尚+状态栏时 = `bar.position`，否则 = 任务栏边）；`getTaskbarPositionForScreen()` 恒指任务栏/dock 边（启动器定位、屏覆盖编辑器、避让判断用它）。挂件弹层跟随其宿主表面：dock 区挂件弹层用任务栏边，bar 区挂件弹层用状态栏边。
+- 状态栏与 dock 允许同边（dock 悬浮居中会叠在状态栏上方），建议错开摆放。
+- 自动隐藏时状态栏收进屏幕边缘，贴边悬停触发区唤出；常驻时 `BarExclusionZone` 为它保留空间（同任务栏规则）。
+- 视觉：沿用 §3.5 的面板体系（`Color.maskShell` 底、无阴影、圆角按 `bar.barType`）；与任务栏同屏时不额外加描边或发光。
+
 ---
 
 ## 4. 工具：`nosd-blur`（Rust）
@@ -610,7 +621,9 @@ Noctalia 卡片的对应关系：
 | `general.showScreenCorners` | `false` |
 | `general.lockScreenBlur` | 启用 |
 | `colorSchemes.predefinedScheme` | `Deepin` |
+| `bar.enabled` | `false`（可选状态栏，§3.13） |
 
+- `ui.settingsPanelMode`：设置面板固定为控制中心模式，选择器已移除；字段仅作兼容数据保留（Migration72 会把旧值钉回 `controlCenter`）。
 - 旧配置的迁移：
   - `bar.widgets` → `dock.plugins`
   - `bar.position` → `dock.position`

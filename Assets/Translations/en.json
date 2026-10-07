@@ -2351,7 +2351,13 @@
       "mode-description": "Fashion mode floats centered; Efficient mode spans the screen edge.",
       "size-description": "Taskbar icon size.",
       "state-description": "Smart hide falls back to Keep hidden when the compositor does not support it.",
-      "plugins-description": "Choose which plugins appear on the taskbar. Drag to reorder."
+      "plugins-description": "Choose which plugins appear on the taskbar. Drag to reorder.",
+      "statusbar": "Status Bar",
+      "statusbar-enabled-label": "Enable status bar",
+      "statusbar-enabled-description": "A separate macOS-style bar with its own widgets and position. Fashion mode only — efficient mode's taskbar already covers this role.",
+      "statusbar-position": "Position",
+      "statusbar-state": "Display",
+      "statusbar-monitors": "Show status bar on"
     },
     "advanced": {
       "dock-appearance": "Dock appearance",
