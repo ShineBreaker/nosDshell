@@ -9,250 +9,203 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: 0
+  spacing: Style.settingsGroupSpacing
   Layout.fillWidth: true
 
-  ColumnLayout {
-    spacing: Style.marginL
-
-    Repeater {
-      model: Quickshell.screens || []
-      delegate: NBox {
-        Layout.fillWidth: true
-        implicitHeight: Math.round(contentCol.implicitHeight + Style.margin2L)
-        color: Color.mSurface
-
-        property var brightnessMonitor: BrightnessService.getMonitorForScreen(modelData)
-        property real localBrightness: 0.5
-        property bool localBrightnessChanging: false
-        readonly property string automaticOptionLabel: {
-          var baseLabel = I18n.tr("panels.display.monitors-backlight-device-auto-option");
-          var autoDevicePath = (BrightnessService.availableBacklightDevices && BrightnessService.availableBacklightDevices.length > 0) ? BrightnessService.availableBacklightDevices[0] : "";
-          if (autoDevicePath === "")
-            return baseLabel;
-
-          var autoDeviceName = BrightnessService.getBacklightDeviceName(autoDevicePath) || autoDevicePath;
-          return baseLabel + "(" + autoDeviceName + ")";
-        }
-        readonly property var backlightDeviceOptions: {
-          var options = [
-                {
-                  "key": "",
-                  "name": automaticOptionLabel
-                }
-              ];
-
-          var devices = BrightnessService.availableBacklightDevices || [];
-          for (var i = 0; i < devices.length; i++) {
-            var devicePath = devices[i];
-            var deviceName = BrightnessService.getBacklightDeviceName(devicePath) || devicePath;
-            options.push({
-                           "key": devicePath,
-                           "name": deviceName
-                         });
-          }
-          return options;
-        }
-
-        onBrightnessMonitorChanged: {
-          if (brightnessMonitor && !localBrightnessChanging)
-            localBrightness = brightnessMonitor.brightness || 0.5;
-        }
-
-        Connections {
-          target: BrightnessService
-          function onMonitorBrightnessChanged(monitor, newBrightness) {
-            if (monitor === brightnessMonitor && !localBrightnessChanging) {
-              localBrightness = newBrightness;
-            }
-          }
-        }
-        Connections {
-          target: brightnessMonitor
-          ignoreUnknownSignals: true
-          function onBrightnessUpdated() {
-            if (brightnessMonitor && !localBrightnessChanging) {
-              localBrightness = brightnessMonitor.brightness || 0;
-            }
-          }
-        }
-        Timer {
-          id: debounceTimer
-          interval: 120
-          repeat: false
-          onTriggered: {
-            if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable && Math.abs(localBrightness - brightnessMonitor.brightness) >= 0.005) {
-              brightnessMonitor.setBrightness(localBrightness);
-            }
-          }
-        }
-
-        ColumnLayout {
-          id: contentCol
-          width: parent.width - Style.margin2L
-          x: Style.marginL
-          y: Style.marginL
-          spacing: Style.marginXXS
-
-          RowLayout {
-            Layout.fillWidth: true
-            Layout.alignment: Qt.AlignBottom
-
-            NText {
-              text: modelData.name || "Unknown"
-              pointSize: Style.fontSizeL
-              font.weight: Style.fontWeightSemiBold
-              Layout.alignment: Qt.AlignBottom
-            }
-
-            NText {
-              Layout.fillWidth: true
-              readonly property real compositorScale: {
-                const info = CompositorService.displayScales[modelData.name];
-                return (info && info.scale) ? info.scale : 1.0;
-              }
-              text: {
-                I18n.tr("system.monitor-description", {
-                          "model": modelData.model,
-                          "width": modelData.width * compositorScale,
-                          "height": modelData.height * compositorScale,
-                          "scale": compositorScale
-                        });
-              }
-              pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
-              wrapMode: Text.WordWrap
-              horizontalAlignment: Text.AlignRight
-              Layout.alignment: Qt.AlignBottom
-            }
-          }
-
-          ColumnLayout {
-            spacing: Style.marginS
-            Layout.fillWidth: true
-            visible: brightnessMonitor !== undefined && brightnessMonitor !== null
-
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginL
-
-              NText {
-                text: I18n.tr("common.brightness")
-                Layout.preferredWidth: Style.settingsBrightnessLabelWidth
-                Layout.alignment: Qt.AlignVCenter
-              }
-
-              NValueSlider {
-                id: brightnessSlider
-                from: 0
-                to: 1
-                value: localBrightness
-                stepSize: 0.01
-                enabled: brightnessMonitor ? brightnessMonitor.brightnessControlAvailable : false
-                onMoved: value => {
-                           if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                             localBrightness = value;
-                             debounceTimer.restart();
-                           }
-                         }
-                onPressedChanged: (pressed, value) => {
-                                    localBrightnessChanging = pressed;
-                                    if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                                      if (pressed) {
-                                        localBrightness = value;
-                                        debounceTimer.restart();
-                                      } else {
-                                        localBrightness = value;
-                                        debounceTimer.restart();
-                                      }
-                                    }
-                                  }
-                Layout.fillWidth: true
-              }
-
-              NText {
-                text: brightnessMonitor ? Math.round(localBrightness * 100) + "%" : "N/A"
-                Layout.preferredWidth: Style.settingsBrightnessValueWidth
-                horizontalAlignment: Text.AlignRight
-                Layout.alignment: Qt.AlignVCenter
-                opacity: brightnessMonitor && !brightnessMonitor.brightnessControlAvailable ? 0.5 : 1.0
-              }
-
-              Item {
-                Layout.preferredWidth: Style.settingsFieldHeight
-                Layout.fillHeight: true
-                NIcon {
-                  icon: brightnessMonitor && brightnessMonitor.method == "internal" ? "device-laptop" : "device-desktop"
-                  anchors.right: parent.right
-                  anchors.verticalCenter: parent.verticalCenter
-                  opacity: brightnessMonitor && !brightnessMonitor.brightnessControlAvailable ? 0.5 : 1.0
-                }
-              }
-            }
-
-            NText {
-              visible: brightnessMonitor && !brightnessMonitor.brightnessControlAvailable && !(brightnessMonitor.method === "internal" && brightnessMonitor.initInProgress)
-              text: !Settings.data.brightness.enableDdcSupport ? I18n.tr("panels.display.monitors-brightness-unavailable-ddc-disabled") : I18n.tr("panels.display.monitors-brightness-unavailable-generic")
-              pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
-              Layout.fillWidth: true
-              wrapMode: Text.WordWrap
-            }
-
-            NComboBox {
-              Layout.fillWidth: true
-              visible: brightnessMonitor && brightnessMonitor.method === "internal"
-              label: I18n.tr("panels.display.monitors-backlight-device-label")
-              description: I18n.tr("panels.display.monitors-backlight-device-description")
-              model: backlightDeviceOptions
-              currentKey: BrightnessService.getMappedBacklightDevice(modelData.name) || ""
-              onSelected: key => BrightnessService.setMappedBacklightDevice(modelData.name, key)
-            }
-          }
-        }
-      }
-    }
-
-    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
-    NDccGap {
-      Layout.fillWidth: true
-    }
-    ColumnLayout {
+  // §3.5.4 — one SettingsGroup per monitor: an identity row, a DCCSlider
+  // brightness row and, for internal panels, a backlight-device Option row.
+  Repeater {
+    model: Quickshell.screens || []
+    delegate: ColumnLayout {
       Layout.fillWidth: true
       spacing: Style.settingsGroupGap
 
-      NSpinBox {
-        Layout.fillWidth: true
-        label: I18n.tr("panels.display.monitors-brightness-step-label")
-        description: I18n.tr("panels.display.monitors-brightness-step-description")
-        minimum: 1
-        maximum: 50
-        value: Settings.data.brightness.brightnessStep
-        stepSize: 1
-        suffix: "%"
-        onValueChanged: Settings.data.brightness.brightnessStep = value
-        defaultValue: Settings.getDefaultValue("brightness.brightnessStep")
+      property var brightnessMonitor: BrightnessService.getMonitorForScreen(modelData)
+      property real localBrightness: 0.5
+      property bool localBrightnessChanging: false
+      readonly property string automaticOptionLabel: {
+        var baseLabel = I18n.tr("panels.display.monitors-backlight-device-auto-option");
+        var autoDevicePath = (BrightnessService.availableBacklightDevices && BrightnessService.availableBacklightDevices.length > 0) ? BrightnessService.availableBacklightDevices[0] : "";
+        if (autoDevicePath === "")
+          return baseLabel;
+
+        var autoDeviceName = BrightnessService.getBacklightDeviceName(autoDevicePath) || autoDevicePath;
+        return baseLabel + "(" + autoDeviceName + ")";
+      }
+      readonly property var backlightDeviceOptions: {
+        var options = [
+              {
+                "key": "",
+                "name": automaticOptionLabel
+              }
+            ];
+
+        var devices = BrightnessService.availableBacklightDevices || [];
+        for (var i = 0; i < devices.length; i++) {
+          var devicePath = devices[i];
+          var deviceName = BrightnessService.getBacklightDeviceName(devicePath) || devicePath;
+          options.push({
+                         "key": devicePath,
+                         "name": deviceName
+                       });
+        }
+        return options;
       }
 
-      NToggle {
-        Layout.fillWidth: true
-        label: I18n.tr("panels.display.monitors-enforce-minimum-label")
-        description: I18n.tr("panels.display.monitors-enforce-minimum-description")
-        checked: Settings.data.brightness.enforceMinimum
-        onToggled: checked => Settings.data.brightness.enforceMinimum = checked
-        defaultValue: Settings.getDefaultValue("brightness.enforceMinimum")
+      onBrightnessMonitorChanged: {
+        if (brightnessMonitor && !localBrightnessChanging)
+          localBrightness = brightnessMonitor.brightness || 0.5;
       }
 
-      NToggle {
+      Connections {
+        target: BrightnessService
+        function onMonitorBrightnessChanged(monitor, newBrightness) {
+          if (monitor === brightnessMonitor && !localBrightnessChanging) {
+            localBrightness = newBrightness;
+          }
+        }
+      }
+      Connections {
+        target: brightnessMonitor
+        ignoreUnknownSignals: true
+        function onBrightnessUpdated() {
+          if (brightnessMonitor && !localBrightnessChanging) {
+            localBrightness = brightnessMonitor.brightness || 0;
+          }
+        }
+      }
+      Timer {
+        id: debounceTimer
+        interval: 120
+        repeat: false
+        onTriggered: {
+          if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable && Math.abs(localBrightness - brightnessMonitor.brightness) >= 0.005) {
+            brightnessMonitor.setBrightness(localBrightness);
+          }
+        }
+      }
+
+      NDccRow {
+        interactive: false
         Layout.fillWidth: true
-        label: I18n.tr("panels.display.monitors-external-brightness-label")
-        description: I18n.tr("panels.display.monitors-external-brightness-description")
-        checked: Settings.data.brightness.enableDdcSupport
-        onToggled: checked => {
-                     Settings.data.brightness.enableDdcSupport = checked;
+
+        RowLayout {
+          Layout.fillWidth: true
+          Layout.alignment: Qt.AlignBottom
+          spacing: Style.marginM
+
+          NIcon {
+            icon: brightnessMonitor && brightnessMonitor.method == "internal" ? "device-laptop" : "device-desktop"
+            pointSize: Style.fontSizeXL
+            color: Color.onShell
+            Layout.alignment: Qt.AlignVCenter
+          }
+
+          NText {
+            text: modelData.name || "Unknown"
+            pointSize: Style.fontSizeL
+            font.weight: Style.fontWeightSemiBold
+            Layout.alignment: Qt.AlignBottom
+          }
+
+          NText {
+            Layout.fillWidth: true
+            readonly property real compositorScale: {
+              const info = CompositorService.displayScales[modelData.name];
+              return (info && info.scale) ? info.scale : 1.0;
+            }
+            text: {
+              I18n.tr("system.monitor-description", {
+                        "model": modelData.model,
+                        "width": modelData.width * compositorScale,
+                        "height": modelData.height * compositorScale,
+                        "scale": compositorScale
+                      });
+            }
+            pointSize: Style.fontSizeS
+            color: Color.onShellTertiary
+            wrapMode: Text.WordWrap
+            horizontalAlignment: Text.AlignRight
+            Layout.alignment: Qt.AlignBottom
+          }
+        }
+      }
+
+      NValueSlider {
+        id: brightnessSlider
+        Layout.fillWidth: true
+        visible: brightnessMonitor !== undefined && brightnessMonitor !== null
+        label: I18n.tr("common.brightness")
+        description: (brightnessMonitor && !brightnessMonitor.brightnessControlAvailable && !(brightnessMonitor.method === "internal" && brightnessMonitor.initInProgress)) ? (!Settings.data.brightness.enableDdcSupport ? I18n.tr("panels.display.monitors-brightness-unavailable-ddc-disabled") : I18n.tr("panels.display.monitors-brightness-unavailable-generic")) :
+                                                                                                                                                                              ""
+        text: brightnessMonitor ? Math.round(localBrightness * 100) + "%" : "N/A"
+        from: 0
+        to: 1
+        value: localBrightness
+        stepSize: 0.01
+        enabled: brightnessMonitor ? brightnessMonitor.brightnessControlAvailable : false
+        onMoved: value => {
+                   if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
+                     localBrightness = value;
+                     debounceTimer.restart();
                    }
-        defaultValue: Settings.getDefaultValue("brightness.enableDdcSupport")
+                 }
+        onPressedChanged: (pressed, value) => {
+                            localBrightnessChanging = pressed;
+                            if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
+                              localBrightness = value;
+                              debounceTimer.restart();
+                            }
+                          }
       }
+
+      NComboBox {
+        Layout.fillWidth: true
+        visible: brightnessMonitor && brightnessMonitor.method === "internal"
+        label: I18n.tr("panels.display.monitors-backlight-device-label")
+        description: I18n.tr("panels.display.monitors-backlight-device-description")
+        model: backlightDeviceOptions
+        currentKey: BrightnessService.getMappedBacklightDevice(modelData.name) || ""
+        onSelected: key => BrightnessService.setMappedBacklightDevice(modelData.name, key)
+      }
+    }
+  }
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+
+    NSpinBox {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.display.monitors-brightness-step-label")
+      description: I18n.tr("panels.display.monitors-brightness-step-description")
+      minimum: 1
+      maximum: 50
+      value: Settings.data.brightness.brightnessStep
+      stepSize: 1
+      suffix: "%"
+      onValueChanged: Settings.data.brightness.brightnessStep = value
+      defaultValue: Settings.getDefaultValue("brightness.brightnessStep")
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.display.monitors-enforce-minimum-label")
+      description: I18n.tr("panels.display.monitors-enforce-minimum-description")
+      checked: Settings.data.brightness.enforceMinimum
+      onToggled: checked => Settings.data.brightness.enforceMinimum = checked
+      defaultValue: Settings.getDefaultValue("brightness.enforceMinimum")
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.display.monitors-external-brightness-label")
+      description: I18n.tr("panels.display.monitors-external-brightness-description")
+      checked: Settings.data.brightness.enableDdcSupport
+      onToggled: checked => {
+                   Settings.data.brightness.enableDdcSupport = checked;
+                 }
+      defaultValue: Settings.getDefaultValue("brightness.enableDdcSupport")
     }
   }
 }

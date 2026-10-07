@@ -30,7 +30,7 @@ ColumnLayout {
       delegate: Item {
         id: delegateItem
         width: listView.availableWidth
-        height: contentRow.height
+        height: contentRow.implicitHeight + Style.settingsRowPaddingV * 2
 
         required property int index
         required property var modelData
@@ -42,9 +42,9 @@ ColumnLayout {
 
         Rectangle {
           anchors.fill: parent
-          radius: Style.radiusM
-          color: delegateItem.dragging ? Color.mSurfaceVariant : "transparent"
-          border.color: delegateItem.dragging ? Color.mOutline : "transparent"
+          radius: Style.radiusItem
+          color: delegateItem.dragging ? Color.overlay("checked") : Color.overlay("strong")
+          border.color: delegateItem.dragging ? Color.borderShell : "transparent"
           border.width: Style.borderS
 
           Behavior on color {
@@ -56,7 +56,11 @@ ColumnLayout {
 
         RowLayout {
           id: contentRow
-          width: parent.width
+          anchors.verticalCenter: parent.verticalCenter
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.leftMargin: Style.settingsRowPaddingH
+          anchors.rightMargin: Style.settingsRowPaddingH
           spacing: Style.marginS
 
           // Drag handle
@@ -65,7 +69,7 @@ ColumnLayout {
             Layout.preferredHeight: Style.baseWidgetSize * 0.7
             Layout.alignment: Qt.AlignVCenter
             radius: Style.radiusXS
-            color: dragHandleMouseArea.containsMouse ? Color.mSurfaceVariant : "transparent"
+            color: dragHandleMouseArea.containsMouse ? Color.overlay("strong") : "transparent"
 
             Behavior on color {
               ColorAnimation {
@@ -83,7 +87,7 @@ ColumnLayout {
                   Layout.preferredWidth: Style.baseWidgetSize * 0.28
                   Layout.preferredHeight: Style.marginXXS
                   radius: Style.marginXXXS
-                  color: Color.mOutline
+                  color: Color.onShellTertiary
                 }
               }
             }
@@ -144,8 +148,8 @@ ColumnLayout {
             Layout.preferredHeight: Style.baseWidgetSize * 0.7
             Layout.alignment: Qt.AlignVCenter
             radius: Style.radiusXS
-            color: modelData.enabled ? Color.mPrimary : Color.mSurface
-            border.color: Color.mOutline
+            color: modelData.enabled ? Color.accent : Color.overlay("field")
+            border.color: modelData.enabled ? Color.accent : Color.borderShell
             border.width: Style.borderS
 
             Behavior on color {
@@ -159,7 +163,7 @@ ColumnLayout {
               anchors.centerIn: parent
               anchors.horizontalCenterOffset: -1
               icon: "check"
-              color: Color.mOnPrimary
+              color: Color.onAccent
               pointSize: Math.max(Style.fontSizeXS, Style.baseWidgetSize * 0.35)
             }
 
@@ -178,7 +182,7 @@ ColumnLayout {
           NText {
             Layout.fillWidth: true
             text: modelData.text
-            color: Color.mOnSurface
+            color: Color.onShell
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
           }

@@ -58,9 +58,9 @@ Popup {
   background: Rectangle {
     id: bgRect
 
-    color: Color.mSurface
-    radius: Style.radiusL
-    border.color: Color.mPrimary
+    color: Color.maskShell
+    radius: Style.radiusWindow
+    border.color: Color.borderShell
     border.width: Style.borderM
   }
 
@@ -82,8 +82,8 @@ Popup {
                           "entry": root.entryText
                         })
           pointSize: Style.fontSizeL
-          font.weight: Style.fontWeightBold
-          color: Color.mPrimary
+          font.weight: Style.fontWeightSemiBold
+          color: Color.onShell
           Layout.fillWidth: true
         }
 
@@ -101,7 +101,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Color.overlay("hover")
       }
 
       // Command input
@@ -119,7 +119,7 @@ Popup {
         Layout.fillWidth: true
         spacing: Style.marginXS
 
-        NLabel {
+        NHeader {
           label: I18n.tr("panels.session-menu.entry-settings-default-info-label")
           description: I18n.tr("panels.session-menu.entry-settings-default-info-description")
           Layout.fillWidth: true
@@ -129,9 +129,9 @@ Popup {
         Rectangle {
           Layout.fillWidth: true
           Layout.preferredHeight: defaultCommandText.implicitHeight + Style.margin2M
-          radius: Style.radiusM
-          color: Color.mSurfaceVariant
-          border.color: Color.mOutline
+          radius: Style.radiusWindow
+          color: Color.overlay("field")
+          border.color: Color.borderShell
           border.width: Style.borderS
 
           RowLayout {
@@ -141,7 +141,7 @@ Popup {
 
             NIcon {
               icon: "info"
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellSecondary
               pointSize: Style.fontSizeM
             }
 
@@ -149,7 +149,7 @@ Popup {
               id: defaultCommandText
               Layout.fillWidth: true
               text: root.defaultCommand
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellSecondary
               font.family: "monospace"
               font.pointSize: Style.fontSizeS
               wrapMode: Text.Wrap

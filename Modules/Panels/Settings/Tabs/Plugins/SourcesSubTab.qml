@@ -8,48 +8,48 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: Style.settingsGroupSpacing
   Layout.fillWidth: true
 
   // List of plugin sources
   ColumnLayout {
-    spacing: Style.marginM
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     Repeater {
       id: pluginSourcesRepeater
       model: PluginRegistry.pluginSources || []
 
-      delegate: NBox {
+      delegate: NDccRow {
+        clip: true
         Layout.fillWidth: true
-        implicitHeight: sourceRow.implicitHeight + Style.margin2L
-        color: Color.mSurface
 
         RowLayout {
           id: sourceRow
-          anchors.fill: parent
-          anchors.margins: Style.marginL
+          Layout.fillWidth: true
           spacing: Style.marginM
 
           NIcon {
             icon: "brand-github"
             pointSize: Style.fontSizeL
+            Layout.alignment: Qt.AlignVCenter
           }
 
           ColumnLayout {
-            spacing: 2
+            spacing: Style.marginXXS
             Layout.fillWidth: true
 
             NText {
               text: modelData.name
-              color: Color.mOnSurface
+              font.weight: Style.fontWeightMedium
+              color: Color.onShell
               Layout.fillWidth: true
             }
 
             NText {
               text: modelData.url
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
               Layout.fillWidth: true
               elide: Text.ElideRight
             }
@@ -100,9 +100,9 @@ ColumnLayout {
     padding: Style.marginL
 
     background: Rectangle {
-      color: Color.mSurface
-      radius: Style.radiusS
-      border.color: Color.mPrimary
+      color: Color.maskShell
+      radius: Style.radiusWindow
+      border.color: Color.borderShell
       border.width: Style.borderM
     }
 
@@ -144,8 +144,8 @@ ColumnLayout {
 
         NButton {
           text: I18n.tr("common.add")
-          backgroundColor: Color.mPrimary
-          textColor: Color.mOnPrimary
+          backgroundColor: Color.accent
+          textColor: Color.onAccent
           enabled: sourceNameInput.text.length > 0 && sourceUrlInput.text.length > 0
           onClicked: {
             if (PluginRegistry.addPluginSource(sourceNameInput.text, sourceUrlInput.text)) {

@@ -42,7 +42,7 @@ ColumnLayout {
     spacing: Style.marginL
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.display.night-light-temperature-night")
       description: I18n.tr("panels.display.night-light-temperature-night-description")
       Layout.fillWidth: true
@@ -90,12 +90,12 @@ ColumnLayout {
       NText {
         text: nightSlider.value + "K"
         pointSize: Style.fontSizeM
-        color: Color.mOnSurfaceVariant
+        color: Color.onShellTertiary
         Layout.alignment: Qt.AlignVCenter
       }
     }
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.display.night-light-temperature-day")
       description: I18n.tr("panels.display.night-light-temperature-day-description")
       Layout.fillWidth: true
@@ -143,7 +143,7 @@ ColumnLayout {
       NText {
         text: daySlider.value + "K"
         pointSize: Style.fontSizeM
-        color: Color.mOnSurfaceVariant
+        color: Color.onShellTertiary
         Layout.alignment: Qt.AlignVCenter
       }
     }
@@ -162,7 +162,7 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: !Settings.data.nightLight.autoSchedule && !Settings.data.nightLight.forced
 
-      NLabel {
+      NHeader {
         label: I18n.tr("panels.display.night-light-manual-schedule-label")
         description: I18n.tr("panels.display.night-light-manual-schedule-description")
       }
@@ -174,7 +174,7 @@ ColumnLayout {
         NText {
           text: I18n.tr("panels.display.night-light-manual-schedule-sunrise")
           pointSize: Style.fontSizeM
-          color: Color.mOnSurfaceVariant
+          color: Color.onShellTertiary
           Layout.alignment: Qt.AlignVCenter
         }
 
@@ -194,7 +194,7 @@ ColumnLayout {
         NText {
           text: I18n.tr("panels.display.night-light-manual-schedule-sunset")
           pointSize: Style.fontSizeM
-          color: Color.mOnSurfaceVariant
+          color: Color.onShellTertiary
           Layout.alignment: Qt.AlignVCenter
         }
 

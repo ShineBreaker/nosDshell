@@ -7,7 +7,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: Style.settingsGroupSpacing
   Layout.fillWidth: true
 
   property string pluginSearchText: ""
@@ -91,7 +91,7 @@ ColumnLayout {
 
   // Available plugins list
   ColumnLayout {
-    spacing: Style.marginM
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     Repeater {
@@ -169,19 +169,15 @@ ColumnLayout {
         return filtered;
       }
 
-      delegate: NBox {
+      delegate: NDccRow {
         id: pluginBox
 
+        clip: true
         Layout.fillWidth: true
-        Layout.leftMargin: Style.borderS
-        Layout.rightMargin: Style.borderS
-        implicitHeight: Math.round(contentColumn.implicitHeight + Style.margin2L)
-        color: Color.mSurface
 
         ColumnLayout {
           id: contentColumn
-          anchors.fill: parent
-          anchors.margins: Style.marginL
+          Layout.fillWidth: true
           spacing: Style.marginS
 
           RowLayout {
@@ -191,20 +187,22 @@ ColumnLayout {
             NIcon {
               icon: "plugin"
               pointSize: Style.fontSizeL
-              color: Color.mPrimary
+              color: Color.accent
             }
 
             NText {
               text: modelData.name
-              color: Color.mPrimary
+              font.weight: Style.fontWeightMedium
+              color: Color.onShell
               elide: Text.ElideRight
+              Layout.fillWidth: true
             }
 
             // Official badge (marked official by the plugin's registry)
             Rectangle {
               visible: modelData.official === true
-              color: Color.mSecondary
-              radius: Style.radiusXS
+              color: Color.accentAlt
+              radius: Style.radiusRow
               implicitWidth: officialBadgeRow.implicitWidth + Style.margin2S
               implicitHeight: officialBadgeRow.implicitHeight + Style.margin2XS
 
@@ -216,14 +214,14 @@ ColumnLayout {
                 NIcon {
                   icon: "official-plugin"
                   pointSize: Style.fontSizeXXS
-                  color: Color.mOnSecondary
+                  color: Color.onAccent
                 }
 
                 NText {
                   text: I18n.tr("common.official")
                   font.pointSize: Style.fontSizeXXS
                   font.weight: Style.fontWeightMedium
-                  color: Color.mOnSecondary
+                  color: Color.onAccent
                 }
               }
             }
@@ -248,7 +246,7 @@ ColumnLayout {
             NIcon {
               icon: "circle-check"
               pointSize: Style.baseWidgetSize * 0.5
-              color: Color.mPrimary
+              color: Color.accent
               visible: modelData.downloaded === true
             }
 
@@ -274,7 +272,7 @@ ColumnLayout {
             visible: modelData.description
             text: modelData.description || ""
             font.pointSize: Style.fontSizeXS
-            color: Color.mOnSurface
+            color: Color.onShellTertiary
             wrapMode: Text.WordWrap
             maximumLineCount: 2
             elide: Text.ElideRight
@@ -289,45 +287,45 @@ ColumnLayout {
             NText {
               text: "v" + modelData.version
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             NText {
               text: "•"
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             NText {
               text: stripAuthorEmail(modelData.author)
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             NText {
               text: "•"
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             NText {
               text: modelData.source ? modelData.source.name : ""
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             NText {
               visible: !!modelData.lastUpdated
               text: "•"
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             NText {
               visible: !!modelData.lastUpdated
               text: modelData.lastUpdated ? Time.formatRelativeTime(new Date(modelData.lastUpdated)) : ""
               font.pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Color.onShellTertiary
             }
 
             Item {

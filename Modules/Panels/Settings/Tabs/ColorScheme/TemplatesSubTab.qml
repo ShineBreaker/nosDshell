@@ -189,30 +189,26 @@ ColumnLayout {
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
   NHeader {
     label: I18n.tr("panels.color-scheme.templates-header")
+    description: I18n.tr("panels.color-scheme.templates-desc")
   }
 
-  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
-  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
+  // Category filter
+  NTagFilter {
+    Layout.fillWidth: true
+    tags: root.availableCategories
+    selectedTag: root.selectedCategory
+    onSelectedTagChanged: root.selectedCategory = selectedTag
+    label: I18n.tr("panels.color-scheme.templates-filter-label")
+    description: I18n.tr("panels.color-scheme.templates-filter-description")
+    expanded: true
+  }
+
   ColumnLayout {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    NText {
-      text: I18n.tr("panels.color-scheme.templates-desc")
-      wrapMode: Text.WordWrap
-      Layout.fillWidth: true
-    }
+    Layout.topMargin: Style.marginM
+    spacing: Style.marginS
 
-    // Category filter chips
-    NTagFilter {
-      tags: root.availableCategories
-      selectedTag: root.selectedCategory
-      onSelectedTagChanged: root.selectedCategory = selectedTag
-      label: I18n.tr("panels.color-scheme.templates-filter-label")
-      description: I18n.tr("panels.color-scheme.templates-filter-description")
-      expanded: true
-    }
-
-    // Search/filter input row
+    // Search/filter toolbar above the list
     RowLayout {
       Layout.fillWidth: true
       spacing: Style.marginS
@@ -228,72 +224,56 @@ ColumnLayout {
         icon: "filter"
         tooltipText: root.showOnlyActive ? I18n.tr("actions.show-all") : I18n.tr("actions.show-active-only")
 
-        colorBg: root.showOnlyActive ? Color.mPrimary : Color.mSurface
-        colorFg: root.showOnlyActive ? Color.mOnPrimary : Color.mOnSurface
+        colorBg: root.showOnlyActive ? Color.accent : Color.overlay("strong")
+        colorFg: root.showOnlyActive ? Color.onAccent : Color.onShell
 
         onClicked: root.showOnlyActive = !root.showOnlyActive
       }
     }
 
-    // Chip grid - uniform columns
-    GridLayout {
+    // SettingsGroup: one DDE SettingsGroup -- rows stack with the
+    // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4). Each template is a
+    // click-row; an accent check marks the active ones.
+    ColumnLayout {
       Layout.fillWidth: true
-      columns: 4
-      columnSpacing: Style.marginS
-      rowSpacing: Style.marginS
+      spacing: Style.settingsGroupGap
 
       Repeater {
         model: filteredTemplates
 
-        Rectangle {
-          id: chip
+        delegate: NDccRow {
+          id: templateRow
           Layout.fillWidth: true
-          Layout.preferredHeight: Math.round(Style.baseWidgetSize * 0.9)
-          radius: Style.iRadiusM
-          color: chipMouse.containsMouse ? Color.mHover : (isActive ? Color.mPrimary : Color.mSurface)
-          border.color: isActive ? Color.mPrimary : Color.mOutline
-          border.width: Style.borderS
+          clickable: true
 
           required property int index
           required property var modelData
           readonly property bool isActive: root.isTemplateActive(modelData.id)
 
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
+          onClicked: root.toggleTemplate(modelData.id)
 
           NText {
-            id: chipText
-            anchors.centerIn: parent
-            width: parent.width - Style.margin2L
-            text: chip.modelData.name
+            text: templateRow.modelData.name
             pointSize: Style.fontSizeS
-            color: chipMouse.containsMouse ? Color.mOnHover : (isActive ? Color.mOnPrimary : Color.mOnSurface)
-            horizontalAlignment: Text.AlignHCenter
+            color: Color.onShell
             elide: Text.ElideRight
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
+            Layout.fillWidth: true
           }
 
-          MouseArea {
-            id: chipMouse
-            anchors.fill: parent
-            cursorShape: Qt.PointingHandCursor
-            hoverEnabled: true
-            onClicked: root.toggleTemplate(chip.modelData.id)
-            onEntered: {
-              if (chip.modelData.tooltip) {
-                TooltipService.show(chip, chip.modelData.tooltip, "bottom");
+          NIcon {
+            icon: "check"
+            pointSize: Style.fontSizeL
+            color: Color.accent
+            visible: templateRow.isActive
+          }
+
+          HoverHandler {
+            onHoveredChanged: {
+              if (hovered && templateRow.modelData.tooltip) {
+                TooltipService.show(templateRow, templateRow.modelData.tooltip, "bottom");
+              } else {
+                TooltipService.hide();
               }
-            }
-            onExited: {
-              TooltipService.hide();
             }
           }
         }
@@ -304,7 +284,7 @@ ColumnLayout {
     NText {
       visible: filteredTemplates.length === 0 && searchText.trim() !== ""
       text: I18n.tr("common.no-results")
-      color: Color.mOnSurfaceVariant
+      color: Color.onShellTertiary
     }
   }
 

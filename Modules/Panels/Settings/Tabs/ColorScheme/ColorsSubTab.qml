@@ -159,49 +159,55 @@ ColumnLayout {
                   }
     }
 
-    ColumnLayout {
-      spacing: Style.marginS
+    NDccRow {
+      interactive: false
+      Layout.fillWidth: true
       visible: Settings.data.colorSchemes.schedulingMode === "manual"
 
-      NLabel {
-        label: I18n.tr("panels.display.night-light-manual-schedule-label")
-        description: I18n.tr("panels.display.night-light-manual-schedule-description")
-      }
-
-      RowLayout {
-        Layout.fillWidth: false
+      ColumnLayout {
+        Layout.fillWidth: true
         spacing: Style.marginS
 
-        NText {
-          text: I18n.tr("panels.display.night-light-manual-schedule-sunrise")
-          pointSize: Style.fontSizeM
-          color: Color.mOnSurfaceVariant
+        NLabel {
+          label: I18n.tr("panels.display.night-light-manual-schedule-label")
+          description: I18n.tr("panels.display.night-light-manual-schedule-description")
         }
 
-        NComboBox {
-          model: root.timeOptions
-          currentKey: Settings.data.colorSchemes.manualSunrise
-          placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-start")
-          onSelected: key => Settings.data.colorSchemes.manualSunrise = key
-          minimumWidth: 120
-        }
+        RowLayout {
+          Layout.fillWidth: false
+          spacing: Style.marginS
 
-        Item {
-          Layout.preferredWidth: Style.settingsTimeGroupGap
-        }
+          NText {
+            text: I18n.tr("panels.display.night-light-manual-schedule-sunrise")
+            pointSize: Style.fontSizeM
+            color: Color.onShellTertiary
+          }
 
-        NText {
-          text: I18n.tr("panels.display.night-light-manual-schedule-sunset")
-          pointSize: Style.fontSizeM
-          color: Color.mOnSurfaceVariant
-        }
+          NComboBox {
+            model: root.timeOptions
+            currentKey: Settings.data.colorSchemes.manualSunrise
+            placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-start")
+            onSelected: key => Settings.data.colorSchemes.manualSunrise = key
+            minimumWidth: 120
+          }
 
-        NComboBox {
-          model: root.timeOptions
-          currentKey: Settings.data.colorSchemes.manualSunset
-          placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-stop")
-          onSelected: key => Settings.data.colorSchemes.manualSunset = key
-          minimumWidth: 120
+          Item {
+            Layout.preferredWidth: Style.settingsTimeGroupGap
+          }
+
+          NText {
+            text: I18n.tr("panels.display.night-light-manual-schedule-sunset")
+            pointSize: Style.fontSizeM
+            color: Color.onShellTertiary
+          }
+
+          NComboBox {
+            model: root.timeOptions
+            currentKey: Settings.data.colorSchemes.manualSunset
+            placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-stop")
+            onSelected: key => Settings.data.colorSchemes.manualSunset = key
+            minimumWidth: 120
+          }
         }
       }
     }
@@ -278,7 +284,7 @@ ColumnLayout {
       visible: Settings.data.colorSchemes.useWallpaperColors
       Layout.fillWidth: true
       implicitHeight: descriptionColumn.implicitHeight + Style.margin2L
-      color: Color.mSurface
+      color: Color.overlay("field")
 
       Column {
         id: descriptionColumn
@@ -293,7 +299,7 @@ ColumnLayout {
           wrapMode: Text.WordWrap
           text: I18n.tr("panels.color-scheme.method-description." + Settings.data.colorSchemes.generationMethod)
           pointSize: Style.fontSizeS
-          color: Color.mOnSurfaceVariant
+          color: Color.onShellTertiary
         }
 
         Row {
@@ -356,12 +362,12 @@ ColumnLayout {
           border.width: Style.borderL
           border.color: {
             if ((Settings.data.colorSchemes.predefinedScheme === schemeName) && schemeItem.enabled) {
-              return Color.mSecondary;
+              return Color.accent;
             }
             if (itemMouseArea.containsMouse) {
-              return Color.mHover;
+              return Color.onShellTertiary;
             }
-            return Color.mOutline;
+            return Color.borderShell;
           }
 
           RowLayout {
@@ -373,7 +379,7 @@ ColumnLayout {
             NText {
               text: schemeItem.schemeName
               pointSize: Style.fontSizeS
-              color: Color.mOnSurface
+              color: root.getSchemeColor(schemeItem.schemeName, "mOnSurface")
               // schemeItem dims the whole card; no second factor on the text.
               autoDim: false
               Layout.fillWidth: true
@@ -438,14 +444,14 @@ ColumnLayout {
             width: Style.settingsSchemeBadgeSize
             height: Style.settingsSchemeBadgeSize
             radius: Math.min(Style.radiusL, width / 2)
-            color: Color.mSecondary
+            color: Color.accent
             border.width: Style.borderS
-            border.color: Color.mOnSecondary
+            border.color: Color.onAccent
 
             NIcon {
               icon: "check"
               pointSize: Style.fontSizeXS
-              color: Color.mOnSecondary
+              color: Color.onAccent
               anchors.centerIn: parent
             }
           }
