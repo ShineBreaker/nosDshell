@@ -124,8 +124,8 @@ NDccRow {
   Item {
     id: buttonItem
     visible: root.showReset && root.defaultValue !== undefined
-    Layout.preferredWidth: 30 * Style.uiScaleRatio
-    Layout.preferredHeight: 30 * Style.uiScaleRatio
+    Layout.preferredWidth: Style.settingsFieldHeight
+    Layout.preferredHeight: Style.settingsFieldHeight
 
     NIconButton {
       icon: "restore"

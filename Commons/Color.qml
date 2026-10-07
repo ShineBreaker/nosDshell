@@ -442,6 +442,10 @@ Singleton {
   readonly property color onTransientTrack: Qt.rgba(0, 0, 0, 0.1)
   readonly property color onTransientTick: Qt.rgba(0, 0, 0, 0.5)
 
+  // Module header separator: 1 px line, white x 0.15 in dark mode (DESIGN
+  // §3.5.4). Adaptive via onShell so light mode reads black x 0.15.
+  readonly property color separator: Qt.alpha(onShell, 0.15)
+
   // White overlay ladder on dark surfaces (black on light) — DESIGN §1.3
   readonly property var overlayLevels: ({
                                           "idle": 0.03,

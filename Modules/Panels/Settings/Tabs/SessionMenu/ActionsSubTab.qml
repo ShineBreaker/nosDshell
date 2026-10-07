@@ -75,14 +75,14 @@ ColumnLayout {
 
             ColumnLayout {
               anchors.centerIn: parent
-              spacing: 2
+              spacing: Style.marginXXS
 
               Repeater {
                 model: 3
                 Rectangle {
                   Layout.preferredWidth: Style.baseWidgetSize * 0.28
-                  Layout.preferredHeight: 2
-                  radius: 1
+                  Layout.preferredHeight: Style.marginXXS
+                  radius: Style.marginXXXS
                   color: Color.mOutline
                 }
               }

@@ -601,9 +601,9 @@ Item {
                   radius: Style.radiusRow
                   color: {
                     if (railArea.containsMouse)
-                      return Qt.rgba(1, 1, 1, 0.2);
+                      return Color.overlay("strong");
                     if (selected)
-                      return Qt.rgba(1, 1, 1, 0.3);
+                      return Color.overlay("checked");
                     return "transparent";
                   }
 
@@ -674,7 +674,7 @@ Item {
             // 24×24, radius 4, white×0.2 block (DESIGN §3.5.3).
             baseSize: 24
             customRadius: Style.radiusRow
-            colorBg: Qt.rgba(1, 1, 1, 0.2)
+            colorBg: Color.overlay("strong")
             tooltipText: I18n.tr("common.back")
             onClicked: root.backRequested()
           }
@@ -699,7 +699,7 @@ Item {
           Layout.leftMargin: Style.settingsRowPaddingH
           Layout.rightMargin: Style.settingsRowPaddingH
           Layout.bottomMargin: Style.settingsModuleSeparatorGap
-          color: Qt.rgba(1, 1, 1, Style.settingsHeadAlpha)
+          color: Color.separator
         }
 
         // Search (DESIGN §3.5.4 input: height 30, bg field, radiusItem, focus
@@ -710,7 +710,7 @@ Item {
           Layout.leftMargin: Style.marginS
           Layout.rightMargin: Style.marginS
           Layout.bottomMargin: Style.marginS
-          Layout.preferredHeight: Math.round(30 * Style.uiScaleRatio)
+          Layout.preferredHeight: Style.settingsFieldHeight
           radius: Style.radiusItem
           color: Color.overlay("field")
           border.width: searchInput.activeFocus ? Style.borderS : 0
@@ -769,30 +769,25 @@ Item {
                 searchResultClicked(currentItem.entry);
             }
 
-            delegate: Rectangle {
+            delegate: NDccRow {
               required property var modelData
               readonly property var entry: modelData
               width: searchResults.width
               height: Style.detailRowHeight
-              radius: itemMouse.containsMouse ? Style.radiusRow : 0
-              color: (itemMouse.containsMouse || ListView.isCurrentItem) ? Color.overlay("checked") : Color.overlay("strong")
+              clickable: true
+              onHoveredChanged: {
+                if (hovered)
+                  searchResults.currentIndex = index;
+              }
+              onClicked: searchResultClicked(entry)
 
               NText {
-                anchors.left: parent.left
-                anchors.leftMargin: Style.marginS
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width - Style.margin2S
+                Layout.fillWidth: true
+                Layout.alignment: Qt.AlignVCenter
                 text: I18n.tr(entry.labelKey)
                 pointSize: Style.fontSizeBody
                 color: Color.onShell
                 elide: Text.ElideRight
-              }
-
-              MouseArea {
-                id: itemMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: searchResultClicked(entry)
               }
             }
           }

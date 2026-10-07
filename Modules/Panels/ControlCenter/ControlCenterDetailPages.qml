@@ -24,8 +24,6 @@ Item {
   property var screen: null
   property string page: "wifi"
 
-  readonly property real listWidth: Math.max(1, root.width)
-
   // Wi-Fi rows: connected first, then saved, then the rest, strongest signal first
   readonly property var wifiRows: {
     const nets = Object.values(NetworkService.networks ?? {});
@@ -90,48 +88,25 @@ Item {
     ColumnLayout {
       Layout.fillWidth: true
       visible: root.page === "wifi"
-      spacing: 0
+      spacing: Style.settingsGroupGap
 
-      Item {
-        Layout.fillWidth: true
-        Layout.leftMargin: Style.marginS
-        Layout.rightMargin: Style.marginS
-        Layout.preferredHeight: Style.detailRowHeight
-
-        RowLayout {
-          anchors.fill: parent
-          spacing: Style.marginS
-
-          NIcon {
-            icon: NetworkService.wifiEnabled ? "wifi" : "wifi-off"
-            pointSize: Style.fontSizeXL
-            color: NetworkService.wifiEnabled ? Color.accent : Color.onShellSecondary
-          }
-
-          NText {
-            Layout.fillWidth: true
-            text: I18n.tr("common.wifi")
-            pointSize: Style.fontSizeM
-          }
-
-          NToggle {
-            label: ""
-            checked: NetworkService.wifiEnabled
-            enabled: !NetworkService.airplaneModeEnabled
-            onToggled: checked => NetworkService.setWifiEnabled(checked)
-          }
-        }
+      NToggle {
+        label: I18n.tr("common.wifi")
+        icon: NetworkService.wifiEnabled ? "wifi" : "wifi-off"
+        checked: NetworkService.wifiEnabled
+        enabled: !NetworkService.airplaneModeEnabled
+        onToggled: checked => NetworkService.setWifiEnabled(checked)
       }
 
-      HD {}
-      HD { text: I18n.tr("common.available") }
+      NHeader {
+        label: I18n.tr("common.available")
+      }
 
       Repeater {
         model: NetworkService.wifiEnabled ? root.wifiRows : []
 
         delegate: DetailRow {
           required property var modelData
-          width: root.listWidth
           glyph: NetworkService.getSignalInfo(modelData.signal, modelData.connected).icon
           glyphColor: modelData.connected ? Color.accent : Color.onShellSecondary
           rowText: modelData.ssid
@@ -154,47 +129,21 @@ Item {
     ColumnLayout {
       Layout.fillWidth: true
       visible: root.page === "bluetooth"
-      spacing: 0
+      spacing: Style.settingsGroupGap
 
-      Item {
-        Layout.fillWidth: true
-        Layout.leftMargin: Style.marginS
-        Layout.rightMargin: Style.marginS
-        Layout.preferredHeight: Style.detailRowHeight
-
-        RowLayout {
-          anchors.fill: parent
-          spacing: Style.marginS
-
-          NIcon {
-            icon: BluetoothService.enabled ? "bluetooth" : "bluetooth-off"
-            pointSize: Style.fontSizeXL
-            color: BluetoothService.enabled ? Color.accent : Color.onShellSecondary
-          }
-
-          NText {
-            Layout.fillWidth: true
-            text: I18n.tr("common.bluetooth")
-            pointSize: Style.fontSizeM
-          }
-
-          NToggle {
-            label: ""
-            checked: BluetoothService.enabled
-            enabled: !NetworkService.airplaneModeEnabled
-            onToggled: checked => BluetoothService.setBluetoothEnabled(checked)
-          }
-        }
+      NToggle {
+        label: I18n.tr("common.bluetooth")
+        icon: BluetoothService.enabled ? "bluetooth" : "bluetooth-off"
+        checked: BluetoothService.enabled
+        enabled: !NetworkService.airplaneModeEnabled
+        onToggled: checked => BluetoothService.setBluetoothEnabled(checked)
       }
-
-      HD {}
 
       Repeater {
         model: BluetoothService.enabled ? root.bluetoothRows : []
 
         delegate: DetailRow {
           required property var modelData
-          width: root.listWidth
           glyph: "bt-device-generic"
           glyphColor: modelData.connected ? Color.accent : Color.onShellSecondary
           rowText: modelData.name || modelData.deviceName || I18n.tr("common.devices")
@@ -227,7 +176,7 @@ Item {
     ColumnLayout {
       Layout.fillWidth: true
       visible: root.page === "display"
-      spacing: 0
+      spacing: Style.settingsGroupGap
 
       Repeater {
         model: root.brightnessMonitor ? [root.brightnessMonitor] : []
@@ -283,39 +232,14 @@ Item {
         }
       }
 
-      HD {}
-
-      Item {
-        Layout.fillWidth: true
-        Layout.leftMargin: Style.marginS
-        Layout.rightMargin: Style.marginS
-        Layout.preferredHeight: Style.detailRowHeight
-
-        RowLayout {
-          anchors.fill: parent
-          spacing: Style.marginS
-
-          NIcon {
-            icon: Settings.data.nightLight.enabled ? "nightlight-on" : "nightlight-off"
-            pointSize: Style.fontSizeXL
-            color: Settings.data.nightLight.enabled ? Color.accent : Color.onShellSecondary
-          }
-
-          NText {
-            Layout.fillWidth: true
-            text: I18n.tr("common.night-light")
-            pointSize: Style.fontSizeM
-          }
-
-          NToggle {
-            label: ""
-            checked: Settings.data.nightLight.enabled
-            enabled: ProgramCheckerService.wlsunsetAvailable
-            onToggled: checked => {
-              Settings.data.nightLight.enabled = checked;
-              Settings.data.nightLight.forced = false;
-            }
-          }
+      NToggle {
+        label: I18n.tr("common.night-light")
+        icon: Settings.data.nightLight.enabled ? "nightlight-on" : "nightlight-off"
+        checked: Settings.data.nightLight.enabled
+        enabled: ProgramCheckerService.wlsunsetAvailable
+        onToggled: checked => {
+          Settings.data.nightLight.enabled = checked;
+          Settings.data.nightLight.forced = false;
         }
       }
     }
@@ -324,16 +248,13 @@ Item {
     ColumnLayout {
       Layout.fillWidth: true
       visible: root.page === "vpn"
-      spacing: 0
-
-      HD {}
+      spacing: Style.settingsGroupGap
 
       Repeater {
         model: root.vpnRows
 
         delegate: DetailRow {
           required property var modelData
-          width: root.listWidth
           glyph: modelData.active ? "shield-lock" : "shield-off"
           glyphColor: modelData.active ? Color.accent : Color.onShellSecondary
           rowText: modelData.name
@@ -346,108 +267,56 @@ Item {
     }
   }
 
-  // 1 px separator using overlay("hover") — DESIGN §3.5.4
-  component HD: Item {
-    property string text: ""
-    Layout.fillWidth: true
-    Layout.preferredHeight: text !== "" ? 24 : 1
-    visible: true
-
-    NText {
-      anchors.verticalCenter: parent.verticalCenter
-      anchors.left: parent.left
-      anchors.leftMargin: Style.marginM
-      anchors.rightMargin: Style.marginS
-      text: parent.text
-      pointSize: Style.fontSizeS
-      color: Color.onShellSecondary
-      visible: parent.text !== ""
-    }
-
-    Rectangle {
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
-      anchors.right: parent.right
-      height: 1
-      color: Color.overlay("hover")
-      visible: parent.text === ""
-    }
-  }
-
-  // A 36 px list row (§3.5.4): glyph, name, secondary text, accent ✓ when active.
+  // A 36 px list row (DESIGN §3.5.4) reusing the settings-row chrome: glyph,
+  // name, secondary text, accent check when active. An NDccRow, so these lists
+  // share the row fill, hover, auto head/tail corners and (20, 10) padding.
   // The row's label is `rowText` rather than `text` so the NText inside the
   // row isn't shadowed by an Item-level `text` property.
-  component DetailRow: Item {
+  component DetailRow: NDccRow {
     property string glyph: ""
     property color glyphColor: Color.onShellSecondary
     property string rowText: ""
     property string secondary: ""
     property color secondaryColor: Color.onShellTertiary
     property bool check: false
-    signal clicked()
 
-    height: Style.detailRowHeight
+    clickable: true
 
-    Rectangle {
-      anchors.fill: parent
-      color: rowMouse.containsMouse ? Color.overlay("hover") : "transparent"
+    NIcon {
+      Layout.preferredWidth: Style.fontSizeXL
+      Layout.preferredHeight: Style.fontSizeXL
+      Layout.alignment: Qt.AlignVCenter
+      icon: glyph
+      color: glyphColor
     }
 
-    Rectangle {
-      anchors.bottom: parent.bottom
-      anchors.left: parent.left
-      anchors.right: parent.right
-      height: 1
-      color: Color.overlay("hover")
+    NText {
+      Layout.fillWidth: true
+      Layout.minimumWidth: 0
+      Layout.alignment: Qt.AlignVCenter
+      verticalAlignment: Text.AlignVCenter
+      text: rowText
+      pointSize: Style.fontSizeM
+      color: Color.onShell
+      elide: Text.ElideRight
     }
 
-    RowLayout {
-      anchors.fill: parent
-      anchors.leftMargin: Style.marginS
-      anchors.rightMargin: Style.marginS
-      spacing: Style.marginS
-
-      NIcon {
-        Layout.preferredWidth: Style.fontSizeXL
-        Layout.preferredHeight: Style.fontSizeXL
-        Layout.alignment: Qt.AlignVCenter
-        icon: glyph
-        color: glyphColor
-      }
-
-      NText {
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        verticalAlignment: Text.AlignVCenter
-        text: rowText
-        pointSize: Style.fontSizeM
-        color: Color.onShell
-        elide: Text.ElideRight
-      }
-
-      NText {
-        visible: secondary !== ""
-        verticalAlignment: Text.AlignVCenter
-        text: secondary
-        pointSize: Style.fontSizeS
-        color: secondaryColor
-        elide: Text.ElideRight
-      }
-
-      NIcon {
-        visible: check
-        icon: "check"
-        pointSize: Style.fontSizeL
-        color: Color.accent
-      }
+    NText {
+      visible: secondary !== ""
+      Layout.alignment: Qt.AlignVCenter
+      verticalAlignment: Text.AlignVCenter
+      text: secondary
+      pointSize: Style.fontSizeS
+      color: secondaryColor
+      elide: Text.ElideRight
     }
 
-    MouseArea {
-      id: rowMouse
-      anchors.fill: parent
-      hoverEnabled: true
-      cursorShape: Qt.PointingHandCursor
-      onClicked: parent.clicked()
+    NIcon {
+      visible: check
+      Layout.alignment: Qt.AlignVCenter
+      icon: "check"
+      pointSize: Style.fontSizeL
+      color: Color.accent
     }
   }
 }

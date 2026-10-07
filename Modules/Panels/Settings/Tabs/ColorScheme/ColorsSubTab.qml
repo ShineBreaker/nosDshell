@@ -187,7 +187,7 @@ ColumnLayout {
         }
 
         Item {
-          Layout.preferredWidth: 20
+          Layout.preferredWidth: Style.settingsTimeGroupGap
         }
 
         NText {
@@ -435,8 +435,8 @@ ColumnLayout {
             anchors.top: parent.top
             anchors.rightMargin: 0
             anchors.topMargin: -3
-            width: 20
-            height: 20
+            width: Style.settingsSchemeBadgeSize
+            height: Style.settingsSchemeBadgeSize
             radius: Math.min(Style.radiusL, width / 2)
             color: Color.mSecondary
             border.width: Style.borderS

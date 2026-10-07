@@ -514,6 +514,15 @@ Singleton {
   // titles stay readable.
   readonly property int settingsFieldTitleWidth: Math.round(140 * uiScaleRatio)
   readonly property int settingsFieldGap: Math.round(4 * uiScaleRatio)
+  // Hand-rolled brightness row (BrightnessSubTab, no DDE counterpart): label
+  // column + percent readout. Local alignment constants, kept separate from
+  // the DCC LineEdit title column above; previously unscaled literals.
+  readonly property int settingsBrightnessLabelWidth: Math.round(90 * uiScaleRatio)
+  readonly property int settingsBrightnessValueWidth: Math.round(55 * uiScaleRatio)
+  // Sunrise/sunset group gap + selected-scheme check badge (ColorsSubTab):
+  // one-off 20 px constants, scaled like everything else.
+  readonly property int settingsTimeGroupGap: Math.round(20 * uiScaleRatio)
+  readonly property int settingsSchemeBadgeSize: Math.round(20 * uiScaleRatio)
   // NextPageWidget: 5 px between value and chevron, 10 px trailing margin
   // (nextpagewidget.cpp:50-51); the chevron is a 16 px enter_details glyph.
   readonly property int settingsNextGap: Math.round(5 * uiScaleRatio)

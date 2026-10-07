@@ -36,7 +36,7 @@ NDccRow {
     }
   }
 
-  readonly property real _pillHeight: Math.round(30 * Style.uiScaleRatio)
+  readonly property real _pillHeight: Style.settingsFieldHeight
 
   function _applyKeybind(keyStr) {
     if (!keyStr)

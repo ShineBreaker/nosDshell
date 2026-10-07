@@ -138,7 +138,7 @@ ColumnLayout {
 
               NText {
                 text: I18n.tr("common.brightness")
-                Layout.preferredWidth: 90
+                Layout.preferredWidth: Style.settingsBrightnessLabelWidth
                 Layout.alignment: Qt.AlignVCenter
               }
 
@@ -172,14 +172,14 @@ ColumnLayout {
 
               NText {
                 text: brightnessMonitor ? Math.round(localBrightness * 100) + "%" : "N/A"
-                Layout.preferredWidth: 55
+                Layout.preferredWidth: Style.settingsBrightnessValueWidth
                 horizontalAlignment: Text.AlignRight
                 Layout.alignment: Qt.AlignVCenter
                 opacity: brightnessMonitor && !brightnessMonitor.brightnessControlAvailable ? 0.5 : 1.0
               }
 
               Item {
-                Layout.preferredWidth: 30
+                Layout.preferredWidth: Style.settingsFieldHeight
                 Layout.fillHeight: true
                 NIcon {
                   icon: brightnessMonitor && brightnessMonitor.method == "internal" ? "device-laptop" : "device-desktop"

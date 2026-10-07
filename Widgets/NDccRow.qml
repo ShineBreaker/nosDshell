@@ -18,8 +18,7 @@ import qs.Widgets
 * declarative, so a sibling being added, removed or hidden re-runs it and a
 * bulk change costs a single re-evaluation instead of one per row.
 *
-* A row inside an NSettingsGroup takes isFirst/isLast from the group instead, so
-* an explicit group layout still wins.
+* An explicit isFirst/isLast override still wins over the automatic scan.
 *
 * Use it as the root of a control, or drop plain content into it. Set
 * `interactive: false` for a read-only row and `error: true` for the alert
@@ -51,7 +50,7 @@ Rectangle {
   // Hover can be driven from the outside when the control already owns a
   // MouseArea covering the whole row (NCheckbox).
   property bool hovered: false
-  // Explicit corner overrides, used when the parent is an NSettingsGroup.
+  // Manual corner overrides: win over the automatic scan when set.
   property bool isFirst: false
   property bool isLast: false
 
@@ -86,8 +85,8 @@ Rectangle {
   // Only the head row's top corners and the tail row's bottom corners are
   // rounded; rows in between stay square so the 1 px gaps read as separators
   // (common.qss: SettingsItem[isHead=true] / [isTail=true]).
-  readonly property bool headRow: root.plain ? false : (root._groupDriven ? root.isFirst : root._autoIsFirst)
-  readonly property bool tailRow: root.plain ? false : (root._groupDriven ? root.isLast : root._autoIsLast)
+  readonly property bool headRow: root.plain ? false : (root.isFirst || root._autoIsFirst)
+  readonly property bool tailRow: root.plain ? false : (root.isLast || root._autoIsLast)
 
   topLeftRadius: headRow ? Style.radiusItem : 0
   topRightRadius: headRow ? Style.radiusItem : 0
@@ -124,7 +123,7 @@ Rectangle {
     onHoveredChanged: root.hovered = hovered
   }
 
-  // Only rows that are clickable in their own right (NDccNextPage, NCheckbox)
+  // Only rows that are clickable in their own right (e.g. NCheckbox)
   // get a click area; the rest let their content handle input.
   MouseArea {
     anchors.fill: parent
@@ -178,6 +177,4 @@ Rectangle {
     return true;
   }
 
-  // An NSettingsGroup hands out isFirst/isLast for its own children.
-  readonly property bool _groupDriven: parent !== null && parent.isDccSettingsGroup === true
 }
