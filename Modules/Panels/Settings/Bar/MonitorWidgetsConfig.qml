@@ -7,22 +7,26 @@ import qs.Commons
 import qs.Services.UI
 import qs.Widgets
 
-// Monitor Widgets Configuration (inline)
-NBox {
+// Monitor Widgets Configuration (inline). `screen: null` edits the global
+// default layout (Settings.data.bar.widgets); a bound screen edits that
+// monitor's override.
+ColumnLayout {
   id: root
 
-  required property var screen
+  property var screen: null
   readonly property string screenName: screen?.name || ""
   // determine bar orientation
-  readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
+  readonly property string barPosition: screenName === "" ? Settings.data.bar.position : Settings.getBarPositionForScreen(screenName)
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
 
-  color: Color.mSurfaceVariant
   Layout.fillWidth: true
-  implicitHeight: content.implicitHeight + Style.margin2L
+  spacing: Style.marginM
 
-  // Helper to get widgets for this screen (ensures override exists)
+  // Helper to get widgets for this screen (ensures override exists); the
+  // global editor works on Settings.data.bar.widgets directly.
   function _getWidgetsContainer() {
+    if (screenName === "")
+      return Settings.data.bar.widgets;
     if (!Settings.hasScreenOverride(screenName, "widgets")) {
       var currentWidgets = Settings.getBarWidgetsForScreen(screenName);
       var widgetsCopy = QtObj2JS.qtObjectToPlainObject(currentWidgets);
@@ -34,7 +38,11 @@ NBox {
 
   // Persist widget changes by reassigning the override (triggers change detection)
   function _saveWidgets(widgets) {
-    Settings.setScreenOverride(screenName, "widgets", widgets);
+    if (screenName === "") {
+      Settings.data.bar.widgets = widgets;
+    } else {
+      Settings.setScreenOverride(screenName, "widgets", widgets);
+    }
   }
 
   // Widget manipulation functions
@@ -121,13 +129,13 @@ NBox {
       if (BarWidgetRegistry.isPluginWidget(id)) {
         badges.push({
                       "icon": "plugin",
-                      "color": Color.mSecondary
+                      "color": Color.accentAlt
                     });
       }
       if (BarWidgetRegistry.isCpuIntensive(id)) {
         badges.push({
                       "icon": "cpu-intensive",
-                      "color": Color.mSecondary
+                      "color": Color.accentAlt
                     });
       }
       availableWidgetsModel.append({
@@ -153,74 +161,67 @@ NBox {
     id: availableWidgetsModel
   }
 
-  // Get effective widgets for this screen
-  readonly property var effectiveWidgets: Settings.getBarWidgetsForScreen(screenName)
+  // Get effective widgets: global default when unbound, per-screen otherwise.
+  readonly property var effectiveWidgets: screenName === "" ? Settings.data.bar.widgets : Settings.getBarWidgetsForScreen(screenName)
 
-  ColumnLayout {
-    id: content
-    anchors.fill: parent
-    anchors.margins: Style.marginL
-    spacing: Style.marginM
+  NText {
+    text: I18n.tr("panels.bar.widgets-desc")
+    wrapMode: Text.WordWrap
+    Layout.fillWidth: true
+  }
 
-    NText {
-      text: I18n.tr("panels.bar.widgets-desc")
-      wrapMode: Text.WordWrap
-      Layout.fillWidth: true
-    }
+  // Left Section
+  NSectionEditor {
+    sectionName: root.barIsVertical ? I18n.tr("positions.top") : I18n.tr("positions.left")
+    sectionId: "left"
+    barIsVertical: root.barIsVertical
+    screen: root.screen
+    settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
+    widgetRegistry: BarWidgetRegistry
+    widgetModel: root.effectiveWidgets.left
+    availableWidgets: availableWidgetsModel
+    onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
+    onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
+    onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
+    onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
+    onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
+    onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+  }
 
-    // Left Section
-    NSectionEditor {
-      sectionName: root.barIsVertical ? I18n.tr("positions.top") : I18n.tr("positions.left")
-      sectionId: "left"
-      barIsVertical: root.barIsVertical
-      screen: root.screen
-      settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
-      widgetRegistry: BarWidgetRegistry
-      widgetModel: root.effectiveWidgets.left
-      availableWidgets: availableWidgetsModel
-      onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
-      onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
-      onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
-      onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
-      onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
-    }
+  // Center Section
+  NSectionEditor {
+    sectionName: I18n.tr("positions.center")
+    sectionId: "center"
+    barIsVertical: root.barIsVertical
+    screen: root.screen
+    settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
+    widgetRegistry: BarWidgetRegistry
+    widgetModel: root.effectiveWidgets.center
+    availableWidgets: availableWidgetsModel
+    onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
+    onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
+    onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
+    onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
+    onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
+    onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+  }
 
-    // Center Section
-    NSectionEditor {
-      sectionName: I18n.tr("positions.center")
-      sectionId: "center"
-      barIsVertical: root.barIsVertical
-      screen: root.screen
-      settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
-      widgetRegistry: BarWidgetRegistry
-      widgetModel: root.effectiveWidgets.center
-      availableWidgets: availableWidgetsModel
-      onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
-      onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
-      onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
-      onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
-      onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
-    }
-
-    // Right Section
-    NSectionEditor {
-      sectionName: root.barIsVertical ? I18n.tr("positions.bottom") : I18n.tr("positions.right")
-      sectionId: "right"
-      barIsVertical: root.barIsVertical
-      screen: root.screen
-      settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
-      widgetRegistry: BarWidgetRegistry
-      widgetModel: root.effectiveWidgets.right
-      availableWidgets: availableWidgetsModel
-      onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
-      onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
-      onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
-      onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
-      onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
-    }
+  // Right Section
+  NSectionEditor {
+    sectionName: root.barIsVertical ? I18n.tr("positions.bottom") : I18n.tr("positions.right")
+    sectionId: "right"
+    barIsVertical: root.barIsVertical
+    screen: root.screen
+    settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
+    widgetRegistry: BarWidgetRegistry
+    widgetModel: root.effectiveWidgets.right
+    availableWidgets: availableWidgetsModel
+    onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
+    onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
+    onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
+    onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
+    onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
+    onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
   }
 
   // Plugin settings dialog

@@ -10,7 +10,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: Style.settingsGroupSpacing
   Layout.fillWidth: true
 
   NText {
@@ -19,14 +19,14 @@ ColumnLayout {
     Layout.fillWidth: true
   }
 
-  // Monitor cards
+  // §3.5.4 — one SettingsGroup per monitor: an identity row, the override
+  // switch, the override rows and an expandable widgets editor.
   Repeater {
     model: Quickshell.screens || []
-    delegate: NBox {
-      id: monitorCard
+    delegate: ColumnLayout {
+      id: monitorGroup
       Layout.fillWidth: true
-      implicitHeight: cardContent.implicitHeight + Style.margin2L
-      color: Color.mSurface
+      spacing: Style.settingsGroupGap
 
       required property var modelData
       readonly property string screenName: modelData.name || "Unknown"
@@ -35,216 +35,174 @@ ColumnLayout {
         return (info && info.scale) ? info.scale : 1.0;
       }
       readonly property bool hasOverride: Settings.hasScreenOverride(screenName)
-
-      // Track if override is enabled (controls both visibility AND whether overrides are applied)
       readonly property bool overrideEnabled: Settings.isScreenOverrideEnabled(screenName)
-
-      // Get effective values for this screen
       readonly property string effectivePosition: Settings.getTaskbarPositionForScreen(screenName)
       readonly property string effectiveDensity: Settings.getBarDensityForScreen(screenName)
 
-      ColumnLayout {
-        id: cardContent
-        anchors.fill: parent
-        anchors.margins: Style.marginL
-        spacing: Style.marginM
+      NDccRow {
+        interactive: false
+        Layout.fillWidth: true
 
-        RowLayout {
+        NLabel {
+          label: monitorGroup.screenName
+          description: I18n.tr("system.monitor-description", {
+                                 "model": monitorGroup.modelData.model || I18n.tr("common.unknown"),
+                                 "width": Math.round(monitorGroup.modelData.width * monitorGroup.compositorScale),
+                                 "height": Math.round(monitorGroup.modelData.height * monitorGroup.compositorScale),
+                                 "scale": monitorGroup.compositorScale
+                               })
           Layout.fillWidth: true
+        }
+      }
 
-          // Header: Monitor name and specs
-          ColumnLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginXXS
+      NToggle {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.bar.monitor-override-settings")
+        description: I18n.tr("panels.bar.monitor-override-settings-description")
+        checked: monitorGroup.overrideEnabled
+        onToggled: checked => {
+                     Settings.setScreenOverride(monitorGroup.screenName, "enabled", checked);
+                     BarService.widgetsRevision++;
+                   }
+      }
 
-            NText {
-              Layout.fillWidth: true
-              text: monitorCard.screenName
-              pointSize: Style.fontSizeM
-              font.weight: Style.fontWeightBold
-              color: Color.mOnSurface
-            }
+      NComboBox {
+        Layout.fillWidth: true
+        visible: monitorGroup.overrideEnabled
+        label: I18n.tr("panels.bar.appearance-position-label")
+        description: I18n.tr("panels.bar.appearance-position-description")
+        model: [
+          {
+            "key": "top",
+            "name": I18n.tr("positions.top")
+          },
+          {
+            "key": "bottom",
+            "name": I18n.tr("positions.bottom")
+          },
+          {
+            "key": "left",
+            "name": I18n.tr("positions.left")
+          },
+          {
+            "key": "right",
+            "name": I18n.tr("positions.right")
+          }
+        ]
+        currentKey: monitorGroup.effectivePosition
+        onSelected: key => Settings.setScreenOverride(monitorGroup.screenName, "position", key)
+      }
 
-            NText {
-              text: {
-                return I18n.tr("system.monitor-description", {
-                                 "model": monitorCard.modelData.model || I18n.tr("common.unknown"),
-                                 "width": Math.round(monitorCard.modelData.width * monitorCard.compositorScale),
-                                 "height": Math.round(monitorCard.modelData.height * monitorCard.compositorScale),
-                                 "scale": monitorCard.compositorScale
-                               });
-              }
-              pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
-            }
+      NComboBox {
+        Layout.fillWidth: true
+        visible: monitorGroup.overrideEnabled
+        label: I18n.tr("panels.bar.appearance-density-label")
+        description: I18n.tr("panels.bar.appearance-density-description")
+        model: [
+          {
+            "key": "mini",
+            "name": I18n.tr("options.bar.density-mini")
+          },
+          {
+            "key": "compact",
+            "name": I18n.tr("options.bar.density-compact")
+          },
+          {
+            "key": "default",
+            "name": I18n.tr("options.bar.density-default")
+          },
+          {
+            "key": "comfortable",
+            "name": I18n.tr("options.bar.density-comfortable")
+          },
+          {
+            "key": "spacious",
+            "name": I18n.tr("options.bar.density-spacious")
+          }
+        ]
+        currentKey: monitorGroup.effectiveDensity
+        onSelected: key => Settings.setScreenOverride(monitorGroup.screenName, "density", key)
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        visible: monitorGroup.overrideEnabled
+        label: I18n.tr("common.display-mode")
+        description: I18n.tr("panels.bar.appearance-display-mode-description")
+        model: [
+          {
+            "key": "always_visible",
+            "name": I18n.tr("hide-modes.visible")
+          },
+          {
+            "key": "non_exclusive",
+            "name": I18n.tr("hide-modes.non-exclusive")
+          },
+          {
+            "key": "auto_hide",
+            "name": I18n.tr("hide-modes.auto-hide")
+          }
+        ]
+        currentKey: Settings.getBarDisplayModeForScreen(monitorGroup.screenName)
+        onSelected: key => Settings.setScreenOverride(monitorGroup.screenName, "displayMode", key)
+      }
+
+      NDccRow {
+        id: widgetsRow
+        Layout.fillWidth: true
+        visible: monitorGroup.overrideEnabled
+        clickable: true
+        onClicked: widgetsEditor.visible = !widgetsEditor.visible
+
+        NText {
+          text: I18n.tr("panels.bar.monitor-configure-widgets")
+          pointSize: Style.fontSizeS
+          color: Color.onShell
+          Layout.fillWidth: true
+        }
+
+        NIcon {
+          icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
+          pointSize: Style.fontSizeL
+          color: Color.onShellTertiary
+        }
+      }
+
+      BarSettings.MonitorWidgetsConfig {
+        id: widgetsEditor
+        visible: false
+        screen: PanelService.liveScreen(monitorGroup.modelData)
+        Layout.fillWidth: true
+        Layout.topMargin: Style.marginM
+      }
+
+      NDccRow {
+        interactive: false
+        Layout.fillWidth: true
+        visible: monitorGroup.overrideEnabled
+
+        Item {
+          Layout.fillWidth: true
+        }
+
+        NButton {
+          visible: Settings.hasScreenOverride(monitorGroup.screenName, "widgets")
+          fontSize: Style.fontSizeS
+          text: I18n.tr("panels.bar.use-global-widgets")
+          icon: "refresh"
+          onClicked: {
+            Settings.clearScreenOverride(monitorGroup.screenName, "widgets");
+            BarService.widgetsRevision++;
           }
         }
 
-        // Per-screen override section
-        ColumnLayout {
-          Layout.fillWidth: true
-          spacing: Style.marginS
-
-          // Override toggle
-          NToggle {
-            Layout.fillWidth: true
-            label: I18n.tr("panels.bar.monitor-override-settings")
-            description: I18n.tr("panels.bar.monitor-override-settings-description")
-            checked: monitorCard.overrideEnabled
-            onToggled: checked => {
-                         Settings.setScreenOverride(monitorCard.screenName, "enabled", checked);
-                         BarService.widgetsRevision++;
-                       }
-          }
-
-          // Override controls (only visible when override toggle is on)
-          ColumnLayout {
-            Layout.fillWidth: true
-            spacing: Style.marginS
-            visible: monitorCard.overrideEnabled
-
-            // Position override
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginS
-
-              NComboBox {
-                Layout.fillWidth: true
-                label: I18n.tr("panels.bar.appearance-position-label")
-                description: I18n.tr("panels.bar.appearance-position-description")
-                model: [
-                  {
-                    "key": "top",
-                    "name": I18n.tr("positions.top")
-                  },
-                  {
-                    "key": "bottom",
-                    "name": I18n.tr("positions.bottom")
-                  },
-                  {
-                    "key": "left",
-                    "name": I18n.tr("positions.left")
-                  },
-                  {
-                    "key": "right",
-                    "name": I18n.tr("positions.right")
-                  }
-                ]
-                currentKey: monitorCard.effectivePosition
-                onSelected: key => Settings.setScreenOverride(monitorCard.screenName, "position", key)
-              }
-            }
-
-            // Density override
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginS
-
-              NComboBox {
-                Layout.fillWidth: true
-                label: I18n.tr("panels.bar.appearance-density-label")
-                description: I18n.tr("panels.bar.appearance-density-description")
-                model: [
-                  {
-                    "key": "mini",
-                    "name": I18n.tr("options.bar.density-mini")
-                  },
-                  {
-                    "key": "compact",
-                    "name": I18n.tr("options.bar.density-compact")
-                  },
-                  {
-                    "key": "default",
-                    "name": I18n.tr("options.bar.density-default")
-                  },
-                  {
-                    "key": "comfortable",
-                    "name": I18n.tr("options.bar.density-comfortable")
-                  },
-                  {
-                    "key": "spacious",
-                    "name": I18n.tr("options.bar.density-spacious")
-                  }
-                ]
-                currentKey: monitorCard.effectiveDensity
-                onSelected: key => Settings.setScreenOverride(monitorCard.screenName, "density", key)
-              }
-            }
-
-            // DisplayMode override
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginS
-
-              NComboBox {
-                Layout.fillWidth: true
-                label: I18n.tr("common.display-mode")
-                description: I18n.tr("panels.bar.appearance-display-mode-description")
-                model: [
-                  {
-                    "key": "always_visible",
-                    "name": I18n.tr("hide-modes.visible")
-                  },
-                  {
-                    "key": "non_exclusive",
-                    "name": I18n.tr("hide-modes.non-exclusive")
-                  },
-                  {
-                    "key": "auto_hide",
-                    "name": I18n.tr("hide-modes.auto-hide")
-                  }
-                ]
-                currentKey: Settings.getBarDisplayModeForScreen(monitorCard.screenName)
-                onSelected: key => Settings.setScreenOverride(monitorCard.screenName, "displayMode", key)
-              }
-            }
-
-            // Widgets configuration button and Reset all
-            RowLayout {
-              Layout.fillWidth: true
-              spacing: Style.marginS
-
-              NButton {
-                id: widgetConfigButton
-                property bool expanded: false
-                Layout.fillWidth: true
-                fontSize: Style.fontSizeS
-                text: I18n.tr("panels.bar.monitor-configure-widgets")
-                icon: expanded ? "chevron-up" : "layout-grid"
-                onClicked: expanded = !expanded
-              }
-
-              NButton {
-                visible: Settings.hasScreenOverride(monitorCard.screenName, "widgets")
-                Layout.fillWidth: true
-                fontSize: Style.fontSizeS
-                text: I18n.tr("panels.bar.use-global-widgets")
-                icon: "refresh"
-                onClicked: {
-                  Settings.clearScreenOverride(monitorCard.screenName, "widgets");
-                  BarService.widgetsRevision++;
-                }
-              }
-
-              NButton {
-                Layout.fillWidth: true
-                fontSize: Style.fontSizeS
-                text: I18n.tr("panels.bar.monitor-reset-all")
-                icon: "restore"
-                onClicked: {
-                  Settings.clearScreenOverride(monitorCard.screenName);
-                  BarService.widgetsRevision++;
-                }
-              }
-            }
-
-            // Inline widget configuration
-            BarSettings.MonitorWidgetsConfig {
-              visible: widgetConfigButton.expanded
-              screen: PanelService.liveScreen(monitorCard.modelData)
-              Layout.fillWidth: true
-              Layout.topMargin: Style.marginS
-            }
+        NButton {
+          fontSize: Style.fontSizeS
+          text: I18n.tr("panels.bar.monitor-reset-all")
+          icon: "restore"
+          onClicked: {
+            Settings.clearScreenOverride(monitorGroup.screenName);
+            BarService.widgetsRevision++;
           }
         }
       }

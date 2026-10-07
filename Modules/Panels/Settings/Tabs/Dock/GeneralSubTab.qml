@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import "../../Bar" as BarSettings
 import qs.Commons
 import qs.Services.Compositor
 import qs.Widgets
@@ -249,6 +250,35 @@ ColumnLayout {
                        }
                        Settings.data.bar.monitors = arr;
                      }
+        }
+
+        // Widget layout — expands the global bar.widgets editor inline.
+        NDccRow {
+          id: widgetsRow
+          Layout.fillWidth: true
+          clickable: true
+          onClicked: widgetsEditor.visible = !widgetsEditor.visible
+
+          NText {
+            text: I18n.tr("panels.bar.monitor-configure-widgets")
+            pointSize: Style.fontSizeS
+            color: Color.onShell
+            Layout.fillWidth: true
+          }
+
+          NIcon {
+            icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
+            pointSize: Style.fontSizeL
+            color: Color.onShellTertiary
+          }
+        }
+
+        BarSettings.MonitorWidgetsConfig {
+          id: widgetsEditor
+          visible: false
+          screen: null
+          Layout.fillWidth: true
+          Layout.topMargin: Style.marginM
         }
       }
     }
