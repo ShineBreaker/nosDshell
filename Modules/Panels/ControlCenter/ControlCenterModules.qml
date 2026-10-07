@@ -74,6 +74,7 @@ Singleton {
     },
     {
       "id": "dock",
+      "ddeIcon": "dock",
       "label": "control-center.module.taskbar",
       "icon": "layout-bottombar",
       "tabs": [
@@ -85,6 +86,7 @@ Singleton {
     },
     {
       "id": "launcher",
+      "ddeIcon": "launcher",
       "label": "control-center.module.launcher",
       "icon": "rocket",
       "tabs": [
@@ -96,6 +98,7 @@ Singleton {
     },
     {
       "id": "controlcenter",
+      "ddeIcon": "controlcenter",
       "label": "control-center.module.control-center",
       "icon": "settings-control-center",
       "tabs": [
@@ -147,6 +150,7 @@ Singleton {
     },
     {
       "id": "notifications",
+      "ddeIcon": "notifications",
       "label": "control-center.module.notifications",
       "icon": "bell",
       "tabs": [
@@ -202,6 +206,7 @@ Singleton {
     },
     {
       "id": "desktopwidgets",
+      "ddeIcon": "desktopwidgets",
       "label": "control-center.module.desktop-widget",
       "icon": "layout-board",
       "tabs": [
@@ -213,6 +218,7 @@ Singleton {
     },
     {
       "id": "systemmonitor",
+      "ddeIcon": "systemmonitor",
       "label": "control-center.module.system-monitor",
       "icon": "activity",
       "tabs": [
@@ -224,6 +230,7 @@ Singleton {
     },
     {
       "id": "plugins",
+      "ddeIcon": "plugins",
       "label": "control-center.module.plugins",
       "icon": "plug-connected",
       "tabs": [
@@ -235,6 +242,7 @@ Singleton {
     },
     {
       "id": "advanced",
+      "ddeIcon": "advanced",
       "label": "control-center.module.advanced",
       "icon": "link",
       "tabs": [
@@ -270,11 +278,19 @@ Singleton {
 
   // DDE 15 original navigation artwork (DESIGN §1.9/§3.5.3): selected state
   // uses nav_<m>.svg, default state nav_<m>_normal.svg. Returns "" when the
-  // module has no original art (caller falls back to a Tabler glyph).
+  // module has no artwork (caller falls back to a Tabler glyph).
+  //
+  // Modules that exist only in nosDshell (no upstream counterpart) carry
+  // same-style artwork drawn in-house under Assets/Nav/ — mixing real DDE
+  // fills with Tabler strokes made the rail read as two different icon sets.
+  readonly property var nosdNavIcons: ["advanced", "controlcenter", "desktopwidgets", "dock", "launcher", "notifications", "plugins", "systemmonitor"]
+
   function navIconUrl(module, selected) {
     if (!module || !module.ddeIcon)
       return "";
     const suffix = selected ? "" : "_normal";
+    if (nosdNavIcons.indexOf(module.ddeIcon) >= 0)
+      return Quickshell.shellDir + "/Assets/Nav/nav_" + module.ddeIcon + suffix + ".svg";
     return Quickshell.shellDir + "/Assets/DDE/gxde-control-center/src/frame/modules/" + module.ddeIcon + "/themes/dark/icons/nav_" + module.ddeIcon + suffix + ".svg";
   }
 

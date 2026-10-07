@@ -615,13 +615,14 @@ Item {
                   }
 
                   Image {
+                    id: railArt
                     anchors.centerIn: parent
                     width: Style.settingsModuleHeadIcon
                     height: Style.settingsModuleHeadIcon
                     sourceSize.width: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
                     sourceSize.height: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
                     source: ddeArt
-                    visible: ddeArt !== ""
+                    visible: ddeArt !== "" && status !== Image.Error
                     smooth: true
                   }
 
@@ -632,7 +633,7 @@ Item {
                     // uses this too) so the rail column reads uniform.
                     pointSize: Style.settingsModuleHeadIcon
                     applyUiScale: false
-                    visible: ddeArt === ""
+                    visible: !railArt.visible
                     color: selected ? Color.onShell : Qt.rgba(1, 1, 1, Style.settingsRailIconDim)
                   }
                 }
@@ -911,13 +912,14 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Style.marginS
                     Image {
+                      id: headArtImage
                       anchors.verticalCenter: parent.verticalCenter
                       width: Style.settingsModuleHeadIcon
                       height: Style.settingsModuleHeadIcon
                       sourceSize.width: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
                       sourceSize.height: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
                       source: headArt
-                      visible: headArt !== ""
+                      visible: headArt !== "" && status !== Image.Error
                       smooth: true
                     }
                     NIcon {
@@ -925,7 +927,7 @@ Item {
                       icon: sectionModule.icon
                       pointSize: Style.settingsModuleHeadIcon
                       applyUiScale: false
-                      visible: headArt === ""
+                      visible: !headArtImage.visible
                       color: Color.onShell
                     }
                     NText {

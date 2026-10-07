@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>nav_desktopwidgets_normal</title>
+    <g id="UI" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" fill-opacity="0.2" stroke-opacity="0.2">
+        <g id="nav_desktopwidgets_normal" fill="#FFFFFF">
+            <path fill-rule="evenodd" d="M4,4 C3.17,4 2.5,4.67 2.5,5.5 L2.5,18.5 C2.5,19.33 3.17,20 4,20 L20,20 C20.83,20 21.5,19.33 21.5,18.5 L21.5,5.5 C21.5,4.67 20.83,4 20,4 Z M4,5 C3.72,5 3.5,5.22 3.5,5.5 L3.5,18.5 C3.5,18.78 3.72,19 4,19 L20,19 C20.28,19 20.5,18.78 20.5,18.5 L20.5,5.5 C20.5,5.22 20.28,5 20,5 Z"/>
+            <rect x="5.5" y="7" width="5" height="10" rx="0.8"/>
+            <rect x="12" y="7" width="6.5" height="4" rx="0.7"/>
+            <rect x="12" y="12.5" width="6.5" height="4.5" rx="0.7"/>
+        </g>
+    </g>
+</svg>

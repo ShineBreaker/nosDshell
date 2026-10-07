@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <title>nav_notifications_normal</title>
+    <g id="UI" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" fill-opacity="0.2" stroke-opacity="0.2">
+        <g id="nav_notifications_normal" fill="#FFFFFF">
+            <path d="M12,3.5 C8.7,3.5 6.5,6 6.5,9.5 L6.5,13 L4.8,15.8 C4.5,16.3 4.8,17 5.4,17 L18.6,17 C19.2,17 19.5,16.3 19.2,15.8 L17.5,13 L17.5,9.5 C17.5,6 15.3,3.5 12,3.5 Z"/>
+            <circle cx="12" cy="19.6" r="1.5"/>
+        </g>
+    </g>
+</svg>
