@@ -1151,7 +1151,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.mode === \"fashion\""
+    ]
   },
   {
     "labelKey": "settings.taskbar.statusbar-enabled-label",
@@ -1160,7 +1163,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.mode === \"fashion\""
+    ]
   },
   {
     "labelKey": "settings.taskbar.statusbar-position",
@@ -1169,7 +1175,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.mode === \"fashion\""
+    ]
   },
   {
     "labelKey": "settings.taskbar.statusbar-state",
@@ -1178,7 +1187,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.mode === \"fashion\""
+    ]
   },
   {
     "labelKey": "panels.general.profile-picture-label",
