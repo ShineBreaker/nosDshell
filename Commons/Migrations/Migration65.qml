@@ -17,9 +17,9 @@ QtObject {
       delete rawJson.noctaliaPerformance;
     }
 
-    // Location: weatherTaliaMascotAlways -> weatherMascotAlways
-    if (rawJson.location && rawJson.location.weatherTaliaMascotAlways !== undefined) {
-      rawJson.location.weatherMascotAlways = rawJson.location.weatherTaliaMascotAlways;
+    // Location: the Talia mascot is gone entirely — drop its persisted key
+    // rather than renaming onto a key nothing reads.
+    if (rawJson.location) {
       delete rawJson.location.weatherTaliaMascotAlways;
     }
 
