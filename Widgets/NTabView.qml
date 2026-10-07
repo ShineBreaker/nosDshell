@@ -32,9 +32,12 @@ Item {
   clip: true
   Layout.fillWidth: true
 
-  // A head is only drawn when the bar can name every page one-to-one.
+  // A head is only drawn when the bar can name every page one-to-one. The head
+  // is the group's own label: it keeps just the 1 px seam to its rows (its
+  // bottomMargin in a layout), while the 15 px group spacing lands between the
+  // previous group's last row and this head — both handled by _stackedOffset.
   readonly property bool stackHeads: stacked && stackTitles.length === contentItems.length && contentItems.length > 0
-  readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.settingsGroupSpacing : 0
+  readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.settingsGroupGap : 0
 
   // During animation, use max height to prevent clipping. Otherwise use current item height.
   implicitHeight: {
