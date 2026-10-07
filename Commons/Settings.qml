@@ -305,11 +305,6 @@ Singleton {
       property string middleClickAction: "none"
       property bool middleClickFollowMouse: false
       property string middleClickCommand: ""
-      // legacy: empty-space right-click is hardwired to the dock settings menu
-      // (Bar.qml:438+); these three keys have no consumers
-      property string rightClickAction: "controlCenter"
-      property bool rightClickFollowMouse: true
-      property string rightClickCommand: ""
       // Per-screen overrides for position and widgets
       // Format: [{ "name": "HDMI-1", "position": "left" }, { "name": "DP-1", "position": "bottom", "widgets": {...} }]
       property list<var> screenOverrides: []
@@ -324,7 +319,6 @@ Singleton {
       property real scaleRatio: 1.0
       property real radiusRatio: 1.0
       property real iRadiusRatio: 1.0
-      property real boxRadiusRatio: 1.0 // legacy: no consumer (of the four radius-ratio keys only this one is dead)
       property real screenRadiusRatio: 1.0
       property real animationSpeed: 1.0
       property bool animationDisabled: false
@@ -337,7 +331,6 @@ Singleton {
       property bool enableLockScreenMediaControls: false
       property bool enableShadows: true
       property bool enableBlurBehind: true
-      property string shadowDirection: "bottom_right" // legacy: no consumer (DDE shadow params are per-component tokens)
       property int shadowOffsetX: 0
       property int shadowOffsetY: 2
       property string language: ""
@@ -346,10 +339,6 @@ Singleton {
       property int lockScreenCountdownDuration: 10000
       property bool autoStartAuth: false
       property bool allowPasswordWithFprintd: false
-      // legacy: no consumers — clock format lives in the widget-level
-      // Clock/DesktopClock settings (widgetData.formatHorizontal etc.)
-      property string clockStyle: "custom"
-      property string clockFormat: "hh\\nmm"
       property bool passwordChars: false
       property list<string> lockScreenMonitors: [] // holds lock screen visibility per monitor
       property real lockScreenBlur: 1.0
@@ -363,7 +352,6 @@ Singleton {
         property list<string> keyEscape: ["Esc"]
         property list<string> keyHome: ["Home"]
         property list<string> keyEnd: ["End"]
-        property list<string> keyRemove: ["Del"] // legacy: no caller passes 'remove' to Keybinds.checkKey
       }
       property bool reverseScroll: false
       property bool smoothScrollEnabled: true
@@ -382,7 +370,6 @@ Singleton {
       property bool translucentWidgets: false
       property bool panelsAttachedToBar: false
       property string settingsPanelMode: "controlCenter" // legacy: Migration72 pins to controlCenter; the picker is gone (DDE keeps settings inside the CC frame)
-      property bool settingsPanelSideBarCardStyle: false // legacy: no consumer (DDE rail layout supersedes it)
     }
 
     // location
@@ -394,7 +381,6 @@ Singleton {
       property bool use12hourFormat: false
       property bool showWeekNumberInCalendar: false
       property bool showCalendarEvents: true
-      property bool showCalendarWeather: true // legacy: no consumer (weather is its own calendar card)
       property bool analogClockInCalendar: false
       property int firstDayOfWeek: -1 // -1 = auto (use locale), 0 = Sunday, 1 = Monday, 6 = Saturday
       property bool hideWeatherTimezone: false
@@ -443,7 +429,6 @@ Singleton {
       property bool skipStartupTransition: false
       property real transitionEdgeSmoothness: 0.05
       property string panelPosition: "follow_bar"
-      property bool hideWallpaperFilenames: false // legacy: no consumer (panel filename visibility is NFilePicker's own)
       property bool useOriginalImages: false
       property real overviewBlur: 0.4
       property real overviewTint: 0.6
@@ -640,33 +625,18 @@ Singleton {
         }
       ]
       property string position: "bottom" // "top", "bottom", "left", "right"
-      property string displayMode: "auto_hide" // legacy: Migration70 maps to hideMode, then dead
-      property string dockType: "floating" // "floating", "attached" (advanced only; "attached" path is dormant)
-      property real backgroundOpacity: 1.0 // only read on the dormant StaticDockPanel path
-      property real floatingRatio: 1.0 // legacy: no consumer
-      property real size: 1 // legacy: only read on the dormant StaticDockPanel path
       property bool onlySameOutput: true
       property list<string> monitors: [] // holds dock visibility per monitor
       property list<string> pinnedApps: [] // Desktop entry IDs pinned to the dock (e.g., "org.kde.konsole", "firefox.desktop")
       property bool colorizeIcons: false
-      property bool showLauncherIcon: false // legacy: no consumer
-      property string launcherPosition: "end" // legacy: no consumer; "start", "end"
       property bool launcherUseDistroLogo: false
       property string launcherIcon: ""
       property string launcherIconColor: "none"
       property bool pinnedStatic: false
-      property bool inactiveIndicators: false // legacy: no consumer (DDE draws no running indicators beyond §3.1.2)
       property bool groupApps: true // DDE: one item per application
       property string groupContextMenuMode: "extended" // "list", "extended"
       property string groupClickAction: "cycle" // "cycle", "list"
-      property string groupIndicatorStyle: "dots" // legacy: no consumer; "number", "dots"
       property double deadOpacity: 0.6
-      property real animationSpeed: 1.0 // legacy: no consumer (Style animation durations divide general.animationSpeed)
-      property bool sitOnFrame: false
-      property bool showDockIndicator: false // legacy: no consumer
-      property int indicatorThickness: 3 // legacy: no consumer
-      property string indicatorColor: "primary" // legacy: no consumer
-      property real indicatorOpacity: 0.6 // legacy: no consumer
     }
 
     // network
@@ -675,9 +645,7 @@ Singleton {
       property int bluetoothRssiPollIntervalMs: 60000 // Polling interval in milliseconds for RSSI queries
       property string networkPanelView: "wifi"
       property string wifiDetailsViewMode: "grid"   // "grid" or "list"
-      property string bluetoothDetailsViewMode: "grid" // legacy: no consumer; "grid" or "list"
       property bool bluetoothHideUnnamedDevices: false
-      property bool disableDiscoverability: false // legacy: no consumer (discoverability follows the bluetooth panel lifecycle)
       property bool bluetoothAutoConnect: true
     }
 
@@ -771,7 +739,6 @@ Singleton {
       property string location: "bottom_center"
       property int autoHideMs: 1000
       property bool overlayLayer: true
-      property real backgroundOpacity: 1.0 // legacy: no consumer (OSD surface is fixed maskTransient)
       property list<var> enabledTypes: [OSD.Type.Volume, OSD.Type.InputVolume, OSD.Type.Brightness]
       property list<string> monitors: [] // holds osd visibility per monitor
     }

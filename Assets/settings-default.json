@@ -76,9 +76,6 @@
     "middleClickAction": "none",
     "middleClickFollowMouse": false,
     "middleClickCommand": "",
-    "rightClickAction": "controlCenter",
-    "rightClickFollowMouse": true,
-    "rightClickCommand": "",
     "screenOverrides": []
   },
   "general": {
@@ -89,7 +86,6 @@
     "scaleRatio": 1,
     "radiusRatio": 1,
     "iRadiusRatio": 1,
-    "boxRadiusRatio": 1,
     "screenRadiusRatio": 1,
     "animationSpeed": 1,
     "animationDisabled": false,
@@ -99,7 +95,6 @@
     "enableLockScreenMediaControls": false,
     "enableShadows": true,
     "enableBlurBehind": true,
-    "shadowDirection": "bottom_right",
     "shadowOffsetX": 0,
     "shadowOffsetY": 2,
     "language": "",
@@ -108,8 +103,6 @@
     "lockScreenCountdownDuration": 10000,
     "autoStartAuth": false,
     "allowPasswordWithFprintd": false,
-    "clockStyle": "custom",
-    "clockFormat": "hh\\nmm",
     "passwordChars": false,
     "lockScreenMonitors": [],
     "lockScreenBlur": 1,
@@ -139,9 +132,6 @@
       ],
       "keyEnd": [
         "End"
-      ],
-      "keyRemove": [
-        "Del"
       ]
     },
     "reverseScroll": false,
@@ -158,8 +148,7 @@
     "panelBackgroundOpacity": 0.4,
     "translucentWidgets": false,
     "panelsAttachedToBar": false,
-    "settingsPanelMode": "controlCenter",
-    "settingsPanelSideBarCardStyle": false
+    "settingsPanelMode": "controlCenter"
   },
   "location": {
     "name": "",
@@ -169,7 +158,6 @@
     "use12hourFormat": false,
     "showWeekNumberInCalendar": false,
     "showCalendarEvents": true,
-    "showCalendarWeather": true,
     "analogClockInCalendar": false,
     "firstDayOfWeek": -1,
     "hideWeatherTimezone": false,
@@ -221,7 +209,6 @@
     "skipStartupTransition": false,
     "transitionEdgeSmoothness": 0.05,
     "panelPosition": "follow_bar",
-    "hideWallpaperFilenames": false,
     "useOriginalImages": false,
     "overviewBlur": 0.4,
     "overviewTint": 0.6,
@@ -393,42 +380,25 @@
       }
     ],
     "position": "bottom",
-    "displayMode": "auto_hide",
-    "dockType": "floating",
-    "backgroundOpacity": 1,
-    "floatingRatio": 1,
-    "size": 1,
     "onlySameOutput": true,
     "monitors": [],
     "pinnedApps": [],
     "colorizeIcons": false,
-    "showLauncherIcon": false,
-    "launcherPosition": "end",
     "launcherUseDistroLogo": false,
     "launcherIcon": "",
     "launcherIconColor": "none",
     "pinnedStatic": false,
-    "inactiveIndicators": false,
     "groupApps": true,
     "groupContextMenuMode": "extended",
     "groupClickAction": "cycle",
-    "groupIndicatorStyle": "dots",
-    "deadOpacity": 0.6,
-    "animationSpeed": 1,
-    "sitOnFrame": false,
-    "showDockIndicator": false,
-    "indicatorThickness": 3,
-    "indicatorColor": "primary",
-    "indicatorOpacity": 0.6
+    "deadOpacity": 0.6
   },
   "network": {
     "bluetoothRssiPollingEnabled": false,
     "bluetoothRssiPollIntervalMs": 60000,
     "networkPanelView": "wifi",
     "wifiDetailsViewMode": "grid",
-    "bluetoothDetailsViewMode": "grid",
     "bluetoothHideUnnamedDevices": false,
-    "disableDiscoverability": false,
     "bluetoothAutoConnect": true
   },
   "sessionMenu": {
@@ -514,7 +484,6 @@
     "location": "bottom_center",
     "autoHideMs": 1000,
     "overlayLayer": true,
-    "backgroundOpacity": 1,
     "enabledTypes": [
       0,
       1,

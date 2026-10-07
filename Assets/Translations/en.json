@@ -1155,7 +1155,6 @@
       "section-monitors": "Monitors"
     },
     "dock": {
-      "appearance-background-opacity-description": "Adjust the dock's background opacity.",
       "appearance-border-radius-description": "Adjust the dock's border radius.",
       "appearance-border-radius-label": "Border radius",
       "appearance-colorize-icons-description": "Apply theme colors to dock app icons (non-focused apps only).",
@@ -1210,12 +1209,6 @@
       "appearance-position-label": "Position",
       "appearance-show-launcher-icon-description": "Show the application launcher icon in the dock.",
       "appearance-show-launcher-icon-label": "Show app launcher",
-      "appearance-sit-on-frame-description": "Align the dock inside the frame border instead of sitting on top.",
-      "appearance-sit-on-frame-label": "Dock sits on frame",
-      "appearance-type-attached": "Attached",
-      "appearance-type-description": "Choose between a floating pill or a static bar attached to the edge.",
-      "appearance-type-floating": "Floating",
-      "appearance-type-label": "Dock style",
       "enabled-description": "Show or hide the dock entirely.",
       "enabled-label": "Enable dock",
       "monitors-desc": "Show dock on specific monitors. Defaults to all if none are chosen.",

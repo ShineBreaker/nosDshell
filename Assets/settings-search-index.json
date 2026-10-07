@@ -48,33 +48,6 @@
     "subTab": null
   },
   {
-    "labelKey": "panels.dock.appearance-type-label",
-    "descriptionKey": "panels.dock.appearance-type-description",
-    "widget": "NComboBox",
-    "tab": 0,
-    "tabLabel": "control-center.module.advanced",
-    "subTab": null
-  },
-  {
-    "labelKey": "panels.dock.appearance-sit-on-frame-label",
-    "descriptionKey": "panels.dock.appearance-sit-on-frame-description",
-    "widget": "NToggle",
-    "tab": 0,
-    "tabLabel": "control-center.module.advanced",
-    "subTab": null,
-    "visibleWhen": [
-      "Settings.data.dock.dockType === \"attached\""
-    ]
-  },
-  {
-    "labelKey": "panels.osd.background-opacity-label",
-    "descriptionKey": "panels.dock.appearance-background-opacity-description",
-    "widget": "NValueSlider",
-    "tab": 0,
-    "tabLabel": "control-center.module.advanced",
-    "subTab": null
-  },
-  {
     "labelKey": "panels.dock.appearance-dead-opacity-label",
     "descriptionKey": "panels.dock.appearance-dead-opacity-description",
     "widget": "NValueSlider",
@@ -1891,6 +1864,15 @@
     "labelKey": "panels.osd.always-on-top-label",
     "descriptionKey": "panels.notifications.settings-always-on-top-description",
     "widget": "NToggle",
+    "tab": 17,
+    "tabLabel": "common.notifications",
+    "subTab": 0,
+    "subTabLabel": "common.appearance"
+  },
+  {
+    "labelKey": "panels.osd.background-opacity-label",
+    "descriptionKey": "panels.notifications.settings-background-opacity-description",
+    "widget": "NValueSlider",
     "tab": 17,
     "tabLabel": "common.notifications",
     "subTab": 0,

@@ -29,15 +29,9 @@ Item {
   // PanelService.screenRectOf walks the parent chain to find it.
   property point screenOrigin: Qt.point(0, 0)
 
-  // Legacy attached-panel insets (StaticDockPanel assigns these); they are
-  // inert in fashion mode but kept so the lazy panel stays loadable
-  property real extraTop: 0
-  property real extraBottom: 0
-  property real extraLeft: 0
-  property real extraRight: 0
-  // Dock.qml passes the ShellScreen as modelData; the legacy StaticDockPanel
-  // exposes it as `screen` instead. liveScreen wins: the injected modelData
-  // can be a stale ShellScreen with frozen dimensions (PanelService.liveScreen).
+  // Dock.qml passes the ShellScreen as modelData. liveScreen wins: the
+  // injected modelData can be a stale ShellScreen with frozen dimensions
+  // (PanelService.liveScreen).
   readonly property var screen: dockRoot ? (dockRoot.liveScreen || dockRoot.modelData || dockRoot.screen || null) : null
   readonly property bool isVertical: dockRoot.isVertical
   readonly property string tooltipDirection: dockRoot.dockPosition === "left" ? "right" : (dockRoot.dockPosition === "right" ? "left" : (dockRoot.dockPosition === "top" ? "bottom" : "top"))

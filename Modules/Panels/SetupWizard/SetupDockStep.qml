@@ -74,26 +74,6 @@ ColumnLayout {
         onSelected: key => Settings.data.dock.hideMode = key
       }
 
-      // Background opacity
-      ColumnLayout {
-        visible: Settings.data.dock.enabled
-        spacing: Style.marginXXS
-        Layout.fillWidth: true
-        NLabel {
-          label: I18n.tr("panels.osd.background-opacity-label")
-          description: I18n.tr("panels.dock.appearance-background-opacity-description")
-        }
-        NValueSlider {
-          Layout.fillWidth: true
-          from: 0
-          to: 1
-          stepSize: 0.01
-          value: Settings.data.dock.backgroundOpacity
-          onMoved: value => Settings.data.dock.backgroundOpacity = value
-          text: Math.floor(Settings.data.dock.backgroundOpacity * 100) + "%"
-        }
-      }
-
       // 图标尺寸：DDE 三档 30/36/48（DESIGN §3.1.1）；旧 dock.size 是 0–2 比例，已改写 iconSize
       NComboBox {
         visible: Settings.data.dock.enabled

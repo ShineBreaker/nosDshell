@@ -32,49 +32,6 @@ ColumnLayout {
       label: I18n.tr("settings.advanced.dock-appearance")
     }
 
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.dock.appearance-type-label")
-      description: I18n.tr("panels.dock.appearance-type-description")
-      model: [
-        {
-          "key": "floating",
-          "name": I18n.tr("panels.dock.appearance-type-floating")
-        },
-        {
-          "key": "attached",
-          "name": I18n.tr("panels.dock.appearance-type-attached")
-        }
-      ]
-      currentKey: Settings.data.dock.dockType
-      defaultValue: Settings.getDefaultValue("dock.dockType")
-      onSelected: key => Settings.data.dock.dockType = key
-    }
-
-    NToggle {
-      Layout.fillWidth: true
-      visible: Settings.data.dock.dockType === "attached"
-      label: I18n.tr("panels.dock.appearance-sit-on-frame-label")
-      description: I18n.tr("panels.dock.appearance-sit-on-frame-description")
-      checked: Settings.data.dock.sitOnFrame
-      defaultValue: Settings.getDefaultValue("dock.sitOnFrame")
-      onToggled: checked => Settings.data.dock.sitOnFrame = checked
-    }
-
-    NValueSlider {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.osd.background-opacity-label")
-      description: I18n.tr("panels.dock.appearance-background-opacity-description")
-      from: 0
-      to: 1
-      stepSize: 0.01
-      showReset: true
-      value: Settings.data.dock.backgroundOpacity
-      defaultValue: Settings.getDefaultValue("dock.backgroundOpacity")
-      onMoved: value => Settings.data.dock.backgroundOpacity = value
-      text: Math.floor(Settings.data.dock.backgroundOpacity * 100) + "%"
-    }
-
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.dock.appearance-dead-opacity-label")

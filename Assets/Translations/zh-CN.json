@@ -1155,7 +1155,6 @@
       "section-monitors": "显示器"
     },
     "dock": {
-      "appearance-background-opacity-description": "调整 Dock 栏的背景不透明度。",
       "appearance-border-radius-description": "调整 Dock 栏的边框半径。",
       "appearance-border-radius-label": "边框半径",
       "appearance-colorize-icons-description": "将主题颜色应用到 Dock 栏应用图标（仅限非焦点应用）。",
@@ -1210,12 +1209,6 @@
       "appearance-position-label": "位置",
       "appearance-show-launcher-icon-description": "在 Dock 中显示应用程序启动器图标。",
       "appearance-show-launcher-icon-label": "显示应用启动器",
-      "appearance-sit-on-frame-description": "将停靠栏对齐在框架边框内，而不是位于顶部。",
-      "appearance-sit-on-frame-label": "停靠栏位于框架上",
-      "appearance-type-attached": "停靠",
-      "appearance-type-description": "选择浮动药丸样式或附着在边缘的静态栏。",
-      "appearance-type-floating": "浮动",
-      "appearance-type-label": "Dock 样式",
       "enabled-description": "完全显示或隐藏 Dock 栏。",
       "enabled-label": "启用 Dock 栏",
       "monitors-desc": "在特定显示器上显示 Dock 栏。如果未选择任何显示器，则默认在所有显示器上显示。",

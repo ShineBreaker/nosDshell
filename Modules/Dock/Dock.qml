@@ -15,8 +15,9 @@ import qs.Widgets
 // centered floating dock flush against the screen edge, maskShell rounded
 // surface, DDE item geometry (thickness = iconSize*1.5, length = thickness*1.1,
 // icon = 0.8*min), max length = edge - 60, 2 px sliver when hidden.
-// Legacy dockType/floatingRatio/backgroundOpacity/size/displayMode keys are
-// inert in fashion mode (kept in settings, ignored here).
+// The legacy attached-dock path (dockType/sitOnFrame/backgroundOpacity/size/
+// displayMode/floatingRatio keys, StaticDockPanel) was removed — nothing ever
+// opened that panel.
 Loader {
 
   active: Settings.data.dock.enabled && Settings.data.dock.mode === "fashion"
