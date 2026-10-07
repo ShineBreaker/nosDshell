@@ -186,12 +186,13 @@ NBox {
     return Math.max(absoluteMin, Style.margin2L + headerHeight + Style.marginM + widgetAreaHeight);
   }
 
-  // Generate widget color from name checksum
-  function getWidgetColor(widget) {
-    if (widget.id.startsWith('plugin:')) {
-      return [Color.mSecondary, Color.mOnSecondary];
+  // Plugin tiles get an accent-tinted border; the plugin NIcon inside marks
+  // them too (widget tiles otherwise use one field-level chip colour).
+  function tileBorderColor(widget) {
+    if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(widget.id)) {
+      return Qt.alpha(Color.accent, 0.45);
     }
-    return [Color.mPrimary, Color.mOnPrimary];
+    return "transparent";
   }
 
   // Check if widget has settings (either core widget with metadata or plugin with settings entry point)
@@ -392,10 +393,10 @@ NBox {
 
       NIconButton {
         icon: "add"
-        colorBg: Color.mPrimary
-        colorFg: Color.mOnPrimary
-        colorBgHover: Color.mSecondary
-        colorFgHover: Color.mOnSecondary
+        colorBg: Color.overlay("field")
+        colorFg: Color.mOnSurface
+        colorBgHover: Color.overlay("checked")
+        colorFgHover: Color.mOnSurface
         enabled: comboBox.currentKey !== "" && !root.isAtMaxCapacity
         tooltipText: root.isAtMaxCapacity ? I18n.tr("tooltips.max-widgets-reached") : I18n.tr("tooltips.add-widget")
         Layout.alignment: Qt.AlignVCenter
@@ -432,8 +433,8 @@ NBox {
       Rectangle {
         anchors.fill: parent
         radius: Style.iRadiusL
-        color: Qt.alpha(Color.mSecondary, 0.12)
-        border.color: Color.mSecondary
+        color: Qt.alpha(Color.accent, 0.12)
+        border.color: Color.accent
         border.width: Style.borderM
         visible: root.showCrossSectionDropHint
         z: 1500
@@ -465,9 +466,15 @@ NBox {
             width: root.calculateWidgetWidth(parent.width)
             height: root.widgetItemHeight
             radius: Style.iRadiusL
-            color: root.getWidgetColor(modelData)[0]
-            border.color: Color.mOutline
+            // Field-level chip, same ladder step as NComboBox/NTextInput
+            // fields (DESIGN §1.3); hover lifts one step.
+            color: widgetItem.enabled ? (tileHover.containsMouse ? Color.overlay("strong") : Color.overlay("field")) : Color.overlay("idle")
+            border.color: root.tileBorderColor(modelData)
             border.width: Style.borderS
+
+            HoverHandler {
+              id: tileHover
+            }
 
             // Store the widget index for drag operations
             property int widgetIndex: index
@@ -587,7 +594,7 @@ NBox {
                 // widgetItem already dims the whole tile when disabled.
                 autoDim: false
                 pointSize: Style.fontSizeXS
-                color: root.getWidgetColor(modelData)[1]
+                color: Color.mOnSurface
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
@@ -602,7 +609,7 @@ NBox {
                 visible: root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)
                 icon: "plugin"
                 pointSize: Style.fontSizeXXS
-                color: root.getWidgetColor(modelData)[1]
+                color: Color.mOnSurface
                 Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
                 Layout.preferredHeight: Style.baseWidgetSize * 0.5
               }
@@ -612,7 +619,7 @@ NBox {
                 visible: root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id)
                 icon: "cpu-intensive"
                 pointSize: Style.fontSizeXXS
-                color: root.getWidgetColor(modelData)[1]
+                color: Color.mOnSurface
                 Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
                 Layout.preferredHeight: Style.baseWidgetSize * 0.5
               }
@@ -628,11 +635,11 @@ NBox {
                     icon: "settings"
                     tooltipText: I18n.tr("actions.widget-settings")
                     baseSize: miniButtonSize
-                    colorBorder: Qt.alpha(Color.mOutline, Style.opacityLight)
-                    colorBg: Color.mOnSurface
-                    colorFg: Color.mOnPrimary
-                    colorBgHover: Qt.alpha(Color.mOnPrimary, Style.opacityLight)
-                    colorFgHover: Color.mOnPrimary
+                    colorBorder: "transparent"
+                    colorBg: Color.overlay("hover")
+                    colorFg: Color.mOnSurface
+                    colorBgHover: Color.overlay("checked")
+                    colorFgHover: Color.mOnSurface
                     onClicked: {
                       root.openWidgetSettings(index, modelData);
                     }
@@ -662,7 +669,7 @@ NBox {
           id: ghostText
           anchors.centerIn: parent
           pointSize: Style.fontSizeS
-          color: Color.mOnPrimary
+          color: Color.mOnSurface
         }
       }
 
@@ -672,7 +679,7 @@ NBox {
         width: 3
         height: Style.baseWidgetSize * 1.15
         radius: Style.iRadiusXXS
-        color: Color.mSecondary
+        color: Color.accent
         opacity: 0
         visible: opacity > 0
         z: 1999
@@ -899,7 +906,7 @@ NBox {
                                  // Setup ghost widget
                                  if (draggedWidget) {
                                    dragGhost.width = draggedWidget.width;
-                                   dragGhost.color = root.getWidgetColor(draggedModelData)[0];
+                                   dragGhost.color = Color.overlay("field");
                                    ghostText.text = draggedModelData.id;
                                  }
 
