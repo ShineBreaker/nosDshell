@@ -91,7 +91,8 @@ Singleton {
                                             "about": SettingsPanel.Tab.About,
                                             "advanced": SettingsPanel.Tab.Advanced,
                                             "audio": SettingsPanel.Tab.Audio,
-                                            "bar": SettingsPanel.Tab.Bar,
+                                            // bar settings live on the dock tab; Tab.Bar has no module
+                                            "bar": SettingsPanel.Tab.Dock,
                                             "colorscheme": SettingsPanel.Tab.ColorScheme,
                                             "lockscreen": SettingsPanel.Tab.LockScreen,
                                             "controlcenter": SettingsPanel.Tab.ControlCenter,
