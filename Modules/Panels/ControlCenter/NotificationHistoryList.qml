@@ -257,7 +257,6 @@ Item {
 
             MouseArea {
               anchors.fill: parent
-              anchors.rightMargin: closeButton.width + Style.marginS
               hoverEnabled: true
               onClicked: {
                 root.focusIndex = index;
@@ -371,26 +370,32 @@ Item {
                   }
                 }
               }
+            }
 
-              // Close × revealed on hover
-              NIconButton {
-                id: closeButton
-                Layout.alignment: Qt.AlignTop
-                baseSize: Style.baseWidgetSize * 0.7
-                applyUiScale: false
-                opacity: hoverHandler.hovered ? 1 : 0
-                icon: "x"
-                colorFg: Color.onShellTertiary
-                colorBg: "transparent"
-                colorBgHover: Color.overlay("hover")
-                colorFgHover: Color.onShell
-                tooltipText: I18n.tr("tooltips.dismiss-notification")
-                onClicked: delegateItem.remove()
+            // Close × revealed on hover, overlaid on the card top-right so the
+            // timestamp can use the full row width (gxde notifydelegate.cpp:
+            // the button floats over the item instead of reserving a slot).
+            NIconButton {
+              id: closeButton
+              anchors.right: delegateItem.right
+              anchors.top: delegateItem.top
+              anchors.margins: Style.marginXS
+              z: 1
+              baseSize: Style.baseWidgetSize * 0.7
+              applyUiScale: false
+              visible: opacity > 0
+              opacity: hoverHandler.hovered ? 1 : 0
+              icon: "x"
+              colorFg: Color.onShellTertiary
+              colorBg: "transparent"
+              colorBgHover: Color.overlay("hover")
+              colorFgHover: Color.onShell
+              tooltipText: I18n.tr("tooltips.dismiss-notification")
+              onClicked: delegateItem.remove()
 
-                Behavior on opacity {
-                  NumberAnimation {
-                    duration: Style.animationFast
-                  }
+              Behavior on opacity {
+                NumberAnimation {
+                  duration: Style.animationFast
                 }
               }
             }
