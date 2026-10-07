@@ -197,7 +197,7 @@ Item {
     if (!root.arrowPopup)
       return false;
     var n = root.objectName || "";
-    var deny = ["launcherPanel", "controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel", "staticDockPanel"];
+    var deny = ["launcherPanel", "controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel"];
     for (var i = 0; i < deny.length; ++i) {
       if (n.indexOf(deny[i] + "-") === 0)
         return false;
@@ -294,7 +294,7 @@ Item {
 
   // Panel control functions
   function toggle(buttonItem, buttonName) {
-    if (!isPanelOpen) {
+    if (!isPanelOpen || isClosing) {
       open(buttonItem, buttonName);
     } else {
       close();
@@ -302,6 +302,23 @@ Item {
   }
 
   function open(buttonItem, buttonName) {
+    // A close animation is still running: isPanelOpen only clears at
+    // finalizeClose, so without cancelling here the open request would be
+    // silently eaten and the panel would finish closing anyway. Flip the
+    // close flags back — the opacity/size bindings return to their open
+    // targets and the panel animates back open from wherever it was.
+    if (root.isClosing) {
+      root.isClosing = false;
+      root.opacityFadeComplete = false;
+      root.closeWatchdogActive = false;
+      closeWatchdogTimer.stop();
+      root.sizeAnimationComplete = true;
+      // finalizeClose may already be queued via Qt.callLater; keep the flag
+      // raised so it early-returns instead of closing the revived panel.
+      // close() clears it again on entry.
+      root.closeFinalized = true;
+    }
+
     // Reset immediate close flag to ensure animations work properly
     PanelService.closedImmediately = false;
     // Reset to default - fixes panel being stuck in one position

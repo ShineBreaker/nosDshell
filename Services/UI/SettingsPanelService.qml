@@ -45,7 +45,10 @@ Singleton {
       var target = ControlCenterModules.targetForTab(entry.tab, entry.subTab);
       if (!ccPanel || !target)
         return;
-      if (ccPanel.isPanelOpen)
+      // isPanelOpen stays true during the close animation; route through
+      // open() then so the pending module applies after the close is
+      // cancelled, instead of scrolling a panel that vanishes anyway.
+      if (ccPanel.isPanelOpen && !ccPanel.isClosing)
         ccPanel.openModule(target.module, target.slot, target.inner);
       else {
         ccPanel.pendingModule = target.module;
@@ -96,7 +99,7 @@ Singleton {
         Logger.w("SettingsPanelService", "No module maps to tab", tabId, "subTab", subTabId);
         return;
       }
-      if (ccPanel.isPanelOpen)
+      if (ccPanel.isPanelOpen && !ccPanel.isClosing)
         ccPanel.openModule(target.module, target.slot, target.inner);
       else {
         ccPanel.pendingModule = target.module;
@@ -161,7 +164,7 @@ Singleton {
         return;
       }
       var ccPanel = PanelService.getPanel("controlCenterPanel", screen);
-      if (ccPanel?.isPanelOpen) {
+      if (ccPanel?.isPanelOpen && !ccPanel.isClosing) {
         ccPanel.close();
       } else {
         openToTab(tabId, subTabId, screen);

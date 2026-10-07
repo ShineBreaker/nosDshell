@@ -527,7 +527,7 @@ run_scene() {
                             echo "vinput binary missing: cargo build --release --manifest-path tools/nosd-helpers/Cargo.toml"
                           fi
                           call settings toggle 0.5 ;;
-    settings-*)           call settings openTab "${1#settings-}" 5; shot "$1"; call settings toggle 0.5 ;;
+    settings-*)           call settings openTab "${1#settings-}" 5; shot "$1"; call settings toggle 2 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
     notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null

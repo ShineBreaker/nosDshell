@@ -196,7 +196,7 @@ Singleton {
                                               var cc = PanelService.getPanel("controlCenterPanel", screen);
                                               if (!cc)
                                               return;
-                                              if (cc.isPanelOpen) {
+                                              if (cc.isPanelOpen && !cc.isClosing) {
                                                 cc.notificationPage = !cc.notificationPage;
                                               } else {
                                                 cc.notificationPage = true;
@@ -647,7 +647,7 @@ Singleton {
                                               if (!controlCenterPanel)
                                               return;
                                               controlCenterPanel.notificationPage = true;
-                                              if (!controlCenterPanel.isPanelOpen)
+                                              if (!controlCenterPanel.isPanelOpen || controlCenterPanel.isClosing)
                                               controlCenterPanel.open();
                                             });
     }
@@ -659,7 +659,7 @@ Singleton {
                                               if (!controlCenterPanel)
                                               return;
                                               controlCenterPanel.pendingQuickPage = page;
-                                              if (!controlCenterPanel.isPanelOpen)
+                                              if (!controlCenterPanel.isPanelOpen || controlCenterPanel.isClosing)
                                               controlCenterPanel.open();
                                             });
     }
