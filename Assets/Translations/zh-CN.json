@@ -802,6 +802,7 @@
       "system-uptime": "正常运行时间：",
       "system-wm": "窗口管理器：",
       "title": "关于",
+      "updates-via-package-manager": "更新由系统包管理器统一分发。",
       "view-commit": "在 GitHub 上查看提交"
     },
     "audio": {

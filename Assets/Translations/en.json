@@ -802,6 +802,7 @@
       "system-uptime": "Uptime:",
       "system-wm": "WM:",
       "title": "About",
+      "updates-via-package-manager": "Updates are delivered by the system package manager.",
       "view-commit": "View commit on GitHub"
     },
     "audio": {

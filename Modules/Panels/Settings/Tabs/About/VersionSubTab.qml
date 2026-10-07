@@ -398,8 +398,17 @@ ColumnLayout {
       outlined: true
       Layout.alignment: Qt.AlignHCenter
       Layout.topMargin: Style.marginM
-      Layout.bottomMargin: Style.marginM
       onClicked: root.copyInfoToClipboard()
+    }
+
+    NText {
+      Layout.fillWidth: true
+      Layout.bottomMargin: Style.marginM
+      text: I18n.tr("panels.about.updates-via-package-manager")
+      pointSize: Style.fontSizeXS
+      color: Color.onShellTertiary
+      horizontalAlignment: Text.AlignHCenter
+      wrapMode: Text.Wrap
     }
   }
 
