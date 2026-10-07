@@ -1,5 +1,5 @@
 {
-  version ? "dirty",
+  version ? "1.0",
   extraPackages ? [ ],
   runtimeDeps ? [
     brightnessctl

@@ -129,9 +129,8 @@ ColumnLayout {
         var shellDir = Quickshell.shellDir || "";
         Logger.d("VersionSubTab", "Component.onCompleted - NixOS detected, shellDir:", shellDir);
         if (shellDir) {
-          // Extract commit hash from path like: /nix/store/...-nosdshell-2025-11-30_225e6d3/share/nosdshell
-          // Pattern matches: nosdshell-YYYY-MM-DD_<commit_hash>
-          var match = shellDir.match(/nosdshell-\d{4}-\d{2}-\d{2}_([0-9a-f]{7,})/i);
+          // Store path looks like ...-nosdshell-<version>_<commit>/share/nosdshell.
+          var match = shellDir.match(/nosdshell-.*_([0-9a-f]{7,})/i);
           if (match && match[1]) {
             // Use first 7 characters of the commit hash
             root.commitInfo = match[1].substring(0, 7);

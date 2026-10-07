@@ -20,15 +20,8 @@
         ]
       );
 
-      mkDate =
-        longDate:
-        nixpkgs.lib.concatStringsSep "-" [
-          (builtins.substring 0 4 longDate)
-          (builtins.substring 4 2 longDate)
-          (builtins.substring 6 2 longDate)
-        ];
-
-      version = mkDate (self.lastModifiedDate or "19700101") + "_" + (self.shortRev or "dirty");
+      // 发版时只改引号里的主版本号，shortRev 后缀保留（见 docs/RELEASE.md）。
+      version = "1.0_" + (self.shortRev or "dirty");
     in
     {
       formatter = eachSystem (system: pkgsFor.${system}.nixfmt);

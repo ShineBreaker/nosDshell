@@ -3,7 +3,7 @@
 .idea
 .vscode
 *.code-workspace
-RELEASE.md
+/RELEASE.md
 __pycache__
 result
 build
