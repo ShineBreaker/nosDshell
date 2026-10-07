@@ -112,13 +112,15 @@ NDccRow {
     RowLayout {
       id: slotsRow
       spacing: Style.marginS
+      Layout.fillWidth: true
       Layout.alignment: Qt.AlignVCenter | (labelContainer.visible ? Qt.AlignRight : Qt.AlignLeft)
 
       Repeater {
         model: root.maxKeybinds
         delegate: MouseArea {
           id: slotArea
-          width: Math.round(180 * Style.uiScaleRatio)
+          Layout.fillWidth: true
+          Layout.preferredWidth: 1
           height: root._pillHeight
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor

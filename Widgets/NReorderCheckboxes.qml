@@ -13,14 +13,14 @@ Item {
   property color activeOnColor: "#FFFFFF"
   property color dragHandleColor: Color.onShellTertiary
   property int baseSize: Style.baseWidgetSize * 0.7
-  property int spacing: Style.marginM
+  property int spacing: Style.settingsGroupGap
 
   signal itemToggled(int index, bool enabled)
   signal itemsReordered(int fromIndex, int toIndex)
   signal dragPotentialStarted
   signal dragPotentialEnded
 
-  readonly property real itemHeight: root.baseSize
+  readonly property real itemHeight: Style.settingsRowHeight
   readonly property real contentHeight: root.model.length > 0 ? root.model.length * itemHeight + (root.model.length - 1) * root.spacing : 0
   implicitHeight: contentHeight
 
@@ -67,11 +67,11 @@ Item {
       id: repeater
       model: root.model
 
-      delegate: Item {
+      delegate: NDccRow {
         id: delegateItem
 
         width: itemsContainer.width
-        height: checkboxRow.height
+        height: Style.settingsRowHeight
 
         required property int index
         required property var modelData
@@ -87,173 +87,141 @@ Item {
         property int dragTargetIndex: -1
         property int itemSpacing: root.spacing
 
-        RowLayout {
-          id: checkboxRow
+        // DDE SettingsGroup row: whole row clickable, OptionItem order
+        // (grip, label, required hint, check). Required and disabled rows
+        // keep the fill but drop hover and clicks.
+        clickable: true
+        interactive: !delegateItem.required && !delegateItem.isDisabled
+        spacing: Style.marginS
+        // Per-item disabled stays 0.5; a disabled ancestor dims the row.
+        opacity: isDisabled ? 0.5 : (enabled ? 1.0 : 0.6)
+        onClicked: root.toggleItem(delegateItem.index)
 
-          width: parent.width
-          spacing: Style.marginS
-          // Per-item disabled stays 0.5; a disabled ancestor dims the row.
-          opacity: isDisabled ? 0.5 : (enabled ? 1.0 : 0.6)
+        // Drag handle
+        Rectangle {
+          id: dragHandle
 
-          // Drag handle
-          Rectangle {
-            id: dragHandle
+          Layout.preferredWidth: root.baseSize
+          Layout.preferredHeight: root.baseSize
+          radius: Style.radiusRow
+          color: dragHandleMouseArea.containsMouse ? Color.overlay("hover") : "transparent"
 
-            Layout.preferredWidth: root.baseSize
-            Layout.preferredHeight: root.baseSize
-            radius: Style.radiusRow
-            color: dragHandleMouseArea.containsMouse ? Color.overlay("hover") : "transparent"
+          Behavior on color {
+            ColorAnimation {
+              duration: Style.animationFast
+            }
+          }
 
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
+          ColumnLayout {
+            anchors.centerIn: parent
+            spacing: Style.marginS
+
+            Repeater {
+              model: 3
+              Rectangle {
+                Layout.preferredWidth: root.baseSize * 0.4
+                Layout.preferredHeight: 2
+                radius: 1
+                color: root.dragHandleColor
               }
             }
+          }
 
-            ColumnLayout {
-              anchors.centerIn: parent
-              spacing: Style.marginS
+          MouseArea {
+            id: dragHandleMouseArea
 
-              Repeater {
-                model: 3
-                Rectangle {
-                  Layout.preferredWidth: root.baseSize * 0.4
-                  Layout.preferredHeight: 2
-                  radius: 1
-                  color: root.dragHandleColor
-                }
-              }
-            }
+            anchors.fill: parent
+            cursorShape: delegateItem.canDrag ? Qt.SizeVerCursor : Qt.ArrowCursor
+            hoverEnabled: true
+            preventStealing: false
+            enabled: delegateItem.canDrag
+            z: 1000
 
-            MouseArea {
-              id: dragHandleMouseArea
-
-              anchors.fill: parent
-              cursorShape: delegateItem.canDrag ? Qt.SizeVerCursor : Qt.ArrowCursor
-              hoverEnabled: true
-              preventStealing: false
-              enabled: delegateItem.canDrag
-              z: 1000
-
-              onPressed: mouse => {
-                           if (!delegateItem.canDrag) {
-                             return;
-                           }
-                           delegateItem.dragStartIndex = delegateItem.index;
-                           delegateItem.dragTargetIndex = delegateItem.index;
-                           delegateItem.dragStartY = delegateItem.y;
-                           delegateItem.dragging = true;
-                           delegateItem.z = 999;
-
-                           // Signal that interaction started (prevents panel close)
-                           preventStealing = true;
-                           root.dragPotentialStarted();
+            onPressed: mouse => {
+                         if (!delegateItem.canDrag) {
+                           return;
                          }
+                         delegateItem.dragStartIndex = delegateItem.index;
+                         delegateItem.dragTargetIndex = delegateItem.index;
+                         delegateItem.dragStartY = delegateItem.y;
+                         delegateItem.dragging = true;
+                         delegateItem.z = 999;
 
-              onPositionChanged: mouse => {
-                                   if (delegateItem.dragging) {
-                                     var dy = mouse.y - dragHandle.height / 2;
-                                     var newY = delegateItem.y + dy;
+                         // Signal that interaction started (prevents panel close)
+                         preventStealing = true;
+                         root.dragPotentialStarted();
+                       }
 
-                                     // Constrain within bounds
-                                     newY = Math.max(0, Math.min(newY, root.contentHeight - delegateItem.height));
-                                     delegateItem.y = newY;
+            onPositionChanged: mouse => {
+                                 if (delegateItem.dragging) {
+                                   var dy = mouse.y - dragHandle.height / 2;
+                                   var newY = delegateItem.y + dy;
 
-                                     // Calculate target index (but don't apply yet)
-                                     var targetIndex = Math.floor((newY + delegateItem.height / 2) / (delegateItem.height + delegateItem.itemSpacing));
-                                     targetIndex = Math.max(0, Math.min(targetIndex, repeater.count - 1));
+                                   // Constrain within bounds
+                                   newY = Math.max(0, Math.min(newY, root.contentHeight - delegateItem.height));
+                                   delegateItem.y = newY;
 
-                                     delegateItem.dragTargetIndex = targetIndex;
-                                   }
+                                   // Calculate target index (but don't apply yet)
+                                   var targetIndex = Math.floor((newY + delegateItem.height / 2) / (delegateItem.height + delegateItem.itemSpacing));
+                                   targetIndex = Math.max(0, Math.min(targetIndex, repeater.count - 1));
+
+                                   delegateItem.dragTargetIndex = targetIndex;
                                  }
+                               }
 
-              onReleased: {
-                // Always signal end of interaction
-                preventStealing = false;
-                root.dragPotentialEnded();
+            onReleased: {
+              // Always signal end of interaction
+              preventStealing = false;
+              root.dragPotentialEnded();
 
-                // Apply the model change now that drag is complete
-                if (delegateItem.dragStartIndex !== -1 && delegateItem.dragTargetIndex !== -1 && delegateItem.dragStartIndex !== delegateItem.dragTargetIndex) {
-                  root.moveItem(delegateItem.dragStartIndex, delegateItem.dragTargetIndex);
-                }
-
-                delegateItem.dragging = false;
-                delegateItem.dragStartIndex = -1;
-                delegateItem.dragTargetIndex = -1;
-                delegateItem.z = 0;
+              // Apply the model change now that drag is complete
+              if (delegateItem.dragStartIndex !== -1 && delegateItem.dragTargetIndex !== -1 && delegateItem.dragStartIndex !== delegateItem.dragTargetIndex) {
+                root.moveItem(delegateItem.dragStartIndex, delegateItem.dragTargetIndex);
               }
 
-              onCanceled: {
-                // Handle cancel (e.g., ESC key pressed during drag)
-                preventStealing = false;
-                root.dragPotentialEnded();
-
-                delegateItem.dragging = false;
-                delegateItem.dragStartIndex = -1;
-                delegateItem.dragTargetIndex = -1;
-                delegateItem.z = 0;
-              }
-            }
-          }
-
-          // Checkbox — OptionItem style: accent check glyph, no box
-          Rectangle {
-            id: box
-
-            Layout.preferredWidth: root.baseSize
-            Layout.preferredHeight: root.baseSize
-            radius: Style.radiusRow
-            color: checkboxMouseArea.containsMouse && !delegateItem.required && !delegateItem.isDisabled ? Color.overlay("hover") : "transparent"
-            border.color: "transparent"
-            border.width: Style.borderS
-            opacity: delegateItem.required ? 0.7 : 1.0
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
+              delegateItem.dragging = false;
+              delegateItem.dragStartIndex = -1;
+              delegateItem.dragTargetIndex = -1;
+              delegateItem.z = 0;
             }
 
-            NIcon {
-              visible: delegateItem.itemEnabled
-              anchors.centerIn: parent
-              anchors.horizontalCenterOffset: -1
-              icon: "check"
-              color: root.activeColor
-              pointSize: Math.max(Style.fontSizeXS, root.baseSize * 0.5)
-            }
+            onCanceled: {
+              // Handle cancel (e.g., ESC key pressed during drag)
+              preventStealing = false;
+              root.dragPotentialEnded();
 
-            MouseArea {
-              id: checkboxMouseArea
-              anchors.fill: parent
-              cursorShape: (!delegateItem.required && !delegateItem.isDisabled) ? Qt.PointingHandCursor : Qt.ArrowCursor
-              enabled: !delegateItem.required && !delegateItem.isDisabled
-              hoverEnabled: true
-
-              onClicked: {
-                if (!delegateItem.required && !delegateItem.isDisabled) {
-                  root.toggleItem(delegateItem.index);
-                }
-              }
+              delegateItem.dragging = false;
+              delegateItem.dragStartIndex = -1;
+              delegateItem.dragTargetIndex = -1;
+              delegateItem.z = 0;
             }
           }
+        }
 
-          // Label
-          NText {
-            Layout.fillWidth: true
-            text: delegateItem.text
-            color: Color.onShell
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-          }
+        // Label
+        NText {
+          Layout.fillWidth: true
+          text: delegateItem.text
+          color: Color.onShell
+          verticalAlignment: Text.AlignVCenter
+          elide: Text.ElideRight
+        }
 
-          // Required indicator
-          NText {
-            visible: delegateItem.required
-            text: I18n.tr("common.required")
-            color: Color.onShellTertiary
-            verticalAlignment: Text.AlignVCenter
-          }
+        // Required indicator
+        NText {
+          visible: delegateItem.required
+          text: I18n.tr("common.required")
+          color: Color.onShellTertiary
+          verticalAlignment: Text.AlignVCenter
+        }
+
+        // DDE OptionItem check glyph (display only; the row itself toggles)
+        NIcon {
+          visible: delegateItem.itemEnabled
+          icon: "check"
+          color: root.activeColor
+          pointSize: Style.settingsNextChevronSize
+          Layout.alignment: Qt.AlignVCenter
         }
 
         // Position binding for non-dragging state
