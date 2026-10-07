@@ -38,9 +38,11 @@ Singleton {
   function isOpen(screen) {
     if (!screen)
       return false;
-    if (fullscreenOpen && fullscreenScreen === screen)
+    // Compare by name — Variants delegates can hold a ShellScreen the
+    // compositor replaced, so object identity is unreliable.
+    if (fullscreenOpen && fullscreenScreen?.name === screen.name)
       return true;
-    if (miniOpen && miniScreen === screen)
+    if (miniOpen && miniScreen?.name === screen.name)
       return true;
     return false;
   }

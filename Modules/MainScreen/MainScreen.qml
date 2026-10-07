@@ -93,7 +93,7 @@ PanelWindow {
 
   // Desktop dimming when panels are open
   property real dimmerOpacity: Settings.data.general.dimmerOpacity ?? 0.8
-  property bool isPanelOpen: (PanelService.openedPanel !== null) && (PanelService.openedPanel.screen === screen)
+  property bool isPanelOpen: (PanelService.openedPanel !== null) && (PanelService.openedPanel.screen?.name === screen?.name)
   property bool isPanelClosing: (PanelService.openedPanel !== null) && PanelService.openedPanel.isClosing
   property bool isAnyPanelOpen: PanelService.openedPanel !== null
 
@@ -298,11 +298,16 @@ PanelWindow {
     // Uses isAnyPanelOpen so clicking on any screen's background closes the panel
     MouseArea {
       anchors.fill: parent
-      enabled: root.isAnyPanelOpen
+      enabled: root.isAnyPanelOpen || LauncherState.anyOpen
       acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
       onClicked: mouse => {
                    if (PanelService.openedPanel) {
                      PanelService.openedPanel.close();
+                   }
+                   // The launcher windows are standalone layer surfaces, not
+                   // openedPanel — a desktop click must retract them too.
+                   if (LauncherState.anyOpen) {
+                     LauncherState.close(null);
                    }
                  }
       z: 0 // Behind panels and bar

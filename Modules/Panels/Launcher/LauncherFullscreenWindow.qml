@@ -37,6 +37,19 @@ Variants {
     // whether it shows and takes keyboard focus.
     readonly property bool isActive: modelData !== null && LauncherState.fullscreenOpen && LauncherState.fullscreenScreen?.name === modelData?.name
 
+    // Close fade: hold the surface mapped while the view fades out, then unmap.
+    onIsActiveChanged: {
+      if (!isActive)
+        closeTimer.restart();
+      else
+        closeTimer.stop();
+    }
+    Timer {
+      id: closeTimer
+      interval: Style.animationFast
+    }
+
+    // Insets follow the taskbar/dock edge, not the optional status bar
     readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
@@ -96,7 +109,8 @@ Variants {
       id: window
 
       screen: screenItem.liveScreen
-      visible: screenItem.isActive
+      // Keep the surface mapped through the close fade; the timer unmaps it.
+      visible: screenItem.isActive || closeTimer.running
 
       // The layer surface fills the output; give the window an implicit size so
       // the content item (and the layouts inside it) is laid out.
@@ -114,7 +128,21 @@ Variants {
       // Never reserve space: the launcher must not push the taskbar around
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
-      color: Qt.rgba(0, 0, 0, 0.55)
+      // §1.2: when the compositor blurs (ext-background-effect), the surface
+      // stays transparent and the blur comes from the compositor — no in-QML
+      // wallpaper copy, no heavy black scrim.
+      color: Color.blurActive ? "transparent" : Qt.rgba(0, 0, 0, 0.55)
+
+      BackgroundEffect.blurRegion: Color.blurActive ? fullscreenBlurRegion : null
+      Region {
+        id: fullscreenBlurRegion
+        Region {
+          x: 0
+          y: 0
+          width: window.width
+          height: window.height
+        }
+      }
 
       // The layer surface covers the whole output, taskbar area included; the
       // taskbar renders above it (Overlay layer) and stays visible
@@ -133,17 +161,19 @@ Variants {
         right: 0
       }
 
-      // Pre-blurred wallpaper background, black underneath (DESIGN §1.8)
+      // Pre-blurred wallpaper background, black underneath (DESIGN §1.8).
+      // Only renders when the compositor cannot blur for us.
       LauncherBackground {
         id: background
         anchors.fill: parent
         screen: screenItem.liveScreen
+        visible: !Color.blurActive
         opacity: screenItem.isActive ? 1 : 0
 
         Behavior on opacity {
           NumberAnimation {
-            duration: Style.motionEnter
-            easing.type: Easing.OutCubic
+            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
           }
         }
       }
@@ -171,8 +201,8 @@ Variants {
 
         Behavior on opacity {
           NumberAnimation {
-            duration: Style.motionEnter
-            easing.type: Easing.OutCubic
+            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
           }
         }
 

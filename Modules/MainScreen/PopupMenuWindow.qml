@@ -87,7 +87,20 @@ PanelWindow {
                  }
   }
 
+  // Hold the window mapped briefly so popup content can play its own
+  // fade-out before the surface goes away (TrayMenu/NPopupContextMenu run
+  // ~animationFast).
+  Timer {
+    id: closeTimer
+    interval: Style.animationFast + 40
+    onTriggered: {
+      root.visible = false;
+      root._finishClose();
+    }
+  }
+
   function open() {
+    closeTimer.stop();
     visible = true;
     BarService.popupOpen = true;
   }
@@ -133,9 +146,11 @@ PanelWindow {
   }
 
   function close() {
-    visible = false;
+    if (closeTimer.running)
+      return;
     BarService.popupOpen = false;
-    // Call close/hide method on current content
+    // Call close/hide method on current content — it fades out, then the
+    // timer unmaps this window once the animation has played.
     if (contentItem) {
       if (typeof contentItem.hideMenu === "function") {
         contentItem.hideMenu();
@@ -143,6 +158,10 @@ PanelWindow {
         contentItem.close();
       }
     }
+    closeTimer.restart();
+  }
+
+  function _finishClose() {
     // Hide dynamic menu
     dynamicMenu.visible = false;
     dynamicMenu.variant = "dark";

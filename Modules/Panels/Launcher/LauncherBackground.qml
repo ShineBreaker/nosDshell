@@ -104,7 +104,7 @@ Item {
   // Top and bottom fade bands (DESIGN §1.8). Upstream copies the wallpaper
   // strip and masks it with a white -> transparent gradient
   // (gradientlabel.cpp:41-72, TOP_BOTTOM_GRADIENT_HEIGHT in constants.h:41);
-  // over the black base that reads as a fade to black on both ends.
+  // kept subtle — a hard black band reads as a defect over the blurred base.
   Rectangle {
     anchors.top: parent.top
     anchors.left: parent.left
@@ -113,7 +113,7 @@ Item {
     gradient: Gradient {
       GradientStop {
         position: 0.0
-        color: Color.mShadow
+        color: Qt.alpha(Color.mShadow, 0.35)
       }
       GradientStop {
         position: 1.0
@@ -134,7 +134,7 @@ Item {
       }
       GradientStop {
         position: 1.0
-        color: Color.mShadow
+        color: Qt.alpha(Color.mShadow, 0.35)
       }
     }
   }

@@ -348,7 +348,7 @@ Singleton {
   // Toggle launcher panel
   function toggleLauncher(screen) {
     if (Settings.data.appLauncher.overviewLayer) {
-      if (overlayLauncherOpen && overlayLauncherScreen === screen) {
+      if (overlayLauncherOpen && overlayLauncherScreen?.name === screen?.name) {
         closeOverlayLauncher();
       } else {
         openLauncher(screen);
@@ -384,7 +384,7 @@ Singleton {
 
   function isLauncherOpen(screen) {
     if (Settings.data.appLauncher.overviewLayer) {
-      return overlayLauncherOpen && overlayLauncherScreen === screen;
+      return overlayLauncherOpen && overlayLauncherScreen?.name === screen?.name;
     } else {
       return LauncherState.isOpen(screen);
     }

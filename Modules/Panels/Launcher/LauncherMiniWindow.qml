@@ -34,9 +34,23 @@ Variants {
     // whether it shows and takes keyboard focus.
     readonly property bool isActive: modelData !== null && LauncherState.miniOpen && LauncherState.miniScreen?.name === modelData?.name
 
+    // Close animation: hold the surface mapped while the view slides/fades
+    // back toward the taskbar edge, then unmap.
+    onIsActiveChanged: {
+      if (!isActive)
+        closeTimer.restart();
+      else
+        closeTimer.stop();
+    }
+    Timer {
+      id: closeTimer
+      interval: Style.animationFast
+    }
+
     // -----------------------------------------------------------
     // Geometry (gxde-launcher windowedframe.cpp adjustPosition)
     // -----------------------------------------------------------
+    // The mini launcher hugs the taskbar/dock edge, not the optional status bar
     readonly property string barPosition: Settings.getBarPositionForScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
     readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
@@ -113,8 +127,21 @@ Variants {
       id: window
 
       screen: screenItem.liveScreen
-      visible: screenItem.isActive
+      visible: screenItem.isActive || closeTimer.running
       color: "transparent"
+
+      // §1.2: blur behind the panel body when the compositor offers it.
+      BackgroundEffect.blurRegion: Color.blurActive ? miniBlurRegion : null
+      Region {
+        id: miniBlurRegion
+        Region {
+          x: 0
+          y: 0
+          width: Math.round(panelBg.width)
+          height: Math.round(panelBg.height)
+          radius: Style.radiusItem
+        }
+      }
       // The right bar widens itself until the settings + power row fits, so the
       // window follows the view rather than the other way round
       // (LauncherMiniView.measuredRightPaneWidth, miniframerightbar.cpp updateSize()).
@@ -166,24 +193,26 @@ Variants {
           y: screenItem.isActive ? 0 : (screenItem.barPosition === "top" ? -8 : (screenItem.barPosition === "bottom" ? 8 : 0))
         }
 
+        // Exit runs on the shorter animationFast window — closeTimer unmaps
+        // the surface right after it.
         Behavior on opacity {
           NumberAnimation {
-            duration: Style.motionEnter
-            easing.type: Easing.OutCubic
+            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
           }
         }
 
         Behavior on x {
           NumberAnimation {
-            duration: Style.motionEnter
-            easing.type: Easing.OutCubic
+            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
           }
         }
 
         Behavior on y {
           NumberAnimation {
-            duration: Style.motionEnter
-            easing.type: Easing.OutCubic
+            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
           }
         }
 
