@@ -82,7 +82,11 @@ Item {
     }
   }
 
-  onCurrentRangeChanged: root.applyRangeFilter()
+  onCurrentRangeChanged: {
+    root.applyRangeFilter();
+    focusIndex = -1;
+    actionIndex = -1;
+  }
   // Late arrivals (history loaded from disk after startup) default to shown;
   // filter once they land.
   Component.onCompleted: Qt.callLater(root.applyRangeFilter)
@@ -92,6 +96,8 @@ Item {
     function onCountChanged() {
       // New arrivals default to shown; re-filter in the same frame.
       root.applyRangeFilter();
+      if (root.focusIndex >= notificationColumn.children.length)
+        root.focusIndex = notificationColumn.children.length - 1;
     }
   }
 
@@ -118,6 +124,145 @@ Item {
   function invokeAndClose(id, actionId) {
     if (NotificationService.invokeAction(id, actionId) && root.closeOnAction)
       root.closeOnAction();
+  }
+
+  // Keyboard model (upstream NotificationHistoryPanel.qml): Tab/Backtab cycles
+  // ranges, up/down moves the selection, left/right walks the focused item's
+  // actions, Enter activates, keyRemove/Delete dismisses. focusIndex is a
+  // *visual* index — delegates only exist for the current range filter, so no
+  // hidden items need skipping the way the upstream full-model scan did.
+  focus: true
+  onVisibleChanged: {
+    if (visible)
+      root.forceActiveFocus();
+  }
+
+  Keys.onPressed: event => {
+                    if (event.key === Qt.Key_Tab) {
+                      currentRange = (currentRange + 1) % 4;
+                      event.accepted = true;
+                      return;
+                    }
+                    if (event.key === Qt.Key_Backtab) {
+                      currentRange = (currentRange - 1 + 4) % 4;
+                      event.accepted = true;
+                      return;
+                    }
+                    if (Keybinds.checkKey(event, 'up', Settings)) {
+                      moveSelection(-1);
+                      event.accepted = true;
+                      return;
+                    }
+                    if (Keybinds.checkKey(event, 'down', Settings)) {
+                      moveSelection(1);
+                      event.accepted = true;
+                      return;
+                    }
+                    if (Keybinds.checkKey(event, 'left', Settings)) {
+                      moveAction(-1);
+                      event.accepted = true;
+                      return;
+                    }
+                    if (Keybinds.checkKey(event, 'right', Settings)) {
+                      moveAction(1);
+                      event.accepted = true;
+                      return;
+                    }
+                    if (Keybinds.checkKey(event, 'enter', Settings)) {
+                      activateSelection();
+                      event.accepted = true;
+                      return;
+                    }
+                    if (Keybinds.checkKey(event, 'remove', Settings) || event.key === Qt.Key_Delete) {
+                      removeSelection();
+                      event.accepted = true;
+                      return;
+                    }
+                  }
+
+  function delegateAt(visualIndex) {
+    for (var i = 0; i < notificationColumn.children.length; i++) {
+      var child = notificationColumn.children[i];
+      if (child.visualIndex === visualIndex)
+        return child;
+    }
+    return null;
+  }
+
+  function moveSelection(dir) {
+    var count = notificationColumn.children.length;
+    if (count === 0)
+      return;
+
+    var newIndex = focusIndex;
+    if (newIndex === -1)
+      newIndex = dir > 0 ? -1 : count;
+
+    newIndex += dir;
+    if (newIndex < 0 || newIndex >= count)
+      return;
+
+    focusIndex = newIndex;
+    actionIndex = -1;
+    scrollToItem(focusIndex);
+  }
+
+  function moveAction(dir) {
+    var delegate = delegateAt(focusIndex);
+    if (!delegate)
+      return;
+    var count = delegate.actionsList.length;
+    if (count === 0)
+      return;
+    actionIndex = Math.max(-1, Math.min(actionIndex + dir, count - 1));
+  }
+
+  function activateSelection() {
+    var delegate = delegateAt(focusIndex);
+    if (!delegate)
+      return;
+
+    if (actionIndex >= 0 && actionIndex < delegate.actionsList.length) {
+      var action = delegate.actionsList[actionIndex];
+      if (action.identifier === "default")
+        return;
+      invokeAndClose(delegate.notificationId, action.identifier);
+      return;
+    }
+    if (!(delegate.canExpand || delegate.isExpanded))
+      return;
+    root.expandedId = delegate.isExpanded ? "" : delegate.notificationId;
+  }
+
+  function removeSelection() {
+    var delegate = delegateAt(focusIndex);
+    if (delegate)
+      delegate.remove();
+  }
+
+  function scrollToItem(visualIndex) {
+    var item = delegateAt(visualIndex);
+    if (!item)
+      return;
+
+    // The list lives inside the host page's scroll container; walk ancestors
+    // for the nearest flickable rather than depending on a concrete type.
+    var flickable = root.parent;
+    while (flickable && flickable.contentY === undefined)
+      flickable = flickable.parent;
+    if (!flickable)
+      return;
+
+    var pos = flickable.contentItem.mapFromItem(item, 0, 0);
+    var itemY = pos.y;
+    var itemBottom = itemY + item.height;
+    var viewTop = flickable.contentY;
+    var viewBottom = viewTop + flickable.height;
+
+    if (itemY < viewTop)
+      flickable.contentY = Math.max(0, itemY - Style.marginS);
+    else if (itemBottom > viewBottom)
+      flickable.contentY = Math.min(flickable.contentHeight - flickable.height, itemBottom - flickable.height + Style.marginS);
   }
 
   ColumnLayout {
@@ -199,6 +344,7 @@ Item {
             width: parent.width
             height: contentColumn.implicitHeight + Style.margin2S
 
+            readonly property int visualIndex: index
             readonly property string notificationId: model.id
             readonly property string appName: model.appName || ""
             readonly property bool isExpanded: root.expandedId === notificationId
@@ -353,7 +499,8 @@ Item {
                       readonly property bool isDefault: modelData.identifier === "default"
                       text: modelData.text
                       pointSize: Style.fontSizeS
-                      color: Color.accentAlt
+                      color: (delegateItem.isFocused && root.actionIndex === index) ? Color.accent : Color.accentAlt
+                      font.weight: (delegateItem.isFocused && root.actionIndex === index) ? Style.fontWeightSemiBold : Style.fontWeightNormal
                       visible: !isDefault
 
                       MouseArea {
