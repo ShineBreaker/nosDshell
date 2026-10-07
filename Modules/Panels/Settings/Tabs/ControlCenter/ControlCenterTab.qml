@@ -16,37 +16,37 @@ ColumnLayout {
   property list<var> cardsDefault: [
     {
       "id": "profile-card",
-      "text": "Profile",
+      "text": I18n.tr("panels.control-center.card-profile"),
       "enabled": true,
       "required": true
     },
     {
       "id": "shortcuts-card",
-      "text": "Shortcuts",
+      "text": I18n.tr("panels.control-center.card-shortcuts"),
       "enabled": true,
       "required": false
     },
     {
       "id": "audio-card",
-      "text": "Audio Sliders",
+      "text": I18n.tr("panels.control-center.card-audio-sliders"),
       "enabled": true,
       "required": false
     },
     {
       "id": "brightness-card",
-      "text": "Brightness",
+      "text": I18n.tr("panels.control-center.card-brightness"),
       "enabled": false,
       "required": false
     },
     {
       "id": "weather-card",
-      "text": "Weather",
+      "text": I18n.tr("panels.control-center.card-weather"),
       "enabled": true,
       "required": false
     },
     {
       "id": "media-sysmon-card",
-      "text": "Media and System Monitor",
+      "text": I18n.tr("panels.control-center.card-media-sysmon"),
       "enabled": true,
       "required": false
     }

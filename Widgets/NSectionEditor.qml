@@ -474,8 +474,9 @@ NBox {
             readonly property int buttonsWidth: Math.round(20)
             readonly property int buttonsCount: root.widgetHasSettings(modelData.id) ? 1 : 0
 
-            // Visual feedback during drag
-            opacity: flowDragArea.draggedIndex === index ? 0.5 : 1.0
+            // Visual feedback during drag; dim the whole tile when the
+            // editor subtree is disabled (same 0.6 as NToggle/NComboBox).
+            opacity: flowDragArea.draggedIndex === index ? 0.5 : (enabled ? 1.0 : 0.6)
             scale: flowDragArea.draggedIndex === index ? 0.95 : 1.0
             z: flowDragArea.draggedIndex === index ? 1000 : 0
 

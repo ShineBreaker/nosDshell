@@ -15,11 +15,30 @@ ColumnLayout {
   property var removeMonitor
 
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
-  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
-  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
+  // SettingsGroup 1: the master switch on its own, so the rows it gates can
+  // form one SettingsGroup of their own -- same shape as Dock/GeneralSubTab.
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
+    NToggle {
+      label: I18n.tr("panels.osd.enabled-label")
+      description: I18n.tr("panels.osd.enabled-description")
+      checked: Settings.data.osd.enabled
+      defaultValue: Settings.getDefaultValue("osd.enabled")
+      onToggled: checked => Settings.data.osd.enabled = checked
+    }
+  }
+
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
+  // SettingsGroup 2: everything the master switch gates. OSD draws nothing
+  // while it is off, so the position choice is gated along with the rest.
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+    enabled: Settings.data.osd.enabled
     NComboBox {
       label: I18n.tr("common.position")
       description: I18n.tr("panels.osd.location-description")
@@ -37,7 +56,7 @@ ColumnLayout {
           "name": I18n.tr("positions.top-right")
         },
         {
-          "key": "bottom",
+          "key": "bottom_center",
           "name": I18n.tr("positions.bottom-center")
         },
         {
@@ -60,14 +79,6 @@ ColumnLayout {
       currentKey: Settings.data.osd.location || "top_right"
       defaultValue: Settings.getDefaultValue("osd.location")
       onSelected: key => Settings.data.osd.location = key
-    }
-
-    NToggle {
-      label: I18n.tr("panels.osd.enabled-label")
-      description: I18n.tr("panels.osd.enabled-description")
-      checked: Settings.data.osd.enabled
-      defaultValue: Settings.getDefaultValue("osd.enabled")
-      onToggled: checked => Settings.data.osd.enabled = checked
     }
 
     NToggle {
@@ -97,11 +108,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
-  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
+  // SettingsGroup 3: monitor selection, gated like the rest while off.
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
+    enabled: Settings.data.osd.enabled
     NText {
       text: I18n.tr("panels.osd.monitors-desc")
       wrapMode: Text.WordWrap

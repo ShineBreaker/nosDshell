@@ -1022,6 +1022,12 @@
       "wifi-header-text": "Use Wi-Fi to see available networks and connect to the internet."
     },
     "control-center": {
+      "card-audio-sliders": "Audio Sliders",
+      "card-brightness": "Brightness",
+      "card-media-sysmon": "Media and System Monitor",
+      "card-profile": "Profile",
+      "card-shortcuts": "Shortcuts",
+      "card-weather": "Weather",
       "cards-desc": "Customize which controls appear in the control center and in what order.",
       "desc": "Configure the control center panel positioning and behavior.",
       "open-at-mouse-description": "When right-clicking an empty area of the bar, open the control center near the cursor. When disabled, the position setting above is used instead.",
@@ -1861,6 +1867,7 @@
   "placeholders": {
     "add-new-keybind": "Add a new keybind",
     "command-example": "echo \"Hello World\"",
+    "debug-modules": "Dock, Tray, Taskbar",
     "enter-command": "Enter command to execute (app or custom script)",
     "enter-ipc-identifier": "Enter unique identifier for IPC commands",
     "enter-path": "Enter path...",

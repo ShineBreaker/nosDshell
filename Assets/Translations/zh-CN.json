@@ -1022,6 +1022,12 @@
       "wifi-header-text": "使用 Wi-Fi 查看可用网络并连接到互联网。"
     },
     "control-center": {
+      "card-audio-sliders": "声音滑块",
+      "card-brightness": "亮度",
+      "card-media-sysmon": "媒体与系统监控",
+      "card-profile": "账户",
+      "card-shortcuts": "快捷开关",
+      "card-weather": "天气",
       "cards-desc": "自定义在控制中心显示的控制项及其顺序。",
       "desc": "配置控制中心面板的位置和行为。",
       "open-at-mouse-description": "右键点击栏的空白区域时，在光标附近打开控制中心。禁用时，将使用上方的位置设置。",
@@ -1861,6 +1867,7 @@
   "placeholders": {
     "add-new-keybind": "添加新键位绑定",
     "command-example": "echo \"Hello World\"",
+    "debug-modules": "Dock, Tray, Taskbar",
     "enter-command": "输入要执行的命令（应用程序或自定义脚本）",
     "enter-ipc-identifier": "输入 IPC 命令的唯一标识符",
     "enter-path": "输入路径...",

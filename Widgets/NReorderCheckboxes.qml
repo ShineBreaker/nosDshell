@@ -92,7 +92,8 @@ Item {
 
           width: parent.width
           spacing: Style.marginS
-          opacity: isDisabled ? 0.5 : 1.0
+          // Per-item disabled stays 0.5; a disabled ancestor dims the row.
+          opacity: isDisabled ? 0.5 : (enabled ? 1.0 : 0.6)
 
           // Drag handle
           Rectangle {
