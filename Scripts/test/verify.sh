@@ -161,7 +161,7 @@ fi
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion must match Commons/Settings.qml`settingsVersion` (69): a
+# settingsVersion must match Commons/Settings.qml`settingsVersion` (73): a
 # mismatch makes Settings run the versioned migrations on first load, which
 # rewrite the seed's dock.*/general.* keys back to Assets defaults before the
 # run starts (verified: seed 64 vs runtime 67 lost displayMode/onlySameOutput
@@ -172,7 +172,7 @@ fi
 # list the Quickshell ShellScreen object never satisfies, so leaving the
 # default true silently drops every running app from the dock (verified: with
 # it on, no toplevel reaches dockApps; off, all three appear).
-SEED='{"settingsVersion":69,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":73,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
