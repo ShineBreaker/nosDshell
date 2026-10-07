@@ -11,10 +11,10 @@ Rectangle {
   signal tokenClicked(string token)
 
   Layout.margins: Style.borderS
-  color: Color.mSurface
-  border.color: Color.mOutline
+  color: Color.overlay("field")
+  border.color: Color.borderShell
   border.width: Style.borderS
-  radius: Style.iRadiusM
+  radius: Style.radiusItem
 
   ColumnLayout {
     id: column
@@ -211,13 +211,8 @@ Rectangle {
             id: tokenDelegate
             width: tokensColumn.width
             height: layout.implicitHeight + Style.marginS
-            radius: Style.iRadiusS
-            color: {
-              if (tokenMouseArea.containsMouse) {
-                return Qt.alpha(Color.mPrimary, 0.1);
-              }
-              return index % 2 === 0 ? Color.mSurfaceVariant : Qt.alpha(Color.mSurfaceVariant, 0.6);
-            }
+            radius: Style.radiusItem
+            color: tokenMouseArea.containsMouse ? Color.overlay("checked") : Color.overlay("strong")
 
             // Mouse area for the entire delegate
             MouseArea {
@@ -238,13 +233,13 @@ Rectangle {
               PropertyAnimation {
                 target: tokenDelegate
                 property: "color"
-                to: Qt.alpha(Color.mPrimary, 0.3)
+                to: Qt.alpha(Color.accent, 0.3)
                 duration: 100
               }
               PropertyAnimation {
                 target: tokenDelegate
                 property: "color"
-                to: tokenMouseArea.containsMouse ? Qt.alpha(Color.mPrimary, 0.1) : (index % 2 === 0 ? Color.mSurface : Color.mSurfaceVariant)
+                to: tokenMouseArea.containsMouse ? Color.overlay("checked") : Color.overlay("strong")
                 duration: 200
               }
             }
@@ -261,7 +256,7 @@ Rectangle {
                 width: 70
                 height: 22
                 color: getCategoryColor(modelData.category)[0]
-                radius: Style.iRadiusS
+                radius: Style.radiusItem
                 opacity: tokenMouseArea.containsMouse ? 0.9 : 1.0
 
                 Behavior on opacity {
@@ -284,8 +279,8 @@ Rectangle {
                 Layout.alignment: Qt.AlignVCenter // Added this line
                 width: 100
                 height: 22
-                color: tokenMouseArea.containsMouse ? Color.mPrimary : Color.mOnSurface
-                radius: Style.iRadiusS
+                color: tokenMouseArea.containsMouse ? Color.accent : Color.overlay("checked")
+                radius: Style.radiusItem
 
                 Behavior on color {
                   ColorAnimation {
@@ -296,7 +291,7 @@ Rectangle {
                 NText {
                   anchors.centerIn: parent
                   text: modelData.token
-                  color: tokenMouseArea.containsMouse ? Color.mOnPrimary : Color.mSurface
+                  color: tokenMouseArea.containsMouse ? Color.onAccent : Color.onShell
                   pointSize: Style.fontSizeS
                   font.weight: Style.fontWeightSemiBold
 
@@ -313,7 +308,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter // Added this line
                 text: modelData.description
-                color: tokenMouseArea.containsMouse ? Color.mOnSurface : Color.mOnSurfaceVariant
+                color: tokenMouseArea.containsMouse ? Color.onShell : Color.onShellTertiary
                 pointSize: Style.fontSizeS
                 wrapMode: Text.WordWrap
 
@@ -329,9 +324,9 @@ Rectangle {
                 Layout.alignment: Qt.AlignVCenter // Added this line
                 width: 90
                 height: 22
-                color: tokenMouseArea.containsMouse ? Color.mPrimary : Color.mOnSurfaceVariant
-                radius: Style.iRadiusS
-                border.color: tokenMouseArea.containsMouse ? Color.mPrimary : Color.mOutline
+                color: tokenMouseArea.containsMouse ? Color.accent : Color.overlay("checked")
+                radius: Style.radiusItem
+                border.color: tokenMouseArea.containsMouse ? Color.accent : Color.borderShell
                 border.width: Style.borderS
 
                 Behavior on color {
@@ -349,7 +344,7 @@ Rectangle {
                 NText {
                   anchors.centerIn: parent
                   text: I18n.locale.toString(root.sampleDate, modelData.token)
-                  color: tokenMouseArea.containsMouse ? Color.mOnPrimary : Color.mSurfaceVariant
+                  color: tokenMouseArea.containsMouse ? Color.onAccent : Color.onShellTertiary
                   pointSize: Style.fontSizeS
 
                   Behavior on color {
@@ -369,25 +364,25 @@ Rectangle {
   function getCategoryColor(category) {
     switch (category) {
     case "Year":
-      return [Color.mPrimary, Color.mOnPrimary];
+      return [Color.accent, Color.onAccent];
     case "Month":
-      return [Color.mSecondary, Color.mOnSecondary];
+      return [Color.accentAlt, Color.onAccent];
     case "Day":
-      return [Color.mTertiary, Color.mOnTertiary];
+      return [Color.accentAction, Color.onAccent];
     case "Hour":
-      return [Color.mPrimary, Color.mOnPrimary];
+      return [Color.accent, Color.onAccent];
     case "Minute":
-      return [Color.mSecondary, Color.mOnSecondary];
+      return [Color.accentAlt, Color.onAccent];
     case "Second":
-      return [Color.mTertiary, Color.mOnTertiary];
+      return [Color.accentAction, Color.onAccent];
     case "AM/PM":
-      return [Color.mError, Color.mOnError];
+      return [Color.alert, Color.onAccent];
     case "Timezone":
-      return [Color.mOnSurface, Color.mSurface];
+      return [Color.overlay("checked"), Color.onShell];
     case "Common":
-      return [Color.mError, Color.mOnError];
+      return [Color.alert, Color.onAccent];
     default:
-      return [Color.mOnSurfaceVariant, Color.mSurfaceVariant];
+      return [Color.overlay("strong"), Color.onShellTertiary];
     }
   }
 }

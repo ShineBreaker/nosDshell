@@ -76,7 +76,7 @@ Popup {
         NIcon {
           icon: "color-picker"
           pointSize: Style.fontSizeXXL
-          color: Color.mPrimary
+          color: Color.accent
         }
 
         NText {
@@ -566,7 +566,7 @@ Popup {
               Rectangle {
                 width: 10
                 height: 10
-                radius: Math.min(Style.iRadiusXS, width / 2)
+                radius: Math.min(Style.radiusRow, width / 2)
                 color: "transparent"
                 border.color: root.selectedColor.hsvValue < 0.5 ? "white" : "black"
                 border.width: 1
@@ -668,9 +668,9 @@ Popup {
               Rectangle {
                 width: 24
                 height: 24
-                radius: Style.iRadiusXXS
+                radius: Style.radiusRow
                 color: modelData.color
-                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.mPrimary : Color.borderShell
+                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.accent : Color.borderShell
                 border.width: Math.max(1, root.selectedColor.toString() === modelData.color.toString() ? Style.borderM : Style.borderS)
 
                 MouseArea {
@@ -711,9 +711,9 @@ Popup {
               Rectangle {
                 width: 24
                 height: 24
-                radius: Math.min(Style.iRadiusXS, width / 2)
+                radius: Math.min(Style.radiusRow, width / 2)
                 color: modelData.color
-                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.mPrimary : Color.borderShell
+                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.accent : Color.borderShell
                 border.width: root.selectedColor.toString() === modelData.color.toString() ? 2 : 1
 
                 MouseArea {
@@ -770,7 +770,7 @@ Popup {
       NButton {
         text: I18n.tr("common.apply")
         icon: "check"
-        backgroundColor: Color.mPrimary // recommended action → accent text
+        backgroundColor: Color.accent // recommended action → accent text
         onClicked: {
           root.colorSelected(root.selectedColor);
           // Delay close to prevent click propagation to elements behind the dialog
