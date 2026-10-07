@@ -58,6 +58,7 @@ Guix 用户可直接参考仓库根部的 `nosdshell.scm`。
 |---|---|
 | 静态检查 | `Scripts/dev/lint.sh [--changed]` |
 | 隔离环境运行并截图 | `Scripts/test/verify.sh <名字> [--settings seed.json] [--scenes a,b]` |
+| 真 niri 路径验证（嵌套 niri，桌面上会开一个窗口） | `Scripts/test/niri/`（见目录内 README） |
 | 格式化 QML | `Scripts/dev/qmlfmt.sh <路径>` |
 
 界面改动一律以 [`DESIGN.md`](./DESIGN.md) 为准；工程约定索引见 [`AGENTS.md`](./AGENTS.md)，代码约定见 [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)。
