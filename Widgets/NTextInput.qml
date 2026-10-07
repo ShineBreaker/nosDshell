@@ -50,6 +50,8 @@ NDccRow {
     labelColor: root.labelColor
     descriptionColor: root.descriptionColor
     labelWeight: Style.fontWeightRegular
+    // The row's own opacity already dims the whole subtree.
+    autoDim: false
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
     // §3.5.4: the title sits in a fixed column, the field takes the rest.

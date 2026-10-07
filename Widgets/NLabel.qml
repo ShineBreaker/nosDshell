@@ -19,7 +19,11 @@ ColumnLayout {
   // the SemiBold default.
   property int labelWeight: Style.fontWeightSemiBold
 
-  opacity: enabled ? 1.0 : 0.6
+  // The label does not dim itself: its text/icon children each dim once
+  // (blanket opacity here would multiply with NText's own factor). A
+  // composite that dims the whole row can opt the children out via autoDim.
+  property bool autoDim: true
+
   spacing: Style.marginXXS
   visible: root.label != "" || root.description != ""
 
@@ -35,6 +39,7 @@ ColumnLayout {
       icon: root.icon
       pointSize: Style.fontSizeXXL
       color: root.iconColor
+      opacity: (enabled || !root.autoDim) ? 1.0 : 0.6
       Layout.rightMargin: Style.marginS
     }
 
@@ -46,6 +51,7 @@ ColumnLayout {
       font.weight: root.labelWeight
       color: labelColor
       wrapMode: Text.WordWrap
+      autoDim: root.autoDim
 
       // Settings indicator dot positioned right after the text content
       Loader {
@@ -66,6 +72,7 @@ ColumnLayout {
     text: root.description
     pointSize: Style.fontSizeS
     color: root.descriptionColor
+    autoDim: root.autoDim
     // DDE rows keep a uniform rhythm: at 352 px a 3-line description makes
     // every row a different height. Cap at two lines, eliding the tail.
     wrapMode: Text.WordWrap

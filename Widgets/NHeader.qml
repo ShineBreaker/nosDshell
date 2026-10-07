@@ -19,7 +19,7 @@ ColumnLayout {
   property string description: ""
   property bool enableDescriptionRichText: false
 
-  opacity: enabled ? 1.0 : 0.6
+  // No blanket opacity: the NText children dim themselves once when disabled.
   spacing: Style.marginXXS
   visible: root.label !== "" || root.description !== ""
 

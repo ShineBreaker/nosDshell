@@ -374,6 +374,8 @@ ColumnLayout {
               text: schemeItem.schemeName
               pointSize: Style.fontSizeS
               color: Color.mOnSurface
+              // schemeItem dims the whole card; no second factor on the text.
+              autoDim: false
               Layout.fillWidth: true
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter

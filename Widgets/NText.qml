@@ -20,7 +20,12 @@ Text {
   }
   property var features: ({})
 
-  opacity: enabled ? 1.0 : 0.6
+  // Leaf dim contract: text dims itself when disabled unless an ancestor
+  // composite already dims its whole subtree (autoDim: false) — without the
+  // opt-out the two factors multiply and the text ends up near 0.36.
+  property bool autoDim: true
+
+  opacity: (enabled || !autoDim) ? 1.0 : 0.6
   font.family: root.family
   font.weight: Style.fontWeightMedium
   font.pointSize: Math.max(1, root.pointSize * fontScale)

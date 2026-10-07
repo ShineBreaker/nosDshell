@@ -128,6 +128,7 @@ Item {
         pointSize: root.fontSize
         font.weight: root.fontWeight
         color: root.contentColor
+        autoDim: false
 
         Behavior on color {
           enabled: !Color.isTransitioning
