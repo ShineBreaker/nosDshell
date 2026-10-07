@@ -13,6 +13,8 @@ SmartPanel {
 
   // The "centered"/"attached" settings surface hosts the same two-column DDE
   // module view as the control-center frame (rail + 640 px content).
+  // Hold the loaded tabs across close/open cycles: reopening is instant.
+  keepContentAlive: true
   preferredWidth: Style.settingsRailWidth + Style.settingsWindowContentWidth
   preferredHeight: Math.round(910 * Style.uiScaleRatio)
 

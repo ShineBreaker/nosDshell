@@ -29,6 +29,10 @@ SmartPanel {
   // The DDE frame has no arrow and no grow animation of its own.
   arrowPopup: false
 
+  // Hold the frame content across close/open cycles: the all-settings page
+  // and notification history keep their loaded state, reopening is instant.
+  keepContentAlive: true
+
   // Present as a full-height edge sheet (DESIGN §3.5.1) with its own shadow.
   edgeSheet: true
   panelShadow: Style.shadowControlCenter

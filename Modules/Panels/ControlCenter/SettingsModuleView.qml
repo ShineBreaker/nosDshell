@@ -75,11 +75,14 @@ Item {
   implicitHeight: sectionsColumn.implicitHeight
 
   // ---- staged tab loading (DESIGN §3.5.3 perf): the target module and its
-  // neighbours load at once, the rest fills in on idle; unloaded tabs keep
-  // an estimated-height placeholder so headers stay put.
+  // neighbours load at once, the rest fills in on idle outward from the
+  // target (below-first: loading above the viewport shifts content down);
+  // unloaded tabs keep an estimated-height placeholder so headers stay put.
   property var _loadedMap: ({})
   property double _openStamp: 0
   property int _targetSec: -1
+  // Fill order, rebuilt around every navigation target.
+  property var _fillQueue: []
 
   Timer {
     id: idleFillTimer
@@ -101,6 +104,25 @@ Item {
       if (k >= 0 && k < modules.length)
         _markLoaded(k);
     }
+    _rebuildFillQueue(idx);
+  }
+
+  // Order module indices by distance from the navigation target so the
+  // viewport neighbourhood settles first.
+  function _rebuildFillQueue(center) {
+    const c = (center >= 0 && center < modules.length) ? center : 0;
+    const order = [];
+    for (var i = 0; i < modules.length; i++)
+      order.push(i);
+    order.sort((a, b) => {
+                 const d = Math.abs(a - c) - Math.abs(b - c);
+                 if (d !== 0)
+                 return d;
+                 if ((a > c) !== (b > c))
+                 return (a > c) ? -1 : 1;
+                 return a - b;
+               });
+    root._fillQueue = order;
   }
 
   function _tabActive(mIdx) {
@@ -108,6 +130,14 @@ Item {
   }
 
   function _fillNext() {
+    const q = root._fillQueue;
+    for (var k = 0; k < q.length; k++) {
+      const qi = q[k];
+      if (qi >= 0 && qi < modules.length && root._loadedMap[qi] !== true) {
+        _markLoaded(qi);
+        return;
+      }
+    }
     for (var i = 0; i < modules.length; i++) {
       if (root._loadedMap[i] !== true) {
         _markLoaded(i);
@@ -381,8 +411,11 @@ Item {
       return advancedTab;
     case SettingsPanel.Tab.Audio:
       return audioTab;
-    case SettingsPanel.Tab.Bar:
-      return barTab;
+      // NOTE: Tab.Bar has no owning module (no ControlCenterModules entry maps
+      // it) and no BarTab component exists — the only producer is the IPC
+      // `settings openTab bar` shim, which targetForTab already rejects. The
+      // enum item itself stays: ordinals are persisted (search index) and
+      // Services/Control/IPCService.qml still references it.
     case SettingsPanel.Tab.ColorScheme:
       return colorSchemeTab;
     case SettingsPanel.Tab.LockScreen:
@@ -962,10 +995,6 @@ Item {
   Component {
     id: audioTab
     AudioTab {}
-  }
-  Component {
-    id: barTab
-    AdvancedTab {}
   }
   Component {
     id: colorSchemeTab

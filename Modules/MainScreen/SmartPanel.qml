@@ -51,6 +51,63 @@ Item {
   // Track whether panel is open
   property bool isPanelOpen: false
 
+  // Keep the loaded content alive across close/open cycles (settings and
+  // control-center frame): reopening skips the full tab re-instantiation
+  // and shows the previous state instantly. Off by default; panels that
+  // never close their content (window mode) do not need it.
+  property bool keepContentAlive: false
+  // Set once the content Loader finishes its first load.
+  property bool _contentReady: false
+
+  // Reopen path for keep-alive panels: the Loader stays active so onLoaded
+  // never refires; drive the same finish sequence a fresh load would run.
+  onIsPanelOpenChanged: {
+    if (root.isPanelOpen && root.keepContentAlive && root._contentReady && contentLoader.item)
+      Qt.callLater(root.finishOpen);
+  }
+
+  // Shared tail of every open: position, reveal, fade orchestration.
+  // Called from the content Loader (first open) and from the reopen hook.
+  function finishOpen() {
+    // The reopen hook is deferred a frame; a close/Open race in between
+    // must not reveal a panel that is already closing again.
+    if (!root.isPanelOpen)
+      return;
+    // Calculate position with stable contentPreferredWidth/Height values
+    setPosition();
+
+    // Mark dimensions as initialized to enable animations
+    panelBackground.dimensionsInitialized = true;
+
+    // Cache animation direction BEFORE isPanelVisible becomes true
+    // This locks in the direction for the entire open/close cycle
+    root.cachedAnimateFromTop = panelBackground.animateFromTop;
+    root.cachedAnimateFromBottom = panelBackground.animateFromBottom;
+    root.cachedAnimateFromLeft = panelBackground.animateFromLeft;
+    root.cachedAnimateFromRight = panelBackground.animateFromRight;
+    root.cachedShouldAnimateWidth = panelBackground.shouldAnimateWidth;
+    root.cachedShouldAnimateHeight = panelBackground.shouldAnimateHeight;
+
+    // Make panel visible, now only the intended dimension will animate
+    root.isPanelVisible = true;
+
+    if (root.animationsDisabled || root.useArrowPopup || panelBackground.slidesAlongEdge) {
+      // Skip delay when animations are disabled; arrow popups and edge
+      // sheets have no size animation, so the opacity fade starts at once
+      root.sizeAnimationComplete = true;
+    } else {
+      opacityTrigger.start();
+    }
+
+    // Start open watchdog timer (skip when animations disabled - everything completes synchronously)
+    if (!root.animationsDisabled) {
+      root.openWatchdogActive = true;
+      openWatchdogTimer.start();
+    }
+
+    opened();
+  }
+
   // Track actual visibility (delayed until content is loaded and sized)
   property bool isPanelVisible: false
 
@@ -376,7 +433,10 @@ Item {
     root.opacityFadeComplete = false;
     root.closeFinalized = true;
     root.isPanelOpen = false;
-    panelBackground.dimensionsInitialized = false;
+    // Keep-alive panels hold their content: the Loader stays active and the
+    // measured dimensions stay valid, so reopening skips the reload.
+    if (!root.keepContentAlive)
+      panelBackground.dimensionsInitialized = false;
 
     // Signal immediate close so MainScreen can skip dimmer animation
     PanelService.closedImmediately = true;
@@ -408,8 +468,10 @@ Item {
     root.isClosing = false;
     root.opacityFadeComplete = false;
 
-    // Reset dimensionsInitialized for next opening
-    panelBackground.dimensionsInitialized = false;
+    // Reset dimensionsInitialized for next opening (keep-alive panels hold
+    // their content, so the measured dimensions stay valid).
+    if (!root.keepContentAlive)
+      panelBackground.dimensionsInitialized = false;
 
     PanelService.closedPanel(root);
     closed();
@@ -1558,7 +1620,8 @@ Item {
     // Panel top content: Text, icons, etc...
     Loader {
       id: contentLoader
-      active: isPanelOpen
+      // Keep-alive panels hold their content across close/open cycles.
+      active: isPanelOpen || (root.keepContentAlive && root._contentReady)
       x: panelBackground.x
       y: panelBackground.y
       width: panelBackground.width
@@ -1566,42 +1629,9 @@ Item {
       sourceComponent: root.panelContent
 
       onLoaded: {
+        root._contentReady = true;
         // Wait for contentPreferredWidth/Height to be available before making visible
-        Qt.callLater(function () {
-          // Calculate position with stable contentPreferredWidth/Height values
-          setPosition();
-
-          // Mark dimensions as initialized to enable animations
-          panelBackground.dimensionsInitialized = true;
-
-          // Cache animation direction BEFORE isPanelVisible becomes true
-          // This locks in the direction for the entire open/close cycle
-          root.cachedAnimateFromTop = panelBackground.animateFromTop;
-          root.cachedAnimateFromBottom = panelBackground.animateFromBottom;
-          root.cachedAnimateFromLeft = panelBackground.animateFromLeft;
-          root.cachedAnimateFromRight = panelBackground.animateFromRight;
-          root.cachedShouldAnimateWidth = panelBackground.shouldAnimateWidth;
-          root.cachedShouldAnimateHeight = panelBackground.shouldAnimateHeight;
-
-          // Make panel visible, now only the intended dimension will animate
-          root.isPanelVisible = true;
-
-          if (root.animationsDisabled || root.useArrowPopup || panelBackground.slidesAlongEdge) {
-            // Skip delay when animations are disabled; arrow popups and edge
-            // sheets have no size animation, so the opacity fade starts at once
-            root.sizeAnimationComplete = true;
-          } else {
-            opacityTrigger.start();
-          }
-
-          // Start open watchdog timer (skip when animations disabled - everything completes synchronously)
-          if (!root.animationsDisabled) {
-            root.openWatchdogActive = true;
-            openWatchdogTimer.start();
-          }
-
-          opened();
-        });
+        Qt.callLater(root.finishOpen);
       }
     }
   }
