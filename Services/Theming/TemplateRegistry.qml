@@ -222,7 +222,7 @@ Singleton {
           "path": "~/.local/share/vicinae/themes/nosdshell.toml"
         }
       ],
-      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/noctalia.svg ~/.local/share/vicinae/themes/noctalia.svg && ${applyHook("vicinae")}`
+      "postProcess": () => `cp --update=none ${Quickshell.shellDir}/Assets/nosdshell.svg ~/.local/share/vicinae/themes/nosdshell.svg && ${applyHook("vicinae")}`
     },
     {
       "id": "walker",
