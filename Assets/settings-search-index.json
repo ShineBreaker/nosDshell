@@ -2489,24 +2489,6 @@
     "subTabLabel": "common.panels"
   },
   {
-    "labelKey": "panels.user-interface.settings-panel-header",
-    "descriptionKey": null,
-    "widget": "NHeader",
-    "tab": 21,
-    "tabLabel": "panels.user-interface.title",
-    "subTab": 1,
-    "subTabLabel": "common.panels"
-  },
-  {
-    "labelKey": "panels.user-interface.settings-panel-mode-label",
-    "descriptionKey": "panels.user-interface.settings-panel-mode-description",
-    "widget": "NComboBox",
-    "tab": 21,
-    "tabLabel": "panels.user-interface.title",
-    "subTab": 1,
-    "subTabLabel": "common.panels"
-  },
-  {
     "labelKey": "panels.wallpaper.automation-scheduled-change-label",
     "descriptionKey": "panels.wallpaper.automation-scheduled-change-description",
     "widget": "NToggle",

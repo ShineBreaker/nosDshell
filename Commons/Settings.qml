@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 71
+  readonly property int settingsVersion: 72
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -377,7 +377,7 @@ Singleton {
       property real panelBackgroundOpacity: 0.4
       property bool translucentWidgets: false
       property bool panelsAttachedToBar: false
-      property string settingsPanelMode: "controlCenter" // "controlCenter", "centered", "attached", "window"
+      property string settingsPanelMode: "controlCenter" // legacy: Migration72 pins to controlCenter; the picker is gone (DDE keeps settings inside the CC frame)
       property bool settingsPanelSideBarCardStyle: false // legacy: no consumer (DDE rail layout supersedes it)
     }
 

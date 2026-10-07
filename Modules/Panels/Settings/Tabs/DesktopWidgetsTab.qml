@@ -61,7 +61,7 @@ ColumnLayout {
       icon: "edit"
       onClicked: {
         DesktopWidgetRegistry.editMode = !DesktopWidgetRegistry.editMode;
-        if (DesktopWidgetRegistry.editMode && Settings.data.ui.settingsPanelMode !== "window") {
+        if (DesktopWidgetRegistry.editMode) {
           var item = root.parent;
           while (item) {
             if (item.closeRequested !== undefined) {

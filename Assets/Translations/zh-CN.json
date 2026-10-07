@@ -756,11 +756,6 @@
       "grid": "网格",
       "single-row": "单行"
     },
-    "settings-panel-mode": {
-      "attached": "附属于状态栏显示",
-      "centered": "居中屏幕显示",
-      "window": "显示为独立窗口"
-    },
     "visualizer-types": {
       "linear": "线性",
       "mirrored": "镜像",
@@ -937,7 +932,7 @@
       "monitor-reset-all": "全部重置",
       "monitor-widgets-title": "小部件配置 - {monitor}",
       "monitors-desc": "在特定显示器上显示状态栏。如果未选择，则默认为全部。",
-      "monitors-desc-new": "在“任务栏 / 显示器”中选择哪些显示器显示任务栏，这里可以按显示器覆盖位置、密度、显示模式和挂件。", 
+      "monitors-desc-new": "在“任务栏 / 显示器”中选择哪些显示器显示任务栏，这里可以按显示器覆盖位置、密度、显示模式和挂件。",
       "monitors-title": "显示器显示",
       "title": "状态栏",
       "tray-blacklist-description": "添加托盘排除规则，支持通配符 (*)。",
@@ -1777,9 +1772,6 @@
       "scaling-label": "界面缩放",
       "scrollbar-always-visible-description": "当内容可滚动时，保持滚动条始终可见，而不是仅在悬停时显示。",
       "scrollbar-always-visible-label": "始终显示滚动条",
-      "settings-panel-header": "设置面板",
-      "settings-panel-mode-description": "选择「设置」面板的布局（可能需要重新打开「设置」面板才会生效）。",
-      "settings-panel-mode-label": "「设置」面板模式",
       "settings-panel-sidebar-card-style-description": "用圆角填充背景包裹设置侧边栏。",
       "settings-panel-sidebar-card-style-label": "侧边栏卡片样式",
       "shadows-description": "启用条形图和面板下的阴影。",
@@ -2367,7 +2359,7 @@
       "bar-appearance": "顶栏外观",
       "bar-behavior": "顶栏行为",
       "bar-autohide": "自动隐藏",
-      "bar-monitors": "分屏覆盖", 
+      "bar-monitors": "分屏覆盖",
       "panels-corners": "面板与圆角"
     }
   }
