@@ -8,7 +8,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   property var timeOptions
@@ -31,8 +31,14 @@ ColumnLayout {
                }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   ColumnLayout {
     enabled: Settings.data.nightLight.enabled
+    // Not a SettingsGroup: the children here are NLabel/RowLayout blocks, not
+    // dcc rows, so they keep element spacing rather than the 1 px seam.
     spacing: Style.marginL
     Layout.fillWidth: true
 

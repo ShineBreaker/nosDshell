@@ -8,7 +8,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
   enabled: Settings.data.notifications.enabled
 
@@ -44,42 +44,55 @@ ColumnLayout {
     }
   }
 
-  NToggle {
-    enabled: SoundService.multimediaAvailable
-    label: I18n.tr("panels.notifications.sounds-enabled-label")
-    description: I18n.tr("panels.notifications.sounds-enabled-description")
-    checked: Settings.data.notifications?.sounds?.enabled ?? false
-    onToggled: checked => Settings.data.notifications.sounds.enabled = checked
-    defaultValue: Settings.getDefaultValue("notifications.sounds.enabled")
-  }
-
-  // Sound Volume
-  NValueSlider {
-    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
     Layout.fillWidth: true
-    label: I18n.tr("panels.notifications.sounds-volume-label")
-    description: I18n.tr("panels.notifications.sounds-volume-description")
-    from: 0
-    to: 1
-    stepSize: 0.01
-    showReset: true
-    value: Settings.data.notifications?.sounds?.volume ?? 0.5
-    onMoved: value => Settings.data.notifications.sounds.volume = value
-    text: Math.round((Settings.data.notifications?.sounds?.volume ?? 0.5) * 100) + "%"
-    defaultValue: Settings.getDefaultValue("notifications.sounds.volume")
   }
-
-  // Separate Sounds Toggle
-  NToggle {
-    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+  ColumnLayout {
     Layout.fillWidth: true
-    label: I18n.tr("panels.notifications.sounds-separate-label")
-    description: I18n.tr("panels.notifications.sounds-separate-description")
-    checked: Settings.data.notifications?.sounds?.separateSounds ?? false
-    onToggled: checked => Settings.data.notifications.sounds.separateSounds = checked
-    defaultValue: Settings.getDefaultValue("notifications.sounds.separateSounds")
+    spacing: Style.settingsGroupGap
+
+    NToggle {
+      enabled: SoundService.multimediaAvailable
+      label: I18n.tr("panels.notifications.sounds-enabled-label")
+      description: I18n.tr("panels.notifications.sounds-enabled-description")
+      checked: Settings.data.notifications?.sounds?.enabled ?? false
+      onToggled: checked => Settings.data.notifications.sounds.enabled = checked
+      defaultValue: Settings.getDefaultValue("notifications.sounds.enabled")
+    }
+
+    // Sound Volume
+    NValueSlider {
+      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+      Layout.fillWidth: true
+      label: I18n.tr("panels.notifications.sounds-volume-label")
+      description: I18n.tr("panels.notifications.sounds-volume-description")
+      from: 0
+      to: 1
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.notifications?.sounds?.volume ?? 0.5
+      onMoved: value => Settings.data.notifications.sounds.volume = value
+      text: Math.round((Settings.data.notifications?.sounds?.volume ?? 0.5) * 100) + "%"
+      defaultValue: Settings.getDefaultValue("notifications.sounds.volume")
+    }
+
+    // Separate Sounds Toggle
+    NToggle {
+      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+      Layout.fillWidth: true
+      label: I18n.tr("panels.notifications.sounds-separate-label")
+      description: I18n.tr("panels.notifications.sounds-separate-description")
+      checked: Settings.data.notifications?.sounds?.separateSounds ?? false
+      onToggled: checked => Settings.data.notifications.sounds.separateSounds = checked
+      defaultValue: Settings.getDefaultValue("notifications.sounds.separateSounds")
+    }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   // Unified Sound File (shown when separateSounds is false)
   ColumnLayout {
     enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
@@ -115,6 +128,10 @@ ColumnLayout {
     }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   // Separate Sound Files (shown when separateSounds is true)
   ColumnLayout {
     visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false) && (Settings.data.notifications?.sounds?.separateSounds ?? false)
@@ -188,6 +205,10 @@ ColumnLayout {
     }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   // Excluded Apps List
   ColumnLayout {
     enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)

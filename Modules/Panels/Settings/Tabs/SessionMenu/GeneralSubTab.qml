@@ -6,8 +6,12 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     Layout.fillWidth: true
@@ -41,4 +45,6 @@ ColumnLayout {
     text: Math.round(Settings.data.sessionMenu.countdownDuration / 1000) + "s"
     defaultValue: Settings.getDefaultValue("sessionMenu.countdownDuration")
   }
+  }
+
 }

@@ -9,7 +9,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
   enabled: Settings.data.dock.enabled
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   // Helper functions to update arrays immutably
@@ -25,37 +25,42 @@ ColumnLayout {
     });
   }
 
-  NText {
-    text: I18n.tr("panels.dock.monitors-desc")
-    wrapMode: Text.WordWrap
+  ColumnLayout {
     Layout.fillWidth: true
-  }
+    spacing: Style.settingsGroupGap
 
-  Repeater {
-    model: Quickshell.screens || []
-    delegate: NCheckbox {
+    NText {
+      text: I18n.tr("panels.dock.monitors-desc")
+      wrapMode: Text.WordWrap
       Layout.fillWidth: true
-      readonly property real compositorScale: {
-        const info = CompositorService.displayScales[modelData.name];
-        return (info && info.scale) ? info.scale : 1.0;
-      }
-      label: modelData.name || "Unknown"
-      description: {
-        I18n.tr("system.monitor-description", {
-                  "model": modelData.model,
-                  "width": modelData.width * compositorScale,
-                  "height": modelData.height * compositorScale,
-                  "scale": compositorScale
-                });
-      }
-      checked: (Settings.data.dock.monitors || []).indexOf(modelData.name) !== -1
-      onToggled: checked => {
-                   if (checked) {
-                     Settings.data.dock.monitors = root.addMonitor(Settings.data.dock.monitors, modelData.name);
-                   } else {
-                     Settings.data.dock.monitors = root.removeMonitor(Settings.data.dock.monitors, modelData.name);
+    }
+
+    Repeater {
+      model: Quickshell.screens || []
+      delegate: NCheckbox {
+        Layout.fillWidth: true
+        readonly property real compositorScale: {
+          const info = CompositorService.displayScales[modelData.name];
+          return (info && info.scale) ? info.scale : 1.0;
+        }
+        label: modelData.name || "Unknown"
+        description: {
+          I18n.tr("system.monitor-description", {
+                    "model": modelData.model,
+                    "width": modelData.width * compositorScale,
+                    "height": modelData.height * compositorScale,
+                    "scale": compositorScale
+                  });
+        }
+        checked: (Settings.data.dock.monitors || []).indexOf(modelData.name) !== -1
+        onToggled: checked => {
+                     if (checked) {
+                       Settings.data.dock.monitors = root.addMonitor(Settings.data.dock.monitors, modelData.name);
+                     } else {
+                       Settings.data.dock.monitors = root.removeMonitor(Settings.data.dock.monitors, modelData.name);
+                     }
                    }
-                 }
+      }
     }
   }
 }

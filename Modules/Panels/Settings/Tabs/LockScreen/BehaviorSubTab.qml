@@ -6,7 +6,11 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     label: I18n.tr("panels.lock-screen.lock-on-suspend-label")
@@ -54,4 +58,6 @@ ColumnLayout {
     text: Math.round(Settings.data.general.lockScreenCountdownDuration / 1000) + "s"
     defaultValue: Settings.getDefaultValue("general.lockScreenCountdownDuration")
   }
+  }
+
 }

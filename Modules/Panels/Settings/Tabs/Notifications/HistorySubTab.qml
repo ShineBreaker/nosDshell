@@ -6,9 +6,13 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
   enabled: Settings.data.notifications.enabled
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     label: I18n.tr("panels.notifications.history-clear-dismiss-label")
@@ -49,4 +53,6 @@ ColumnLayout {
     onToggled: checked => Settings.data.notifications.saveToHistory.critical = checked
     defaultValue: Settings.getDefaultValue("notifications.saveToHistory.critical")
   }
+  }
+
 }

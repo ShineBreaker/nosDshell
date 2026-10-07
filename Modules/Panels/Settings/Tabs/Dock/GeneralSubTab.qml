@@ -13,7 +13,7 @@ import qs.Widgets
 // The optional status bar group below is a nosd extension (DESIGN §3.13).
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   NToggle {
@@ -25,8 +25,13 @@ ColumnLayout {
     onToggled: checked => Settings.data.dock.enabled = checked
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   ColumnLayout {
-    spacing: Style.marginL
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
     enabled: Settings.data.dock.enabled
 
     NComboBox {
@@ -121,6 +126,10 @@ ColumnLayout {
     }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   // ---- Status bar (DESIGN §3.13) ----
   // macOS-style optional status bar, independent of the dock/taskbar. It only
   // exists in fashion mode — in efficient mode the taskbar already is the bar.
@@ -142,6 +151,10 @@ ColumnLayout {
     }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap

@@ -7,8 +7,12 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NTextInput {
     label: I18n.tr("panels.launcher.settings-terminal-command-label")
@@ -44,4 +48,6 @@ ColumnLayout {
     placeholderText: I18n.tr("panels.launcher.settings-annotation-tool-placeholder")
     onTextChanged: Settings.data.appLauncher.screenshotAnnotationTool = text
   }
+  }
+
 }

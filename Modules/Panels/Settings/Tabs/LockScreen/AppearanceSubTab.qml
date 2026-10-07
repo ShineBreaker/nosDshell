@@ -7,7 +7,11 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     label: I18n.tr("panels.lock-screen.password-chars-label")
@@ -60,4 +64,6 @@ ColumnLayout {
     text: ((Settings.data.general.lockScreenTint) * 100).toFixed(0) + "%"
     defaultValue: Settings.getDefaultValue("general.lockScreenTint")
   }
+  }
+
 }

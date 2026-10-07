@@ -9,7 +9,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   ColumnLayout {
@@ -213,37 +213,46 @@ ColumnLayout {
       }
     }
 
-    NSpinBox {
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
       Layout.fillWidth: true
-      label: I18n.tr("panels.display.monitors-brightness-step-label")
-      description: I18n.tr("panels.display.monitors-brightness-step-description")
-      minimum: 1
-      maximum: 50
-      value: Settings.data.brightness.brightnessStep
-      stepSize: 1
-      suffix: "%"
-      onValueChanged: Settings.data.brightness.brightnessStep = value
-      defaultValue: Settings.getDefaultValue("brightness.brightnessStep")
     }
-
-    NToggle {
+    ColumnLayout {
       Layout.fillWidth: true
-      label: I18n.tr("panels.display.monitors-enforce-minimum-label")
-      description: I18n.tr("panels.display.monitors-enforce-minimum-description")
-      checked: Settings.data.brightness.enforceMinimum
-      onToggled: checked => Settings.data.brightness.enforceMinimum = checked
-      defaultValue: Settings.getDefaultValue("brightness.enforceMinimum")
-    }
+      spacing: Style.settingsGroupGap
 
-    NToggle {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.display.monitors-external-brightness-label")
-      description: I18n.tr("panels.display.monitors-external-brightness-description")
-      checked: Settings.data.brightness.enableDdcSupport
-      onToggled: checked => {
-                   Settings.data.brightness.enableDdcSupport = checked;
-                 }
-      defaultValue: Settings.getDefaultValue("brightness.enableDdcSupport")
+      NSpinBox {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.display.monitors-brightness-step-label")
+        description: I18n.tr("panels.display.monitors-brightness-step-description")
+        minimum: 1
+        maximum: 50
+        value: Settings.data.brightness.brightnessStep
+        stepSize: 1
+        suffix: "%"
+        onValueChanged: Settings.data.brightness.brightnessStep = value
+        defaultValue: Settings.getDefaultValue("brightness.brightnessStep")
+      }
+
+      NToggle {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.display.monitors-enforce-minimum-label")
+        description: I18n.tr("panels.display.monitors-enforce-minimum-description")
+        checked: Settings.data.brightness.enforceMinimum
+        onToggled: checked => Settings.data.brightness.enforceMinimum = checked
+        defaultValue: Settings.getDefaultValue("brightness.enforceMinimum")
+      }
+
+      NToggle {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.display.monitors-external-brightness-label")
+        description: I18n.tr("panels.display.monitors-external-brightness-description")
+        checked: Settings.data.brightness.enableDdcSupport
+        onToggled: checked => {
+                     Settings.data.brightness.enableDdcSupport = checked;
+                   }
+        defaultValue: Settings.getDefaultValue("brightness.enableDdcSupport")
+      }
     }
   }
 }

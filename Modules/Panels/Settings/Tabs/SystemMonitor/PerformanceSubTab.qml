@@ -6,8 +6,12 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     Layout.fillWidth: true
@@ -26,4 +30,6 @@ ColumnLayout {
     defaultValue: !Settings.getDefaultValue("performance.disableDesktopWidgets")
     onToggled: checked => Settings.data.performance.disableDesktopWidgets = !checked
   }
+  }
+
 }

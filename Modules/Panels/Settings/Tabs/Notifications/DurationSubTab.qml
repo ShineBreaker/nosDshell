@@ -6,9 +6,13 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
   enabled: Settings.data.notifications.enabled
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     label: I18n.tr("panels.notifications.duration-respect-expire-label")
@@ -59,4 +63,6 @@ ColumnLayout {
     text: Settings.data.notifications.criticalUrgencyDuration + "s"
     defaultValue: Settings.getDefaultValue("notifications.criticalUrgencyDuration")
   }
+  }
+
 }

@@ -7,7 +7,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
   enabled: Settings.data.wallpaper.enabled
 
@@ -18,9 +18,13 @@ ColumnLayout {
     onToggled: checked => Settings.data.wallpaper.automationEnabled = checked
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   ColumnLayout {
     enabled: Settings.data.wallpaper.automationEnabled
-    spacing: Style.marginL
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     NComboBox {

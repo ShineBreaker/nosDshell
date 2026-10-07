@@ -9,7 +9,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
   enabled: true
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   // Helper functions to update arrays immutably
@@ -24,6 +24,10 @@ ColumnLayout {
       return n !== name;
     });
   }
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NText {
     text: I18n.tr("panels.lock-screen.monitors-desc")
@@ -57,5 +61,6 @@ ColumnLayout {
                    }
                  }
     }
+  }
   }
 }

@@ -7,22 +7,31 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   // Preferred player
-  NTextInput {
-    label: I18n.tr("panels.audio.media-primary-player-label")
-    description: I18n.tr("panels.audio.media-primary-player-description")
-    placeholderText: I18n.tr("panels.audio.media-primary-player-placeholder")
-    text: Settings.data.audio.preferredPlayer
-    defaultValue: Settings.getDefaultValue("audio.preferredPlayer")
-    onTextChanged: {
-      Settings.data.audio.preferredPlayer = text;
-      MediaService.updateCurrentPlayer();
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+
+    NTextInput {
+      label: I18n.tr("panels.audio.media-primary-player-label")
+      description: I18n.tr("panels.audio.media-primary-player-description")
+      placeholderText: I18n.tr("panels.audio.media-primary-player-placeholder")
+      text: Settings.data.audio.preferredPlayer
+      defaultValue: Settings.getDefaultValue("audio.preferredPlayer")
+      onTextChanged: {
+        Settings.data.audio.preferredPlayer = text;
+        MediaService.updateCurrentPlayer();
+      }
     }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   // Blacklist editor
   ColumnLayout {
     spacing: Style.marginS

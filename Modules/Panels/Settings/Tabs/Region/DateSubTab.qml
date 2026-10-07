@@ -6,8 +6,12 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
 
   NToggle {
     label: I18n.tr("panels.location.date-time-12hour-format-label")
@@ -43,4 +47,6 @@ ColumnLayout {
     ]
     onSelected: key => Settings.data.location.firstDayOfWeek = parseInt(key)
   }
+  }
+
 }

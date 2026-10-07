@@ -11,7 +11,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
 
-  spacing: Style.marginL
+  spacing: 0
 
   // Available widgets model - declared early so Repeater delegates can access it
   property alias availableWidgetsModel: availableWidgets
@@ -27,25 +27,34 @@ ColumnLayout {
     }
   }
 
-  NToggle {
+  ColumnLayout {
     Layout.fillWidth: true
-    label: I18n.tr("panels.desktop-widgets.enabled-label")
-    description: I18n.tr("panels.desktop-widgets.enabled-description")
-    checked: Settings.data.desktopWidgets.enabled
-    defaultValue: Settings.getDefaultValue("desktopWidgets.enabled")
-    onToggled: checked => Settings.data.desktopWidgets.enabled = checked
+    spacing: Style.settingsGroupGap
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.desktop-widgets.enabled-label")
+      description: I18n.tr("panels.desktop-widgets.enabled-description")
+      checked: Settings.data.desktopWidgets.enabled
+      defaultValue: Settings.getDefaultValue("desktopWidgets.enabled")
+      onToggled: checked => Settings.data.desktopWidgets.enabled = checked
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      enabled: Settings.data.desktopWidgets.enabled
+      label: I18n.tr("panels.desktop-widgets.overview-enabled-label")
+      description: I18n.tr("panels.desktop-widgets.overview-enabled-description")
+      checked: Settings.data.desktopWidgets.overviewEnabled
+      defaultValue: Settings.getDefaultValue("desktopWidgets.overviewEnabled")
+      onToggled: checked => Settings.data.desktopWidgets.overviewEnabled = checked
+    }
   }
 
-  NToggle {
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
     Layout.fillWidth: true
-    enabled: Settings.data.desktopWidgets.enabled
-    label: I18n.tr("panels.desktop-widgets.overview-enabled-label")
-    description: I18n.tr("panels.desktop-widgets.overview-enabled-description")
-    checked: Settings.data.desktopWidgets.overviewEnabled
-    defaultValue: Settings.getDefaultValue("desktopWidgets.overviewEnabled")
-    onToggled: checked => Settings.data.desktopWidgets.overviewEnabled = checked
   }
-
   ColumnLayout {
     enabled: Settings.data.desktopWidgets.enabled
 

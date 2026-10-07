@@ -9,7 +9,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   property var addMonitor
@@ -23,6 +23,10 @@ ColumnLayout {
     defaultValue: Settings.getDefaultValue("notifications.enabled")
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   ColumnLayout {
     spacing: Style.settingsGroupGap
     enabled: Settings.data.notifications.enabled

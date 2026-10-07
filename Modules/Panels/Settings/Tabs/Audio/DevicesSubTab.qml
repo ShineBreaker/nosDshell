@@ -8,7 +8,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
 
   // Output Devices
@@ -19,7 +19,6 @@ ColumnLayout {
   ColumnLayout {
     spacing: Style.marginXS
     Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginL
 
     NLabel {
       label: I18n.tr("panels.audio.devices-output-device-label")
@@ -41,6 +40,10 @@ ColumnLayout {
     }
   }
 
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
   // Input Devices
   ButtonGroup {
     id: sources
