@@ -576,23 +576,16 @@ NBox {
 
               NText {
                 text: {
-                  // For plugin widgets, get the actual plugin name from manifest
-                  if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)) {
-                    const pluginId = modelData.id.replace("plugin:", "");
-                    const manifest = PluginRegistry.getPluginManifest(pluginId);
-                    if (manifest && manifest.name) {
-                      return manifest.name;
-                    }
-                    // Fallback: just strip the prefix
-                    return pluginId;
-                  }
-                  // Localised label from the registry; falls back to the raw id
-                  // when no widgetDisplayName is available.
+                  // Localised label from the registry (plugin ids resolve to
+                  // the manifest name inside); falls back to the raw id when
+                  // no widgetDisplayName is available.
                   if (root.widgetRegistry && typeof root.widgetRegistry.widgetDisplayName === "function") {
                     return root.widgetRegistry.widgetDisplayName(modelData.id);
                   }
                   return modelData.id;
                 }
+                // widgetItem already dims the whole tile when disabled.
+                autoDim: false
                 pointSize: Style.fontSizeXS
                 color: root.getWidgetColor(modelData)[1]
                 horizontalAlignment: Text.AlignLeft

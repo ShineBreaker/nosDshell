@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Services.Compositor
-import qs.Services.Plugins
 import qs.Services.UI
 import qs.Widgets
 
@@ -136,6 +135,15 @@ ColumnLayout {
     Qt.callLater(updateAvailableWidgetsModel);
   }
 
+  // Model entries bake I18n.tr results at append time; rebuild on language
+  // change or (re)loaded translations.
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      updateAvailableWidgetsModel();
+    }
+  }
+
   // Helper to get screen names array
   function getScreenNames() {
     var names = [];
@@ -185,18 +193,9 @@ ColumnLayout {
       }
       for (var i = 0; i < widgetIds.length; i++) {
         var widgetId = widgetIds[i];
+        // widgetDisplayName already resolves plugin ids to the manifest name.
         var displayName = DesktopWidgetRegistry.widgetDisplayName(widgetId);
-
-        // Get plugin name for plugin widgets
-        var isPlugin = false;
-        if (DesktopWidgetRegistry.isPluginWidget(widgetId)) {
-          isPlugin = true;
-          var pluginId = widgetId.replace("plugin:", "");
-          var manifest = PluginRegistry.getPluginManifest(pluginId);
-          if (manifest && manifest.name) {
-            displayName = manifest.name;
-          }
-        }
+        var isPlugin = DesktopWidgetRegistry.isPluginWidget(widgetId);
 
         // Add plugin badge first (with custom color)
         const badges = [];

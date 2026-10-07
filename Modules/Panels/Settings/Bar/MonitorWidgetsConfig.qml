@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import "../../../../Helpers/QtObj2JS.js" as QtObj2JS
 import qs.Commons
-import qs.Services.Plugins
 import qs.Services.UI
 import qs.Widgets
 
@@ -116,16 +115,10 @@ NBox {
       return;
     for (var i = 0; i < widgetIds.length; i++) {
       var id = widgetIds[i];
+      // widgetDisplayName already resolves plugin ids to the manifest name.
       var displayName = BarWidgetRegistry.widgetDisplayName(id);
       const badges = [];
       if (BarWidgetRegistry.isPluginWidget(id)) {
-        var pluginId = id.replace("plugin:", "");
-        var manifest = PluginRegistry.getPluginManifest(pluginId);
-        if (manifest && manifest.name) {
-          displayName = manifest.name;
-        } else {
-          displayName = pluginId;
-        }
         badges.push({
                       "icon": "plugin",
                       "color": Color.mSecondary
@@ -146,6 +139,15 @@ NBox {
   }
 
   Component.onCompleted: Qt.callLater(updateAvailableWidgetsModel)
+
+  // Model entries bake I18n.tr results at append time; rebuild on language
+  // change or (re)loaded translations.
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      updateAvailableWidgetsModel();
+    }
+  }
 
   ListModel {
     id: availableWidgetsModel

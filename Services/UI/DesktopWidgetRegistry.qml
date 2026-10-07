@@ -145,14 +145,18 @@ Singleton {
   }
 
   // Localised display name, mirroring BarWidgetRegistry.widgetDisplayName:
-  // camelCase/PascalCase id -> kebab-case key under `bar-widgets.label-`, with
+  // camelCase/PascalCase id -> kebab-case key under `widgets.label-`, with
   // the raw id as fallback when the key is untranslated or absent.
+  // Plugin widgets resolve to the manifest name, else the bare plugin id.
   function widgetDisplayName(id) {
     if (!id)
       return id;
-    if (isPluginWidget(id))
-      return id;
-    const key = "bar-widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+    if (isPluginWidget(id)) {
+      const pluginId = id.replace("plugin:", "");
+      const manifest = PluginRegistry.getPluginManifest(pluginId);
+      return (manifest && manifest.name) ? manifest.name : pluginId;
+    }
+    const key = "widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
     const name = I18n.tr(key);
     if (!name || name === key || name === "!!" + key + "!!")
       return id;

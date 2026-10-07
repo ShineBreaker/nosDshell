@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
-import qs.Services.Plugins
 import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
@@ -52,22 +51,28 @@ ColumnLayout {
     }
   ]
 
-  Component.onCompleted: {
+  Component.onCompleted: root._rebuildModels()
+
+  // Model entries bake I18n.tr results at append time, so they must be
+  // rebuilt when translations arrive or the language changes.
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root._rebuildModels();
+    }
+  }
+
+  function _rebuildModels() {
     // Fill out availableWidgets ListModel
     availableWidgets.clear();
     var sortedEntries = ControlCenterWidgetRegistry.getAvailableWidgets().slice().sort();
     sortedEntries.forEach(entry => {
+                            // widgetDisplayName already resolves plugin ids to
+                            // the manifest name.
                             const isPlugin = ControlCenterWidgetRegistry.isPluginWidget(entry);
                             let displayName = ControlCenterWidgetRegistry.widgetDisplayName(entry);
                             let badges = [];
                             if (isPlugin) {
-                              const pluginId = entry.replace("plugin:", "");
-                              const manifest = PluginRegistry.getPluginManifest(pluginId);
-                              if (manifest && manifest.name) {
-                                displayName = manifest.name;
-                              } else {
-                                displayName = pluginId;
-                              }
                               badges.push({
                                             "icon": "plugin",
                                             "color": Color.mSecondary

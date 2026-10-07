@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Modules.Bar.Widgets
+import qs.Services.Plugins
 
 Singleton {
   id: root
@@ -446,17 +447,20 @@ Singleton {
 
   // Localised display name for a widget id, used by NSectionEditor tiles and
   // by the "add widget" combo. Ids are camelCase/PascalCase; the key is their
-  // kebab-case form (`NotificationHistory` -> `bar-widgets.label-notification-history`).
+  // kebab-case form (`NotificationHistory` -> `widgets.label-notification-history`).
   // Falls back to the raw id when the key is untranslated or absent: I18n.tr
   // returns the bare key before translations load and `!!key!!` when the key
   // exists in neither the active language nor the English fallback.
-  // Plugin widgets keep their manifest name, which the callers resolve.
+  // Plugin widgets resolve to the manifest name, else the bare plugin id.
   function widgetDisplayName(id) {
     if (!id)
       return id;
-    if (isPluginWidget(id))
-      return id;
-    const key = "bar-widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+    if (isPluginWidget(id)) {
+      const pluginId = id.replace("plugin:", "");
+      const manifest = PluginRegistry.getPluginManifest(pluginId);
+      return (manifest && manifest.name) ? manifest.name : pluginId;
+    }
+    const key = "widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
     const name = I18n.tr(key);
     if (!name || name === key || name === "!!" + key + "!!")
       return id;

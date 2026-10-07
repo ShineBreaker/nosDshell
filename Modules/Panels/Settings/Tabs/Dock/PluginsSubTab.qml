@@ -85,6 +85,15 @@ ColumnLayout {
     }
   }
 
+  // Model entries bake I18n.tr results at append time; rebuild on language
+  // change or (re)loaded translations.
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      updateAvailablePlugins();
+    }
+  }
+
   ListModel {
     id: availablePlugins
   }
