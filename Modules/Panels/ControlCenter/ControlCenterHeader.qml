@@ -24,10 +24,10 @@ Item {
   property var screen: null
   property bool notificationPage: false
 
-  signal avatarRequested()
-  signal settingsRequested()
-  signal sessionRequested()
-  signal notificationToggled()
+  signal avatarRequested
+  signal settingsRequested
+  signal sessionRequested
+  signal notificationToggled
 
   implicitHeight: Style.controlCenterHeaderHeight
 
@@ -84,9 +84,13 @@ Item {
       NText {
         Layout.fillWidth: true
         Layout.minimumWidth: 0
-        // Date with weekday, long format minus the timezone tail
-        text: Qt.locale().toString(Time.now, Locale.LongFormat).split(" ")[0]
+        // Long-format date including the weekday; shrinks to fit so the
+        // weekday is never elided mid-word (locale formats vary in length,
+        // and a plain split(" ") drops or keeps the weekday unpredictably).
+        text: Qt.locale().toString(Time.now, Locale.LongFormat)
         pointSize: Style.fontSizeM
+        fontSizeMode: Text.HorizontalFit
+        minimumPointSize: Style.fontSizeXS
         color: Color.onShell
         elide: Text.ElideRight
       }
