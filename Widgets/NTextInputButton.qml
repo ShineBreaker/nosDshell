@@ -16,6 +16,7 @@ NDccRow {
 
   property alias text: input.text
   property alias placeholderText: input.placeholderText
+  property alias inputReadOnly: input.readOnly
   property string label: ""
   property string description: ""
   property string inputIconName: ""

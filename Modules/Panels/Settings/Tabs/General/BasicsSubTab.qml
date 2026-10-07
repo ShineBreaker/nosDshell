@@ -47,11 +47,16 @@ ColumnLayout {
         NTextInputButton {
           label: I18n.tr("panels.general.profile-picture-label")
           description: I18n.tr("panels.general.profile-picture-description")
-          text: Settings.data.general.avatarImage
+          // Read-only basename: the raw stored path is an internal detail;
+          // picking a different avatar goes through the file picker button.
+          inputReadOnly: true
+          text: {
+            const path = Settings.data.general.avatarImage;
+            return path ? path.split("/").pop() : "";
+          }
           placeholderText: '~/.face' // don't translate path
           buttonIcon: "photo"
           buttonTooltip: I18n.tr("panels.general.profile-tooltip")
-          onInputTextChanged: text => Settings.data.general.avatarImage = text
           onButtonClicked: {
             avatarPicker.openFilePicker();
           }
