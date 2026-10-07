@@ -191,7 +191,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | 锁屏 `Modules/LockScreen` | **dde-lock** | §3.9 |
 | 壁纸 `Panels/Wallpaper` | 底部壁纸选择条〔派生自 dde-desktop，参考仓库中没有〕 | §3.10 |
 | 首次设置向导 `Panels/SetupWizard` | 类似 dde-welcome：模糊壁纸 + 居中的暗色对话框 | §3.11 |
-| 更新日志 `Panels/Changelog`、各类确认弹窗 | **DDialog** 暗色对话框 | §3.11 |
+| 各类确认弹窗 | **DDialog** 暗色对话框 | §3.11 |
 | 桌面挂件 `Modules/DesktopWidgets` | 暗色毛玻璃小卡片 | §3.12 |
 | 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | **DDE 中没有**。保留功能代码，默认关闭，设置界面里放到"高级"下 | — |
 | 多个配色方案 / 壁纸取色 | 默认用 **Deepin** 方案；切换其他方案只改强调色 | §5 |
@@ -634,6 +634,19 @@ Noctalia 卡片的对应关系：
   - 原来启用了 Bar 的用户 → `dock.mode = "efficient"`
   - `bar.barType` 的 `framed` / `floating` → 保留数值，但不再生效
 - 迁移不能丢失用户数据。用不上的旧字段原样保留，不删除。
+
+### 6.1 上游功能移除清单
+
+以下 Noctalia v4 能力被有意移除，逐项记录理由（对应 AGENTS.md 的业务保真规则：删除上游功能必须有明确依据并登记于此）：
+
+| 移除项 | 理由 |
+|---|---|
+| `Services/Noctalia/UpdateService.qml` 应用内更新检查、`Panels/Changelog` 更新日志弹窗、`general.showChangelogOnStartup` | nosDshell 经 Guix 打包分发，更新统一走系统包管理器；应用内更新检查会引导用户绕过包管理。版本信息仍在"关于"页展示 |
+| `Services/Noctalia/TelemetryService.qml` 遥测 | 隐私考量，fork 不向外部服务上报使用数据 |
+| `Services/Noctalia/GitHubService.qml`、`SupporterService.qml`、About 页的 Contributors/Supporters 子页 | 服务于上游 noctalia 项目的贡献者与赞助展示；fork 不应继续以该名单代表自己。配色方案下载不依赖它们（SchemeDownloader 直连 colorschemes 仓库） |
+| Talia 天气吉祥物（`weatherTaliaMascotAlways` 等） | noctalia 品牌资产，随重命名移除 |
+| `Panels/NotificationHistory` 独立弹窗 | 并入控制中心通知页（§3.5.2），键盘操作模型已随 `NotificationHistoryList` 保留 |
+| `~/.config/noctalia` → `~/.config/nosdshell` 旧配置目录自动搬迁 | 不做。nosDshell 是独立 shell 身份而非 noctalia 的就地升级；MigrationNN 管线负责 nosdshell 自身配置的键级演进 |
 
 ---
 
