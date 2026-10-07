@@ -163,6 +163,13 @@ NDccRow {
               anchors.rightMargin: Style.marginS
               spacing: Style.marginXS
 
+              // Empty slots are too narrow for the "add keybind" caption —
+              // show just a centred glyph instead of a truncated string.
+              Item {
+                Layout.fillWidth: true
+                visible: !slotArea.isOccupied && !slotArea.isRecordingThis
+              }
+
               NIcon {
                 icon: root.hasConflict && slotArea.isRecordingThis ? "alert-circle" : (slotArea.isRecordingThis ? "circle-dot" : "keyboard")
                 color: root.hasConflict && slotArea.isRecordingThis ? Color.alert : (slotArea.isRecordingThis ? Color.accent : (slotArea.isOccupied ? Color.onShellSecondary : Color.onShellTertiary))
@@ -170,8 +177,14 @@ NDccRow {
                 visible: !slotArea.isRecordingThis || root.hasConflict
               }
 
+              Item {
+                Layout.fillWidth: true
+                visible: !slotArea.isOccupied && !slotArea.isRecordingThis
+              }
+
               NText {
                 Layout.fillWidth: true
+                visible: slotArea.isOccupied || slotArea.isRecordingThis
                 text: slotArea.keybindText
                 color: slotArea.isRecordingThis ? Color.onShell : (slotArea.isOccupied ? Color.onShell : Color.onShellTertiary)
                 font.family: slotArea.isOccupied && !slotArea.isRecordingThis ? Settings.data.ui.fontFixed : Settings.data.ui.fontDefault
