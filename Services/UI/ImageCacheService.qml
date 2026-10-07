@@ -840,7 +840,7 @@ Singleton {
   // -------------------------------------------------
   Process {
     id: checkBlurProcess
-    command: ["sh", "-c", "command -v nosd-blur || { p=\"" + Quickshell.shellDir + "/tools/nosd-blur/target/release/nosd-blur\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    command: ["sh", "-c", "command -v nosd-blur || { for b in release debug; do p=\"" + Quickshell.shellDir + "/tools/nosd-blur/target/\"$b\"/nosd-blur\"; [ -x \"$p\" ] && printf '%s' \"$p\" && exit 0; done; }"]
     running: false
 
     stdout: StdioCollector {}

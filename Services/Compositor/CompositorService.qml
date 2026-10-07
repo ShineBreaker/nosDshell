@@ -45,7 +45,7 @@ Singleton {
     id: wlProbeProcess
     // Same binary resolution as the other nosd-helpers callers: PATH
     // install first, then the in-tree release binary.
-    command: ["sh", "-c", "b=$(command -v nosd-helpers) || b=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/release/nosd-helpers\"; [ -x \"$b\" ] || exit 127; exec \"$b\" wl-probe"]
+    command: ["sh", "-c", "b=$(command -v nosd-helpers) || { for d in release debug; do p=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/\"$d\"/nosd-helpers\"; [ -x \"$p\" ] && b=\"$p\" && break; done; }; [ -n \"$b\" ] && [ -x \"$b\" ] || exit 127; exec \"$b\" wl-probe"]
     running: true
     stdout: StdioCollector {
       id: wlProbeOut

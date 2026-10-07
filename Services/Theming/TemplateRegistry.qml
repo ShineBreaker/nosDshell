@@ -70,7 +70,7 @@ Singleton {
 
   Process {
     id: helpersDetectProcess
-    command: ["sh", "-c", "command -v nosd-helpers || { p=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/release/nosd-helpers\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    command: ["sh", "-c", "command -v nosd-helpers || { for b in release debug; do p=\"" + Quickshell.shellDir + "/tools/nosd-helpers/target/\"$b\"/nosd-helpers\"; [ -x \"$p\" ] && printf '%s' \"$p\" && exit 0; done; }"]
     running: true
     stdout: StdioCollector {}
     onExited: {
@@ -86,7 +86,7 @@ Singleton {
 
   Process {
     id: themeDetectProcess
-    command: ["sh", "-c", "command -v nosd-theme || { p=\"" + Quickshell.shellDir + "/tools/nosd-theme/target/release/nosd-theme\"; [ -x \"$p\" ] && printf '%s' \"$p\"; }"]
+    command: ["sh", "-c", "command -v nosd-theme || { for b in release debug; do p=\"" + Quickshell.shellDir + "/tools/nosd-theme/target/\"$b\"/nosd-theme\"; [ -x \"$p\" ] && printf '%s' \"$p\" && exit 0; done; }"]
     running: true
     stdout: StdioCollector {}
     onExited: {
