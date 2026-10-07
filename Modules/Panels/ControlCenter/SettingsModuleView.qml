@@ -942,13 +942,21 @@ Item {
                   model: sectionModule.tabs ?? [sectionModule]
 
                   delegate: Item {
+                    id: tabSlot
                     required property var modelData
                     required property int index
                     width: sectionsColumn.width
-                    implicitHeight: tabLoader.item ? tabLoader.item.implicitHeight : Style.settingsTabEstimateHeight
+                    // The loaded item only reports its real height once the
+                    // tab's stacked NTabView has collected its pages (its
+                    // _initializeItems runs one turn after incubation); before
+                    // that the item reads a collapsed mid-layout height. Keep
+                    // the estimate and hide the content until then so the
+                    // column swaps estimate->real in a single step.
+                    property bool _contentReady: false
+                    implicitHeight: (_contentReady && tabLoader.item) ? tabLoader.item.implicitHeight : Style.settingsTabEstimateHeight
 
                     function tabReady() {
-                      return tabLoader.status === Loader.Ready && tabLoader.item !== null;
+                      return _contentReady;
                     }
                     // The tab's internal NTabView once loaded (null before /
                     // when the component has none). Used for inner sub-group
@@ -957,17 +965,44 @@ Item {
                       return tabLoader.item ? root._findByObjectName(tabLoader.item, "NTabView") : null;
                     }
 
+                    Connections {
+                      id: readyConn
+                      enabled: false
+                      function onInitializedChanged() {
+                        if (readyConn.target && readyConn.target.initialized) {
+                          tabSlot._contentReady = true;
+                          readyConn.enabled = false;
+                        }
+                      }
+                    }
+
                     Loader {
                       id: tabLoader
                       width: parent.width
                       asynchronous: true
                       active: root._tabActive(sectionIndex)
                       sourceComponent: root._tabComponent(modelData.tab)
+                      visible: tabSlot._contentReady
+
+                      onActiveChanged: {
+                        if (!active) {
+                          tabSlot._contentReady = false;
+                          readyConn.enabled = false;
+                          readyConn.target = null;
+                        }
+                      }
 
                       onLoaded: {
                         if (item === null)
                           return;
                         root._applyGroupMode(item);
+                        const view = root._findByObjectName(item, "NTabView");
+                        if (!view || view.initialized) {
+                          tabSlot._contentReady = true;
+                        } else {
+                          readyConn.target = view;
+                          readyConn.enabled = true;
+                        }
                         // NOTE: no currentSubTabIndex preselect — tab files have no
                         // such property (the old line only ever errored); subTab
                         // routing scrolls to the tab section instead.
