@@ -91,7 +91,7 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.marginS
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.bar.tray-blacklist-label")
       description: I18n.tr("panels.bar.tray-blacklist-description")
     }
@@ -133,7 +133,7 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.preferredHeight: 150
     Layout.topMargin: Style.marginL // Increased top margin
-    gradientColor: Color.mSurface
+    gradientColor: Color.maskShell
 
     model: blacklistModel
     delegate: Item {
@@ -145,9 +145,9 @@ ColumnLayout {
         anchors.fill: parent
         anchors.margins: Style.marginXS
         color: "transparent" // Make background transparent
-        border.color: Color.mOutline
+        border.color: Color.borderShell
         border.width: Style.borderS
-        radius: Style.radiusS
+        radius: Style.radiusItem
         visible: model.rule !== undefined && model.rule !== "" // Only visible if rule exists
       }
 
@@ -167,10 +167,10 @@ ColumnLayout {
           anchors.verticalCenter: parent.verticalCenter
           icon: "close"
           baseSize: 12 * Style.uiScaleRatio
-          colorBg: Color.mSurfaceVariant
-          colorFg: Color.mOnSurfaceVariant
-          colorBgHover: Color.mError
-          colorFgHover: Color.mOnError
+          colorBg: Color.overlay("field")
+          colorFg: Color.onShellTertiary
+          colorBgHover: Color.alert
+          colorFgHover: Color.onAccent
           onClicked: {
             blacklistModel.remove(index);
             saveSettings();

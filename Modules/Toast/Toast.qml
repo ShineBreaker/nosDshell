@@ -325,7 +325,7 @@ Item {
         text: root.title
         color: Color.mOnSurface
         pointSize: isCompact ? Style.fontSizeM : Style.fontSizeL
-        font.weight: Style.fontWeightBold
+        font.weight: Style.fontWeightSemiBold
         wrapMode: Text.WordWrap
         visible: text.length > 0
       }

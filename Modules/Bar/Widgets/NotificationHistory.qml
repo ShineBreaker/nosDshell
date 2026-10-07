@@ -147,8 +147,8 @@ NIconButton {
       height: 7
       width: height
       radius: Style.radiusXS
-      color: root.hovering ? Color.mOnHover : (root.badgeColor || Color.mError)
-      border.color: Color.mSurface
+      color: root.badgeColor || Color.alert
+      border.color: Color.maskShell
       border.width: Style.borderS
       visible: count > 0
     }

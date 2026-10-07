@@ -140,9 +140,9 @@ ColumnLayout {
       NBox {
         visible: Settings.data.wallpaper.enableMultiMonitorDirectories
         Layout.fillWidth: true
-        radius: Style.radiusM
-        color: Color.mSurface
-        border.color: Color.mOutline
+        radius: Style.radiusItem
+        color: Color.overlay("field")
+        border.color: Color.borderShell
         border.width: Style.borderS
         implicitHeight: contentCol.implicitHeight + Style.margin2L
         clip: true
@@ -160,8 +160,8 @@ ColumnLayout {
 
               NText {
                 text: (modelData.name || "Unknown")
-                color: Color.mPrimary
-                font.weight: Style.fontWeightBold
+                color: Color.onShell
+                font.weight: Style.fontWeightSemiBold
                 pointSize: Style.fontSizeM
               }
 

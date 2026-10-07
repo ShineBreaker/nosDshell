@@ -51,7 +51,7 @@ ColumnLayout {
     spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.wallpaper.look-feel-transition-type-label")
       description: I18n.tr("panels.wallpaper.look-feel-transition-type-description")
     }

@@ -42,9 +42,9 @@ Popup {
 
   background: Rectangle {
     id: bgRect
-    color: Color.mSurface
-    radius: Style.radiusL
-    border.color: Color.mPrimary
+    color: Color.maskShell
+    radius: Style.radiusWindow
+    border.color: Color.borderShell
     border.width: Style.borderM
   }
 
@@ -67,8 +67,8 @@ Popup {
                           "widget": DesktopWidgetRegistry.getWidgetDisplayName(root.widgetId)
                         })
           pointSize: Style.fontSizeL
-          font.weight: Style.fontWeightBold
-          color: Color.mPrimary
+          font.weight: Style.fontWeightSemiBold
+          color: Color.onShell
           Layout.fillWidth: true
         }
 
@@ -83,7 +83,7 @@ Popup {
         id: separator
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Color.overlay("hover")
       }
 
       // Scrollable settings area
@@ -92,7 +92,7 @@ Popup {
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumHeight: 100
-        gradientColor: Color.mSurface
+        gradientColor: Color.maskShell
 
         ColumnLayout {
           width: scrollView.availableWidth

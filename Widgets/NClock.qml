@@ -55,8 +55,8 @@ Item {
   // Font size properties for digital clock
   property real hoursFontSize: Style.fontSizeXS
   property real minutesFontSize: Style.fontSizeXXS
-  property int hoursFontWeight: Style.fontWeightBold
-  property int minutesFontWeight: Style.fontWeightBold
+  property int hoursFontWeight: Style.fontWeightSemiBold
+  property int minutesFontWeight: Style.fontWeightSemiBold
 
   // Scale ratio for canvas line widths (used by desktop widget scaling)
   property real scaleRatio: Style.uiScaleRatio
@@ -238,8 +238,8 @@ Item {
     property color progressColor: Color.mError
     property real hoursFontSize: Style.fontSizeXS
     property real minutesFontSize: Style.fontSizeXXS
-    property int hoursFontWeight: Style.fontWeightBold
-    property int minutesFontWeight: Style.fontWeightBold
+    property int hoursFontWeight: Style.fontWeightSemiBold
+    property int minutesFontWeight: Style.fontWeightSemiBold
     property real scaleRatio: Style.uiScaleRatio
     property bool showProgress: true
 

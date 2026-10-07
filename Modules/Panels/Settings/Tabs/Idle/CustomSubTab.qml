@@ -112,7 +112,7 @@ ColumnLayout {
       editPopup.open();
     }
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.idle.custom-label")
       description: I18n.tr("panels.idle.custom-description")
     }
@@ -145,7 +145,7 @@ ColumnLayout {
           Layout.fillWidth: true
           label: entryDelegate.name || I18n.tr("panels.idle.custom-entry-unnamed")
           description: I18n.trp("common.second", entryDelegate.timeout)
-          labelColor: (entryDelegate.command || entryDelegate.resumeCommand) ? Color.mPrimary : Color.mOnSurface
+          labelColor: (entryDelegate.command || entryDelegate.resumeCommand) ? Color.accent : Color.onShell
         }
 
         NIconButton {

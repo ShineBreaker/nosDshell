@@ -220,7 +220,7 @@ ColumnLayout {
   NLabel {
     label: I18n.tr("bar.media-mini.panel-section-label")
     description: I18n.tr("bar.media-mini.panel-section-description")
-    labelColor: Color.mPrimary
+    labelColor: Color.accent
   }
 
   NToggle {
@@ -233,5 +233,4 @@ ColumnLayout {
                }
     defaultValue: widgetMetadata.panelShowAlbumArt
   }
-
 }

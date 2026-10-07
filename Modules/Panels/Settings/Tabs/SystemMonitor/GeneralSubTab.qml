@@ -43,7 +43,7 @@ ColumnLayout {
                          Settings.data.systemMonitor.warningColor = Color.mTertiary.toString();
                        }
                        if (!Settings.data.systemMonitor.criticalColor || Settings.data.systemMonitor.criticalColor === "") {
-                         Settings.data.systemMonitor.criticalColor = Color.mError.toString();
+                         Settings.data.systemMonitor.criticalColor = Color.alert.toString();
                        }
                      }
                      Settings.data.systemMonitor.useCustomColors = checked;
@@ -89,7 +89,7 @@ ColumnLayout {
           Layout.preferredWidth: Style.sliderWidth
           Layout.preferredHeight: Style.baseWidgetSize
           enabled: Settings.data.systemMonitor.useCustomColors
-          selectedColor: Settings.data.systemMonitor.criticalColor || Color.mError
+          selectedColor: Settings.data.systemMonitor.criticalColor || Color.alert
           onColorSelected: color => Settings.data.systemMonitor.criticalColor = color
         }
       }

@@ -57,7 +57,7 @@ ColumnLayout {
   ColumnLayout {
     enabled: Settings.data.desktopWidgets.enabled
 
-    NLabel {
+    NHeader {
       description: I18n.tr("panels.desktop-widgets.cpu-intensive-note")
     }
 
@@ -202,13 +202,13 @@ ColumnLayout {
         if (isPlugin) {
           badges.push({
                         "icon": "plugin",
-                        "color": Color.mSecondary
+                        "color": Color.accentAlt
                       });
         }
         if (DesktopWidgetRegistry.isCpuIntensive(widgetId)) {
           badges.push({
                         "icon": "cpu-intensive",
-                        "color": Color.mSecondary
+                        "color": Color.accentAlt
                       });
         }
 

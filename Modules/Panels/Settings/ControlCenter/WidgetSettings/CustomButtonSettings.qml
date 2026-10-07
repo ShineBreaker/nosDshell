@@ -219,7 +219,7 @@ ColumnLayout {
     visible: root.rootSettings && root.rootSettings.enableOnStateLogic
     spacing: Style.marginM
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.control-center.shortcuts-custom-button-state-checks-label")
     }
 
@@ -266,11 +266,11 @@ ColumnLayout {
               icon: "close"
               tooltipText: I18n.tr("panels.control-center.shortcuts-custom-button-state-checks-remove")
               baseSize: Style.baseWidgetSize * 0.75
-              colorBorder: Qt.alpha(Color.mOutline, Style.opacityLight)
-              colorBg: Color.mError
-              colorFg: Color.mOnError
-              colorBgHover: Qt.alpha(Color.mError, Style.opacityMedium)
-              colorFgHover: Color.mOnError
+              colorBorder: Qt.alpha(Color.borderShell, Style.opacityLight)
+              colorBg: Color.alert
+              colorFg: Color.onAccent
+              colorBgHover: Qt.alpha(Color.alert, Style.opacityMedium)
+              colorFgHover: Color.onAccent
               onClicked: {
                 removeStateCheck(currentIndex);
               }

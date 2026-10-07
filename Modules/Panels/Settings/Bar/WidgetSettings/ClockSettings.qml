@@ -240,9 +240,9 @@ ColumnLayout {
         Layout.preferredWidth: 320
         Layout.preferredHeight: 160 // Fixed height instead of fillHeight
 
-        color: Color.mSurfaceVariant
-        radius: Style.radiusM
-        border.color: Color.mSecondary
+        color: Color.overlay("field")
+        radius: Style.radiusItem
+        border.color: Color.accent
         border.width: Style.borderS
 
         Behavior on border.color {
@@ -268,7 +268,7 @@ ColumnLayout {
                 text: modelData
                 family: valueUseCustomFont && valueCustomFont ? valueCustomFont : Settings.data.ui.fontDefault
                 pointSize: Style.fontSizeM
-                font.weight: Style.fontWeightBold
+                font.weight: Style.fontWeightSemiBold
                 color: textColor
                 wrapMode: Text.WordWrap
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
@@ -299,7 +299,7 @@ ColumnLayout {
                 text: modelData
                 family: valueUseCustomFont && valueCustomFont ? valueCustomFont : Settings.data.ui.fontDefault
                 pointSize: Style.fontSizeM
-                font.weight: Style.fontWeightBold
+                font.weight: Style.fontWeightSemiBold
                 color: textColor
                 wrapMode: Text.WordWrap
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter

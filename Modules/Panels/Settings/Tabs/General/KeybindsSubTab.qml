@@ -14,7 +14,7 @@ ColumnLayout {
     spacing: Style.settingsGroupGap
 
     // Keybinds section
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.general.keybinds-title")
       description: I18n.tr("panels.general.keybinds-description")
       Layout.fillWidth: true

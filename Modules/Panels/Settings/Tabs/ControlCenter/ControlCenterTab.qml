@@ -75,7 +75,7 @@ ColumnLayout {
                             if (isPlugin) {
                               badges.push({
                                             "icon": "plugin",
-                                            "color": Color.mSecondary
+                                            "color": Color.accentAlt
                                           });
                             }
                             availableWidgets.append({

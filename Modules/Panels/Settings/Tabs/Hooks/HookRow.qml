@@ -17,7 +17,7 @@ RowLayout {
   NLabel {
     label: root.label
     description: root.description
-    labelColor: root.value ? Color.mPrimary : Color.mOnSurface
+    labelColor: root.value ? Color.accent : Color.onShell
   }
 
   NIconButton {

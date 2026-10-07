@@ -16,7 +16,7 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    NLabel {
+    NHeader {
       Layout.fillWidth: true
       description: I18n.tr("panels.system-monitor.thresholds-section-description")
     }
@@ -48,7 +48,7 @@ ColumnLayout {
         horizontalAlignment: Text.AlignHCenter
         text: I18n.tr("panels.system-monitor.threshold-warning")
         pointSize: Style.fontSizeS
-        color: Color.mOnSurfaceVariant
+        color: Color.onShellTertiary
       }
 
       NText {
@@ -56,7 +56,7 @@ ColumnLayout {
         horizontalAlignment: Text.AlignHCenter
         text: I18n.tr("panels.system-monitor.threshold-critical")
         pointSize: Style.fontSizeS
-        color: Color.mOnSurfaceVariant
+        color: Color.onShellTertiary
       }
 
       // CPU Usage

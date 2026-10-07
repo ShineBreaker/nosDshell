@@ -96,7 +96,7 @@ ColumnLayout {
         spacing: Style.marginXXS
         Layout.fillWidth: true
 
-        NLabel {
+        NHeader {
           label: I18n.tr("panels.audio.volumes-feedback-sound-file-label")
           description: I18n.tr("panels.audio.volumes-feedback-sound-file-description")
         }

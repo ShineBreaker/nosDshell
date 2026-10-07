@@ -234,8 +234,8 @@ Popup {
         NText {
           text: root.title
           pointSize: Style.fontSizeXL
-          font.weight: Style.fontWeightBold
-          color: Color.mPrimary
+          font.weight: Style.fontWeightSemiBold
+          color: Color.onShell
           Layout.fillWidth: true
         }
 
@@ -279,9 +279,9 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 45
-        color: Color.mSurfaceVariant
-        radius: Style.iRadiusS
-        border.color: Color.mOutline
+        color: Color.overlay("field")
+        radius: Style.radiusWindow
+        border.color: Color.borderShell
         border.width: Style.borderS
 
         RowLayout {
@@ -406,9 +406,9 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        color: Color.mSurface
-        radius: Style.iRadiusM
-        border.color: Color.mOutline
+        color: Color.maskShell
+        radius: Style.radiusWindow
+        border.color: Color.borderShell
         border.width: Style.borderS
 
         FolderListModel {
@@ -460,7 +460,7 @@ Popup {
           model: filteredModel
           visible: filePickerPanel.viewMode
           reuseItems: true
-          gradientColor: Color.mSurface
+          gradientColor: Color.maskShell
 
           property int columns: Math.max(1, Math.floor(availableWidth / 120))
           property int itemSize: Math.floor((availableWidth - leftMargin - rightMargin - (columns * Style.marginS)) / columns)
@@ -550,13 +550,13 @@ Popup {
 
                   Rectangle {
                     anchors.fill: parent
-                    color: Color.mSurfaceVariant
+                    color: Color.overlay("field")
                     radius: Style.iRadiusS
                     visible: thumbnail.status === Image.Loading
                     NIcon {
                       icon: "filepicker-photo"
                       pointSize: Style.fontSizeL
-                      color: Color.mOnSurfaceVariant
+                      color: Color.onShellSecondary
                       anchors.centerIn: parent
                     }
                   }
@@ -571,7 +571,7 @@ Popup {
                     else if (mouseArea.containsMouse)
                       return Color.mOnHover;
                     else
-                      return model.fileIsDir ? Color.mPrimary : Color.mOnSurfaceVariant;
+                      return model.fileIsDir ? Color.mPrimary : Color.onShellSecondary;
                   }
                   anchors.centerIn: parent
                   visible: !iconContainer.isImage || thumbnail.status !== Image.Ready
@@ -585,7 +585,7 @@ Popup {
                   height: 24
                   radius: Math.min(Style.iRadiusL, width / 2)
                   color: Color.mSecondary
-                  border.color: Color.mOutline
+                  border.color: Color.borderShell
                   border.width: Style.borderS
                   visible: isSelected
                   NIcon {
@@ -605,10 +605,10 @@ Popup {
                   else if (mouseArea.containsMouse)
                     return Color.mOnHover;
                   else
-                    return Color.mOnSurfaceVariant;
+                    return Color.onShellSecondary;
                 }
                 pointSize: Style.fontSizeS
-                font.weight: isSelected ? Style.fontWeightBold : Style.fontWeightRegular
+                font.weight: isSelected ? Style.fontWeightSemiBold : Style.fontWeightRegular
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 wrapMode: Text.WrapAnywhere
@@ -666,7 +666,7 @@ Popup {
           anchors.margins: Style.marginS
           model: filteredModel
           visible: !filePickerPanel.viewMode
-          gradientColor: Color.mSurface
+          gradientColor: Color.maskShell
 
           delegate: Rectangle {
             id: listItem
@@ -695,21 +695,21 @@ Popup {
               NIcon {
                 icon: model.fileIsDir ? "filepicker-folder" : root.getFileIcon(model.fileName)
                 pointSize: Style.fontSizeL
-                color: model.fileIsDir ? (filePickerPanel.currentSelection.includes(model.filePath) ? Color.mOnSecondary : Color.mPrimary) : Color.mOnSurfaceVariant
+                color: model.fileIsDir ? (filePickerPanel.currentSelection.includes(model.filePath) ? Color.mOnSecondary : Color.mPrimary) : Color.onShellSecondary
               }
 
               NText {
                 text: model.fileName
-                color: filePickerPanel.currentSelection.includes(model.filePath) ? Color.mOnSecondary : Color.mOnSurface
+                color: filePickerPanel.currentSelection.includes(model.filePath) ? Color.mOnSecondary : Color.onShell
                 pointSize: Style.fontSizeM
-                font.weight: filePickerPanel.currentSelection.includes(model.filePath) ? Style.fontWeightBold : Style.fontWeightRegular
+                font.weight: filePickerPanel.currentSelection.includes(model.filePath) ? Style.fontWeightSemiBold : Style.fontWeightRegular
                 Layout.fillWidth: true
                 elide: Text.ElideRight
               }
 
               NText {
                 text: model.fileIsDir ? "" : root.formatFileSize(model.fileSize)
-                color: filePickerPanel.currentSelection.includes(model.filePath) ? Color.mOnSecondary : Color.mOnSurfaceVariant
+                color: filePickerPanel.currentSelection.includes(model.filePath) ? Color.mOnSecondary : Color.onShellSecondary
                 pointSize: Style.fontSizeS
                 visible: !model.fileIsDir
                 Layout.preferredWidth: implicitWidth
@@ -782,7 +782,7 @@ Popup {
               return filteredModel.count + " " + (filteredModel.count === 1 ? I18n.tr("widgets.file-picker.item") : I18n.tr("widgets.file-picker.items"));
             }
           }
-          color: filePickerPanel.searchText.length > 0 ? Color.mPrimary : Color.mOnSurfaceVariant
+          color: filePickerPanel.searchText.length > 0 ? Color.mPrimary : Color.onShellSecondary
           pointSize: Style.fontSizeS
           Layout.fillWidth: true
         }

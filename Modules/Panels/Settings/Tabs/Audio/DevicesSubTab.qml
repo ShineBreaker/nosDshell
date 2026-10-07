@@ -20,7 +20,7 @@ ColumnLayout {
     spacing: Style.marginXS
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.audio.devices-output-device-label")
       description: I18n.tr("panels.audio.devices-output-device-description")
     }
@@ -53,7 +53,7 @@ ColumnLayout {
     spacing: Style.marginXS
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.audio.devices-input-device-label")
       description: I18n.tr("panels.audio.devices-input-device-description")
     }

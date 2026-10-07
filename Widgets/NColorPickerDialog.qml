@@ -82,8 +82,8 @@ Popup {
         NText {
           text: I18n.tr("widgets.color-picker.title")
           pointSize: Style.fontSizeXL
-          font.weight: Style.fontWeightBold
-          color: Color.mPrimary
+          font.weight: Style.fontWeightSemiBold
+          color: Color.onShell
         }
       }
 
@@ -101,9 +101,9 @@ Popup {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 80
-      radius: Style.iRadiusS
+      radius: Style.radiusWindow
       color: root.selectedColor
-      border.color: Color.mOutline
+      border.color: Color.borderShell
       border.width: Style.borderS
 
       ColumnLayout {
@@ -477,7 +477,7 @@ Popup {
               Layout.alignment: Qt.AlignTop
 
               radius: 0
-              border.color: Color.mOutline
+              border.color: Color.borderShell
               border.width: Style.borderS
               clip: true
 
@@ -600,7 +600,7 @@ Popup {
               Rectangle {
                 anchors.fill: parent
                 color: "transparent"
-                border.color: Color.mOutline
+                border.color: Color.borderShell
                 border.width: Style.borderS
                 antialiasing: false
               }
@@ -670,7 +670,7 @@ Popup {
                 height: 24
                 radius: Style.iRadiusXXS
                 color: modelData.color
-                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.mPrimary : Color.mOutline
+                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.mPrimary : Color.borderShell
                 border.width: Math.max(1, root.selectedColor.toString() === modelData.color.toString() ? Style.borderM : Style.borderS)
 
                 MouseArea {
@@ -713,7 +713,7 @@ Popup {
                 height: 24
                 radius: Math.min(Style.iRadiusXS, width / 2)
                 color: modelData.color
-                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.mPrimary : Color.mOutline
+                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.mPrimary : Color.borderShell
                 border.width: root.selectedColor.toString() === modelData.color.toString() ? 2 : 1
 
                 MouseArea {

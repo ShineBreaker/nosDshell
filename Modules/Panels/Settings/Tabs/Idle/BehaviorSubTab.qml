@@ -46,7 +46,7 @@ ColumnLayout {
         text: IdleService.idleSeconds > 0 ? I18n.trp("common.second", IdleService.idleSeconds) : I18n.tr("common.active")
         family: Settings.data.ui.fontFixed
         pointSize: Style.fontSizeM
-        color: IdleService.idleSeconds > 0 ? Color.mPrimary : Color.mOnSurfaceVariant
+        color: IdleService.idleSeconds > 0 ? Color.accent : Color.onShellTertiary
       }
     }
 
@@ -98,7 +98,7 @@ ColumnLayout {
       spacing: Style.marginL
       enabled: Settings.data.idle.enabled
 
-      NLabel {
+      NHeader {
         label: I18n.tr("panels.idle.timeouts-label")
         description: I18n.tr("panels.idle.timeouts-description")
       }

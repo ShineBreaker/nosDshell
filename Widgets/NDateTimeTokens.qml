@@ -298,7 +298,7 @@ Rectangle {
                   text: modelData.token
                   color: tokenMouseArea.containsMouse ? Color.mOnPrimary : Color.mSurface
                   pointSize: Style.fontSizeS
-                  font.weight: Style.fontWeightBold
+                  font.weight: Style.fontWeightSemiBold
 
                   Behavior on color {
                     ColorAnimation {

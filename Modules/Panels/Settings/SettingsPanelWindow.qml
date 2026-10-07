@@ -81,8 +81,11 @@ FloatingWindow {
   // Main content
   Rectangle {
     anchors.fill: parent
-    color: Qt.alpha(Color.mSurface, Settings.data.ui.panelBackgroundOpacity)
-    radius: Style.radiusL
+    // DDialog-style window (DESIGN §3.5.3): maskShell carries the final alpha
+    // itself (blur ? panelBackgroundOpacity : 0.8), so re-applying the setting
+    // here would multiply it — same rule as ControlCenterPanel's ownBackgroundAlpha.
+    color: Color.maskShell
+    radius: Style.radiusWindow
 
     SettingsModuleView {
       id: settingsModuleView

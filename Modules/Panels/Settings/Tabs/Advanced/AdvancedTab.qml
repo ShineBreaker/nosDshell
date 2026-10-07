@@ -87,9 +87,9 @@ ColumnLayout {
         visible: Settings.data.dock.launcherUseDistroLogo
         width: Style.toOdd(Style.baseWidgetSize * Style.uiScaleRatio)
         height: width
-        radius: Math.min(Style.iRadiusL, width / 2)
-        color: Color.smartAlpha(Color.mSurfaceVariant)
-        border.color: Color.mOutline
+        radius: Math.min(Style.radiusItem, width / 2)
+        color: Color.overlay("field")
+        border.color: Color.borderShell
         border.width: Style.borderS
 
         Image {
@@ -337,8 +337,8 @@ ColumnLayout {
       visible: Settings.data.bar.showCapsule
       label: I18n.tr("panels.bar.appearance-capsule-color-label")
       description: I18n.tr("panels.bar.appearance-capsule-color-description")
-      noneColor: Color.mSurfaceVariant
-      noneOnColor: Color.mOnSurfaceVariant
+      noneColor: Color.overlay("field")
+      noneOnColor: Color.onShellTertiary
       currentKey: Settings.data.bar.capsuleColorKey
       onSelected: key => Settings.data.bar.capsuleColorKey = key
     }
