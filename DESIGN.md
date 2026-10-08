@@ -232,6 +232,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
   - `keep-showing` → 预留屏幕空间（exclusive）
   - `keep-hidden` → 自动隐藏
   - `smart-hide` → 有窗口挡住时隐藏；合成器不支持时按 keep-hidden 处理
+- **全屏**：窗口在某输出上全屏时，该输出的任务栏/dock 无条件隐藏（不含 2 px 感应条，悬停不唤出），退出全屏即恢复。〔派生：DDE 的真实全屏应用覆盖 dock〕
 - 隐藏和显示：沿屏幕边缘滑动，`motionPanel`。显示延迟 100 ms（`show-timeout`），隐藏延迟 100 ms。隐藏后只在边缘留 2 px 的感应条。
 - 悬停提示：延迟 500 ms，用暗色带箭头提示框，箭头尖端距项边缘 2 px。
 - 右键：

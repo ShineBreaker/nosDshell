@@ -1,6 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import Quickshell.Wayland
 import qs.Commons
 import qs.Services.Keyboard
 
@@ -28,6 +29,50 @@ Item {
 
   property var outputCache: ({})
   property var workspaceCache: ({})
+
+  // Outputs where a window currently covers the whole output on the active
+  // workspace. niri's `msg windows` payload carries no fullscreen flag, so the
+  // state comes from foreign-toplevel (niri implements ext-foreign-toplevel)
+  // joined to a niri window — and thereby its workspace/output — by
+  // app_id+title. Reading each toplevel's `fullscreen` inside the binding
+  // registers it as a dependency, so state toggles re-evaluate on their own;
+  // _fsRev covers the side data (windows/workspaces) the join needs.
+  property int _fsRev: 0
+  readonly property var fullscreenOutputs: {
+    _fsRev;
+    var outs = {};
+    const values = (typeof ToplevelManager !== "undefined" && ToplevelManager.toplevels) ? ToplevelManager.toplevels.values : [];
+    for (var i = 0; i < values.length; i++) {
+      const t = values[i];
+      if (!t.fullscreen)
+        continue;
+      const out = _fullscreenToplevelOutput(t);
+      if (out)
+        outs[out] = true;
+    }
+    return Object.keys(outs);
+  }
+
+  function _fullscreenToplevelOutput(toplevel) {
+    for (var i = 0; i < _rawWindows.length; i++) {
+      const win = _rawWindows[i];
+      if (win.app_id !== toplevel.appId || (win.title || "") !== (toplevel.title || ""))
+        continue;
+      const ws = workspaceCache[win.workspace_id];
+      if (ws && ws.isActive && ws.output)
+        return ws.output;
+    }
+    // Not matched: only trust the activated toplevel — it lives on the
+    // focused workspace's output.
+    if (toplevel.activated) {
+      for (var w = 0; w < workspaces.count; w++) {
+        const ws = workspaces.get(w);
+        if (ws.isFocused && ws.output)
+          return ws.output;
+      }
+    }
+    return null;
+  }
 
   property var _keyboardLayoutNames: []
   property var _rawWindows: []
@@ -236,6 +281,7 @@ Item {
         "transform": logical.transform || "Normal"
       };
     }
+    _fsRev += 1;
   }
 
   function _workspaceSortKey(ws) {
@@ -272,6 +318,7 @@ Item {
     for (var j = 0; j < workspacesList.length; j++) {
       workspaces.append(workspacesList[j]);
     }
+    _fsRev += 1;
     workspaceChanged();
   }
 
@@ -354,6 +401,7 @@ Item {
 
     windows = toSortedWindowList(windowsList);
     safeUpdateFocusedWindow();
+    _fsRev += 1;
     windowListChanged();
     activeWindowChanged();
   }

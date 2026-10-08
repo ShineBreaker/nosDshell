@@ -35,6 +35,30 @@ Singleton {
   // True for LabWC (stacking compositor), false for tiling WMs with per-output workspaces
   property bool globalWorkspaces: false
 
+  // Names of outputs currently covered by a fullscreen window. Two sources
+  // merged: window objects carrying a real `fullscreen` flag plus `output`
+  // (mango), and the backend's own rollup (niri infers it from geometry —
+  // its IPC windows expose no fullscreen state).
+  readonly property var fullscreenOutputs: _fullscreenOutputs
+  property var _fullscreenOutputs: []
+
+  function _recomputeFullscreenOutputs() {
+    var outs = {};
+    for (var i = 0; i < windows.count; i++) {
+      const w = windows.get(i);
+      if (w.fullscreen && w.output)
+        outs[w.output] = true;
+    }
+    const extra = (backend && backend.fullscreenOutputs) || [];
+    for (var j = 0; j < extra.length; j++)
+      outs[extra[j]] = true;
+    _fullscreenOutputs = Object.keys(outs);
+  }
+
+  function outputHasFullscreen(outputName) {
+    return outputName ? _fullscreenOutputs.indexOf(outputName) !== -1 : false;
+  }
+
   // Compositor blur capability (DESIGN §1.2 / §4.1): probed once at startup
   // via `nosd-helpers wl-probe` because QML cannot see the Wayland registry.
   // A missing or failed probe keeps the legacy behaviour (assumed supported).
@@ -273,6 +297,11 @@ Singleton {
                                               overviewActive = backend.overviewActive;
                                             });
     }
+    if (backend.fullscreenOutputsChanged) {
+      backend.fullscreenOutputsChanged.connect(() => {
+                                                 _recomputeFullscreenOutputs();
+                                               });
+    }
 
     // Initial sync
     syncWorkspaces();
@@ -284,6 +313,7 @@ Singleton {
     if (backend.globalWorkspaces !== undefined) {
       globalWorkspaces = backend.globalWorkspaces;
     }
+    _recomputeFullscreenOutputs();
   }
 
   function syncWorkspaces() {
@@ -302,6 +332,7 @@ Singleton {
     for (var i = 0; i < ws.length; i++) {
       windows.append(ws[i]);
     }
+    _recomputeFullscreenOutputs();
     // Emit signal to notify listeners that window list has been updated
     windowListChanged();
   }

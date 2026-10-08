@@ -219,10 +219,10 @@ PanelWindow {
     id: blurRegion
     // ── Non-framed bar (simple/floating): single rectangle with bar corner states ──
     Region {
-      x: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.isHidden) ? barPlaceholder.x : 0
-      y: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.isHidden) ? barPlaceholder.y : 0
-      width: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.isHidden) ? barPlaceholder.width : 0
-      height: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.isHidden) ? barPlaceholder.height : 0
+      x: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.x : 0
+      y: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.y : 0
+      width: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.width : 0
+      height: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.height : 0
       radius: Style.radiusL
       topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.topLeftCornerState, Style.radiusL)
       topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.topRightCornerState, Style.radiusL)
@@ -234,8 +234,8 @@ PanelWindow {
     Region {
       x: 0
       y: 0
-      width: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.isHidden) ? root.width : 0
-      height: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.isHidden) ? root.height : 0
+      width: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.width : 0
+      height: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.height : 0
 
       Region {
         intersection: Intersection.Subtract
@@ -447,6 +447,11 @@ PanelWindow {
       readonly property bool autoHide: Settings.getBarDisplayModeForScreen(screen?.name) === "auto_hide"
       property bool isHidden: autoHide
 
+      // A fullscreen window on this output covers the bar regardless of the
+      // auto-hide mode — mirrors BarContentWindow.effectivelyHidden.
+      readonly property bool fullscreenCovered: screen ? CompositorService.outputHasFullscreen(screen.name) : false
+      readonly property bool effectivelyHidden: isHidden || fullscreenCovered
+
       Connections {
         target: BarService
         function onBarAutoHideStateChanged(screenName, hidden) {
@@ -460,8 +465,8 @@ PanelWindow {
       // Use screen dimensions directly.
       // Efficient mode: the background slides off the screen edge when hidden
       // (mirrors BarContentWindow's content slide)
-      property real hiddenSlideX: (isHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "left" ? -barHeight : (barPosition === "right" ? barHeight : 0)) : 0
-      property real hiddenSlideY: (isHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "top" ? -barHeight : (barPosition === "bottom" ? barHeight : 0)) : 0
+      property real hiddenSlideX: (effectivelyHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "left" ? -barHeight : (barPosition === "right" ? barHeight : 0)) : 0
+      property real hiddenSlideY: (effectivelyHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "top" ? -barHeight : (barPosition === "bottom" ? barHeight : 0)) : 0
 
       Behavior on hiddenSlideX {
         NumberAnimation {

@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Modules.Bar
+import qs.Services.Compositor
 import qs.Services.UI
 
 /**
@@ -22,12 +23,12 @@ PanelWindow {
 
   // Window invisible when auto-hidden (blocks input) or toggled off via IPC.
   // windowVisible stays true briefly after isHidden to allow fade-out animation.
-  property bool windowVisible: !isHidden
+  property bool windowVisible: !effectivelyHidden
   visible: contentLoaded && windowVisible && BarService.effectivelyVisible
 
   Component.onCompleted: {
     Logger.d("BarContentWindow", "Bar content window created for screen:", barWindow.screen?.name);
-    if (!isHidden)
+    if (!effectivelyHidden)
       contentLoaded = true;
   }
 
@@ -56,6 +57,11 @@ PanelWindow {
   readonly property int hideDelay: efficientMode ? 100 : (Settings.data.bar.autoHideDelay || 500)
   readonly property int showDelay: efficientMode ? 100 : (Settings.data.bar.autoShowDelay || 100)
   property bool isHidden: autoHide
+
+  // A fullscreen window on this output covers the bar regardless of the
+  // auto-hide mode (DDE keeps the taskbar hidden under fullscreen apps).
+  readonly property bool fullscreenCovered: CompositorService.outputHasFullscreen(screen?.name)
+  readonly property bool effectivelyHidden: isHidden || fullscreenCovered
 
   // Hover tracking
   property bool barHovered: false
@@ -166,13 +172,13 @@ PanelWindow {
     id: windowHideTimer
     interval: barWindow.efficientMode ? Style.motionPanel : Style.animationFast
     onTriggered: {
-      if (barWindow.isHidden)
+      if (barWindow.effectivelyHidden)
         barWindow.windowVisible = false;
     }
   }
 
-  onIsHiddenChanged: {
-    if (isHidden) {
+  onEffectivelyHiddenChanged: {
+    if (effectivelyHidden) {
       // Delay window hide so fade-out is visible
       windowHideTimer.restart();
     } else {
@@ -186,7 +192,7 @@ PanelWindow {
   Connections {
     target: BarService
     function onEffectivelyVisibleChanged() {
-      if (BarService.effectivelyVisible && !barWindow.isHidden && !barWindow.contentLoaded) {
+      if (BarService.effectivelyVisible && !barWindow.effectivelyHidden && !barWindow.contentLoaded) {
         barWindow.contentLoaded = true;
       }
     }
@@ -230,10 +236,10 @@ PanelWindow {
 
       // Efficient mode slides along the screen edge (DDE spec: motionPanel,
       // InOutCubic); the legacy path fades out instead
-      opacity: (!barWindow.efficientMode && barWindow.isHidden) ? 0 : 1
+      opacity: (!barWindow.efficientMode && barWindow.effectivelyHidden) ? 0 : 1
 
       Behavior on opacity {
-        enabled: barWindow.autoHide && !barWindow.efficientMode
+        enabled: !barWindow.efficientMode
         NumberAnimation {
           duration: Style.animationFast
           easing.type: Easing.OutCubic
@@ -242,7 +248,7 @@ PanelWindow {
 
       transform: Translate {
         // Slide distance: the bar thickness beyond the screen edge
-        readonly property real slideOff: barWindow.isHidden ? barWindow.barHeight : 0
+        readonly property real slideOff: barWindow.effectivelyHidden ? barWindow.barHeight : 0
         x: (barWindow.barPosition === "left") ? -slideOff : (barWindow.barPosition === "right") ? slideOff : 0
         y: (barWindow.barPosition === "top") ? -slideOff : (barWindow.barPosition === "bottom") ? slideOff : 0
 

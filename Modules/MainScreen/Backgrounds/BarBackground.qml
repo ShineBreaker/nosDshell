@@ -117,10 +117,10 @@ ShapePath {
 
   // Auto-hide opacity factor for background fade.
   // Efficient mode slides the placeholder off-screen instead of fading.
-  property real opacityFactor: (bar && bar.isHidden && Settings.data.dock.mode !== "efficient") ? 0 : 1
+  property real opacityFactor: (bar && bar.effectivelyHidden && Settings.data.dock.mode !== "efficient") ? 0 : 1
 
   Behavior on opacityFactor {
-    enabled: bar && bar.autoHide && Settings.data.dock.mode !== "efficient"
+    enabled: bar && Settings.data.dock.mode !== "efficient"
     NumberAnimation {
       duration: Style.animationFast
       easing.type: Easing.OutCubic

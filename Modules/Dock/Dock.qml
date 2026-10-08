@@ -60,6 +60,11 @@ Loader {
       readonly property int hideDelay: 100
       property bool hidden: autoHide
 
+      // A fullscreen window on this output covers the dock regardless of
+      // hideMode (DDE keeps the dock hidden under fullscreen apps): slides
+      // fully off the edge with no hover sliver.
+      readonly property bool fullscreenCovered: liveScreen ? CompositorService.outputHasFullscreen(liveScreen.name) : false
+
       property bool _smartHideWarned: false
       Component.onCompleted: {
         if (ToplevelManager)
@@ -629,13 +634,11 @@ Loader {
           // Layer-shell surfaces can't report their own position, so it's
           // computed from the anchor geometry; PanelService.screenRectOf
           // uses it to place arrow popups and previews over dock items.
-          readonly property point screenOrigin: Qt.point(
-                                                    dockPosition === "right" ? (root.liveScreen?.width ?? 0) - itemThickness : 0,
-                                                    dockPosition === "bottom" ? (root.liveScreen?.height ?? 0) - itemThickness : 0)
+          readonly property point screenOrigin: Qt.point(dockPosition === "right" ? (root.liveScreen?.width ?? 0) - itemThickness : 0, dockPosition === "bottom" ? (root.liveScreen?.height ?? 0) - itemThickness : 0)
 
           // Slide the visual rect off the edge when hidden, leaving a
           // hiddenSliver-thick strip visible on the docked edge.
-          readonly property real slideOffset: root.hidden ? (itemThickness - root.hiddenSliver) : 0
+          readonly property real slideOffset: root.fullscreenCovered ? itemThickness : (root.hidden ? (itemThickness - root.hiddenSliver) : 0)
           readonly property real slideX: dockPosition === "left" ? -slideOffset : dockPosition === "right" ? slideOffset : 0
           readonly property real slideY: dockPosition === "top" ? -slideOffset : dockPosition === "bottom" ? slideOffset : 0
 
