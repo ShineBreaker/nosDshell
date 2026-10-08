@@ -103,17 +103,21 @@ NDccRow {
       descriptionColor: root.descriptionColor
       labelWeight: Style.fontWeightRegular
       visible: label !== "" || description !== ""
-      Layout.fillWidth: true
       Layout.alignment: Qt.AlignVCenter
       // §3.5.4: the title sits in a fixed column, the slots take the rest.
-      Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
+      // preferredWidth (not fillWidth) so the slots row is the only filler:
+      // two fillWidth siblings split the row proportionally by preferred
+      // width and the pills' preferredWidth of 1 starves them to ~5 px.
+      Layout.preferredWidth: root.dccRow ? Style.settingsFieldTitleWidth : -1
     }
 
     RowLayout {
       id: slotsRow
       spacing: Style.marginS
       Layout.fillWidth: true
-      Layout.alignment: Qt.AlignVCenter | (labelContainer.visible ? Qt.AlignRight : Qt.AlignLeft)
+      // No Layout.alignment here: setting it makes the layout item size
+      // to preferred width (fillWidth is then ignored) and the pills
+      // collapse to a few px.
 
       Repeater {
         model: root.maxKeybinds
@@ -121,6 +125,7 @@ NDccRow {
           id: slotArea
           Layout.fillWidth: true
           Layout.preferredWidth: 1
+          Layout.minimumWidth: Math.round(root._pillHeight * 2)
           height: root._pillHeight
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
@@ -142,6 +147,7 @@ NDccRow {
             id: slotBg
             anchors.fill: parent
             radius: Style.radiusItem
+            clip: true
             color: root.hasConflict && slotArea.isRecordingThis ? Qt.alpha(Color.alert, 0.15) : (slotArea.isRecordingThis ? Color.overlay("checked") : (slotArea.containsMouse ? Color.overlay("hover") : Color.overlay("field")))
             border.color: root.hasConflict && slotArea.isRecordingThis ? Color.alert : (slotArea.isRecordingThis ? Color.accent : "transparent")
             border.width: Style.borderS
@@ -157,51 +163,54 @@ NDccRow {
               }
             }
 
+            // Empty slots are too narrow for the "add keybind"
+            // caption — show just a centred glyph instead of a
+            // truncated string.
+            NIcon {
+              anchors.centerIn: parent
+              icon: "keyboard"
+              color: Color.onShellTertiary
+              opacity: 0.8
+              visible: !slotArea.isOccupied && !slotArea.isRecordingThis
+            }
+
             RowLayout {
               anchors.fill: parent
               anchors.leftMargin: Style.marginM
               anchors.rightMargin: Style.marginS
               spacing: Style.marginXS
+              visible: slotArea.isOccupied || slotArea.isRecordingThis
 
-              // Empty slots are too narrow for the "add keybind" caption —
-              // show just a centred glyph instead of a truncated string.
-              Item {
-                Layout.fillWidth: true
-                visible: !slotArea.isOccupied && !slotArea.isRecordingThis
-              }
-
+              // The icon only marks the recording state; an
+              // occupied slot spends its width on the key name.
               NIcon {
-                icon: root.hasConflict && slotArea.isRecordingThis ? "alert-circle" : (slotArea.isRecordingThis ? "circle-dot" : "keyboard")
-                color: root.hasConflict && slotArea.isRecordingThis ? Color.alert : (slotArea.isRecordingThis ? Color.accent : (slotArea.isOccupied ? Color.onShellSecondary : Color.onShellTertiary))
+                icon: root.hasConflict ? "alert-circle" : "circle-dot"
+                color: root.hasConflict ? Color.alert : Color.accent
                 opacity: 0.8
-                visible: !slotArea.isRecordingThis || root.hasConflict
-              }
-
-              Item {
-                Layout.fillWidth: true
-                visible: !slotArea.isOccupied && !slotArea.isRecordingThis
+                visible: slotArea.isRecordingThis
               }
 
               NText {
                 Layout.fillWidth: true
-                visible: slotArea.isOccupied || slotArea.isRecordingThis
                 text: slotArea.keybindText
-                color: slotArea.isRecordingThis ? Color.onShell : (slotArea.isOccupied ? Color.onShell : Color.onShellTertiary)
-                font.family: slotArea.isOccupied && !slotArea.isRecordingThis ? Settings.data.ui.fontFixed : Settings.data.ui.fontDefault
-                font.pointSize: slotArea.isOccupied ? Style.fontSizeM : Style.fontSizeS
-                font.weight: slotArea.isOccupied ? Style.fontWeightMedium : Style.fontWeightRegular
+                color: Color.onShell
+                family: Settings.data.ui.fontFixed
+                pointSize: Style.fontSizeM
+                font.weight: Style.fontWeightMedium
                 elide: Text.ElideRight
-                opacity: slotArea.isOccupied || slotArea.isRecordingThis ? 1.0 : 0.6
               }
 
               Item {
                 Layout.preferredWidth: Math.round(root._pillHeight * 0.7)
                 Layout.fillHeight: true
-                visible: slotArea.isOccupied && root.recordingIndex === -1
+                // Reveal on hover: a permanently reserved ×
+                // slot starves two-bind pills to ~25 px of
+                // text ("Return" elides to "R…").
+                visible: (root.currentKeybinds.length > 1 || root.allowEmpty) && slotArea.containsMouse
 
                 NIconButton {
                   anchors.centerIn: parent
-                  visible: root.recordingIndex === -1 && (root.currentKeybinds.length > 1 || root.allowEmpty)
+                  visible: root.recordingIndex === -1
                   icon: "x"
                   colorBg: "transparent"
                   colorBgHover: Qt.alpha(Color.alert, 0.1)

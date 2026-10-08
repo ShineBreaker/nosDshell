@@ -86,10 +86,9 @@ ColumnLayout {
     saveCards();
   }
 
-  // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
-  NHeader {
-    label: I18n.tr("panels.location.calendar-header")
-  }
+  // No inner NHeader: the stacked NTabView already draws this group's
+  // SettingsHead from the sub-tab title — a second head here glued itself
+  // to it.
 
   // Clock style section
   ColumnLayout {
