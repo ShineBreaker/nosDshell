@@ -198,21 +198,21 @@ Variants {
         Behavior on opacity {
           NumberAnimation {
             duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
           }
         }
 
         Behavior on x {
           NumberAnimation {
             duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
           }
         }
 
         Behavior on y {
           NumberAnimation {
             duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InQuad
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
           }
         }
 
