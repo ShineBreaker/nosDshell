@@ -517,8 +517,9 @@ Variants {
           }
         }
 
-        // DDE slides the tile up 12 px on show / 8 px on hide while fading
-        // (dde-osd/container.cpp startWaylandAnimation).
+        // DDE slides the tile up from 12 px below on show / 8 px below on
+        // hide while fading (dde-osd/container.cpp startWaylandAnimation:
+        // waylandAnimationOffset on the bottom margin, -12→0 / →-8).
         property real slideOffset: 0
         transform: Translate {
           y: osdItem.slideOffset
@@ -658,7 +659,7 @@ Variants {
           onTriggered: {
             osdItem._hiding = false;
             osdItem.visible = true;
-            osdItem.slideOffset = -12;
+            osdItem.slideOffset = 12;
             osdItem.opacity = 0;
             osdItem.slideOffset = 0;
             osdItem.opacity = 1;
@@ -677,7 +678,7 @@ Variants {
           visibilityTimer.stop();
           osdItem._hiding = true;
           osdItem.opacity = 0;
-          osdItem.slideOffset = -8;
+          osdItem.slideOffset = 8;
           visibilityTimer.start();
         }
 

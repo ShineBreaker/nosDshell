@@ -131,9 +131,9 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 |---|---|---|---|---|
 | `motionPanel` | 300 ms | InOutCubic | 任务栏显示/隐藏/尺寸变化、控制中心内的页面切换 | `gxde-dock/frame/window/mainwindow.cpp:360-386`；`gxde-control-center/src/frame/framewidget.cpp:44-51` |
 | `motionEnter` | 300 ms | OutCubic | 控制中心整窗滑入、各类面板出现 | `gxde-control-center/src/frame/frame.cpp:71,90-95` |
-| `motionBubbleIn` | 180 ms | OutCubic，上移 12 px 并淡入（透明度与位移并行） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:496-508` |
+| `motionBubbleIn` | 180 ms | OutCubic，从锚定缘水平滑入 12 px 并淡入（DDE 右下气泡：waylandEnterOffset −12→0 加在 rightMargin） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:218-225,496-508` |
 | `motionBubbleOut` | 300 ms | OutCubic，向右滑出（DDE 为向右缘塌缩的 geometry 动画） | 通知消失 | `gxde-session-ui/dde-osd/notification/bubble.cpp:486-488` |
-| `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic，位移 −12→0 / →−8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
+| `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic，下缘 margin 偏移 −12→0（自下向上入）/ →−8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
 | 壁纸过渡 | 1000 ms | InOutCubic | `wallpaper.transitionDuration`（默认 1000，设置滑杆 0.5–10 s） | `gxde-session-ui/widgets/fullscreenbackground.cpp:51-74` |
 | `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停放大 1.0→1.2 | `gxde-launcher/src/widgets/navigationwidget.cpp:213-230` |
 | `motionSettingsScroll` | 1400 ms | OutQuint | 设置页内定位与页内长滚动 | `gxde-control-center/src/frame/widgets/contentwidget.cpp:51,106-112` |

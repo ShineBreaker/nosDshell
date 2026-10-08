@@ -246,6 +246,9 @@ Variants {
             // Animation properties
             property real opacityValue: 0.0
             property real slideOffset: 0
+            // DDE entry slides the bubble in horizontally from the edge it is
+            // anchored to (bubble.cpp: waylandEnterOffset -12→0 on rightMargin).
+            property real enterOffset: 0
             property real swipeOffset: 0
             property real swipeOffsetY: 0
             property real pressGlobalX: 0
@@ -259,7 +262,7 @@ Variants {
 
             opacity: opacityValue
             transform: Translate {
-              x: card.swipeOffset
+              x: card.swipeOffset + card.enterOffset
               y: card.slideOffset + card.swipeOffsetY
             }
 
@@ -293,11 +296,18 @@ Variants {
               swipeOffsetY = 0;
               if (Settings.data.general.animationDisabled) {
                 slideOffset = 0;
+                enterOffset = 0;
                 opacityValue = 1.0;
                 return;
               }
 
-              slideOffset = slideInOffset;
+              if (useVerticalSwipe) {
+                enterOffset = 0;
+                slideOffset = slideInOffset;
+              } else {
+                slideOffset = 0;
+                enterOffset = notifWindow.isLeft ? -slideDistance : slideDistance;
+              }
               opacityValue = 0.0;
               animInDelayTimer.interval = animationDelay;
               animInDelayTimer.start();
@@ -315,6 +325,7 @@ Variants {
                 if (card.isRemoving)
                   return;
                 slideOffset = 0;
+                enterOffset = 0;
                 opacityValue = 1.0;
               }
             }
@@ -398,6 +409,14 @@ Variants {
               enabled: !Settings.data.general.animationDisabled
               NumberAnimation {
                 duration: card.isRemoving ? Style.motionBubbleOut : Style.motionBubbleIn
+                easing.type: Easing.OutCubic
+              }
+            }
+
+            Behavior on enterOffset {
+              enabled: !Settings.data.general.animationDisabled
+              NumberAnimation {
+                duration: Style.motionBubbleIn
                 easing.type: Easing.OutCubic
               }
             }
