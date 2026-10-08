@@ -231,50 +231,76 @@ ColumnLayout {
       }
     }
 
-    // SettingsGroup: one DDE SettingsGroup -- rows stack with the
-    // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4). Each template is a
-    // click-row; an accent check marks the active ones.
-    ColumnLayout {
+    // Template picker: the entries are name + check only, so a single column
+    // of full-width rows wastes most of the card. Lay them out as compact
+    // tiles, ≥2 columns at 170 px each — the ~352 px frame fits two, the
+    // windowed settings page grows to three (DESIGN §3.5.3).
+    GridLayout {
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
+      columns: Math.max(2, Math.floor(width / (170 * Style.uiScaleRatio)))
+      rowSpacing: Style.marginXS
+      columnSpacing: Style.marginXS
 
       Repeater {
         model: filteredTemplates
 
-        delegate: NDccRow {
-          id: templateRow
+        delegate: Rectangle {
+          id: templateCell
           Layout.fillWidth: true
-          clickable: true
+          implicitHeight: Style.settingsRowHeight
 
           required property int index
           required property var modelData
           readonly property bool isActive: root.isTemplateActive(modelData.id)
 
-          onClicked: root.toggleTemplate(modelData.id)
+          radius: Style.radiusItem
+          color: cellHover.hovered ? Color.overlay("checked") : Color.overlay("strong")
 
-          NText {
-            text: templateRow.modelData.name
-            pointSize: Style.fontSizeS
-            color: Color.onShell
-            elide: Text.ElideRight
-            Layout.fillWidth: true
+          Behavior on color {
+            enabled: !Color.isTransitioning
+            ColorAnimation {
+              duration: Style.animationFast
+              easing.type: Easing.OutCubic
+            }
           }
 
-          NIcon {
-            icon: "check"
-            pointSize: Style.fontSizeL
-            color: Color.accent
-            visible: templateRow.isActive
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.settingsRowPaddingH
+            anchors.rightMargin: Style.settingsRowPaddingH
+            spacing: Style.marginS
+
+            NText {
+              text: templateCell.modelData.name
+              pointSize: Style.fontSizeS
+              color: Color.onShell
+              elide: Text.ElideRight
+              Layout.fillWidth: true
+            }
+
+            NIcon {
+              icon: "check"
+              pointSize: Style.fontSizeL
+              color: Color.accent
+              visible: templateCell.isActive
+            }
           }
 
           HoverHandler {
+            id: cellHover
             onHoveredChanged: {
-              if (hovered && templateRow.modelData.tooltip) {
-                TooltipService.show(templateRow, templateRow.modelData.tooltip, "bottom");
+              if (hovered && templateCell.modelData.tooltip) {
+                TooltipService.show(templateCell, templateCell.modelData.tooltip, "bottom");
               } else {
                 TooltipService.hide();
               }
             }
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: root.toggleTemplate(templateCell.modelData.id)
           }
         }
       }
