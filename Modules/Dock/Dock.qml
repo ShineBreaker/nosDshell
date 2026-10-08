@@ -423,8 +423,43 @@ Loader {
         return grouped;
       }
 
-      // Function to update the combined dock apps model
+      // Identity comparison: same app order, type, pin state and toplevel
+      // objects → the delegates' live bindings (title, urgent, active)
+      // already reflect the change; reassigning the array would only force
+      // a full delegate teardown/re-incubation for no visual gain.
+      function _sameDockApps(a, b) {
+        if (a.length !== b.length)
+          return false;
+        for (var i = 0; i < a.length; i++) {
+          const x = a[i], y = b[i];
+          if (x.appId !== y.appId || x.type !== y.type || x.isPinned !== y.isPinned)
+            return false;
+          const ta = x.toplevels || [], tb = y.toplevels || [];
+          if (ta.length !== tb.length)
+            return false;
+          for (var j = 0; j < ta.length; j++) {
+            if (ta[j] !== tb[j])
+              return false;
+          }
+        }
+        return true;
+      }
+
+      // Coalesce dockApps rebuilds: callers fire on every toplevel/window/pin
+      // change, and rebuilding synchronously inside those signal handlers
+      // re-enters the Repeater's delegate incubation (QQmlIncubator UAF — the
+      // crash class NotificationService and the launcher model already guard
+      // against). Queue one rebuild per event-loop turn instead.
+      property bool _dockAppsUpdateQueued: false
       function updateDockApps() {
+        if (_dockAppsUpdateQueued)
+          return;
+        _dockAppsUpdateQueued = true;
+        Qt.callLater(_updateDockAppsNow);
+      }
+
+      function _updateDockAppsNow() {
+        _dockAppsUpdateQueued = false;
         const runningApps = ToplevelManager ? (ToplevelManager.toplevels.values || []) : [];
         const pinnedApps = Settings.data.dock.pinnedApps || [];
         const combined = [];
@@ -520,7 +555,9 @@ Loader {
         }
 
         const sortedApps = sortDockApps(combined);
-        dockApps = buildGroupedDockApps(sortedApps);
+        const nextDockApps = buildGroupedDockApps(sortedApps);
+        if (!_sameDockApps(nextDockApps, dockApps))
+          dockApps = nextDockApps;
         const cycleState = root.groupCycleIndices || {};
         const nextCycleState = {};
         dockApps.forEach(app => {

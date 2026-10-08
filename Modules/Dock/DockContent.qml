@@ -553,9 +553,11 @@ Item {
 
             // Swing phase drives a damped ~2.75-cycle ±8° oscillation and a
             // constant 18px lift while running (appswingeffectbuilder.h:
-            // rotation frames decay 8→0, translation held at -18).
+            // rotation frames decay 8→0, translation held at -18). At rest
+            // the formula would read 8° — gate it on the animation so idle
+            // icons sit level.
             property real swingPhase: 0
-            rotation: 8 * Math.sin(swingPhase * 2.75 * 2 * Math.PI + Math.PI / 2) * (1 - swingPhase)
+            rotation: swingAnim.running ? 8 * Math.sin(swingPhase * 2.75 * 2 * Math.PI + Math.PI / 2) * (1 - swingPhase) : 0
 
             // When dragging, remove anchors so MouseArea can position it
             anchors.centerIn: dragging ? undefined : parent
