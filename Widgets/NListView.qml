@@ -97,6 +97,8 @@ Item {
 
     root._wheelTargetY = root.clampScrollY(root._wheelTargetY - step);
     wheelScrollAnimation.to = root._wheelTargetY;
+    wheelScrollAnimation.duration = Style.motionScrollWheel;
+    wheelScrollAnimation.easing.type = Easing.OutQuint;
     wheelScrollAnimation.restart();
   }
 
@@ -111,6 +113,8 @@ Item {
 
     root._wheelTargetY = clampedY;
     wheelScrollAnimation.to = clampedY;
+    wheelScrollAnimation.duration = Style.motionProgramScroll;
+    wheelScrollAnimation.easing.type = Easing.OutQuad;
     wheelScrollAnimation.restart();
   }
 

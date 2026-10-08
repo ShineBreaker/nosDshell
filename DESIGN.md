@@ -134,7 +134,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 | `motionBubbleIn` | 180 ms | OutCubic，上移 12 px 并淡入（透明度与位移并行） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:496-508` |
 | `motionBubbleOut` | 300 ms | OutCubic，向右滑出（DDE 为向右缘塌缩的 geometry 动画） | 通知消失 | `gxde-session-ui/dde-osd/notification/bubble.cpp:486-488` |
 | `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic，位移 −12→0 / →−8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
-| `motionFade` | 1000 ms | InOutCubic | 切换壁纸时淡入淡出 | `gxde-session-ui/widgets/fullscreenbackground.cpp:51-74` |
+| 壁纸过渡 | 1000 ms | InOutCubic | `wallpaper.transitionDuration`（默认 1000，设置滑杆 0.5–10 s） | `gxde-session-ui/widgets/fullscreenbackground.cpp:51-74` |
 | `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停放大 1.0→1.2 | `gxde-launcher/src/widgets/navigationwidget.cpp:213-230` |
 | `motionSettingsScroll` | 1400 ms | OutQuint | 设置页内定位与页内长滚动 | `gxde-control-center/src/frame/widgets/contentwidget.cpp:51,106-112` |
 | `motionScrollWheel` | 800 ms | OutQuint | 滚轮惯性滚动（列表/网格/滚动视图） | `gxde-launcher/src/view/applistview.cpp:105-112` |
