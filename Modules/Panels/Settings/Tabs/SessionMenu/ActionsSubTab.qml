@@ -22,15 +22,18 @@ ColumnLayout {
     NListView {
       id: listView
       anchors.fill: parent
-      spacing: Style.marginS
+      // Sortable entries are one SettingsGroup: 1 px seams, auto head/tail
+      // corners come from NDccRow's sibling scan (DESIGN §3.5.4).
+      spacing: Style.settingsGroupGap
       interactive: false
       reserveScrollbarSpace: false
       model: root.entriesModel
 
-      delegate: Item {
+      delegate: NDccRow {
         id: delegateItem
         width: listView.availableWidth
-        height: contentRow.implicitHeight + Style.settingsRowPaddingV * 2
+        spacing: Style.marginS
+        active: dragging
 
         required property int index
         required property var modelData
@@ -40,11 +43,93 @@ ColumnLayout {
         property int dragStartIndex: -1
         property int dragTargetIndex: -1
 
+        // Drag handle
         Rectangle {
-          anchors.fill: parent
-          radius: Style.radiusItem
-          color: delegateItem.dragging ? Color.overlay("checked") : Color.overlay("strong")
-          border.color: delegateItem.dragging ? Color.borderShell : "transparent"
+          Layout.preferredWidth: Style.baseWidgetSize * 0.7
+          Layout.preferredHeight: Style.baseWidgetSize * 0.7
+          Layout.alignment: Qt.AlignVCenter
+          radius: Style.radiusXS
+          color: dragHandleMouseArea.containsMouse ? Color.overlay("strong") : "transparent"
+
+          Behavior on color {
+            ColorAnimation {
+              duration: Style.animationFast
+            }
+          }
+
+          ColumnLayout {
+            anchors.centerIn: parent
+            spacing: Style.marginXXS
+
+            Repeater {
+              model: 3
+              Rectangle {
+                Layout.preferredWidth: Style.baseWidgetSize * 0.28
+                Layout.preferredHeight: Style.marginXXS
+                radius: Style.marginXXXS
+                color: Color.onShellTertiary
+              }
+            }
+          }
+
+          MouseArea {
+            id: dragHandleMouseArea
+            anchors.fill: parent
+            cursorShape: Qt.SizeVerCursor
+            hoverEnabled: true
+            preventStealing: false
+            z: 1000
+
+            onPressed: mouse => {
+                         delegateItem.dragStartIndex = delegateItem.index;
+                         delegateItem.dragTargetIndex = delegateItem.index;
+                         delegateItem.dragStartY = delegateItem.y;
+                         delegateItem.dragging = true;
+                         delegateItem.z = 999;
+                         preventStealing = true;
+                       }
+
+            onPositionChanged: mouse => {
+                                 if (delegateItem.dragging) {
+                                   var dy = mouse.y - height / 2;
+                                   var newY = delegateItem.y + dy;
+                                   newY = Math.max(0, Math.min(newY, listView.contentHeight - delegateItem.height));
+                                   delegateItem.y = newY;
+                                   var targetIndex = Math.floor((newY + delegateItem.height / 2) / (delegateItem.height + listView.spacing));
+                                   targetIndex = Math.max(0, Math.min(targetIndex, listView.count - 1));
+                                   delegateItem.dragTargetIndex = targetIndex;
+                                 }
+                               }
+
+            onReleased: {
+              preventStealing = false;
+              if (delegateItem.dragStartIndex !== -1 && delegateItem.dragTargetIndex !== -1 && delegateItem.dragStartIndex !== delegateItem.dragTargetIndex) {
+                root.reorderEntries(delegateItem.dragStartIndex, delegateItem.dragTargetIndex);
+              }
+              delegateItem.dragging = false;
+              delegateItem.dragStartIndex = -1;
+              delegateItem.dragTargetIndex = -1;
+              delegateItem.z = 0;
+            }
+
+            onCanceled: {
+              preventStealing = false;
+              delegateItem.dragging = false;
+              delegateItem.dragStartIndex = -1;
+              delegateItem.dragTargetIndex = -1;
+              delegateItem.z = 0;
+            }
+          }
+        }
+
+        // Enable checkbox
+        Rectangle {
+          Layout.preferredWidth: Style.baseWidgetSize * 0.7
+          Layout.preferredHeight: Style.baseWidgetSize * 0.7
+          Layout.alignment: Qt.AlignVCenter
+          radius: Style.radiusXS
+          color: modelData.enabled ? Color.accent : Color.overlay("field")
+          border.color: modelData.enabled ? Color.accent : Color.borderShell
           border.width: Style.borderS
 
           Behavior on color {
@@ -52,162 +137,56 @@ ColumnLayout {
               duration: Style.animationFast
             }
           }
+
+          NIcon {
+            visible: modelData.enabled
+            anchors.centerIn: parent
+            anchors.horizontalCenterOffset: -1
+            icon: "check"
+            color: Color.onAccent
+            pointSize: Math.max(Style.fontSizeXS, Style.baseWidgetSize * 0.35)
+          }
+
+          MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: {
+              root.updateEntry(index, {
+                                 "enabled": !modelData.enabled
+                               });
+            }
+          }
         }
 
-        RowLayout {
-          id: contentRow
-          anchors.verticalCenter: parent.verticalCenter
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.leftMargin: Style.settingsRowPaddingH
-          anchors.rightMargin: Style.settingsRowPaddingH
-          spacing: Style.marginS
+        // Label
+        NText {
+          Layout.fillWidth: true
+          text: modelData.text
+          color: Color.onShell
+          verticalAlignment: Text.AlignVCenter
+          elide: Text.ElideRight
+        }
 
-          // Drag handle
-          Rectangle {
-            Layout.preferredWidth: Style.baseWidgetSize * 0.7
-            Layout.preferredHeight: Style.baseWidgetSize * 0.7
-            Layout.alignment: Qt.AlignVCenter
-            radius: Style.radiusXS
-            color: dragHandleMouseArea.containsMouse ? Color.overlay("strong") : "transparent"
+        // Countdown toggle (only shown when global countdown is enabled)
+        NIconButtonHot {
+          visible: Settings.data.sessionMenu.enableCountdown
+          icon: "clock"
+          hot: modelData.countdownEnabled !== undefined ? modelData.countdownEnabled : true
+          baseSize: Style.baseWidgetSize * 0.8
+          Layout.alignment: Qt.AlignVCenter
+          tooltipText: I18n.tr("common.countdown")
+          onClicked: root.updateEntry(delegateItem.index, {
+                                        "countdownEnabled": !(modelData.countdownEnabled !== undefined ? modelData.countdownEnabled : true)
+                                      })
+        }
 
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
-
-            ColumnLayout {
-              anchors.centerIn: parent
-              spacing: Style.marginXXS
-
-              Repeater {
-                model: 3
-                Rectangle {
-                  Layout.preferredWidth: Style.baseWidgetSize * 0.28
-                  Layout.preferredHeight: Style.marginXXS
-                  radius: Style.marginXXXS
-                  color: Color.onShellTertiary
-                }
-              }
-            }
-
-            MouseArea {
-              id: dragHandleMouseArea
-              anchors.fill: parent
-              cursorShape: Qt.SizeVerCursor
-              hoverEnabled: true
-              preventStealing: false
-              z: 1000
-
-              onPressed: mouse => {
-                           delegateItem.dragStartIndex = delegateItem.index;
-                           delegateItem.dragTargetIndex = delegateItem.index;
-                           delegateItem.dragStartY = delegateItem.y;
-                           delegateItem.dragging = true;
-                           delegateItem.z = 999;
-                           preventStealing = true;
-                         }
-
-              onPositionChanged: mouse => {
-                                   if (delegateItem.dragging) {
-                                     var dy = mouse.y - height / 2;
-                                     var newY = delegateItem.y + dy;
-                                     newY = Math.max(0, Math.min(newY, listView.contentHeight - delegateItem.height));
-                                     delegateItem.y = newY;
-                                     var targetIndex = Math.floor((newY + delegateItem.height / 2) / (delegateItem.height + Style.marginS));
-                                     targetIndex = Math.max(0, Math.min(targetIndex, listView.count - 1));
-                                     delegateItem.dragTargetIndex = targetIndex;
-                                   }
-                                 }
-
-              onReleased: {
-                preventStealing = false;
-                if (delegateItem.dragStartIndex !== -1 && delegateItem.dragTargetIndex !== -1 && delegateItem.dragStartIndex !== delegateItem.dragTargetIndex) {
-                  root.reorderEntries(delegateItem.dragStartIndex, delegateItem.dragTargetIndex);
-                }
-                delegateItem.dragging = false;
-                delegateItem.dragStartIndex = -1;
-                delegateItem.dragTargetIndex = -1;
-                delegateItem.z = 0;
-              }
-
-              onCanceled: {
-                preventStealing = false;
-                delegateItem.dragging = false;
-                delegateItem.dragStartIndex = -1;
-                delegateItem.dragTargetIndex = -1;
-                delegateItem.z = 0;
-              }
-            }
-          }
-
-          // Enable checkbox
-          Rectangle {
-            Layout.preferredWidth: Style.baseWidgetSize * 0.7
-            Layout.preferredHeight: Style.baseWidgetSize * 0.7
-            Layout.alignment: Qt.AlignVCenter
-            radius: Style.radiusXS
-            color: modelData.enabled ? Color.accent : Color.overlay("field")
-            border.color: modelData.enabled ? Color.accent : Color.borderShell
-            border.width: Style.borderS
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
-
-            NIcon {
-              visible: modelData.enabled
-              anchors.centerIn: parent
-              anchors.horizontalCenterOffset: -1
-              icon: "check"
-              color: Color.onAccent
-              pointSize: Math.max(Style.fontSizeXS, Style.baseWidgetSize * 0.35)
-            }
-
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: {
-                root.updateEntry(index, {
-                                   "enabled": !modelData.enabled
-                                 });
-              }
-            }
-          }
-
-          // Label
-          NText {
-            Layout.fillWidth: true
-            text: modelData.text
-            color: Color.onShell
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-          }
-
-          // Countdown toggle (only shown when global countdown is enabled)
-          NIconButtonHot {
-            visible: Settings.data.sessionMenu.enableCountdown
-            icon: "clock"
-            hot: modelData.countdownEnabled !== undefined ? modelData.countdownEnabled : true
-            baseSize: Style.baseWidgetSize * 0.8
-            Layout.alignment: Qt.AlignVCenter
-            tooltipText: I18n.tr("common.countdown")
-            onClicked: root.updateEntry(delegateItem.index, {
-                                          "countdownEnabled": !(modelData.countdownEnabled !== undefined ? modelData.countdownEnabled : true)
-                                        })
-          }
-
-          // Settings button (cogwheel)
-          NIconButton {
-            icon: "settings"
-            tooltipText: I18n.tr("panels.session-menu.entry-settings-tooltip")
-            baseSize: Style.baseWidgetSize * 0.8
-            Layout.alignment: Qt.AlignVCenter
-            onClicked: root.openEntrySettingsDialog(delegateItem.index)
-          }
+        // Settings button (cogwheel)
+        NIconButton {
+          icon: "settings"
+          tooltipText: I18n.tr("panels.session-menu.entry-settings-tooltip")
+          baseSize: Style.baseWidgetSize * 0.8
+          Layout.alignment: Qt.AlignVCenter
+          onClicked: root.openEntrySettingsDialog(delegateItem.index)
         }
 
         // Position binding for non-dragging state
@@ -231,16 +210,16 @@ ColumnLayout {
             var currentIndex = delegateItem.index;
             if (draggedIndex < targetIndex) {
               if (currentIndex > draggedIndex && currentIndex <= targetIndex) {
-                return (currentIndex - 1) * (delegateItem.height + Style.marginS);
+                return (currentIndex - 1) * (delegateItem.height + listView.spacing);
               }
             } else {
               if (currentIndex >= targetIndex && currentIndex < draggedIndex) {
-                return (currentIndex + 1) * (delegateItem.height + Style.marginS);
+                return (currentIndex + 1) * (delegateItem.height + listView.spacing);
               }
             }
           }
 
-          return delegateItem.index * (delegateItem.height + Style.marginS);
+          return delegateItem.index * (delegateItem.height + listView.spacing);
         }
 
         Behavior on y {

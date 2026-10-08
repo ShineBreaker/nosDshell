@@ -35,117 +35,64 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
+  // Enabled group: labelled slider/combo/toggle rows share one card with the
+  // 1 px seam (settingsgroup.cpp:46, DESIGN §3.5.4). Hidden manual-schedule
+  // rows drop out of the sibling scan automatically.
   ColumnLayout {
     enabled: Settings.data.nightLight.enabled
-    // Not a SettingsGroup: the children here are NLabel/RowLayout blocks, not
-    // dcc rows, so they keep element spacing rather than the 1 px seam.
-    spacing: Style.marginL
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
-    NHeader {
+    NValueSlider {
+      id: nightSlider
+      Layout.fillWidth: true
       label: I18n.tr("panels.display.night-light-temperature-night")
       description: I18n.tr("panels.display.night-light-temperature-night-description")
-      Layout.fillWidth: true
+      from: 1000
+      to: 6500
+      stepSize: 1
+      value: Settings.data.nightLight.nightTemp
+      defaultValue: Settings.getDefaultValue("nightLight.nightTemp")
+      showReset: true
+      text: Math.round(value) + "K"
+
+      onMoved: v => {
+                 var dayTemp = parseInt(Settings.data.nightLight.dayTemp);
+                 var x = Math.round(v);
+                 if (!isNaN(dayTemp)) {
+                   var maxNight = dayTemp - 500;
+                   x = Math.min(maxNight, Math.max(1000, x));
+                 } else {
+                   x = Math.max(1000, x);
+                 }
+                 Settings.data.nightLight.nightTemp = x;
+               }
     }
 
-    RowLayout {
+    NValueSlider {
+      id: daySlider
       Layout.fillWidth: true
-      spacing: Style.marginM
-
-      NSlider {
-        id: nightSlider
-        Layout.fillWidth: true
-        from: 1000
-        to: 6500
-        value: Settings.data.nightLight.nightTemp
-
-        onValueChanged: {
-          var dayTemp = parseInt(Settings.data.nightLight.dayTemp);
-          var v = Math.round(value);
-          if (!isNaN(dayTemp)) {
-            var maxNight = dayTemp - 500;
-            v = Math.min(maxNight, Math.max(1000, v));
-          } else {
-            v = Math.max(1000, v);
-          }
-          if (v !== value)
-            value = v;
-        }
-
-        onPressedChanged: {
-          if (!pressed) {
-            var dayTemp = parseInt(Settings.data.nightLight.dayTemp);
-            var v = Math.round(value);
-            if (!isNaN(dayTemp)) {
-              var maxNight = dayTemp - 500;
-              v = Math.min(maxNight, Math.max(1000, v));
-            } else {
-              v = Math.max(1000, v);
-            }
-            Settings.data.nightLight.nightTemp = v;
-          }
-        }
-      }
-
-      NText {
-        text: nightSlider.value + "K"
-        pointSize: Style.fontSizeM
-        color: Color.onShellTertiary
-        Layout.alignment: Qt.AlignVCenter
-      }
-    }
-
-    NHeader {
       label: I18n.tr("panels.display.night-light-temperature-day")
       description: I18n.tr("panels.display.night-light-temperature-day-description")
-      Layout.fillWidth: true
-    }
+      from: 1000
+      to: 6500
+      stepSize: 1
+      value: Settings.data.nightLight.dayTemp
+      defaultValue: Settings.getDefaultValue("nightLight.dayTemp")
+      showReset: true
+      text: Math.round(value) + "K"
 
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginM
-
-      NSlider {
-        id: daySlider
-        Layout.fillWidth: true
-        from: 1000
-        to: 6500
-        value: Settings.data.nightLight.dayTemp
-
-        onValueChanged: {
-          var nightTemp = parseInt(Settings.data.nightLight.nightTemp);
-          var v = Math.round(value);
-          if (!isNaN(nightTemp)) {
-            var minDay = nightTemp + 500;
-            v = Math.max(minDay, Math.min(6500, v));
-          } else {
-            v = Math.min(6500, v);
-          }
-          if (v !== value)
-            value = v;
-        }
-
-        onPressedChanged: {
-          if (!pressed) {
-            var nightTemp = parseInt(Settings.data.nightLight.nightTemp);
-            var v = Math.round(value);
-            if (!isNaN(nightTemp)) {
-              var minDay = nightTemp + 500;
-              v = Math.max(minDay, Math.min(6500, v));
-            } else {
-              v = Math.min(6500, v);
-            }
-            Settings.data.nightLight.dayTemp = v;
-          }
-        }
-      }
-
-      NText {
-        text: daySlider.value + "K"
-        pointSize: Style.fontSizeM
-        color: Color.onShellTertiary
-        Layout.alignment: Qt.AlignVCenter
-      }
+      onMoved: v => {
+                 var nightTemp = parseInt(Settings.data.nightLight.nightTemp);
+                 var x = Math.round(v);
+                 if (!isNaN(nightTemp)) {
+                   var minDay = nightTemp + 500;
+                   x = Math.max(minDay, Math.min(6500, x));
+                 } else {
+                   x = Math.min(6500, x);
+                 }
+                 Settings.data.nightLight.dayTemp = x;
+               }
     }
 
     NToggle {
@@ -157,55 +104,28 @@ ColumnLayout {
       onToggled: checked => Settings.data.nightLight.autoSchedule = checked
     }
 
-    ColumnLayout {
-      spacing: Style.marginS
-      Layout.fillWidth: true
+    NHeader {
+      label: I18n.tr("panels.display.night-light-manual-schedule-label")
+      description: I18n.tr("panels.display.night-light-manual-schedule-description")
       visible: !Settings.data.nightLight.autoSchedule && !Settings.data.nightLight.forced
+    }
 
-      NHeader {
-        label: I18n.tr("panels.display.night-light-manual-schedule-label")
-        description: I18n.tr("panels.display.night-light-manual-schedule-description")
-      }
+    NComboBox {
+      label: I18n.tr("panels.display.night-light-manual-schedule-sunrise")
+      model: root.timeOptions
+      currentKey: Settings.data.nightLight.manualSunrise
+      placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-start")
+      onSelected: key => Settings.data.nightLight.manualSunrise = key
+      visible: !Settings.data.nightLight.autoSchedule && !Settings.data.nightLight.forced
+    }
 
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: Style.marginS
-
-        NText {
-          text: I18n.tr("panels.display.night-light-manual-schedule-sunrise")
-          pointSize: Style.fontSizeM
-          color: Color.onShellTertiary
-          Layout.alignment: Qt.AlignVCenter
-        }
-
-        NComboBox {
-          model: root.timeOptions
-          currentKey: Settings.data.nightLight.manualSunrise
-          placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-start")
-          onSelected: key => Settings.data.nightLight.manualSunrise = key
-          Layout.fillWidth: true
-        }
-      }
-
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: Style.marginS
-
-        NText {
-          text: I18n.tr("panels.display.night-light-manual-schedule-sunset")
-          pointSize: Style.fontSizeM
-          color: Color.onShellTertiary
-          Layout.alignment: Qt.AlignVCenter
-        }
-
-        NComboBox {
-          model: root.timeOptions
-          currentKey: Settings.data.nightLight.manualSunset
-          placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-stop")
-          onSelected: key => Settings.data.nightLight.manualSunset = key
-          Layout.fillWidth: true
-        }
-      }
+    NComboBox {
+      label: I18n.tr("panels.display.night-light-manual-schedule-sunset")
+      model: root.timeOptions
+      currentKey: Settings.data.nightLight.manualSunset
+      placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-stop")
+      onSelected: key => Settings.data.nightLight.manualSunset = key
+      visible: !Settings.data.nightLight.autoSchedule && !Settings.data.nightLight.forced
     }
 
     NToggle {

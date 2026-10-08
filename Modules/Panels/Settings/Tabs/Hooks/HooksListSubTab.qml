@@ -10,7 +10,9 @@ import qs.Widgets
 ColumnLayout {
   id: root
   enabled: Settings.data.hooks.enabled
-  spacing: Style.marginL
+  // Nine hook rows are one SettingsGroup: the 1 px seam, not separate cards
+  // (settingsgroup.cpp:46, DESIGN §3.5.4).
+  spacing: Style.settingsGroupGap
   width: parent.width
 
   // Shared Edit Popup

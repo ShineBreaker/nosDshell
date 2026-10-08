@@ -18,7 +18,6 @@ ColumnLayout {
     spacing: Style.settingsGroupGap
     NToggle {
       Layout.fillWidth: true
-      Layout.topMargin: Style.marginM
       label: I18n.tr("panels.system-monitor.enable-dgpu-monitoring-label")
       description: I18n.tr("panels.system-monitor.enable-dgpu-monitoring-description")
       checked: Settings.data.systemMonitor.enableDgpuMonitoring
@@ -26,33 +25,31 @@ ColumnLayout {
       onToggled: checked => Settings.data.systemMonitor.enableDgpuMonitoring = checked
     }
 
-    // Colors Section
-    RowLayout {
+    NToggle {
       Layout.fillWidth: true
-      spacing: Style.marginM
-
-      NToggle {
-        label: I18n.tr("panels.system-monitor.use-custom-highlight-colors-label")
-        description: I18n.tr("panels.system-monitor.use-custom-highlight-colors-description")
-        checked: Settings.data.systemMonitor.useCustomColors
-        defaultValue: Settings.getDefaultValue("systemMonitor.useCustomColors")
-        onToggled: checked => {
-                     // If enabling custom colors and no custom color is saved, persist current theme colors
-                     if (checked) {
-                       if (!Settings.data.systemMonitor.warningColor || Settings.data.systemMonitor.warningColor === "") {
-                         Settings.data.systemMonitor.warningColor = Color.mTertiary.toString();
-                       }
-                       if (!Settings.data.systemMonitor.criticalColor || Settings.data.systemMonitor.criticalColor === "") {
-                         Settings.data.systemMonitor.criticalColor = Color.alert.toString();
-                       }
+      label: I18n.tr("panels.system-monitor.use-custom-highlight-colors-label")
+      description: I18n.tr("panels.system-monitor.use-custom-highlight-colors-description")
+      checked: Settings.data.systemMonitor.useCustomColors
+      defaultValue: Settings.getDefaultValue("systemMonitor.useCustomColors")
+      onToggled: checked => {
+                   // If enabling custom colors and no custom color is saved, persist current theme colors
+                   if (checked) {
+                     if (!Settings.data.systemMonitor.warningColor || Settings.data.systemMonitor.warningColor === "") {
+                       Settings.data.systemMonitor.warningColor = Color.mTertiary.toString();
                      }
-                     Settings.data.systemMonitor.useCustomColors = checked;
+                     if (!Settings.data.systemMonitor.criticalColor || Settings.data.systemMonitor.criticalColor === "") {
+                       Settings.data.systemMonitor.criticalColor = Color.alert.toString();
+                     }
                    }
-      }
+                   Settings.data.systemMonitor.useCustomColors = checked;
+                 }
     }
 
-    RowLayout {
+    // Two half-width pickers share one row card (they are the interactive part,
+    // so the row itself stays passive).
+    NDccRow {
       Layout.fillWidth: true
+      interactive: false
       spacing: Style.marginXL
       visible: Settings.data.systemMonitor.useCustomColors
 
@@ -67,7 +64,7 @@ ColumnLayout {
 
         NColorPicker {
           screen: root.screen
-          Layout.preferredWidth: Style.sliderWidth
+          Layout.fillWidth: true
           Layout.preferredHeight: Style.baseWidgetSize
           enabled: Settings.data.systemMonitor.useCustomColors
           selectedColor: Settings.data.systemMonitor.warningColor || Color.mTertiary
@@ -86,7 +83,7 @@ ColumnLayout {
 
         NColorPicker {
           screen: root.screen
-          Layout.preferredWidth: Style.sliderWidth
+          Layout.fillWidth: true
           Layout.preferredHeight: Style.baseWidgetSize
           enabled: Settings.data.systemMonitor.useCustomColors
           selectedColor: Settings.data.systemMonitor.criticalColor || Color.alert

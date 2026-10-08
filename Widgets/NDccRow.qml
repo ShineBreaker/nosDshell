@@ -39,6 +39,8 @@ Rectangle {
 
   property bool interactive: true
   property bool error: false
+  // Active outline while a row is dragged/moved (keeps the checked tint).
+  property bool active: false
   // Plain mode drops the row chrome entirely (no fill, no padding, no minimum
   // height). Controls set this when they have no label to show, so a bare
   // switch or combo still looks like it always did.
@@ -71,13 +73,13 @@ Rectangle {
   implicitWidth: Math.min(contentRow.implicitWidth, Style.settingsRowContentMaxWidth) + (plain ? 0 : Style.settingsRowPaddingH * 2)
 
   color: rowColor
-  border.color: root.error ? Color.alert : "transparent"
-  border.width: root.error ? Style.borderM : 0
+  border.color: root.error ? Color.alert : (root.active ? Color.borderShell : "transparent")
+  border.width: root.error ? Style.borderM : (root.active ? Style.borderS : 0)
 
   readonly property color rowColor: {
     if (root.plain)
       return "transparent";
-    if (root.hovered && root.interactive && !root.error)
+    if ((root.hovered || root.active) && root.interactive && !root.error)
       return Color.overlay("checked");
     return Color.overlay("strong");
   }
@@ -176,5 +178,4 @@ Rectangle {
     }
     return true;
   }
-
 }
