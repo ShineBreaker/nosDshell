@@ -360,11 +360,16 @@ Singleton {
   readonly property int motionFade: _motion(1000)
   readonly property int motionNavZoom: _motion(300)
   readonly property int motionSwitch: _motion(150)
+  // gxde-launcher applistview.cpp:105-112 — wheel inertia scroll
+  readonly property int motionScrollWheel: _motion(800)
+  // gxde-launcher fullscreenframe.cpp:189-204 — programmatic scroll-to
+  readonly property int motionProgramScroll: _motion(300)
+  // gxde-dock appswingeffectbuilder.h:87-118 — attention swing cycle
+  readonly property int motionSwing: _motion(1200)
 
-  // Timeouts (ms)
+  // Timeouts (ms) — OSD auto-hide lives in Settings.data.osd.autoHideMs and
+  // notification duration in Settings.data.notifications.*, both user-facing.
   readonly property int tooltipDelayDock: 500
-  readonly property int osdTimeout: 1000
-  readonly property int bubbleTimeout: 5000
 
   // DDE type scale (points, same unit as the other fontSize* tokens)
   readonly property real fontSizeBody: 9

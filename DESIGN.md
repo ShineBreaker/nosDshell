@@ -19,7 +19,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 3. **一个强调色。** `#2CA7F8` 只用在：当前活动项、菜单悬停行、按下态、进度和高亮、链接。其他地方不出现。
 4. **小圆角。** 圆角在 4–10 px 之间（§1.4）。除头像、圆点这类正圆外，不要胶囊形，不要大圆角卡片。
 5. **贴边并居中。** 任务栏贴住屏幕边缘并居中；控制中心贴右边、占满屏高；弹出层用带箭头的矩形指向触发它的任务栏图标。**弹出层不和栏融合成一体**（不要 Noctalia 的 attached panel 和反向圆角）。
-6. **少动效。** 进入用 `OutCubic`，位移用 `InOutCubic`，时长基本是 300 ms。不要弹簧，不要回弹，不要水波纹。
+6. **少动效。** 指针状态（悬停、按下、选中、禁用）一律瞬变——DDE 的 hover 高亮全是即时重绘，菜单与提示框没有任何显隐动画。能动的只有模型/生命周期驱动的变化：进入用 `OutCubic`，位移和尺寸用 `InOutCubic`，时长基准 300 ms，退场比进场快且收 ease-in。不要弹簧，不要回弹，不要水波纹。
 7. **每个效果都要有降级方案。** 关掉模糊时，蒙版要更不透明（§1.2）。关掉动画时，时长为 0。
 
 ---
@@ -125,21 +125,36 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 ### 1.7 动效
 
+DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象；dock 的弹出层、tooltip、窗口预览全部瞬变；hover 高亮在 mouse 事件里直接重绘。真正插值的动画集中在三层：**微反馈**（≤180 ms）、**空间过渡**（300 ms 主节拍）、**长动效**（壁纸交叉淡化、滚轮惯性、attention 摆动）。
+
 | 令牌 | 时长 | 曲线 | 用于 | 来源 |
 |---|---|---|---|---|
-| `motionPanel` | 300 ms | InOutCubic | 任务栏显示/隐藏/尺寸变化、控制中心内的页面切换 | `mainwindow.cpp:360-386`；`framewidget.cpp:44-51` |
-| `motionEnter` | 300 ms | OutCubic | 控制中心滑入、各类面板出现 | `frame.cpp:90-95` |
-| `motionBubbleIn` | 180 ms | OutCubic，同时上移 12 px 并淡入 | 通知出现 | `bubble.cpp:682-696` |
-| `motionBubbleOut` | 300 ms | OutCubic，向右滑出 | 通知消失 | `bubble.cpp:487-510` |
-| `motionOsdIn` / `Out` | 160 / 120 ms | OutCubic / InCubic，位移 −12→0 / 0→−8 | OSD | `container.cpp:199-218` |
-| `motionFade` | 1000 ms | InOutCubic | 切换壁纸时淡入淡出 | `fullscreenbackground.cpp:51-74` |
-| `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停时放大 1.0→1.2 | `navigationwidget.cpp:209-231` |
-| `tooltipDelay` | 500 ms | — | 任务栏悬停提示 | `dockitem.cpp:75` |
-| `osdTimeout` | 1000 ms | — | OSD 自动隐藏 | `dde-osd/manager.cpp:74` |
-| `bubbleTimeout` | 5000 ms | — | 普通通知 | `bubble.cpp:514-517` |
+| `motionPanel` | 300 ms | InOutCubic | 任务栏显示/隐藏/尺寸变化、控制中心内的页面切换 | `gxde-dock/frame/window/mainwindow.cpp:360-386`；`gxde-control-center/src/frame/framewidget.cpp:44-51` |
+| `motionEnter` | 300 ms | OutCubic | 控制中心整窗滑入、各类面板出现 | `gxde-control-center/src/frame/frame.cpp:71,90-95` |
+| `motionBubbleIn` | 180 ms | OutCubic，上移 12 px 并淡入（透明度与位移并行） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:496-508` |
+| `motionBubbleOut` | 300 ms | OutCubic，向右滑出（DDE 为向右缘塌缩的 geometry 动画） | 通知消失 | `gxde-session-ui/dde-osd/notification/bubble.cpp:486-488` |
+| `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic，位移 −12→0 / →−8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
+| `motionFade` | 1000 ms | InOutCubic | 切换壁纸时淡入淡出 | `gxde-session-ui/widgets/fullscreenbackground.cpp:51-74` |
+| `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停放大 1.0→1.2 | `gxde-launcher/src/widgets/navigationwidget.cpp:213-230` |
+| `motionSettingsScroll` | 1400 ms | OutQuint | 设置页内定位与页内长滚动 | `gxde-control-center/src/frame/widgets/contentwidget.cpp:51,106-112` |
+| `motionScrollWheel` | 800 ms | OutQuint | 滚轮惯性滚动（列表/网格/滚动视图） | `gxde-launcher/src/view/applistview.cpp:105-112` |
+| `motionProgramScroll` | 300 ms | OutQuad | 程序化滚动定位（点分类跳锚点、滚动到可见） | `gxde-launcher/src/fullscreenframe.cpp:189-204`（未显式设时长，Qt 默认 250，归并到 300 主节拍） |
+| `motionSwing` | 1200 ms | Linear 关键帧（±8°，阻尼衰减回中） | dock 项 attention 摆动，持续期间每 ~2.2 s 重播 | `gxde-dock/frame/item/components/appswingeffectbuilder.h:87-118`；`appitem.cpp:690-732` |
+| `motionSwitch` | 150 ms | — | 开关滑块 | 派生自 DTK（§3.5.4） |
+| `tooltipDelayDock` | 500 ms | — | 任务栏悬停提示 | `gxde-dock/frame/item/dockitem.cpp:75` |
 
-- 关闭模糊时，动画时长改为 150 ms（`framewidget.cpp:172`）。`animationDisabled` 为真时一律为 0。
-- 已有的 `Style.animationFast/Normal/...` 继续保留给通用场景，但上表里列出的场景**必须**用对应令牌。
+非动画时长不进 Style 令牌，它们是用户可调设置：`osd.autoHideMs`（默认 1000，`dde-osd/manager.cpp:74`）与 `notifications.*UrgencyDuration`（低/普通/紧急 3/5/15 s，`bubble.cpp:514-517`）。
+
+规则：
+
+- **瞬变清单**（DDE 明确不动画，禁止补动效）：菜单出现/消失/悬停/子菜单；任务栏弹出层与提示框的显隐；指针态颜色与透明度（hover/press/checked/disabled）；attention 图标切换；OSD 数值条；密码错误反馈（描边 + 文字，无抖动）；启动器显示模式切换。
+- **曲线词汇表**：`OutCubic` = 进入；`InOutCubic` = 位移/尺寸/页面切换；`InCubic` = 快速退场；`OutQuad` = 程序化滚动定位；`OutQuint` = 滚轮长惯性；`Linear` = 旋转/循环/计时/拖拽跟手。其余曲线（Back、Elastic、Bounce、Spring、自定义 `BezierSpline`）一律禁用。
+- **不对称退场**：退出比进入短且收 ease-in（OSD 160/120、`OutCubic`→`InCubic` 是范本）。
+- **合并语义**：运行中的动画被再次触发时只改目标值、不打断（QML `Behavior` 天然如此；手写 `start()` 前先沿用当前值）。
+- **延时不是动画**：tooltip 500 ms、预览 200/300 ms、自动隐藏收起 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换的防抖，不换算成缓动。
+- **适配说明**：DDE 的启动器开合、关机界面是零动画瞬显；本实现为这两类全屏毛玻璃面保留 `motionEnter` 短淡入——layer-shell 全屏面瞬显在合成器上会闪，且要等模糊壁纸首帧。这是有意的偏离，不是疏漏。
+- 关闭模糊时，panel/enter 类动画时长改为 150 ms（`framewidget.cpp:172`）。`animationDisabled` 为真时一律为 0。
+- 已有的 `Style.animationFast/Normal/...` 继续保留给通用场景（如拖拽跟手、装饰性循环），但上表里列出的场景**必须**用对应令牌。
 
 ### 1.8 背景与模糊壁纸
 
@@ -276,7 +291,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - **不和任务栏连在一起**。Noctalia 的 `panelsAttachedToBar` 对这类面板一律不起作用。
 - 内容宽度：200–320 px（声音 200、磁盘 300）。行高 36，左右内边距 10–20。
 - 分区标题：白 × 0.6、字号 S。分隔线：1 px、白 × 0.1。滑块高 22。
-- 点击外部关闭；按 Esc 关闭。打开时 `motionEnter`，可以只做淡入。
+- 点击外部关闭；按 Esc 关闭。显隐瞬变，不做动画（`dockpopupwindow.cpp:84-148`：算好位置直接 show/hide）。
 - 提示框：同样的形态，只放白色文字；宽 = 文字宽 + 6 × 字高；没有图标。
 
 ### 3.3 菜单（deepin-menu）

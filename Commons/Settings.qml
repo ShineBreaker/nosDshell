@@ -423,7 +423,7 @@ Singleton {
       property bool automationEnabled: false
       property string wallpaperChangeMode: "random" // "random" or "alphabetical"
       property int randomIntervalSec: 300 // 5 min
-      property int transitionDuration: 1500 // 1500 ms
+      property int transitionDuration: 1000 // DDE crossfade ≈ 1 s
       property list<string> transitionType: ["fade", "disc", "stripes", "wipe", "pixelate", "honeycomb"]
       property bool skipStartupTransition: false
       property real transitionEdgeSmoothness: 0.05
