@@ -7,6 +7,30 @@
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-08
+
+设置页 DDE 化收尾与一轮 Noctalia 业务逻辑保真审计整改：所有设置项统一行样式，几处在改造中丢失或断线的上游能力全部接回。
+
+### 设置界面
+
+- 统一行样式：裸行全部换成 `NDccRow`（设备单选、通知规则、自定义空闲命令、钩子、空闲状态、启动器图标、颜色选择行），同组行合并为一张卡、1 px 缝、首尾圆角自动推断。
+- 标题列加宽度下限，"一周的第一天"等长标签不再折行；`NComboBox` 默认字段宽收窄。
+- 快捷键录制器修复：已绑按键恢复显示，胶囊等分宽度、空槽改居中图标、清除按钮改为悬停显现。
+- 消除 `NTabView.stacked` 下的重复组头；堆叠组间距统一。
+- 高级设置拆分为任务栏 / 状态栏 / 显示器 / 面板与圆角四个堆叠组（复用每屏覆盖页，配置键零丢失）。
+- 配色模板列表改为自适应多列网格；Toast、取色器、时间日期令牌等弹层统一到 transient/overlay 令牌。
+- `settings openTab` 支持子页直达（`tab/sub` 路由兜底），`verify.sh` 新增 `settings-<tab>/<sub>` 与 `settings-scroll-*` 截图场景。
+
+### 业务逻辑保真
+
+- 恢复在线配色方案下载（`SchemeDownloader` + `ShellState` 方案缓存）。
+- 恢复状态栏挂件编辑器：全局编辑器接入任务栏页，每屏覆盖页恢复位置/密度/显示模式/挂件编辑。
+- 恢复通知历史键盘导航（Tab/方向键/Enter/Delete，动作项高亮）。
+- IPC 修正：`openTab bar` 路由到任务栏页，`non_exclusive` 写回 `bar.displayMode`，启动器搜索透传不再被吞。
+- vicinae 模板指向现存的 `nosdshell.svg`；迁移器不再产生孤儿设置键。
+- Rust 工具（`nosd-theme`/`nosd-helpers`/`nosd-blur`）探测链回退 `target/debug`——开发机上非 release 构建不再让着色/输入注入静默失效。
+- 确认有意移除项（更新检查、Changelog、遥测/赞助服务）并在 `DESIGN.md` §6.1 记录理由；关于页注明"更新由系统包管理器统一分发"。
+
 ## [1.0] - 2026-10-07
 
 首个正式版本，也是仓库的第一个 tag（此前本地、远端均无任何 tag）。
@@ -32,5 +56,6 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.0...v1.0.1
 [1.0]: https://github.com/ShineBreaker/nosDshell/releases/tag/v1.0
