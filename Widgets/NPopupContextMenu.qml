@@ -420,14 +420,8 @@ PopupWindow {
     borderColor: root._borderColor
     borderWidth: Style.borderS
     shadow: root._shadow
+    // DDE menus appear/disappear instantly (deepin-menu has no animations)
     opacity: root.visible && !root._closing ? 1.0 : 0.0
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutQuad
-      }
-    }
   }
 
   Flickable {
@@ -440,13 +434,6 @@ PopupWindow {
     interactive: true
     clip: true
     opacity: root.visible && !root._closing ? 1.0 : 0.0
-
-    Behavior on opacity {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutQuad
-      }
-    }
 
     ColumnLayout {
       id: columnLayout

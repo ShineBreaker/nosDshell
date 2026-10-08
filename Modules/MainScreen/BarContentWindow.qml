@@ -213,9 +213,7 @@ PanelWindow {
   // Window origin in screen coordinates (screen's top-left = 0,0).
   // Layer-shell surfaces can't report their own position, so it's computed
   // from the anchor/margin geometry; PanelService.screenRectOf uses it.
-  readonly property point screenOrigin: Qt.point(
-                                            (barWindow.barPosition === "right") ? (barWindow.liveScreen?.width ?? 0) - margins.right - implicitWidth : margins.left,
-                                            (barWindow.barPosition === "bottom") ? (barWindow.liveScreen?.height ?? 0) - margins.bottom - implicitHeight : margins.top)
+  readonly property point screenOrigin: Qt.point((barWindow.barPosition === "right") ? (barWindow.liveScreen?.width ?? 0) - margins.right - implicitWidth : margins.left, (barWindow.barPosition === "bottom") ? (barWindow.liveScreen?.height ?? 0) - margins.bottom - implicitHeight : margins.top)
 
   // Bar content loader - loaded once, stays active for lifetime
   Loader {
@@ -238,7 +236,7 @@ PanelWindow {
         enabled: barWindow.autoHide && !barWindow.efficientMode
         NumberAnimation {
           duration: Style.animationFast
-          easing.type: Easing.OutQuad
+          easing.type: Easing.OutCubic
         }
       }
 

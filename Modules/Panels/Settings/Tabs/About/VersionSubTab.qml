@@ -272,7 +272,7 @@ ColumnLayout {
         Behavior on rotation {
           NumberAnimation {
             duration: Style.animationSlowest
-            easing.type: Easing.OutBack
+            easing.type: Easing.InOutCubic
           }
         }
 

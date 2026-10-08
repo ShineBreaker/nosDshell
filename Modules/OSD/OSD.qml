@@ -344,9 +344,9 @@ Variants {
         for (var i = 0; i < BrightnessService.monitors.length; i++) {
           try {
             BrightnessService.monitors[i].brightnessUpdated.disconnect(onBrightnessChanged);
-          } catch (e) {
+          } catch (e)
             // Ignore errors if already disconnected or not connected
-          }
+          {}
         }
       }
     }
@@ -506,10 +506,14 @@ Variants {
         visible: false
         opacity: 0
 
+        // DDE exit is shorter and eases in: 160/OutCubic in, 120/InCubic out
+        // (dde-osd/container.cpp startWaylandAnimation).
+        property bool _hiding: false
+
         Behavior on opacity {
           NumberAnimation {
-            duration: Style.motionOsdIn
-            easing.type: Easing.OutCubic
+            duration: osdItem._hiding ? Style.motionOsdOut : Style.motionOsdIn
+            easing.type: osdItem._hiding ? Easing.InCubic : Easing.OutCubic
           }
         }
 
@@ -521,8 +525,8 @@ Variants {
         }
         Behavior on slideOffset {
           NumberAnimation {
-            duration: Style.motionOsdIn
-            easing.type: Easing.OutCubic
+            duration: osdItem._hiding ? Style.motionOsdOut : Style.motionOsdIn
+            easing.type: osdItem._hiding ? Easing.InCubic : Easing.OutCubic
           }
         }
 
@@ -596,13 +600,8 @@ Variants {
               width: parent.width * Math.min(1.0, root.getCurrentValue() / root.getMaxValue())
               radius: parent.radius
               color: Color.onTransient
-
-              Behavior on width {
-                NumberAnimation {
-                  duration: Style.motionOsdIn
-                  easing.type: Easing.OutCubic
-                }
-              }
+              // DDE updates the OSD value bar without tweening
+              // (dde-osd/manager.cpp updateUI → direct repaint).
             }
 
             // Overdrive graduation: two 1x5 tick marks at the 2/3 point of
@@ -648,7 +647,6 @@ Variants {
             elide: Text.ElideNone
             horizontalAlignment: Text.AlignHCenter
           }
-
         }
 
         // Delay showing the OSD to allow the layout to settle after activation.
@@ -658,6 +656,7 @@ Variants {
           id: showDelayTimer
           interval: 30
           onTriggered: {
+            osdItem._hiding = false;
             osdItem.visible = true;
             osdItem.slideOffset = -12;
             osdItem.opacity = 0;
@@ -676,6 +675,7 @@ Variants {
         function hide() {
           hideTimer.stop();
           visibilityTimer.stop();
+          osdItem._hiding = true;
           osdItem.opacity = 0;
           osdItem.slideOffset = -8;
           visibilityTimer.start();

@@ -994,9 +994,9 @@ Item {
     enabled: !PanelService.closedImmediately
     NumberAnimation {
       id: opacityAnimation
-      // Arrow popups: Style.motionEnter fade in, same duration out (§3.2)
-      duration: root.useArrowPopup ? Style.motionEnter : (root.isClosing ? Style.animationFaster : Style.animationFast)
-      easing.type: root.useArrowPopup ? Easing.OutCubic : Easing.OutQuad
+      // Arrow popups show/hide instantly (DESIGN §1.7 瞬变清单, §3.2)
+      duration: root.useArrowPopup ? 0 : (root.isClosing ? Style.animationFaster : Style.animationFast)
+      easing.type: root.isClosing ? Easing.InCubic : Easing.OutCubic
 
       onRunningChanged: {
         // Safety: If animation didn't run (zero duration), handle immediately
@@ -1138,8 +1138,6 @@ Item {
       // Set by setPosition() for edge sheets (DESIGN §3.5.1): the panel slides
       // along the edge axis instead of growing.
       property bool slidesAlongEdge: false
-
-      property var bezierCurve: [0.05, 0, 0.133, 0.06, 0.166, 0.4, 0.208, 0.82, 0.25, 1, 1, 1]
 
       // Determine which edges the panel is closest to for animation direction
       // Use target position (not animated position) to avoid binding loops
@@ -1420,8 +1418,8 @@ Item {
           // During closing: use 0ms if not animating width, otherwise use fast duration
           // During normal content resizing: always use normal duration
           duration: !panelBackground.dimensionsInitialized ? 0 : (root.isOpening && !panelBackground.shouldAnimateWidth) ? 0 : root.isOpening ? Style.animationNormal : (root.isClosing && !panelBackground.shouldAnimateWidth) ? 0 : root.isClosing ? Style.animationFast : Style.animationNormal
-          easing.type: Easing.BezierSpline
-          easing.bezierCurve: panelBackground.bezierCurve
+          // Size changes use InOutCubic (DESIGN §1.7 曲线词汇表)
+          easing.type: Easing.InOutCubic
 
           onRunningChanged: {
             // Safety: Zero-duration animation handling
@@ -1450,8 +1448,8 @@ Item {
           // During closing: use 0ms if not animating height, otherwise use fast duration
           // During normal content resizing: always use normal duration
           duration: !panelBackground.dimensionsInitialized ? 0 : (root.isOpening && !panelBackground.shouldAnimateHeight) ? 0 : root.isOpening ? Style.animationNormal : (root.isClosing && !panelBackground.shouldAnimateHeight) ? 0 : root.isClosing ? Style.animationFast : Style.animationNormal
-          easing.type: Easing.BezierSpline
-          easing.bezierCurve: panelBackground.bezierCurve
+          // Size changes use InOutCubic (DESIGN §1.7 曲线词汇表)
+          easing.type: Easing.InOutCubic
 
           onRunningChanged: {
             // Safety: Zero-duration animation handling

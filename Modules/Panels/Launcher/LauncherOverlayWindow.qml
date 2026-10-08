@@ -155,7 +155,7 @@ Variants {
 
         Behavior on opacity {
           NumberAnimation {
-            duration: Style.animationNormal
+            duration: Style.motionEnter
             easing.type: Easing.OutCubic
           }
         }
@@ -377,12 +377,9 @@ Variants {
           return Math.max(launcherPanel.y + Style.marginL, Math.min(mapped.y, launcherPanel.y + launcherPanel.height - previewBox.height - Style.marginL));
         }
 
+        // DDE popup: appears/hides instantly; the y glide only tracks the
+        // selection moving inside the already-open panel (DESIGN §1.7).
         opacity: visible ? 1.0 : 0.0
-        Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
-          }
-        }
         Behavior on y {
           NumberAnimation {
             duration: Style.animationFast

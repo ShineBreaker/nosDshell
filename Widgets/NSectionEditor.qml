@@ -690,25 +690,25 @@ NBox {
           loops: Animation.Infinite
           NumberAnimation {
             to: 1
-            duration: 400
+            duration: Style.animationNormal
             easing.type: Easing.InOutQuad
           }
           NumberAnimation {
             to: 0.6
-            duration: 400
+            duration: Style.animationNormal
             easing.type: Easing.InOutQuad
           }
         }
 
         Behavior on x {
           NumberAnimation {
-            duration: 100
+            duration: Style.animationFaster
             easing.type: Easing.OutCubic
           }
         }
         Behavior on y {
           NumberAnimation {
-            duration: 100
+            duration: Style.animationFaster
             easing.type: Easing.OutCubic
           }
         }

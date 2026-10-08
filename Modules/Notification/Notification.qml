@@ -326,10 +326,17 @@ Variants {
               resumeTimer.stop();
               isRemoving = true;
               isSwiping = false;
-              swipeOffset = 0;
               swipeOffsetY = 0;
               if (!Settings.data.general.animationDisabled) {
-                slideOffset = slideOutOffset;
+                // DDE exits toward the screen edge the bubble hangs on
+                // (bubble.cpp m_outAnimation: right-edge collapse, OutCubic).
+                if (useVerticalSwipe) {
+                  swipeOffset = 0;
+                  slideOffset = slideOutOffset;
+                } else {
+                  slideOffset = 0;
+                  swipeOffset = notifWindow.isLeft ? -(bubbleBody.width + Style.marginXL) : bubbleBody.width + Style.marginXL;
+                }
                 opacityValue = 0.0;
               }
             }
@@ -382,7 +389,7 @@ Variants {
             Behavior on opacity {
               enabled: !Settings.data.general.animationDisabled
               NumberAnimation {
-                duration: Style.motionBubbleIn
+                duration: card.isRemoving ? Style.motionBubbleOut : Style.motionBubbleIn
                 easing.type: Easing.OutCubic
               }
             }
@@ -390,7 +397,7 @@ Variants {
             Behavior on slideOffset {
               enabled: !Settings.data.general.animationDisabled
               NumberAnimation {
-                duration: Style.motionBubbleIn
+                duration: card.isRemoving ? Style.motionBubbleOut : Style.motionBubbleIn
                 easing.type: Easing.OutCubic
               }
             }
@@ -398,7 +405,7 @@ Variants {
             Behavior on swipeOffset {
               enabled: !Settings.data.general.animationDisabled && !card.isSwiping
               NumberAnimation {
-                duration: Style.animationFast
+                duration: card.isRemoving ? Style.motionBubbleOut : Style.animationFast
                 easing.type: Easing.OutCubic
               }
             }
@@ -406,7 +413,7 @@ Variants {
             Behavior on swipeOffsetY {
               enabled: !Settings.data.general.animationDisabled && !card.isSwiping
               NumberAnimation {
-                duration: Style.animationFast
+                duration: card.isRemoving ? Style.motionBubbleOut : Style.animationFast
                 easing.type: Easing.OutCubic
               }
             }
@@ -634,7 +641,7 @@ Variants {
                               if (mouse.button === Qt.RightButton) {
                                 card.animateOut();
                                 if (Settings.data.notifications.clearDismissed)
-                                  NotificationService.removeFromHistory(card.notificationId);
+                                NotificationService.removeFromHistory(card.notificationId);
                                 return;
                               }
 
@@ -647,7 +654,7 @@ Variants {
                                 if (dismissDistance >= threshold) {
                                   card.dismissBySwipe();
                                   if (Settings.data.notifications.clearDismissed)
-                                    NotificationService.removeFromHistory(card.notificationId);
+                                  NotificationService.removeFromHistory(card.notificationId);
                                 } else {
                                   card.swipeOffset = 0;
                                   card.swipeOffsetY = 0;

@@ -234,13 +234,13 @@ Rectangle {
                 target: tokenDelegate
                 property: "color"
                 to: Qt.alpha(Color.accent, 0.3)
-                duration: 100
+                duration: Style.animationFaster
               }
               PropertyAnimation {
                 target: tokenDelegate
                 property: "color"
                 to: tokenMouseArea.containsMouse ? Color.overlay("checked") : Color.overlay("strong")
-                duration: 200
+                duration: Style.animationFast
               }
             }
 
@@ -259,12 +259,6 @@ Rectangle {
                 radius: Style.radiusItem
                 opacity: tokenMouseArea.containsMouse ? 0.9 : 1.0
 
-                Behavior on opacity {
-                  NumberAnimation {
-                    duration: Style.animationFast
-                  }
-                }
-
                 NText {
                   anchors.centerIn: parent
                   text: modelData.category
@@ -282,24 +276,12 @@ Rectangle {
                 color: tokenMouseArea.containsMouse ? Color.accent : Color.overlay("checked")
                 radius: Style.radiusItem
 
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                  }
-                }
-
                 NText {
                   anchors.centerIn: parent
                   text: modelData.token
                   color: tokenMouseArea.containsMouse ? Color.onAccent : Color.onShell
                   pointSize: Style.fontSizeS
                   font.weight: Style.fontWeightSemiBold
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
                 }
               }
 
@@ -311,12 +293,6 @@ Rectangle {
                 color: tokenMouseArea.containsMouse ? Color.onShell : Color.onShellTertiary
                 pointSize: Style.fontSizeS
                 wrapMode: Text.WordWrap
-
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                  }
-                }
               }
 
               // Live example
@@ -329,12 +305,6 @@ Rectangle {
                 border.color: tokenMouseArea.containsMouse ? Color.accent : Color.borderShell
                 border.width: Style.borderS
 
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                  }
-                }
-
                 Behavior on border.color {
                   ColorAnimation {
                     duration: Style.animationFast
@@ -346,12 +316,6 @@ Rectangle {
                   text: I18n.locale.toString(root.sampleDate, modelData.token)
                   color: tokenMouseArea.containsMouse ? Color.onAccent : Color.onShellTertiary
                   pointSize: Style.fontSizeS
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
                 }
               }
             }

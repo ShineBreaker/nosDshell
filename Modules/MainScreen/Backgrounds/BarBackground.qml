@@ -123,7 +123,7 @@ ShapePath {
     enabled: bar && bar.autoHide && Settings.data.dock.mode !== "efficient"
     NumberAnimation {
       duration: Style.animationFast
-      easing.type: Easing.OutQuad
+      easing.type: Easing.OutCubic
     }
   }
 

@@ -59,7 +59,7 @@ Item {
       NumberAnimation {
         properties: isVertical ? "height,pillHeight" : "width,pillWidth"
         duration: Style.animationNormal
-        easing.type: Easing.OutBack
+        easing.type: Easing.InOutCubic
       }
     },
     Transition {
@@ -68,7 +68,7 @@ Item {
       NumberAnimation {
         properties: isVertical ? "height,pillHeight" : "width,pillWidth"
         duration: Style.animationNormal
-        easing.type: Easing.OutBack
+        easing.type: Easing.InOutCubic
       }
     }
   ]
@@ -151,7 +151,7 @@ Item {
     Behavior on scale {
       NumberAnimation {
         duration: Style.animationNormal
-        easing.type: Easing.OutBack
+        easing.type: Easing.InOutCubic
       }
     }
     Behavior on color {
@@ -170,7 +170,7 @@ Item {
     Behavior on radius {
       NumberAnimation {
         duration: Style.animationNormal
-        easing.type: Easing.OutBack
+        easing.type: Easing.InOutCubic
       }
     }
   }
@@ -178,25 +178,25 @@ Item {
   Behavior on width {
     NumberAnimation {
       duration: Style.animationNormal
-      easing.type: Easing.OutBack
+      easing.type: Easing.InOutCubic
     }
   }
   Behavior on height {
     NumberAnimation {
       duration: Style.animationNormal
-      easing.type: Easing.OutBack
+      easing.type: Easing.InOutCubic
     }
   }
   Behavior on pillWidth {
     NumberAnimation {
       duration: Style.animationNormal
-      easing.type: Easing.OutBack
+      easing.type: Easing.InOutCubic
     }
   }
   Behavior on pillHeight {
     NumberAnimation {
       duration: Style.animationNormal
-      easing.type: Easing.OutBack
+      easing.type: Easing.InOutCubic
     }
   }
 

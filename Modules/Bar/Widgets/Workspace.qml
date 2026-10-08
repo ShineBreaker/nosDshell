@@ -437,8 +437,8 @@ Item {
       property: "masterProgress"
       from: 0.0
       to: 1.0
-      duration: Style.animationSlow * 2
-      easing.type: Easing.OutQuint
+      duration: Style.motionPanel
+      easing.type: Easing.InOutCubic
     }
     PropertyAction {
       target: root
@@ -637,7 +637,7 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         onPressed: mouse => {
                      if (mouse.button === Qt.LeftButton)
-                       CompositorService.switchToWorkspace(squareDelegate.model);
+                     CompositorService.switchToWorkspace(squareDelegate.model);
                    }
         onReleased: mouse => {
                       if (mouse.button === Qt.RightButton) {
@@ -665,8 +665,7 @@ Item {
     Behavior on scale {
       NumberAnimation {
         duration: Style.animationFast
-        easing.type: Easing.OutBack
-        easing.overshoot: 1.2
+        easing.type: Easing.OutCubic
       }
     }
 
@@ -713,8 +712,7 @@ Item {
     Behavior on scale {
       NumberAnimation {
         duration: Style.animationFast
-        easing.type: Easing.OutBack
-        easing.overshoot: 1.2
+        easing.type: Easing.OutCubic
       }
     }
 
@@ -960,8 +958,8 @@ Item {
 
           Behavior on scale {
             NumberAnimation {
-              duration: Style.animationNormal
-              easing.type: Easing.OutBack
+              duration: Style.animationFast
+              easing.type: Easing.OutCubic
             }
           }
 
@@ -1051,7 +1049,6 @@ Item {
       NumberAnimation {
         duration: Style.animationFast
         easing.type: Easing.OutCubic
-        easing.overshoot: 1.2
       }
     }
 

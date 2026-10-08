@@ -477,52 +477,41 @@ Item {
           property int modelIndex: index
           objectName: "dockAppButton"
 
-          // Attention: short swing on the icon + attention-colored indicator
-          // (DESIGN §3.1.2; gxde-dock appitem swing effect)
+          // Attention: damped swing — ±8° rotation with 18px lift, one
+          // 1200ms Linear cycle, re-armed every ~2.2s while urgent
+          // (DESIGN §3.1.2; gxde-dock appitem.cpp checkAttentionEffect,
+          // appswingeffectbuilder.h Frames table).
           onIsUrgentAppChanged: {
-            if (isUrgentApp)
-              swingAnim.restart();
+            if (isUrgentApp) {
+              if (Style.motionSwing > 0)
+                swingAnim.restart();
+              swingRepeatTimer.restart();
+            } else {
+              swingRepeatTimer.stop();
+              swingAnim.stop();
+              iconContainer.swingPhase = 0;
+            }
           }
 
-          SequentialAnimation {
+          Timer {
+            id: swingRepeatTimer
+            interval: Style.motionSwing + 1000
+            repeat: true
+            onTriggered: {
+              if (appButton.isUrgentApp)
+                swingAnim.restart();
+            }
+          }
+
+          NumberAnimation {
             id: swingAnim
-            running: false
-            NumberAnimation {
-              target: iconContainer
-              property: "rotation"
-              from: 0
-              to: 10
-              duration: 100
-              easing.type: Easing.InOutQuad
-            }
-            NumberAnimation {
-              target: iconContainer
-              property: "rotation"
-              to: -10
-              duration: 160
-              easing.type: Easing.InOutQuad
-            }
-            NumberAnimation {
-              target: iconContainer
-              property: "rotation"
-              to: 8
-              duration: 140
-              easing.type: Easing.InOutQuad
-            }
-            NumberAnimation {
-              target: iconContainer
-              property: "rotation"
-              to: -8
-              duration: 140
-              easing.type: Easing.InOutQuad
-            }
-            NumberAnimation {
-              target: iconContainer
-              property: "rotation"
-              to: 0
-              duration: 100
-              easing.type: Easing.InOutQuad
-            }
+            target: iconContainer
+            property: "swingPhase"
+            from: 0
+            to: 1
+            duration: Style.motionSwing
+            easing.type: Easing.Linear
+            onStopped: iconContainer.swingPhase = 0
           }
 
           DropArea {
@@ -562,8 +551,15 @@ Item {
             height: appButton.appIconContent
             transformOrigin: Item.Center
 
+            // Swing phase drives a damped ~2.75-cycle ±8° oscillation and a
+            // constant 18px lift while running (appswingeffectbuilder.h:
+            // rotation frames decay 8→0, translation held at -18).
+            property real swingPhase: 0
+            rotation: 8 * Math.sin(swingPhase * 2.75 * 2 * Math.PI + Math.PI / 2) * (1 - swingPhase)
+
             // When dragging, remove anchors so MouseArea can position it
             anchors.centerIn: dragging ? undefined : parent
+            anchors.verticalCenterOffset: swingPhase !== 0 ? -Math.round(18 * Style.uiScaleRatio) : 0
 
             property bool dragging: appMouseArea.drag.active
             onDraggingChanged: {
@@ -619,13 +615,13 @@ Item {
               Behavior on x {
                 NumberAnimation {
                   duration: Style.animationFast
-                  easing.type: Easing.OutQuad
+                  easing.type: Easing.InOutCubic
                 }
               }
               Behavior on y {
                 NumberAnimation {
                   duration: Style.animationFast
-                  easing.type: Easing.OutQuad
+                  easing.type: Easing.InOutCubic
                 }
               }
             }
@@ -657,7 +653,7 @@ Item {
               Behavior on opacity {
                 NumberAnimation {
                   duration: Style.animationFast
-                  easing.type: Easing.OutQuad
+                  easing.type: Easing.OutCubic
                 }
               }
             }

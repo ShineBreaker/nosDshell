@@ -20,8 +20,9 @@ PopupWindow {
   property int hideDelay: 0
   property int maxWidth: 340
 
-  property int animationDuration: Style.animationFast
-  property real animationScale: 0.85
+  // DDE shows/hides tips instantly (§1.7 瞬变清单); kept as a property so
+  // callers can still opt into a duration.
+  property int animationDuration: 0
 
   // Font scale calculation matching NText behavior
   readonly property real gridFontScale: {
@@ -140,16 +141,6 @@ PopupWindow {
       duration: root.animationDuration
       easing.type: Easing.OutCubic
     }
-
-    PropertyAnimation {
-      target: tooltipContainer
-      property: "scale"
-      from: root.animationScale
-      to: 1.0
-      duration: root.animationDuration
-      easing.type: Easing.OutBack
-      easing.overshoot: 1.2
-    }
   }
 
   // Hide animation
@@ -162,15 +153,6 @@ PopupWindow {
       from: 1.0
       to: 0.0
       duration: root.animationDuration * 0.75 // Slightly faster hide
-      easing.type: Easing.InCubic
-    }
-
-    PropertyAnimation {
-      target: tooltipContainer
-      property: "scale"
-      from: 1.0
-      to: root.animationScale
-      duration: root.animationDuration * 0.75
       easing.type: Easing.InCubic
     }
 
@@ -231,9 +213,9 @@ PopupWindow {
       targetScreen = null;
     }
 
-    // Initialize animation state (hidden)
+    // Initialize animation state (hidden) — DDE tooltips don't scale
     tooltipContainer.opacity = 0.0;
-    tooltipContainer.scale = root.animationScale;
+    tooltipContainer.scale = 1.0;
 
     // Start show timer (will position and then make visible)
     showTimer.start();

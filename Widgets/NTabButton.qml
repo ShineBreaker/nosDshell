@@ -97,7 +97,7 @@ Rectangle {
   // Tooltip
   Timer {
     id: tooltipTimer
-    interval: 500
+    interval: Style.tooltipDelayDock
     onTriggered: {
       if (root.isHovered && root.tooltipText && (!Array.isArray(root.tooltipText) || root.tooltipText.length > 0)) {
         TooltipService.show(root, root.tooltipText);

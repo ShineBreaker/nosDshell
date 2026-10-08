@@ -845,13 +845,13 @@ Item {
               Behavior on x {
                 NumberAnimation {
                   duration: Style.animationFast
-                  easing.type: Easing.OutQuad
+                  easing.type: Easing.InOutCubic
                 }
               }
               Behavior on y {
                 NumberAnimation {
                   duration: Style.animationFast
-                  easing.type: Easing.OutQuad
+                  easing.type: Easing.InOutCubic
                 }
               }
             }
