@@ -29,12 +29,6 @@ Item {
     anchors.bottomMargin: 1
     radius: Style.radiusRow
     color: (mouseArea.containsMouse || root.selected) ? Color.overlay("hover") : "transparent"
-
-    Behavior on color {
-      ColorAnimation {
-        duration: Style.animationFast
-      }
-    }
   }
 
   // Icon

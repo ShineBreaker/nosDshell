@@ -147,7 +147,8 @@ Item {
   function _updateResultsNow() {
     _updateQueued = false;
     const text = _searchText;
-    _results = [];
+    // _results is assigned once at the end — clearing first would force the
+    // view through a full delegate teardown + re-incubation per keystroke.
     let newActiveProvider = null;
 
     if (text.startsWith(">")) {

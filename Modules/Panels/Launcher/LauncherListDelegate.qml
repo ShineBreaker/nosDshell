@@ -21,12 +21,14 @@ NBox {
   color: entry.isSelected ? Color.mHover : Color.mSurfaceVariant
   forceOpaque: entry.isSelected
 
-  // Prepare item when it becomes visible (e.g., decode images)
+  // Prepare item when it becomes visible (e.g., decode images). Deferred out
+  // of the delegate incubation window — see LauncherGridDelegate.
   Component.onCompleted: {
-    var provider = modelData.provider;
-    if (provider && provider.prepareItem) {
-      provider.prepareItem(modelData);
-    }
+    Qt.callLater(() => {
+                   var provider = modelData.provider;
+                   if (provider && provider.prepareItem)
+                     provider.prepareItem(modelData);
+                 });
   }
 
   ColumnLayout {

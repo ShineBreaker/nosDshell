@@ -33,12 +33,6 @@ Item {
     anchors.fill: parent
     radius: Style.radiusRow
     color: root._active ? Color.overlay("hover") : "transparent"
-
-    Behavior on color {
-      ColorAnimation {
-        duration: Style.animationFast
-      }
-    }
   }
 
   RowLayout {

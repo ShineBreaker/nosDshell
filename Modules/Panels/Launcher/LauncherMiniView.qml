@@ -175,12 +175,6 @@ Item {
                 anchors.bottomMargin: 1
                 radius: Style.radiusRow
                 color: (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent"
-
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                  }
-                }
               }
 
               IconImage {

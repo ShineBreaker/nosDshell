@@ -18,12 +18,16 @@ Item {
 
   property bool isSelected: (!launcher.ignoreMouseHover && mouseArea.containsMouse) || (index === launcher.selectedIndex)
 
-  // Prepare item when it becomes visible (e.g., decode images)
+  // Prepare item when it becomes visible (e.g., decode images). Deferred out
+  // of the delegate incubation window — the provider call can emit back into
+  // the model and re-enter the V4 engine mid-incubation (same crash class as
+  // NotificationService's callLater insert).
   Component.onCompleted: {
-    var provider = modelData.provider;
-    if (provider && provider.prepareItem) {
-      provider.prepareItem(modelData);
-    }
+    Qt.callLater(() => {
+                   var provider = modelData.provider;
+                   if (provider && provider.prepareItem)
+                     provider.prepareItem(modelData);
+                 });
   }
 
   NBox {

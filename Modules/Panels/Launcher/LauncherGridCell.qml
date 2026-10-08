@@ -36,12 +36,6 @@ Item {
     anchors.bottomMargin: root.blockMargin * 2
     radius: Style.radiusLarge
     color: (mouseArea.containsMouse || root.selected) ? Color.pressDim : "transparent"
-
-    Behavior on color {
-      ColorAnimation {
-        duration: Style.animationFast
-      }
-    }
   }
 
   ColumnLayout {
