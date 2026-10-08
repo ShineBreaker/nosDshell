@@ -164,12 +164,15 @@ NDccRow {
   }
 
   NLabel {
+    id: titleLabel
+
     label: root.label
     description: root.description
     labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
     Layout.maximumWidth: root.dccRow ? root.titleWidth : Number.POSITIVE_INFINITY
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, root.titleWidth) : 0
   }
 
   ComboBox {

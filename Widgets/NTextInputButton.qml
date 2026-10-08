@@ -36,12 +36,15 @@ NDccRow {
 
   // Label and description
   NLabel {
+    id: titleLabel
+
     label: root.label
     description: root.description
     labelWeight: Style.fontWeightRegular
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
     Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
   }
 
   // Input field with button

@@ -39,6 +39,8 @@ NDccRow {
                                                                                   }) : ""
 
   NLabel {
+    id: titleLabel
+
     Layout.fillWidth: true
     label: root.label
     description: root.description
@@ -48,6 +50,7 @@ NDccRow {
     visible: root.label !== "" || root.description !== ""
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
   }
 
   // DSwitchButton: 40x22 capsule, off = white x 0.2, on = accent, white 18px knob (DESIGN §3.5.4)

@@ -27,9 +27,15 @@ ColumnLayout {
   spacing: Style.marginXXS
   visible: root.label != "" || root.description != ""
 
+  // Single-line width of the label row (icon + text). Rows that reserve a
+  // title column use this as their minimumWidth so a squeezed field can
+  // never wrap the label itself (descriptions may still wrap/elide).
+  readonly property real labelImplicitWidth: labelRow.implicitWidth
+
   Layout.fillWidth: true
 
   RowLayout {
+    id: labelRow
     spacing: Style.marginXS
     Layout.fillWidth: true
     visible: root.label !== ""

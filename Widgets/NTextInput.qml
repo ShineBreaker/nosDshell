@@ -45,6 +45,8 @@ NDccRow {
                                                                                   }) : ""
 
   NLabel {
+    id: titleLabel
+
     label: root.label
     description: root.description
     labelColor: root.labelColor
@@ -54,8 +56,11 @@ NDccRow {
     autoDim: false
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
-    // §3.5.4: the title sits in a fixed column, the field takes the rest.
+    // §3.5.4: the title sits in a fixed column, the field takes the rest —
+    // capped at the title column, floored at the label's own width so the
+    // label never wraps while the field can still yield.
     Layout.maximumWidth: root.dccRow ? root.titleWidth : Number.POSITIVE_INFINITY
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, root.titleWidth) : 0
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
   }

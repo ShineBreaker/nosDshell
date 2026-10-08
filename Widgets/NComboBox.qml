@@ -8,7 +8,7 @@ import qs.Widgets
 NDccRow {
   id: root
 
-  property real minimumWidth: 200
+  property real minimumWidth: 170
   property real popupHeight: 180
 
   property string label: ""
@@ -129,11 +129,20 @@ NDccRow {
   }
 
   NLabel {
+    id: titleLabel
+
     label: root.label
     description: root.description
     labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
+    Layout.fillWidth: true
+    // §3.5.4: the title sits in a fixed column, the field takes the rest —
+    // without this cap a fixed-width combo starves the label to ~50 px and
+    // mid-length titles wrap ("一周的第一/天"). The floor keeps the label on
+    // one line when the field still has room to give (it shrinks first).
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
   }
 
   ComboBox {
