@@ -219,6 +219,13 @@ if [ -n "$SCENES_ARG" ]; then
   # process-level env var (Quickshell.env, read at shell start):
   #   NOSD_PAM_BAD=1 ./verify.sh <run>-lockerr --scenes lockscreen-error
   [[ "$WANTED" == *" lockscreen-error "* ]] && SELECTED="$SELECTED lockscreen-error"
+  # settings-<tab>/<sub> names are generated, not listed in SCENES_ORDER —
+  # pass any requested ones through in the order given.
+  for s in $WANTED; do
+    case "$s" in
+      settings-*/*) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+    esac
+  done
 else
   SELECTED="$SCENES_ORDER"
 fi
@@ -527,7 +534,9 @@ run_scene() {
                             echo "vinput binary missing: cargo build --release --manifest-path tools/nosd-helpers/Cargo.toml"
                           fi
                           call settings toggle 0.5 ;;
-    settings-*)           call settings openTab "${1#settings-}" 5; shot "$1"; call settings toggle 2 ;;
+    # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
+    # openTab ("tab/sub"); the shot filename flattens the slash.
+    settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;
     session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
     notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null
