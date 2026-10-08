@@ -609,7 +609,7 @@ Rectangle {
   Behavior on opacity {
     NumberAnimation {
       duration: Style.animationFast
-      easing.type: Easing.OutCirc
+      easing.type: Easing.OutCubic
     }
   }
 

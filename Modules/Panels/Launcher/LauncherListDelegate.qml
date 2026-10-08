@@ -29,13 +29,6 @@ NBox {
     }
   }
 
-  Behavior on color {
-    ColorAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCirc
-    }
-  }
-
   ColumnLayout {
     id: contentLayout
     anchors.fill: parent

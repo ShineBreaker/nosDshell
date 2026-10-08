@@ -102,10 +102,12 @@ Variants {
         return launcherCore.selectedIndex >= 0 && launcherCore.results && !!launcherCore.results[launcherCore.selectedIndex];
       }
 
-      // Dimmer background (click to close)
+      // Dimmer background (click to close) — fades with the panel; an
+      // unanimated dimmer would pop in instantly.
       Rectangle {
         anchors.fill: parent
         color: Qt.alpha(Color.mSurface, Settings.data.general.dimmerOpacity)
+        opacity: launcherPanel.opacity
 
         MouseArea {
           anchors.fill: parent

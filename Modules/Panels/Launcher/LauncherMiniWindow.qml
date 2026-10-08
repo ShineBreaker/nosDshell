@@ -44,7 +44,7 @@ Variants {
     }
     Timer {
       id: closeTimer
-      interval: Style.animationFast
+      interval: Style.animationFast + 30
     }
 
     // -----------------------------------------------------------
@@ -161,36 +161,21 @@ Variants {
       margins.left: screenItem.efficient ? screenItem.cornerX : screenItem.fashionX
       margins.top: screenItem.efficient ? screenItem.cornerY : screenItem.fashionY
 
-      // The panel surface: maskShell, 1 px overlay("hover") border,
-      // radius radiusItem.
-      // ponytail: per-corner radius (radiusLarge on the taskbar-side corner in
-      // efficient mode) would need a Canvas or a mask image; QML Rectangle
-      // only supports a uniform radius. Upgrade if the corner becomes
-      // visually load-bearing.
-      Rectangle {
-        id: panelBg
-        anchors.fill: parent
-        color: Color.maskShell
-        radius: Style.radiusItem
-        border.width: Style.borderM
-        border.color: Color.overlay("hover")
-      }
-
-      // Opening animation: fade + 8 px slide from the taskbar side.
-      // The slide is applied to the content item, so the window keeps its
-      // anchored geometry.
-      LauncherMiniView {
-        id: view
+      // Opening animation: fade + 8 px slide from the taskbar side, applied
+      // to the whole panel surface — the opaque background and the content
+      // must move together. The slide lives on a real property bound into
+      // the Translate: a binding inside transform has nothing to animate it.
+      Item {
+        id: surface
 
         anchors.fill: parent
-        screen: screenItem.liveScreen
-        barPosition: screenItem.barPosition
 
-        enabled: screenItem.isActive
+        property real slideX: screenItem.isActive ? 0 : (screenItem.barPosition === "left" ? -8 : (screenItem.barPosition === "right" ? 8 : 0))
+        property real slideY: screenItem.isActive ? 0 : (screenItem.barPosition === "top" ? -8 : (screenItem.barPosition === "bottom" ? 8 : 0))
         opacity: screenItem.isActive ? 1 : 0
         transform: Translate {
-          x: screenItem.isActive ? 0 : (screenItem.barPosition === "left" ? -8 : (screenItem.barPosition === "right" ? 8 : 0))
-          y: screenItem.isActive ? 0 : (screenItem.barPosition === "top" ? -8 : (screenItem.barPosition === "bottom" ? 8 : 0))
+          x: surface.slideX
+          y: surface.slideY
         }
 
         // Exit runs on the shorter animationFast window — closeTimer unmaps
@@ -201,23 +186,46 @@ Variants {
             easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
           }
         }
-
-        Behavior on x {
+        Behavior on slideX {
+          NumberAnimation {
+            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
+            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
+          }
+        }
+        Behavior on slideY {
           NumberAnimation {
             duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
             easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
           }
         }
 
-        Behavior on y {
-          NumberAnimation {
-            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
-          }
+        // The panel surface: maskShell, 1 px overlay("hover") border,
+        // radius radiusItem.
+        // ponytail: per-corner radius (radiusLarge on the taskbar-side corner in
+        // efficient mode) would need a Canvas or a mask image; QML Rectangle
+        // only supports a uniform radius. Upgrade if the corner becomes
+        // visually load-bearing.
+        Rectangle {
+          id: panelBg
+          anchors.fill: parent
+          color: Color.maskShell
+          radius: Style.radiusItem
+          border.width: Style.borderM
+          border.color: Color.overlay("hover")
         }
 
-        onRequestClose: LauncherState.close(screenItem.liveScreen)
-        onRequestCloseImmediately: LauncherState.close(screenItem.liveScreen)
+        LauncherMiniView {
+          id: view
+
+          anchors.fill: parent
+          screen: screenItem.liveScreen
+          barPosition: screenItem.barPosition
+
+          enabled: screenItem.isActive
+
+          onRequestClose: LauncherState.close(screenItem.liveScreen)
+          onRequestCloseImmediately: LauncherState.close(screenItem.liveScreen)
+        }
       }
     }
   }

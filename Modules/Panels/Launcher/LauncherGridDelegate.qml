@@ -33,13 +33,6 @@ Item {
     color: gridEntryContainer.isSelected ? Color.mHover : Color.mSurfaceVariant
     forceOpaque: gridEntryContainer.isSelected
 
-    Behavior on color {
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCirc
-      }
-    }
-
     ColumnLayout {
       anchors.fill: parent
       anchors.margins: launcher.isCompactDensity ? Style.marginXS : Style.marginS

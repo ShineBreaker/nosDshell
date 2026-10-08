@@ -46,7 +46,7 @@ Variants {
     }
     Timer {
       id: closeTimer
-      interval: Style.animationFast
+      interval: Style.animationFast + 30
     }
 
     // Insets follow the taskbar/dock edge, not the optional status bar
@@ -130,8 +130,9 @@ Variants {
 
       // §1.2: when the compositor blurs (ext-background-effect), the surface
       // stays transparent and the blur comes from the compositor — no in-QML
-      // wallpaper copy, no heavy black scrim.
-      color: Color.blurActive ? "transparent" : Qt.rgba(0, 0, 0, 0.55)
+      // wallpaper copy, no heavy black scrim. The window color itself can
+      // never animate, so the scrim lives in the content tree instead.
+      color: "transparent"
 
       BackgroundEffect.blurRegion: Color.blurActive ? fullscreenBlurRegion : null
       Region {
@@ -176,6 +177,15 @@ Variants {
             easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
           }
         }
+      }
+
+      // Dim veil over the wallpaper (used to be window.color, which would pop
+      // instantly). Bound to view.opacity so it follows the same fade curve.
+      Rectangle {
+        anchors.fill: parent
+        visible: !Color.blurActive
+        color: Qt.rgba(0, 0, 0, 0.55)
+        opacity: view.opacity
       }
 
       LauncherFullscreenView {
