@@ -223,7 +223,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -534,6 +534,23 @@ run_scene() {
                             echo "vinput binary missing: cargo build --release --manifest-path tools/nosd-helpers/Cargo.toml"
                           fi
                           call settings toggle 0.5 ;;
+    # settings-scroll-<tab>: page-long tabs don't fit the ~980 px viewport —
+    # inject real wheel scrolls through the module view and shot each step.
+    settings-scroll-*)    local tab="${1#settings-scroll-}"
+                          call settings openTab "$tab" 5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          shot "settings-scroll-${tab}-0"
+                          # Wheel over row padding (x 1600), not at x 1750 —
+                          # that lands on combo/spin fields which eat the axis.
+                          qs -p "$REPO" ipc call debug hit opened 1600 540 >> "$WORK/logs/scroll-hit.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug hit opened 1750 540 >> "$WORK/logs/scroll-hit.txt" 2>&1 || true
+                          for i in 1 2 3 4 5 6 7 8; do
+                            "$VINPUT" vinput scroll 1600 540 720 2>/dev/null || true
+                            sleep 1.0
+                            shot "settings-scroll-${tab}-${i}"
+                          done
+                          call settings toggle 2 ;;
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;
