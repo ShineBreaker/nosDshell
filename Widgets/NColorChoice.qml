@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Services.UI
 
-RowLayout {
+NDccRow {
   id: root
 
   property string label: I18n.tr("common.select-color")
@@ -13,6 +13,12 @@ RowLayout {
   property var defaultValue: undefined
   property var noneColor: undefined      // color declared as var so we can nullify
   property var noneOnColor: undefined    // color declared as var so we can nullify
+
+  // A labelled picker is a settings row; a bare one stays chromeless.
+  property bool dccRow: label !== "" || description !== ""
+
+  interactive: false
+  plain: !root.dccRow
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (currentKey !== defaultValue)
   readonly property string indicatorTooltip: {
@@ -26,10 +32,16 @@ RowLayout {
   signal selected(string key)
 
   NLabel {
+    id: titleLabel
+
     label: root.label
     description: root.description
+    labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
+    Layout.fillWidth: true
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
   }
 
   RowLayout {
