@@ -531,6 +531,29 @@ Variants {
           }
         }
 
+        // Explicit entry anims: writing slideOffset=12 then 0 inside one JS
+        // tick would animate 0→0 (Behavior reads the value at write time), and
+        // deferring the "to" write would only travel whatever the first anim
+        // had already covered. from/to give the full DDE 12 px excursion.
+        NumberAnimation {
+          id: enterSlideAnim
+          target: osdItem
+          property: "slideOffset"
+          from: 12
+          to: 0
+          duration: Style.motionOsdIn
+          easing.type: Easing.OutCubic
+        }
+        NumberAnimation {
+          id: enterFadeAnim
+          target: osdItem
+          property: "opacity"
+          from: 0
+          to: 1
+          duration: Style.motionOsdIn
+          easing.type: Easing.OutCubic
+        }
+
         Timer {
           id: hideTimer
           interval: Settings.data.osd.autoHideMs
@@ -661,13 +684,8 @@ Variants {
             osdItem.visible = true;
             osdItem.slideOffset = 12;
             osdItem.opacity = 0;
-            // Defer the "to" values one tick — assigning 12 then 0 in the
-            // same JS tick animates 0→0 (Behavior reads the value at write
-            // time). Same pattern as Notification's animInDelayTimer.
-            Qt.callLater(function () {
-              osdItem.slideOffset = 0;
-              osdItem.opacity = 1;
-            });
+            enterSlideAnim.restart();
+            enterFadeAnim.restart();
             hideTimer.start();
           }
         }
@@ -681,6 +699,8 @@ Variants {
         function hide() {
           hideTimer.stop();
           visibilityTimer.stop();
+          enterSlideAnim.stop();
+          enterFadeAnim.stop();
           osdItem._hiding = true;
           osdItem.opacity = 0;
           osdItem.slideOffset = 8;
@@ -690,6 +710,8 @@ Variants {
         function hideImmediately() {
           hideTimer.stop();
           visibilityTimer.stop();
+          enterSlideAnim.stop();
+          enterFadeAnim.stop();
           osdItem.opacity = 0;
           osdItem.visible = false;
           root.currentOSDType = -1;

@@ -287,6 +287,8 @@ Variants {
 
             function triggerEntryAnimation() {
               animInDelayTimer.stop();
+              enterSlideAnim.stop();
+              enterXAnim.stop();
               removalTimer.stop();
               resumeTimer.stop();
               isRemoving = false;
@@ -294,20 +296,13 @@ Variants {
               isSwiping = false;
               swipeOffset = 0;
               swipeOffsetY = 0;
+              slideOffset = 0;
+              enterOffset = 0;
               if (Settings.data.general.animationDisabled) {
-                slideOffset = 0;
-                enterOffset = 0;
                 opacityValue = 1.0;
                 return;
               }
 
-              if (useVerticalSwipe) {
-                enterOffset = 0;
-                slideOffset = slideInOffset;
-              } else {
-                slideOffset = 0;
-                enterOffset = notifWindow.isLeft ? -slideDistance : slideDistance;
-              }
               opacityValue = 0.0;
               animInDelayTimer.interval = animationDelay;
               animInDelayTimer.start();
@@ -324,9 +319,17 @@ Variants {
               onTriggered: {
                 if (card.isRemoving)
                   return;
-                slideOffset = 0;
-                enterOffset = 0;
-                opacityValue = 1.0;
+                // Explicit from/to: arming the offset before the stagger delay
+                // would let the Behavior drift, and a same-tick second write
+                // would collapse the animation to 0→0.
+                if (card.useVerticalSwipe) {
+                  enterSlideAnim.from = card.slideInOffset;
+                  enterSlideAnim.restart();
+                } else {
+                  enterXAnim.from = notifWindow.isLeft ? -card.slideDistance : card.slideDistance;
+                  enterXAnim.restart();
+                }
+                card.opacityValue = 1.0;
               }
             }
 
@@ -334,6 +337,8 @@ Variants {
               if (isRemoving)
                 return;
               animInDelayTimer.stop();
+              enterSlideAnim.stop();
+              enterXAnim.stop();
               resumeTimer.stop();
               isRemoving = true;
               isSwiping = false;
@@ -356,6 +361,8 @@ Variants {
               if (isRemoving)
                 return;
               animInDelayTimer.stop();
+              enterSlideAnim.stop();
+              enterXAnim.stop();
               resumeTimer.stop();
               isRemoving = true;
               isSwiping = false;
@@ -419,6 +426,23 @@ Variants {
                 duration: Style.motionBubbleIn
                 easing.type: Easing.OutCubic
               }
+            }
+
+            NumberAnimation {
+              id: enterSlideAnim
+              target: card
+              property: "slideOffset"
+              to: 0
+              duration: Style.motionBubbleIn
+              easing.type: Easing.OutCubic
+            }
+            NumberAnimation {
+              id: enterXAnim
+              target: card
+              property: "enterOffset"
+              to: 0
+              duration: Style.motionBubbleIn
+              easing.type: Easing.OutCubic
             }
 
             Behavior on swipeOffset {
@@ -647,6 +671,8 @@ Variants {
                                          return;
                                          card.isSwiping = true;
                                        }
+                                       card.enterSlideAnim.stop();
+                                       card.enterXAnim.stop();
                                      }
                                      if (card.useVerticalSwipe) {
                                        card.swipeOffset = 0;
