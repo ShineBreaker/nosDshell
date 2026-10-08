@@ -171,16 +171,19 @@ Item {
 
   // Timer: hideTimer removed, using progressAnimation
 
+  // Bubble profile (DESIGN §1.7): 180 ms in, 300 ms out, both OutCubic.
+  property bool _hiding: false
+
   Behavior on opacity {
     NumberAnimation {
-      duration: Style.animationNormal
+      duration: root._hiding ? Style.motionBubbleOut : Style.motionBubbleIn
       easing.type: Easing.OutCubic
     }
   }
 
   Behavior on scale {
     NumberAnimation {
-      duration: Style.animationNormal
+      duration: root._hiding ? Style.motionBubbleOut : Style.motionBubbleIn
       easing.type: Easing.OutCubic
     }
   }
@@ -203,7 +206,7 @@ Item {
 
   Timer {
     id: hideAnimation
-    interval: Style.animationFast
+    interval: Style.motionBubbleOut
     onTriggered: {
       root.visible = false;
       root.hidden();
@@ -377,6 +380,7 @@ Item {
     actionCallback = msgActionCallback || null;
 
     visible = true;
+    _hiding = false;
     opacity = 1.0;
     scale = 1.0;
     progress = 1.0;
@@ -397,6 +401,7 @@ Item {
     isSwiping = false;
     swipeOffset = 0;
     swipeOffsetY = 0;
+    _hiding = true;
     opacity = 0;
     scale = initialScale;
     hideAnimation.restart();
