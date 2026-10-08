@@ -188,7 +188,7 @@ SmartPanel {
     requestedSubTab = -1;
     const target = ControlCenterModules.targetForTab(tab, sub);
     if (target)
-      _settingsContent.openModuleAt(target.module, target.slot, target.inner);
+      _settingsContent.openModuleAt(target.module, target.slot, target.inner, false);
   }
 
   // Scroll functions - delegate to content

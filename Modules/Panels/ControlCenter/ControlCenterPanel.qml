@@ -87,7 +87,7 @@ SmartPanel {
     pendingSubTab = (subTab === undefined || subTab === null) ? -1 : subTab;
     pendingInner = (inner === undefined || inner === null) ? -1 : inner;
     if (root._moduleView)
-      root._moduleView.openModuleAt(module, pendingSubTab, pendingInner);
+      root._moduleView.openModuleAt(module, pendingSubTab, pendingInner, false);
   }
 
   // Page state resets on close. This must live at the root: the closed signal

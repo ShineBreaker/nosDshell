@@ -364,11 +364,13 @@ Item {
     openModuleAt(mod, -1);
   }
 
-  // External entry point for routing (panel openModule, window navigateTo,
-  // rail clicks, search results): highlight + scroll to the module header,
-  // to a tab section when subTab >= 0, and to a stacked sub-group inside
-  // that tab when inner > 0.
-  function openModuleAt(mod, subTab, inner) {
+  // External entry point for routing (panel openModule, window navigateTo)
+  // and in-page navigation (rail clicks, keyboard, search results):
+  // highlight + scroll to the module header, to a tab section when
+  // subTab >= 0, and to a stacked sub-group inside that tab when inner > 0.
+  // Routing passes animated=false so a freshly opened page lands directly
+  // on the target; only in-page navigation plays the scroll animation.
+  function openModuleAt(mod, subTab, inner, animated) {
     if (!mod)
       return;
     const idx = moduleIndex(mod);
@@ -381,7 +383,7 @@ Item {
     _ensureLoaded(idx);
     idleFillTimer.start();
     snapQuietTimer.start();
-    Qt.callLater(() => _scrollToSection(idx, subTab, inner, true));
+    Qt.callLater(() => _scrollToSection(idx, subTab, inner, animated !== false));
   }
 
   // modelData reaching delegates may be a QVariant-wrapped copy (Repeater
@@ -795,7 +797,7 @@ Item {
           function searchResultClicked(entry) {
             const t = ControlCenterModules.targetForTab(entry.tab, entry.subTab);
             if (t)
-              root.openModuleAt(t.module, t.slot, t.inner);
+              root.openModuleAt(t.module, t.slot, t.inner, false);
             searchInput.text = "";
           }
         }

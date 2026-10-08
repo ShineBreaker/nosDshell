@@ -36,7 +36,7 @@ FloatingWindow {
     const target = ControlCenterModules.targetForTab(tabId, subTabId);
     if (target) {
       activeModule = target.module;
-      settingsModuleView.openModuleAt(target.module, target.slot, target.inner);
+      settingsModuleView.openModuleAt(target.module, target.slot, target.inner, false);
     }
   }
 
