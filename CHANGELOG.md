@@ -7,6 +7,8 @@
 
 ## [Unreleased]
 
+- 打包：`quickshell-nosd` 改为我们的 fork `ShineBreaker/quickshell-nosd`（上游 0.3.2 + 两个 pipewire UAF 修复 commit），原 `packaging/patches/` 本地补丁随之移除。
+
 ## [1.0.2] - 2026-10-08
 
 动效按 DDE 15 规范全面打磨并补充设计规范，另修复启动器崩溃与设置页滚动的两个结构性问题。

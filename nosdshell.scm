@@ -50,40 +50,32 @@
   (dirname (current-filename)))
 
 
-;;; Upstream quickshell plus the pipewire use-after-free fixes that the
-;;; archived noctalia-qs fork carried and upstream never merged: dangling
-;;; raw PwNode pointers in the default-device tracker (ecdc0b1) and in the
-;;; PwNodeIface-bound volume/peak readers (587f531 minus its spectrum.hpp
-;;; hunk, which is fork-only).  Both crash the shell when a pipewire node
-;;; (USB audio, headphones) disappears.  The fork's third engine fix —
-;;; diffUpdate reordering in core/model — is already upstream at v0.3.0.
+;;; Our quickshell fork (ShineBreaker/quickshell-nosd): upstream master at
+;;; the version 0.3.2 commit plus the two pipewire use-after-free fixes the
+;;; archived noctalia-qs fork carried and upstream never merged — dangling
+;;; raw PwNode pointers in the default-device tracker (903a70a) and in the
+;;; PwNodeIface-bound volume/peak readers (08e6406).  Both crash the shell
+;;; when a pipewire node (USB audio, headphones) disappears; they are now
+;;; real commits in the fork rather than patches applied here.
 ;;;
-;;; Pinned to v0.3.1 (not the channel's 0.3.0): upstream fixed exactly the
-;;; dock-hover crash class there — ScreencopyView creation failure,
-;;; screencopy buffer creation failure, and unsetting PopupAnchor.item.
-;;; Both pipewire patches still apply verbatim (verified against the tag).
+;;; Upstream's adjacent destructor-order fixes (36517a2, 91dcb41, 13fe9b0)
+;;; do not remove the dangling-pointer windows, so both fixes are still
+;;; needed.
 (define quickshell/nosd
   (package
     (inherit quickshell)
     (name "quickshell-nosd")
-    (version "0.3.1")
+    (version "0.3.2")
     (source
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://git.outfoxxed.me/quickshell/quickshell")
-             (commit (string-append "v" version))))
+             (url "https://github.com/ShineBreaker/quickshell-nosd")
+             (commit "903a70a9cc7a98834e79db25a8c708acfcffd248")))
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1mhpgy7zcyqmqj6h1b0fhbriimkp2563lkgcdj5ipr32krkgdd88"))
-       (patches
-        (list (local-file
-               (string-append %repo-root
-                              "/packaging/patches/quickshell-pipewire-default-tracker-qpointer.patch"))
-              (local-file
-               (string-append %repo-root
-                              "/packaging/patches/quickshell-pipewire-node-iface-qpointer.patch"))))))))
+         "0b2gb4cb9w8x71r7ik0s9sl5jm1smgs3chfd9halcr8pd549820w"))))))
 
 (define-public nosd-blur
   (package

@@ -42,4 +42,4 @@ guix build -L . -e '(@ (nosdshell) nosd-<名>)'
 
 ## shell 运行时是什么
 
-本机是 Guix，没有 Nix；shell 跑在上游 `quickshell` 上。`nosdshell.scm` 打包的 `quickshell-nosd` = 上游 0.3.0 + `packaging/patches/` 里两个 fork 未上游的 pipewire UAF 补丁——需要 pipewire 补丁就用这个已打包的包。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）；`QS_PKG=noctalia-qs` 只用于对照那个已归档停更的 fork。
+本机是 Guix，没有 Nix；shell 跑在上游 `quickshell` 上。`nosdshell.scm` 打包的 `quickshell-nosd` = 我们的 fork `ShineBreaker/quickshell-nosd`（上游 0.3.2 + 两个 pipewire UAF 修复 commit）——需要 pipewire 补丁就用这个已打包的包。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）；`QS_PKG=noctalia-qs` 只用于对照那个已归档停更的 fork。
