@@ -7,6 +7,31 @@
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-10-08
+
+动效按 DDE 15 规范全面打磨并补充设计规范，另修复启动器崩溃与设置页滚动的两个结构性问题。
+
+### 动效规范与实现
+
+- `DESIGN.md` 新增三层动效规范（瞬变清单、曲线词汇表、不对称退场），`Commons/Style.qml` 补齐 DDE 节拍令牌；全部数值可溯源到 GXDE-OS 源码行号。
+- 违禁曲线清零：`OutBack`/`OutInBounce`/`BezierSpline`/无效 overshoot 全部换成规范词汇。
+- tooltip、菜单、箭头弹层显隐改为瞬变；22 处指针态颜色/透明度渐变瞬变化（对齐 DDE 即时重绘）。
+- OSD：进入 160 ms `OutCubic` 淡入 + 上移 12 px，退出 120 ms `InCubic` 下移 8 px；数值条直跳不补间。
+- 通知气泡：进入 180 ms 沿锚定边水平滑入 12 px，退出 300 ms `OutCubic`；错峰延迟的外漂修正。
+- Toast 入/出拆分 180/300 ms；面板与遮罩退场统一 `InCubic`。
+- 滚轮惯性 800 ms `OutQuint` 与程序化滚动 300 ms `OutQuad` 分开驱动。
+- dock 提醒摆动按 `appswingeffectbuilder.h` 帧表重做（±8° 阻尼 + 18 px 抬升，约 2.2 s 一轮）。
+- 控制中心 home↔模块页切恢复水平滑动（几何 Behavior 误挂换肤守卫修复）。
+- 启动器：底框与内容统一进可动画面，mini 8 px 位移真正生效，黑幕/遮罩随面板透明度渐变；壁纸默认过渡对齐 DDE 约 1 s。
+
+### 修复
+
+- 启动器快速切换模式时偶发 `QQmlIncubator` 崩溃：委托孵化窗口内的服务回调用 `Qt.callLater` 移出孵化窗口，搜索结果模型每键入两次全量重置改为单次赋值。
+- 设置页从启动器/IPC 打开时直跳目标模块（此前 1400 ms 从头滚到尾，懒加载期间看似卡住）；滚动动画只保留给 rail 点击与键盘翻页。
+- dock 图标静止时倾斜 8°：摆动相位公式在 `swingPhase=0` 处读出 8°，旋转改为仅在摆动动画运行时生效。
+- 长时间运行后偶发 `QQmlIncubator` 崩溃：toplevel/SNI 信号突发期间 `dockApps` 全量重赋值重入 Repeater 委托孵化；重建合并到事件循环单回合执行，且应用序/类型/置顶态/toplevel 集合不变时跳过赋值。
+- 窗口全屏时该输出的任务栏/dock 自动隐藏（不留感应条、悬停不唤出），退出即恢复；niri 端经 ext-foreign-toplevel 关联窗口判定全屏，`DESIGN.md` §3.1 已记录语义。
+
 ## [1.0.1] - 2026-10-08
 
 设置页 DDE 化收尾与一轮 Noctalia 业务逻辑保真审计整改：所有设置项统一行样式，几处在改造中丢失或断线的上游能力全部接回。
@@ -56,6 +81,7 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.2...HEAD
+[1.0.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.0...v1.0.1
 [1.0]: https://github.com/ShineBreaker/nosDshell/releases/tag/v1.0

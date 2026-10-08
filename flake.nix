@@ -21,7 +21,7 @@
       );
 
       // 发版时只改引号里的主版本号，shortRev 后缀保留（见 docs/RELEASE.md）。
-      version = "1.0.1_" + (self.shortRev or "dirty");
+      version = "1.0.2_" + (self.shortRev or "dirty");
     in
     {
       formatter = eachSystem (system: pkgsFor.${system}.nixfmt);
