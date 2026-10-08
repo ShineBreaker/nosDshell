@@ -214,8 +214,9 @@ SmartPanel {
             root.openModule(module, -1);
           }
 
+          // The !Color.isTransitioning guard elsewhere exists to freeze *color*
+          // Behaviors during a theme swap — geometry slides must still run.
           Behavior on x {
-            enabled: !Color.isTransitioning
             NumberAnimation {
               duration: Style.motionPanel
               easing.type: Easing.InOutCubic
@@ -244,7 +245,6 @@ SmartPanel {
           onBackRequested: root.activeModule = null
 
           Behavior on x {
-            enabled: !Color.isTransitioning
             NumberAnimation {
               duration: Style.motionPanel
               easing.type: Easing.InOutCubic

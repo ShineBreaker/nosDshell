@@ -661,8 +661,13 @@ Variants {
             osdItem.visible = true;
             osdItem.slideOffset = 12;
             osdItem.opacity = 0;
-            osdItem.slideOffset = 0;
-            osdItem.opacity = 1;
+            // Defer the "to" values one tick — assigning 12 then 0 in the
+            // same JS tick animates 0→0 (Behavior reads the value at write
+            // time). Same pattern as Notification's animInDelayTimer.
+            Qt.callLater(function () {
+              osdItem.slideOffset = 0;
+              osdItem.opacity = 1;
+            });
             hideTimer.start();
           }
         }
