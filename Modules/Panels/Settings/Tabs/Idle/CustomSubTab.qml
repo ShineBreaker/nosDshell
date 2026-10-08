@@ -130,7 +130,7 @@ ColumnLayout {
     Repeater {
       model: entriesModel
 
-      delegate: RowLayout {
+      delegate: NDccRow {
         id: entryDelegate
         required property int index
         required property string name
@@ -138,7 +138,8 @@ ColumnLayout {
         required property string command
         required property string resumeCommand
 
-        spacing: Style.marginM
+        clickable: true
+        onClicked: root.openEdit(entryDelegate.index, entryDelegate.name, entryDelegate.timeout, entryDelegate.command, entryDelegate.resumeCommand)
         Layout.fillWidth: true
 
         NLabel {
@@ -146,6 +147,7 @@ ColumnLayout {
           label: entryDelegate.name || I18n.tr("panels.idle.custom-entry-unnamed")
           description: I18n.trp("common.second", entryDelegate.timeout)
           labelColor: (entryDelegate.command || entryDelegate.resumeCommand) ? Color.accent : Color.onShell
+          labelWeight: Style.fontWeightRegular
         }
 
         NIconButton {

@@ -81,7 +81,7 @@ ColumnLayout {
     Repeater {
       model: NotificationRulesService.rules || []
 
-      delegate: RowLayout {
+      delegate: NDccRow {
         id: entryDelegate
         required property int index
         required property var modelData
@@ -90,7 +90,8 @@ ColumnLayout {
         property string action: modelData.action || "block"
         property bool isRegex: pattern.length >= 3 && pattern.startsWith("/") && pattern.endsWith("/")
 
-        spacing: Style.marginM
+        clickable: true
+        onClicked: root.openEdit(entryDelegate.index, entryDelegate.pattern, entryDelegate.action)
         Layout.fillWidth: true
 
         NLabel {
@@ -98,6 +99,7 @@ ColumnLayout {
           label: (entryDelegate.isRegex ? "regex: " : "") + entryDelegate.pattern
           description: entryDelegate.action === "block" ? I18n.tr("panels.notifications.rules-action-block") : (entryDelegate.action === "mute" ? I18n.tr("panels.notifications.rules-action-mute") : I18n.tr("panels.notifications.rules-action-hide"))
           labelColor: entryDelegate.pattern ? Color.accent : Color.onShell
+          labelWeight: Style.fontWeightRegular
         }
 
         NIconButton {

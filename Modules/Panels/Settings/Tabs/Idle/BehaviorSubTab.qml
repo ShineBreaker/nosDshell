@@ -27,22 +27,21 @@ ColumnLayout {
     }
 
     // Live idle status
-    RowLayout {
+    NDccRow {
       Layout.fillWidth: true
       enabled: Settings.data.idle.enabled
+      interactive: false
       visible: IdleService.nativeIdleMonitorAvailable
 
       NLabel {
         label: I18n.tr("panels.idle.status-label")
         description: I18n.tr("panels.idle.status-description")
-      }
-
-      Item {
+        labelWeight: Style.fontWeightRegular
         Layout.fillWidth: true
       }
 
       NText {
-        Layout.alignment: Qt.AlignBottom | Qt.AlignRight
+        Layout.alignment: Qt.AlignVCenter
         text: IdleService.idleSeconds > 0 ? I18n.trp("common.second", IdleService.idleSeconds) : I18n.tr("common.active")
         family: Settings.data.ui.fontFixed
         pointSize: Style.fontSizeM
@@ -50,9 +49,15 @@ ColumnLayout {
       }
     }
 
-    NLabel {
+    NDccRow {
+      Layout.fillWidth: true
+      interactive: false
       visible: !IdleService.nativeIdleMonitorAvailable
-      description: I18n.tr("panels.idle.unavailable")
+
+      NLabel {
+        description: I18n.tr("panels.idle.unavailable")
+        Layout.fillWidth: true
+      }
     }
   }
 
@@ -95,7 +100,7 @@ ColumnLayout {
     // Timeout spinboxes and resume commands
     ColumnLayout {
       Layout.fillWidth: true
-      spacing: Style.marginL
+      spacing: Style.settingsGroupGap
       enabled: Settings.data.idle.enabled
 
       NHeader {
@@ -170,33 +175,29 @@ ColumnLayout {
     }
   }
 
-  component DefaultActionRow: RowLayout {
+  // A spin row plus its "edit commands" gear — the button drops into the
+  // NSpinBox's own dcc row content (NDccRow forwards children there), so the
+  // gear shares the row chrome instead of floating outside it.
+  component DefaultActionRow: NSpinBox {
     id: rowRoot
     Layout.fillWidth: true
-    spacing: Style.marginM
 
     property string actionName
     property string actionDescription
-    property alias timeoutValue: spinBox.value
-    property int defaultValue
     property string command
     property string resumeCommand
+    property alias timeoutValue: rowRoot.value
 
     signal actionTimeoutChanged(int newValue)
     signal actionCommandChanged(string newCmd)
     signal actionResumeCommandChanged(string newCmd)
 
-    NSpinBox {
-      id: spinBox
-      Layout.fillWidth: true
-      label: rowRoot.actionName
-      description: rowRoot.actionDescription
-      from: 0
-      to: 86400
-      suffix: "s"
-      defaultValue: rowRoot.defaultValue
-      onValueChanged: rowRoot.actionTimeoutChanged(value)
-    }
+    label: rowRoot.actionName
+    description: rowRoot.actionDescription
+    from: 0
+    to: 86400
+    suffix: "s"
+    onValueChanged: rowRoot.actionTimeoutChanged(value)
 
     NIconButton {
       Layout.alignment: Qt.AlignVCenter

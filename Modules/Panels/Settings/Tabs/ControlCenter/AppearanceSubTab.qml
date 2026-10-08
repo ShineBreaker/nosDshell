@@ -9,12 +9,12 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
   Layout.fillWidth: true
   Layout.fillHeight: true
 
   ColumnLayout {
-    spacing: Style.marginL
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     NComboBox {

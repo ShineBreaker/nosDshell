@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-RowLayout {
+NDccRow {
   id: root
 
   property string label: ""
@@ -12,12 +12,15 @@ RowLayout {
 
   signal editClicked
 
-  spacing: Style.marginM
+  clickable: true
+  onClicked: root.editClicked()
 
   NLabel {
     label: root.label
     description: root.description
     labelColor: root.value ? Color.accent : Color.onShell
+    labelWeight: Style.fontWeightRegular
+    Layout.fillWidth: true
   }
 
   NIconButton {

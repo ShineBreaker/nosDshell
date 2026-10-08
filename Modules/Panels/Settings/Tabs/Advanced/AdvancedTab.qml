@@ -64,13 +64,15 @@ ColumnLayout {
       onToggled: checked => Settings.data.dock.launcherUseDistroLogo = checked
     }
 
-    RowLayout {
+    NDccRow {
       Layout.fillWidth: true
+      interactive: false
 
       NLabel {
         Layout.fillWidth: true
         label: I18n.tr("panels.dock.appearance-launcher-icon-label")
         description: I18n.tr("panels.dock.appearance-launcher-icon-description")
+        labelWeight: Style.fontWeightRegular
       }
 
       NIconButton {

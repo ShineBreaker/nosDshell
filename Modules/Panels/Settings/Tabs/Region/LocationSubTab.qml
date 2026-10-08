@@ -6,157 +6,160 @@ import qs.Services.Location
 import qs.Widgets
 
 ColumnLayout {
-  id: root
-  spacing: 0
-  Layout.fillWidth: true
-
-  // Language
-
-  // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
-  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+    id: root
+    spacing: 0
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.general.language-select-label")
-      description: I18n.tr("panels.general.language-select-description")
-      defaultValue: Settings.getDefaultValue("general.language")
-      model: [
-        {
-          "key": "",
-          "name": I18n.tr("panels.general.language-select-auto-detect") + " (" + I18n.systemDetectedLangCode + ")"
-        }
-      ].concat(I18n.availableLanguages.map(function (langCode) {
-        return {
-          "key": langCode,
-          "name": langCode
-        };
-      }))
-      currentKey: Settings.data.general.language
-      settingsPath: "general.language"
-      onSelected: key => {
-                    // Need to change language on next frame using "callLater" or it will pull the rug below our feet: the NComboBox would be rebuilt immediately before it can close properly.
-                    Qt.callLater(() => {
-                                   Settings.data.general.language = key;
-                                   if (key === "") {
-                                     I18n.detectLanguage(); // Re-detect system language if "Automatic" is selected
-                                   } else {
-                                     I18n.setLanguage(key); // Set specific language
-                                   }
-                                 });
-                  }
-    }
-  }
 
-  // Location
+    // Language
 
-  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
-  NDccGap {
-    Layout.fillWidth: true
-  }
-  // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
-  // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
+    // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
+    // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
     ColumnLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginS
-
-      // Auto-locate
-      RowLayout {
         Layout.fillWidth: true
-        spacing: Style.marginM
+        spacing: Style.settingsGroupGap
+        NComboBox {
+            Layout.fillWidth: true
+            label: I18n.tr("panels.general.language-select-label")
+            description: I18n.tr("panels.general.language-select-description")
+            defaultValue: Settings.getDefaultValue("general.language")
+            model: [
+                {
+                    "key": "",
+                    "name": I18n.tr("panels.general.language-select-auto-detect") + " (" + I18n.systemDetectedLangCode + ")"
+                }
+            ].concat(I18n.availableLanguages.map(function (langCode) {
+                return {
+                    "key": langCode,
+                    "name": langCode
+                };
+            }))
+            currentKey: Settings.data.general.language
+            settingsPath: "general.language"
+            onSelected: key => {
+                // Need to change language on next frame using "callLater" or it will pull the rug below our feet: the NComboBox would be rebuilt immediately before it can close properly.
+                Qt.callLater(() => {
+                    Settings.data.general.language = key;
+                    if (key === "") {
+                        I18n.detectLanguage(); // Re-detect system language if "Automatic" is selected
+                    } else {
+                        I18n.setLanguage(key); // Set specific language
+                    }
+                });
+            }
+        }
+    }
+
+    // Location
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+        Layout.fillWidth: true
+    }
+    // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
+    // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: Style.settingsGroupGap
+
+        // Auto-locate: title column + trailing action button + switch.
+        NDccRow {
+            Layout.fillWidth: true
+
+            NLabel {
+                label: I18n.tr("panels.location.auto-locate-label")
+                description: I18n.tr("panels.location.auto-locate-description")
+                labelWeight: Style.fontWeightRegular
+                Layout.fillWidth: true
+            }
+
+            NButton {
+                text: I18n.tr("panels.location.geolocate-now-button")
+                icon: "current-location"
+                enabled: !LocationService.isFetchingWeather
+                onClicked: LocationService.geolocateAndApply()
+                Layout.alignment: Qt.AlignVCenter
+            }
+
+            NToggle {
+                checked: Settings.data.location.autoLocate
+                onToggled: checked => Settings.data.location.autoLocate = checked
+                defaultValue: Settings.getDefaultValue("location.autoLocate")
+                Layout.alignment: Qt.AlignVCenter
+            }
+        }
+
+        NTextInput {
+            visible: !Settings.data.location.autoLocate
+            Layout.fillWidth: true
+            label: I18n.tr("panels.location.location-search-label")
+            description: I18n.tr("panels.location.location-search-description")
+            text: Settings.data.location.name
+            placeholderText: I18n.tr("panels.location.location-search-placeholder")
+            onEditingFinished: {
+                // Verify the location has really changed to avoid extra resets
+                var newLocation = text.trim();
+                if (newLocation != Settings.data.location.name) {
+                    Settings.data.location.name = newLocation;
+                    LocationService.resetWeather();
+                }
+            }
+        }
+
+        NDccRow {
+            Layout.fillWidth: true
+            interactive: false
+            visible: LocationService.coordinatesReady
+
+            NText {
+                text: I18n.tr("system.location-display", {
+                    "name": LocationService.stableName,
+                    "coordinates": LocationService.displayCoordinates
+                })
+                pointSize: Style.fontSizeS
+                color: Color.onShellTertiary
+                font.italic: true
+                Layout.fillWidth: true
+            }
+        }
 
         NToggle {
-          Layout.fillWidth: true
-          label: I18n.tr("panels.location.auto-locate-label")
-          description: I18n.tr("panels.location.auto-locate-description")
-          checked: Settings.data.location.autoLocate
-          onToggled: checked => Settings.data.location.autoLocate = checked
-          defaultValue: Settings.getDefaultValue("location.autoLocate")
+            label: I18n.tr("panels.location.weather-enabled-label")
+            description: I18n.tr("panels.location.weather-enabled-description")
+            checked: Settings.data.location.weatherEnabled
+            onToggled: checked => Settings.data.location.weatherEnabled = checked
+            defaultValue: Settings.getDefaultValue("location.weatherEnabled")
         }
 
-        NButton {
-          text: I18n.tr("panels.location.geolocate-now-button")
-          icon: "current-location"
-          enabled: !LocationService.isFetchingWeather
-          onClicked: LocationService.geolocateAndApply()
+        NToggle {
+            label: I18n.tr("panels.location.weather-fahrenheit-label")
+            description: I18n.tr("panels.location.weather-fahrenheit-description")
+            checked: Settings.data.location.useFahrenheit
+            onToggled: checked => Settings.data.location.useFahrenheit = checked
+            enabled: Settings.data.location.weatherEnabled
         }
-      }
 
-      NTextInput {
-        visible: !Settings.data.location.autoLocate
-        Layout.maximumWidth: root.width / 2
-        label: I18n.tr("panels.location.location-search-label")
-        description: I18n.tr("panels.location.location-search-description")
-        text: Settings.data.location.name
-        placeholderText: I18n.tr("panels.location.location-search-placeholder")
-        onEditingFinished: {
-          // Verify the location has really changed to avoid extra resets
-          var newLocation = text.trim();
-          if (newLocation != Settings.data.location.name) {
-            Settings.data.location.name = newLocation;
-            LocationService.resetWeather();
-          }
+        NToggle {
+            label: I18n.tr("panels.location.weather-show-effects-label")
+            description: I18n.tr("panels.location.weather-show-effects-description")
+            checked: Settings.data.location.weatherShowEffects
+            onToggled: checked => Settings.data.location.weatherShowEffects = checked
+            enabled: Settings.data.location.weatherEnabled
         }
-      }
 
-      NText {
-        text: LocationService.coordinatesReady ? I18n.tr("system.location-display", {
-                                                           "name": LocationService.stableName,
-                                                           "coordinates": LocationService.displayCoordinates
-                                                         }) : ""
-        pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
-        font.italic: true
-      }
+        NToggle {
+            label: I18n.tr("panels.location.weather-hide-city-label")
+            description: I18n.tr("panels.location.weather-hide-city-description")
+            checked: Settings.data.location.hideWeatherCityName
+            onToggled: checked => Settings.data.location.hideWeatherCityName = checked
+            enabled: Settings.data.location.weatherEnabled
+        }
+
+        NToggle {
+            label: I18n.tr("panels.location.weather-hide-timezone-label")
+            description: I18n.tr("panels.location.weather-hide-timezone-description")
+            checked: Settings.data.location.hideWeatherTimezone
+            onToggled: checked => Settings.data.location.hideWeatherTimezone = checked
+            enabled: Settings.data.location.weatherEnabled
+        }
     }
-
-    ColumnLayout {
-      spacing: Style.marginL
-      Layout.fillWidth: true
-
-      NToggle {
-        label: I18n.tr("panels.location.weather-enabled-label")
-        description: I18n.tr("panels.location.weather-enabled-description")
-        checked: Settings.data.location.weatherEnabled
-        onToggled: checked => Settings.data.location.weatherEnabled = checked
-        defaultValue: Settings.getDefaultValue("location.weatherEnabled")
-      }
-
-      NToggle {
-        label: I18n.tr("panels.location.weather-fahrenheit-label")
-        description: I18n.tr("panels.location.weather-fahrenheit-description")
-        checked: Settings.data.location.useFahrenheit
-        onToggled: checked => Settings.data.location.useFahrenheit = checked
-        enabled: Settings.data.location.weatherEnabled
-      }
-
-      NToggle {
-        label: I18n.tr("panels.location.weather-show-effects-label")
-        description: I18n.tr("panels.location.weather-show-effects-description")
-        checked: Settings.data.location.weatherShowEffects
-        onToggled: checked => Settings.data.location.weatherShowEffects = checked
-        enabled: Settings.data.location.weatherEnabled
-      }
-
-      NToggle {
-        label: I18n.tr("panels.location.weather-hide-city-label")
-        description: I18n.tr("panels.location.weather-hide-city-description")
-        checked: Settings.data.location.hideWeatherCityName
-        onToggled: checked => Settings.data.location.hideWeatherCityName = checked
-        enabled: Settings.data.location.weatherEnabled
-      }
-
-      NToggle {
-        label: I18n.tr("panels.location.weather-hide-timezone-label")
-        description: I18n.tr("panels.location.weather-hide-timezone-description")
-        checked: Settings.data.location.hideWeatherTimezone
-        onToggled: checked => Settings.data.location.hideWeatherTimezone = checked
-        enabled: Settings.data.location.weatherEnabled
-      }
-    }
-  }
 }
