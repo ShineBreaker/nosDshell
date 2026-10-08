@@ -545,7 +545,7 @@ run_scene() {
                           # that lands on combo/spin fields which eat the axis.
                           qs -p "$REPO" ipc call debug hit opened 1600 540 >> "$WORK/logs/scroll-hit.txt" 2>&1 || true
                           qs -p "$REPO" ipc call debug hit opened 1750 540 >> "$WORK/logs/scroll-hit.txt" 2>&1 || true
-                          for i in 1 2 3 4 5 6 7 8; do
+                          for i in 1 2 3 4 5 6 7 8 9 10 11 12; do
                             "$VINPUT" vinput scroll 1600 540 720 2>/dev/null || true
                             sleep 1.0
                             shot "settings-scroll-${tab}-${i}"
