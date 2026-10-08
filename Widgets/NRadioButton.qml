@@ -27,12 +27,6 @@ RadioButton {
     radius: Style.radiusRow
     color: root.hovered ? Color.overlay("hover") : "transparent"
 
-    Behavior on color {
-      ColorAnimation {
-        duration: Style.animationFast
-      }
-    }
-
     RowLayout {
       id: rowContent
       anchors.left: parent.left

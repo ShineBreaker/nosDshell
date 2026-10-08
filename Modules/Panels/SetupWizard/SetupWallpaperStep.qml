@@ -191,11 +191,6 @@ ColumnLayout {
               radius: thumbDelegate.thumbRadius
               color: Color.mPrimary
               opacity: hoverHandler.hovered ? 0.1 : 0
-              Behavior on opacity {
-                NumberAnimation {
-                  duration: Style.animationFast
-                }
-              }
             }
 
             // Selection badge

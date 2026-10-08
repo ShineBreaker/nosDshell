@@ -51,12 +51,6 @@ ColumnLayout {
           radius: Style.radiusXS
           color: dragHandleMouseArea.containsMouse ? Color.overlay("strong") : "transparent"
 
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
-
           ColumnLayout {
             anchors.centerIn: parent
             spacing: Style.marginXXS

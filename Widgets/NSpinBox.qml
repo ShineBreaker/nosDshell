@@ -157,11 +157,6 @@ NDccRow {
         radius: spinBoxContainer.radius
         color: Color.overlay("hover")
         opacity: decreaseArea.containsMouse ? 1.0 : 0.0
-        Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
-          }
-        }
       }
 
       NIcon {
@@ -204,11 +199,6 @@ NDccRow {
         radius: spinBoxContainer.radius
         color: Color.overlay("hover")
         opacity: increaseArea.containsMouse ? 1.0 : 0.0
-        Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
-          }
-        }
       }
 
       NIcon {

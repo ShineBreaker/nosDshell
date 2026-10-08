@@ -106,12 +106,6 @@ Item {
           radius: Style.radiusRow
           color: dragHandleMouseArea.containsMouse ? Color.overlay("hover") : "transparent"
 
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
-
           ColumnLayout {
             anchors.centerIn: parent
             spacing: Style.marginS

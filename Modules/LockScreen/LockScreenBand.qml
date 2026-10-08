@@ -131,14 +131,6 @@ Item {
     radius: width / 2
     color: pressed ? Qt.alpha("white", 0.3) : (hovered ? Qt.alpha("white", 0.2) : Qt.alpha("white", 0.12))
 
-    Behavior on color {
-      enabled: !Settings.data.general.animationDisabled
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
-      }
-    }
-
     Image {
       anchors.centerIn: parent
       width: Math.round(parent.width * 2 / 3)

@@ -30,14 +30,6 @@ ColumnLayout {
     border.width: Style.borderS
 
     // Smooth color transitions
-    Behavior on color {
-      enabled: root._userInteracted
-      ColorAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutCubic
-      }
-    }
-
     Behavior on border.color {
       enabled: root._userInteracted
       ColorAnimation {

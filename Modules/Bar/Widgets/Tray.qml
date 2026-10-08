@@ -498,13 +498,6 @@ Item {
           height: 4
           color: trayDelegate.isHovered ? Color.mHover : "transparent"
           radius: Math.min(Style.radiusXXS, width / 2)
-
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.OutCubic
-            }
-          }
         }
 
         MouseArea {

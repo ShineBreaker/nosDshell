@@ -414,12 +414,6 @@ Item {
             duration: Style.animationFast
           }
         }
-
-        Behavior on color {
-          ColorAnimation {
-            duration: Style.animationFast
-          }
-        }
       }
 
       background: Rectangle {

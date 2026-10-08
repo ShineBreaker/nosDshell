@@ -539,12 +539,6 @@ Item {
               colorFgHover: Color.onShell
               tooltipText: I18n.tr("tooltips.dismiss-notification")
               onClicked: delegateItem.remove()
-
-              Behavior on opacity {
-                NumberAnimation {
-                  duration: Style.animationFast
-                }
-              }
             }
           }
         }

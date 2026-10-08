@@ -286,12 +286,6 @@ Item {
           radius: Style.radiusRow
           color: switchRowMouse.containsMouse || switchRowMouse.pressed ? Color.overlay("hover") : "transparent"
 
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
-
           RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Style.marginM

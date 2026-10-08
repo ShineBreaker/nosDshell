@@ -219,12 +219,6 @@ ScrollView {
           duration: Style.animationFast
         }
       }
-
-      Behavior on color {
-        ColorAnimation {
-          duration: Style.animationFast
-        }
-      }
     }
 
     background: Rectangle {
@@ -259,12 +253,6 @@ ScrollView {
 
       Behavior on opacity {
         NumberAnimation {
-          duration: Style.animationFast
-        }
-      }
-
-      Behavior on color {
-        ColorAnimation {
           duration: Style.animationFast
         }
       }
