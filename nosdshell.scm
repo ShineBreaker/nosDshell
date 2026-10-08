@@ -5,8 +5,8 @@
 ;;; Packaging for nosDshell, originally the Noctalia v4 recipe from the
 ;;; Rosenthal channel (https://codeberg.org/hako/Rosenthal).
 ;;;
-;;; The shell installs to etc/xdg/quickshell/nosdshell and runs under
-;;; upstream quickshell; the nosd-blur wallpaper pre-blur tool is built
+;;; The shell installs to etc/xdg/quickshell/nosdshell and runs under our
+;;; quickshell-nosd fork (see below); the nosd-blur wallpaper pre-blur tool is built
 ;;; from tools/nosd-blur via cargo-build-system, as are the nosd-helpers
 ;;; and nosd-theme Rust ports.  Their vendored crate sources live in
 ;;; packaging/rust-crates.scm.  The source is the
