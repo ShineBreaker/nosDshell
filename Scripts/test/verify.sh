@@ -205,7 +205,7 @@ settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-long osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu locksscreen settings-tree" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu lockscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
