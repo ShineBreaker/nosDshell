@@ -603,15 +603,17 @@ Variants {
             id: osdGlyph
             anchors.horizontalCenter: parent.horizontalCenter
             y: Style.osdIconOffsetWithProgress
+            visible: root.currentOSDType !== OSD.Type.LockKey
             icon: root.getIcon()
             color: root.getIconColor()
-            pointSize: Style.fontSizeXL
+            pointSize: Style.osdIconSize
           }
 
           Rectangle {
             id: progressTrack
             anchors.horizontalCenter: parent.horizontalCenter
             y: Style.osdProgressOffset
+            visible: root.currentOSDType !== OSD.Type.LockKey
             width: Style.osdProgressWidth
             height: Style.osdProgressHeight
             radius: Style.osdProgressHeight / 2
@@ -657,7 +659,7 @@ Variants {
             visible: root.currentOSDType === OSD.Type.LockKey
             icon: root.getIcon()
             color: root.getIconColor()
-            pointSize: Style.fontSizeXL
+            pointSize: Style.osdIconSize
           }
 
           NText {

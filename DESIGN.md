@@ -14,7 +14,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 ### 设计原则
 
-1. **蒙版，而不是色块。** 面板背景 = 背后模糊 + 纯黑蒙版（暗色）或纯白蒙版（浅色气泡、OSD）。面板背景不用彩色，不用渐变，不用 Material 风格的 tonal surface。
+1. **蒙版，而不是色块。** 常驻面板背景 = 背后模糊 + 纯黑蒙版（暗色）或纯白蒙版（浅色面板）。面板背景不用彩色，不用渐变，不用 Material 风格的 tonal surface。OSD 和通知气泡是例外——瞬时提示叠在任意壁纸上，半透明会浑浊且毁对比度，所以用**不透明浅色实底**（§1.2 `maskTransient`）。
 2. **白色透明度阶梯。** 暗色表面上，所有层级都是"白色 × 某个透明度"（§1.3）。
 3. **一个强调色。** `#2CA7F8` 只用在：当前活动项、菜单悬停行、按下态、进度和高亮、链接。其他地方不出现。
 4. **小圆角。** 圆角在 4–10 px 之间（§1.4）。除头像、圆点这类正圆外，不要胶囊形，不要大圆角卡片。
@@ -53,14 +53,14 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 规则：
 
 - **任务栏、控制中心、启动器小窗口、任务栏弹出层、暗色菜单**都用 `maskDark`。其中任务栏弹出层和暗色菜单用 `popupDark`（这两者的面积小，需要更高的不透明度才看得清）。
-- **OSD 和通知气泡**用 `maskLight`，文字为深色（§1.5）。这是 DDE 15 的一个特点：浅色的瞬时提示，叠在暗色的常驻外壳之上。
+- **OSD 和通知气泡**用 `maskTransient`（不透明 `#F8F8F8`，Deepin 浅色方案的 mSurface），文字为深色（§1.5）。这是 DDE 15 的一个特点：浅色的瞬时提示，叠在暗色的常驻外壳之上。DDE 原版用 `DBlurEffectWidget::LightColor`（近不透明），合成器模糊不可用时半透明底会直接透出清晰壁纸，故取实色——宁可平坦，不可浑浊。
 - **全屏界面**（全屏启动器、关机界面、锁屏）不用蒙版，背景是**预先模糊好的壁纸**（§1.8）。
 - "有模糊"= `Settings.data.general.enableBlurBehind` 为真 **且** 合成器确实提供 `ext-background-effect-v1`（启动时探测，见 §4 `nosd-helpers wl-probe`）。合成器不支持时一律按"无模糊"取 0.8 蒙版，否则半透明蒙版下面是清晰的壁纸，文字不可读。组件只读 `Color.maskDark` 这类令牌，不自己算透明度。
 - 组件实际使用的是下列**语义令牌**：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
   - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为白 × 0.9。
   - `Color.borderShell` / `Color.borderTransient`：分别对应 `borderDark` / `borderLight`（浅色外壳使用 `borderLight`）。
-  - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司）。两种模式下都等于 `maskLight`。
+  - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司）。两种模式下都是不透明 `#F8F8F8`——不随 `panelBackgroundOpacity`/`blurActive` 变化。
 - 与之配套的前景色：`Color.onShell`（暗色模式为白色，浅色模式为 `#303030`）、`Color.onTransient`（`#303030`）。`onShellSecondary` / `onShellTertiary` 是它的弱化级：暗色侧用 DDE 规格 alpha 0.8 / 0.6，浅色侧 tertiary 提到 0.7——`#303030` × 0.6 在白帧上只有约 3.8:1，0.7 落到 ≈`#6E6E6E`（~5:1），对齐浅色方案的 `mOnSurfaceVariant`（`#6B6B6B`）。§1.3 的叠加阶梯以对应表面的前景色为底色。
 - 壁纸面（全屏启动器、关机界面、锁屏，§1.8 的预模糊壁纸 + 暗色压暗）在两种模式下都是暗色表面，上面的内容用不随主题翻转的令牌：`Color.onWallpaper` / `onWallpaperSecondary` / `onWallpaperTertiary`（恒白阶梯）、`overlayWallpaper(level)`（恒白叠加阶梯）、`onWallpaperShadow`（§1.5 文字投影 `rgba(0,0,0,0.31)`）。这些面上禁用 `onShell` 和 `overlay()`。
 
@@ -475,7 +475,7 @@ Noctalia 卡片的对应关系：
 
 来源：`gxde-session-ui/dde-osd/notification/*`。
 
-- **浅色**：背景 `maskLight`，描边 `borderLight`，圆角 8，阴影 14 / (0,4)。
+- **浅色**：背景 `maskTransient`（不透明 `#F8F8F8`），描边 `borderLight`，圆角 8，阴影 14 / (0,4)。
 - 尺寸：基准 **300×70**。正文较长时允许增高，但最多显示 3 行。
 - 位置：**屏幕右上角**，距离屏幕边缘 20 px（这是 DDE 15 原版行为，`bubblemanager.cpp` 的 `getY()`）。
   - 任务栏在顶部时，气泡排在任务栏下方；控制中心打开时，气泡排在控制中心左侧。
@@ -495,11 +495,11 @@ Noctalia 卡片的对应关系：
 
 来源：`gxde-session-ui/dde-osd/container.cpp`、`common.cpp`。
 
-- **浅色方块**：背景 `maskLight`，圆角 10，阴影 16 / (0,4)，描边 `borderLight`。
+- **浅色方块**：背景 `maskTransient`（不透明 `#F8F8F8`），圆角 10，阴影 16 / (0,4)，描边 `borderLight`。
 - 尺寸 **140×140**。
 - 位置：水平居中，方块底边距离屏幕底边 **180 px**。`osd.location` 仍然可以修改，但默认值改为 `"bottom_center"`。
 - 内容：
-  - 图标居中：只有图标时距顶 40，下面有文字时距顶 25，下面有进度条时距顶 30。图标用深色 symbolic 版本。
+  - 图标居中：只有图标时距顶 40，下面有文字时距顶 25，下面有进度条时距顶 30。图标用深色 symbolic 版本，字号 `osdIconSize`（48 pt ≈ 原版 64 px SVG 的墨迹量，`icons/OSD_*.svg`）。
   - 进度条：**80×4**，距顶 110，圆角 2。滑槽为黑 × 0.1，已填充部分为黑色实色。
   - 音量超过 100% 时，在滑槽 2/3 处画两条 1×5 的刻度线（黑 × 0.5）。
 - 键盘布局 OSD：竖向列表，宽度 = max(文字宽, 200) + 30，行高 = 字高 + 10，当前行底色黑 × 0.1。

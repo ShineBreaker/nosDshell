@@ -400,6 +400,10 @@ Singleton {
   // ----------------------------------------------------------------
   readonly property int osdTileSize: 140
   readonly property int osdBottomOffset: 180
+  // DDE draws its OSD SVGs at their natural 64 px size (icons/OSD_*.svg,
+  // common.cpp DrawImage); a 48 pt symbolic glyph inks ≈52 px, keeping the
+  // same share of the 140 px tile.
+  readonly property int osdIconSize: 48
   readonly property int osdIconOffset: 40 // icon only
   readonly property int osdIconOffsetWithText: 25
   readonly property int osdIconOffsetWithProgress: 30

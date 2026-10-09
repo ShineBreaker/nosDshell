@@ -425,7 +425,12 @@ Singleton {
 
   readonly property color maskShell: shellIsDark ? maskDark : maskLight
   readonly property color popupShell: shellIsDark ? popupDark : Qt.rgba(1, 1, 1, 0.9)
-  readonly property color maskTransient: maskLight
+  // Transient tiles (OSD, notification/toast bubbles) are a SOLID light
+  // surface, not a mask: a translucent white over arbitrary wallpaper reads
+  // muddy and breaks contrast. DDE reaches for DBlurEffectWidget::LightColor
+  // (dde-osd/container.cpp:83), which is near-opaque; we go fully opaque with
+  // the deepin light scheme's mSurface (#F8F8F8).
+  readonly property color maskTransient: "#F8F8F8"
   readonly property color borderShell: shellIsDark ? borderDark : borderLight
   readonly property color borderTransient: borderLight
 
