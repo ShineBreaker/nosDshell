@@ -199,6 +199,7 @@ Item {
             id: appList
             anchors.fill: parent
             clip: true
+            gradientColor: Color.maskShell
             // The category list reuses this view: rows are the 12 DDE buckets
             // as bare strings while the apps keep their result-entry shape.
             // The bucket filter rides on the provider, so in-category browsing

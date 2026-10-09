@@ -425,6 +425,7 @@ Item {
           height: Math.min(contentHeight, root.height * 0.5)
           spacing: 0
           clip: true
+          gradientColor: "transparent"
           model: root.listResults
           currentIndex: model.selectedIndex
           interactive: true

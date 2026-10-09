@@ -310,6 +310,7 @@ NDccRow {
           id: listView
           Layout.fillWidth: true
           Layout.fillHeight: true
+          gradientColor: Color.popupShell
           // Use activeModel (source model when not filtering, filtered results when searching)
           model: combo.popup.visible ? root.activeModel : null
           horizontalPolicy: ScrollBar.AlwaysOff

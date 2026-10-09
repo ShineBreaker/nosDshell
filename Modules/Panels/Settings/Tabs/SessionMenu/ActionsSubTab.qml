@@ -22,6 +22,7 @@ ColumnLayout {
     NListView {
       id: listView
       anchors.fill: parent
+      gradientColor: Color.maskShell
       // Sortable entries are one SettingsGroup: 1 px seams, auto head/tail
       // corners come from NDccRow's sibling scan (DESIGN §3.5.4).
       spacing: Style.settingsGroupGap
