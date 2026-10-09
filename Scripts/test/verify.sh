@@ -224,7 +224,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|dock-fullscreen) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -682,6 +682,30 @@ run_scene() {
                             shot settings-search-outside
                           fi
                           call settings toggle 1 ;;
+    # A fullscreen window must fully release the dock strip: the dock slides
+    # off AND its Overlay-layer surface must stop claiming input there.
+    # Probe dockContainer's scene position (off-surface = slid), then inject a
+    # real click where the dock was — if the strip still owns input, the click
+    # can wake the dock (dockHovered) instead of reaching the fullscreen app.
+    # NOTE: sway/niri refuse fullscreen on floating containers — the spawned
+    # verify windows are floated, so un-float the focused one first.
+    dock-fullscreen)      swaymsg floating disable 2>/dev/null
+                          swaymsg fullscreen enable 2>/dev/null
+                          sleep 1.5
+                          swaymsg -t get_tree > "$WORK/logs/dock-fs-sway-tree.json" 2>&1 || true
+                          shot dock-fs-off
+                          qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 4 > "$WORK/logs/dock-fs-tree.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug hit dock-HEADLESS-1 960 1050 >> "$WORK/logs/dock-fs-hit.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug hit main-HEADLESS-1 960 1050 >> "$WORK/logs/dock-fs-hit.txt" 2>&1 || true
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          if [ -x "$VINPUT" ]; then
+                            "$VINPUT" vinput click 960 1050 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0
+                            shot dock-fs-click
+                          fi
+                          swaymsg fullscreen disable 2>/dev/null
+                          swaymsg floating enable 2>/dev/null ;;
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;

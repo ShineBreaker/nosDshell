@@ -29,6 +29,10 @@
 
 `tools/nosd-helpers/target/release/nosd-helpers vinput click|jclick <x> <y> [dx dy]`——走 `zwlr_virtual_pointer_v1`，进程存活期间虚拟指针有效。只在 `verify.sh` 的隔离 sway 里注入，用户真机会话不用。`verify.sh` 的 `settings-tree` 场景是现成示例（rail 命中探针 + 注入点击 + 外点关面板）。
 
+## 输入归属排查（"某块区域点不动"）
+
+表面内容 `transform` 划走 ≠ 输入区域释放——Wayland 输入归属只由 `wl_surface.set_input_region` 决定，QML transform 不产生 region 更新，mask 会冻结在动画前的矩形上。取证用 `WAYLAND_DEBUG=1` 跑 `verify.sh`（日志落在 `$WORK/logs/<名>.log`）：先认 `zwlr_layer_surface_v1.set_window_geometry` / `xdg_toplevel` 把 surface 编号对到窗口，再追 `wl_region.add` + `set_input_region` 的最后一次有效值，对比 `wl_pointer.enter` 落在哪个 surface。`verify.sh` 的 `dock-fullscreen` 场景（非浮窗全屏 → 取证 → 注入点击原 dock 条 → 恢复）是现成流程。注意 sway 下 `fullscreen` 对浮窗无效，先 `swaymsg floating disable`。quickshell 侧：`Region { item: X }` 的 mask 只在 item 的 x/y/w/h 变化时重建，transform 动画不触发——`Dock.qml` 的 sentinel（零尺寸 `Region` 绑动画值）就是为此加的逐帧 `changed` 泵。
+
 ## Qt 类别日志与 core 验尸
 
 类别日志只能在**启动前**用环境变量打开，QML 运行时改不了：`QT_LOGGING_RULES="qt.quick.hover.trace=true"`（逐 item hover 投递）、`qt.qml.binding.removal=true` 等。

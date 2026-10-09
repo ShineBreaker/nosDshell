@@ -681,17 +681,28 @@ Loader {
 
           // Input mask = the visual dock rect only (follows the slide; while
           // hidden this is just the hiddenSliver strip so hovering it reveals
-          // the dock, and clicks elsewhere pass through)
-          mask: Region {
+          // the dock, and clicks elsewhere pass through). A fullscreen window
+          // swaps in an explicitly EMPTY Region object: on the Overlay layer a
+          // stale dock rect would keep claiming the strip's input above the
+          // fullscreen window, so release can't depend on per-frame tracking.
+          mask: root.fullscreenCovered ? dockEmptyInputRegion : dockInputRegion
+          Region {
+            id: dockEmptyInputRegion
+          }
+          Region {
+            id: dockInputRegion
             Region {
               item: dockContent.dockContainer
             }
             // PendingRegion rebuilds on item x/y/width/height changes only; a
             // transform-driven slide emits nothing, so this empty sentinel
-            // re-emits `changed` on each slide frame and the item rect is
-            // re-read via mapToScene (quickshell src/core/region.cpp:156-160).
+            // re-emits `changed` and the item rect is re-read via mapToScene
+            // (quickshell src/core/region.cpp:156-160). It must bind the
+            // ANIMATED transform values (dockSlide.x/y) — slideX/slideY jump
+            // to their target instantly, which rebuilds once at the animation
+            // start and freezes the mask on the pre-slide rect.
             Region {
-              x: dockWindow.slideX + dockWindow.slideY
+              x: dockSlide.x + dockSlide.y
               width: 0
               height: 0
             }
@@ -727,6 +738,7 @@ Loader {
             screenOrigin: dockWindow.screenOrigin
 
             transform: Translate {
+              id: dockSlide
               x: dockWindow.slideX
               y: dockWindow.slideY
 

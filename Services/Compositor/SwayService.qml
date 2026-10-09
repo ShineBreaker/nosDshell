@@ -32,6 +32,58 @@ Item {
   // Track window usage counts per workspace to handle duplicates
   property var windowUsageCountsPerWorkspace: ({})
 
+  // Outputs covered by a fullscreen window, merged into
+  // CompositorService.fullscreenOutputs (facade interface — niri exposes the
+  // same property). Reading `t.fullscreen` inside the binding registers it as
+  // a dependency so state toggles re-evaluate on their own — sway emits a
+  // `window` IPC event for fullscreen but quickshell's I3 listener only
+  // subscribes to workspace+output, so no event-driven path could ever see it.
+  // `_fsRev` covers the side data (windowWorkspaceMap) the output join needs;
+  // `_treeFsOutputs` is a fallback rollup of containers whose fullscreen_mode
+  // is non-zero (toplevel impls without a fullscreened state still hit that).
+  property int _fsRev: 0
+  property var _treeFsOutputs: []
+  readonly property var fullscreenOutputs: {
+    _fsRev;
+    var outs = {};
+    const tl = (typeof ToplevelManager !== "undefined" && ToplevelManager.toplevels) ? ToplevelManager.toplevels.values : [];
+    for (var i = 0; i < tl.length; i++) {
+      const t = tl[i];
+      if (!t || !t.fullscreen)
+        continue;
+      const out = _toplevelOutput(t);
+      if (out)
+        outs[out] = true;
+    }
+    for (var j = 0; j < _treeFsOutputs.length; j++) {
+      outs[_treeFsOutputs[j]] = true;
+    }
+    return Object.keys(outs);
+  }
+
+  // Join a fullscreen toplevel to its output: same appId+title → workspace
+  // match extractWindowData uses against windowWorkspaceMap, then the
+  // workspace's output. Fallback mirrors NiriService: the activated toplevel
+  // lives on the focused workspace's output.
+  function _toplevelOutput(toplevel) {
+    const baseKey = `${getAppId(toplevel)}:${safeGetProperty(toplevel, "title", "")}`;
+    for (var i = 0; i < workspaces.count; i++) {
+      const ws = workspaces.get(i);
+      if (!ws)
+        continue;
+      if (windowWorkspaceMap[`ws${ws.idx}:${baseKey}[0]`] !== undefined)
+        return ws.output || "";
+    }
+    if (toplevel.activated) {
+      for (var j = 0; j < workspaces.count; j++) {
+        const ws = workspaces.get(j);
+        if (ws && ws.isFocused && ws.output)
+          return ws.output;
+      }
+    }
+    return null;
+  }
+
   // Debounce timer for updates
   Timer {
     id: updateTimer
@@ -89,15 +141,20 @@ Item {
         const treeData = JSON.parse(accumulatedOutput);
         const newMap = {};
         const workspaceWindows = {}; // Track windows per workspace
+        const fsOutputs = {};
 
         // Recursively find all windows and their workspaces
-        function traverseTree(node, workspaceNum) {
+        function traverseTree(node, workspaceNum, workspaceOutput) {
           if (!node)
             return;
 
-          // If this is a workspace node, update the workspace number
-          if (node.type === "workspace" && node.num !== undefined) {
+          // Output nodes carry the real output name; workspace nodes carry an
+          // `output` field too (fallback for unusual nestings).
+          if (node.type === "output" && node.name) {
+            workspaceOutput = node.name;
+          } else if (node.type === "workspace" && node.num !== undefined) {
             workspaceNum = node.num;
+            workspaceOutput = node.output || workspaceOutput;
             if (!workspaceWindows[workspaceNum]) {
               workspaceWindows[workspaceNum] = [];
             }
@@ -108,6 +165,11 @@ Item {
             const appId = node.app_id || (node.window_properties ? node.window_properties.class : null);
             const title = node.name || "";
             const id = node.id;
+
+            // fullscreen_mode: 0 = none, 1 = workspace, 2 = global
+            if (node.fullscreen_mode && workspaceOutput) {
+              fsOutputs[workspaceOutput] = true;
+            }
 
             if (appId && workspaceNum !== undefined && workspaceNum >= 0) {
               // Store window info for this workspace
@@ -122,19 +184,25 @@ Item {
           // Traverse children
           if (node.nodes && node.nodes.length > 0) {
             for (const child of node.nodes) {
-              traverseTree(child, workspaceNum);
+              traverseTree(child, workspaceNum, workspaceOutput);
             }
           }
 
           // Traverse floating nodes
           if (node.floating_nodes && node.floating_nodes.length > 0) {
             for (const child of node.floating_nodes) {
-              traverseTree(child, workspaceNum);
+              traverseTree(child, workspaceNum, workspaceOutput);
             }
           }
         }
 
-        traverseTree(treeData, -1);
+        traverseTree(treeData, -1, null);
+
+        const nextFsOutputs = Object.keys(fsOutputs);
+        if (JSON.stringify(nextFsOutputs) !== JSON.stringify(_treeFsOutputs)) {
+          _treeFsOutputs = nextFsOutputs;
+          _fsRev++;
+        }
 
         // Now build the map with workspace-specific keys
         for (const wsNum in workspaceWindows) {
@@ -163,6 +231,7 @@ Item {
         }
 
         windowWorkspaceMap = newMap;
+        _fsRev++; // the fullscreen output join reads this map
 
         // Update windows with new workspace information
         Qt.callLater(safeUpdateWindows);
@@ -420,6 +489,7 @@ Item {
         "appId": appId,
         "isFocused": focused,
         "isUrgent": safeGetProperty(toplevel, "urgent", "false") === "true",
+        "fullscreen": toplevel.fullscreen === true,
         "workspaceId": workspaceId,
         "output": outputName,
         "handle": toplevel
