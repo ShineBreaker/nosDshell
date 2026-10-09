@@ -432,6 +432,15 @@ Singleton {
   readonly property color onShell: shellIsDark ? "#FFFFFF" : "#303030"
   readonly property color onShellSecondary: Qt.alpha(onShell, 0.8)
   readonly property color onShellTertiary: Qt.alpha(onShell, 0.6)
+
+  // Text/icons drawn on the blurred wallpaper itself (fullscreen launcher,
+  // shutdown UI, lock screen). Those surfaces stay dark in both modes, so the
+  // foreground never follows shellIsDark (DESIGN §1.5).
+  readonly property color onWallpaper: "#FFFFFF"
+  readonly property color onWallpaperSecondary: Qt.alpha("#FFFFFF", 0.8)
+  readonly property color onWallpaperTertiary: Qt.alpha("#FFFFFF", 0.6)
+  // Text shadow on wallpaper: rgba(0,0,0,0.31) offset (0,1) → Text.Sunken
+  readonly property color onWallpaperShadow: Qt.rgba(0, 0, 0, 0.31)
   readonly property color onTransient: "#303030"
   readonly property color onTransientBody: Qt.rgba(0, 0, 0, 0.9)
 
@@ -463,6 +472,12 @@ Singleton {
 
   function overlay(level) {
     return _overlay(level, shellIsDark ? "#FFFFFF" : "#000000");
+  }
+
+  // White ladder that never follows the theme — tiles on the blurred
+  // wallpaper (fullscreen launcher) sit on a dark surface in both modes.
+  function overlayWallpaper(level) {
+    return _overlay(level, "#FFFFFF");
   }
 
   function overlayTransient(level) {
