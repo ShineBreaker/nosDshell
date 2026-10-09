@@ -270,7 +270,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 | Launcher | 启动器图标（0.7） | 启动器图标（0.6–0.8） |
 | Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
 | Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 圆角方形"时钟图标"，上面是大号数字时间（用 QML 画） |
-| Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊可展开/收起；展开态为暗色，收起态为白 × 0.5；分隔线 2 px 白 × 0.1（`fashiontraycontrolwidget.cpp`） |
+| Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊可展开/收起；分隔线 2 px 白 × 0.1（`fashiontraycontrolwidget.cpp`）。**胶囊底色用与其他插件一致的 `overlay` 梯度（`subtle`/`hover`/`checked`）〔派生：上游展开态是暗色 #282828@0.5，nosDshell 按用户要求统一为插件瓦片底色〕** |
 | Volume / Microphone / Network / Bluetooth / VPN / Brightness / Battery | 16 px symbolic 图标，sizeHint 26×26；Battery 在图标右侧加百分比文字 | 0.8 倍的图标 |
 | SessionMenu | `system-shutdown` symbolic | `system-shutdown` 彩色图标 |
 | NotificationHistory | 铃铛 symbolic（有未读时显示角标） | 铃铛图标；点击打开控制中心的通知页 |
@@ -353,7 +353,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
   4. 1 px 分隔线
   5. 4 px 间距
   6. 应用列表（行高 **36**；图标 24 px 放在 x=10；文字从 x=48 开始，过长时右侧截断；悬停底色 `hover`，圆角 4，缩进 1 px）
-  7. "所有应用 ⇄ 分类"切换按钮（悬停/选中底色 `hover`，圆角 4；按下时文字变 `accent`）
+  7. "所有应用 ⇄ 分类"切换按钮（悬停/选中底色 `hover`，圆角 4；按下时文字变 `accent`）。应用列表态显示"分类"+ 20 px 进入箭头；分类视图（分类列表或分类内）显示"返回"。点击循环：全部应用 → 分类列表 → 点分类进分类内 → 返回分类列表（`windowedframe.cpp` `onSwitchBtnClicked`）
   8. 15 px 间距
 - 右栏：
   - 左边缘一条 1 px 竖线（白 × 0.1）。
