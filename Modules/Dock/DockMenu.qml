@@ -277,79 +277,17 @@ PopupWindow {
     calculateMenuWidth();
   }
 
-  // Helper function to normalize app IDs for case-insensitive matching
-  function normalizeAppId(appId) {
-    if (!appId || typeof appId !== 'string')
-      return "";
-    return appId.toLowerCase().trim();
-  }
-
-  // Helper function to get desktop entry ID from an app ID
-  function getDesktopEntryId(appId) {
-    if (!appId)
-      return appId;
-
-    // Try to find the desktop entry using heuristic lookup
-    if (typeof DesktopEntries !== 'undefined' && DesktopEntries.heuristicLookup) {
-      try {
-        const entry = DesktopEntries.heuristicLookup(appId);
-        if (entry && entry.id) {
-          return entry.id;
-        }
-      } catch (e)
-        // Fall through to return original appId
-      {}
-    }
-
-    // Try direct lookup
-    if (typeof DesktopEntries !== 'undefined' && DesktopEntries.byId) {
-      try {
-        const entry = DesktopEntries.byId(appId);
-        if (entry && entry.id) {
-          return entry.id;
-        }
-      } catch (e)
-        // Fall through to return original appId
-      {}
-    }
-
-    // Return original appId if we can't find a desktop entry
-    return appId;
-  }
-
-  // Helper functions for pin/unpin functionality
+  // Helper functions forwarded to the shared AppIdMatcher singleton; the dock
+  // menu keeps raw app IDs, checks pins by direct comparison only (weak
+  // match) and pins desktop entry IDs.
   function isAppPinned(appId) {
-    if (!appId)
-      return false;
-    const pinnedApps = Settings.data.dock.pinnedApps || [];
-    const normalizedId = normalizeAppId(appId);
-    return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);
+    return AppIdMatcher.isAppPinned(appId);
   }
 
   function toggleAppPin(appId) {
-    if (!appId)
-      return;
-
-    // Get the desktop entry ID for consistent pinning
-    const desktopEntryId = getDesktopEntryId(appId);
-    const normalizedId = normalizeAppId(desktopEntryId);
-
-    let pinnedApps = (Settings.data.dock.pinnedApps || []).slice(); // Create a copy
-
-    // Find existing pinned app with case-insensitive matching
-    const existingIndex = pinnedApps.findIndex(pinnedId => normalizeAppId(pinnedId) === normalizedId);
-    const isPinned = existingIndex >= 0;
-
-    if (isPinned) {
-      // Unpin: remove from array
-      pinnedApps.splice(existingIndex, 1);
-    } else {
-      // Pin: add desktop entry ID to array
-      pinnedApps.push(desktopEntryId);
-    }
-
-    // Update the settings
-    Settings.data.dock.pinnedApps = pinnedApps;
+    AppIdMatcher.toggleAppPin(appId, {
+      useDesktopEntryId: true
+    });
   }
 
   // Dock position for context menu placement

@@ -134,7 +134,6 @@ Loader {
         target: DesktopEntries.applications
         function onValuesChanged() {
           root.iconRevision++;
-          root._desktopEntryIdCache = {};
           updateDockApps();
         }
       }
@@ -248,82 +247,28 @@ Loader {
         }
       }
 
-      // Helper function to normalize app IDs for case-insensitive matching
+      // Helper functions forwarded to the shared AppIdMatcher singleton; the
+      // dock strips the ".desktop" suffix when normalizing pinned keys and
+      // matches pins via desktop entry resolution (strong match).
       function normalizeAppId(appId) {
-        if (!appId || typeof appId !== 'string')
-          return "";
-        let id = appId.toLowerCase().trim();
-        if (id.endsWith(".desktop"))
-          id = id.substring(0, id.length - 8);
-        return id;
+        return AppIdMatcher.normalizeAppId(appId, {
+                 stripDesktopSuffix: true
+               });
       }
 
-      // Helper function to check if an app ID matches a pinned app (case-insensitive)
       function isAppIdPinned(appId, pinnedApps) {
-        if (!appId || !pinnedApps || pinnedApps.length === 0)
-          return false;
-        const normalizedId = normalizeAppId(appId);
-        // Direct match
-        if (pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId))
-          return true;
-        // Resolve via desktop entry lookup (handles StartupWMClass != .desktop filename)
-        const resolved = resolveToDesktopEntryId(appId);
-        if (resolved !== appId) {
-          const normalizedResolved = normalizeAppId(resolved);
-          return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedResolved);
-        }
-        return false;
+        return AppIdMatcher.isAppIdPinned(appId, pinnedApps, {
+                 stripDesktopSuffix: true,
+                 resolveEntry: true
+               });
       }
 
-      // Desktop entry ID resolution cache (cleared when DesktopEntries change)
-      property var _desktopEntryIdCache: ({})
-
-      // Resolve a toplevel appId to its canonical .desktop entry ID via heuristic lookup.
-      // This handles cases where the Wayland appId (e.g. "zen" from StartupWMClass)
-      // differs from the .desktop filename (e.g. "zen-browser-bin").
       function resolveToDesktopEntryId(appId) {
-        if (!appId)
-          return appId;
-        if (_desktopEntryIdCache.hasOwnProperty(appId))
-          return _desktopEntryIdCache[appId];
-        try {
-          if (typeof DesktopEntries !== 'undefined' && DesktopEntries.heuristicLookup) {
-            const entry = DesktopEntries.heuristicLookup(appId);
-            if (entry && entry.id) {
-              _desktopEntryIdCache[appId] = entry.id;
-              return entry.id;
-            }
-          }
-        } catch (e) {}
-        _desktopEntryIdCache[appId] = appId;
-        return appId;
+        return AppIdMatcher.resolveToDesktopEntryId(appId);
       }
 
-      // Helper function to get app name from desktop entry
       function getAppNameFromDesktopEntry(appId) {
-        if (!appId)
-          return appId;
-
-        try {
-          if (typeof DesktopEntries !== 'undefined' && DesktopEntries.heuristicLookup) {
-            const entry = DesktopEntries.heuristicLookup(appId);
-            if (entry && entry.name) {
-              return entry.name;
-            }
-          }
-
-          if (typeof DesktopEntries !== 'undefined' && DesktopEntries.byId) {
-            const entry = DesktopEntries.byId(appId);
-            if (entry && entry.name) {
-              return entry.name;
-            }
-          }
-        } catch (e)
-          // Fall through to return original appId
-        {}
-
-        // Return original appId if we can't find a desktop entry
-        return appId;
+        return AppIdMatcher.getAppNameFromDesktopEntry(appId);
       }
 
       // onlySameOutput predicate against the live ShellScreen — a stale

@@ -212,153 +212,41 @@ Item {
     }
   }
 
-  // Helper function to normalize app IDs for case-insensitive matching
+  // Helper functions forwarded to the shared AppIdMatcher singleton; the
+  // taskbar keeps raw app IDs (no ".desktop" suffix stripping), matches pins
+  // via desktop entry resolution (strong match) and pins desktop entry IDs.
   function normalizeAppId(appId) {
-    if (!appId || typeof appId !== 'string')
-      return "";
-    return appId.toLowerCase().trim();
+    return AppIdMatcher.normalizeAppId(appId);
   }
 
-  // Helper function to check if an app ID matches a pinned app (case-insensitive)
   function isAppIdPinned(appId, pinnedApps) {
-    if (!appId || !pinnedApps || pinnedApps.length === 0)
-      return false;
-    const normalizedId = normalizeAppId(appId);
-    // Direct match
-    if (pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId))
-      return true;
-    // Resolve via desktop entry lookup (handles StartupWMClass != .desktop filename)
-    const resolved = resolveToDesktopEntryId(appId);
-    if (resolved !== appId) {
-      const normalizedResolved = normalizeAppId(resolved);
-      return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedResolved);
-    }
-    return false;
+    return AppIdMatcher.isAppIdPinned(appId, pinnedApps, {
+             resolveEntry: true
+           });
   }
 
-  // Desktop entry ID resolution cache (cleared when DesktopEntries change)
-  property var _desktopEntryIdCache: ({})
-
-  // Resolve a toplevel appId to its canonical .desktop entry ID via heuristic lookup.
   function resolveToDesktopEntryId(appId) {
-    if (!appId)
-      return appId;
-    if (_desktopEntryIdCache.hasOwnProperty(appId))
-      return _desktopEntryIdCache[appId];
-    try {
-      if (typeof DesktopEntries !== 'undefined' && DesktopEntries.heuristicLookup) {
-        const entry = DesktopEntries.heuristicLookup(appId);
-        if (entry && entry.id) {
-          _desktopEntryIdCache[appId] = entry.id;
-          return entry.id;
-        }
-      }
-    } catch (e) {}
-    _desktopEntryIdCache[appId] = appId;
-    return appId;
+    return AppIdMatcher.resolveToDesktopEntryId(appId);
   }
 
-  // Helper function to get app name from desktop entry
   function getAppNameFromDesktopEntry(appId) {
-    if (!appId)
-      return appId;
-
-    try {
-      if (typeof DesktopEntries !== 'undefined' && DesktopEntries.heuristicLookup) {
-        const entry = DesktopEntries.heuristicLookup(appId);
-        if (entry && entry.name) {
-          return entry.name;
-        }
-      }
-
-      if (typeof DesktopEntries !== 'undefined' && DesktopEntries.byId) {
-        const entry = DesktopEntries.byId(appId);
-        if (entry && entry.name) {
-          return entry.name;
-        }
-      }
-    } catch (e)
-      // Fall through to return original appId
-    {}
-
-    // Return original appId if we can't find a desktop entry
-    return appId;
+    return AppIdMatcher.getAppNameFromDesktopEntry(appId);
   }
 
-  // Helper function to get desktop entry ID from an app ID
   function getDesktopEntryId(appId) {
-    if (!appId)
-      return appId;
-
-    // Try to find the desktop entry using heuristic lookup
-    if (typeof DesktopEntries !== 'undefined' && DesktopEntries.heuristicLookup) {
-      try {
-        const entry = DesktopEntries.heuristicLookup(appId);
-        if (entry && entry.id) {
-          return entry.id;
-        }
-      } catch (e)
-        // Fall through to return original appId
-      {}
-    }
-
-    // Try direct lookup
-    if (typeof DesktopEntries !== 'undefined' && DesktopEntries.byId) {
-      try {
-        const entry = DesktopEntries.byId(appId);
-        if (entry && entry.id) {
-          return entry.id;
-        }
-      } catch (e)
-        // Fall through to return original appId
-      {}
-    }
-
-    // Return original appId if we can't find a desktop entry
-    return appId;
+    return AppIdMatcher.getDesktopEntryId(appId);
   }
 
-  // Helper function to check if an app is pinned
   function isAppPinned(appId) {
-    if (!appId)
-      return false;
-    const pinnedApps = Settings.data.dock.pinnedApps || [];
-    const normalizedId = normalizeAppId(appId);
-    if (pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId))
-      return true;
-    const resolved = resolveToDesktopEntryId(appId);
-    if (resolved !== appId) {
-      const normalizedResolved = normalizeAppId(resolved);
-      return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedResolved);
-    }
-    return false;
+    return AppIdMatcher.isAppPinned(appId, {
+             resolveEntry: true
+           });
   }
 
-  // Helper function to toggle app pin/unpin
   function toggleAppPin(appId) {
-    if (!appId)
-      return;
-
-    // Get the desktop entry ID for consistent pinning
-    const desktopEntryId = getDesktopEntryId(appId);
-    const normalizedId = normalizeAppId(desktopEntryId);
-
-    let pinnedApps = (Settings.data.dock.pinnedApps || []).slice(); // Create a copy
-
-    // Find existing pinned app with case-insensitive matching
-    const existingIndex = pinnedApps.findIndex(pinnedId => normalizeAppId(pinnedId) === normalizedId);
-    const isPinned = existingIndex >= 0;
-
-    if (isPinned) {
-      // Unpin: remove from array
-      pinnedApps.splice(existingIndex, 1);
-    } else {
-      // Pin: add desktop entry ID to array
-      pinnedApps.push(desktopEntryId);
-    }
-
-    // Update the settings
-    Settings.data.dock.pinnedApps = pinnedApps;
+    AppIdMatcher.toggleAppPin(appId, {
+      useDesktopEntryId: true
+    });
   }
 
   // Function to update the combined model

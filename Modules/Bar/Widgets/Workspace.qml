@@ -246,40 +246,17 @@ Item {
       CompositorService.switchToWorkspace(ws);
   }
 
-  // Helper function to normalize app IDs for case-insensitive matching
-  function normalizeAppId(appId) {
-    if (!appId || typeof appId !== 'string')
-      return "";
-    return appId.toLowerCase().trim();
-  }
-
-  // Helper function to check if an app is pinned
+  // Helper functions forwarded to the shared AppIdMatcher singleton; the
+  // workspace widget keeps raw app IDs, checks pins by direct comparison only
+  // (weak match) and pins the raw appId instead of the desktop entry ID.
   function isAppPinned(appId) {
-    if (!appId)
-      return false;
-    const pinnedApps = Settings.data.dock.pinnedApps || [];
-    const normalizedId = normalizeAppId(appId);
-    return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);
+    return AppIdMatcher.isAppPinned(appId);
   }
 
-  // Helper function to toggle app pin/unpin
   function toggleAppPin(appId) {
-    if (!appId)
-      return;
-
-    const normalizedId = normalizeAppId(appId);
-    let pinnedApps = (Settings.data.dock.pinnedApps || []).slice();
-
-    const existingIndex = pinnedApps.findIndex(pinnedId => normalizeAppId(pinnedId) === normalizedId);
-    const isPinned = existingIndex >= 0;
-
-    if (isPinned) {
-      pinnedApps.splice(existingIndex, 1);
-    } else {
-      pinnedApps.push(appId);
-    }
-
-    Settings.data.dock.pinnedApps = pinnedApps;
+    AppIdMatcher.toggleAppPin(appId, {
+      useDesktopEntryId: false
+    });
   }
 
   // Deferred via Qt.callLater to avoid synchronous ListModel mutations during
