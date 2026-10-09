@@ -16,9 +16,11 @@ SettingsPanelService.openToEntry / Launcher SettingsProvider):
 
 Tab -> component mapping is read from SettingsModuleView._tabComponent
 (switch cases + trailing Component{id} declarations). When two enum values
-share one component (Tab.Bar is a routing shim for AdvancedTab), the entry
-keeps the enum value ControlCenterModules.moduleForTab can resolve
-(Tab.Advanced) so search clicks never fall through to null.
+share one component, the entry keeps the enum value
+ControlCenterModules.moduleForTab can resolve so search clicks never fall
+through to null. (Tab.Advanced and Tab.Bar currently have neither a module
+nor a component — the 高级 module hosts HooksTab; bar/dock settings moved
+into DockTab.)
 
 Scan scopes:
   Modules/Panels/Settings/Tabs/**                  -> owning tab / subtab
@@ -338,8 +340,8 @@ def main():
 
     routed = parse_routed_tabs(MODULES_QML.read_text()) if MODULES_QML.exists() else set()
 
-    # Tab enum value -> root tab file. Shared components (Tab.Bar shim over
-    # AdvancedTab) keep only the moduleForTab-routable enum value.
+    # Tab enum value -> root tab file. If two enum values ever share one
+    # component, only the moduleForTab-routable one is kept.
     file_to_tabs: dict[Path, list[str]] = {}
     for tab_name, type_name in tab_to_type.items():
         f = type_to_file.get(type_name)
@@ -389,9 +391,6 @@ def main():
         dir_tab_type = f"{parent.name}Tab"
         tab_name = type_to_tab.get(dir_tab_type)
         if tab_name is None:
-            # orphan dir (Tabs/Bar/: BarTab deleted, now hosted by AdvancedTab)
-            if parent.name == "Bar":
-                return ("Advanced", None, None)
             print(f"Warning: no tab for directory {parent.name} ({qml_file})", file=sys.stderr)
             return None
         if stem == dir_tab_type:

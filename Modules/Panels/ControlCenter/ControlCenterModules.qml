@@ -241,6 +241,9 @@ Singleton {
             ]
         },
         {
+            // Overflow shelf is gone — everything it held moved to its
+            // semantic module (taskbar/monitors → 任务栏, panels & corners →
+            // 个性化). 高级 now means "things with no DDE home at all": hooks.
             "id": "advanced",
             "ddeIcon": "advanced",
             "label": "control-center.module.advanced",
@@ -248,10 +251,6 @@ Singleton {
             "tabs": [
                 {
                     "tab": SettingsPanel.Tab.Hooks,
-                    "subTab": -1
-                },
-                {
-                    "tab": SettingsPanel.Tab.Advanced,
                     "subTab": -1
                 }
             ]

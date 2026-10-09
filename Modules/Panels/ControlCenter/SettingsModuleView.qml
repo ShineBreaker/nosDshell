@@ -6,7 +6,6 @@ import qs.Commons
 import qs.Modules.Panels.Settings
 import qs.Modules.Panels.Settings.Tabs
 import qs.Modules.Panels.Settings.Tabs.About
-import qs.Modules.Panels.Settings.Tabs.Advanced
 import qs.Modules.Panels.Settings.Tabs.Audio
 import qs.Modules.Panels.Settings.Tabs.ColorScheme
 import qs.Modules.Panels.Settings.Tabs.Connections
@@ -416,8 +415,11 @@ Item {
     switch (tab) {
     case SettingsPanel.Tab.About:
       return aboutTab;
-    case SettingsPanel.Tab.Advanced:
-      return advancedTab;
+    // NOTE: Tab.Advanced has no owning module anymore (ControlCenterModules
+    // maps no tab to it — the 高级 module now hosts only HooksTab; the old
+    // overflow page's contents moved to 任务栏/个性化). The enum item itself
+    // stays: ordinals are persisted (search index) and IPCService still
+    // references it.
     case SettingsPanel.Tab.Audio:
       return audioTab;
       // NOTE: Tab.Bar has no owning module (no ControlCenterModules entry maps
@@ -1051,10 +1053,6 @@ Item {
   Component {
     id: aboutTab
     AboutTab {}
-  }
-  Component {
-    id: advancedTab
-    AdvancedTab {}
   }
   Component {
     id: audioTab

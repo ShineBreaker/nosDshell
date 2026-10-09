@@ -7,8 +7,8 @@ import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
 
-// Advanced taskbar (dock) keys — the "任务栏" sub-tab of the stacked 高级
-// module page (DESIGN §3.5.3).
+// Taskbar (dock) appearance + grouping — the "外观" sub-tab of the stacked
+// 任务栏 module page (DESIGN §3.5.3).
 ColumnLayout {
   id: root
   spacing: 0
@@ -203,14 +203,6 @@ ColumnLayout {
       currentKey: Settings.data.dock.groupContextMenuMode
       defaultValue: Settings.getDefaultValue("dock.groupContextMenuMode")
       onSelected: key => Settings.data.dock.groupContextMenuMode = key
-    }
-
-    NToggle {
-      label: I18n.tr("panels.dock.monitors-only-same-monitor-label")
-      description: I18n.tr("panels.dock.monitors-only-same-monitor-description")
-      checked: Settings.data.dock.onlySameOutput
-      defaultValue: Settings.getDefaultValue("dock.onlySameOutput")
-      onToggled: checked => Settings.data.dock.onlySameOutput = checked
     }
   }
 }

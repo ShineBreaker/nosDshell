@@ -7,8 +7,10 @@ import qs.Services.Compositor
 import qs.Services.UI
 import qs.Widgets
 
-// Advanced bar keys — the "状态栏" sub-tab of the stacked 高级 module page
-// (DESIGN §3.5.3): appearance, behaviour and auto-hide groups.
+// Bar keys — the "状态栏" sub-tab of the stacked 任务栏 module page
+// (DESIGN §3.5.3): appearance, behaviour and auto-hide groups. The bar is
+// the taskbar itself in efficient mode and the optional status bar in
+// fashion mode.
 ColumnLayout {
   id: root
   spacing: 0

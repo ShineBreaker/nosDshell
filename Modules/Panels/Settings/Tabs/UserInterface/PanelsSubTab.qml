@@ -17,6 +17,15 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
     NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.panels-attached-to-bar-label")
+      description: I18n.tr("panels.user-interface.panels-attached-to-bar-description")
+      checked: Settings.data.ui.panelsAttachedToBar
+      defaultValue: Settings.getDefaultValue("ui.panelsAttachedToBar")
+      onToggled: checked => Settings.data.ui.panelsAttachedToBar = checked
+    }
+
+    NToggle {
       visible: (Quickshell.screens.length > 1)
       label: I18n.tr("panels.user-interface.allow-panels-without-bar-label")
       description: I18n.tr("panels.user-interface.allow-panels-without-bar-description")
@@ -141,6 +150,50 @@ ColumnLayout {
       defaultValue: Settings.getDefaultValue("general.shadowStrength")
       onMoved: value => Settings.data.general.shadowStrength = value
       text: Math.floor(Settings.data.general.shadowStrength * 100) + "%"
+    }
+  }
+
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
+
+  // Screen corners (the rounded-corner masks at the screen edges)
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.general.screen-corners-show-corners-label")
+      description: I18n.tr("panels.general.screen-corners-show-corners-description")
+      checked: Settings.data.general.showScreenCorners
+      defaultValue: Settings.getDefaultValue("general.showScreenCorners")
+      onToggled: checked => Settings.data.general.showScreenCorners = checked
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.general.screen-corners-solid-black-label")
+      description: I18n.tr("panels.general.screen-corners-solid-black-description")
+      checked: Settings.data.general.forceBlackScreenCorners
+      defaultValue: Settings.getDefaultValue("general.forceBlackScreenCorners")
+      onToggled: checked => Settings.data.general.forceBlackScreenCorners = checked
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.general.screen-corners-radius-label")
+      description: I18n.tr("panels.general.screen-corners-radius-description")
+      enabled: Settings.data.general.showScreenCorners
+      from: 0
+      to: 2
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.general.screenRadiusRatio
+      defaultValue: Settings.getDefaultValue("general.screenRadiusRatio")
+      onMoved: value => Settings.data.general.screenRadiusRatio = value
+      text: Math.floor(Settings.data.general.screenRadiusRatio * 100) + "%"
     }
   }
 }

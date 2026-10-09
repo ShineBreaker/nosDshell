@@ -96,7 +96,8 @@ Singleton {
   // Settings IPC helpers (outside IpcHandler to avoid QVariant IPC warnings)
   readonly property var _settingsTabMap: ({
                                             "about": SettingsPanel.Tab.About,
-                                            "advanced": SettingsPanel.Tab.Advanced,
+                                            // the 高级 module hosts only Hooks now; Tab.Advanced has no module
+                                            "advanced": SettingsPanel.Tab.Hooks,
                                             "audio": SettingsPanel.Tab.Audio,
                                             // bar settings live on the dock tab; Tab.Bar has no module
                                             "bar": SettingsPanel.Tab.Dock,

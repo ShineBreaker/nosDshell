@@ -217,7 +217,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 | 首次设置向导 `Panels/SetupWizard` | 类似 dde-welcome：模糊壁纸 + 居中的暗色对话框 | §3.11 |
 | 各类确认弹窗 | **DDialog** 暗色对话框 | §3.11 |
 | 桌面挂件 `Modules/DesktopWidgets` | 暗色毛玻璃小卡片 | §3.12 |
-| 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | **DDE 中没有**。保留功能代码，默认关闭，设置界面里放到"高级"下 | — |
+| 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | **DDE 中没有**。保留功能代码，默认关闭；屏幕圆角在"个性化"，栏体细节在"任务栏"〔演进：按对象归位，不再堆"高级"〕 | — |
 | 多个配色方案 / 壁纸取色 | 默认用 **Deepin** 方案；切换其他方案只改强调色 | §5 |
 
 ---
@@ -436,22 +436,23 @@ Noctalia 卡片的对应关系：
 | 账户 accounts | General（头像、用户名） |
 | 显示 display | Display（亮度、夜灯） |
 | 个性化 personalization | ColorScheme、Wallpaper、UserInterface |
-| 任务栏 dock | Bar、Dock（合并）。该模块暴露的就是 §3.1.1 设置菜单的五项——模式、位置、大小、状态、插件开关，外加插件分组和多屏覆盖。原 Noctalia 的 `bar.*`/`dock.*` 细节设置（密度、间距、指示器、点击动作等）DDE 不暴露，收进"高级"组 |
+| 任务栏 dock | Dock（常规/外观/状态栏/显示器/插件）。该模块暴露 §3.1.1 设置菜单的五项——模式、位置、大小、状态、插件开关，外加插件分组和多屏覆盖。原 Noctalia 的 `bar.*`/`dock.*` 细节设置（透明度、密度、间距、分组、点击动作等）按对象收进这里〔演进：不再堆进"高级"，见下方归位原则〕 |
 | 启动器 launcher | Launcher |
 | 控制中心 | ControlCenter |
 | 网络 network | Connections / Wi-Fi |
 | 蓝牙 bluetooth | Connections / Bluetooth |
-| 声音 sound | Audio |
-| 通知 notifications | Notifications、Osd |
+| 声音 sound | Audio、Osd |
+| 通知 notifications | Notifications |
 | 时间日期 datetime | Region（语言、位置、天气） |
 | 电源 power | Idle、SessionMenu、LockScreen |
 | 键盘 keyboard | General / Keybinds |
 | 桌面挂件 | DesktopWidgets |
 | 系统监控 | SystemMonitor |
 | 插件 | Plugins |
-| 高级 | Hooks、以及第 2 节表格里标为"DDE 中没有"的那些开关 |
+| 高级 | Hooks。只收"在任何 DDE 模块里都没有语义归属"的项；曾经的溢出页（dock/bar 细节、面板圆角）已按对象归位到任务栏/个性化〔演进〕 |
 | 系统信息 systeminfo | About |
 
+- **设置项归位原则**〔演进〕：新设置项按"它配置的对象"进对应模块（dock/bar 的外观与行为 → 任务栏，面板/圆角/阴影/动画这类 shell 全局观感 → 个性化，per-monitor 覆写 → 任务栏·显示器），不因为"DDE 没有对应开关"就堆进高级；高级只留完全没有归属的项（目前只有 Hooks）。
 - 原来的子 Tab 不再用横向标签栏，改为**分组**（SettingsGroup，每组带组标题）。内容较多的子页，用"下一页"行（NextPageWidget）进入二级页。
 - `ui.settingsPanelMode = "window"` 继续可用：在一个居中的 DDialog 风格窗口里显示同样的两栏结构（总宽 = 56 + 640）。默认值为 `"controlCenter"`。
 

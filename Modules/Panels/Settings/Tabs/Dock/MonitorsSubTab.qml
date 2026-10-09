@@ -8,7 +8,6 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  enabled: Settings.data.dock.enabled
   spacing: 0
   Layout.fillWidth: true
 
@@ -28,11 +27,21 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
+    enabled: Settings.data.dock.enabled
 
     NText {
       text: I18n.tr("panels.dock.monitors-desc")
       wrapMode: Text.WordWrap
       Layout.fillWidth: true
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.dock.monitors-only-same-monitor-label")
+      description: I18n.tr("panels.dock.monitors-only-same-monitor-description")
+      checked: Settings.data.dock.onlySameOutput
+      defaultValue: Settings.getDefaultValue("dock.onlySameOutput")
+      onToggled: checked => Settings.data.dock.onlySameOutput = checked
     }
 
     Repeater {
@@ -62,5 +71,16 @@ ColumnLayout {
                    }
       }
     }
+  }
+
+  NDccGap {
+    Layout.fillWidth: true
+  }
+
+  // Per-screen overrides of the bar/taskbar itself (position, density,
+  // display mode, widget layout) — the bar is the taskbar in efficient mode
+  // and the status bar in fashion mode.
+  ScreenOverridesSubTab {
+    Layout.fillWidth: true
   }
 }
