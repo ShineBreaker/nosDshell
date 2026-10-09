@@ -7,11 +7,12 @@
 //! 用法：
 //!   nosd-helpers vinput move <x> <y> [W H]
 //!   nosd-helpers vinput click|rclick|mclick <x> <y> [W H]
-//!   nosd-helpers vinput jclick <x> <y> <dx> <dy>   // 按下-抖动-抬起，探拖拽阈值
-//!   nosd-helpers vinput drag <x1> <y1> <x2> <y2>   // 按住拖动
-//!   nosd-helpers vinput scroll <x> <y> <dy>
+//!   nosd-helpers vinput jclick <x> <y> <dx> <dy> [W H]  // 按下-抖动-抬起，探拖拽阈值
+//!   nosd-helpers vinput drag <x1> <y1> <x2> <y2> [W H]  // 按住拖动
+//!   nosd-helpers vinput scroll <x> <y> <dy> [W H]
 //!
-//! W/H 为绝对坐标的映射区间，默认 1920x1080（verify 的无头输出）。
+//! W/H 为绝对坐标的映射区间，默认 1920x1080（verify 的无头输出），
+//! 永远排在各操作自己的坐标参数之后。
 
 use std::thread::sleep;
 use std::time::Duration;
@@ -107,8 +108,13 @@ fn run_op(args: &[String]) -> Result<(), String> {
         .roundtrip(&mut state)
         .map_err(|e| format!("vinput: roundtrip failed: {e}"))?;
 
-    let ew = arg_f32(p, 2).unwrap_or(1920.0);
-    let eh = arg_f32(p, 3).unwrap_or(1080.0);
+    // Optional [W H] extent override comes AFTER each op's own coords —
+    // move/click take it at p[2..4], jclick/drag at p[4..6], scroll at p[3..5].
+    let extent_at = |i: usize| -> (u32, u32) {
+        let w = arg_f32(p, i).unwrap_or(1920.0).max(1.0);
+        let h = arg_f32(p, i + 1).unwrap_or(1080.0).max(1.0);
+        (w as u32, h as u32)
+    };
     let mut t: u32 = 0;
     let mut tick = || {
         t += 10;
@@ -121,12 +127,12 @@ fn run_op(args: &[String]) -> Result<(), String> {
             .unwrap();
     };
 
-    let move_to = |vp: &ZwlrVirtualPointerV1, x: f32, y: f32, t: u32| {
-        vp.motion_absolute(t, x as u32, y as u32, ew as u32, eh as u32);
+    let move_to = |vp: &ZwlrVirtualPointerV1, x: f32, y: f32, ew: u32, eh: u32, t: u32| {
+        vp.motion_absolute(t, x as u32, y as u32, ew, eh);
         vp.frame();
     };
-    let click_at = |vp: &ZwlrVirtualPointerV1, x: f32, y: f32, btn: u32, t: &mut u32| {
-        vp.motion_absolute(*t, x as u32, y as u32, ew as u32, eh as u32);
+    let click_at = |vp: &ZwlrVirtualPointerV1, x: f32, y: f32, btn: u32, ew: u32, eh: u32, t: &mut u32| {
+        vp.motion_absolute(*t, x as u32, y as u32, ew, eh);
         vp.frame();
         *t += 30;
         vp.button(*t, btn, wl_pointer::ButtonState::Pressed);
@@ -139,7 +145,8 @@ fn run_op(args: &[String]) -> Result<(), String> {
 
     match op {
         "move" => {
-            move_to(&vp, arg_f32(p, 0)?, arg_f32(p, 1)?, tick());
+            let (ew, eh) = extent_at(2);
+            move_to(&vp, arg_f32(p, 0)?, arg_f32(p, 1)?, ew, eh, tick());
             flush(&mut queue);
         }
         "click" | "rclick" | "mclick" => {
@@ -148,7 +155,8 @@ fn run_op(args: &[String]) -> Result<(), String> {
                 "mclick" => BTN_MIDDLE,
                 _ => BTN_LEFT,
             };
-            click_at(&vp, arg_f32(p, 0)?, arg_f32(p, 1)?, btn, &mut t);
+            let (ew, eh) = extent_at(2);
+            click_at(&vp, arg_f32(p, 0)?, arg_f32(p, 1)?, btn, ew, eh, &mut t);
             flush(&mut queue);
         }
         "jclick" => {
@@ -160,14 +168,15 @@ fn run_op(args: &[String]) -> Result<(), String> {
                 arg_f32(p, 2)?,
                 arg_f32(p, 3)?,
             );
-            vp.motion_absolute(t, x as u32, y as u32, ew as u32, eh as u32);
+            let (ew, eh) = extent_at(4);
+            vp.motion_absolute(t, x as u32, y as u32, ew, eh);
             vp.frame();
             t += 30;
             vp.button(t, BTN_LEFT, wl_pointer::ButtonState::Pressed);
             vp.frame();
             sleep(Duration::from_millis(60));
             t += 60;
-            vp.motion_absolute(t, (x + dx) as u32, (y + dy) as u32, ew as u32, eh as u32);
+            vp.motion_absolute(t, (x + dx) as u32, (y + dy) as u32, ew, eh);
             vp.frame();
             sleep(Duration::from_millis(60));
             t += 60;
@@ -182,7 +191,8 @@ fn run_op(args: &[String]) -> Result<(), String> {
                 arg_f32(p, 2)?,
                 arg_f32(p, 3)?,
             );
-            vp.motion_absolute(t, x1 as u32, y1 as u32, ew as u32, eh as u32);
+            let (ew, eh) = extent_at(4);
+            vp.motion_absolute(t, x1 as u32, y1 as u32, ew, eh);
             vp.frame();
             t += 30;
             vp.button(t, BTN_LEFT, wl_pointer::ButtonState::Pressed);
@@ -195,8 +205,8 @@ fn run_op(args: &[String]) -> Result<(), String> {
                     t,
                     (x1 + (x2 - x1) * f) as u32,
                     (y1 + (y2 - y1) * f) as u32,
-                    ew as u32,
-                    eh as u32,
+                    ew,
+                    eh,
                 );
                 vp.frame();
                 sleep(Duration::from_millis(20));
@@ -208,7 +218,8 @@ fn run_op(args: &[String]) -> Result<(), String> {
         }
         "scroll" => {
             let dy = arg_f32(p, 2)?;
-            vp.motion_absolute(t, arg_f32(p, 0)? as u32, arg_f32(p, 1)? as u32, ew as u32, eh as u32);
+            let (ew, eh) = extent_at(3);
+            vp.motion_absolute(t, arg_f32(p, 0)? as u32, arg_f32(p, 1)? as u32, ew, eh);
             vp.frame();
             t += 30;
             vp.axis(t, wl_pointer::Axis::VerticalScroll, dy as f64);
