@@ -15,7 +15,7 @@ NDccRow {
   property bool checked: false
   property bool hovering: false
   property color activeColor: Color.accent
-  property color activeOnColor: "#FFFFFF"
+  property color activeOnColor: Color.onAccent
   property int baseSize: root.defaultSize
   property real labelSize: Style.fontSizeTitle
   // A labelled option is a settings row; a bare one is not.

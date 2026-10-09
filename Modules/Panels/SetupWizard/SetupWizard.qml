@@ -480,7 +480,7 @@ PanelWindow {
                   width: 8
                   height: 8
                   radius: width / 2
-                  color: active ? Qt.rgba(1, 1, 1, Style.pageDotCurrent) : Qt.rgba(1, 1, 1, Style.pageDotOther)
+                  color: active ? Qt.alpha(Color.onWallpaper, Style.pageDotCurrent) : Qt.alpha(Color.onWallpaper, Style.pageDotOther)
 
                   Behavior on color {
                     ColorAnimation {
@@ -500,7 +500,7 @@ PanelWindow {
               Layout.preferredHeight: 1
               Layout.minimumHeight: 1
               Layout.maximumHeight: 1
-              color: Qt.rgba(1, 1, 1, 0.1)
+              color: Color.overlayWallpaper("hover")
             }
 
             RowLayout {
@@ -551,7 +551,7 @@ PanelWindow {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 1
                 Layout.maximumHeight: Style.dialogButtonHeight
-                color: Qt.rgba(1, 1, 1, 0.1)
+                color: Color.overlayWallpaper("hover")
                 visible: panelContent.currentStep > 0
               }
 

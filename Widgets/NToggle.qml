@@ -77,7 +77,9 @@ NDccRow {
       implicitWidth: Math.round(18 * root._switchScale)
       implicitHeight: Math.round(18 * root._switchScale)
       radius: height / 2
-      color: "#FFFFFF"
+      // Off-track is the light overlay (DDE white disc); on-track is accent,
+      // so the knob follows onAccent to stay readable under accentOverride.
+      color: root.checked ? Color.onAccent : "#FFFFFF"
       anchors.verticalCenter: parent.verticalCenter
       anchors.verticalCenterOffset: 0
       x: root.checked ? switcher.width - width - 2 : 2

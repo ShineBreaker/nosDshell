@@ -85,7 +85,7 @@ Rectangle {
       Layout.preferredHeight: Style.shutdownButtonIcon
       visible: button.artworkPath === ""
       icon: button.icon
-      color: "white"
+      color: Color.onWallpaper
       pointSize: Style.fontSizeXXXL
     }
 
@@ -94,7 +94,7 @@ Rectangle {
       Layout.maximumWidth: Style.shutdownButtonSize - Style.marginM
       text: button.title
       pointSize: Style.fontSizeM
-      color: "white"
+      color: Color.onWallpaper
       horizontalAlignment: Text.AlignHCenter
       wrapMode: Text.WrapAtWordBoundaryOrAnywhere
     }

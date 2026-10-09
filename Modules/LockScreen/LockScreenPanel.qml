@@ -170,7 +170,7 @@ Item {
           Layout.bottomMargin: 20
           text: HostService.displayName
           pointSize: 16
-          color: "white"
+          color: Color.onWallpaper
           horizontalAlignment: Text.AlignHCenter
         }
       }
@@ -629,7 +629,7 @@ Item {
                                              "seconds": Math.ceil(root.timeRemaining / 1000)
                                            }) : ""
           pointSize: Style.fontSizeL
-          color: "white"
+          color: Color.onWallpaper
         }
       }
     }

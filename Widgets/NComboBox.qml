@@ -309,7 +309,7 @@ NDccRow {
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             pointSize: Style.fontSizeM
-            color: delegateRect.isHighlighted ? "#FFFFFF" : Color.onShell
+            color: delegateRect.isHighlighted ? Color.onAccent : Color.onShell
             text: {
               var item = root.getItem(delegateRect.index);
               return item && item.name ? item.name : "";

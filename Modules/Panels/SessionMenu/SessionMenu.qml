@@ -490,7 +490,7 @@ PanelWindow {
                       "seconds": Math.ceil(root.timeRemaining / 1000)
                     })
       pointSize: Style.fontSizeL
-      color: "white"
+      color: Color.onWallpaper
     }
   }
 }

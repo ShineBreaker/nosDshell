@@ -692,7 +692,7 @@ PopupWindow {
               NIcon {
                 icon: modelData.icon
                 pointSize: Style.fontSizeL
-                color: root.hoveredItem === index ? "#FFFFFF" : Color.onShellSecondary
+                color: root.hoveredItem === index ? Color.onAccent : Color.onShellSecondary
                 visible: icon !== ""
                 anchors.verticalCenter: parent.verticalCenter
               }
@@ -700,7 +700,7 @@ PopupWindow {
               NText {
                 text: modelData.text
                 pointSize: Style.fontSizeS
-                color: root.hoveredItem === index ? "#FFFFFF" : Color.onShell
+                color: root.hoveredItem === index ? Color.onAccent : Color.onShell
                 anchors.verticalCenter: parent.verticalCenter
                 width: rowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
                 elide: Text.ElideRight
@@ -796,7 +796,7 @@ PopupWindow {
             NIcon {
               icon: modelData.icon
               pointSize: Style.fontSizeL
-              color: root.hoveredItem === fixedItemRect.globalIndex ? "#FFFFFF" : Color.onShellSecondary
+              color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShellSecondary
               visible: icon !== ""
               anchors.verticalCenter: parent.verticalCenter
             }
@@ -804,7 +804,7 @@ PopupWindow {
             NText {
               text: modelData.text
               pointSize: Style.fontSizeS
-              color: root.hoveredItem === fixedItemRect.globalIndex ? "#FFFFFF" : Color.onShell
+              color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShell
               anchors.verticalCenter: parent.verticalCenter
               width: fixedRowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
               elide: Text.ElideRight

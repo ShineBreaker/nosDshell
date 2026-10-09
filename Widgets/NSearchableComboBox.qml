@@ -353,7 +353,7 @@ NDccRow {
                 NText {
                   text: name
                   pointSize: Style.fontSizeM
-                  color: highlighted ? "#FFFFFF" : Color.onShell
+                  color: highlighted ? Color.onAccent : Color.onShell
                   verticalAlignment: Text.AlignVCenter
                   elide: Text.ElideRight
                   Layout.fillWidth: true
@@ -400,7 +400,7 @@ NDccRow {
                         else
                           return Style.fontSizeXS;
                       }
-                      color: highlighted ? "#FFFFFF" : (badgeData && badgeData.color ? badgeData.color : Color.onShellSecondary)
+                      color: highlighted ? Color.onAccent : (badgeData && badgeData.color ? badgeData.color : Color.onShellSecondary)
                       Layout.preferredWidth: Math.round(Style.baseWidgetSize * 0.6)
                       Layout.preferredHeight: Math.round(Style.baseWidgetSize * 0.6)
                       visible: badgeData && badgeData.icon !== undefined && badgeData.icon !== ""

@@ -473,6 +473,14 @@ Singleton {
   readonly property color maskShell: shellIsDark ? maskDark : maskLight
   readonly property color popupShell: shellIsDark ? popupDark : Qt.rgba(1, 1, 1, 0.9)
 
+  // Forced-light popup variant (DESIGN §3.3): the DDE "light" menu keeps the
+  // light palette regardless of shell mode — same values as light-mode popups.
+  // (Not "onPopupLight": on<PropertyName> is parsed as popupLight's change
+  // handler and wants a script, not a color.)
+  readonly property color popupLight: Qt.rgba(1, 1, 1, 0.9)
+  readonly property color popupLightText: "#303030"
+  readonly property color popupLightDisabled: Qt.rgba(0, 0, 0, 0.3)
+
   // Transient tiles (OSD, notification/toast bubbles) — DESIGN §1.2.
   // ui.transientSurface: "light" = DDE's opaque #F8F8F8 tile, "dark" = dark
   // glass on popupDark, "auto" follows shellIsDark. ui.transientOpacity

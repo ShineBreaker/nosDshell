@@ -44,12 +44,12 @@ PopupWindow {
   property real submenuAnchorY: 0
 
   readonly property bool _light: variant === "light"
-  readonly property color _bgColor: _light ? Qt.rgba(1, 1, 1, 0.9) : Color.popupShell
+  readonly property color _bgColor: _light ? Color.popupLight : Color.popupShell
   readonly property color _borderColor: _light ? Color.borderLight : Color.borderShell
   readonly property real _radius: _light ? Style.radiusRow : Style.radiusPopup
   readonly property var _shadow: _light ? Style.shadowMenuLight : Style.shadowPopup
-  readonly property color _textColor: _light ? "#303030" : Color.onShell
-  readonly property color _disabledColor: _light ? Qt.rgba(0, 0, 0, 0.3) : Color.textDisabledDark
+  readonly property color _textColor: _light ? Color.popupLightText : Color.onShell
+  readonly property color _disabledColor: _light ? Color.popupLightDisabled : Color.textDisabledDark
   readonly property real _rowHeight: itemHeight > 0 ? itemHeight : rowMeasure.implicitHeight + 8
 
   // Keyboard highlight index (-1 = none)
@@ -547,7 +547,7 @@ PopupWindow {
                 icon: modelData.icon || ""
                 pointSize: Style.fontSizeS
                 applyUiScale: false
-                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : root._textColor
+                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
                 verticalAlignment: Text.AlignVCenter
 
                 Behavior on color {
@@ -560,7 +560,7 @@ PopupWindow {
               NText {
                 text: modelData.label || modelData.text || ""
                 pointSize: Style.fontSizeS
-                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : root._textColor
+                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
                 verticalAlignment: Text.AlignVCenter
                 Layout.fillWidth: true
 
@@ -576,7 +576,7 @@ PopupWindow {
                 visible: modelData.checked === true || menuItem.hasSubmenu || modelData.hasSubmenu === true
                 icon: (menuItem.hasSubmenu || modelData.hasSubmenu === true) ? "chevron-right" : "check"
                 pointSize: Style.fontSizeXL
-                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? "#FFFFFF" : Color.accent
+                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : Color.accent
               }
             }
 
