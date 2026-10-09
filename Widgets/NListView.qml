@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Templates as T
 import qs.Commons
 
@@ -23,6 +24,10 @@ Item {
 
   property bool showGradientMasks: true
   property color gradientColor: Color.mSurfaceVariant
+  // A fully transparent gradientColor switches the edge hint from "paint
+  // surface color over the rows" to "fade the rows themselves out" — the only
+  // fade that can end in nothing on a translucent surface.
+  readonly property bool _fadeToTransparent: gradientColor.a === 0
   property int gradientHeight: 16
   property bool reserveScrollbarSpace: true
 
@@ -192,7 +197,7 @@ Item {
 
   // Dynamically create gradient overlays
   function createGradients() {
-    if (!showGradientMasks)
+    if (!showGradientMasks || root._fadeToTransparent)
       return;
 
     Qt.createQmlObject(`
@@ -247,10 +252,63 @@ Item {
     `, root, "bottomGradient");
   }
 
+  // Fade-out mask used when gradientColor is transparent: a full-size opaque
+  // field whose edge zones turn transparent under the same show/hide rules as
+  // the overlay gradients, so rows dissolve instead of being painted over.
+  Item {
+    id: fadeMask
+    opacity: 0
+    layer.enabled: true
+    layer.smooth: true
+    width: listView.width
+    height: listView.height
+
+    readonly property bool topFade: {
+      if (!root.contentOverflows)
+        return false;
+      if (listView.contentY <= 1)
+        return false;
+      if (listView.currentItem && listView.currentItem.y - listView.contentY < root.gradientHeight)
+        return false;
+      return true;
+    }
+    readonly property bool bottomFade: {
+      if (!root.contentOverflows)
+        return false;
+      if (listView.contentY + listView.height >= listView.contentHeight - 1)
+        return false;
+      if (listView.currentItem && listView.currentItem.y + listView.currentItem.height > listView.contentY + listView.height - root.gradientHeight)
+        return false;
+      return true;
+    }
+    readonly property real fadeFrac: Math.min(0.4, (root.gradientHeight + 1) / Math.max(1, height))
+
+    Rectangle {
+      anchors.fill: parent
+      gradient: Gradient {
+        GradientStop { position: 0.0; color: fadeMask.topFade ? "transparent" : "white" }
+        GradientStop { position: fadeMask.fadeFrac; color: "white" }
+        GradientStop { position: 1.0 - fadeMask.fadeFrac; color: "white" }
+        GradientStop { position: 1.0; color: fadeMask.bottomFade ? "transparent" : "white" }
+      }
+    }
+  }
+
+  Component {
+    id: fadeEffect
+    MultiEffect {
+      maskEnabled: true
+      maskSource: fadeMask
+    }
+  }
+
   ListView {
     id: listView
     anchors.fill: parent
     anchors.rightMargin: root.reserveScrollbarSpace ? root.handleWidth + Style.marginXS : 0
+
+    layer.enabled: root.showGradientMasks && root._fadeToTransparent
+    layer.effect: root._fadeToTransparent ? fadeEffect : null
 
     clip: true
     boundsBehavior: Flickable.StopAtBounds

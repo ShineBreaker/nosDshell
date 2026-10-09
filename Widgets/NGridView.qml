@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Effects
 import QtQuick.Templates as T
 import qs.Commons
 
@@ -27,6 +28,9 @@ Item {
   // Gradient properties
   property bool showGradientMasks: true
   property color gradientColor: Color.mSurfaceVariant
+  // Fully transparent gradientColor: fade the rows out (OpacityMask) instead
+  // of painting an opaque surface color over them — see NListView.
+  readonly property bool _fadeToTransparent: gradientColor.a === 0
   property int gradientHeight: 16
   property bool reserveScrollbarSpace: true
 
@@ -275,7 +279,7 @@ Item {
 
   // Dynamically create gradient overlays
   function createGradients() {
-    if (!showGradientMasks)
+    if (!showGradientMasks || root._fadeToTransparent)
       return;
 
     Qt.createQmlObject(`
@@ -322,10 +326,47 @@ Item {
     `, root, "bottomGradient");
   }
 
+  // Fade-out mask for the transparent-gradientColor mode (NListView sibling):
+  // full-size opaque field whose edge zones turn transparent under the same
+  // show/hide rules as the overlay gradients.
+  Item {
+    id: fadeMask
+    opacity: 0
+    layer.enabled: true
+    layer.smooth: true
+    width: gridView.width
+    height: gridView.height
+
+    readonly property bool topFade: root.contentOverflows && !(gridView.contentY <= 1 || root.selectionOnFirstVisibleRow)
+    readonly property bool bottomFade: root.contentOverflows && !((gridView.contentY + gridView.height >= gridView.contentHeight - 1) || root.selectionOnLastVisibleRow)
+    readonly property real fadeFrac: Math.min(0.4, (root.gradientHeight + 1) / Math.max(1, height))
+
+    Rectangle {
+      anchors.fill: parent
+      gradient: Gradient {
+        GradientStop { position: 0.0; color: fadeMask.topFade ? "transparent" : "white" }
+        GradientStop { position: fadeMask.fadeFrac; color: "white" }
+        GradientStop { position: 1.0 - fadeMask.fadeFrac; color: "white" }
+        GradientStop { position: 1.0; color: fadeMask.bottomFade ? "transparent" : "white" }
+      }
+    }
+  }
+
+  Component {
+    id: fadeEffect
+    MultiEffect {
+      maskEnabled: true
+      maskSource: fadeMask
+    }
+  }
+
   GridView {
     id: gridView
     anchors.fill: parent
     anchors.rightMargin: root.reserveScrollbarSpace ? root.handleWidth + Style.marginXS : 0
+
+    layer.enabled: root.showGradientMasks && root._fadeToTransparent
+    layer.effect: root._fadeToTransparent ? fadeEffect : null
 
     move: root.animateMovement ? moveTransitionImpl : null
     displaced: root.animateMovement ? displacedTransitionImpl : null

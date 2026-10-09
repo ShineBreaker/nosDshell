@@ -286,7 +286,7 @@ NDccRow {
       contentItem: NListView {
         id: listView
         property var comboBox: combo
-        gradientColor: Color.popupShell
+        gradientColor: "transparent"
         model: combo.popup.visible ? root.model : null
         highlightMoveDuration: 0
         //showGradientMasks: false
