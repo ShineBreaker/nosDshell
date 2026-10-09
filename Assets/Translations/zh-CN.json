@@ -1364,6 +1364,8 @@
       "settings-annotation-tool-placeholder": "例如：'gradia'，'satty -f -'",
       "settings-auto-paste-description": "自动粘贴选定的剪贴板项目。需要 wtype。",
       "settings-auto-paste-label": "自动粘贴",
+      "settings-clear-search-on-close-description": "每次关闭启动器时清空搜索框。",
+      "settings-clear-search-on-close-label": "关闭时清空搜索",
       "settings-clip-chips-description": "显示一个标签栏，以按类型（图片、链接、文件、代码等）过滤剪贴板历史记录。",
       "settings-clip-chips-label": "启用类别标签",
       "settings-clip-preview-description": "在使用 >clip 命令时显示剪贴板内容的预览。",

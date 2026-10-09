@@ -96,7 +96,8 @@ Item {
   }
 
   function onClosed() {
-    _searchText = "";
+    if (Settings.data.appLauncher.clearSearchOnClose)
+      _searchText = "";
     _selectedIndex = 0;
     _results = [];
     _activeProvider = null;

@@ -181,6 +181,14 @@ ColumnLayout {
     }
 
     NToggle {
+      label: I18n.tr("panels.launcher.settings-clear-search-on-close-label")
+      description: I18n.tr("panels.launcher.settings-clear-search-on-close-description")
+      checked: Settings.data.appLauncher.clearSearchOnClose
+      onToggled: checked => Settings.data.appLauncher.clearSearchOnClose = checked
+      defaultValue: Settings.getDefaultValue("appLauncher.clearSearchOnClose")
+    }
+
+    NToggle {
       label: I18n.tr("panels.launcher.settings-ignore-mouse-input-label")
       description: I18n.tr("panels.launcher.settings-ignore-mouse-input-description")
       checked: Settings.data.appLauncher.ignoreMouseInput

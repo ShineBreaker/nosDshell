@@ -481,6 +481,7 @@ Singleton {
       property bool enableSettingsSearch: true
       property bool enableWindowsSearch: true
       property bool enableSessionSearch: true
+      property bool clearSearchOnClose: true
       property bool ignoreMouseInput: false
       property string screenshotAnnotationTool: ""
       property bool overviewLayer: false

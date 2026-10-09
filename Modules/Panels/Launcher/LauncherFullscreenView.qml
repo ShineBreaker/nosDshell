@@ -81,7 +81,9 @@ Item {
   LauncherModel {
     id: model
     screen: root.screen
-    isOpen: true
+    // Real open state — hardcoding true would keep onClosed() (search clear,
+    // result reset) from ever firing since the view lives in an always-on Loader.
+    isOpen: LauncherState.fullscreenOpen && LauncherState.fullscreenScreen?.name === root.screen?.name
     Component.onCompleted: LauncherState.registerModel("fullscreen", model)
     Component.onDestruction: LauncherState.unregisterModel("fullscreen", model)
     onRequestClose: root.requestClose()

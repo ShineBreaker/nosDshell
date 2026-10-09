@@ -82,7 +82,9 @@ Item {
   LauncherModel {
     id: model
     screen: root.screen
-    isOpen: true
+    // Real open state — hardcoding true would keep onClosed() (search clear,
+    // result reset) from ever firing since the view lives in an always-on Loader.
+    isOpen: LauncherState.miniOpen && LauncherState.miniScreen?.name === root.screen?.name
     Component.onCompleted: LauncherState.registerModel("mini", model)
     Component.onDestruction: LauncherState.unregisterModel("mini", model)
     onRequestClose: root.requestClose()
