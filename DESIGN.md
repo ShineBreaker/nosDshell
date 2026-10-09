@@ -381,7 +381,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 - **宽 408 px，高度占满屏幕，贴住屏幕右边**（`frame.h:53`、`frame.cpp:517-523`）。左侧阴影 20、黑 × 0.5；直角。
 - 背景 `maskDark`。从右侧滑入，`motionEnter`（300 ms OutCubic）。
-- 帧左侧的区域由控制中心自己的 scrim 压暗〔演进〕：原版没有遮幕，但我们的全屏透明层会让背后的窗口贴着帧边缘透出文字。scrim 在贴帧处最重（`Style.edgeSheetScrimOpacity`，黑 × 1.0）、向内渐降到 `edgeSheetScrimOpacityMin`（黑 × 0.25）——贴帧的可读文字压死，远处背幕仍透气。它跟随滑入时的帧左缘，不盖住帧本身；点击外部仍走共享的 click-outside 关闭。
+- 帧左侧由控制中心自己的 scrim 压暗〔演进〕：原版没有遮幕，但我们的全屏透明层会让背后的窗口贴着帧边缘透出文字。scrim 是一条贴帧的阴影带而不是整面黑墙——宽度 `Style.edgeSheetScrimWidth`（400 px），贴帧处最重（`Style.edgeSheetScrimOpacity`，黑 × 1.0），向外渐降到 `edgeSheetScrimOpacityMin`（黑 × 0.0）后消失，外侧只留共享 dimmer。它跟随滑入时的帧左缘，不盖住帧本身；点击外部仍走共享的 click-outside 关闭。
 - 点击外部关闭；按 Esc 时，如果在子页面就先返回上一级，否则关闭。
 - Noctalia 原有的 `controlCenter.position` 设置不再起作用：控制中心永远在右侧。任务栏在右侧时，控制中心排在任务栏内侧。
 

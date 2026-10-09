@@ -77,6 +77,11 @@ Item {
         font.pointSize: Math.max(1, Style.fontSizeClockCC * (Settings.data.ui.fontDefaultScale ?? 1.0) * Style.uiScaleRatio)
         font.weight: Style.fontWeightLight
         color: Color.onShell
+        // The column between avatar and buttons is ~120 px — narrower than
+        // "HH:mm" at fontSizeClockCC on wider fonts — so shrink instead of
+        // eliding the minutes (same contract as the date line below).
+        fontSizeMode: Text.HorizontalFit
+        minimumPointSize: Style.fontSizeXXXL
         elide: Text.ElideRight
         Layout.minimumWidth: 0
       }
@@ -84,10 +89,12 @@ Item {
       NText {
         Layout.fillWidth: true
         Layout.minimumWidth: 0
-        // Long-format date including the weekday; shrinks to fit so the
-        // weekday is never elided mid-word (locale formats vary in length,
-        // and a plain split(" ") drops or keeps the weekday unpredictably).
-        text: Qt.locale().toString(Time.now, Locale.LongFormat)
+        // Long-format DATE only — `toString(Time.now, …)` formats the whole
+        // datetime, which tacks a " 中国标准时间" timezone tail onto zh
+        // locales and overflows even at minimumPointSize; formatDate drops
+        // the time part in every locale. HorizontalFit then shrinks it to
+        // the column width so the weekday never elides mid-word.
+        text: Qt.formatDate(Time.now, Locale.LongFormat)
         pointSize: Style.fontSizeM
         fontSizeMode: Text.HorizontalFit
         minimumPointSize: Style.fontSizeXXS
