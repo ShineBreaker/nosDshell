@@ -11,6 +11,7 @@ import qs.Modules.Bar.Extras
 import qs.Services.Compositor
 import qs.Services.UI
 import qs.Widgets
+import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 
 Item {
   id: root
@@ -255,8 +256,8 @@ Item {
 
   function toggleAppPin(appId) {
     AppIdMatcher.toggleAppPin(appId, {
-      useDesktopEntryId: false
-    });
+                                useDesktopEntryId: false
+                              });
   }
 
   // Deferred via Qt.callLater to avoid synchronous ListModel mutations during
@@ -311,24 +312,18 @@ Item {
 
   function refreshWorkspaces() {
     var targetList = [];
-    var focusedOutput = null;
-    if (followFocusedScreen) {
-      for (var i = 0; i < CompositorService.workspaces.count; i++) {
-        const ws = CompositorService.workspaces.get(i);
-        if (ws.isFocused)
-          focusedOutput = ws.output.toLowerCase();
-      }
-    }
 
     if (screen !== null) {
-      const screenName = screen.name.toLowerCase();
-      for (var i = 0; i < CompositorService.workspaces.count; i++) {
-        const ws = CompositorService.workspaces.get(i);
-        // For global workspaces (e.g., LabWC), show all workspaces on all screens
-        const matchesScreen = CompositorService.globalWorkspaces || (followFocusedScreen && ws.output.toLowerCase() == focusedOutput) || (!followFocusedScreen && ws.output.toLowerCase() == screenName);
+      // 屏幕归属筛选收敛在 Commons/WorkspaceQuery.js（与 Bar 滚轮切换共用）
+      const candidates = WorkspaceQuery.workspacesForScreen(CompositorService.workspaces, {
+                                                              globalWorkspaces: CompositorService.globalWorkspaces,
+                                                              screenName: screen.name.toLowerCase(),
+                                                              followFocusedScreen: followFocusedScreen,
+                                                              focusedOutput: followFocusedScreen ? WorkspaceQuery.focusedOutput(CompositorService.workspaces) : null
+                                                            });
 
-        if (!matchesScreen)
-          continue;
+      for (var i = 0; i < candidates.length; i++) {
+        const ws = candidates[i];
         if (hideUnoccupied && !ws.isOccupied && !ws.isFocused)
           continue;
 

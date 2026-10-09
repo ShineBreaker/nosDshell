@@ -14,6 +14,7 @@ import qs.Services.Debug
 import qs.Services.Media
 import qs.Services.UI
 import qs.Widgets
+import "../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 
 // Bar Component
 Item {
@@ -339,14 +340,15 @@ Item {
           if (!root.screen || CompositorService.workspaces.count === 0)
             return;
 
-          var screenName = root.screen.name.toLowerCase();
-          var candidates = [];
-          for (var i = 0; i < CompositorService.workspaces.count; i++) {
-            var ws = CompositorService.workspaces.get(i);
-            var matchesScreen = CompositorService.globalWorkspaces || (ws.output && ws.output.toLowerCase() === screenName);
-            if (matchesScreen)
-              candidates.push(ws);
-          }
+          // Bar 空白区滚轮锚定 bar 的物理屏幕，不跟随挂件的 followFocusedScreen
+          // 显示偏好：那是 per-widget 设置（Workspace 挂件可各自配置），同一 bar
+          // 的多个挂件实例可各持不同值，屏幕级交互没有单一真值可循；上游
+          // a08ff3619 的 Bar 侧同样只按屏幕名匹配。
+          var candidates = WorkspaceQuery.workspacesForScreen(CompositorService.workspaces, {
+                                                                globalWorkspaces: CompositorService.globalWorkspaces,
+                                                                screenName: root.screen.name.toLowerCase(),
+                                                                followFocusedScreen: false
+                                                              });
 
           if (candidates.length <= 1)
             return;
