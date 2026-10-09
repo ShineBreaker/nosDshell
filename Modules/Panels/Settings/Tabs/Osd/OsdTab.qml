@@ -39,15 +39,14 @@ ColumnLayout {
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("common.general")
-      tabIndex: 0
-      checked: subTabBar.currentIndex === 0
-    }
-    NTabButton {
-      text: I18n.tr("common.events")
-      tabIndex: 1
-      checked: subTabBar.currentIndex === 1
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("common.general")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.events")
+      }
     }
   }
 

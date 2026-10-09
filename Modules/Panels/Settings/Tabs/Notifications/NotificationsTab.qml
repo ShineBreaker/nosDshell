@@ -43,35 +43,26 @@ ColumnLayout {
     distributeEvenly: false // this is too cramped on this tab to split evenly
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("common.appearance")
-      tabIndex: 0
-      checked: subTabBar.currentIndex === 0
-    }
-    NTabButton {
-      text: I18n.tr("common.duration")
-      tabIndex: 1
-      checked: subTabBar.currentIndex === 1
-    }
-    NTabButton {
-      text: I18n.tr("common.history")
-      tabIndex: 2
-      checked: subTabBar.currentIndex === 2
-    }
-    NTabButton {
-      text: I18n.tr("common.sound")
-      tabIndex: 3
-      checked: subTabBar.currentIndex === 3
-    }
-    NTabButton {
-      text: I18n.tr("common.toast")
-      tabIndex: 4
-      checked: subTabBar.currentIndex === 4
-    }
-    NTabButton {
-      text: I18n.tr("panels.notifications.rules-tab")
-      tabIndex: 5
-      checked: subTabBar.currentIndex === 5
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("common.appearance")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.duration")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.history")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.sound")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.toast")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("panels.notifications.rules-tab")
+      }
     }
   }
 

@@ -15,25 +15,20 @@ ColumnLayout {
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("common.volumes")
-      tabIndex: 0
-      checked: subTabBar.currentIndex === 0
-    }
-    NTabButton {
-      text: I18n.tr("common.devices")
-      tabIndex: 1
-      checked: subTabBar.currentIndex === 1
-    }
-    NTabButton {
-      text: I18n.tr("common.media")
-      tabIndex: 2
-      checked: subTabBar.currentIndex === 2
-    }
-    NTabButton {
-      text: I18n.tr("common.visualizer")
-      tabIndex: 3
-      checked: subTabBar.currentIndex === 3
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("common.volumes")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.devices")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.media")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.visualizer")
+      }
     }
   }
 

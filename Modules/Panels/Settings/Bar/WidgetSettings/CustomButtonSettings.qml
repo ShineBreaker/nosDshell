@@ -79,28 +79,23 @@ ColumnLayout {
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("bar.custom-button.tab-actions")
-      tabIndex: 0
-      checked: tabView.currentIndex === 0
-      onClicked: tabView.currentIndex = 0
-    }
-    NTabButton {
-      text: I18n.tr("bar.custom-button.tab-icon")
-      tabIndex: 1
-      checked: tabView.currentIndex === 1
-      onClicked: tabView.currentIndex = 1
-    }
-    NTabButton {
-      text: I18n.tr("bar.custom-button.tab-text")
-      tabIndex: 2
-      checked: tabView.currentIndex === 2
-      onClicked: tabView.currentIndex = 2
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("bar.custom-button.tab-actions")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("bar.custom-button.tab-icon")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("bar.custom-button.tab-text")
+      }
     }
   }
 
   NTabView {
     id: tabView
+    currentIndex: subTabBar.currentIndex
     Layout.fillWidth: true
 
     // ============ Actions Tab ============
