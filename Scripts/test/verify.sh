@@ -192,7 +192,7 @@ cat > "$INNER" <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 
-SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap
+SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap launcher-handoff
 control-center cc-switch cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
@@ -448,19 +448,52 @@ run_scene() {
                           call launcher setSearchText ">" 1.2;      shot launcher-search-cmd
                           call launcher setSearchText "2+2*8" 1.2;  shot launcher-search-calc
                           call launcher setSearchText "" 0.5;      call launcher toggle 0.5 ;;
-    # Category mode: nav column + filtered grid, then back to free mode.
+    # Category mode: nav column + filtered grid; a re-click on the active nav
+    # row deselects back to "all" (vinput real click on the 网络 row).
     launcher-category)    call launcher toggle 1.5; shot launcher-category-free
                           call launcher switchDisplayMode 0.6; shot launcher-category-open
                           call launcher selectCategory "Internet" 1.2; shot launcher-category-internet
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          "$VINPUT" vinput click 80 100 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot launcher-category-deselect
                           call launcher switchDisplayMode 0.6
                           call launcher toggle 0.5 ;;
-    # Mini mode: floating panel anchored 1 px from the bar, search + results.
+    # Mini mode: floating panel anchored 1 px from the bar, search + results,
+    # then the two-level category list via real clicks on the switch row and
+    # a bucket row (1920x1080: window left edge ~637, switch row y~990,
+    # first bucket row centers ~600/636).
     launcher-mini)        call launcher switchMode mini 1
                           call launcher toggle 1.5; shot launcher-mini-open
                           call launcher setSearchText "chr" 1.2; shot launcher-mini-search
                           call launcher setSearchText "" 0.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          "$VINPUT" vinput click 750 990 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot launcher-mini-categories
+                          "$VINPUT" vinput click 750 620 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot launcher-mini-category-apps
+                          "$VINPUT" vinput click 750 990 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot launcher-mini-back-list
+                          "$VINPUT" vinput click 750 990 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot launcher-mini-back-all
                           call launcher toggle 0.5
                           call launcher switchMode fullscreen 0.8 ;;
+    # Exclusive-grab handoff: the fullscreen launcher's top-right settings and
+    # power buttons must close the launcher BEFORE their target panel opens,
+    # otherwise the new controls sit under an exclusive keyboard grab.
+    launcher-handoff)     call launcher toggle 1.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # settings gear, top-right (1920x1080: ~1827,33)
+                          "$VINPUT" vinput click 1827 33 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.5; shot launcher-handoff-settings
+                          call settings toggle 0.8
+                          call launcher toggle 1.5
+                          # power button, top-right (~1877,33)
+                          "$VINPUT" vinput click 1877 33 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2; shot launcher-handoff-session
+                          call sessionMenu toggle 0.5 ;;
     # Live mode swap: switch while the view is open (gxde-launcher
     # launchersys.cpp:238-246). The query must carry across both ways.
     launcher-modeswap)    call launcher switchMode mini 1
