@@ -364,6 +364,13 @@ Item {
     openModuleAt(mod, -1);
   }
 
+  function searchResultClicked(entry) {
+    const t = ControlCenterModules.targetForTab(entry.tab, entry.subTab);
+    if (t)
+      openModuleAt(t.module, t.slot, t.inner, false);
+    searchInput.text = "";
+  }
+
   // External entry point for routing (panel openModule, window navigateTo)
   // and in-page navigation (rail clicks, keyboard, search results):
   // highlight + scroll to the module header, to a tab section when
@@ -712,6 +719,7 @@ Item {
         // 1 px accent). Noctalia's search index has no DDE counterpart; the
         // field lives in the module view so every mode keeps working.
         Rectangle {
+          id: searchField
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginS
           Layout.rightMargin: Style.marginS
@@ -733,6 +741,7 @@ Item {
 
           TextInput {
             id: searchInput
+            objectName: "settingsSearchInput"
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
@@ -748,61 +757,6 @@ Item {
               if (searchResults.count > 0)
                 searchResults.selectFirst();
             }
-          }
-
-          ListView {
-            id: searchResults
-            anchors.top: parent.bottom
-            anchors.topMargin: Style.marginXS
-            anchors.left: parent.left
-            anchors.right: parent.right
-            visible: count > 0 && searchInput.text.trim() !== ""
-            height: visible ? Math.min(contentHeight, Style.controlCenterWidth) : 0
-            clip: true
-            model: SettingsSearchService.searchIndex.filter(function (entry) {
-              return SettingsSearchService.isEntryVisible(entry) && searchInput.text.trim() !== "" && I18n.tr(entry.labelKey).toLowerCase().includes(searchInput.text.trim().toLowerCase());
-            })
-            z: 10
-
-            // Up/Down + Enter from the field: first result selected by default
-            onCountChanged: {
-              if (count > 0 && currentIndex < 0)
-                currentIndex = 0;
-            }
-
-            function selectFirst() {
-              if (currentItem)
-                searchResultClicked(currentItem.entry);
-            }
-
-            delegate: NDccRow {
-              required property var modelData
-              readonly property var entry: modelData
-              width: searchResults.width
-              height: Style.detailRowHeight
-              clickable: true
-              onHoveredChanged: {
-                if (hovered)
-                  searchResults.currentIndex = index;
-              }
-              onClicked: searchResultClicked(entry)
-
-              NText {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-                text: I18n.tr(entry.labelKey)
-                pointSize: Style.fontSizeBody
-                color: Color.onShell
-                elide: Text.ElideRight
-              }
-            }
-          }
-
-          function searchResultClicked(entry) {
-            const t = ControlCenterModules.targetForTab(entry.tab, entry.subTab);
-            if (t)
-              root.openModuleAt(t.module, t.slot, t.inner, false);
-            searchInput.text = "";
           }
         }
 
@@ -1015,6 +969,78 @@ Item {
                   }
                 }
               }
+            }
+          }
+        }
+      }
+
+      // Search-result popup. Sibling of contentLayout, not a child of the
+      // fixed-height field: pointer delivery walks "child contains point" down
+      // the tree, so anything painted past the field's own rect can never take
+      // a press no matter the z — the scroll view underneath wins every time.
+      // Anchored under searchField so it floats above the module scroll view;
+      // popupShell keeps the overlay-tinted rows legible over the glass content.
+      Rectangle {
+        id: searchPopup
+        objectName: "settingsSearchPopup"
+        x: searchField.x
+        y: searchField.y + searchField.height + Style.marginXS
+        width: searchField.width
+        height: Math.min(searchResults.contentHeight, Style.controlCenterWidth)
+        visible: searchResults.count > 0 && searchInput.text.trim() !== ""
+        radius: Style.radiusPopup
+        color: Color.popupShell
+        border.color: Color.borderShell
+        border.width: Style.borderS
+        clip: true
+
+        ListView {
+          id: searchResults
+          anchors.fill: parent
+          clip: true
+          // Explicit highlight kept under the delegates — Qt's default highlight
+          // item sits above row 0 and swallows its clicks
+          highlight: Rectangle {
+            color: Color.overlay("checked")
+            radius: Style.radiusRow
+            z: -1
+          }
+          highlightMoveDuration: Style.animationFast
+          model: SettingsSearchService.searchIndex.filter(function (entry) {
+            return SettingsSearchService.isEntryVisible(entry) && searchInput.text.trim() !== "" && I18n.tr(entry.labelKey).toLowerCase().includes(searchInput.text.trim().toLowerCase());
+          })
+
+          // Up/Down + Enter from the field: first result selected by default
+          onCountChanged: {
+            if (count > 0 && currentIndex < 0)
+              currentIndex = 0;
+          }
+
+          function selectFirst() {
+            if (currentItem)
+              searchResultClicked(currentItem.entry);
+          }
+
+          delegate: NDccRow {
+            required property var modelData
+            required property int index
+            readonly property var entry: modelData
+            width: searchResults.width
+            height: Style.detailRowHeight
+            clickable: true
+            onHoveredChanged: {
+              if (hovered)
+                searchResults.currentIndex = index;
+            }
+            onClicked: searchResultClicked(entry)
+
+            NText {
+              Layout.fillWidth: true
+              Layout.alignment: Qt.AlignVCenter
+              text: I18n.tr(entry.labelKey)
+              pointSize: Style.fontSizeBody
+              color: Color.onShell
+              elide: Text.ElideRight
             }
           }
         }
