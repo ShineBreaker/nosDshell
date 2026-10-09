@@ -63,12 +63,10 @@ Singleton {
     Logger.d("ColorScheme", "Load colorScheme");
     scanning = true;
     schemes = [];
-    // Use find command to locate all scheme.json files in both directories
-    // First ensure the downloaded schemes directory exists
-    Quickshell.execDetached(["mkdir", "-p", downloadedSchemesDirectory]);
-    // Find in both preinstalled and downloaded directories
-    findProcess.command = ["find", "-L", schemesDirectory, downloadedSchemesDirectory, "-mindepth", "2", "-name", "*.json", "-type", "f"];
-    findProcess.running = true;
+    // Ensure the downloaded schemes dir exists *before* find runs: a missing
+    // dir makes find exit non-zero and kills the whole scan (first-boot race
+    // — execDetached mkdir never serialized with the find).
+    mkdirProcess.running = true;
   }
 
   function getBasename(path) {
@@ -146,6 +144,17 @@ Singleton {
     } else {
       Logger.e("ColorScheme", "Scheme not found:", schemeName);
       ToastService.showError(I18n.tr("panels.color-scheme.title"), `'${basename}' ` + I18n.tr("common.not-found"));
+    }
+  }
+
+  Process {
+    id: mkdirProcess
+    running: false
+    command: ["mkdir", "-p", root.downloadedSchemesDirectory]
+    onExited: function (exitCode) {
+      // Find in both preinstalled and downloaded directories
+      findProcess.command = ["find", "-L", schemesDirectory, downloadedSchemesDirectory, "-mindepth", "2", "-name", "*.json", "-type", "f"];
+      findProcess.running = true;
     }
   }
 

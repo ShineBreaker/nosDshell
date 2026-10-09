@@ -211,7 +211,7 @@ Variants {
           color: Color.maskShell
           radius: Style.radiusItem
           border.width: Style.borderS
-          border.color: Color.overlay("hover")
+          border.color: Color.borderShell
         }
 
         LauncherMiniView {
