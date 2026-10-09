@@ -664,6 +664,15 @@
     "subTabLabel": "common.colors"
   },
   {
+    "labelKey": "panels.color-scheme.accent-override-label",
+    "descriptionKey": "panels.color-scheme.accent-override-description",
+    "widget": "NTextInput",
+    "tab": 4,
+    "tabLabel": "panels.color-scheme.title",
+    "subTab": 0,
+    "subTabLabel": "common.colors"
+  },
+  {
     "labelKey": "panels.color-scheme.dark-mode-mode-label",
     "descriptionKey": "panels.color-scheme.dark-mode-mode-description",
     "widget": "NComboBox",
@@ -2513,6 +2522,15 @@
     "subTabLabel": "common.appearance"
   },
   {
+    "labelKey": "panels.user-interface.row-height-scale-label",
+    "descriptionKey": "panels.user-interface.row-height-scale-description",
+    "widget": "NValueSlider",
+    "tab": 21,
+    "tabLabel": "panels.user-interface.title",
+    "subTab": 0,
+    "subTabLabel": "common.appearance"
+  },
+  {
     "labelKey": "panels.user-interface.animation-disable-label",
     "descriptionKey": "panels.user-interface.animation-disable-description",
     "widget": "NToggle",
@@ -2557,6 +2575,42 @@
   {
     "labelKey": "panels.user-interface.dimmer-opacity-label",
     "descriptionKey": "panels.user-interface.dimmer-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 21,
+    "tabLabel": "panels.user-interface.title",
+    "subTab": 1,
+    "subTabLabel": "common.panels"
+  },
+  {
+    "labelKey": "panels.user-interface.transient-surface-label",
+    "descriptionKey": "panels.user-interface.transient-surface-description",
+    "widget": "NComboBox",
+    "tab": 21,
+    "tabLabel": "panels.user-interface.title",
+    "subTab": 1,
+    "subTabLabel": "common.panels"
+  },
+  {
+    "labelKey": "panels.user-interface.transient-opacity-label",
+    "descriptionKey": "panels.user-interface.transient-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 21,
+    "tabLabel": "panels.user-interface.title",
+    "subTab": 1,
+    "subTabLabel": "common.panels"
+  },
+  {
+    "labelKey": "panels.user-interface.border-emphasis-label",
+    "descriptionKey": "panels.user-interface.border-emphasis-description",
+    "widget": "NValueSlider",
+    "tab": 21,
+    "tabLabel": "panels.user-interface.title",
+    "subTab": 1,
+    "subTabLabel": "common.panels"
+  },
+  {
+    "labelKey": "panels.user-interface.shadow-strength-label",
+    "descriptionKey": "panels.user-interface.shadow-strength-description",
     "widget": "NValueSlider",
     "tab": 21,
     "tabLabel": "panels.user-interface.title",
@@ -2726,6 +2780,15 @@
       "CompositorService.isNiri",
       "Settings.data.wallpaper.overviewEnabled"
     ]
+  },
+  {
+    "labelKey": "panels.wallpaper.settings-blur-sigma-label",
+    "descriptionKey": "panels.wallpaper.settings-blur-sigma-description",
+    "widget": "NValueSlider",
+    "tab": 22,
+    "tabLabel": "common.wallpaper",
+    "subTab": 0,
+    "subTabLabel": "common.general"
   },
   {
     "labelKey": "panels.wallpaper.look-feel-fill-mode-label",
