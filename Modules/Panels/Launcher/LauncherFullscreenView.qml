@@ -480,7 +480,10 @@ Item {
         }
 
         // Pinned section title (category mode): text + a 1 px line fading from
-        // white@0.3 to 0, pinned to the grid top while scrolling.
+        // white@0.3 to 0, pinned to the grid top while scrolling. Upstream
+        // paints no background here (categorytitlewidget.cpp: a transparent
+        // QLabel + CategoryWhiteLine) — a band under the text reads as a dark
+        // frame that collides with the selected cell's pressDim block.
         Rectangle {
           id: pinnedTitle
           visible: root.categoryMode && !resultsList.visible
@@ -488,7 +491,7 @@ Item {
           anchors.right: parent.right
           anchors.top: parent.top
           height: Style.launcherCategoryTitleHeight
-          color: Qt.alpha(Color.mShadow, 0.3)
+          color: "transparent"
 
           RowLayout {
             anchors.fill: parent
