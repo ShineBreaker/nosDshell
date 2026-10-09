@@ -24,15 +24,7 @@ Item {
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
   readonly property string screenName: screen ? screen.name : ""
-  property var widgetSettings: {
-    if (section && sectionWidgetIndex >= 0 && screenName) {
-      var widgets = Settings.getBarWidgetsForScreen(screenName)[section];
-      if (widgets && sectionWidgetIndex < widgets.length) {
-        return widgets[sectionWidgetIndex];
-      }
-    }
-    return {};
-  }
+  property var widgetSettings: Settings.getWidgetSettings(screenName, section, sectionWidgetIndex)
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
   readonly property bool isBarVertical: barPosition === "left" || barPosition === "right"
@@ -150,25 +142,10 @@ Item {
   implicitWidth: useGraphicMode ? capsule.width : pill.width
   implicitHeight: useGraphicMode ? capsule.height : pill.height
 
-  NPopupContextMenu {
+  BarWidgetSettingsMenu {
     id: contextMenu
 
-    model: [
-      {
-        "label": I18n.tr("actions.widget-settings"),
-        "action": "widget-settings",
-        "icon": "settings"
-      },
-    ]
-
-    onTriggered: action => {
-                   contextMenu.close();
-                   PanelService.closeContextMenu(screen);
-
-                   if (action === "widget-settings") {
-                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-                   }
-                 }
+    widget: root
   }
 
   // ==================== GRAPHIC MODE ====================

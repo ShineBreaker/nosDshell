@@ -1066,6 +1066,23 @@ Singleton {
   }
 
   // -----------------------------------------------------
+  // Per-instance settings object for a bar widget: the entry at
+  // section/sectionWidgetIndex of the screen's effective widget list.
+  // Pure read on the getBarWidgetsForScreen data path — bar widgets call
+  // this from a property binding so instances refresh when settings change.
+  // Fashion dock plugins bypass this entirely: BarWidgetLoader injects the
+  // dock.plugins entry itself (Modules/Dock/DockContent.qml).
+  function getWidgetSettings(screenName, section, sectionWidgetIndex) {
+    if (section && sectionWidgetIndex >= 0 && screenName) {
+      var widgets = getBarWidgetsForScreen(screenName)[section];
+      if (widgets && sectionWidgetIndex < widgets.length && widgets[sectionWidgetIndex]) {
+        return widgets[sectionWidgetIndex];
+      }
+    }
+    return {};
+  }
+
+  // -----------------------------------------------------
   // Get effective bar density for a screen (with inheritance)
   // If the screen has a density override and overrides are enabled, use it; otherwise use global default
   function getBarDensityForScreen(screenName) {

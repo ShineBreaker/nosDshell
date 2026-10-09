@@ -1,5 +1,6 @@
 import Quickshell
 import qs.Commons
+import qs.Modules.Bar.Extras
 import qs.Services.UI
 import qs.Widgets
 
@@ -16,15 +17,7 @@ NIconButton {
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   readonly property string screenName: screen ? screen.name : ""
-  property var widgetSettings: {
-    if (section && sectionWidgetIndex >= 0 && screenName) {
-      var widgets = Settings.getBarWidgetsForScreen(screenName)[section];
-      if (widgets && sectionWidgetIndex < widgets.length) {
-        return widgets[sectionWidgetIndex];
-      }
-    }
-    return {};
-  }
+  property var widgetSettings: Settings.getWidgetSettings(screenName, section, sectionWidgetIndex)
 
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
@@ -50,25 +43,10 @@ NIconButton {
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
-  NPopupContextMenu {
+  BarWidgetSettingsMenu {
     id: contextMenu
 
-    model: [
-      {
-        "label": I18n.tr("actions.widget-settings"),
-        "action": "widget-settings",
-        "icon": "settings"
-      },
-    ]
-
-    onTriggered: action => {
-                   contextMenu.close();
-                   PanelService.closeContextMenu(screen);
-
-                   if (action === "widget-settings") {
-                     BarService.openWidgetSettings(screen, section, sectionWidgetIndex, widgetId, widgetSettings);
-                   }
-                 }
+    widget: root
   }
 
   onRightClicked: {
