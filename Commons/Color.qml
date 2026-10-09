@@ -479,7 +479,10 @@ Singleton {
   readonly property color borderLight: _border(mOutline, 0.08)
 
   readonly property color maskShell: shellIsDark ? maskDark : maskLight
-  readonly property color popupShell: shellIsDark ? popupDark : Qt.alpha(mSurface, 0.9)
+  // ui.popupOpacity multiplies the token's tuned alpha (dark 0.86 /
+  // light 0.9) so menus and arrow popups follow one user knob.
+  readonly property color _popupBase: shellIsDark ? popupDark : Qt.alpha(mSurface, 0.9)
+  readonly property color popupShell: Qt.rgba(_popupBase.r, _popupBase.g, _popupBase.b, _popupBase.a * Settings.data.ui.popupOpacity)
 
   // Forced-light popup variant (DESIGN §3.3): the DDE "light" menu keeps the
   // classic light palette regardless of shell mode — a fixed signature, not a

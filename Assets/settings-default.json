@@ -1,5 +1,5 @@
 {
-  "settingsVersion": 74,
+  "settingsVersion": 76,
   "bar": {
     "enabled": false,
     "barType": "simple",
@@ -80,7 +80,7 @@
   },
   "general": {
     "avatarImage": "",
-    "dimmerOpacity": 0.2,
+    "dimmerOpacity": 0.35,
     "showScreenCorners": false,
     "forceBlackScreenCorners": false,
     "scaleRatio": 1,
@@ -146,12 +146,13 @@
     "tooltipsEnabled": true,
     "scrollbarAlwaysVisible": false,
     "boxBorderEnabled": false,
-    "panelBackgroundOpacity": 0.4,
+    "panelBackgroundOpacity": 0.65,
     "translucentWidgets": false,
     "panelsAttachedToBar": false,
     "settingsPanelMode": "controlCenter",
     "transientSurface": "auto",
     "transientOpacity": 1.0,
+    "popupOpacity": 1.0,
     "borderEmphasis": 1.0,
     "rowHeightScale": 1.0,
     "accentOverride": ""
@@ -399,7 +400,8 @@
     "groupApps": true,
     "groupContextMenuMode": "extended",
     "groupClickAction": "cycle",
-    "deadOpacity": 0.6
+    "deadOpacity": 0.6,
+    "backgroundOpacity": 1.0
   },
   "network": {
     "bluetoothRssiPollingEnabled": false,

@@ -26,6 +26,20 @@ ColumnLayout {
 
     NValueSlider {
       Layout.fillWidth: true
+      label: I18n.tr("panels.dock.appearance-background-opacity-label")
+      description: I18n.tr("panels.dock.appearance-background-opacity-description")
+      from: 0.3
+      to: 1
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.dock.backgroundOpacity
+      defaultValue: Settings.getDefaultValue("dock.backgroundOpacity")
+      onMoved: value => Settings.data.dock.backgroundOpacity = value
+      text: Math.floor(Settings.data.dock.backgroundOpacity * 100) + "%"
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
       label: I18n.tr("panels.dock.appearance-dead-opacity-label")
       description: I18n.tr("panels.dock.appearance-dead-opacity-description")
       from: 0

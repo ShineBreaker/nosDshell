@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 75
+  readonly property int settingsVersion: 76
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -313,7 +313,7 @@ Singleton {
     // general
     property JsonObject general: JsonObject {
       property string avatarImage: ""
-      property real dimmerOpacity: 0.2
+      property real dimmerOpacity: 0.35
       property bool showScreenCorners: false
       property bool forceBlackScreenCorners: false
       property real scaleRatio: 1.0
@@ -366,7 +366,7 @@ Singleton {
       property bool tooltipsEnabled: true
       property bool scrollbarAlwaysVisible: false
       property bool boxBorderEnabled: false
-      property real panelBackgroundOpacity: 0.4
+      property real panelBackgroundOpacity: 0.65
       property bool translucentWidgets: false
       property bool panelsAttachedToBar: false
       property string settingsPanelMode: "controlCenter" // legacy: Migration72 pins to controlCenter; the picker is gone (DDE keeps settings inside the CC frame)
@@ -374,6 +374,9 @@ Singleton {
       // (dark glass), "auto" (follows colorSchemes.darkMode) — DESIGN §1.2
       property string transientSurface: "auto"
       property real transientOpacity: 1.0
+      // Scales the popup family (popupShell: menus, arrow popups, mini
+      // launcher) token alpha; multiplies the token's tuned ratio
+      property real popupOpacity: 1.0
       // Scales border token alpha (DESIGN §1.2); 0 disables panel borders
       property real borderEmphasis: 1.0
       // Multiplies row-height tokens (DESIGN §3.5.4)
@@ -652,6 +655,8 @@ Singleton {
       property string groupContextMenuMode: "extended" // "list", "extended"
       property string groupClickAction: "cycle" // "cycle", "list"
       property double deadOpacity: 0.6
+      // Extra multiplier on the dock's maskShell background alpha
+      property real backgroundOpacity: 1.0
     }
 
     // network

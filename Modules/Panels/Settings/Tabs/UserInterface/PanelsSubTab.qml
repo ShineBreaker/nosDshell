@@ -52,6 +52,20 @@ ColumnLayout {
       onMoved: value => Settings.data.general.dimmerOpacity = value
       text: Math.floor(Settings.data.general.dimmerOpacity * 100) + "%"
     }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.popup-opacity-label")
+      description: I18n.tr("panels.user-interface.popup-opacity-description")
+      from: 0.3
+      to: 1
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.ui.popupOpacity
+      defaultValue: Settings.getDefaultValue("ui.popupOpacity")
+      onMoved: value => Settings.data.ui.popupOpacity = value
+      text: Math.floor(Settings.data.ui.popupOpacity * 100) + "%"
+    }
   }
 
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)

@@ -452,13 +452,6 @@ Singleton {
   // Control center home (DESIGN §3.5.1–3.5.2)
   // 408 px frame, flush right edge, full screen height (gxde-control-center frame.h:53)
   readonly property int controlCenterWidth: Math.round(408 * uiScaleRatio)
-  // The edge sheet's own scrim — a shadow band hugging the frame's free edge,
-  // not a full-width wall: heaviest next to the frame (max) so a window edge
-  // underneath reads as a backdrop instead of text at the frame's edge, and
-  // fades to nothing (min) before the band's outer end (DESIGN §3.5.1〔演进〕).
-  readonly property real edgeSheetScrimOpacity: 1.0
-  readonly property real edgeSheetScrimOpacityMin: 0.0
-  readonly property int edgeSheetScrimWidth: Math.round(400 * uiScaleRatio)
   readonly property int controlCenterHeaderHeight: Math.round(140 * uiScaleRatio)
   readonly property int controlCenterHeaderMarginLeft: Math.round(40 * uiScaleRatio)
   readonly property int controlCenterHeaderMarginTop: Math.round(10 * uiScaleRatio)

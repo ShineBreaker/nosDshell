@@ -346,6 +346,15 @@
     "subTabLabel": "control-center.module.taskbar"
   },
   {
+    "labelKey": "panels.dock.appearance-background-opacity-label",
+    "descriptionKey": "panels.dock.appearance-background-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 0,
+    "tabLabel": "control-center.module.advanced",
+    "subTab": 0,
+    "subTabLabel": "control-center.module.taskbar"
+  },
+  {
     "labelKey": "panels.dock.appearance-dead-opacity-label",
     "descriptionKey": "panels.dock.appearance-dead-opacity-description",
     "widget": "NValueSlider",
@@ -2575,6 +2584,15 @@
   {
     "labelKey": "panels.user-interface.dimmer-opacity-label",
     "descriptionKey": "panels.user-interface.dimmer-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 21,
+    "tabLabel": "panels.user-interface.title",
+    "subTab": 1,
+    "subTabLabel": "common.panels"
+  },
+  {
+    "labelKey": "panels.user-interface.popup-opacity-label",
+    "descriptionKey": "panels.user-interface.popup-opacity-description",
     "widget": "NValueSlider",
     "tab": 21,
     "tabLabel": "panels.user-interface.title",

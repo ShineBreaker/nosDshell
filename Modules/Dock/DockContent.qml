@@ -184,7 +184,9 @@ Item {
 
     // DDE fashion surface: maskShell rounded rect flush to the screen edge
     // (radiusItem = 5 px when compositing is on), no border, no shadow.
-    color: Color.maskShell
+    // dock.backgroundOpacity multiplies the token alpha on top of
+    // ui.panelBackgroundOpacity — the dock knob only detunes the dock.
+    color: Qt.rgba(Color.maskShell.r, Color.maskShell.g, Color.maskShell.b, Color.maskShell.a * Settings.data.dock.backgroundOpacity)
     radius: Style.radiusItem
 
     readonly property real contentLength: Math.min(dockLayout.implicitLength + Style.margin2XS, dockRoot.maxLength)

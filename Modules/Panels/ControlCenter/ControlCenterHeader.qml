@@ -77,6 +77,7 @@ Item {
         font.pointSize: Math.max(1, Style.fontSizeClockCC * (Settings.data.ui.fontDefaultScale ?? 1.0) * Style.uiScaleRatio)
         font.weight: Style.fontWeightLight
         color: Color.onShell
+        horizontalAlignment: Text.AlignHCenter
         // The column between avatar and buttons is ~120 px — narrower than
         // "HH:mm" at fontSizeClockCC on wider fonts — so shrink instead of
         // eliding the minutes (same contract as the date line below).
@@ -96,6 +97,7 @@ Item {
         // the column width so the weekday never elides mid-word.
         text: Qt.formatDate(Time.now, Locale.LongFormat)
         pointSize: Style.fontSizeM
+        horizontalAlignment: Text.AlignHCenter
         fontSizeMode: Text.HorizontalFit
         minimumPointSize: Style.fontSizeXXS
         color: Color.onShell
