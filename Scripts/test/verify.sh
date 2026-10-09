@@ -193,7 +193,7 @@ set -uo pipefail
 cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap launcher-handoff
-control-center cc-switch cc-page cc-notifications cc-quick-wifi
+control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
@@ -529,6 +529,21 @@ run_scene() {
                           sleep 1.0; shot cc-page-2
                           "$VINPUT" vinput click 1673 1058 2>>"$WORK/logs/vinput.log" || true
                           sleep 1.0; shot cc-page-back
+                          call controlCenter toggle 0.5 ;;
+    # Volume + brightness slider drags. 1920x1080: volume groove y≈936 (knob
+    # starts ~0.4 → x≈1682), brightness groove y≈970 (knob ~1.0 → x≈1885).
+    cc-slider)            call controlCenter toggle 1.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          qs -p "$REPO" ipc call debug hit opened 1685 936 > "$WORK/logs/cc-slider-hit.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug hit opened 1885 970 >> "$WORK/logs/cc-slider-hit.txt" 2>&1 || true
+                          shot cc-slider-0
+                          "$VINPUT" vinput drag 1685 936 1590 936 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-slider-vol-left
+                          "$VINPUT" vinput drag 1595 936 1790 936 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-slider-vol-right
+                          "$VINPUT" vinput drag 1885 970 1700 970 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-slider-bri-left
                           call controlCenter toggle 0.5 ;;
     # DDE control center: bell page (3 notifications seeded so the list has content)
     cc-notifications)     notify-send -a nosdshell-verify "Notification one" \
