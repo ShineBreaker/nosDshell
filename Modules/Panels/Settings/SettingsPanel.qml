@@ -14,7 +14,10 @@ SmartPanel {
   // The "centered"/"attached" settings surface hosts the same two-column DDE
   // module view as the control-center frame (rail + 640 px content).
   // Hold the loaded tabs across close/open cycles: reopening is instant.
-  keepContentAlive: true
+  // Gated to the modes that actually use this panel — in controlCenter mode
+  // the standalone panel never opens, and keeping it alive would preload a
+  // second full settings view at startup for nothing.
+  keepContentAlive: settingsPanelMode === "centered" || settingsPanelMode === "attached"
   preferredWidth: Style.settingsRailWidth + Style.settingsWindowContentWidth
   preferredHeight: Math.round(910 * Style.uiScaleRatio)
 

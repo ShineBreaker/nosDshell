@@ -1635,8 +1635,13 @@ Item {
     // Panel top content: Text, icons, etc...
     Loader {
       id: contentLoader
-      // Keep-alive panels hold their content across close/open cycles.
-      active: isPanelOpen || (root.keepContentAlive && root._contentReady)
+      // Keep-alive panels hold their content across close/open cycles — and
+      // build it while hidden: activating only on first open made the first
+      // open pay the full incubation cost (settings: ~3 s of placeholder
+      // gaps). finishOpen() early-returns when the panel isn't open, so the
+      // preload stays invisible.
+      active: isPanelOpen || root.keepContentAlive
+      asynchronous: root.keepContentAlive
       x: panelBackground.x
       y: panelBackground.y
       width: panelBackground.width

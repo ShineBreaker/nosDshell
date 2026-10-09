@@ -1110,4 +1110,14 @@ Item {
     id: wallpaperTab
     WallpaperTab {}
   }
+
+  // Keep-alive panels preload this view while hidden (SmartPanel
+  // contentLoader): start the staged tab fill at creation too, so the first
+  // open lands on settled rows instead of a 3 s placeholder sweep.
+  Component.onCompleted: {
+    if (module === null && modules.length > 0) {
+      _ensureLoaded(0);
+      idleFillTimer.start();
+    }
+  }
 }
