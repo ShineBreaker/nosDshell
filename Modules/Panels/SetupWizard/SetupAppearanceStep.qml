@@ -13,7 +13,8 @@ ColumnLayout {
 
   function extractSchemeName(path) {
     var basename = path.split('/').pop();
-    return basename.replace('.json', '');
+    var name = basename.replace('.json', '');
+    return name === 'nosDshell-default' ? 'Noctalia' : name;
   }
 
   // Cache for scheme colors (mirrors ColorSchemeTab approach)

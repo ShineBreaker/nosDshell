@@ -78,7 +78,7 @@ Singleton {
     var schemeName = filename.replace(".json", "");
     // Convert back to display names for special cases
     if (schemeName === "nosDshell-default") {
-      return "nosDshell (default)";
+      return "Noctalia";
     } else if (schemeName === "Tokyo-Night") {
       return "Tokyo Night";
     } else if (schemeName === "Rosepine") {
@@ -95,7 +95,7 @@ Singleton {
     }
     // Handle special cases for bundled schemes
     var schemeName = nameOrPath.replace(".json", "");
-    if (schemeName === "nosDshell (default)") {
+    if (schemeName === "nosDshell (default)" || schemeName === "Noctalia" || schemeName === "Noctalia (default)") {
       schemeName = "nosDshell-default";
     } else if (schemeName === "Tokyo Night") {
       schemeName = "Tokyo-Night";

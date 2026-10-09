@@ -27,7 +27,7 @@ ColumnLayout {
     var schemeName = filename.replace(".json", "");
 
     if (schemeName === "nosDshell-default") {
-      schemeName = "nosDshell (default)";
+      schemeName = "Noctalia";
     } else if (schemeName === "Tokyo-Night") {
       schemeName = "Tokyo Night";
     } else if (schemeName === "Rosepine") {
