@@ -201,13 +201,15 @@ PanelWindow {
     }
 
     // Background region for click-to-close - reactive sizing
-    // Uses isAnyPanelOpen so clicking on any screen's background closes the panel
+    // Uses isAnyPanelOpen so clicking on any screen's background closes the panel.
+    // Launcher windows are standalone layer surfaces on Top, so while one is
+    // open the wallpaper must also accept input for the dismiss MouseArea below.
     Region {
       id: backgroundMaskRegion
       x: 0
       y: 0
-      width: root.isAnyPanelOpen ? root.width : 0
-      height: root.isAnyPanelOpen ? root.height : 0
+      width: (root.isAnyPanelOpen || LauncherState.anyOpen) ? root.width : 0
+      height: (root.isAnyPanelOpen || LauncherState.anyOpen) ? root.height : 0
       intersection: Intersection.Subtract
     }
   }

@@ -93,6 +93,14 @@ Item {
     anchors.fill: parent
     focus: false
 
+    // DDE fullscreen: left-click on empty canvas retracts the launcher. Sits
+    // under the content ColumnLayout so controls and cells keep their clicks.
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.LeftButton
+      onClicked: root.requestClose()
+    }
+
     Keys.onPressed: event => {
                       // Escape works from every zone
                       if (event.key === Qt.Key_Escape && event.modifiers === Qt.NoModifier) {
@@ -459,13 +467,27 @@ Item {
           spacing: root.cellSpacing
           model: root.appResults
           currentIndex: model.selectedIndex
-          interactive: true
+          // Only grab the pointer while the grid actually scrolls — otherwise an
+          // interactive Flickable eats every press on empty canvas and the
+          // dismiss MouseArea below can never see them. Wheel scroll still goes
+          // through NGridView's own WheelHandler either way.
+          interactive: contentOverflows
           focus: true
           verticalPolicy: ScrollBar.AlwaysOff
           horizontalPolicy: ScrollBar.AlwaysOff
           reserveScrollbarSpace: false
           showGradientMasks: false
           boundsBehavior: Flickable.StopAtBounds
+
+          // Sits under the inner GridView (z:-1): clicks on empty canvas between
+          // or below cells retract the launcher (DDE fullscreen behaviour).
+          MouseArea {
+            z: -1
+            width: Math.max(resultsGrid.contentWidth, resultsGrid.width)
+            height: Math.max(resultsGrid.contentHeight, resultsGrid.height)
+            acceptedButtons: Qt.LeftButton
+            onClicked: root.requestClose()
+          }
 
           // Keyboard selection: animates to the new row (NGridView smooth scroll)
           onCurrentIndexChanged: {
