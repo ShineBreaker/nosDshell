@@ -13,6 +13,7 @@
 #
 # Scenes (default: all, lockscreen always runs last):
 #   idle, taskbar, launcher, launcher-search, launcher-category, launcher-mini,
+#   launcher-dismiss,
 #   launcher-modeswap, control-center, cc-notifications, cc-quick-wifi,
 #   cc-quick-bluetooth, cc-quick-display, cc-quick-vpn, cc-quick-basic,
 #   settings, session-menu, notification,
@@ -192,7 +193,7 @@ cat > "$INNER" <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 
-SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap launcher-handoff
+SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
 control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
@@ -479,6 +480,36 @@ run_scene() {
                           sleep 1.0; shot launcher-mini-back-all
                           call launcher toggle 0.5
                           call launcher switchMode fullscreen 0.8 ;;
+    # Dismissal + activation: clicking an app row must launch-and-close,
+    # clicking empty wallpaper must retract the launcher (the launcher windows
+    # are standalone Top-layer surfaces — the wallpaper MouseArea only sees
+    # events while MainScreen's input mask covers the desktop), and the search
+    # field must be empty on reopen when clearSearchOnClose is on (default).
+    launcher-dismiss)     call launcher switchMode mini 1
+                          call launcher toggle 1.5; shot launcher-dismiss-open
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # first app row (~y620 in the 1920x1080 mini window)
+                          "$VINPUT" vinput click 800 620 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2; shot launcher-dismiss-appclick
+                          # reopen, type a query, click empty wallpaper -> close
+                          call launcher toggle 1.5
+                          call launcher setSearchText "chr" 1.0
+                          shot launcher-dismiss-typed
+                          "$VINPUT" vinput click 300 300 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2; shot launcher-dismiss-outside
+                          # reopen -> search field must be empty again
+                          call launcher toggle 1.5; shot launcher-dismiss-reopen
+                          call launcher toggle 0.5
+                          # fullscreen: cell click activates (window closes),
+                          # margin click on empty canvas retracts too
+                          call launcher switchMode fullscreen 1.2
+                          call launcher toggle 1.5; shot launcher-dismiss-full
+                          "$VINPUT" vinput click 960 400 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2; shot launcher-dismiss-cellclick
+                          call launcher toggle 1.5
+                          "$VINPUT" vinput click 60 540 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2; shot launcher-dismiss-canvas ;;
     # Exclusive-grab handoff: the fullscreen launcher's top-right settings and
     # power buttons must close the launcher BEFORE their target panel opens,
     # otherwise the new controls sit under an exclusive keyboard grab.
