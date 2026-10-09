@@ -45,7 +45,7 @@ PopupWindow {
 
   readonly property bool _light: variant === "light"
   readonly property color _bgColor: _light ? Color.popupLight : Color.popupShell
-  readonly property color _borderColor: _light ? Color.borderLight : Color.borderShell
+  readonly property color _borderColor: _light ? Color.popupLightBorder : Color.borderShell
   readonly property real _radius: _light ? Style.radiusRow : Style.radiusPopup
   readonly property var _shadow: _light ? Style.shadowMenuLight : Style.shadowPopup
   readonly property color _textColor: _light ? Color.popupLightText : Color.onShell

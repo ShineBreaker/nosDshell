@@ -16,8 +16,8 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 ### 设计原则
 
-1. **蒙版，而不是色块。** 常驻面板背景 = 背后模糊 + 纯黑蒙版（暗色）或纯白蒙版（浅色面板）。面板背景不用彩色，不用渐变，不用 Material 风格的 tonal surface。OSD 和通知气泡这类瞬时提示是例外——它们不读蒙版，走 `maskTransient` 令牌体系：经典形态是不透明浅色实底（DDE 原版），也可切换为深色玻璃或跟随明暗模式（§1.2，`ui.transientSurface`）。
-2. **白色透明度阶梯。** 暗色表面上，所有层级都是"白色 × 某个透明度"（§1.3）。
+1. **蒙版，而不是色块。** 常驻面板背景 = 背后模糊 + 半透明蒙版。蒙版颜色取自配色方案的表面角色〔演进：原为纯黑/纯白字面量〕——面板取 `mSurface`、弹出层取 `mSurfaceVariant`，蒙版自身的 DDE 透明度和模糊行为不变。Deepin 方案的表面值（暗 `#181818` / 浅 `#F8F8F8`）就是 DDE 15 的近黑/近白观感；其他方案得到各自色调的玻璃，这是方案染色可定制性的落点（§5）。面板背景不用渐变，不用 Material 实色 tonal surface 直接铺。OSD 和通知气泡这类瞬时提示是例外——它们不读蒙版，走 `maskTransient` 令牌体系：经典形态是不透明浅色实底（DDE 原版），也可切换为深色玻璃或跟随明暗模式（§1.2，`ui.transientSurface`）。
+2. **前景透明度阶梯。** 表面上所有层级都是"该表面前景色 × 某个透明度"——暗色面用 `onShell`、壁纸面用恒白、浅色瞬时用深文字色（§1.3）。
 3. **一个强调色。** `#2CA7F8` 只用在：当前活动项、菜单悬停行、按下态、进度和高亮、链接。其他地方不出现。
 4. **小圆角。** 圆角在 4–10 px 之间（§1.4）。除头像、圆点这类正圆外，不要胶囊形，不要大圆角卡片。
 5. **贴边并居中。** 任务栏贴住屏幕边缘并居中；控制中心贴右边、占满屏高；弹出层用带箭头的矩形指向触发它的任务栏图标。**弹出层不和栏融合成一体**（不要 Noctalia 的 attached panel 和反向圆角）。
@@ -46,34 +46,34 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 | 令牌 | 有模糊时 | 无模糊时 | 来源 |
 |---|---|---|---|
-| `maskDark` | `#000000` × `ui.panelBackgroundOpacity`（默认 **0.4**） | `#000000` × **0.8** | dtkwidget `DBlurEffectWidget::maskColor()`（DarkColor：有模糊用 maskAlpha，无模糊用 `MASK_COLOR_ALPHA_DEFAULT=204`）；默认透明度见 `gxde-desktop-schemas` `com.deepin.dde.appearance` `opacity=0.4` |
-| `maskLight` | `#FFFFFF` × 0.4 〔派生，与暗色对称〕 | `#FFFFFF` × **0.8** | 同上（LightColor） |
-| `popupDark` | `#242424` × 0.86 | 同左 | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值） |
-| `borderDark` | `rgba(255,255,255,0.10)`〔演进：原版 0.05 在现代屏上近乎不可见，提到 Win11 式可见发丝边〕 | `#2C3238` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
-| `borderLight` | `rgba(0,0,0,0.08)`〔演进：原版 0.04〕 | `#E5E5E5` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
+| `maskDark` | `mSurface` × `ui.panelBackgroundOpacity`（默认 **0.4**） | `mSurface` × **0.8** | dtkwidget `DBlurEffectWidget::maskColor()`（DarkColor：有模糊用 maskAlpha，无模糊用 `MASK_COLOR_ALPHA_DEFAULT=204`）；默认透明度见 `gxde-desktop-schemas` `com.deepin.dde.appearance` `opacity=0.4`；RGB 改取方案表面色〔演进〕——Deepin `#181818` ≈ 原 `#000000` |
+| `maskLight` | `mSurface` × 0.4 〔派生，与暗色对称〕 | `mSurface` × **0.8** | 同上（LightColor）；RGB 改取方案表面色〔演进〕——Deepin `#F8F8F8` ≈ 原 `#FFFFFF` |
+| `popupDark` | `mSurfaceVariant` × 0.86 | 同左 | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）；RGB 改取方案 surfaceVariant〔演进〕——Deepin `#2A2A2A` ≈ 原 `#242424` |
+| `borderDark` | `mOutline` × 0.10〔演进：原版 0.05 在现代屏上近乎不可见，提到 Win11 式可见发丝边；底色改取方案 mOutline——Deepin `#3A3A3A` ≈ 原 `#2C3238`〕 | `mOutline` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
+| `borderLight` | `mOutline` × 0.08〔演进：原版 0.04；底色改取方案 mOutline——Deepin `#D5D5D5` ≈ 原 `#E5E5E5`〕 | `mOutline` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
 
 规则：
 
 - **任务栏、控制中心、启动器小窗口、任务栏弹出层、暗色菜单**都用 `maskDark`。其中任务栏弹出层和暗色菜单用 `popupDark`（这两者的面积小，需要更高的不透明度才看得清）。
 - **OSD、通知气泡、吐司**用 `maskTransient` 令牌族。瞬时面的形态由 `ui.transientSurface` 控制（§6）：
-  - `light`：不透明 `#F8F8F8`（Deepin 浅色方案的 mSurface），文字为深色——DDE 15 的原版形态：浅色瞬时提示叠在暗色常驻外壳之上。DDE 原版用 `DBlurEffectWidget::LightColor`（近不透明），半透明会浑浊且毁对比度，故取实色。
-  - `dark`〔演进〕：深色玻璃，底色 `popupDark`（`#242424`）。有模糊时 alpha = `0.86 × ui.transientOpacity`（下限 0.5），无模糊时下限抬到 0.9——同样是"宁可平坦，不可浑浊"。文字/描边/叠加层整体翻为暗面规格（见下表"瞬时令牌"）。
+  - `light`：不透明浅色实底 + 深文字——DDE 15 的原版形态：浅色瞬时提示叠在暗色常驻外壳之上。底色取方案浅色面〔演进〕：浅色模式下即 `mSurface`（Deepin `#F8F8F8`，其他浅色方案各随其调）；暗色模式下方案没有浅色面，退为固定经典值 `#F8F8F8`，保证"light"始终是 DDE 那块浅砖。DDE 原版用 `DBlurEffectWidget::LightColor`（近不透明），半透明会浑浊且毁对比度，故取实色。
+  - `dark`〔演进〕：深色玻璃，暗色模式底色取方案 `mSurfaceVariant`（Deepin `#2A2A2A`）；浅色模式下方案没有深色面，退为固定 `#242424`。有模糊时 alpha = `0.86 × ui.transientOpacity`（下限 0.5），无模糊时下限抬到 0.9——同样是"宁可平坦，不可浑浊"。文字/描边/叠加层整体翻为暗面规格（见下表"瞬时令牌"）。
   - `auto`（默认）〔演进〕：暗色模式按 `dark`，浅色模式按 `light`——跟随系统观感。
   - `ui.transientOpacity`（默认 1.0，范围 0.3–1.0）同时作用于两种形态：有模糊时直接乘在各自的基准 alpha 上（light 基准 1.0，dark 基准 0.86），无模糊时最终 alpha 一律抬到 ≥0.9——同样是"宁可平坦，不可浑浊"。`notifications.backgroundOpacity` 作为通知专属系数继续叠加。
 - **全屏界面**（全屏启动器、关机界面、锁屏）不用蒙版，背景是**预先模糊好的壁纸**（§1.8）。
 - "有模糊"= `Settings.data.general.enableBlurBehind` 为真 **且** 合成器确实提供 `ext-background-effect-v1`（启动时探测，见 §4 `nosd-helpers wl-probe`）。合成器不支持时一律按"无模糊"取 0.8 蒙版，否则半透明蒙版下面是清晰的壁纸，文字不可读。组件只读 `Color.maskDark` 这类令牌，不自己算透明度。
 - 组件实际使用的是下列**语义令牌**：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
-  - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为白 × 0.9。
+  - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原固定白 × 0.9〕。
   - `Color.borderShell` / `Color.borderTransient`：分别对应 `borderDark` / `borderLight`（浅色外壳使用 `borderLight`）；描边透明度受 `ui.borderEmphasis`（0–2，默认 1，0 = 无边框）整体缩放〔演进〕。
   - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司），取值按上面的 `transientSurface` 规则解析——不再恒为不透明 `#F8F8F8`〔演进〕。
-- 与之配套的前景色：`Color.onShell`（暗色模式为白色，浅色模式为 `#303030`）、`Color.onTransient`（浅色瞬时面上 `#303030`）。`onShellSecondary` / `onShellTertiary` 是它的弱化级：暗色侧用 DDE 规格 alpha 0.8 / 0.6，浅色侧 tertiary 提到 0.7——`#303030` × 0.6 在白帧上只有约 3.8:1，0.7 落到 ≈`#6E6E6E`（~5:1），对齐浅色方案的 `mOnSurfaceVariant`（`#6B6B6B`）。§1.3 的叠加阶梯以对应表面的前景色为底色。
-- 瞬时面为 `dark` 时，整组瞬时令牌翻转〔演进〕：`onTransient`→`#FFFFFF`、`onTransientBody`→白 × 0.85、`onTransientTrack`→白 × 0.15、`onTransientTick`→白 × 0.5、`overlayTransient(level)`→白阶梯、动作文字 `transientAction`→`accent`（浅色面上是 `accentAction`）。组件永远只读这些令牌，不判断当前形态。
+- 与之配套的前景色：`Color.onShell` = 方案的 `mOnSurface`〔演进〕——Deepin 仍是暗 `#FFFFFF` / 浅 `#303030`，其他方案的壳上文字随方案色相（如 Gruvbox 的米黄）。`Color.onTransient` 同理：浅色瞬时面 = 浅深文字（浅色模式取 `onShell`，暗色模式固定 `#303030` 经典值），深色瞬时面 = 浅文字。`onShellSecondary` / `onShellTertiary` 是它的弱化级：暗色侧用 DDE 规格 alpha 0.8 / 0.6，浅色侧 tertiary 提到 0.7——`#303030` × 0.6 在白帧上只有约 3.8:1，0.7 落到 ≈`#6E6E6E`（~5:1），对齐浅色方案的 `mOnSurfaceVariant`（`#6B6B6B`）。§1.3 的叠加阶梯以对应表面的前景色为底色。
+- 瞬时面为 `dark` 时，整组瞬时令牌翻转〔演进〕：暗色模式下 `onTransient`→`onShell`（方案白/米白等）、`onTransientBody`→前景 × 0.85、`onTransientTrack`→前景 × 0.15、`onTransientTick`→前景 × 0.5、`overlayTransient(level)`→前景阶梯、动作文字 `transientAction`→`accent`（浅色面上是 `accentAction`）；浅色模式强制 dark 砖时前景退为固定恒白。组件永远只读这些令牌，不判断当前形态。
 - 壁纸面（全屏启动器、关机界面、锁屏，§1.8 的预模糊壁纸 + 暗色压暗）在两种模式下都是暗色表面，上面的内容用不随主题翻转的令牌：`Color.onWallpaper` / `onWallpaperSecondary` / `onWallpaperTertiary`（恒白阶梯）、`overlayWallpaper(level)`（恒白叠加阶梯）、`onWallpaperShadow`（§1.5 文字投影 `rgba(0,0,0,0.31)`）。这些面上禁用 `onShell` 和 `overlay()`。
 
-### 1.3 白色叠加阶梯（用于暗色表面）
+### 1.3 前景叠加阶梯（MD3 state layer）
 
-浅色表面用同样的阶梯，只是把白色换成黑色（`Qt.alpha("#000", x)`）。阶梯值统一从 `Color.overlay(level)` 取得。
+阶梯底色的规则同 MD3 state layer：**状态色 = 该表面的前景色 × 层级透明度**。`Color.overlay(level)` 以 `onShell` 为底——暗色模式即 `mOnSurface`（Deepin 为白，其他方案随其色相）；浅色模式同理取 `mOnSurface` 的深色值（Deepin `#303030` ≈ 原黑阶梯）〔演进：原为白/黑字面量〕。壁纸面另用 `overlayWallpaper`（恒白），瞬时面用 `overlayTransient`（取 `onTransient`）。
 
 | 层级 | α | 典型用途 | 来源 |
 |---|---|---|---|
@@ -473,9 +473,9 @@ Noctalia 卡片的对应关系：
   - 圆角 15 的胶囊（这是第二处允许胶囊形的地方），底色白 × 0.2。悬停白 × 0.5，按下 `accent`。
   - 推荐操作按钮：文字为 `accent`。
 - **单选 / 复选**（OptionItem）：整行可点，选中时右侧显示 `accent` 色的 ✓。DDE 不使用圆形单选框。
-- **分隔线**：1 px，白 × 0.15。
+- **分隔线**：1 px，前景 × 0.15（`separator` 令牌）。
 - **行高系数**〔演进〕：行高类令牌（`detailRowHeight`/`settingsRowHeight`/`launcherMiniRowHeight`/`dialogButtonHeight`/`sliderBasicHeight`/`settingsFieldHeight`）整体乘 `ui.rowHeightScale`（0.9–1.2，默认 1）。写死行高的组件不受控，新代码一律走令牌。
-- **表面令牌边界**：设置页里的行、列表、嵌板一律来自白叠加阶梯（`overlay`）或蒙版（`maskShell`）。**禁止**用 `mSurface`/`mSurfaceVariant`/`mOutline` 这类 Material 实色做行或卡片的填充——它们在暗色面板上是突兀的实黑块（`overlay("strong")`≈白 ×0.2，`overlay("field")`≈白 ×0.15，视觉上是"白底"而非黑底）。`m*` 实色只允许出现在两处：配色方案预览等"数据本身即颜色"的展示面，以及徽章/状态点的语义色。
+- **表面令牌边界**：设置页里的行、列表、嵌板一律来自叠加阶梯（`overlay`）或蒙版（`maskShell`）。方案染色只经由令牌层进入组件——**禁止**组件直接用 `mSurface`/`mSurfaceVariant`/`mOutline` 这类 Material 实色做行或卡片的填充：它们是**不透明**色（方案要供 GTK/终端模板用），跳过令牌的透明度处理后会在玻璃面上糊成实块。`m*` 实色只允许出现在两处：配色方案预览等"数据本身即颜色"的展示面，以及徽章/状态点的语义色。
 - **列表页**（Wi-Fi 网络、蓝牙设备、插件、配色模板这类"可选多项"清单）：每一项就是一个 SettingsItem 行；选中/已连接态用右侧 `accent` ✓ 与状态文字表达，**不给整行换底色**；进行中用行内转圈；行内展开区（密码、详情）用 `overlay("field")` + `radiusItem` 嵌板，行尾接一个可点的"添加/新建"行。
 - **堆叠子页**：`NTabView.stacked` 时每个子页 = 一个 NHeader + 一个 SettingsGroup。组头与它的组之间只有 1 px 缝，组与组之间 15 px——间距全部落在"上一组末行与下一组头"之间，头与组之间不再额外留白。
 - **行内可展开的编辑器**：行本身（clickable + 右侧 chevron）负责开合，展开内容直接挂在行组内、跟随组缝排列，不自包实色容器。
@@ -618,7 +618,7 @@ Noctalia 卡片的对应关系：
   - 暗色：`mPrimary #2CA7F8`、`mOnPrimary #FFFFFF`、`mSecondary #01BDFF`、`mOnSecondary #FFFFFF`、`mTertiary #0087FF`、`mOnTertiary #FFFFFF`、`mError #F9704F`、`mOnError #FFFFFF`、`mSurface #181818`、`mOnSurface #FFFFFF`、`mSurfaceVariant #2A2A2A`、`mOnSurfaceVariant #B4B4B4`、`mOutline #3A3A3A`、`mShadow #000000`、`mHover #2CA7F8`、`mOnHover #FFFFFF`。
   - 浅色：强调色相同；`mSurface #F8F8F8`、`mOnSurface #303030`、`mSurfaceVariant #EBEBEB`、`mOnSurfaceVariant #6B6B6B`、`mOutline #D5D5D5`、`mShadow #000000`。
   - 方案中的颜色**一律不透明**，因为模板（GTK、终端）要直接使用这些颜色，尚未改造的组件也会把 `mSurfaceVariant` 当作实色来画。DDE 的半透明表面只从 §1.2 和 §1.3 的令牌获得。
-- **表面令牌（§1.2–1.3）不读取配色方案**，只看暗色/浅色模式。切换到其他方案或使用壁纸取色时，只有强调色系（`mPrimary`、`mSecondary`、`mTertiary`、`mHover`）跟着变。唯一的例外是 `transientSurface = dark` 时的瞬时面——它用 `popupDark` 这个固定深色，仍不读方案。
+- **表面令牌读取配色方案的表面角色**〔演进：原为只看明暗模式〕：蒙版取 `mSurface`、弹出层取 `mSurfaceVariant`、描边取 `mOutline`、壳上前景和叠加阶梯取 `mOnSurface`、`alert` 取 `mError`、禁用文字按 MD3 规则 = `onSurface` × 0.38。切换方案或壁纸取色时，表面色调、文字色相、状态层、错误色全部随方案走——这是方案染色可定制性的完整落点。Deepin 方案的这些角色被刻意设成 DDE 15 的值（`#181818`/`#2A2A2A`/`#3A3A3A`/`#FFFFFF`/`#F9704F`），所以默认观感不变。例外仍是固定签名：壁纸面的恒白阶梯、强制反向模式时的瞬时经典值、浅色菜单的固定浅色调色板（`popupLight*`）、分隔槽的刻线对、以及 §6 的强调色行为。
 - **`ui.accentOverride`**（默认空）〔演进〕：非空且为合法颜色时，`Color.mPrimary` / `mSecondary` / `mTertiary` / `mHover` 四个强调色角色一律取覆盖色（`Color.qml` 里方案值存 `_​*Raw`，公开 m* 令牌随覆盖解析），各 `mOn*` 对应色按覆盖色亮度取白或 `#303030`；`accent` / `accentAlt` / `accentAction` / `onAccent` 语义令牌仍是 m* 的别名，所以直接读 `mPrimary` 的组件（进度环、滑块、勾选态）同样跟随。`mError` 与表面系令牌不受影响；GTK/终端模板读方案 JSON 生成、不经 `Color.qml`，照常按方案出。副作用：设置页里"当前方案"预览条显示的是生效色（即覆盖色），各方案的候选色板仍显示方案自带颜色。
 - 模板功能（GTK、终端等配色文件的生成）照常使用当前方案的完整颜色。
 
