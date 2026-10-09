@@ -94,7 +94,9 @@ Item {
           width: 8
           height: 8
           radius: 4
-          color: active ? Qt.rgba(1, 1, 1, Style.pageDotCurrent) : Qt.rgba(1, 1, 1, Style.pageDotOther)
+          // On-shell alphas: DDE spec is white@0.8/0.3 on its always-dark
+          // panel; the token flips to dark dots on a light frame.
+          color: active ? Qt.alpha(Color.onShell, Style.pageDotCurrent) : Qt.alpha(Color.onShell, Style.pageDotOther)
           anchors.verticalCenter: parent.verticalCenter
         }
       }
