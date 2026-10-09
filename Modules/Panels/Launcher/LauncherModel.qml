@@ -346,6 +346,19 @@ Item {
       _selectedIndex = index;
   }
 
+  // Select + activate a result object taken from a view's model array (e.g.
+  // the fullscreen grid's filtered appResults) — the delegate's `index` alone
+  // does not line up with _results there. Do NOT pass the injected `modelData`
+  // context property: Qt re-boxes JS objects per delegate, so identity tests
+  // against _results always fail.
+  function activateItem(item) {
+    const idx = _results.indexOf(item);
+    if (idx < 0)
+      return;
+    _selectedIndex = idx;
+    activate();
+  }
+
   // ---------------------------------------------------------------
   // Activation
   // ---------------------------------------------------------------

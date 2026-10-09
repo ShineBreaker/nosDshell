@@ -16,6 +16,10 @@ Item {
   // Owning grid, injected by NGridView; may be null during early evaluation.
   property var gridView: GridView.view
 
+  // Emitted on left-click; the owning view maps `index` back to the result
+  // object in the launcher model, then selects and activates it.
+  signal activated
+
   property int iconSize: 85
 
   // New until first launch (tracked in ShellState by ApplicationsProvider)
@@ -99,12 +103,10 @@ Item {
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: mouse => {
-                 if (root.gridView)
-                 root.gridView.currentIndex = root.index;
                  if (mouse.button === Qt.RightButton) {
                    appContextMenu.openAtItem(root, mouse.x, mouse.y);
                  } else {
-                   model.activate();
+                   root.activated();
                  }
                }
   }

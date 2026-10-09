@@ -476,6 +476,9 @@ Item {
             width: resultsGrid.effectiveCellWidth
             height: resultsGrid.effectiveCellHeight
             iconSize: Math.round(resultsGrid.effectiveCellWidth * Settings.data.appLauncher.iconRatio)
+            // `index` is the position inside appResults (apps only, filtered)
+            // — map back to the real result object before activating.
+            onActivated: model.activateItem(root.appResults[index])
           }
         }
 
