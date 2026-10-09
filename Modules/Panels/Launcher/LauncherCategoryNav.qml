@@ -72,7 +72,11 @@ Item {
   function select(category) {
     if (!appsProvider)
       return;
-    appsProvider.selectDDECategory(category);
+    // Upstream scrolls to the category inside the all-apps grid instead of
+    // filtering, so no deselect gesture was ever needed; here the nav filters
+    // — re-clicking the active category must return to the all view or the
+    // launcher stays stuck on one filter.
+    appsProvider.selectDDECategory(category === currentCategory ? "all" : category);
     if (gridView)
       gridView.positionViewAtBeginning();
   }
