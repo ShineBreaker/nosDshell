@@ -584,7 +584,7 @@ Singleton {
 
   // Category navigation (navigationwidget.cpp, categorybutton.cpp, constants.h)
   readonly property int launcherCategoryIconSize: 22 // *_22px.svg
-  readonly property int launcherCategoryRowHeight: 42 // NAVIGATION_ICON_HEIGHT 50/1.2
+  readonly property int launcherCategoryRowHeight: Math.round(42 * Settings.data.ui.rowHeightScale) // NAVIGATION_ICON_HEIGHT 50/1.2
   readonly property int launcherCategoryTitleHeight: 50 // CATEGORY_TITLE_WIDGET_HEIGHT
   readonly property real launcherNavZoom: 1.2 // enterEvent zoom level
 
@@ -650,7 +650,7 @@ Singleton {
   readonly property int wallpaperStripThumbWidth: Math.round(160 * uiScaleRatio)
   readonly property int wallpaperStripThumbHeight: Math.round(wallpaperStripThumbWidth * 9 / 16)
   readonly property int wallpaperStripSpacing: Math.round(10 * uiScaleRatio)
-  readonly property int wallpaperStripRowHeight: 30 // §3.5.4 field height
+  readonly property int wallpaperStripRowHeight: Math.round(30 * Settings.data.ui.rowHeightScale) // §3.5.4 field height
   readonly property int wallpaperStripActionHeight: 26 // capsule button row under a hovered thumb
   // ~160 at uiScaleRatio 1: 90 thumb + 30 source row + 26 actions + 2 x marginS
   readonly property int wallpaperStripHeight: wallpaperStripThumbHeight + wallpaperStripRowHeight + wallpaperStripActionHeight + marginS * 2
