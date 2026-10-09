@@ -452,6 +452,11 @@ Singleton {
   // Control center home (DESIGN §3.5.1–3.5.2)
   // 408 px frame, flush right edge, full screen height (gxde-control-center frame.h:53)
   readonly property int controlCenterWidth: Math.round(408 * uiScaleRatio)
+  // The edge sheet's own scrim over the region beside the frame — heaviest
+  // next to the frame (max) so window edges underneath stay a backdrop,
+  // fading inward (min) to keep the backdrop translucent (DESIGN §3.5.1〔演进〕)
+  readonly property real edgeSheetScrimOpacity: 1.0
+  readonly property real edgeSheetScrimOpacityMin: 0.25
   readonly property int controlCenterHeaderHeight: Math.round(140 * uiScaleRatio)
   readonly property int controlCenterHeaderMarginLeft: Math.round(40 * uiScaleRatio)
   readonly property int controlCenterHeaderMarginTop: Math.round(10 * uiScaleRatio)

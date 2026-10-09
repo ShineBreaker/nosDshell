@@ -1119,6 +1119,38 @@ Item {
     // Expose panelBackground for geometry placeholder
     property alias geometryPlaceholder: panelBackground
 
+    // An edge sheet sits above the shared click-outside dimmer, which is
+    // intentionally light; the sheet adds its own scrim over the region
+    // beside the frame so windows underneath read as a backdrop instead of
+    // showing text through the frame's edge (DESIGN §3.5.1). The scrim is
+    // heaviest next to the frame — where a readable window edge would clash
+    // with the sheet — and fades inward so the backdrop stays translucent.
+    // The right edge is bound to panelBackground.x so it tracks the slide-in
+    // edge and never covers the frame. Non-interactive: outside clicks fall
+    // through to the MainScreen MouseArea below.
+    Rectangle {
+      id: edgeScrim
+      anchors.left: parent.left
+      width: Math.max(0, Math.min(panelBackground.x, parent.width))
+      height: parent.height
+      visible: root.edgeSheet && root.edgeSheetEdge === "right" && root.isPanelVisible && width > 0
+      gradient: Gradient {
+        orientation: Gradient.Horizontal
+        GradientStop {
+          position: 0.0
+          color: Qt.alpha(Color.mShadow, Style.edgeSheetScrimOpacityMin)
+        }
+        GradientStop {
+          position: 0.55
+          color: Qt.alpha(Color.mShadow, Style.edgeSheetScrimOpacityMin)
+        }
+        GradientStop {
+          position: 1.0
+          color: Qt.alpha(Color.mShadow, Style.edgeSheetScrimOpacity)
+        }
+      }
+    }
+
     // The actual panel background - provides geometry for PanelBackground rendering
     Item {
       id: panelBackground

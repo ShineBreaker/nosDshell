@@ -224,7 +224,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -644,6 +644,44 @@ run_scene() {
                             shot "settings-scroll-${tab}-${i}"
                           done
                           call settings toggle 2 ;;
+    # Live theme-switch with settings open: catches stale/leftover regions at
+    # the panel edges that a fresh-open screenshot can't.
+    settings-themeswitch) call settings openTab general 3
+                          qs -p "$REPO" ipc call debug list > "$WORK/logs/ts-roots.txt" 2>&1
+                          qs -p "$REPO" ipc call debug tree cc-HEADLESS-1 10 > "$WORK/logs/ts-tree.txt" 2>&1
+                          qs -p "$REPO" ipc call debug tree cc-HEADLESS-1 40 >> "$WORK/logs/ts-tree.txt" 2>&1 || true
+                          swaymsg -t get_tree > "$WORK/logs/sway-tree.json" 2>&1
+                          for x in 1445 1460 1480 1500; do
+                            for y in 150 400 650; do
+                              qs -p "$REPO" ipc call debug hit main-HEADLESS-1 $x $y >> "$WORK/logs/ts-hit.txt" 2>&1 || true
+                              qs -p "$REPO" ipc call debug hit cc-HEADLESS-1 $x $y >> "$WORK/logs/ts-hit.txt" 2>&1 || true
+                            done
+                          done
+                          qs -p "$REPO" ipc call debug tree main-HEADLESS-1 8 > "$WORK/logs/ts-main-tree.txt" 2>&1
+                          call colorScheme set Gruvbox 2; shot themeswitch-gruv
+                          call colorScheme set Deepin 2; shot themeswitch-deepin
+                          call colorScheme set Gruvbox 2; shot themeswitch-gruv2
+                          call settings toggle 2 ;;
+    # settings search end-to-end: inject text via `debug set` (vinput has no
+    # keyboard), shot the dropdown, hit-test + real-click the first result.
+    settings-search)      call settings openTab general 3
+                          qs -p "$REPO" ipc call debug set cc-HEADLESS-1 settingsSearchInput text 夜间 >> "$WORK/logs/search.log" 2>&1
+                          sleep 0.5
+                          shot settings-search-results
+                          qs -p "$REPO" ipc call debug hit cc-HEADLESS-1 1700 115 >> "$WORK/logs/search.log" 2>&1 || true
+                          qs -p "$REPO" ipc call debug hit cc-HEADLESS-1 1700 150 >> "$WORK/logs/search.log" 2>&1 || true
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          if [ -x "$VINPUT" ]; then
+                            "$VINPUT" vinput click 1700 115 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot settings-search-clicked
+                            # The edge-sheet scrim must stay non-interactive:
+                            # a click beside the frame still closes the panel.
+                            "$VINPUT" vinput click 800 500 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0
+                            shot settings-search-outside
+                          fi
+                          call settings toggle 1 ;;
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;
