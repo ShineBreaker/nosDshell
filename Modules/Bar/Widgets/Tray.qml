@@ -62,8 +62,8 @@ Item {
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   // "fashion" = DDE fashion dock presentation: collapsible pill tray —
   // the second permitted pill usage (gxde-dock fashiontraycontrolwidget.cpp:
-  // radius-10 pill, expanded = dark, collapsed = white @0.5 with an arrow;
-  // 2 px splitters between groups, tray spacing 10 px).
+  // radius-10 pill; 2 px splitters between groups, tray spacing 10 px).
+  // Surface colors use the plugin overlay ramp, not upstream's dark variant.
   property string dockPresentation: ""
   readonly property bool fashionMode: dockPresentation === "fashion"
   property bool trayExpanded: true
@@ -624,9 +624,10 @@ Item {
 
   // ---- Fashion presentation (gxde-dock fashiontraycontrolwidget.cpp:71-110) ----
   // The collapsible tray is a radius-10 pill — the second permitted pill
-  // usage in the shell. Expanded: dark pill (#282828 @0.5) with 16 px icons
-  // at 10 px spacing and 2 px overlay("hover") splitters between groups;
-  // collapsed: white @0.5 pill with an arrow glyph.
+  // usage in the shell. Expanded: pill with 16 px icons at 10 px spacing and
+  // 2 px overlay("hover") splitters between groups. Both surfaces reuse the
+  // plugin-button overlay ramp instead of upstream's dark #282828@0.5 so the
+  // tray reads as one family with the neighbouring plugin tiles.
   Rectangle {
     id: fashionExpandedPill
     visible: root.fashionMode && root.trayExpanded
@@ -635,7 +636,7 @@ Item {
     width: root.isVertical ? root.fashionPillHeight : Math.round(fashionIconsFlow.implicitWidth + 12)
     height: root.isVertical ? Math.round(fashionIconsFlow.implicitHeight + 12) : root.fashionPillHeight
     radius: 10
-    color: Qt.rgba(0.157, 0.157, 0.157, 0.5)
+    color: Color.overlay("subtle")
 
     Flow {
       id: fashionIconsFlow
@@ -659,11 +660,9 @@ Item {
     width: root.isVertical ? root.fashionPillHeight : 20
     height: root.isVertical ? 20 : root.fashionPillHeight
     radius: 10
-    // gxde-dock fashiontraycontrolwidget.cpp: expanded control shares the
-    // dark (40,40,40)@0.5 surface (hover 60/60/60, pressed 20/20/20) with a
-    // light arrow; the collapsed control is the same subtle tile as the
-    // plugin buttons so expanding doesn't invert the button's colors.
-    color: root.trayExpanded ? (collapserArea.containsMouse ? (collapserArea.pressed ? Qt.rgba(0.078, 0.078, 0.078, 0.5) : Qt.rgba(0.235, 0.235, 0.235, 0.5)) : Qt.rgba(0.157, 0.157, 0.157, 0.5)) : (collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : Color.overlay("subtle"))
+    // Same overlay ramp as the plugin tiles in both states — upstream's dark
+    // expanded variant made the collapser read as a different element.
+    color: collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : Color.overlay("subtle")
 
     NIcon {
       anchors.centerIn: parent
