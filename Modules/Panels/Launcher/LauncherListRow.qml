@@ -28,7 +28,7 @@ Item {
     anchors.topMargin: 1
     anchors.bottomMargin: 1
     radius: Style.radiusRow
-    color: (mouseArea.containsMouse || root.selected) ? Color.overlay("hover") : "transparent"
+    color: (mouseArea.containsMouse || root.selected) ? Color.overlayWallpaper("hover") : "transparent"
   }
 
   // Icon
@@ -52,7 +52,7 @@ Item {
     // Fallback when the themed icon fails: only feed real Tabler glyph names
     // to the font path, app icon names would warn and render the fallback.
     icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "search"
-    color: Color.onShell
+    color: Color.onWallpaper
     visible: rowIcon.status !== Image.Ready
   }
 
@@ -63,7 +63,7 @@ Item {
     verticalAlignment: Text.AlignVCenter
     text: modelData.name || ""
     pointSize: Style.fontSizeBody
-    color: Color.onShell
+    color: Color.onWallpaper
     elide: Text.ElideRight
     maximumLineCount: 1
     applyUiScale: false

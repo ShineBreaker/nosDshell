@@ -13,13 +13,16 @@ Item {
   property alias text: input.text
   property alias textInput: input
   property string placeholderText: I18n.tr("launcher.dde.search-placeholder")
+  // True on the fullscreen launcher's blurred wallpaper (always dark); false
+  // on the mini window's theme-aware panel surface.
+  property bool wallpaperSurface: false
   signal textEdited(string text)
   signal accepted
 
   Rectangle {
     anchors.fill: parent
     radius: Style.radiusItem
-    color: Color.overlay("strong")
+    color: root.wallpaperSurface ? Color.overlayWallpaper("strong") : Color.overlay("strong")
   }
 
   RowLayout {
@@ -31,7 +34,7 @@ Item {
     NIcon {
       icon: "search"
       pointSize: Style.fontSizeM
-      color: Color.onShellTertiary
+      color: root.wallpaperSurface ? Color.onWallpaperTertiary : Color.onShellTertiary
       Layout.alignment: Qt.AlignVCenter
     }
 
@@ -40,9 +43,9 @@ Item {
 
       Layout.fillWidth: true
       Layout.fillHeight: true
-      color: Color.onShell
+      color: root.wallpaperSurface ? Color.onWallpaper : Color.onShell
       selectionColor: Color.accent
-      selectedTextColor: Color.onShell
+      selectedTextColor: root.wallpaperSurface ? Color.onWallpaper : Color.onShell
       font.family: Settings.data.ui.fontDefault
       font.pointSize: 12 * Style.uiScaleRatio
       verticalAlignment: TextInput.AlignVCenter
@@ -59,7 +62,7 @@ Item {
         anchors.leftMargin: 2
         verticalAlignment: input.verticalAlignment
         text: root.placeholderText
-        color: Color.onShellTertiary
+        color: root.wallpaperSurface ? Color.onWallpaperTertiary : Color.onShellTertiary
         font: input.font
         visible: input.text === ""
       }
@@ -67,7 +70,7 @@ Item {
       cursorDelegate: Rectangle {
         visible: input.activeFocus
         width: 1
-        color: Color.onShell
+        color: root.wallpaperSurface ? Color.onWallpaper : Color.onShell
       }
     }
   }

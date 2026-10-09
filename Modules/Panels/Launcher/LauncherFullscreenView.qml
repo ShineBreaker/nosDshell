@@ -322,6 +322,7 @@ Item {
         id: searchField
         Layout.preferredWidth: Style.launcherSearchWidth
         Layout.preferredHeight: 30
+        wallpaperSurface: true
         text: model.searchText
         onTextEdited: txt => model.setSearchText(txt)
         onAccepted: model.activate()
@@ -530,7 +531,7 @@ Item {
               text: appsProvider ? (appsProvider.getDDECategoryName ? appsProvider.getDDECategoryName(appsProvider.ddeCategory) : appsProvider.ddeCategory) : ""
               pointSize: Style.fontSizeBody
               font.weight: Style.fontWeightMedium
-              color: Color.onShell
+              color: Color.onWallpaper
             }
 
             Rectangle {
@@ -540,11 +541,11 @@ Item {
               gradient: Gradient {
                 GradientStop {
                   position: 0.0
-                  color: Qt.alpha(Color.onShell, 0.3)
+                  color: Qt.alpha(Color.onWallpaper, 0.3)
                 }
                 GradientStop {
                   position: 1.0
-                  color: Qt.alpha(Color.onShell, 0)
+                  color: Qt.alpha(Color.onWallpaper, 0)
                 }
               }
             }

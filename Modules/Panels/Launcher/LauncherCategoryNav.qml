@@ -134,7 +134,7 @@ Item {
         pointSize: Style.fontSizeBody
         elide: Text.ElideRight
         maximumLineCount: 1
-        color: Qt.alpha(Color.onShell, parent.textAlpha)
+        color: Qt.alpha(Color.onWallpaper, parent.textAlpha)
       }
 
       MouseArea {

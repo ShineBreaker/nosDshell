@@ -30,26 +30,37 @@ Item {
   // Hover/press block inset, from the curve fit in appitemdelegate.cpp:92-97:
   // margin = (0.26418192 * cellWidth - 0.38890932 * iconWidth) * 0.71
   readonly property real blockMargin: Math.max(1, (0.26418192 * width - 0.38890932 * root.iconSize) * 0.71)
+  // itemBoundingRect(): the top-aligned square inside the cell (cells are
+  // already square; keep the formula so a non-square cell still behaves).
+  readonly property real _side: Math.min(width, height)
 
-  // Hover/press block
+  // Hover/press block — upstream `br` = itemBoundingRect minus
+  // QMargins(margin, 1, margin, margin*2). The block contains BOTH the icon
+  // and the label: itemTextRect() derives the name area from `br`, so the
+  // content column is anchored inside the block, not to the raw cell.
   Rectangle {
-    anchors.fill: parent
-    anchors.leftMargin: root.blockMargin
-    anchors.rightMargin: root.blockMargin
-    anchors.topMargin: 1
-    anchors.bottomMargin: root.blockMargin * 2
+    id: block
+    x: (root.width - root._side) / 2 + root.blockMargin
+    y: 1
+    width: root._side - root.blockMargin * 2
+    height: root._side - 1 - root.blockMargin * 2
     radius: Style.radiusLarge
     color: (mouseArea.containsMouse || root.selected) ? Color.pressDim : "transparent"
   }
 
   ColumnLayout {
-    anchors.fill: parent
-    anchors.margins: 6
+    anchors.left: block.left
+    anchors.right: block.right
+    anchors.top: block.top
+    anchors.bottom: block.bottom
+    anchors.margins: 2
     spacing: 0
 
     Item {
       Layout.fillWidth: true
       Layout.preferredHeight: root.iconSize
+      // Upstream iconTopMargin = max(ibr.height*0.2 - iconSize*0.3, 1)
+      Layout.topMargin: Math.max(1, root._side * 0.2 - root.iconSize * 0.3)
       Layout.alignment: Qt.AlignHCenter
 
       IconImage {
@@ -65,7 +76,7 @@ Item {
       NIcon {
         anchors.centerIn: parent
         pointSize: root.iconSize * 0.9
-        color: Color.onShell
+        color: Color.onWallpaper
         visible: !modelData.icon || modelData.icon === ""
       }
     }
@@ -77,7 +88,9 @@ Item {
       Layout.topMargin: Math.max(1, root.iconSize * 0.06)
       text: modelData.name || ""
       pointSize: Style.fontSizeBody
-      color: Color.onShell
+      color: Color.onWallpaper
+      style: Text.Sunken
+      styleColor: Color.onWallpaperShadow
       horizontalAlignment: Text.AlignHCenter
       verticalAlignment: Text.AlignTop
       wrapMode: Text.Wrap
@@ -86,15 +99,16 @@ Item {
     }
   }
 
-  // New app dot: 10 px accent circle at the left of the label
+  // New app dot: 10 px accent circle at the left of the label's first line
+  // (upstream: textRect.topLeft shifted left by the dot width, appitemdelegate.cpp:172)
   Rectangle {
     visible: root.isNew
     width: 10
     height: 10
     radius: width / 2
     color: Color.accent
-    x: 8
-    y: parent.height - height - 8
+    x: block.x + 2
+    y: appLabel.mapToItem(root, 0, 0).y - 1
   }
 
   MouseArea {
