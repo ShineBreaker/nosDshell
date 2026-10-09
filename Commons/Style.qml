@@ -77,9 +77,13 @@ Singleton {
   readonly property real effectiveBarOpacity: PowerProfileService.performanceMode ? 1.0 : Settings.data.bar.backgroundOpacity
 
   // Shadows
-  readonly property real shadowOpacity: 0.85
+  // general.shadowStrength (0-2, DESIGN §1.6) scales shadow opacity globally
+  readonly property real shadowOpacity: Math.min(1, 0.85 * Settings.data.general.shadowStrength)
   readonly property real shadowBlur: 1.0
-  readonly property int shadowBlurMax: 22
+  readonly property int shadowBlurMax: 40
+  function _shadowScale(alpha) {
+    return Math.min(1, alpha * Settings.data.general.shadowStrength);
+  }
   readonly property real shadowHorizontalOffset: Settings.data.general.shadowOffsetX
   readonly property real shadowVerticalOffset: Settings.data.general.shadowOffsetY
 
@@ -284,45 +288,46 @@ Singleton {
   // Capsule radius — only the switch and RoundedButton-style buttons may use it (DESIGN §7)
   readonly property int radiusPill: 15
 
-  // Shadows — feed into NDropShadow; plain {blur, x, y, color} objects (DESIGN §1.6)
+  // Shadows — feed into NDropShadow; plain {blur, x, y, color} objects (DESIGN §1.6).
+  // Alphas pass through _shadowScale so general.shadowStrength acts globally.
   readonly property var shadowPopup: ({
-                                        "blur": 20,
+                                        "blur": 32,
                                         "x": 0,
-                                        "y": 2,
-                                        "color": Qt.rgba(0, 0, 0, 0.5)
+                                        "y": 3,
+                                        "color": Qt.rgba(0, 0, 0, _shadowScale(0.32))
                                       })
   // Control centre frame: shadow cast to the left side only (DESIGN §3.5.1)
   readonly property var shadowControlCenter: ({
-                                                "blur": 20,
-                                                "x": -20,
+                                                "blur": 32,
+                                                "x": -16,
                                                 "y": 0,
-                                                "color": Qt.rgba(0, 0, 0, 0.5)
+                                                "color": Qt.rgba(0, 0, 0, _shadowScale(0.32))
                                               })
   readonly property var shadowOsd: ({
-                                      "blur": 16,
+                                      "blur": 24,
                                       "x": 0,
-                                      "y": 4,
-                                      "color": Qt.rgba(0, 0, 0, 70 / 255)
+                                      "y": 5,
+                                      "color": Qt.rgba(0, 0, 0, _shadowScale(0.24))
                                     })
   readonly property var shadowBubble: ({
-                                         "blur": 14,
+                                         "blur": 24,
                                          "x": 0,
                                          "y": 4,
-                                         "color": Qt.rgba(0, 0, 0, 100 / 255)
+                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.30))
                                        })
   readonly property var shadowMenuLight: ({
-                                            "blur": 12,
+                                            "blur": 20,
                                             "x": 0,
-                                            "y": 6,
-                                            "color": Qt.rgba(0, 0, 0, 0.2)
+                                            "y": 8,
+                                            "color": Qt.rgba(0, 0, 0, _shadowScale(0.16))
                                           })
-  // DDialog (DESIGN §3.11): same 20 px black@0.5 drop as the control centre
-  // frame, but cast straight down instead of to the left.
+  // DDialog (DESIGN §3.11): same soft drop as the control centre frame, but
+  // cast straight down instead of to the left.
   readonly property var shadowDialog: ({
-                                         "blur": 20,
+                                         "blur": 32,
                                          "x": 0,
                                          "y": 0,
-                                         "color": Qt.rgba(0, 0, 0, 0.5)
+                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.32))
                                        })
 
   // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
@@ -340,7 +345,7 @@ Singleton {
   // `setFixedHeight(DIALOG::BUTTON_HEIGHT)`; the constant itself lives in the
   // dde-dtk ddialog header, which is not cloned, so the DDE action-button height
   // of 36 from gxde-session-ui/global_util/constants.h:40 stands in for it.
-  readonly property int dialogButtonHeight: Math.round(36 * uiScaleRatio)
+  readonly property int dialogButtonHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
 
   // Motion (ms) — 0 when animations are off or in performance mode;
   // panel/enter motions fall back to 150 ms when blur is disabled (DESIGN §1.7)
@@ -464,7 +469,7 @@ Singleton {
   readonly property int quickSwitchWidth: Math.round(70 * uiScaleRatio)
   readonly property int quickSwitchHeight: Math.round(60 * uiScaleRatio)
   // Basic page slider track height (gxde-control-center basicsettingspage.cpp)
-  readonly property int sliderBasicHeight: Math.round(35 * uiScaleRatio)
+  readonly property int sliderBasicHeight: Math.round(35 * uiScaleRatio * Settings.data.ui.rowHeightScale)
   // Quick-control page slot height: two sliderBasicHeight rows + the switch row
   // + inner gaps (2×S spacing + 2×S row top margins) + outer margins (2×M).
   // All quick-control pages share this slot so paging never resizes the strip.
@@ -478,7 +483,8 @@ Singleton {
   // Wheel page switching is debounced by 200 ms (indicatorwidget.cpp:72-74)
   readonly property int pageSwitchDebounce: 200
   // Detail list rows are 36 px tall (wifilistmodel.cpp:95)
-  readonly property int detailRowHeight: Math.round(36 * uiScaleRatio)
+  // Row-family heights ride ui.rowHeightScale (0.9-1.2, DESIGN §3.5.4)
+  readonly property int detailRowHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
 
   // Settings pages inside the control center (DESIGN §3.5.3–3.5.4)
   // 56 px icon rail, spacing 20; content 352 (frame mode) / 640 (window mode)
@@ -517,7 +523,7 @@ Singleton {
   readonly property int switchKnob: Math.round(18 * uiScaleRatio)
   readonly property int switchDuration: 150
   // Text fields (LineEditWidget / ComboBoxWidget / spin box): 30 high, radiusItem
-  readonly property int settingsFieldHeight: Math.round(30 * uiScaleRatio)
+  readonly property int settingsFieldHeight: Math.round(30 * uiScaleRatio * Settings.data.ui.rowHeightScale)
   readonly property int settingsFieldRadius: radiusItem
   // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83); the
   // gap between the title and the field is 0 there, we use marginXS so long
@@ -590,7 +596,7 @@ Singleton {
   readonly property int launcherMiniLeftPaneWidth: 320
   readonly property int launcherMiniRightPaneWidth: 160
   readonly property int launcherMiniDockGap: 1 // adjustPosition(): +1 px off the taskbar
-  readonly property int launcherMiniRowHeight: 36 // app rows and the switch button
+  readonly property int launcherMiniRowHeight: Math.round(36 * Settings.data.ui.rowHeightScale) // app rows and the switch button
   readonly property int launcherMiniAvatarSize: 60 // avatar.cpp:42
   readonly property int launcherMiniTopBand: 30 // right bar top spacing
   readonly property int launcherMiniModeToggleSize: 24 // fullscreen_normal.png

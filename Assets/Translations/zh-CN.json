@@ -559,7 +559,8 @@
     "windows": "窗口",
     "yes": "是",
     "today": "今天",
-    "display": "显示"
+    "display": "显示",
+    "auto": "自动"
   },
   "control-center": {
     "power-profile": {
@@ -1003,7 +1004,10 @@
       "wallpaper-method-description": "选择您喜欢的调色板生成方法。",
       "wallpaper-method-label": "调色板生成方法",
       "wallpaper-monitor-source-description": "选择用于提取壁纸颜色的显示器。",
-      "wallpaper-monitor-source-label": "颜色生成源"
+      "wallpaper-monitor-source-label": "颜色生成源",
+      "accent-override-label": "强调色覆盖",
+      "accent-override-description": "指定一个 #RRGGBB 颜色作为全局强调色，不再跟随配色方案。留空则使用方案色。",
+      "accent-override-placeholder": "例如 #2CA7F8"
     },
     "connections": {
       "authentication-required": "需要认证",
@@ -1785,7 +1789,20 @@
       "tooltips-description": "启用或禁用整个界面的提示信息。",
       "tooltips-label": "显示提示信息（Tooltip）",
       "translucent-widgets-description": "使面板内的按钮、选项卡和其他小部件半透明。",
-      "translucent-widgets-label": "半透明小部件"
+      "translucent-widgets-label": "半透明小部件",
+      "transient-surface-label": "瞬时面样式",
+      "transient-surface-description": "OSD、通知气泡、吐司的表面样式：auto 跟随暗色模式，light 是 DDE 原版不透明白底，dark 是深色玻璃。",
+      "transient-surface-auto": "自动（跟随暗色模式）",
+      "transient-surface-light": "浅色（DDE 原版）",
+      "transient-surface-dark": "深色玻璃",
+      "transient-opacity-label": "瞬时面不透明度",
+      "transient-opacity-description": "瞬时面方块的不透明度。合成器不支持模糊时，实际不透明度会抬到至少 90%。",
+      "border-emphasis-label": "描边强度",
+      "border-emphasis-description": "整体缩放面板与弹出层的发丝描边，0 表示关闭描边。",
+      "shadow-strength-label": "阴影强度",
+      "shadow-strength-description": "整体缩放全局投影的不透明度。",
+      "row-height-scale-label": "行高系数",
+      "row-height-scale-description": "整体缩放列表与设置项的行高。"
     },
     "wallpaper": {
       "automation-change-mode-alphabetical": "按字母顺序",
@@ -1858,7 +1875,9 @@
       "view-mode-browse": "浏览目录",
       "view-mode-cycle-tooltip": "查看模式：{mode}（点击更改）",
       "view-mode-recursive": "扁平化子目录",
-      "view-mode-single": "根目录"
+      "view-mode-single": "根目录",
+      "settings-blur-sigma-label": "壁纸模糊强度",
+      "settings-blur-sigma-description": "启动器、锁屏与关机界面所用预模糊壁纸的模糊 sigma。0 = 自动（屏幕短边的 3%）。"
     }
   },
   "placeholders": {

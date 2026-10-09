@@ -336,4 +336,29 @@ ColumnLayout {
             defaultValue: Settings.getDefaultValue("wallpaper.overviewTint")
         }
     }
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+        Layout.fillWidth: true
+    }
+
+    // Pre-blurred wallpaper for launcher / lock screen / shutdown (DESIGN §4)
+    ColumnLayout {
+        Layout.fillWidth: true
+        spacing: Style.settingsGroupGap
+
+        NValueSlider {
+            Layout.fillWidth: true
+            label: I18n.tr("panels.wallpaper.settings-blur-sigma-label")
+            description: I18n.tr("panels.wallpaper.settings-blur-sigma-description")
+            from: 0
+            to: 80
+            stepSize: 1
+            showReset: true
+            value: Settings.data.wallpaper.blurSigma
+            onMoved: value => Settings.data.wallpaper.blurSigma = value
+            text: Settings.data.wallpaper.blurSigma > 0 ? Math.round(Settings.data.wallpaper.blurSigma) : I18n.tr("common.auto")
+            defaultValue: Settings.getDefaultValue("wallpaper.blurSigma")
+        }
+    }
 }

@@ -133,6 +133,17 @@ ColumnLayout {
                  }
     }
 
+    // Accent override: a pinned #hex replaces the accent family on the shell
+    // (DESIGN §5); invalid input is ignored by Color.qml
+    NTextInput {
+      label: I18n.tr("panels.color-scheme.accent-override-label")
+      description: I18n.tr("panels.color-scheme.accent-override-description")
+      placeholderText: I18n.tr("panels.color-scheme.accent-override-placeholder")
+      text: Settings.data.ui.accentOverride
+      defaultValue: Settings.getDefaultValue("ui.accentOverride")
+      onTextChanged: Settings.data.ui.accentOverride = text.trim()
+    }
+
     NComboBox {
       label: I18n.tr("panels.color-scheme.dark-mode-mode-label")
       description: I18n.tr("panels.color-scheme.dark-mode-mode-description")

@@ -96,7 +96,7 @@ Item {
     anchors.fill: parent
     anchors.margins: shadowPadding
     radius: Style.radiusL
-    color: Qt.alpha(Color.maskTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
+    color: Color.stackAlpha(Color.maskTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
 
     // Colored border based on type
     border.width: Style.borderS
@@ -110,7 +110,7 @@ Item {
         baseColor = Color.borderTransient;
         break;
       }
-      return Qt.alpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
+      return Color.stackAlpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
     }
 
     // Progress bar
@@ -142,7 +142,7 @@ Item {
             baseColor = Color.accent; // Match standard notification color
             break;
           }
-          return Qt.alpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
+          return Color.stackAlpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
         }
       }
     }

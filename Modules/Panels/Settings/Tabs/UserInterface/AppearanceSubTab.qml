@@ -124,6 +124,20 @@ ColumnLayout {
       onMoved: value => Settings.data.general.iRadiusRatio = value
       text: Math.floor(Settings.data.general.iRadiusRatio * 100) + "%"
     }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.row-height-scale-label")
+      description: I18n.tr("panels.user-interface.row-height-scale-description")
+      from: 0.9
+      to: 1.2
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.ui.rowHeightScale
+      defaultValue: Settings.getDefaultValue("ui.rowHeightScale")
+      onMoved: value => Settings.data.ui.rowHeightScale = value
+      text: Math.floor(Settings.data.ui.rowHeightScale * 100) + "%"
+    }
   }
 
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)

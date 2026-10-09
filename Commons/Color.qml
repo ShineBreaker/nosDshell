@@ -397,10 +397,33 @@ Singleton {
   // --------------------------------
 
   // Accents resolve through the active color scheme so other schemes still work.
-  readonly property color accent: root.mPrimary
-  readonly property color accentAlt: root.mSecondary
-  readonly property color accentAction: root.mTertiary
-  readonly property color onAccent: root.mOnPrimary
+  // ui.accentOverride (DESIGN §5): a non-empty valid #hex color pins the whole
+  // accent family; invalid values are ignored with a warning.
+  readonly property color _accentOverride: {
+    const s = Settings.data.ui.accentOverride;
+    if (typeof s !== "string" || s === "")
+      return "transparent";
+    if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(s)) {
+      if (!_accentWarned) {
+        _accentWarned = true;
+        Logger.w("Color", "Ignoring invalid ui.accentOverride:", s);
+      }
+      return "transparent";
+    }
+    return s; // string coerced to color by the property type
+  }
+  property bool _accentWarned: false
+  readonly property bool accentOverridden: _accentOverride.a > 0
+
+  readonly property color accent: accentOverridden ? _accentOverride : root.mPrimary
+  readonly property color accentAlt: accentOverridden ? _accentOverride : root.mSecondary
+  readonly property color accentAction: accentOverridden ? _accentOverride : root.mTertiary
+  // Text on accent: white on the dark side, #303030 once the accent is bright
+  // enough for it to read (≈0.6 relative luminance keeps Deepin blue on white).
+  readonly property color onAccent: {
+    const c = accent;
+    return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 0.6 ? "#303030" : "#FFFFFF";
+  }
 
   readonly property color attention: "#F18A2E"
   readonly property color alert: "#F9704F"
@@ -420,19 +443,37 @@ Singleton {
   readonly property color maskLight: Qt.rgba(1, 1, 1, blurActive ? Settings.data.ui.panelBackgroundOpacity : 0.8)
   readonly property color popupDark: Qt.rgba(36 / 255, 36 / 255, 36 / 255, 0.86)
 
-  readonly property color borderDark: blurActive ? Qt.rgba(1, 1, 1, 0.05) : "#2C3238"
-  readonly property color borderLight: blurActive ? Qt.rgba(0, 0, 0, 0.04) : "#E5E5E5"
+  // Panel borders: visible hairlines over blur (DESIGN §1.2), scaled by
+  // ui.borderEmphasis (0-2; 0 disables). Solid fallbacks stay solid at
+  // emphasis >= 1 and fade proportionally below it.
+  function _border(base, blurredAlpha) {
+    const c = blurActive ? Qt.rgba(base.r, base.g, base.b, blurredAlpha) : base;
+    return Qt.alpha(c, Math.min(1, c.a * Settings.data.ui.borderEmphasis));
+  }
+  readonly property color borderDark: _border("#2C3238", 0.10)
+  readonly property color borderLight: _border("#E5E5E5", 0.08)
 
   readonly property color maskShell: shellIsDark ? maskDark : maskLight
   readonly property color popupShell: shellIsDark ? popupDark : Qt.rgba(1, 1, 1, 0.9)
-  // Transient tiles (OSD, notification/toast bubbles) are a SOLID light
-  // surface, not a mask: a translucent white over arbitrary wallpaper reads
-  // muddy and breaks contrast. DDE reaches for DBlurEffectWidget::LightColor
-  // (dde-osd/container.cpp:83), which is near-opaque; we go fully opaque with
-  // the deepin light scheme's mSurface (#F8F8F8).
-  readonly property color maskTransient: "#F8F8F8"
+
+  // Transient tiles (OSD, notification/toast bubbles) — DESIGN §1.2.
+  // ui.transientSurface: "light" = DDE's opaque #F8F8F8 tile, "dark" = dark
+  // glass on popupDark, "auto" follows shellIsDark. ui.transientOpacity
+  // scales the tile alpha; without compositor blur the floor is 0.9 so a
+  // translucent tile never floats over sharp wallpaper (muddy, low contrast).
+  readonly property bool transientIsDark: {
+    const s = Settings.data.ui.transientSurface;
+    return s === "dark" ? true : s === "light" ? false : shellIsDark;
+  }
+  readonly property real _transientAlpha: {
+    const base = transientIsDark ? 0.86 : 1.0;
+    const a = base * Settings.data.ui.transientOpacity;
+    return blurActive ? Math.max(0.5, a) : Math.max(0.9, a);
+  }
+  readonly property color maskTransient: transientIsDark ? Qt.rgba(36 / 255, 36 / 255, 36 / 255, _transientAlpha) : Qt.alpha("#F8F8F8", _transientAlpha)
+
   readonly property color borderShell: shellIsDark ? borderDark : borderLight
-  readonly property color borderTransient: borderLight
+  readonly property color borderTransient: transientIsDark ? borderDark : borderLight
 
   readonly property color onShell: shellIsDark ? "#FFFFFF" : "#303030"
   readonly property color onShellSecondary: Qt.alpha(onShell, 0.8)
@@ -449,15 +490,19 @@ Singleton {
   readonly property color onWallpaperTertiary: Qt.alpha("#FFFFFF", 0.6)
   // Text shadow on wallpaper: rgba(0,0,0,0.31) offset (0,1) → Text.Sunken
   readonly property color onWallpaperShadow: Qt.rgba(0, 0, 0, 0.31)
-  readonly property color onTransient: "#303030"
-  readonly property color onTransientBody: Qt.rgba(0, 0, 0, 0.9)
+  readonly property color onTransient: transientIsDark ? "#FFFFFF" : "#303030"
+  readonly property color onTransientBody: transientIsDark ? Qt.rgba(1, 1, 1, 0.85) : Qt.rgba(0, 0, 0, 0.9)
 
-  // Dark-on-light foreground for transient prompts (OSD glyphs, lock-key text).
-  // OSD track/labels over a light tile: black @0.1 and @0.5 are DDE's literal
-  // values (dde-osd/common.cpp DrawProgressBar / DrawVolumeGraduation) — no
-  // adaptive fallback exists for them, so read the ladder instead of inlining.
-  readonly property color onTransientTrack: Qt.rgba(0, 0, 0, 0.1)
-  readonly property color onTransientTick: Qt.rgba(0, 0, 0, 0.5)
+  // Track/tick marks on transient tiles (OSD progress groove, volume
+  // graduation). Light tiles use DDE's literal black @0.1/@0.5
+  // (dde-osd/common.cpp DrawProgressBar / DrawVolumeGraduation); dark tiles
+  // flip to the white ladder (DESIGN §1.2).
+  readonly property color onTransientTrack: transientIsDark ? Qt.rgba(1, 1, 1, 0.15) : Qt.rgba(0, 0, 0, 0.1)
+  readonly property color onTransientTick: transientIsDark ? Qt.rgba(1, 1, 1, 0.5) : Qt.rgba(0, 0, 0, 0.5)
+
+  // Action-button text on transient tiles: accentAction (the light-tile
+  // blue) reads dim on dark glass, so dark tiles take the brighter accent.
+  readonly property color transientAction: transientIsDark ? accent : accentAction
 
   // Module header separator: 1 px line, white x 0.15 in dark mode (DESIGN
   // §3.5.4). Adaptive via onShell so light mode reads black x 0.15.
@@ -489,7 +534,14 @@ Singleton {
   }
 
   function overlayTransient(level) {
-    return _overlay(level, "#000000");
+    return _overlay(level, transientIsDark ? "#FFFFFF" : "#000000");
+  }
+
+  // Multiply a token's alpha by an extra factor — unlike Qt.alpha(), which
+  // overwrites the alpha outright and would clobber tokens that already
+  // carry one (maskTransient, popupDark).
+  function stackAlpha(base, factor) {
+    return Qt.rgba(base.r, base.g, base.b, Math.min(1, base.a * factor));
   }
 
   function _overlay(level, base) {

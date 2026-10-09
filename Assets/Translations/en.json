@@ -559,7 +559,8 @@
     "windows": "Windows",
     "yes": "Yes",
     "today": "Today",
-    "display": "Display"
+    "display": "Display",
+    "auto": "Auto"
   },
   "control-center": {
     "power-profile": {
@@ -1003,7 +1004,10 @@
       "wallpaper-method-description": "Choose your favorite palette generation method.",
       "wallpaper-method-label": "Palette generation method",
       "wallpaper-monitor-source-description": "Select which monitor to use for extracting wallpaper colors.",
-      "wallpaper-monitor-source-label": "Color generation source"
+      "wallpaper-monitor-source-label": "Color generation source",
+      "accent-override-label": "Accent color override",
+      "accent-override-description": "A #RRGGBB color pinned as the shell accent regardless of the active color scheme. Empty follows the scheme.",
+      "accent-override-placeholder": "e.g. #2CA7F8"
     },
     "connections": {
       "authentication-required": "Authentication required",
@@ -1785,7 +1789,20 @@
       "tooltips-description": "Enable or disable tooltips throughout the interface.",
       "tooltips-label": "Show tooltips",
       "translucent-widgets-description": "Make buttons, tabs, and other widgets inside panels semi-transparent.",
-      "translucent-widgets-label": "Translucent widgets"
+      "translucent-widgets-label": "Translucent widgets",
+      "transient-surface-label": "Transient surface style",
+      "transient-surface-description": "Surface style for transient tiles (OSD, notifications, toasts): auto follows dark mode, light is the classic opaque DDE tile, dark is dark glass.",
+      "transient-surface-auto": "Auto (follow dark mode)",
+      "transient-surface-light": "Light (classic DDE)",
+      "transient-surface-dark": "Dark glass",
+      "transient-opacity-label": "Transient surface opacity",
+      "transient-opacity-description": "Opacity of transient tiles. Without compositor blur the effective opacity is raised to at least 90%.",
+      "border-emphasis-label": "Border emphasis",
+      "border-emphasis-description": "Scales the hairline border on panels and popups. 0 disables borders.",
+      "shadow-strength-label": "Shadow strength",
+      "shadow-strength-description": "Scales drop-shadow opacity across the shell.",
+      "row-height-scale-label": "Row height scale",
+      "row-height-scale-description": "Scales list and settings row heights."
     },
     "wallpaper": {
       "automation-change-mode-alphabetical": "Alphabetical",
@@ -1858,7 +1875,9 @@
       "view-mode-browse": "Browse directories",
       "view-mode-cycle-tooltip": "View mode: {mode} (click to change)",
       "view-mode-recursive": "Flattened subdirectories",
-      "view-mode-single": "Root directory"
+      "view-mode-single": "Root directory",
+      "settings-blur-sigma-label": "Wallpaper blur strength",
+      "settings-blur-sigma-description": "Blur sigma for the pre-blurred wallpaper used by the launcher, lock screen and shutdown UI. 0 = auto (3% of the screen's short edge)."
     }
   },
   "placeholders": {

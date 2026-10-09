@@ -135,7 +135,8 @@
       ]
     },
     "reverseScroll": false,
-    "smoothScrollEnabled": true
+    "smoothScrollEnabled": true,
+    "shadowStrength": 1.0
   },
   "ui": {
     "fontDefault": "",
@@ -148,7 +149,12 @@
     "panelBackgroundOpacity": 0.4,
     "translucentWidgets": false,
     "panelsAttachedToBar": false,
-    "settingsPanelMode": "controlCenter"
+    "settingsPanelMode": "controlCenter",
+    "transientSurface": "auto",
+    "transientOpacity": 1.0,
+    "borderEmphasis": 1.0,
+    "rowHeightScale": 1.0,
+    "accentOverride": ""
   },
   "location": {
     "name": "",
@@ -224,7 +230,8 @@
     "wallhavenResolutionWidth": "",
     "wallhavenResolutionHeight": "",
     "sortOrder": "name",
-    "favorites": []
+    "favorites": [],
+    "blurSigma": 0
   },
   "appLauncher": {
     "enableClipboardHistory": false,

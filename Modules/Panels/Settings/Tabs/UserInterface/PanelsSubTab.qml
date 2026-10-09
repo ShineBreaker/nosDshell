@@ -53,4 +53,80 @@ ColumnLayout {
       text: Math.floor(Settings.data.general.dimmerOpacity * 100) + "%"
     }
   }
+
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
+
+  // Transient tiles + panel borders (DESIGN §1.2)
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+
+    NComboBox {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.transient-surface-label")
+      description: I18n.tr("panels.user-interface.transient-surface-description")
+      model: [
+        {
+          "key": "auto",
+          "name": I18n.tr("panels.user-interface.transient-surface-auto")
+        },
+        {
+          "key": "light",
+          "name": I18n.tr("panels.user-interface.transient-surface-light")
+        },
+        {
+          "key": "dark",
+          "name": I18n.tr("panels.user-interface.transient-surface-dark")
+        }
+      ]
+      currentKey: Settings.data.ui.transientSurface
+      defaultValue: Settings.getDefaultValue("ui.transientSurface")
+      onSelected: key => Settings.data.ui.transientSurface = key
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.transient-opacity-label")
+      description: I18n.tr("panels.user-interface.transient-opacity-description")
+      from: 0.3
+      to: 1
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.ui.transientOpacity
+      defaultValue: Settings.getDefaultValue("ui.transientOpacity")
+      onMoved: value => Settings.data.ui.transientOpacity = value
+      text: Math.floor(Settings.data.ui.transientOpacity * 100) + "%"
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.border-emphasis-label")
+      description: I18n.tr("panels.user-interface.border-emphasis-description")
+      from: 0
+      to: 2
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.ui.borderEmphasis
+      defaultValue: Settings.getDefaultValue("ui.borderEmphasis")
+      onMoved: value => Settings.data.ui.borderEmphasis = value
+      text: Math.floor(Settings.data.ui.borderEmphasis * 100) + "%"
+    }
+
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.user-interface.shadow-strength-label")
+      description: I18n.tr("panels.user-interface.shadow-strength-description")
+      from: 0
+      to: 2
+      stepSize: 0.01
+      showReset: true
+      value: Settings.data.general.shadowStrength
+      defaultValue: Settings.getDefaultValue("general.shadowStrength")
+      onMoved: value => Settings.data.general.shadowStrength = value
+      text: Math.floor(Settings.data.general.shadowStrength * 100) + "%"
+    }
+  }
 }

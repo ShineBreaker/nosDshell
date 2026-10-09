@@ -181,7 +181,9 @@ Singleton {
       return;
     }
 
-    const sigma = 0.03 * Math.min(width, height);
+    // wallpaper.blurSigma: 0 = auto (3% of the short edge, DESIGN §4)
+    const overrideSigma = Settings.data.wallpaper.blurSigma;
+    const sigma = overrideSigma > 0 ? overrideSigma : 0.03 * Math.min(width, height);
 
     getMtime(sourcePath, function (mtime) {
       const cacheKey = generateBlurredKey(sourcePath, width, height, sigma, mtime);

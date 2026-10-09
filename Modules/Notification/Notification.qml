@@ -468,8 +468,8 @@ Variants {
               width: notifWindow.notifWidth
               height: contentColumn.implicitHeight + Style.margin2M
               radius: Style.radiusWindow
-              color: Color.maskTransient
-              border.color: Color.borderTransient
+              color: Color.stackAlpha(Color.maskTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
+              border.color: Color.stackAlpha(Color.borderTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
               border.width: Style.borderS
 
               NDropShadow {
@@ -556,7 +556,7 @@ Variants {
                   delegate: Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: actionArea.containsMouse ? Color.accentAction : "transparent"
+                    color: actionArea.containsMouse ? Color.transientAction : "transparent"
 
                     NText {
                       anchors.centerIn: parent
@@ -568,7 +568,7 @@ Variants {
                         return actionText;
                       }
                       pointSize: Style.fontSizeS
-                      color: actionArea.containsMouse ? "white" : Color.accentAction
+                      color: actionArea.containsMouse ? "white" : Color.transientAction
                       elide: Text.ElideRight
                       horizontalAlignment: Text.AlignHCenter
                     }
@@ -600,6 +600,11 @@ Variants {
                 icon: "close"
                 tooltipText: I18n.tr("tooltips.dismiss-notification")
                 baseSize: Style.baseWidgetSize * 0.6
+                // Sits on a transient tile, not the shell — use the flipped
+                // transient foreground (DESIGN §1.2)
+                colorFg: Color.onTransientBody
+                colorFgHover: Color.onTransient
+                colorBgHover: Color.overlayTransient("hover")
                 anchors.top: parent.top
                 anchors.topMargin: Style.marginXS
                 anchors.right: parent.right

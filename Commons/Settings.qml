@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 74
+  readonly property int settingsVersion: 75
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -332,6 +332,7 @@ Singleton {
       property bool enableBlurBehind: true
       property int shadowOffsetX: 0
       property int shadowOffsetY: 2
+      property real shadowStrength: 1.0
       property string language: ""
       property bool allowPanelsOnScreenWithoutBar: true
       property bool enableLockScreenCountdown: true
@@ -369,6 +370,17 @@ Singleton {
       property bool translucentWidgets: false
       property bool panelsAttachedToBar: false
       property string settingsPanelMode: "controlCenter" // legacy: Migration72 pins to controlCenter; the picker is gone (DDE keeps settings inside the CC frame)
+      // Transient tile style: "light" (DDE original opaque tile), "dark"
+      // (dark glass), "auto" (follows colorSchemes.darkMode) — DESIGN §1.2
+      property string transientSurface: "auto"
+      property real transientOpacity: 1.0
+      // Scales border token alpha (DESIGN §1.2); 0 disables panel borders
+      property real borderEmphasis: 1.0
+      // Multiplies row-height tokens (DESIGN §3.5.4)
+      property real rowHeightScale: 1.0
+      // Empty = follow the active color scheme; a valid color overrides the
+      // accent family (accent/accentAlt/accentAction), DESIGN §5
+      property string accentOverride: ""
     }
 
     // location
@@ -431,6 +443,9 @@ Singleton {
       property bool useOriginalImages: false
       property real overviewBlur: 0.4
       property real overviewTint: 0.6
+      // nosd-blur sigma for pre-blurred wallpaper; 0 = auto (3% of the
+      // screen's short edge, DESIGN §4)
+      property real blurSigma: 0
       // Wallhaven settings
       property bool useWallhaven: false
       property string wallhavenQuery: ""
