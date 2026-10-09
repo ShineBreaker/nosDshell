@@ -193,7 +193,7 @@ set -uo pipefail
 cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-modeswap launcher-handoff
-control-center cc-switch cc-notifications cc-quick-wifi
+control-center cc-switch cc-page cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
@@ -515,6 +515,20 @@ run_scene() {
                           sleep 1.2
                           shot cc-switch-after
                           qs -p "$REPO" ipc call debug opened 1 > "$WORK/logs/cc-switch-opened.txt" 2>&1 || true
+                          call controlCenter toggle 0.5 ;;
+    # Page-indicator chevrons: real clicks on < / > must actually move
+    # currentPage (the wheel debounce helper used to kill the click handler).
+    # 1920x1080 panel: "<" at ~(1673,1058), ">" at ~(1780,1058).
+    cc-page)              call controlCenter toggle 1.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          shot cc-page-0
+                          "$VINPUT" vinput click 1780 1058 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-page-1
+                          "$VINPUT" vinput click 1780 1058 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-page-2
+                          "$VINPUT" vinput click 1673 1058 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-page-back
                           call controlCenter toggle 0.5 ;;
     # DDE control center: bell page (3 notifications seeded so the list has content)
     cc-notifications)     notify-send -a nosdshell-verify "Notification one" \
