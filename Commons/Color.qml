@@ -57,13 +57,35 @@ Singleton {
     onTriggered: root.isTransitioning = false
   }
 
-  // --- Key Colors: These are the main accent colors that define your app's style
-  property color mPrimary: defaultColors.mPrimary
-  property color mOnPrimary: defaultColors.mOnPrimary
-  property color mSecondary: defaultColors.mSecondary
-  property color mOnSecondary: defaultColors.mOnSecondary
-  property color mTertiary: defaultColors.mTertiary
-  property color mOnTertiary: defaultColors.mOnTertiary
+  // --- Key Colors: These are the main accent colors that define your app's style.
+  // The accent roles (primary/secondary/tertiary/hover) split into a raw
+  // scheme value (_*Raw, written by the colors.json FileView connections) and
+  // the public m* token, which resolves through ui.accentOverride (DESIGN §5):
+  // a pinned accent overrides all four roles, and their on-colors are derived
+  // from the accent's luminance so text stays readable.
+  property color _primaryRaw: defaultColors.mPrimary
+  property color _onPrimaryRaw: defaultColors.mOnPrimary
+  property color _secondaryRaw: defaultColors.mSecondary
+  property color _onSecondaryRaw: defaultColors.mOnSecondary
+  property color _tertiaryRaw: defaultColors.mTertiary
+  property color _onTertiaryRaw: defaultColors.mOnTertiary
+  property color _hoverRaw: defaultColors.mHover
+  property color _onHoverRaw: defaultColors.mOnHover
+
+  readonly property color mPrimary: accentOverridden ? _accentOverride : _primaryRaw
+  readonly property color mSecondary: accentOverridden ? _accentOverride : _secondaryRaw
+  readonly property color mTertiary: accentOverridden ? _accentOverride : _tertiaryRaw
+  readonly property color mHover: accentOverridden ? _accentOverride : _hoverRaw
+  // Text on accent: white on the dark side, #303030 once the accent is bright
+  // enough for it to read (≈0.6 relative luminance keeps Deepin blue on white).
+  readonly property color _onAccentColor: {
+    const c = mPrimary;
+    return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 0.6 ? "#303030" : "#FFFFFF";
+  }
+  readonly property color mOnPrimary: accentOverridden ? _onAccentColor : _onPrimaryRaw
+  readonly property color mOnSecondary: accentOverridden ? _onAccentColor : _onSecondaryRaw
+  readonly property color mOnTertiary: accentOverridden ? _onAccentColor : _onTertiaryRaw
+  readonly property color mOnHover: accentOverridden ? _onAccentColor : _onHoverRaw
 
   // --- Utility Colors: These colors serve specific, universal purposes like indicating errors
   property color mError: defaultColors.mError
@@ -79,46 +101,43 @@ Singleton {
   property color mOutline: defaultColors.mOutline
   property color mShadow: defaultColors.mShadow
 
-  property color mHover: defaultColors.mHover
-  property color mOnHover: defaultColors.mOnHover
-
   // --- Color transition animations ---
-  Behavior on mPrimary {
+  Behavior on _primaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mOnPrimary {
+  Behavior on _onPrimaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mSecondary {
+  Behavior on _secondaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mOnSecondary {
+  Behavior on _onSecondaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mTertiary {
+  Behavior on _tertiaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mOnTertiary {
+  Behavior on _onTertiaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
@@ -181,14 +200,14 @@ Singleton {
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mHover {
+  Behavior on _hoverRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
       easing.type: Easing.OutCubic
     }
   }
-  Behavior on mOnHover {
+  Behavior on _onHoverRaw {
     enabled: !root.skipTransition
     ColorAnimation {
       duration: Style.animationSlowest
@@ -209,37 +228,37 @@ Singleton {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mPrimary = customColorsData.mPrimary;
+      root._primaryRaw = customColorsData.mPrimary;
     }
     function onMOnPrimaryChanged() {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mOnPrimary = customColorsData.mOnPrimary;
+      root._onPrimaryRaw = customColorsData.mOnPrimary;
     }
     function onMSecondaryChanged() {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mSecondary = customColorsData.mSecondary;
+      root._secondaryRaw = customColorsData.mSecondary;
     }
     function onMOnSecondaryChanged() {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mOnSecondary = customColorsData.mOnSecondary;
+      root._onSecondaryRaw = customColorsData.mOnSecondary;
     }
     function onMTertiaryChanged() {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mTertiary = customColorsData.mTertiary;
+      root._tertiaryRaw = customColorsData.mTertiary;
     }
     function onMOnTertiaryChanged() {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mOnTertiary = customColorsData.mOnTertiary;
+      root._onTertiaryRaw = customColorsData.mOnTertiary;
     }
     function onMErrorChanged() {
       if (!root.skipTransition) {
@@ -293,13 +312,13 @@ Singleton {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mHover = customColorsData.mHover;
+      root._hoverRaw = customColorsData.mHover;
     }
     function onMOnHoverChanged() {
       if (!root.skipTransition) {
         startTransition();
       }
-      root.mOnHover = customColorsData.mOnHover;
+      root._onHoverRaw = customColorsData.mOnHover;
     }
   }
 
@@ -415,15 +434,13 @@ Singleton {
   property bool _accentWarned: false
   readonly property bool accentOverridden: _accentOverride.a > 0
 
-  readonly property color accent: accentOverridden ? _accentOverride : root.mPrimary
-  readonly property color accentAlt: accentOverridden ? _accentOverride : root.mSecondary
-  readonly property color accentAction: accentOverridden ? _accentOverride : root.mTertiary
-  // Text on accent: white on the dark side, #303030 once the accent is bright
-  // enough for it to read (≈0.6 relative luminance keeps Deepin blue on white).
-  readonly property color onAccent: {
-    const c = accent;
-    return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) > 0.6 ? "#303030" : "#FFFFFF";
-  }
+  // The accent family aliases the accent-role m* tokens, which already resolve
+  // ui.accentOverride (declared above) — so a pinned accent reaches every
+  // consumer, including places that read mPrimary/mTertiary directly.
+  readonly property color accent: root.mPrimary
+  readonly property color accentAlt: root.mSecondary
+  readonly property color accentAction: root.mTertiary
+  readonly property color onAccent: root.mOnPrimary
 
   readonly property color attention: "#F18A2E"
   readonly property color alert: "#F9704F"

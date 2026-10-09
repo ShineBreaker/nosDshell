@@ -619,7 +619,7 @@ Noctalia 卡片的对应关系：
   - 浅色：强调色相同；`mSurface #F8F8F8`、`mOnSurface #303030`、`mSurfaceVariant #EBEBEB`、`mOnSurfaceVariant #6B6B6B`、`mOutline #D5D5D5`、`mShadow #000000`。
   - 方案中的颜色**一律不透明**，因为模板（GTK、终端）要直接使用这些颜色，尚未改造的组件也会把 `mSurfaceVariant` 当作实色来画。DDE 的半透明表面只从 §1.2 和 §1.3 的令牌获得。
 - **表面令牌（§1.2–1.3）不读取配色方案**，只看暗色/浅色模式。切换到其他方案或使用壁纸取色时，只有强调色系（`mPrimary`、`mSecondary`、`mTertiary`、`mHover`）跟着变。唯一的例外是 `transientSurface = dark` 时的瞬时面——它用 `popupDark` 这个固定深色，仍不读方案。
-- **`ui.accentOverride`**（默认空）〔演进〕：非空且为合法颜色时，`Color.accent` / `accentAlt` / `accentAction` 一律取覆盖色，`onAccent` 按覆盖色亮度取白或 `#303030`；`m*` 方案令牌本身不动，GTK/终端模板照常按方案生成。
+- **`ui.accentOverride`**（默认空）〔演进〕：非空且为合法颜色时，`Color.mPrimary` / `mSecondary` / `mTertiary` / `mHover` 四个强调色角色一律取覆盖色（`Color.qml` 里方案值存 `_​*Raw`，公开 m* 令牌随覆盖解析），各 `mOn*` 对应色按覆盖色亮度取白或 `#303030`；`accent` / `accentAlt` / `accentAction` / `onAccent` 语义令牌仍是 m* 的别名，所以直接读 `mPrimary` 的组件（进度环、滑块、勾选态）同样跟随。`mError` 与表面系令牌不受影响；GTK/终端模板读方案 JSON 生成、不经 `Color.qml`，照常按方案出。副作用：设置页里"当前方案"预览条显示的是生效色（即覆盖色），各方案的候选色板仍显示方案自带颜色。
 - 模板功能（GTK、终端等配色文件的生成）照常使用当前方案的完整颜色。
 
 ---
