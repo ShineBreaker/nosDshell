@@ -61,7 +61,10 @@ Item {
     }
     return "";
   }
-  readonly property bool useGraphicMode: displayMode === "graphic" || displayMode === "graphic-clean"
+  // The graphic capsule is a bar presentation; on the fashion dock the plugin
+  // is always the shared icon tile (gxde-dock pluginwidget.cpp draws only the
+  // themed battery icon, no capsule).
+  readonly property bool useGraphicMode: (displayMode === "graphic" || displayMode === "graphic-clean") && !fashionMode
 
   readonly property bool hideIfNotDetected: widgetSettings.hideIfNotDetected !== undefined ? widgetSettings.hideIfNotDetected : widgetMetadata.hideIfNotDetected
   readonly property bool hideIfIdle: widgetSettings.hideIfIdle !== undefined ? widgetSettings.hideIfIdle : widgetMetadata.hideIfIdle
