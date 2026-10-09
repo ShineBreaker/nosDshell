@@ -210,7 +210,7 @@ Variants {
           anchors.fill: parent
           color: Color.maskShell
           radius: Style.radiusItem
-          border.width: Style.borderM
+          border.width: Style.borderS
           border.color: Color.overlay("hover")
         }
 
