@@ -683,10 +683,18 @@ Loader {
           // hidden this is just the hiddenSliver strip so hovering it reveals
           // the dock, and clicks elsewhere pass through)
           mask: Region {
-            x: Math.round(dockContent.dockContainer.x + dockWindow.slideX)
-            y: Math.round(dockContent.dockContainer.y + dockWindow.slideY)
-            width: Math.round(dockContent.dockContainer.width)
-            height: Math.round(dockContent.dockContainer.height)
+            Region {
+              item: dockContent.dockContainer
+            }
+            // PendingRegion rebuilds on item x/y/width/height changes only; a
+            // transform-driven slide emits nothing, so this empty sentinel
+            // re-emits `changed` on each slide frame and the item rect is
+            // re-read via mapToScene (quickshell src/core/region.cpp:156-160).
+            Region {
+              x: dockWindow.slideX + dockWindow.slideY
+              width: 0
+              height: 0
+            }
           }
 
           // Blur behind the dock rect (only when the compositor can blur, §1.2)
@@ -694,11 +702,13 @@ Loader {
           Region {
             id: dockBlurRegion
             Region {
-              x: Math.round(dockContent.dockContainer.x + dockWindow.slideX)
-              y: Math.round(dockContent.dockContainer.y + dockWindow.slideY)
-              width: Math.round(dockContent.dockContainer.width)
-              height: Math.round(dockContent.dockContainer.height)
+              item: dockContent.dockContainer
               radius: Style.radiusItem
+            }
+            Region {
+              x: dockWindow.slideX + dockWindow.slideY
+              width: 0
+              height: 0
             }
           }
 
