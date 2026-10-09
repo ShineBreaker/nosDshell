@@ -34,22 +34,50 @@ Item {
   readonly property string ddeIcons: Quickshell.shellDir + "/Assets/DDE/gxde-launcher/src/skin/icons/"
   readonly property string ddeImages: Quickshell.shellDir + "/Assets/DDE/gxde-launcher/src/widgets/images/"
 
-  // App list vs category list (DESIGN §3.4.2 two-level list)
+  // App list vs category list (DESIGN §3.4.2 two-level list; upstream drives
+  // it off WindowedFrame::m_displayMode, windowedframe.cpp onSwitchBtnClicked).
+  // The picked bucket lives on the provider (ddeCategory) so the rows on
+  // screen ARE model.results — keyboard selection and Enter stay aligned.
   property bool showCategoryList: false
-  property string activeCategory: ""
-  readonly property bool inCategory: showCategoryList && activeCategory !== ""
+  // Highlighted row while the 12 category rows are on screen (model.selection
+  // tracks _results, which are not what the list is showing in that state).
+  property int catIndex: 0
+  readonly property bool inCategory: showCategoryList && ddeCategory !== "all"
+  // showingCategoryRows = the bucket list itself; inCategory = inside a bucket
+  readonly property bool showingCategoryRows: showCategoryList && !inCategory
 
   readonly property var appsProvider: model.appsProvider
+  readonly property string ddeCategory: appsProvider ? appsProvider.ddeCategory : "all"
 
-  // Apps to show: the full list, or the active category's apps
-  readonly property var listApps: {
-    const all = appsProvider ? (appsProvider.entries || []) : [];
-    if (!inCategory)
-      return all;
-    return all.filter(app => appsProvider.appMatchesDDECategory(app, activeCategory));
+  // Category-list rows: "All Apps" first, then the 11 DDE buckets
+  // (minicategorywidget.cpp:46-56).
+  readonly property var categoryRows: ["all"].concat(appsProvider ? (appsProvider.ddeCategories || []) : [])
+
+  readonly property bool hasApps: model.results.length > 0
+
+  // Category-row activation: "all" leaves the category views entirely, a
+  // bucket enters it (switchToCategory -> setCategory).
+  function pickCategory(cat) {
+    if (cat === "all") {
+      showCategoryList = false;
+      appsProvider.selectDDECategory("all");
+    } else {
+      appsProvider.selectDDECategory(cat);
+    }
   }
 
-  readonly property bool hasApps: listApps.length > 0
+  // Upstream resets the windowed frame to the all-apps list every time it
+  // hides (windowedframe.cpp hideEvent). Drop the category state and the
+  // bucket filter so a reopened launcher never comes up silently filtered.
+  Connections {
+    target: LauncherState
+    function onClosed() {
+      root.showCategoryList = false;
+      root.catIndex = 0;
+      if (root.appsProvider)
+        root.appsProvider.selectDDECategory("all");
+    }
+  }
 
   LauncherModel {
     id: model
@@ -85,16 +113,29 @@ Item {
 
                       switch (event.key) {
                         case Qt.Key_Up:
+                        if (root.showingCategoryRows)
+                        root.catIndex = Math.max(0, root.catIndex - 1);
+                        else
                         model.selectPreviousRow(1);
                         event.accepted = true;
                         break;
                         case Qt.Key_Down:
+                        if (root.showingCategoryRows)
+                        root.catIndex = Math.min(root.categoryRows.length - 1, root.catIndex + 1);
+                        else
                         model.selectNextRow(1);
                         event.accepted = true;
                         break;
                         case Qt.Key_Enter:
                         case Qt.Key_Return:
-                        model.activate();
+                        // On the bucket rows Enter enters/buckets the row
+                        // (upstream switchToCategory); elsewhere the result.
+                        if (root.showingCategoryRows) {
+                          if (root.catIndex >= 0 && root.catIndex < root.categoryRows.length)
+                          root.pickCategory(root.categoryRows[root.catIndex]);
+                        } else {
+                          model.activate();
+                        }
                         event.accepted = true;
                         break;
                       }
@@ -156,8 +197,18 @@ Item {
             id: appList
             anchors.fill: parent
             clip: true
-            model: model.searchText.trim() !== "" ? model.results : root.listApps
-            currentIndex: model.selectedIndex
+            // The category list reuses this view: rows are the 12 DDE buckets
+            // as bare strings while the apps keep their result-entry shape.
+            // The bucket filter rides on the provider, so in-category browsing
+            // shows exactly model.results.
+            model: {
+              if (model.searchText.trim() !== "")
+                return model.results;
+              if (root.showingCategoryRows)
+                return root.categoryRows;
+              return model.results;
+            }
+            currentIndex: root.showingCategoryRows ? root.catIndex : model.selectedIndex
             spacing: 0
             interactive: true
             reserveScrollbarSpace: false
@@ -165,6 +216,11 @@ Item {
             delegate: Item {
               required property var modelData
               required property int index
+
+              readonly property bool isCategoryRow: typeof modelData === "string"
+              // In the category list the checked row mirrors the view state:
+              // "All Apps" while not inside a category, the bucket otherwise.
+              readonly property bool isActiveRow: isCategoryRow && (modelData === root.ddeCategory || (modelData === "all" && !root.inCategory))
 
               width: appList.width
               height: Style.launcherMiniRowHeight
@@ -174,7 +230,16 @@ Item {
                 anchors.topMargin: 1
                 anchors.bottomMargin: 1
                 radius: Style.radiusRow
-                color: (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent"
+                color: {
+                  if (isCategoryRow) {
+                    // Category rows (§3.4.2): dark tile only when active,
+                    // hover otherwise.
+                    if (isActiveRow)
+                      return Qt.rgba(0.082, 0.082, 0.082, 0.2);
+                    return (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent";
+                  }
+                  return (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent";
+                }
               }
 
               IconImage {
@@ -182,7 +247,7 @@ Item {
                 y: 6
                 width: 24
                 height: 24
-                source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
+                source: (!isCategoryRow && modelData.icon) ? ThemeIcons.iconFromName(modelData.icon) : ""
                 visible: status === Image.Ready
                 asynchronous: true
               }
@@ -197,17 +262,33 @@ Item {
                 // app icon name out of the font path (it would warn).
                 icon: "apps"
                 color: Color.onShell
-                visible: modelData.icon === ""
+                visible: !isCategoryRow && modelData.icon === ""
               }
 
+              // App row label
               NText {
                 x: 48
                 width: parent.width - 58
                 height: 36
                 verticalAlignment: Text.AlignVCenter
-                text: modelData.name || ""
+                text: isCategoryRow ? "" : (modelData.name || "")
                 pointSize: Style.fontSizeBody
                 color: Color.onShell
+                elide: Text.ElideRight
+                maximumLineCount: 1
+                visible: !isCategoryRow
+              }
+
+              // Category row label (§3.4.2: white×0.6 text, accent when
+              // selected; upstream MiniCategoryItem is a centered text button)
+              NText {
+                anchors.fill: parent
+                visible: isCategoryRow
+                horizontalAlignment: Text.AlignHCenter
+                verticalAlignment: Text.AlignVCenter
+                text: isCategoryRow ? (appsProvider ? appsProvider.getDDECategoryName(modelData) : modelData) : ""
+                pointSize: Style.fontSizeBody
+                color: isActiveRow ? Color.accent : Qt.alpha(Color.onShell, 0.6)
                 elide: Text.ElideRight
                 maximumLineCount: 1
               }
@@ -218,7 +299,10 @@ Item {
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onClicked: {
-                  appList.currentIndex = index;
+                  if (isCategoryRow) {
+                    root.pickCategory(modelData);
+                    return;
+                  }
                   model.selectIndex(index);
                   model.activate();
                 }
@@ -226,47 +310,10 @@ Item {
             }
 
             onCountChanged: {
-              if (currentIndex >= count)
+              if (root.showingCategoryRows)
+                root.catIndex = Math.min(root.catIndex, count - 1);
+              else if (currentIndex >= count)
                 model.selectIndex(0);
-            }
-          }
-
-          // Back row when inside a category
-          Rectangle {
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            height: 36
-            radius: Style.radiusRow
-            color: backRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
-            visible: root.inCategory
-
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              spacing: Style.marginS
-
-              NIcon {
-                icon: "chevron-left"
-                pointSize: Style.fontSizeBody
-                color: Color.onShell
-              }
-
-              NText {
-                text: I18n.tr("launcher.dde.back")
-                pointSize: Style.fontSizeBody
-                color: Color.onShell
-                Layout.fillWidth: true
-                elide: Text.ElideRight
-              }
-            }
-
-            MouseArea {
-              id: backRowMouse
-              anchors.fill: parent
-              hoverEnabled: true
-              acceptedButtons: Qt.LeftButton
-              onClicked: root.activeCategory = ""
             }
           }
         }
@@ -298,7 +345,10 @@ Item {
 
             NText {
               Layout.fillWidth: true
-              text: root.showCategoryList ? I18n.tr("launcher.dde.all-apps") : I18n.tr("launcher.dde.categories-label")
+              // Upstream: "All Categories" with the enter arrow while browsing
+              // all apps, "Back" in the category views
+              // (miniframeswitchbtn.cpp updateStatus).
+              text: root.showCategoryList ? I18n.tr("launcher.dde.back") : I18n.tr("launcher.dde.categories-label")
               pointSize: Style.fontSizeBody
               font.weight: Style.fontWeightMedium
               color: switchRowMouse.pressed ? Color.accent : Color.onShell
@@ -312,7 +362,7 @@ Item {
               fillMode: Image.PreserveAspectFit
               smooth: true
               asynchronous: true
-              visible: root.showCategoryList
+              visible: !root.showCategoryList
             }
           }
 
@@ -322,8 +372,15 @@ Item {
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
             onClicked: {
-              root.showCategoryList = !root.showCategoryList;
-              root.activeCategory = "";
+              // windowedframe.cpp onSwitchBtnClicked: from inside a category
+              // the button returns to the category list, not straight to all
+              // apps.
+              if (root.inCategory) {
+                root.appsProvider.selectDDECategory("all");
+              } else {
+                root.showCategoryList = !root.showCategoryList;
+                root.catIndex = 0;
+              }
             }
           }
         }
