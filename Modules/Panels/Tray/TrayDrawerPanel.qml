@@ -75,6 +75,25 @@ SmartPanel {
     readonly property var pinnedList: widgetSettings.pinned || []
     readonly property bool hidePassive: widgetSettings.hidePassive !== undefined ? widgetSettings.hidePassive : true
 
+    // SNI churn arrives in bursts; funnel every model rewrite through one
+    // debounced pass and skip identical results so the Repeater is never
+    // re-incubated unless membership actually changed.
+    Timer {
+      id: valuesDebounce
+      interval: 100
+      onTriggered: panelContent.updateFilteredItems()
+    }
+
+    function _sameItems(a, b) {
+      if (a.length !== b.length)
+        return false;
+      for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i])
+          return false;
+      }
+      return true;
+    }
+
     // Filter tray items - this runs in panelContent context where isPinned is available
     function updateFilteredItems() {
       var filtered = [];
@@ -95,18 +114,19 @@ SmartPanel {
 
         filtered.push(item);
       }
-      root.trayValues = filtered;
+      if (!_sameItems(root.trayValues, filtered))
+        root.trayValues = filtered;
     }
 
     // Update filtered items when dependencies change
     Component.onCompleted: updateFilteredItems()
-    onPinnedListChanged: updateFilteredItems()
-    onHidePassiveChanged: updateFilteredItems()
+    onPinnedListChanged: valuesDebounce.restart()
+    onHidePassiveChanged: valuesDebounce.restart()
 
     Connections {
       target: root
       function onTrayValuesAllChanged() {
-        panelContent.updateFilteredItems();
+        valuesDebounce.restart();
       }
     }
 

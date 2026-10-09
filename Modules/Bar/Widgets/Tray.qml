@@ -82,6 +82,7 @@ Item {
   readonly property color chevronColor: Color.resolveColorKey(chevronColorKey)
   property var filteredItems: [] // Items to show inline (pinned)
   property var dropdownItems: [] // Items to show in drawer (unpinned)
+  property var _snItems: [] // Raw item snapshot for status Connections
   property int hoveredItemIndex: -1 // Track hovered item for dot indicator
 
   Timer {
@@ -114,7 +115,7 @@ Item {
   }
   Repeater {
     id: statusConnectionsRepeater
-    model: SystemTray.items && SystemTray.items.values ? SystemTray.items.values : []
+    model: root._snItems
 
     delegate: Item {
       Connections {
@@ -180,49 +181,66 @@ Item {
     }
 
     // If drawer is disabled, show all items inline
+    let newFiltered = [];
+    let newDropdown = [];
     if (!root.drawerEnabled) {
-      filteredItems = newItems;
-      dropdownItems = [];
+      newFiltered = newItems;
     } else {
       // Build inline (pinned) and drawer (unpinned) lists
       // If pinned list is empty, all items go to drawer (none inline)
       // If pinned list has items, pinned items are inline, rest go to drawer
       if (pinned && pinned.length > 0) {
-        let pinnedItems = [];
         for (var k = 0; k < newItems.length; k++) {
           const item2 = newItems[k];
           const title2 = item2.tooltipTitle || item2.name || item2.id || "";
           for (var m = 0; m < pinned.length; m++) {
             const rule2 = pinned[m];
             if (wildCardMatch(title2, rule2)) {
-              pinnedItems.push(item2);
+              newFiltered.push(item2);
               break;
             }
           }
         }
-        filteredItems = pinnedItems;
 
         // Unpinned items go to drawer
-        let unpinnedItems = [];
         for (var v = 0; v < newItems.length; v++) {
           const cand = newItems[v];
           let isPinned = false;
-          for (var f = 0; f < filteredItems.length; f++) {
-            if (filteredItems[f] === cand) {
+          for (var f = 0; f < newFiltered.length; f++) {
+            if (newFiltered[f] === cand) {
               isPinned = true;
               break;
             }
           }
           if (!isPinned)
-            unpinnedItems.push(cand);
+            newDropdown.push(cand);
         }
-        dropdownItems = unpinnedItems;
       } else {
         // No pinned items: all items go to drawer (none inline)
-        filteredItems = [];
-        dropdownItems = newItems;
+        newDropdown = newItems;
       }
     }
+
+    // SNI churn arrives in bursts; assigning identical arrays would still tear
+    // down and re-incubate every Repeater delegate. Skip writes that change
+    // nothing, so status flips alone never touch the models.
+    const snValues = (SystemTray.items && SystemTray.items.values) ? SystemTray.items.values : [];
+    if (!_sameItems(_snItems, snValues))
+      _snItems = snValues;
+    if (!_sameItems(filteredItems, newFiltered))
+      filteredItems = newFiltered;
+    if (!_sameItems(dropdownItems, newDropdown))
+      dropdownItems = newDropdown;
+  }
+
+  function _sameItems(a, b) {
+    if (a.length !== b.length)
+      return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i])
+        return false;
+    }
+    return true;
   }
 
   function updateFilteredItems() {
