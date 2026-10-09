@@ -1,8 +1,6 @@
 import QtQuick
 import Quickshell
 import qs.Commons
-import qs.Services.Compositor
-import qs.Services.UI
 
 Item {
   id: root
@@ -153,41 +151,11 @@ Item {
       if (launcher)
         launcher.close();
 
-      // Execute via Qt.callLater, but reference only singletons
-      // (root may be destroyed after launcher.close() unloads the panel)
+      // Execute via Qt.callLater, referencing only the SessionActions
+      // singleton (root may be destroyed after launcher.close() unloads the
+      // panel; the Commons singleton outlives panel unloading, see 072eb6d05)
       Qt.callLater(() => {
-                     switch (action) {
-                       case "lock":
-                       if (PanelService.lockScreen && !PanelService.lockScreen.active) {
-                         PanelService.lockScreen.active = true;
-                       }
-                       break;
-                       case "suspend":
-                       if (Settings.data.general.lockOnSuspend) {
-                         CompositorService.lockAndSuspend();
-                       } else {
-                         CompositorService.suspend();
-                       }
-                       break;
-                       case "hibernate":
-                       CompositorService.hibernate();
-                       break;
-                       case "reboot":
-                       CompositorService.reboot();
-                       break;
-                       case "rebootToUefi":
-                       CompositorService.rebootToUefi();
-                       break;
-                       case "userspaceReboot":
-                       CompositorService.userspaceReboot();
-                       break;
-                       case "logout":
-                       CompositorService.logout();
-                       break;
-                       case "shutdown":
-                       CompositorService.shutdown();
-                       break;
-                     }
+                     SessionActions.execute(action);
                    });
     };
   }

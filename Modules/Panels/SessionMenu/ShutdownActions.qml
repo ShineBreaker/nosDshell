@@ -7,8 +7,9 @@ import qs.Services.UI
 // Shared dde-shutdown power-action data, used by both the dde-shutdown panel
 // (Modules/Panels/SessionMenu) and the in-lock-screen power row
 // (Modules/LockScreen, DESIGN §3.9 "电源按钮会在锁屏内打开 §3.8 的按钮行").
-// Keeping the artwork map and the action dispatch in one place means the two
-// surfaces cannot drift apart.
+// The artwork map stays here; the action dispatch lives in the
+// Commons/SessionActions singleton so the launcher's session search reaches
+// the same switch without capturing panel-scoped objects in Qt.callLater.
 //
 // The artwork mapping is the one dde-shutdown/skin/shutdown.qss:1-40 declares
 // per button objectName (qproperty-normalIcon / hoverIcon / pressedIcon):
@@ -150,38 +151,11 @@ QtObject {
     return options;
   }
 
-  // Dispatch a power action. Shared so the panel and the lock screen row behave
-  // identically (including lockOnSuspend routing).
+  // Dispatch a power action. The switch itself lives in the
+  // Commons/SessionActions singleton so the panel, the lock screen row and the
+  // launcher's session search cannot drift apart (including lockOnSuspend
+  // routing and the custom lock command chain).
   function execute(action) {
-    switch (action) {
-    case "lock":
-      CompositorService.lock();
-      break;
-    case "suspend":
-      if (Settings.data.general.lockOnSuspend) {
-        CompositorService.lockAndSuspend();
-      } else {
-        CompositorService.suspend();
-      }
-      break;
-    case "hibernate":
-      CompositorService.hibernate();
-      break;
-    case "reboot":
-      CompositorService.reboot();
-      break;
-    case "userspaceReboot":
-      CompositorService.userspaceReboot();
-      break;
-    case "rebootToUefi":
-      CompositorService.rebootToUefi();
-      break;
-    case "logout":
-      CompositorService.logout();
-      break;
-    case "shutdown":
-      CompositorService.shutdown();
-      break;
-    }
+    SessionActions.execute(action);
   }
 }
