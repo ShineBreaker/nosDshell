@@ -697,8 +697,12 @@ Loader {
             }
           }
 
-          // Blur behind the dock rect (only when the compositor can blur, §1.2)
-          BackgroundEffect.blurRegion: Color.blurActive ? dockBlurRegion : null
+          // Blur behind the dock rect (only when the compositor can blur, §1.2).
+          // Detach entirely while a fullscreen window covers the output: the
+          // compositor otherwise keeps the last-seen region alive, leaving a
+          // blurred band under the slid-away dock and losing the effect on
+          // return.
+          BackgroundEffect.blurRegion: (Color.blurActive && !root.fullscreenCovered) ? dockBlurRegion : null
           Region {
             id: dockBlurRegion
             Region {
