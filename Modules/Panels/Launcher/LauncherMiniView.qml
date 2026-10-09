@@ -25,7 +25,7 @@ Item {
   // Width the right bar settles on: miniframerightbar.cpp updateSize() widens
   // the bar until the settings + power row and the date both fit, with 160 px
   // as the floor (DESIGN §3.4.2 "about 160").
-  readonly property real measuredRightPaneWidth: Math.ceil(Math.max(rightPaneWidth, settingsButton.implicitWidth + powerButton.implicitWidth + 38, dateLabel.implicitWidth + 60))
+  readonly property real measuredRightPaneWidth: Math.ceil(Math.max(rightPaneWidth, settingsButton.implicitWidth + powerButton.implicitWidth + 38, dateLabel.implicitWidth + 60, clockLabel.implicitWidth + 60))
 
   implicitWidth: leftPaneWidth + measuredRightPaneWidth
   implicitHeight: Style.launcherMiniHeight
@@ -504,6 +504,7 @@ Item {
           spacing: 2
 
           NText {
+            id: clockLabel
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             text: I18n.locale.toString(Time.now, "HH:mm")
@@ -511,6 +512,12 @@ Item {
             font.weight: Style.fontWeightRegular
             color: Color.onShell
             applyUiScale: false
+            // Never elide the clock — shrink the glyphs instead (the right
+            // pane should already widen via measuredRightPaneWidth; this is
+            // the safety net for narrow panes).
+            elide: Text.ElideNone
+            fontSizeMode: Text.HorizontalFit
+            minimumPointSize: 18
           }
 
           NText {
@@ -521,6 +528,9 @@ Item {
             pointSize: Style.fontSizeBody
             color: Qt.alpha(Color.onShell, Style.launcherMiniClockDateAlpha)
             applyUiScale: false
+            elide: Text.ElideNone
+            fontSizeMode: Text.HorizontalFit
+            minimumPointSize: 7
           }
         }
 
