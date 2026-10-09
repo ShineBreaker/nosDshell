@@ -30,25 +30,9 @@ ColumnLayout {
     settingsChanged(settings);
   }
 
-  NComboBox {
+  NDisplayModeComboBox {
     visible: valueShowIcon // Hide display mode setting when icon is disabled
-    label: I18n.tr("common.display-mode")
-    description: I18n.tr("bar.volume.display-mode-description")
-    minimumWidth: 200
-    model: [
-      {
-        "key": "onhover",
-        "name": I18n.tr("display-modes.on-hover")
-      },
-      {
-        "key": "forceOpen",
-        "name": I18n.tr("display-modes.force-open")
-      },
-      {
-        "key": "alwaysHide",
-        "name": I18n.tr("display-modes.always-hide")
-      }
-    ]
+    useForceOpen: true
     currentKey: valueDisplayMode
     onSelected: key => {
                   valueDisplayMode = key;
