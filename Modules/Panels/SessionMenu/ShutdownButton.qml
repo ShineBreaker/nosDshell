@@ -99,12 +99,13 @@ Rectangle {
       wrapMode: Text.WrapAtWordBoundaryOrAnywhere
     }
 
-    // Keybind shown after the label, onShellTertiary (white @0.6)
+    // Keybind shown after the label, onWallpaperTertiary (white @0.6) — the
+    // shutdown surface is always dark, so the text never follows the theme.
     NText {
       Layout.alignment: Qt.AlignHCenter
       text: button.keybind
       pointSize: Style.fontSizeS
-      color: Color.onShellTertiary
+      color: Color.onWallpaperTertiary
       visible: text.length > 0
     }
   }

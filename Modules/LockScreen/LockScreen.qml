@@ -216,7 +216,7 @@ Loader {
                                       "action": I18n.tr("common." + panelComponent.pendingAction),
                                       "seconds": Math.ceil(panelComponent.timeRemaining / 1000)
                                     })
-                      color: Color.mOnSurface
+                      color: Color.onWallpaper
                       pointSize: Style.fontSizeL
                       horizontalAlignment: Text.AlignHCenter
                       font.weight: Style.fontWeightBold
