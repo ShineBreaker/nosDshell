@@ -101,34 +101,56 @@ Item {
     onTriggered: root._updateScanningState()
   }
 
+  // What THIS instance switched on. Several BluetoothSubTab instances stay
+  // alive at once (keep-alive panels preload the settings view while hidden —
+  // the CC-embedded module view, the standalone settings window, per-screen
+  // panels); every discoverable/discovering change re-arms every instance's
+  // debouncer, so a hidden instance that tore down state it never owned just
+  // ping-ponged the adapter with the visible one (~1 Hz, jittering the page).
+  property bool _ownsScan: false
+  property bool _ownsDiscoverable: false
+
   function _updateScanningState() {
     if (effectivelyVisible && BluetoothService.enabled && !showOnlyLists) {
       Logger.d("BluetoothPrefs", "Panel/tab active");
       if (!isScanningActive) {
         BluetoothService.setScanActive(true);
+        _ownsScan = true;
       }
       if (!isDiscoverable) {
         BluetoothService.setDiscoverable(true);
+        _ownsDiscoverable = true;
       }
     } else {
       Logger.d("BluetoothPrefs", "Panel/tab inactive");
-      if (isScanningActive && !showOnlyLists) {
-        BluetoothService.setScanActive(false);
+      // Read the live state before writing: BlueZ may already have stopped
+      // discovery on its own — a redundant stop is what "No discovery
+      // started" warnings look like.
+      if (_ownsScan) {
+        _ownsScan = false;
+        if (isScanningActive)
+          BluetoothService.setScanActive(false);
       }
-      if (isDiscoverable && !showOnlyLists) {
-        BluetoothService.setDiscoverable(false);
+      if (_ownsDiscoverable) {
+        _ownsDiscoverable = false;
+        if (isDiscoverable)
+          BluetoothService.setDiscoverable(false);
       }
     }
   }
 
   Component.onDestruction: {
-    // Ensure scanning is stopped when component is closed
-    if (isScanningActive && !showOnlyLists) {
-      BluetoothService.setScanActive(false);
+    // Release only what this instance owns; a sibling instance may be the
+    // one keeping scanning/discoverable on.
+    if (_ownsScan) {
+      _ownsScan = false;
+      if (isScanningActive)
+        BluetoothService.setScanActive(false);
     }
-    // Ensure discoverable is disabled when component is closed
-    if (isDiscoverable && !showOnlyLists) {
-      BluetoothService.setDiscoverable(false);
+    if (_ownsDiscoverable) {
+      _ownsDiscoverable = false;
+      if (isDiscoverable)
+        BluetoothService.setDiscoverable(false);
     }
     Logger.d("BluetoothPrefs", "Panel closed");
   }
