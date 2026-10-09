@@ -52,6 +52,15 @@ Singleton {
       if (item.width !== undefined) {
         s += " " + Math.round(item.width) + "x" + Math.round(item.height);
       }
+      // Scene position catches items painted outside their parent's rect —
+      // hit-testing can never reach those, the tree is the only way to see them.
+      // mapToItem qWarns on windowless items (mid-incubation delegates etc.).
+      if (item.Window) {
+        var gp = item.mapToItem(null, 0, 0);
+        if (gp) {
+          s += " @" + Math.round(gp.x) + "," + Math.round(gp.y);
+        }
+      }
       if (item.visible === false) {
         s += " hidden";
       }
@@ -161,7 +170,7 @@ Singleton {
       for (var i = 0; i < kids.length; i++) {
         var k = kids[i];
         try {
-          if (k.visible === false)
+          if (k.visible === false || !k.Window)
             continue;
           var lp = cur.mapToItem(k, p.x, p.y);
           if (lp.x >= 0 && lp.y >= 0 && lp.x <= k.width && lp.y <= k.height)
@@ -191,6 +200,42 @@ Singleton {
       parts.push("== " + names[i] + " ==\n" + dumpItemTree(roots[names[i]], maxDepth));
     }
     return parts.join("\n");
+  }
+
+  // Find the first item with a matching objectName under a registered root
+  // ("" / "opened" = PanelService.openedPanel). Pairs with setProperty to poke
+  // state mid-repro — e.g. filling a search field the pointer can't reach.
+  function findItem(rootName, objectName) {
+    var item = null;
+    try {
+      item = (rootName === "" || rootName === "opened") ? PanelService.openedPanel : roots[rootName];
+    } catch (e) {}
+    if (!item)
+      return null;
+    var found = null;
+    _walkItems(item, 0, function (it) {
+      if (found)
+        return;
+      try {
+        if (it.objectName === objectName)
+          found = it;
+      } catch (e) {}
+    });
+    return found;
+  }
+
+  function setProperty(rootName, objectName, prop, value) {
+    var it = findItem(rootName, objectName);
+    if (!it)
+      return "no item '" + objectName + "' under " + rootName + " (roots: " + rootNames() + ")";
+    try {
+      if (it[prop] === undefined)
+        return "no property '" + prop + "' on " + describe(it);
+      it[prop] = value;
+      return "ok " + describe(it) + " " + prop + "=" + value;
+    } catch (e) {
+      return "set failed on " + describe(it) + ": " + e;
+    }
   }
 
   // Lifecycle forensics: attach Component.destruction on every item in a

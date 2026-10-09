@@ -20,6 +20,7 @@
 - `debug hit <根> <x> <y>` — 沿 `childAt` 命中测试到最深节点，并列出每层所有盖住该点的子项；回答「这个坐标的 press 会落到谁手上」。
 - `debug opened [深度]` — dump `PanelService.openedPanel`；多屏注册错名时用它拿「当前真正打开的面板」。
 - `debug watch <名字>` — 给整棵子树挂 `Component.destruction` 探针，投递途中谁被销毁，`DbgWatch` 日志会报名字。
+- `debug set <根> <objectName> <属性> <值>` — 按 objectName 找 item 写属性；往指针到不了的输入里灌状态（比如没键盘注入时给搜索框填词）。
 - `debug status` / `debug dump` / `debug unwatch`。
 
 `verify.sh --scenes` 的场景名与 `debug list` 的根名不是同一套命名，两边各自查（场景清单见 `Scripts/test/verify.sh` 头部注释）。

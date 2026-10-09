@@ -1101,5 +1101,9 @@ Singleton {
     function hit(root: string, x: real, y: real): string {
       return DebugService.hitTest(root, x, y, 24);
     }
+
+    function set(root: string, objectName: string, prop: string, value: string): string {
+      return DebugService.setProperty(root, objectName, prop, value);
+    }
   }
 }
