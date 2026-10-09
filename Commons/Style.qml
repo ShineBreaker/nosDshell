@@ -461,8 +461,10 @@ Singleton {
   readonly property int quickSwitchHeight: Math.round(60 * uiScaleRatio)
   // Basic page slider track height (gxde-control-center basicsettingspage.cpp)
   readonly property int sliderBasicHeight: Math.round(35 * uiScaleRatio)
-  // Quick-control basic page height: volume + brightness sliders + switch row
-  readonly property int quickControlPanelHeight: sliderBasicHeight * 3 + Style.marginM * 2
+  // Quick-control page slot height: two sliderBasicHeight rows + the switch row
+  // + inner gaps (2×S spacing + 2×S row top margins) + outer margins (2×M).
+  // All quick-control pages share this slot so paging never resizes the strip.
+  readonly property int quickControlPanelHeight: sliderBasicHeight * 2 + quickSwitchHeight + marginS * 4 + marginM * 2
   readonly property int quickSwitchIconBottomMargin: Math.round(20 * uiScaleRatio)
   readonly property int quickSwitchBlockBottomMargin: Math.round(5 * uiScaleRatio)
   // Page indicator: height 40, dot alphas from DESIGN §3.5.2

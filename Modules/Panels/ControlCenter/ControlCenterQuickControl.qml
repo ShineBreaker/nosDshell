@@ -46,16 +46,22 @@ Item {
   readonly property int pageCount: 1 + switchPageCount + detailPages.length
   property int currentPage: 0
 
+  // Direction of the last page turn (+1 next / -1 previous); the incoming page
+  // slides in from that side.
+  property int navDirection: 1
+
   readonly property string currentDetailPage: {
     const idx = currentPage - 1 - switchPageCount;
     return (idx >= 0 && idx < detailPages.length) ? detailPages[idx] : "";
   }
 
   function nextPage() {
+    navDirection = 1;
     currentPage = (currentPage + 1) % pageCount;
   }
 
   function previousPage() {
+    navDirection = -1;
     currentPage = (currentPage - 1 + pageCount) % pageCount;
   }
 
@@ -71,12 +77,15 @@ Item {
   }
 
   implicitHeight: content.implicitHeight + Style.pageIndicatorHeight
+  clip: true
 
   // Select a page by id ("basic" or wifi/bluetooth/display/vpn); pages that
   // are unavailable in this environment fall back to the basic page.
   function openPage(name) {
     const idx = detailPages.indexOf(name);
-    currentPage = idx >= 0 ? 1 + switchPageCount + idx : 0;
+    const target = idx >= 0 ? 1 + switchPageCount + idx : 0;
+    navDirection = target >= currentPage ? 1 : -1;
+    currentPage = target;
   }
 
   Component.onCompleted: {
@@ -85,6 +94,34 @@ Item {
     VPNService.refresh();
   }
 
+  // Slide-in transition for the incoming page: a directional settle matching
+  // the module-view slide language (Style.motionPanel). Transform-based so the
+  // anchored layout never fights the animation.
+  onCurrentPageChanged: pageSettle.restart()
+
+  ParallelAnimation {
+    id: pageSettle
+
+    NumberAnimation {
+      target: pageSlide
+      property: "x"
+      from: root.navDirection * root.pageEnterOffset
+      to: 0
+      duration: Style.motionPanel
+      easing.type: Easing.OutCubic
+    }
+    NumberAnimation {
+      target: content
+      property: "opacity"
+      from: 0
+      to: 1
+      duration: Style.motionPanel
+      easing.type: Easing.OutCubic
+    }
+  }
+
+  readonly property real pageEnterOffset: Math.round(root.width * 0.12)
+
   ColumnLayout {
     id: content
     anchors.left: parent.left
@@ -92,220 +129,240 @@ Item {
     anchors.top: parent.top
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Style.pageIndicatorHeight
-    spacing: Style.marginS
+    spacing: 0
+    opacity: 1
+    transform: Translate {
+      id: pageSlide
+      x: 0
+    }
 
     // ---------------- basic page ----------------
-    ColumnLayout {
-      id: basicCol
+    Item {
+      id: basicPage
       Layout.fillWidth: true
-      Layout.leftMargin: Style.marginM
-      Layout.rightMargin: Style.marginM
-      Layout.topMargin: Style.marginM
-      Layout.bottomMargin: Style.marginM
-      // Fixed height: sliders (35+35) + quick switch row (60) + spacing
       Layout.preferredHeight: Style.quickControlPanelHeight
       visible: root.currentPage === 0
-      spacing: Style.marginS
 
-      // Volume slider
-      RowLayout {
-        id: volumeRow
-        Layout.fillWidth: true
-        Layout.preferredHeight: Style.sliderBasicHeight
+      ColumnLayout {
+        anchors.fill: parent
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        anchors.topMargin: Style.marginM
+        anchors.bottomMargin: Style.marginM
         spacing: Style.marginS
 
-        property real localVolume: AudioService.volume
-
-        // Service-side refreshes (wpctl polls) must not yank the knob while a
-        // drag is in progress — same guard the brightness row uses.
-        Connections {
-          target: AudioService
-          function onVolumeChanged() {
-            if (!volumeSlider.pressed)
-              volumeRow.localVolume = AudioService.volume;
-          }
-        }
-
-        NIcon {
-          icon: "volume-off"
-          pointSize: Style.fontSizeTitle
-          color: Color.onShellSecondary
-        }
-
-        NSlider {
-          id: volumeSlider
+        // Volume slider
+        RowLayout {
+          id: volumeRow
           Layout.fillWidth: true
-          from: 0
-          to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
-          value: volumeRow.localVolume
-          stepSize: 0.01
-          heightRatio: 0.5
-          onMoved: {
-            volumeRow.localVolume = value;
-            AudioService.setVolume(value);
+          Layout.preferredHeight: Style.sliderBasicHeight
+          spacing: Style.marginS
+
+          property real localVolume: AudioService.volume
+
+          // Service-side refreshes (wpctl polls) must not yank the knob while a
+          // drag is in progress — same guard the brightness row uses.
+          Connections {
+            target: AudioService
+            function onVolumeChanged() {
+              if (!volumeSlider.pressed)
+                volumeRow.localVolume = AudioService.volume;
+            }
           }
-          tooltipText: `${Math.round(value * 100)}%`
+
+          NIcon {
+            icon: "volume-off"
+            pointSize: Style.fontSizeTitle
+            color: Color.onShellSecondary
+          }
+
+          NSlider {
+            id: volumeSlider
+            Layout.fillWidth: true
+            from: 0
+            to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
+            value: volumeRow.localVolume
+            stepSize: 0.01
+            heightRatio: 0.5
+            onMoved: {
+              volumeRow.localVolume = value;
+              AudioService.setVolume(value);
+            }
+            tooltipText: `${Math.round(value * 100)}%`
+          }
+
+          NIcon {
+            icon: "volume-high"
+            pointSize: Style.fontSizeTitle
+            color: Color.onShellSecondary
+          }
         }
 
-        NIcon {
-          icon: "volume-high"
-          pointSize: Style.fontSizeTitle
-          color: Color.onShellSecondary
+        // Brightness slider (hidden when brightness control is unavailable)
+        RowLayout {
+          id: brightnessRow
+          Layout.fillWidth: true
+          Layout.preferredHeight: Style.sliderBasicHeight
+          Layout.topMargin: Style.marginS
+          spacing: Style.marginS
+          visible: brightnessMonitor !== null && brightnessMonitor.brightnessControlAvailable
+
+          readonly property var brightnessMonitor: BrightnessService.getMonitorForScreen(root.screen ?? (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)) ?? null
+
+          Connections {
+            target: brightnessRow.brightnessMonitor
+            ignoreUnknownSignals: true
+            function onBrightnessUpdated() {
+              const bm = brightnessRow.brightnessMonitor;
+              if (bm && !brightnessSlider.pressed)
+                brightnessRow.localBrightness = bm.brightness || 0;
+            }
+          }
+
+          property real localBrightness: brightnessMonitor ? (brightnessMonitor.brightness || 0) : 0
+
+          NIcon {
+            icon: "brightness-low"
+            pointSize: Style.fontSizeTitle
+            color: Color.onShellSecondary
+          }
+
+          NSlider {
+            id: brightnessSlider
+            Layout.fillWidth: true
+            from: 0
+            to: 1
+            value: brightnessRow.localBrightness
+            stepSize: 0.01
+            heightRatio: 0.5
+            onMoved: {
+              brightnessRow.localBrightness = value;
+              brightnessRow.brightnessMonitor?.setBrightness(value);
+            }
+            tooltipText: `${Math.round(value * 100)}%`
+          }
+
+          NIcon {
+            icon: "brightness-high"
+            pointSize: Style.fontSizeTitle
+            color: Color.onShellSecondary
+          }
+        }
+
+        // Quick switch row(s): 5 per page, overflow on dedicated switch pages
+        // Cells are 70 px wide (Style.quickSwitchWidth); the row is centred so
+        // a shorter button count still lands in DDE's rhythm.
+        SwitchGrid {
+          Layout.preferredHeight: Style.quickSwitchHeight
+          Layout.preferredWidth: Math.min(parent.width, naturalWidth)
+          Layout.topMargin: Style.marginS
+          Layout.alignment: Qt.AlignHCenter
+          items: root.currentPage === 0 ? root.shortcuts.slice(0, Math.min(5, root.shortcuts.length)) : []
+          baseIndex: 0
         }
       }
+    }
 
-      // Brightness slider (hidden when brightness control is unavailable)
-      RowLayout {
-        id: brightnessRow
-        Layout.fillWidth: true
-        Layout.preferredHeight: Style.sliderBasicHeight
-        Layout.topMargin: Style.marginS
-        spacing: Style.marginS
-        visible: brightnessMonitor !== null && brightnessMonitor.brightnessControlAvailable
+    // ---------------- switch pages (overflow) ----------------
+    Item {
+      Layout.fillWidth: true
+      Layout.preferredHeight: Style.quickControlPanelHeight
+      visible: root.currentPage >= 1 && root.currentPage <= root.switchPageCount
 
-        readonly property var brightnessMonitor: BrightnessService.getMonitorForScreen(root.screen ?? (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)) ?? null
-
-        Connections {
-          target: brightnessRow.brightnessMonitor
-          ignoreUnknownSignals: true
-          function onBrightnessUpdated() {
-            const bm = brightnessRow.brightnessMonitor;
-            if (bm && !brightnessSlider.pressed)
-              brightnessRow.localBrightness = bm.brightness || 0;
-          }
+      // Same cell geometry and width cap as the basic row; the row is centred
+      // in the page slot so a short page reads balanced instead of sparse.
+      SwitchGrid {
+        anchors.centerIn: parent
+        width: Math.min(parent.width - Style.margin2M, naturalWidth)
+        // Switch pages continue past the basic row: page N shows
+        // shortcuts [5 + (N-1)*5, 5 + N*5) so page 1 is never a duplicate
+        // of the basic page.
+        items: {
+          const start = 5 + (root.currentPage - 1) * 5;
+          const end = Math.min(start + 5, root.shortcuts.length);
+          return root.shortcuts.slice(start, end);
         }
+        baseIndex: 5 + (root.currentPage - 1) * 5
+      }
+    }
 
-        property real localBrightness: brightnessMonitor ? (brightnessMonitor.brightness || 0) : 0
+    // ---------------- detail pages ----------------
+    Item {
+      Layout.fillWidth: true
+      Layout.preferredHeight: Style.quickControlPanelHeight
+      visible: root.currentDetailPage !== ""
 
-        NIcon {
-          icon: "brightness-low"
-          pointSize: Style.fontSizeTitle
-          color: Color.onShellSecondary
-        }
+      // Lists are confined to the page slot and scroll when they exceed it —
+      // an unclipped column used to spill over the page indicator.
+      NScrollView {
+        id: detailScroll
+        anchors.fill: parent
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        anchors.topMargin: Style.marginM
+        horizontalPolicy: ScrollBar.AlwaysOff
+        verticalPolicy: ScrollBar.AsNeeded
+        reserveScrollbarSpace: false
+        gradientColor: Color.maskShell
+        ScrollBar.horizontal.visible: false
 
-        NSlider {
-          id: brightnessSlider
-          Layout.fillWidth: true
-          from: 0
-          to: 1
-          value: brightnessRow.localBrightness
-          stepSize: 0.01
-          heightRatio: 0.5
-          onMoved: {
-            brightnessRow.localBrightness = value;
-            brightnessRow.brightnessMonitor?.setBrightness(value);
-          }
-          tooltipText: `${Math.round(value * 100)}%`
-        }
-
-        NIcon {
-          icon: "brightness-high"
-          pointSize: Style.fontSizeTitle
-          color: Color.onShellSecondary
+        ControlCenterDetailPages {
+          width: detailScroll.availableWidth
+          screen: root.screen
+          page: root.currentDetailPage
         }
       }
+    }
+  }
 
-      // Quick switch row(s): 5 per page, overflow on dedicated switch pages
-      // Cells are 70 px wide (Style.quickSwitchWidth); the row is centred so
-      // a shorter button count still lands in DDE's rhythm.
-      GridLayout {
-        Layout.preferredHeight: Style.quickSwitchHeight
-        Layout.topMargin: Style.marginS
-        Layout.alignment: Qt.AlignHCenter
-        columns: 5
-        columnSpacing: Style.marginXS
-        rowSpacing: Style.marginS
-        width: Math.min(root.width - Style.margin2M, Style.quickSwitchWidth * 5 + Style.marginXS * 4)
+  // The quick-switch cell row shared by the basic page and overflow switch
+  // pages — identical geometry guarantees the same 70 px pitch on every page.
+  // items is the page-local slice; baseIndex is the absolute offset into
+  // root.shortcuts for widget bookkeeping.
+  component SwitchGrid: GridLayout {
+    id: switchGrid
+    property var items: []
+    property int baseIndex: 0
+    // Centre short rows: width hugs the actual cell count so a 3-button page
+    // is a centred trio, not a sparse left-aligned spread in a 5-cell box.
+    readonly property real naturalWidth: items.length * Style.quickSwitchWidth + Math.max(0, items.length - 1) * Style.marginXS
 
-        Repeater {
-          model: root.currentPage === 0 ? root.shortcuts.slice(0, Math.min(5, root.shortcuts.length)) : []
+    columns: Math.max(1, Math.min(5, items.length))
+    columnSpacing: Style.marginXS
+    rowSpacing: Style.marginS
 
-          delegate: QuickSwitchButton {
-            required property var modelData
-            required property int index
-            readonly property var widgetData: modelData
-            widgetId: widgetData !== undefined ? widgetData.id : ""
-            widgetScreen: root.screen
-            widgetProps: widgetData !== undefined ? {
-                                                      "widgetId": widgetData.id,
-                                                      "section": "quickSettings",
-                                                      "sectionWidgetIndex": index,
-                                                      "sectionWidgetsCount": root.shortcuts.length,
-                                                      "widgetSettings": widgetData
-                                                    } : null
-          }
-          }
-          }
-          }
+    Repeater {
+      model: switchGrid.items
 
-            // ---------------- switch pages (overflow) ----------------
-            Item {
-              Layout.fillWidth: true
-              Layout.leftMargin: Style.marginM
-              Layout.rightMargin: Style.marginM
-              Layout.preferredHeight: Style.quickSwitchHeight + Style.marginS
-              visible: root.currentPage >= 1 && root.currentPage <= root.switchPageCount
+      delegate: QuickSwitchButton {
+        required property var modelData
+        required property int index
 
-              GridLayout {
-                anchors.fill: parent
-                columns: 5
-                columnSpacing: Style.marginXS
-                rowSpacing: Style.marginS
+        // The model is sliced to this page, so index is page-local;
+        // absoluteIndex is the position in the full shortcut list.
+        readonly property int absoluteIndex: switchGrid.baseIndex + index
+        readonly property var widgetData: modelData
 
-                Repeater {
-                  // Switch pages continue past the basic row: page N shows
-                  // shortcuts [5 + (N-1)*5, 5 + N*5) so page 1 is never a duplicate
-                  // of the basic page.
-                  model: {
-                    const start = 5 + (root.currentPage - 1) * 5;
-                    const end = Math.min(start + 5, root.shortcuts.length);
-                    return root.shortcuts.slice(start, end);
-                  }
+        widgetId: widgetData !== undefined ? widgetData.id : ""
+        widgetScreen: root.screen
+        widgetProps: widgetData !== undefined ? {
+                                                  "widgetId": widgetData.id,
+                                                  "section": "quickSettings",
+                                                  "sectionWidgetIndex": absoluteIndex,
+                                                  "sectionWidgetsCount": root.shortcuts.length,
+                                                  "widgetSettings": widgetData
+                                                } : null
+      }
+      }
+      }
 
-                  delegate: QuickSwitchButton {
-                    required property var modelData
-                    required property int index
-                    // The model is sliced to this page, so index is page-local;
-                    // absoluteIndex is the position in the full shortcut list.
-                    readonly property int absoluteIndex: 5 + (root.currentPage - 1) * 5 + index
-                    readonly property var widgetData: modelData
-                    widgetId: widgetData !== undefined ? widgetData.id : ""
-                    widgetScreen: root.screen
-                    widgetProps: widgetData !== undefined ? {
-                                                              "widgetId": widgetData.id,
-                                                              "section": "quickSettings",
-                                                              "sectionWidgetIndex": absoluteIndex,
-                                                              "sectionWidgetsCount": root.shortcuts.length,
-                                                              "widgetSettings": widgetData
-                                                            } : null
-                  }
-                  }
-                  }
-                  }
-
-                    // ---------------- detail pages ----------------
-                    Item {
-                      Layout.fillWidth: true
-                      Layout.leftMargin: Style.marginM
-                      Layout.rightMargin: Style.marginM
-                      Layout.preferredHeight: Style.quickSwitchHeight * 3 + Style.margin2S
-                      visible: root.currentDetailPage !== ""
-
-                      ControlCenterDetailPages {
-                        anchors.fill: parent
-                        screen: root.screen
-                        page: root.currentDetailPage
-                      }
-                    }
-                  }
-
-                  PageIndicator {
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-                    pageCount: root.pageCount
-                    currentPage: root.currentPage
-                    onNextRequested: root.nextPage()
-                    onPreviousRequested: root.previousPage()
-                  }
-                }
+        PageIndicator {
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.bottom: parent.bottom
+          pageCount: root.pageCount
+          currentPage: root.currentPage
+          onNextRequested: root.nextPage()
+          onPreviousRequested: root.previousPage()
+        }
+      }
