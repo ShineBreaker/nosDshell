@@ -61,7 +61,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
   - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为白 × 0.9。
   - `Color.borderShell` / `Color.borderTransient`：分别对应 `borderDark` / `borderLight`（浅色外壳使用 `borderLight`）。
   - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司）。两种模式下都等于 `maskLight`。
-- 与之配套的前景色：`Color.onShell`（暗色模式为白色，浅色模式为 `#303030`）、`Color.onTransient`（`#303030`）。§1.3 的叠加阶梯以对应表面的前景色为底色。
+- 与之配套的前景色：`Color.onShell`（暗色模式为白色，浅色模式为 `#303030`）、`Color.onTransient`（`#303030`）。`onShellSecondary` / `onShellTertiary` 是它的弱化级：暗色侧用 DDE 规格 alpha 0.8 / 0.6，浅色侧 tertiary 提到 0.7——`#303030` × 0.6 在白帧上只有约 3.8:1，0.7 落到 ≈`#6E6E6E`（~5:1），对齐浅色方案的 `mOnSurfaceVariant`（`#6B6B6B`）。§1.3 的叠加阶梯以对应表面的前景色为底色。
 - 壁纸面（全屏启动器、关机界面、锁屏，§1.8 的预模糊壁纸 + 暗色压暗）在两种模式下都是暗色表面，上面的内容用不随主题翻转的令牌：`Color.onWallpaper` / `onWallpaperSecondary` / `onWallpaperTertiary`（恒白阶梯）、`overlayWallpaper(level)`（恒白叠加阶梯）、`onWallpaperShadow`（§1.5 文字投影 `rgba(0,0,0,0.31)`）。这些面上禁用 `onShell` 和 `overlay()`。
 
 ### 1.3 白色叠加阶梯（用于暗色表面）

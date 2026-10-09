@@ -290,7 +290,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: isCategoryRow ? (appsProvider ? appsProvider.getDDECategoryName(modelData) : modelData) : ""
                 pointSize: Style.fontSizeBody
-                color: isActiveRow ? Color.accent : Qt.alpha(Color.onShell, 0.6)
+                color: isActiveRow ? Color.accent : Color.onShellTertiary
                 elide: Text.ElideRight
                 maximumLineCount: 1
               }
@@ -528,7 +528,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             text: Time.now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
             pointSize: Style.fontSizeBody
-            color: Qt.alpha(Color.onShell, Style.launcherMiniClockDateAlpha)
+            color: Color.onShellTertiary
             applyUiScale: false
             elide: Text.ElideNone
             fontSizeMode: Text.HorizontalFit

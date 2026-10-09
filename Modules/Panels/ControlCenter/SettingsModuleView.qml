@@ -636,7 +636,11 @@ Item {
                     pointSize: Style.settingsModuleHeadIcon
                     applyUiScale: false
                     visible: !railArt.visible
-                    color: selected ? Color.onShell : Qt.rgba(1, 1, 1, Style.settingsRailIconDim)
+                    // Unselected rail glyph is dimmed on-shell ink — the DDE
+                    // spec is white@0.4 on the dark frame; on a light frame
+                    // the same alpha is applied to #303030 with a bit more
+                    // weight (0.6) so the icon survives on the light rail.
+                    color: selected ? Color.onShell : Qt.alpha(Color.onShell, Color.shellIsDark ? Style.settingsRailIconDim : 0.6)
                   }
                 }
               }

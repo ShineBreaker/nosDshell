@@ -601,9 +601,8 @@ Singleton {
   // the six place rows sit 30 px apart (14 px label + 2/2 px padding from
   // skin/qss/miniframe.qss `#MiniFrameButton`)
   readonly property int launcherMiniButtonRowHeight: 30
-  // DatetimeWidget: 40 px clock, then the long-format date at white 0.6
+  // DatetimeWidget: 40 px clock, then the long-format date in onShellTertiary
   readonly property real launcherMiniClockSize: 40
-  readonly property real launcherMiniClockDateAlpha: 0.6
   readonly property int launcherMiniPlaceIconSize: 22
 
   // Dock icon size presets

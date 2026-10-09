@@ -431,7 +431,10 @@ Singleton {
 
   readonly property color onShell: shellIsDark ? "#FFFFFF" : "#303030"
   readonly property color onShellSecondary: Qt.alpha(onShell, 0.8)
-  readonly property color onShellTertiary: Qt.alpha(onShell, 0.6)
+  // Light side needs more ink: 0.6×#303030 ≈ #828282 is only ~3.8:1 on the
+  // light frame; 0.7 lands ≈ #6E6E6E (~5.2:1), matching the light scheme's
+  // mOnSurfaceVariant (#6B6B6B). Dark side keeps the DDE spec's 0.6.
+  readonly property color onShellTertiary: Qt.alpha(onShell, shellIsDark ? 0.6 : 0.7)
 
   // Text/icons drawn on the blurred wallpaper itself (fullscreen launcher,
   // shutdown UI, lock screen). Those surfaces stay dark in both modes, so the
