@@ -178,13 +178,18 @@ Singleton {
     opened();
   }
 
+  // Both targets open shell UI while a launcher surface still holds an
+  // Exclusive keyboard grab — close the launcher first or the new controls
+  // cannot take input (gxde-launcher hides the frame for the same reason).
   function showSessionMenu(screen) {
+    close(screen);
     const panel = PanelService.getPanel("sessionMenuPanel", screen);
     if (panel)
       panel.toggle();
   }
 
   function showSettings(screen) {
+    close(screen);
     SettingsPanelService.openToTab(SettingsPanel.Tab.Launcher, -1, screen);
   }
 }
