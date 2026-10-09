@@ -20,8 +20,8 @@ Item {
 
   implicitHeight: Style.pageIndicatorHeight
 
-  signal nextRequested()
-  signal previousRequested()
+  signal nextRequested
+  signal previousRequested
 
   function switchPage(delta) {
     if (wheelDebounce.restartIfActive())
@@ -32,31 +32,33 @@ Item {
       previousRequested();
   }
 
-  // Returns true when the wheel event is swallowed by the debounce window.
-  // A restart is enough: the timer is single-shot and non-repeating.
-  function restartIfActive() {
-    if (running) {
-      restart();
-      return true;
-    }
-    restart();
-    return false;
-  }
-
   Timer {
     id: wheelDebounce
     interval: Style.pageSwitchDebounce
     repeat: false
+
+    // Returns true when the event is swallowed by the debounce window.
+    // A restart is enough: the timer is single-shot and non-repeating.
+    // Declared inside the Timer so wheelDebounce.restartIfActive() resolves —
+    // at root scope the callers threw TypeError and never emitted the signal.
+    function restartIfActive() {
+      if (running) {
+        restart();
+        return true;
+      }
+      restart();
+      return false;
+    }
   }
 
   MouseArea {
     anchors.fill: parent
     acceptedButtons: Qt.NoButton
     onWheel: wheel => {
-      const delta = wheel.angleDelta.y || wheel.angleDelta.x;
-      if (delta !== 0)
-        root.switchPage(delta > 0 ? 1 : -1);
-    }
+               const delta = wheel.angleDelta.y || wheel.angleDelta.x;
+               if (delta !== 0)
+               root.switchPage(delta > 0 ? 1 : -1);
+             }
   }
 
   RowLayout {
