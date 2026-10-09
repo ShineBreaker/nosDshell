@@ -698,11 +698,15 @@ Loader {
           }
 
           // Blur behind the dock rect (only when the compositor can blur, §1.2).
-          // Detach entirely while a fullscreen window covers the output: the
-          // compositor otherwise keeps the last-seen region alive, leaving a
-          // blurred band under the slid-away dock and losing the effect on
-          // return.
-          BackgroundEffect.blurRegion: (Color.blurActive && !root.fullscreenCovered) ? dockBlurRegion : null
+          // While a fullscreen window covers the output, swap in an empty
+          // Region OBJECT rather than null: a null assignment can be absorbed
+          // without a new set_blur_region reaching the compositor, leaving the
+          // stale band blurring under the slid-away dock and the effect lost on
+          // return. The object swap forces a drop + fresh re-registration.
+          BackgroundEffect.blurRegion: Color.blurActive ? (root.fullscreenCovered ? dockEmptyBlurRegion : dockBlurRegion) : null
+          Region {
+            id: dockEmptyBlurRegion
+          }
           Region {
             id: dockBlurRegion
             Region {

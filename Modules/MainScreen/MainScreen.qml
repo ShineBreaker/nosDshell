@@ -218,8 +218,12 @@ PanelWindow {
   // DESIGN §1.2: only request compositor blur when it is actually available.
   // Detach while the bar is fully hidden and no panel is open (e.g. an active
   // fullscreen window): like the dock, a stale region would blur a band where
-  // the bar used to be, and re-attaching re-registers the effect on return.
-  BackgroundEffect.blurRegion: (Color.blurActive && (!barPlaceholder.effectivelyHidden || root.isAnyPanelOpen)) ? blurRegion : null
+  // the bar used to be. Swap in an empty Region OBJECT, not null — the object
+  // change guarantees the compositor drops and re-registers the effect.
+  BackgroundEffect.blurRegion: Color.blurActive ? ((!barPlaceholder.effectivelyHidden || root.isAnyPanelOpen) ? blurRegion : emptyBlurRegion) : null
+  Region {
+    id: emptyBlurRegion
+  }
   Region {
     id: blurRegion
     // ── Non-framed bar (simple/floating): single rectangle with bar corner states ──
