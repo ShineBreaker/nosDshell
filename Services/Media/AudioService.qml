@@ -35,6 +35,12 @@ Singleton {
   property bool wpctlInputStateValid: false
   property real wpctlInputVolume: 0
   property bool wpctlInputMuted: true
+  // Latest requested volume while a wpctl set-volume process is still in
+  // flight — NaN when nothing is queued. Slider drags emit onMoved faster
+  // than wpctl exits; without coalescing the tail value (where the user
+  // actually released) is silently dropped.
+  property real pendingOutputVolume: NaN
+  property real pendingInputVolume: NaN
 
   signal volumeAtMaximum
   signal volumeAtMinimum
@@ -848,6 +854,12 @@ Singleton {
         }
       }
       root.refreshWpctlOutputState();
+      // Drain the queued drag-tail value (see pendingOutputVolume).
+      if (!isNaN(root.pendingOutputVolume)) {
+        const v = root.pendingOutputVolume;
+        root.pendingOutputVolume = NaN;
+        Qt.callLater(() => root.setVolume(v));
+      }
     }
   }
 
@@ -887,6 +899,11 @@ Singleton {
         }
       }
       root.refreshWpctlInputState();
+      if (!isNaN(root.pendingInputVolume)) {
+        const v = root.pendingInputVolume;
+        root.pendingInputVolume = NaN;
+        Qt.callLater(() => root.setInputVolume(v));
+      }
     }
   }
 
@@ -1021,11 +1038,13 @@ Singleton {
     const clampedVolume = clampOutputVolume(newVolume);
     const delta = Math.abs(clampedVolume - volume);
     if (delta < root.epsilon) {
+      pendingOutputVolume = NaN;
       return;
     }
 
     if (wpctlAvailable) {
       if (wpctlSetVolumeProcess.running) {
+        pendingOutputVolume = clampedVolume;
         return;
       }
 
@@ -1130,11 +1149,13 @@ Singleton {
     }
     const delta = Math.abs(clampedVolume - currentVol);
     if (delta < root.epsilon) {
+      pendingInputVolume = NaN;
       return;
     }
 
     if (wpctlAvailable) {
       if (wpctlSetInputVolumeProcess.running) {
+        pendingInputVolume = clampedVolume;
         return;
       }
 

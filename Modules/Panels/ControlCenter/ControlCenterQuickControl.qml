@@ -109,9 +109,22 @@ Item {
 
       // Volume slider
       RowLayout {
+        id: volumeRow
         Layout.fillWidth: true
         Layout.preferredHeight: Style.sliderBasicHeight
         spacing: Style.marginS
+
+        property real localVolume: AudioService.volume
+
+        // Service-side refreshes (wpctl polls) must not yank the knob while a
+        // drag is in progress — same guard the brightness row uses.
+        Connections {
+          target: AudioService
+          function onVolumeChanged() {
+            if (!volumeSlider.pressed)
+              volumeRow.localVolume = AudioService.volume;
+          }
+        }
 
         NIcon {
           icon: "volume-off"
@@ -120,13 +133,17 @@ Item {
         }
 
         NSlider {
+          id: volumeSlider
           Layout.fillWidth: true
           from: 0
           to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
-          value: AudioService.volume
+          value: volumeRow.localVolume
           stepSize: 0.01
           heightRatio: 0.5
-          onMoved: AudioService.setVolume(value)
+          onMoved: {
+            volumeRow.localVolume = value;
+            AudioService.setVolume(value);
+          }
           tooltipText: `${Math.round(value * 100)}%`
         }
 
@@ -139,6 +156,7 @@ Item {
 
       // Brightness slider (hidden when brightness control is unavailable)
       RowLayout {
+        id: brightnessRow
         Layout.fillWidth: true
         Layout.preferredHeight: Style.sliderBasicHeight
         Layout.topMargin: Style.marginS
@@ -148,12 +166,12 @@ Item {
         readonly property var brightnessMonitor: BrightnessService.getMonitorForScreen(root.screen ?? (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)) ?? null
 
         Connections {
-          target: parent && parent.brightnessMonitor ? parent.brightnessMonitor : null
+          target: brightnessRow.brightnessMonitor
           ignoreUnknownSignals: true
           function onBrightnessUpdated() {
-            const bm = parent.brightnessMonitor;
+            const bm = brightnessRow.brightnessMonitor;
             if (bm && !brightnessSlider.pressed)
-              parent.localBrightness = bm.brightness || 0;
+              brightnessRow.localBrightness = bm.brightness || 0;
           }
         }
 
@@ -170,12 +188,12 @@ Item {
           Layout.fillWidth: true
           from: 0
           to: 1
-          value: parent.localBrightness
+          value: brightnessRow.localBrightness
           stepSize: 0.01
           heightRatio: 0.5
           onMoved: {
-            parent.localBrightness = value;
-            brightnessMonitor?.setBrightness(value);
+            brightnessRow.localBrightness = value;
+            brightnessRow.brightnessMonitor?.setBrightness(value);
           }
           tooltipText: `${Math.round(value * 100)}%`
         }
