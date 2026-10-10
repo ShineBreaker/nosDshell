@@ -630,50 +630,30 @@ Loader {
           // swaps in an explicitly EMPTY Region object: on the Overlay layer a
           // stale dock rect would keep claiming the strip's input above the
           // fullscreen window, so release can't depend on per-frame tracking.
-          mask: root.fullscreenCovered ? dockEmptyInputRegion : dockInputRegion
-          Region {
-            id: dockEmptyInputRegion
-          }
-          Region {
+          mask: dockInputRegion.region
+          NSurfaceRegion {
             id: dockInputRegion
-            Region {
-              item: dockContent.dockContainer
-            }
-            // PendingRegion rebuilds on item x/y/width/height changes only; a
-            // transform-driven slide emits nothing, so this empty sentinel
-            // re-emits `changed` and the item rect is re-read via mapToScene
-            // (quickshell src/core/region.cpp:156-160). It must bind the
-            // ANIMATED transform values (dockSlide.x/y) — slideX/slideY jump
-            // to their target instantly, which rebuilds once at the animation
-            // start and freezes the mask on the pre-slide rect.
-            Region {
-              x: dockSlide.x + dockSlide.y
-              width: 0
-              height: 0
-            }
+
+            trackedItem: dockContent.dockContainer
+            activeWhen: !root.fullscreenCovered
+            // The slide runs through the animated Translate (dockSlide), so
+            // the sentinel must be fed the animated values (NSurfaceRegion).
+            slideX: dockSlide.x
+            slideY: dockSlide.y
           }
 
           // Blur behind the dock rect (only when the compositor can blur, §1.2).
-          // While a fullscreen window covers the output, swap in an empty
-          // Region OBJECT rather than null: a null assignment can be absorbed
-          // without a new set_blur_region reaching the compositor, leaving the
-          // stale band blurring under the slid-away dock and the effect lost on
-          // return. The object swap forces a drop + fresh re-registration.
-          BackgroundEffect.blurRegion: Color.blurActive ? (root.fullscreenCovered ? dockEmptyBlurRegion : dockBlurRegion) : null
-          Region {
-            id: dockEmptyBlurRegion
-          }
-          Region {
+          // The hidden-state detach (empty-object swap while fullscreenCovered)
+          // is NSurfaceRegion's activeWhen.
+          BackgroundEffect.blurRegion: Color.blurActive ? dockBlurRegion.region : null
+          NSurfaceRegion {
             id: dockBlurRegion
-            Region {
-              item: dockContent.dockContainer
-              radius: Style.radiusItem
-            }
-            Region {
-              x: dockWindow.slideX + dockWindow.slideY
-              width: 0
-              height: 0
-            }
+
+            trackedItem: dockContent.dockContainer
+            radius: Style.radiusItem
+            activeWhen: !root.fullscreenCovered
+            slideX: dockSlide.x
+            slideY: dockSlide.y
           }
 
           DockContent {

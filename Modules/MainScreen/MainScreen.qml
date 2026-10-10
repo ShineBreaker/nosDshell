@@ -216,71 +216,76 @@ PanelWindow {
 
   // Blur behind the bar and open panels — attached to PanelWindow (required by BackgroundEffect API)
   // DESIGN §1.2: only request compositor blur when it is actually available.
-  // Detach while the bar is fully hidden and no panel is open (e.g. an active
-  // fullscreen window): like the dock, a stale region would blur a band where
-  // the bar used to be. Swap in an empty Region OBJECT, not null — the object
-  // change guarantees the compositor drops and re-registers the effect.
-  BackgroundEffect.blurRegion: Color.blurActive ? ((!barPlaceholder.effectivelyHidden || root.isAnyPanelOpen) ? blurRegion : emptyBlurRegion) : null
-  Region {
-    id: emptyBlurRegion
-  }
-  Region {
-    id: blurRegion
-    // ── Non-framed bar (simple/floating): single rectangle with bar corner states ──
-    Region {
-      x: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.x : 0
-      y: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.y : 0
-      width: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.width : 0
-      height: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.height : 0
-      radius: Style.radiusL
-      topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.topLeftCornerState, Style.radiusL)
-      topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.topRightCornerState, Style.radiusL)
-      bottomLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.bottomLeftCornerState, Style.radiusL)
-      bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.bottomRightCornerState, Style.radiusL)
-    }
+  // While the bar is fully hidden and no panel is open (e.g. an active
+  // fullscreen window) the region is detached — NSurfaceRegion's activeWhen
+  // swaps in the empty object so a stale band can't keep blurring where the
+  // bar used to be.
+  BackgroundEffect.blurRegion: Color.blurActive ? screenBlurRegion.region : null
+  NSurfaceRegion {
+    id: screenBlurRegion
 
-    // ── Framed bar: full screen minus rounded hole ──
-    Region {
-      x: 0
-      y: 0
-      width: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.width : 0
-      height: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.height : 0
+    activeWhen: !barPlaceholder.effectivelyHidden || root.isAnyPanelOpen
+    activeRegion: mainScreenBlurTree
 
+    Region {
+      id: mainScreenBlurTree
+
+      // ── Non-framed bar (simple/floating): single rectangle with bar corner states ──
       Region {
-        intersection: Intersection.Subtract
-        x: backgroundBlur.frameHoleX
-        y: backgroundBlur.frameHoleY
-        width: backgroundBlur.frameHoleX2 - backgroundBlur.frameHoleX
-        height: backgroundBlur.frameHoleY2 - backgroundBlur.frameHoleY
-        radius: backgroundBlur.frameR
+        x: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.x : 0
+        y: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.y : 0
+        width: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.width : 0
+        height: (!barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.height : 0
+        radius: Style.radiusL
+        topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.topLeftCornerState, Style.radiusL)
+        topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.topRightCornerState, Style.radiusL)
+        bottomLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.bottomLeftCornerState, Style.radiusL)
+        bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.bottomRightCornerState, Style.radiusL)
       }
-    }
 
-    // ── Panel blur regions ──
-    // Opening panel
-    Region {
-      x: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.x) : 0
-      y: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.y) : 0
-      width: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.width) : 0
-      height: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.height) : 0
-      radius: Style.radiusL
-      topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.topLeftCornerState : 0, Style.radiusL)
-      topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.topRightCornerState : 0, Style.radiusL)
-      bottomLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.bottomLeftCornerState : 0, Style.radiusL)
-      bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.bottomRightCornerState : 0, Style.radiusL)
-    }
+      // ── Framed bar: full screen minus rounded hole ──
+      Region {
+        x: 0
+        y: 0
+        width: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.width : 0
+        height: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.height : 0
 
-    // Closing panel (coexists with opening panel during transition)
-    Region {
-      x: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.x) : 0
-      y: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.y) : 0
-      width: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.width) : 0
-      height: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.height) : 0
-      radius: Style.radiusL
-      topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.topLeftCornerState : 0, Style.radiusL)
-      topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.topRightCornerState : 0, Style.radiusL)
-      bottomLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.bottomLeftCornerState : 0, Style.radiusL)
-      bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.bottomRightCornerState : 0, Style.radiusL)
+        Region {
+          intersection: Intersection.Subtract
+          x: backgroundBlur.frameHoleX
+          y: backgroundBlur.frameHoleY
+          width: backgroundBlur.frameHoleX2 - backgroundBlur.frameHoleX
+          height: backgroundBlur.frameHoleY2 - backgroundBlur.frameHoleY
+          radius: backgroundBlur.frameR
+        }
+      }
+
+      // ── Panel blur regions ──
+      // Opening panel
+      Region {
+        x: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.x) : 0
+        y: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.y) : 0
+        width: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.width) : 0
+        height: backgroundBlur.panelBg ? Math.round(backgroundBlur.panelBg.height) : 0
+        radius: Style.radiusL
+        topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.topLeftCornerState : 0, Style.radiusL)
+        topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.topRightCornerState : 0, Style.radiusL)
+        bottomLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.bottomLeftCornerState : 0, Style.radiusL)
+        bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.panelBg ? backgroundBlur.panelBg.bottomRightCornerState : 0, Style.radiusL)
+      }
+
+      // Closing panel (coexists with opening panel during transition)
+      Region {
+        x: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.x) : 0
+        y: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.y) : 0
+        width: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.width) : 0
+        height: backgroundBlur.closingPanelBg ? Math.round(backgroundBlur.closingPanelBg.height) : 0
+        radius: Style.radiusL
+        topLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.topLeftCornerState : 0, Style.radiusL)
+        topRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.topRightCornerState : 0, Style.radiusL)
+        bottomLeftRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.bottomLeftCornerState : 0, Style.radiusL)
+        bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(backgroundBlur.closingPanelBg ? backgroundBlur.closingPanelBg.bottomRightCornerState : 0, Style.radiusL)
+      }
     }
   }
 

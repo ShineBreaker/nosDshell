@@ -134,15 +134,12 @@ Variants {
       // never animate, so the scrim lives in the content tree instead.
       color: "transparent"
 
-      BackgroundEffect.blurRegion: Color.blurActive ? fullscreenBlurRegion : null
-      Region {
+      BackgroundEffect.blurRegion: Color.blurActive ? fullscreenBlurRegion.region : null
+      NSurfaceRegion {
         id: fullscreenBlurRegion
-        Region {
-          x: 0
-          y: 0
-          width: window.width
-          height: window.height
-        }
+
+        // The whole output, no corners on a fullscreen surface.
+        trackedItem: window.contentItem
       }
 
       // The layer surface covers the whole output, taskbar area included; the

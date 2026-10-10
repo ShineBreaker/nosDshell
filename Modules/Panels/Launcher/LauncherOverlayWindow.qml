@@ -45,28 +45,33 @@ Variants {
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
       // Only request compositor blur when it is actually available (§1.2).
-      BackgroundEffect.blurRegion: Color.blurActive ? launcherBlurRegion : null
-      Region {
-        id: launcherBlurRegion
+      BackgroundEffect.blurRegion: Color.blurActive ? overlayBlurRegion.region : null
+      NSurfaceRegion {
+        id: overlayBlurRegion
+
+        activeRegion: overlayBlurTree
 
         Region {
-          x: Math.round(launcherPanel.x)
-          y: Math.round(launcherPanel.y)
-          width: Math.round(launcherPanel.width)
-          height: Math.round(launcherPanel.height)
-          radius: Style.radiusL
-          topLeftRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.topLeftCornerState, Style.radiusL)
-          topRightRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.topRightCornerState, Style.radiusL)
-          bottomLeftRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.bottomLeftCornerState, Style.radiusL)
-          bottomRightRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.bottomRightCornerState, Style.radiusL)
-        }
+          id: overlayBlurTree
 
-        Region {
-          x: Math.round(previewBox.visible ? previewBox.x : 0)
-          y: Math.round(previewBox.visible ? previewBox.y : 0)
-          width: Math.round(previewBox.visible ? previewBox.width : 0)
-          height: Math.round(previewBox.visible ? previewBox.height : 0)
-          radius: Style.radiusL
+          Region {
+            item: launcherPanel
+            radius: Style.radiusL
+            topLeftRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.topLeftCornerState, Style.radiusL)
+            topRightRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.topRightCornerState, Style.radiusL)
+            bottomLeftRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.bottomLeftCornerState, Style.radiusL)
+            bottomRightRadius: ShapeCornerHelper.getRegionRadius(launcherPanel.bottomRightCornerState, Style.radiusL)
+          }
+
+          // item tracking does not observe `visible`, so the preview keeps its
+          // hand-bound tri-state rect here.
+          Region {
+            x: Math.round(previewBox.visible ? previewBox.x : 0)
+            y: Math.round(previewBox.visible ? previewBox.y : 0)
+            width: Math.round(previewBox.visible ? previewBox.width : 0)
+            height: Math.round(previewBox.visible ? previewBox.height : 0)
+            radius: Style.radiusL
+          }
         }
       }
 

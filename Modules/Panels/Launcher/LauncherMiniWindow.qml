@@ -130,17 +130,18 @@ Variants {
       visible: screenItem.isActive || closeTimer.running
       color: "transparent"
 
-      // §1.2: blur behind the panel body when the compositor offers it.
-      BackgroundEffect.blurRegion: Color.blurActive ? miniBlurRegion : null
-      Region {
+      // §1.2: blur behind the panel body when the compositor offers it. The
+      // open/close slide runs on surface's Translate transform, so the region
+      // tracks panelBg and the sentinel feeds the animated slide values
+      // (NSurfaceRegion).
+      BackgroundEffect.blurRegion: Color.blurActive ? miniBlurRegion.region : null
+      NSurfaceRegion {
         id: miniBlurRegion
-        Region {
-          x: 0
-          y: 0
-          width: Math.round(panelBg.width)
-          height: Math.round(panelBg.height)
-          radius: Style.radiusItem
-        }
+
+        trackedItem: panelBg
+        radius: Style.radiusItem
+        slideX: surface.slideX
+        slideY: surface.slideY
       }
       // The right bar widens itself until the settings + power row fits, so the
       // window follows the view rather than the other way round

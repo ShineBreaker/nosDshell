@@ -60,7 +60,13 @@ Variants {
       id: window
       color: "transparent"
       screen: screenLoader.liveScreen
-      mask: DesktopWidgetRegistry.editMode ? null : widgetsMask
+      // Edit mode needs the WHOLE window to take input. On the mask property
+      // null and an empty Region are opposites (null = whole surface takes
+      // input, empty Region = fully click-through, quickshell proxywindow.cpp
+      // updateMask), so "everything takes input" is expressed as a Region
+      // covering the window — an object swap, matching how the blur regions
+      // detach (5f070d64b), instead of a null swap.
+      mask: DesktopWidgetRegistry.editMode ? editFullRegion : widgetsMask
 
       // Dynamic mask: combine clickable regions for each loaded widget
       property var _maskRegions: []
@@ -68,6 +74,15 @@ Variants {
       Component {
         id: maskRegionComponent
         Region {}
+      }
+
+      Region {
+        id: editFullRegion
+
+        x: 0
+        y: 0
+        width: window.width
+        height: window.height
       }
 
       Region {
