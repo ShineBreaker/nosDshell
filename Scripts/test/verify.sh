@@ -162,7 +162,7 @@ fi
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion must match Commons/Settings.qml`settingsVersion` (75): a
+# settingsVersion must match Commons/Settings.qml`settingsVersion` (76): a
 # mismatch makes Settings run the versioned migrations on first load, which
 # rewrite the seed's dock.*/general.* keys back to Assets defaults before the
 # run starts (verified: seed 64 vs runtime 67 lost displayMode/onlySameOutput
@@ -173,7 +173,7 @@ fi
 # list the Quickshell ShellScreen object never satisfies, so leaving the
 # default true silently drops every running app from the dock (verified: with
 # it on, no toplevel reaches dockApps; off, all three appear).
-SEED='{"settingsVersion":75,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":76,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
@@ -204,8 +204,8 @@ settings-dock settings-launcher settings-wallpaper settings-notifications
 settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
-settings-system settings-systemmonitor notification-actions notification-long osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu lockscreen settings-tree" 
+settings-system settings-systemmonitor notification-actions notification-long notification-resave osd-overdrive toast \
+wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu lockscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -729,6 +729,14 @@ run_scene() {
     notification-long)    notify-send -a nosdshell-verify "Long body" \
                           "第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行"$'\n'"第二行 第二行 第二行 第二行 第二行 第二行 第二行 第二行"$'\n'"第三行 第三行 第三行 第三行 第三行 第三行 第三行 第三行" 2>/dev/null
                           sleep 0.8; shot notification-long ;;
+    # DND toggles write Settings -> onSettingsSaved; the notification server
+    # must survive that save (it used to destroy+recreate and race the bus
+    # name, cua P4). The notify-send afterwards proves the name is still held.
+    notification-resave)  call notifications enableDND 1.2
+                          call notifications disableDND 1.2
+                          notify-send -a nosdshell-verify "After settings save" \
+                            "Server must still own org.freedesktop.Notifications." 2>/dev/null
+                          sleep 0.8; shot notification-resave ;;
     toast)                call toast send '{"title":"Toast 标题","body":"这是 toast 正文","type":"notice"}' 1.5
                           shot toast ;;
     audio-panel)          toggle volume togglePanel 1.5 audio-panel ;;
@@ -745,6 +753,52 @@ run_scene() {
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
     dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
     dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
+    # Widget context menu on a dock plugin: find the Clock item in the dock
+    # scene tree (document roots describe() as Clock_QML_*), rclick it with a
+    # real pointer event, then verify the menu rows render — the trailing
+    # "widget-settings" entry must be there (DESIGN §3.3, cua P2).
+    dock-widget-menu)     qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 12 > "$WORK/logs/dock-tree.txt" 2>&1 || true
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # Tree coords are window-local; the dock window is a
+                          # strip flush to the docked edge, so the cross axis
+                          # maps via DOCK_POSITION (bottom/top here).
+                          CLOCK_POS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/dock-tree.txt" <<'PYEOF'
+import json,os,re,subprocess,sys
+pos = os.environ.get("DOCK_POSITION","bottom")
+out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
+scr = next(o["rect"] for o in out if o.get("active"))
+dock_w = dock_h = 0
+clock = None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if dock_h == 0:
+        dock_w, dock_h = int(w.group(1)), int(w.group(2))  # DockContent root
+    if "Clock_QML" in line and clock is None:
+        cx, cy = int(m.group(1)) + int(w.group(1)) // 2, int(m.group(2)) + int(w.group(2)) // 2
+        if pos == "bottom":
+            cy += scr["height"] - dock_h
+        elif pos == "right":
+            cx += scr["width"] - dock_w
+        clock = (cx, cy)
+if clock:
+    print(*clock)
+PYEOF
+)
+                          echo "clock at: $CLOCK_POS"
+                          if [ -n "$CLOCK_POS" ]; then
+                            "$VINPUT" vinput rclick $CLOCK_POS 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot dock-widget-menu
+                            qs -p "$REPO" ipc call debug hit opened 10 10 > "$WORK/logs/dock-menu-hit.txt" 2>&1 || true
+                            "$VINPUT" vinput click 300 300 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.8
+                          else
+                            echo "clock widget not found in dock tree"
+                          fi ;;
     lockscreen)           call lockScreen lock 2.5; shot lockscreen ;;
     # Requires NOSD_PAM_BAD=1 (separate verify run): LockContext then uses a
     # nonexistent PAM service, so pam.start() errors out and LockContext lands

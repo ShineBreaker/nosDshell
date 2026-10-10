@@ -75,7 +75,7 @@ EOF
 #   settingsVersion MUST equal Commons/Settings.qml's settingsVersion or the
 #   migration chain rewrites the seed back to Assets defaults at first load.
 # shell-state.json marks changelog/telemetry prompts as already-seen.
-SEED='{"settingsVersion":73,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED='{"settingsVersion":76,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
 export SEED
 python3 - <<'PYEOF' || { echo "FATAL: settings seed write failed" >&2; exit 1; }
 import json, os
