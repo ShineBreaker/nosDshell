@@ -140,7 +140,7 @@ and Matugen-compatible template rendering.")
 (define-public nosdshell
   (package
     (name "nosdshell")
-    (version "1.0.3")
+    (version "1.1.0")
     (source (local-file %repo-root
                         #:recursive? #t
                         #:select? (git-predicate %repo-root)))

@@ -7,7 +7,50 @@
 
 ## [Unreleased]
 
-- 打包：`quickshell-nosd` 改为我们的 fork `ShineBreaker/quickshell-nosd`（上游 0.3.2 + 两个 pipewire UAF 修复 commit），原 `packaging/patches/` 本地补丁随之移除。
+## [1.1.0] - 2026-10-10
+
+主题令牌体系补齐 + 全局白色图标自适应，另有一轮启动器/控制中心修复、性能与重构。
+
+### 主题与图标
+
+- 新增 `Color.onWallpaper` 令牌族（壁纸面恒白前景/叠加层/投影，DESIGN §1.5），壁纸面统一改用它，`onShell`/`overlay()` 在壁纸面禁用。
+- 瞬时面（OSD/通知/吐司）整体主题化：`maskTransient` 令牌族 + light/dark 形态与 `ui.transientOpacity` 调节旋钮。
+- 表面角色改走配色方案路由（MD3/Noctalia 染色），`accentOverride` 解析到 `m*` 角色层；剩余硬编码颜色全部替换为令牌；亮色模式 `onShell` 弱化层对比度提高。
+- 烘焙成白色的 DDE 素材（设置导航、控制中心宫格与铃铛、mini 启动器右栏全套）按面重着色为 `onShell`——亮色面深色、暗色面白色；壁纸面按规范保持白色。
+- freedesktop `*-symbolic` 图标按约定染为面墨：通知气泡/历史、mini/全屏/覆盖启动器应用图标、音频面板、图标预览全链路（`ThemeIcons.isSymbolicPath` + `NSymbolicImage.detectSymbolic` + `NImageRounded.symbolicColor`）；彩色图标与照片内容不受影响。
+
+### 启动器
+
+- mini 启动器两级分类列表（重分类点击回 "全部"）、时钟日期不省略、描边收敛为 1 px 发丝。
+- 壁纸/空白处点击关闭、点击项直接激活而非旧选中、关闭时可选清空搜索框、打开设置/关机菜单前先关启动器。
+- 全屏启动器亮色模式可读性修复；合成器提供模糊时保留 0.55 压暗层（壁纸面保持暗色，§1.5）。
+- `LauncherCore` 状态管线并入内嵌 `LauncherModel`；网格右键菜单懒实例化。
+
+### 控制中心与通知
+
+- 页指示点主题化；快捷控制页几何统一并支持滑入分页；滑条恢复跟手；修复 switch 页 1 重复行与分页 chevron/wheel 的 TypeError。
+- 边缘 scrim 改为局部阴影带并可按部分调节；通知历史列表虚拟化。
+- `NotificationServer` 不再随每次设置保存重建（`org.freedesktop.Notifications` 自竞态）；溢出驱逐改为先删行后 `dismiss()`，修复快速通知间隔一条不弹的问题。
+
+### Dock / 任务栏 / 其他修复
+
+- 时尚托盘胶囊与电池按面令牌渲染；blur/mask region 跟踪重构（`NSurfaceRegion`）；全屏覆盖时释放 strip 输入区。
+- "dock" 挂件设置写路由修复（此前静默丢弃）；工作区按屏过滤与 appId 匹配提取为共享件。
+- OSD 显示期间再次触发就地刷新数值，不再重播弹出动画（对齐上游）。
+- 位置服务无坐标告警每周期一次；蓝牙 discoverable/scanning 乒乓停止；SNI 模型冗余重写合并。
+- 锁屏倒计时与快捷键说明在亮色模式保持白色。
+
+### 性能与重构
+
+- keep-alive 面板隐藏期预热；列表边缘按真实表面淡出到无（玻璃面统一）。
+- 设置页折叠出 `NDisplayModeComboBox`、`NSubTabsPane`、`IconColorSettings`、`WidgetSettingsHelper` 等共享件；高级溢出页按对象重排；会话电源动作统一 `SessionActions`。
+- 合成器 blur region 隐藏时分离；`debug` IPC 增加场景坐标与属性 setter 取证能力。
+
+### 工具与打包
+
+- `quickshell-nosd` 改为我们的 fork `ShineBreaker/quickshell-nosd`（上游 0.3.2 + 两个 pipewire UAF 修复 commit），原 `packaging/patches/` 本地补丁随之移除。
+- `Scripts/test/bench.sh` 隔离性能基线；`verify.sh` 新增 cc-slider/launcher-dismiss/category/dock-widget-menu/notification-resave/notification-icon 等场景；`vinput` extent 参数解析修复。
+- `DESIGN.md` 增补现代化演绎层说明（结构忠于 DDE 15，渲染层按现代惯例精修）。
 
 ## [1.0.2] - 2026-10-08
 
@@ -83,7 +126,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.2...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.0...v1.0.1
 [1.0]: https://github.com/ShineBreaker/nosDshell/releases/tag/v1.0
