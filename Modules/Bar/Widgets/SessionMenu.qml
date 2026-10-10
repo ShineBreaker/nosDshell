@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs.Commons
 import qs.Modules.Bar.Extras
+import qs.Services.Hardware
 import qs.Services.UI
 import qs.Widgets
 
@@ -37,6 +38,16 @@ NIconButton {
   property string dockPresentation: ""
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
+  readonly property bool reverseScroll: Settings.data.general.reverseScroll
+  property int wheelAccumulator: 0
+  // Wheel over the power button adjusts this screen's display brightness.
+  property var brightnessMonitor: {
+    var _ = BrightnessService.monitors; // reactive dependency
+    var __ = BrightnessService.ddcMonitors; // reactive dependency
+    if (!screen)
+      return null;
+    return BrightnessService.getMonitorForScreen(screen) ?? null;
+  }
 
   baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
   bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
@@ -57,6 +68,7 @@ NIconButton {
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
+  handleWheel: true
 
   NPopupContextMenu {
     id: contextMenu
@@ -82,5 +94,25 @@ NIconButton {
   onClicked: PanelService.getPanel("sessionMenuPanel", screen)?.toggle()
   onRightClicked: {
     PanelService.showContextMenu(contextMenu, root, screen);
+  }
+  onWheel: function (delta) {
+    var monitor = brightnessMonitor;
+    if (!monitor || !monitor.brightnessControlAvailable)
+      return;
+
+    // Hide tooltip as soon as the user starts scrolling to adjust brightness
+    TooltipService.hide();
+
+    if (root.reverseScroll)
+      delta *= -1;
+
+    wheelAccumulator += delta;
+    if (wheelAccumulator >= 120) {
+      wheelAccumulator = 0;
+      monitor.increaseBrightness();
+    } else if (wheelAccumulator <= -120) {
+      wheelAccumulator = 0;
+      monitor.decreaseBrightness();
+    }
   }
 }
