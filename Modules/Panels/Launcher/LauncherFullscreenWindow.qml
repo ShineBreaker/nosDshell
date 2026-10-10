@@ -130,8 +130,9 @@ Variants {
 
       // §1.2: when the compositor blurs (ext-background-effect), the surface
       // stays transparent and the blur comes from the compositor — no in-QML
-      // wallpaper copy, no heavy black scrim. The window color itself can
-      // never animate, so the scrim lives in the content tree instead.
+      // wallpaper copy. The window color itself can never animate, so the
+      // dim scrim lives in the content tree instead (kept under blur: blur
+      // brightens, §1.5 needs the wallpaper surface dark).
       color: "transparent"
 
       BackgroundEffect.blurRegion: Color.blurActive ? fullscreenBlurRegion.region : null
@@ -178,9 +179,10 @@ Variants {
 
       // Dim veil over the wallpaper (used to be window.color, which would pop
       // instantly). Bound to view.opacity so it follows the same fade curve.
+      // Kept under compositor blur too: blur alone does not darken, and §1.5
+      // requires the wallpaper surface to stay dark for onWallpaper ink.
       Rectangle {
         anchors.fill: parent
-        visible: !Color.blurActive
         color: Qt.rgba(0, 0, 0, 0.55)
         opacity: view.opacity
       }
