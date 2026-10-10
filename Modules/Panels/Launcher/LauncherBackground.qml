@@ -113,11 +113,11 @@ Item {
     gradient: Gradient {
       GradientStop {
         position: 0.0
-        color: Qt.alpha(Color.mShadow, 0.35)
+        color: Qt.alpha(Color.veilWallpaper, 0.35)
       }
       GradientStop {
         position: 1.0
-        color: Qt.alpha(Color.mShadow, 0)
+        color: Qt.alpha(Color.veilWallpaper, 0)
       }
     }
   }
@@ -130,11 +130,11 @@ Item {
     gradient: Gradient {
       GradientStop {
         position: 0.0
-        color: Qt.alpha(Color.mShadow, 0)
+        color: Qt.alpha(Color.veilWallpaper, 0)
       }
       GradientStop {
         position: 1.0
-        color: Qt.alpha(Color.mShadow, 0.35)
+        color: Qt.alpha(Color.veilWallpaper, 0.35)
       }
     }
   }

@@ -541,6 +541,11 @@ Singleton {
   readonly property color onWallpaperTertiary: Qt.alpha("#FFFFFF", 0.6)
   // Text shadow on wallpaper: rgba(0,0,0,0.31) offset (0,1) → Text.Sunken
   readonly property color onWallpaperShadow: Qt.rgba(0, 0, 0, 0.31)
+  // Fixed black for dim veils over wallpaper surfaces — the desktop dimmer
+  // beside panels, the lock-screen scrim, the launcher's edge bands. Never
+  // the scheme's mShadow: schemes tint it (Tokyo-Night light is a light
+  // blue) and §1.5 needs these veils dark in both modes.
+  readonly property color veilWallpaper: "#000000"
   readonly property color onTransient: _onTransientSide
   readonly property color onTransientBody: Qt.alpha(_onTransientSide, transientIsDark ? 0.85 : 0.9)
 
