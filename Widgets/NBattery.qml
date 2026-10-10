@@ -66,7 +66,7 @@ Item {
     if (!ready) {
       return Qt.alpha(baseColor, Style.opacityMedium);
     }
-    if (charging) {
+    if (charging || pluggedIn) {
       return chargingColor;
     }
     if (low || critical) {

@@ -70,6 +70,44 @@ Item {
   readonly property bool isLowBattery: isReady ? BatteryService.isLowBattery(selectedDevice) : false
   readonly property bool isCriticalBattery: isReady ? BatteryService.isCriticalBattery(selectedDevice) : false
 
+  // State tint for the plugin icon and percentage text (DESIGN §1.9):
+  // plugged in (charging or full) -> positive green, at/below
+  // batteryWarningThreshold -> alert.
+  // Transparent while normal/unavailable so the regular on-shell color wins.
+  readonly property color stateColor: !isReady ? "transparent" : ((isCharging || isPluggedIn) ? Color.positive : ((isLowBattery || isCriticalBattery) ? Color.alert : "transparent"))
+
+  readonly property bool reverseScroll: Settings.data.general.reverseScroll
+  property int wheelAccumulator: 0
+  // Wheel over the battery adjusts this screen's display brightness.
+  property var brightnessMonitor: {
+    var _ = BrightnessService.monitors; // reactive dependency
+    var __ = BrightnessService.ddcMonitors; // reactive dependency
+    if (!screen)
+      return null;
+    return BrightnessService.getMonitorForScreen(screen) ?? null;
+  }
+
+  function adjustBrightness(delta) {
+    var monitor = brightnessMonitor;
+    if (!monitor || !monitor.brightnessControlAvailable)
+      return;
+
+    // Hide tooltip as soon as the user starts scrolling to adjust brightness
+    TooltipService.hide();
+
+    if (root.reverseScroll)
+      delta *= -1;
+
+    wheelAccumulator += delta;
+    if (wheelAccumulator >= 120) {
+      wheelAccumulator = 0;
+      monitor.increaseBrightness();
+    } else if (wheelAccumulator <= -120) {
+      wheelAccumulator = 0;
+      monitor.decreaseBrightness();
+    }
+  }
+
   // Visibility: show if hideIfNotDetected is false, or if battery is ready
   readonly property bool shouldShow: !hideIfNotDetected || (isReady && (hideIfIdle ? !isPluggedIn : true))
   readonly property string deviceNativePath: widgetSettings.deviceNativePath !== undefined ? widgetSettings.deviceNativePath : widgetMetadata.deviceNativePath
@@ -186,6 +224,7 @@ Item {
     critical: root.isCriticalBattery
     baseColor: graphicMouseArea.containsMouse ? Color.mOnHover : Color.mOnSurface
     textColor: graphicMouseArea.containsMouse ? Color.mHover : Color.mSurface
+    chargingColor: Color.positive
   }
 
   MouseArea {
@@ -213,6 +252,7 @@ Item {
                    toggleBatteryPanel();
                  }
                }
+    onWheel: wheel => root.adjustBrightness(wheel.angleDelta.y)
   }
 
   Timer {
@@ -242,12 +282,18 @@ Item {
     // DDE battery plugin: icon plus percentage text
     forceOpen: root.efficientMode ? root.isReady : (root.isReady && root.displayMode === "icon-always")
     forceClose: root.efficientMode ? !root.isReady : (root.displayMode === "icon-only" || !root.isReady)
-    // DDE: no colored fills on plugin items
-    customBackgroundColor: root.efficientMode ? "transparent" : (root.isCharging ? Color.mPrimary : ((root.isLowBattery || root.isCriticalBattery) ? Color.mError : "transparent"))
-    customTextIconColor: root.efficientMode ? "transparent" : (root.isCharging ? Color.mOnPrimary : ((root.isLowBattery || root.isCriticalBattery) ? Color.mOnError : "transparent"))
+    // DDE: no colored fills on plugin items — the state shows as a tint on
+    // the icon and percentage text (gxde-dock power assets color the same).
+    customBackgroundColor: "transparent"
+    customTextIconColor: root.stateColor
+    customIconColor: root.stateColor
+    customTextColor: root.stateColor
     tooltipText: !getBatteryPanel()?.isPanelOpen ? root.tooltipContent : ""
     onClicked: toggleBatteryPanel()
     onRightClicked: PanelService.showContextMenu(contextMenu, pill, screen)
+    onWheel: function (delta) {
+      root.adjustBrightness(delta);
+    }
   }
 
   // ==================== SHARED ====================

@@ -224,7 +224,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|dock-fullscreen|dock-power-wheel|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|dock-fullscreen|dock-battery-wheel|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -822,18 +822,19 @@ PYEOF
                           else
                             echo "clock widget not found in dock tree"
                           fi ;;
-    # Wheel over the dock power button adjusts display brightness (SessionMenu
-    # widget). Locate the button in the dock scene tree, inject real wheel
-    # scrolls, shot the resulting OSD. Needs a controllable monitor — seed
+    # Wheel over the dock battery widget adjusts display brightness; the
+    # charging/low state tint rides along in the same shots. Locate the widget
+    # in the dock scene tree, inject real wheel scrolls, shot the resulting
+    # OSD. Needs a controllable monitor — seed
     # brightness.backlightDeviceMappings pointing at a writable fake dir
     # (e.g. /tmp/fake-backlight/{brightness,max_brightness}); the brightnessctl
     # write fails harmlessly but monitor.brightness + brightnessUpdated still
     # drive the OSD. Scene name is passed through like dock-fullscreen:
-    #   ./verify.sh <run> --settings <seed>.json --scenes dock-power-wheel
-    dock-power-wheel)     qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 12 > "$WORK/logs/power-dock-tree.txt" 2>&1 || true
+    #   ./verify.sh <run> --settings <seed>.json --scenes dock-battery-wheel
+    dock-battery-wheel)   qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 12 > "$WORK/logs/battery-dock-tree.txt" 2>&1 || true
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
-                          PWR_POS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/power-dock-tree.txt" <<'PYEOF'
+                          BAT_POS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/battery-dock-tree.txt" <<'PYEOF'
 import json,os,re,subprocess,sys
 pos = os.environ.get("DOCK_POSITION","bottom")
 out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
@@ -847,7 +848,7 @@ for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
         continue
     if dock_h == 0:
         dock_w, dock_h = int(w.group(1)), int(w.group(2))  # DockContent root
-    if "SessionMenu_QML" in line and btn is None:
+    if "Battery_QML" in line and btn is None:
         cx, cy = int(m.group(1)) + int(w.group(1)) // 2, int(m.group(2)) + int(w.group(2)) // 2
         if pos == "bottom":
             cy += scr["height"] - dock_h
@@ -858,21 +859,22 @@ if btn:
     print(*btn)
 PYEOF
 )
-                          echo "power button at: $PWR_POS"
-                          if [ -n "$PWR_POS" ] && [ -x "$VINPUT" ]; then
+                          echo "battery widget at: $BAT_POS"
+                          if [ -n "$BAT_POS" ] && [ -x "$VINPUT" ]; then
                             # Hover first — the tooltip shot also exercises the
                             # arrow-popup shadow path (Style.shadowPopup).
-                            "$VINPUT" vinput move $PWR_POS 2>>"$WORK/logs/vinput.log" || true
+                            "$VINPUT" vinput move $BAT_POS 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.8
-                            shot dock-power-tip
-                            "$VINPUT" vinput scroll $PWR_POS -30 2>>"$WORK/logs/vinput.log" || true
+                            shot dock-battery-tip
+                            shot dock-battery-tint
+                            "$VINPUT" vinput scroll $BAT_POS -30 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.0
-                            shot dock-power-down
-                            "$VINPUT" vinput scroll $PWR_POS 30 2>>"$WORK/logs/vinput.log" || true
+                            shot dock-battery-down
+                            "$VINPUT" vinput scroll $BAT_POS 30 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.0
-                            shot dock-power-up
+                            shot dock-battery-up
                           else
-                            echo "power button not found or vinput missing: $PWR_POS"
+                            echo "battery widget not found or vinput missing: $BAT_POS"
                           fi ;;
     # Needs NOSD_FAKE_PORTAL=<0|1|2> (spawns Scripts/test/fake-portal.py owning
     # org.freedesktop.portal.Desktop on the private bus) plus a settings seed

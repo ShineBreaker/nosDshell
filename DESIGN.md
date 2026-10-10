@@ -40,6 +40,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | `attention` | `#F18A2E` | 窗口请求注意时（任务栏项填充 80%） | `gxde-dock/frame/item/appitem.cpp:313` |
 | `alert` | `#F9704F` | 密码错误边框、错误提示文字 | `gxde-session-ui/dde-lock/skin/dpasswdeditanimated.qss` |
 | `lowPower` | `#FF8000` | 低电量警告文字 | `gxde-session-ui/dde-lowpower/window.cpp` |
+| `positive` | `#9AD82D` | 接通电源/充电态着色 | `gxde-dock/plugins/power/resources/icons/battery_*_plugged.svg` 填充色 |
 | `textDisabledDark` | `#646464` | 暗色菜单里的禁用项 | `deepin-menu/src/ddockmenu.cpp:92-96` |
 
 ### 1.2 表面（蒙版）
@@ -175,6 +176,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 - **应用图标**：全彩，取系统图标主题（推荐 Papirus 或 deepin；不随仓库分发）。
 - **状态与托盘图标**：16 px 的 `*-symbolic` 主题图标（`battery-*-symbolic`、`audio-volume-*-symbolic`、`network-*-symbolic`）。主题里找不到时，退回 Tabler 字形。
+- **电池图标的状态色**〔演进〕：接通电源（充电中或满电）图标与电量文字着 `positive` 绿，低于 `systemMonitor.batteryWarningThreshold`（默认 20%，阈值页可调）着 `alert` 红——DDE 自有电源素材本来就是分色的（`battery_*_plugged.svg`/`battery_plugged.svg` 绿、`battery_0.svg` 红、`battery_2.svg` 琥珀），这里按原色归一化到令牌。
 - **界面字形**：继续用 Tabler 线性图标（风格和 DDE 15 的细线图标一致）。常用尺寸 16 / 22 / 24 px，**不用填充（filled）变体**。
 - 控制中心模块图标 24 px，关机按钮图标 75 px，锁屏头像 100 px（§3）。
 - **DDE 专属素材可以直接复用**（本仓库与参考仓库同为 GPL-3.0）。凡是 DDE 15 自带、系统图标主题里没有对应物的界面素材，优先从 `references/` 复制原件，而不是用 Tabler 字形或 QML 重画近似物：
@@ -697,7 +699,7 @@ Noctalia 卡片的对应关系：
 
 - 胶囊形外观（开关和圆角按钮除外）、超过 10 px 的圆角、Material 风格的彩色表面、水波纹、按压时的缩放、弹簧或回弹动画。
 - 弹出层和栏融合在一起、反向圆角、外圆角、框架式栏（framed bar）——仅保留为默认关闭的兼容选项。
-- 用彩色区分状态（例外：活动项 `accent`、请求注意 `attention`、错误 `alert`）。
+- 用彩色区分状态（例外：活动项 `accent`、请求注意 `attention`、错误 `alert`、充电态 `positive`）。
 - 加粗（Bold / ExtraBold）；全大写的标题；字间距不为 0 的正文。
 - 在一个界面里同时出现两个强调色；用渐变给表面着色。
 - 复制 `references/` 的素材或代码却不留出处：没有放进 `Assets/DDE/<仓库>/`、缺少 `NOTICE`、提交说明里没有写来源路径。

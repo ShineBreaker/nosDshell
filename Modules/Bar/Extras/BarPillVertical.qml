@@ -74,8 +74,10 @@ Item {
   readonly property bool onShellSurface: efficientMode || fashionMode
   readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor))
   readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
-  readonly property color iconFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
-  readonly property color textFgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  // customIconColor/customTextColor also win over onShell — battery state
+  // tints use them to recolor dock plugin items.
+  readonly property color iconFgColor: onShellSurface ? ((customIconColor.a > 0) ? customIconColor : Color.onShell) : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color textFgColor: onShellSurface ? ((customTextColor.a > 0) ? customTextColor : Color.onShell) : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
 
   // Painted tile size: fashion is a 36px chip inside the 54px item slot
   // (same ratio as the tray pill); efficient covers the full 26px cell.
@@ -223,11 +225,12 @@ Item {
       y: (iconCircle.height - height) / 2
 
       // DDE plugin icons are monochrome white — recolor themed *-symbolic
-      // icons to the on-shell foreground. Fashion shows full-color themed
-      // icons and only tints when the theme could only provide a symbolic one.
+      // icons to the on-shell foreground (or the customIconColor state tint).
+      // Fashion shows full-color themed icons and only tints when the theme
+      // could only provide a symbolic one.
       layer.enabled: root.iconSource !== "" && root.onShellSurface
       layer.effect: ShaderEffect {
-        property color targetColor: Color.onShell
+        property color targetColor: root.iconFgColor
         property real colorizeMode: 3.0
         fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
       }

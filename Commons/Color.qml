@@ -447,6 +447,10 @@ Singleton {
   // schemes paint errors in their own hue.
   readonly property color alert: mError
   readonly property color lowPower: "#FF8000"
+  // DDE battery charge green (DESIGN §1.1): gxde-dock's own power-plugin
+  // assets fill charging/healthy cells with #9AD82D; empty cells use the
+  // alert family. Shared by every battery state tint.
+  readonly property color positive: "#9AD82D"
   // MD3 disabled spec: onSurface at 38% — Deepin dark lands ≈#616161, a step
   // off the old fixed #646464.
   readonly property color textDisabledDark: Qt.alpha(onShell, 0.38)
