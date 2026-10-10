@@ -370,6 +370,10 @@ ColumnLayout {
           Layout.fillWidth: true
           Layout.alignment: Qt.AlignHCenter
           height: 50 * Style.uiScaleRatio
+          // GridLayout assigns height directly; a transient 0 there once
+          // destroyed the height binding and collapsed this card to 165x0.
+          Layout.preferredHeight: 50 * Style.uiScaleRatio
+          Layout.minimumHeight: 50 * Style.uiScaleRatio
           radius: Style.radiusS
           color: root.getSchemeColor(schemeName, "mSurface")
           border.width: Style.borderL
