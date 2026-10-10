@@ -84,6 +84,7 @@ ColumnLayout {
       Layout.alignment: Qt.AlignVCenter
       radius: Math.min(Style.radiusL, Layout.preferredWidth / 2)
       imagePath: valueCustomIconPath
+      symbolicColor: Color.onShell
       visible: valueCustomIconPath !== "" && !valueUseDistroLogo
     }
 

@@ -245,12 +245,14 @@ Item {
                 }
               }
 
-              IconImage {
+              NSymbolicImage {
                 x: 10
                 y: 6
                 width: 24
                 height: 24
                 source: (!isCategoryRow && modelData.icon) ? ThemeIcons.iconFromName(modelData.icon) : ""
+                detectSymbolic: true
+                color: Color.onShell
                 visible: status === Image.Ready
                 asynchronous: true
               }

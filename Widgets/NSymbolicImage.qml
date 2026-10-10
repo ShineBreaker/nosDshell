@@ -14,8 +14,14 @@ Image {
   property color color: Color.onShell
   // Set false to render the source pixels untouched (multicolor assets).
   property bool symbolic: true
+  // When true, tint only freedesktop *-symbolic sources
+  // (ThemeIcons.isSymbolicPath); colored icons and photos pass through.
+  property bool detectSymbolic: false
 
-  layer.enabled: root.symbolic && root.source.toString() !== ""
+  // Symbol glyphs and icons must never be cropped or stretched.
+  fillMode: Image.PreserveAspectFit
+
+  layer.enabled: root.source.toString() !== "" && (root.detectSymbolic ? ThemeIcons.isSymbolicPath(root.source) : root.symbolic)
   layer.effect: ShaderEffect {
     property color targetColor: root.color
     property real colorizeMode: 3.0

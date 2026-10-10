@@ -230,8 +230,11 @@ SmartPanel {
                 anchors.rightMargin: Style.marginS
                 spacing: Style.marginS
 
-                IconImage {
-                  implicitSize: Style.baseWidgetSize * 0.6
+                NSymbolicImage {
+                  Layout.preferredWidth: Style.baseWidgetSize * 0.6
+                  Layout.preferredHeight: Style.baseWidgetSize * 0.6
+                  detectSymbolic: true
+                  color: Color.onShell
                   source: {
                     let icon = modelData.properties["application.icon-name"];
                     return ThemeIcons.iconFromName(icon, "audio-x-generic");

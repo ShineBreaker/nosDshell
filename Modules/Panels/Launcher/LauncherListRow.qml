@@ -31,14 +31,16 @@ Item {
     color: (mouseArea.containsMouse || root.selected) ? Color.overlayWallpaper("hover") : "transparent"
   }
 
-  // Icon
-  IconImage {
+  // Icon — darkened wallpaper surface: symbolic glyphs stay in onWallpaper ink
+  NSymbolicImage {
     id: rowIcon
     x: 10
     width: 24
     height: 24
     y: 6
     source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
+    detectSymbolic: true
+    color: Color.onWallpaper
     visible: status === Image.Ready
     asynchronous: true
   }

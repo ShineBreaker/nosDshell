@@ -150,6 +150,13 @@ Singleton {
     }
   }
 
+  // Freedesktop symbolic convention: assets named *-symbolic (or stored under
+  // a symbolic/ directory, e.g. Papirus) are monochrome glyphs meant to be
+  // tinted to the surface ink instead of drawn as-is.
+  function isSymbolicPath(path) {
+    return /(-symbolic|\/symbolic\/)/i.test(String(path ?? ""));
+  }
+
   function distroLogoPath() {
     try {
       return (typeof OSInfo !== 'undefined' && OSInfo.distroIconPath) ? OSInfo.distroIconPath : "";

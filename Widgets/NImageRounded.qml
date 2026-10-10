@@ -15,6 +15,10 @@ Item {
   property real borderWidth: 0
   property color borderColor: "transparent"
   property int imageFillMode: Image.PreserveAspectCrop
+  // Ink for monochrome *-symbolic sources (freedesktop: symbolic assets are
+  // meant to be tinted to the surface foreground — ThemeIcons.isSymbolicPath).
+  // "transparent" disables, keeping colored artwork and photos untouched.
+  property color symbolicColor: "transparent"
 
   // Latched so a failed primary image cannot bounce back once the fallback is showing
   property bool _primaryFailed: false
@@ -35,6 +39,7 @@ Item {
     return _useFallback && status === Image.Error;
   }
   readonly property int status: imageSource ? imageSource.status : Image.Null
+  readonly property bool _isSymbolicSource: symbolicColor.a > 0 && ThemeIcons.isSymbolicPath(_effectiveSource)
 
   // The Loader only tracks component load, so the image status has to report back here
   function noteImageStatus(imageStatus) {
@@ -102,7 +107,7 @@ Item {
     ShaderEffect {
       anchors.fill: parent
       anchors.margins: root.borderWidth
-      visible: !root.showFallback && root.imageSource !== null && root.status === Image.Ready
+      visible: !root.showFallback && !root._isSymbolicSource && root.imageSource !== null && root.status === Image.Ready
       property var source: root.imageSource ?? _safeFallback
       property real itemWidth: width
       property real itemHeight: height
@@ -115,6 +120,19 @@ Item {
       fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/rounded_image.frag.qsb")
       supportsAtlasTextures: false
       blending: true
+    }
+
+    // Symbolic source: the glyph's own alpha is the mask, so the flat ink
+    // silhouette needs no radius clip. PreserveAspectFit keeps it uncropped.
+    NSymbolicImage {
+      anchors.fill: parent
+      anchors.margins: root.borderWidth
+      visible: root._isSymbolicSource && root.status === Image.Ready
+      source: root._isSymbolicSource ? root._effectiveSource : ""
+      color: root.symbolicColor
+      fillMode: Image.PreserveAspectFit
+      smooth: true
+      asynchronous: true
     }
 
     NIcon {

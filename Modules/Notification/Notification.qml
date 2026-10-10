@@ -488,6 +488,7 @@ Variants {
                 height: Style.bubbleIconSize
                 radius: Style.radiusRow
                 imagePath: model.originalImage || ""
+                symbolicColor: Color.onTransient
                 borderColor: "transparent"
                 borderWidth: 0
                 fallbackIcon: "bell"

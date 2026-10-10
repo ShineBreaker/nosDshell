@@ -412,6 +412,7 @@ Item {
                 Layout.alignment: Qt.AlignTop
                 radius: Math.min(Style.radiusRow, width / 2)
                 imagePath: model.cachedImage || model.originalImage || ""
+                symbolicColor: Color.onShell
                 borderColor: "transparent"
                 borderWidth: 0
                 fallbackIcon: "bell"

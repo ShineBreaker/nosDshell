@@ -204,7 +204,7 @@ settings-dock settings-launcher settings-wallpaper settings-notifications
 settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
-settings-system settings-systemmonitor notification-actions notification-long notification-resave osd-overdrive toast \
+settings-system settings-systemmonitor notification-actions notification-icon notification-long notification-resave osd-overdrive toast \
 wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu lockscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
@@ -713,6 +713,17 @@ run_scene() {
     notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null
                           sleep 0.8; shot notification ;;
+    # Monochrome app icon on the bubble: *-symbolic sources are tinted to the
+    # tile ink (ThemeIcons.isSymbolicPath); other artwork renders untouched.
+    notification-icon)    notify-send -a nosdshell-verify -i "$REPO/Scripts/test/assets/audio-volume-high-symbolic.png" \
+                            "Symbolic icon" "Monochrome *-symbolic app icon on the tile." 2>/dev/null
+                          sleep 0.8; shot notification-icon
+                          notify-send -a nosdshell-verify -i "$REPO/Scripts/test/assets/audio-volume-high-symbolic.png" \
+                            "Symbolic icon 2" "Second symbolic send after a live popup." 2>/dev/null
+                          sleep 0.8; shot notification-icon-2
+                          notify-send -a nosdshell-verify -i "$REPO/Assets/DDE/gxde-control-center/src/frame/modules/accounts/themes/dark/icons/nav_accounts.svg" \
+                            "White artwork" "Non-symbolic artwork stays raw (negative control)." 2>/dev/null
+                          sleep 0.8; shot notification-icon-art ;;
     osd-volume)           call volume increase 0.4; call volume increase 0.4
                           call volume increase 0.4; shot osd-volume ;;
     osd-brightness)       call brightness increase 0.4; shot osd-brightness ;;

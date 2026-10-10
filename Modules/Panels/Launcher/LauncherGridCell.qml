@@ -63,11 +63,13 @@ Item {
       Layout.topMargin: Math.max(1, root._side * 0.2 - root.iconSize * 0.3)
       Layout.alignment: Qt.AlignHCenter
 
-      IconImage {
+      NSymbolicImage {
         anchors.centerIn: parent
         width: root.iconSize
         height: root.iconSize
         source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
+        detectSymbolic: true
+        color: Color.onWallpaper
         visible: source !== ""
         asynchronous: true
         smooth: true

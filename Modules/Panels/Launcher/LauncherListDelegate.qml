@@ -137,9 +137,11 @@ NBox {
 
           Component {
             id: systemIconComponent
-            IconImage {
+            NSymbolicImage {
               anchors.fill: parent
               source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon, "application-x-executable") : ""
+              detectSymbolic: true
+              color: Color.onShell
               visible: modelData.icon && source !== "" && !modelData.displayString
               asynchronous: true
             }
