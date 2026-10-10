@@ -45,6 +45,15 @@ Singleton {
 
   // Notification server
   property var notificationServerLoader: null
+  // Applied state of the server toggle — the server must NOT be re-created on
+  // every Settings save: destroy() is a deferred delete, so a same-tick
+  // destroy+create makes the new server request org.freedesktop.Notifications
+  // while the dying one still owns it, and the request is denied (cua P4).
+  // A rapid off->on pair can queue more than one destroy, so _serversDestroying
+  // counts them and the last onDestroyed() re-creates.
+  property bool _serverInitialized: false
+  property bool _serverEnabled: false
+  property int _serversDestroying: 0
 
   Component {
     id: notificationServerComponent
@@ -88,14 +97,40 @@ Singleton {
   }
 
   function updateNotificationServer() {
-    if (notificationServerLoader) {
-      notificationServerLoader.destroy();
-      notificationServerLoader = null;
+    const wantEnabled = Settings.isLoaded && Settings.data.notifications.enabled !== false;
+    if (root._serverInitialized && wantEnabled === root._serverEnabled) {
+      return;
     }
+    root._serverInitialized = true;
+    root._serverEnabled = wantEnabled;
 
-    if (Settings.isLoaded && Settings.data.notifications.enabled !== false) {
-      notificationServerLoader = notificationServerComponent.createObject(root);
+    const oldServer = notificationServerLoader;
+    notificationServerLoader = null;
+    if (oldServer) {
+      // Wait for destroyed() before re-creating so the old server releases
+      // the bus name first (deferred delete).
+      root._serversDestroying++;
+      oldServer.destroyed.connect(root.onOldServerDestroyed);
+      oldServer.destroy();
+      return;
     }
+    if (wantEnabled && root._serversDestroying === 0) {
+      createNotificationServer();
+    }
+  }
+
+  function onOldServerDestroyed() {
+    root._serversDestroying--;
+    if (root._serversDestroying === 0) {
+      createNotificationServer();
+    }
+  }
+
+  function createNotificationServer() {
+    if (!root._serverEnabled || root.notificationServerLoader) {
+      return;
+    }
+    root.notificationServerLoader = notificationServerComponent.createObject(root);
   }
 
   Component.onCompleted: {
