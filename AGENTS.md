@@ -31,14 +31,15 @@ DDE 专属素材（时钟表盘、关机按钮、启动器/控制中心图标等
 - 分级：
   - 每次改完：`Scripts/dev/lint.sh --changed` 不出现新的错误（全仓库检查不加参数，用法见脚本头部）。
   - 界面改动：再用 `verify.sh` 截一组图，用眼睛和 `DESIGN.md` 逐条对照，同时确认日志里没有新增的 `TypeError`、`ReferenceError`、`.qml:行号` 报错。
-  - 已知的离线噪声（没有 NetworkManager、天气数据为 null）不算回归。
+  - 性能相关改动（启动、面板开合延迟）：用 `Scripts/test/bench.sh` 建基线再对比——先丢弃一轮预热环境（guix shell 拉包、磁盘缓存冷会让首轮 startup 系统性偏高），再跑三轮取中位；两项指标口径见脚本头部注释。
+  - 已知的离线噪声（没有 NetworkManager、天气数据为 null、隔离环境里打开蓝牙子页时 `quickshell.dbus.properties` 写 Discoverable 的 WARN）不算回归。
   - 改到两种任务栏模式、四个停靠方向、亮色/暗色、模糊开关时，要用 `--settings` 把这些组合分别截图验证。
 
 ## 分支细则
 
 按这次改动的性质取一份；每份文件单读即可执行，不用回头翻本文件。
 
-- **写 QML、加设置、改界面文案或注释** → [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)：令牌优先、设置项四处同步、`I18n.tr` 文案、`Logger.d/i/w/e` 日志、`PanelService` / `BarWidgetRegistry` 注册、`modelData` 按稳定字段比对、格式化与注释。
+- **写 QML、加设置、改界面文案或注释** → [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)：令牌优先、设置项四处同步、挂件设置页 `value()`/`set()` 与公共件先查再造、`I18n.tr` 文案、`Logger.d/i/w/e` 日志、`PanelService` / `BarWidgetRegistry` 注册、`modelData` 按稳定字段比对、格式化与注释。
 - **调试：界面行为不符合预期，要取证或复现** → [`DEBUGGING.md`](./DEBUGGING.md)：调试开关四个等价入口、`debug.modules` 与 `debug.logLevel`、场景取证 IPC（`list` / `tree` / `hit` / `opened` / `watch`）、真指针注入、Qt 类别日志与 core 验尸、现成脚本。
 - **要写新工具，或改 `tools/*/` 的依赖** → [`TOOLS.md`](./TOOLS.md)：Rust 工具要求、crate 版本选择与 `Cargo.lock`、`packaging/rust-crates.scm` vendor 同步、`guix build` 验证。
 

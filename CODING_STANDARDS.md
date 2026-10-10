@@ -31,6 +31,33 @@ QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这�
 
 面板通过 `PanelService` 注册和打开，任务栏挂件通过 `BarWidgetRegistry` 注册；新增的面板或挂件沿用同一套注册机制。
 
+### 挂件设置页样板
+
+挂件设置页（`Modules/Panels/Settings/{Bar,DesktopWidgets,ControlCenter}/WidgetSettings/`）读写设置一律内嵌 `Widgets/WidgetSettingsHelper.qml`，不再手写回退与保存样板：
+
+- 读：`settingsHelper.value("key", fallback?)`——链为 编辑值 → 已存值 → metadata 默认 → fallback。不要再写 `widgetData.X !== undefined ? ... : widgetMetadata.X` 三元，也不要写 `||` / `??` 回退。
+- 写：`settingsHelper.set("key", v)`——整体替换 edits 对象，`value()` 绑定保持刷新。
+- 存：`var settings = settingsHelper.save()`——复制基座后只覆盖编辑过的字段，没动过的字段不落盘。
+
+只有 iconColor 一项设置的挂件直接映 `WidgetSettings/IconColorSettings.qml`（`widgetSettingsMap` 里 DarkMode / NightLight / PerformanceMode / PowerProfile / WallpaperSelector 五处共用），不新建页面。
+
+两类有意保留的例外，改的时候别顺手"修"成 `value()`：直读控件的空值特判三元（无已存值时必须显示空、靠 placeholder 兜底，见 Bar/CustomButtonSettings 的 textIntervalMs）与 SpinBox 组装路线（嵌套字段在 saveSettings 组装）——换成 `value()` 会改变空值显示行为。
+
+### 公共件先查再造
+
+写新样板之前先查这份清单——以下是已收敛的公共实现，逐个手抄就是造克隆（API 细节看各组件头部注释）：
+
+| 公共件 | 取代的样板 |
+| --- | --- |
+| `Widgets/NSubTabsPane` | 设置页 SubTab 导航骨架、`currentIndex === N` 序号判断 |
+| `Widgets/NDisplayModeComboBox` | onhover / alwaysShow / alwaysHide 组合框整块 |
+| `Modules/Bar/Extras/BarWidgetSettingsMenu` | 挂件右键菜单骨架（widget-settings 固定尾项 + 开合前置） |
+| `Commons/Settings.getWidgetSettings()` | 按屏/区段/序号解析挂件实例设置 |
+| `Commons/AppIdMatcher.qml` | appId 归一化、pinned 判定、desktop-entry 解析 |
+| `Commons/SessionActions.qml` | 电源动作分发（lock/shutdown/reboot/...） |
+| `Commons/WorkspaceQuery.js` | "哪些工作区属于这块屏"的筛选 |
+| `Commons/NSurfaceRegion.qml` | surface 的 blur/mask region 注册（Quickshell 平台陷阱知识） |
+
 ## 服务语义守恒
 
 - `Services/`、`Commons/` 是 Noctalia 的业务内核：重写样式时不要改动它们的属性签名、信号时机和副作用。上游语义被替换必须写出依据（平台差异，如 niri/PipeWire），否则视为回归。

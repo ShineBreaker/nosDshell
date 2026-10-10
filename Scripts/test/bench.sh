@@ -66,7 +66,10 @@
 #     polling above.
 #
 # Repetition protocol: the CALLER runs this script 3 times and takes the
-# per-metric median for the final number.
+# per-metric median for the final number. When establishing a BASELINE,
+# first run one throwaway round to warm the environment (guix shell pull,
+# disk caches): a cold first round reports startup_ms systematically higher
+# than every later round, which poisons before/after comparisons.
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
