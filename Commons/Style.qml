@@ -294,32 +294,32 @@ Singleton {
                                         "blur": 32,
                                         "x": 0,
                                         "y": 3,
-                                        "color": Qt.rgba(0, 0, 0, _shadowScale(0.32))
+                                        "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
                                       })
   // Control centre frame: shadow cast to the left side only (DESIGN §3.5.1)
   readonly property var shadowControlCenter: ({
                                                 "blur": 32,
                                                 "x": -16,
                                                 "y": 0,
-                                                "color": Qt.rgba(0, 0, 0, _shadowScale(0.32))
+                                                "color": Qt.rgba(0, 0, 0, _shadowScale(0.24))
                                               })
   readonly property var shadowOsd: ({
                                       "blur": 24,
                                       "x": 0,
                                       "y": 5,
-                                      "color": Qt.rgba(0, 0, 0, _shadowScale(0.24))
+                                      "color": Qt.rgba(0, 0, 0, _shadowScale(0.14))
                                     })
   readonly property var shadowBubble: ({
                                          "blur": 24,
                                          "x": 0,
                                          "y": 4,
-                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.30))
+                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
                                        })
   readonly property var shadowMenuLight: ({
                                             "blur": 20,
                                             "x": 0,
                                             "y": 8,
-                                            "color": Qt.rgba(0, 0, 0, _shadowScale(0.16))
+                                            "color": Qt.rgba(0, 0, 0, _shadowScale(0.12))
                                           })
   // DDialog (DESIGN §3.11): same soft drop as the control centre frame, but
   // cast straight down instead of to the left.
@@ -327,7 +327,7 @@ Singleton {
                                          "blur": 32,
                                          "x": 0,
                                          "y": 0,
-                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.32))
+                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
                                        })
 
   // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
