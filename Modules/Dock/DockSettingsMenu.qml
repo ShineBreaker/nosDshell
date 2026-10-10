@@ -227,7 +227,10 @@ Singleton {
     _openScreen = screen;
     _openMenu = popupMenuWindow.showDynamicContextMenu(buildModel(), screenX, screenY, function (action) {
       return root.handleAction(action, _openScreen);
-    }, "light");
+    // "dark" variant follows the shell: popupShell resolves dark/light with
+    // the global mode — DDE's always-white menu was dropped so the menu
+    // tracks the user's theme (DESIGN §3.3).
+    }, "dark");
   }
 
   // Open the settings menu at the dock center and expand the first submenu.
