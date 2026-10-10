@@ -415,11 +415,11 @@ Item {
     switch (tab) {
     case SettingsPanel.Tab.About:
       return aboutTab;
-    // NOTE: Tab.Advanced has no owning module anymore (ControlCenterModules
-    // maps no tab to it — the 高级 module now hosts only HooksTab; the old
-    // overflow page's contents moved to 任务栏/个性化). The enum item itself
-    // stays: ordinals are persisted (search index) and IPCService still
-    // references it.
+      // NOTE: Tab.Advanced has no owning module anymore (ControlCenterModules
+      // maps no tab to it — the 高级 module now hosts only HooksTab; the old
+      // overflow page's contents moved to 任务栏/个性化). The enum item itself
+      // stays: ordinals are persisted (search index) and IPCService still
+      // references it.
     case SettingsPanel.Tab.Audio:
       return audioTab;
       // NOTE: Tab.Bar has no owning module (no ControlCenterModules entry maps
@@ -588,7 +588,11 @@ Item {
                 required property int index
 
                 readonly property bool selected: root.module !== null && modelData !== null && root.module.id === modelData.id
-                readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, selected)
+                // Always the full-alpha artwork: the dimmed state comes from
+                // railArt.opacity, matching the NIcon fallback's dim ladder
+                // (the baked *_normal variant is only ~0.2, too faint for the
+                // project's documented rail spec).
+                readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, true)
 
                 width: Style.settingsRailWidth
                 height: Style.settingsModuleHeadIcon + 2 * Style.settingsRailButtonPadV
@@ -625,7 +629,7 @@ Item {
                     }
                   }
 
-                  Image {
+                  NSymbolicImage {
                     id: railArt
                     anchors.centerIn: parent
                     width: Style.settingsModuleHeadIcon
@@ -635,6 +639,10 @@ Item {
                     source: ddeArt
                     visible: ddeArt !== "" && status !== Image.Error
                     smooth: true
+                    // Same dim ladder as the NIcon fallback below: on-shell
+                    // ink, 0.4 on the dark frame / 0.6 on the light frame.
+                    color: Color.onShell
+                    opacity: selected ? 1.0 : (Color.shellIsDark ? Style.settingsRailIconDim : 0.6)
                   }
 
                   NIcon {
@@ -868,7 +876,7 @@ Item {
                     anchors.leftMargin: Style.settingsModuleHeadLeft
                     anchors.verticalCenter: parent.verticalCenter
                     spacing: Style.marginS
-                    Image {
+                    NSymbolicImage {
                       id: headArtImage
                       anchors.verticalCenter: parent.verticalCenter
                       width: Style.settingsModuleHeadIcon
@@ -878,6 +886,7 @@ Item {
                       source: headArt
                       visible: headArt !== "" && status !== Image.Error
                       smooth: true
+                      color: Color.onShell
                     }
                     NIcon {
                       anchors.verticalCenter: parent.verticalCenter

@@ -336,10 +336,11 @@ Item {
             anchors.rightMargin: Style.marginM
             spacing: Style.marginS
 
-            Image {
+            NSymbolicImage {
               Layout.preferredWidth: 24
               Layout.preferredHeight: 24
               source: root.ddeImages + "all.svg"
+              color: Color.onShell
               fillMode: Image.PreserveAspectFit
               smooth: true
               asynchronous: true
@@ -358,10 +359,11 @@ Item {
               elide: Text.ElideRight
             }
 
-            Image {
+            NSymbolicImage {
               Layout.preferredWidth: 20
               Layout.preferredHeight: 20
               source: root.ddeImages + "enter_details_normal.svg"
+              color: Color.onShell
               fillMode: Image.PreserveAspectFit
               smooth: true
               asynchronous: true
@@ -419,6 +421,7 @@ Item {
         normalSource: root.ddeIcons + "fullscreen_normal.png"
         hoverSource: root.ddeIcons + "fullscreen_hover.png"
         pressSource: root.ddeIcons + "fullscreen_press.png"
+        recolorArtwork: true
         tooltipText: I18n.tr("launcher.dde.switch-to-fullscreen")
         onClicked: LauncherState.setMode("fullscreen")
       }

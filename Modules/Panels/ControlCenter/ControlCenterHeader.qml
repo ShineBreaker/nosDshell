@@ -137,18 +137,21 @@ Item {
         Layout.preferredWidth: 32
         Layout.preferredHeight: 32
 
-        Image {
+        NSymbolicImage {
           anchors.centerIn: parent
           width: 32
           height: 32
           sourceSize.width: 64
           sourceSize.height: 64
           smooth: true
+          // The checked artwork is a white disc + accent bell — a flat
+          // silhouette would blob into a solid disc, so all states use the
+          // bell glyphs and the accent carries the active state instead.
           source: {
-            const on = root.notificationPage || bellArea.pressed;
-            const name = on ? (bellArea.containsMouse ? "checkedhover" : "checked") : (bellArea.containsMouse ? "hover" : "normal");
+            const name = bellArea.containsMouse ? "hover" : "normal";
             return Quickshell.shellDir + "/Assets/DDE/gxde-control-center/src/frame/themes/dark/icons/notifications_toggle_" + name + ".svg";
           }
+          color: (root.notificationPage || bellArea.pressed) ? Color.accent : Color.onShell
         }
 
         MouseArea {

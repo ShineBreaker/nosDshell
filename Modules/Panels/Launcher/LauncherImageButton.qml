@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Window
+import Quickshell
 
 import qs.Commons
 import qs.Services.UI
@@ -18,6 +19,14 @@ Item {
   // Shown while `checked` is true; falls back to pressSource.
   property string activeSource: ""
   property bool checked: false
+
+  // Recolors the monochrome artwork to a flat `artworkColor` silhouette so
+  // baked-white DDE glyphs follow a theme surface's foreground (DESIGN §1.3);
+  // press/checked still take the accent like the blue _press art they
+  // replace. Default off: wallpaper surfaces keep the baked white artwork
+  // (§1.5 — those surfaces stay dark in both modes).
+  property bool recolorArtwork: false
+  property color artworkColor: Color.onShell
 
   // Set false for artwork without a "@2x" sibling.
   property bool hasRetinaAsset: true
@@ -54,6 +63,13 @@ Item {
     asynchronous: true
     mipmap: true
     cache: true
+
+    layer.enabled: root.recolorArtwork
+    layer.effect: ShaderEffect {
+      property color targetColor: (mouseArea.pressed || root.checked) ? Color.accent : root.artworkColor
+      property real colorizeMode: 3.0
+      fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
+    }
   }
 
   MouseArea {

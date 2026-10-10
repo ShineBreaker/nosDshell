@@ -17,6 +17,10 @@ Item {
   // DDE artwork wins when set (DESIGN §1.9).
   property string icon: ""
   property string iconSource: ""
+  // Monochrome artwork is repainted in iconColor so baked-white DDE glyphs
+  // follow the panel foreground; set false for multicolor assets.
+  property bool recolorIcon: true
+  property color iconColor: Color.onShell
   property int iconSize: 24
   property bool selected: false
   property real rowHeight: Style.launcherMiniButtonRowHeight
@@ -42,11 +46,13 @@ Item {
     anchors.rightMargin: Style.marginS
     spacing: Style.marginS
 
-    Image {
+    NSymbolicImage {
       visible: root.iconSource !== ""
       Layout.preferredWidth: root.iconSize
       Layout.preferredHeight: root.iconSize
       source: root.iconSource
+      symbolic: root.recolorIcon
+      color: root.iconColor
       fillMode: Image.PreserveAspectFit
       smooth: true
       asynchronous: true
