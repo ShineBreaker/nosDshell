@@ -3,9 +3,43 @@
 发版文案来源：每次发版时，本文件对应版本的条目即 GitHub Release 的正文（流程见 `docs/RELEASE.md`）。
 日常开发把变化记在 `[Unreleased]` 下；发版时将其改名为新版号并写上日期。
 
+条目结构（自 v1.1.1 起）：开头一段偏营销的简介，一两句话覆盖本次全部改动 → `---` 分割线 →
+正文只写"大概做了什么"，每条引用相关 commit，不复述实现细节。
+
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，tag 命名为 `v<版号>`。
 
 ## [Unreleased]
+
+## [1.1.1] - 2026-10-10
+
+一轮观感抛光，顺带补了两项功能：深色模式可以跟随系统切换，电池挂上充电绿/低电红并支持滚轮调亮度；dock 小弹层不再压暗全屏，悬浮阴影的半透明黑块、下拉菜单透出页面文字、右键菜单省略文字这批毛边一并修平。
+
+---
+
+### 新功能
+
+- 深色模式计划新增"跟随系统"，走 freedesktop portal 外观偏好：[`f23fc3de1`](https://github.com/ShineBreaker/nosDshell/commit/f23fc3de1efa349ef0561a7c4ba058ed6ba07b0c)
+- 电池挂件按充电（绿）/低电量（红，阈值可调）着色；滚轮调亮度从电源键移到电池：[`c12e4fb6f`](https://github.com/ShineBreaker/nosDshell/commit/c12e4fb6fa47bc406b3c5d741e2d582f0fbedc45) [`c8df3851b`](https://github.com/ShineBreaker/nosDshell/commit/c8df3851bc7d80648c74841fcbdf0d03b4fe27d0)
+
+### 观感修复
+
+- dock 快弹面板不再触发全屏压暗：[`ca7e3ce94`](https://github.com/ShineBreaker/nosDshell/commit/ca7e3ce9482f1af3fe70da82ff403d13c5add88e)
+- 悬浮控件阴影的半透明高原区 alpha 减半：[`10f7255a6`](https://github.com/ShineBreaker/nosDshell/commit/10f7255a63e59345fd49ab9cd6055890b1b80eb1)
+- 壁纸压暗层固定纯黑，不再随主题染色：[`e592c5429`](https://github.com/ShineBreaker/nosDshell/commit/e592c54293c187ef3bfb066e592b33834098527f)
+- 设置页下拉弹层改不透明底，菜单 accent 高亮块加 `radiusRow` 圆角：[`32979f75f`](https://github.com/ShineBreaker/nosDshell/commit/32979f75f970947e168c6d4e69cfa7cbc6a1f53b) [`f3aa14b1d`](https://github.com/ShineBreaker/nosDshell/commit/f3aa14b1de19d7b20080223875d592ff6c809245)
+- 右键菜单宽度计入行内边距，短标签不再省略：[`3e1da7312`](https://github.com/ShineBreaker/nosDshell/commit/3e1da73125aa0dc3a299152f2b1bdc00512e6291)
+- 勿扰通知的分组续行缩进恢复：[`590209e96`](https://github.com/ShineBreaker/nosDshell/commit/590209e96a4d7f55617764b02bbe1dd3350cec46)
+
+### 设置修复
+
+- 蓝牙/账户等模块页只渲染自己拥有的设置组：[`90228f713`](https://github.com/ShineBreaker/nosDshell/commit/90228f713cdc6772d27e1f3c0f5baee5107fa166)
+- 配色方案卡栅格高度塌陷修复：[`ec1e4ec5e`](https://github.com/ShineBreaker/nosDshell/commit/ec1e4ec5e862535bcf56a19f666688a922560aad)
+
+### 工程
+
+- CI 增加 qmllint / 脚本 / 文档同步检查，tag 自动发版：[`90e456816`](https://github.com/ShineBreaker/nosDshell/commit/90e4568162732ca3acdc2d99bb22a7ff9db18c9d)
+- README 双语化，Pages 挂载 Noctalia v4 wiki 存档镜像：[`6afbd7252`](https://github.com/ShineBreaker/nosDshell/commit/6afbd72522ca587cb57d3cbb7b73279323e61f01)
+- 验证场景新增 settings-combo、dock-context-menu 等：[`05c7578c9`](https://github.com/ShineBreaker/nosDshell/commit/05c7578c994898abf071da0a6459a8088b8b22c3) [`22cb82894`](https://github.com/ShineBreaker/nosDshell/commit/22cb8289418dccfda0bbab3c7abb5a7279e9efcb)
 
 ## [1.1.0] - 2026-10-10
 
@@ -126,7 +160,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.0...v1.0.1
