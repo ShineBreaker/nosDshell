@@ -513,15 +513,17 @@ Item {
   // Sub-tabs of a tab are shown as SettingsGroups on one scrollable page
   // (DESIGN §3.5.3): find the tab's NTabBar / NTabView by objectName and flip
   // both into group mode. objectName lookup keeps tab files untouched.
-  function _applyGroupMode(tabItem) {
+  function _applyGroupMode(tabItem, onlyGroup) {
     if (!tabItem)
       return;
     const bar = _findByObjectName(tabItem, "NTabBar");
     const view = _findByObjectName(tabItem, "NTabView");
     if (bar)
       bar.groupMode = true;
-    if (view)
+    if (view) {
+      view.onlyGroup = (onlyGroup === undefined || onlyGroup === null) ? -1 : onlyGroup;
       view.stacked = true;
+    }
   }
 
   function _findByObjectName(item, name) {
@@ -854,7 +856,13 @@ Item {
                 function innerSlotY(j, inner) {
                   const t = tabsRepeater.itemAt(j);
                   const view = t ? t.stackedView() : null;
-                  return view ? view.groupOffset(inner) : 0;
+                  if (!view)
+                    return 0;
+                  // A slot filtered to a single group IS the module's whole
+                  // content: land on the module header, not one head below it.
+                  if (view.onlyGroup >= 0)
+                    return -tabSlotY(j);
+                  return view.groupOffset(inner);
                 }
                 // Every tab slot loaded?
                 function tabsReady() {
@@ -963,7 +971,7 @@ Item {
                       onLoaded: {
                         if (item === null)
                           return;
-                        root._applyGroupMode(item);
+                        root._applyGroupMode(item, modelData.subTab ?? -1);
                         const view = root._findByObjectName(item, "NTabView");
                         if (!view || view.initialized) {
                           tabSlot._contentReady = true;

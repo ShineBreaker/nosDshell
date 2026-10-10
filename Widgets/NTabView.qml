@@ -18,6 +18,12 @@ Item {
   // still live; NTabBar has no other way to reach a sibling view.
   property var stackTitles: []
 
+  // A stacked view may stand for just one slice of its tab: a settings module
+  // whose entry declares `subTab` owns only that group (e.g. the bluetooth
+  // module owns Connections' group 1), so sibling groups must not render under
+  // the foreign module header. -1 stacks every page.
+  property int onlyGroup: -1
+
   // Private
   property int previousIndex: 0
   property bool initialized: false
@@ -39,6 +45,19 @@ Item {
   readonly property bool stackHeads: stacked && stackTitles.length === contentItems.length && contentItems.length > 0
   readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.settingsGroupGap : 0
 
+  // Content-item indices taking part in the stack. With onlyGroup the view
+  // owns a single slice; otherwise every page is a group.
+  readonly property var _groups: {
+    if (contentItems.length === 0)
+      return [];
+    if (onlyGroup >= 0 && onlyGroup < contentItems.length)
+      return [onlyGroup];
+    var all = [];
+    for (var i = 0; i < contentItems.length; i++)
+      all.push(i);
+    return all;
+  }
+
   // During animation, use max height to prevent clipping. Otherwise use current item height.
   implicitHeight: {
     if (animating)
@@ -46,8 +65,10 @@ Item {
     if (!stacked)
       return contentItems[currentIndex] ? contentItems[currentIndex].implicitHeight : 0;
     let h = 0;
-    for (let i = 0; i < contentItems.length; i++)
-      h += contentItems[i].implicitHeight + root.stackHeadHeight + (i > 0 ? Style.settingsGroupSpacing : 0);
+    for (let k = 0; k < _groups.length; k++) {
+      const i = _groups[k];
+      h += contentItems[i].implicitHeight + root.stackHeadHeight + (k > 0 ? Style.settingsGroupSpacing : 0);
+    }
     return h;
   }
 
@@ -64,16 +85,15 @@ Item {
     anchors.fill: parent
 
     Repeater {
-      model: root.stackTitles
+      model: root.stacked ? root._groups : []
 
       delegate: NHeader {
-        required property int index
-        required property string modelData
+        required property int modelData
 
         x: 0
-        y: root._stackedOffset(index)
+        y: root._stackedOffset(modelData)
         width: root.width
-        label: modelData
+        label: root.stackTitles[modelData] ?? ""
         visible: root.stackHeads
       }
     }
@@ -111,7 +131,7 @@ Item {
     for (let i = 0; i < contentItems.length; i++) {
       const child = contentItems[i];
       child.y = Qt.binding(() => root._stackedOffset(i) + root.stackHeadHeight);
-      child.visible = true;
+      child.visible = root._groups.indexOf(i) >= 0;
     }
   }
 
@@ -120,8 +140,11 @@ Item {
   // is what made stacked pages read as one cramped block.
   function _stackedOffset(index) {
     let off = 0;
-    for (let j = 0; j < index; j++)
+    for (const j of root._groups) {
+      if (j >= index)
+        break;
       off += (contentItems[j] ? contentItems[j].implicitHeight : 0) + root.stackHeadHeight + Style.settingsGroupSpacing;
+    }
     return off;
   }
 
@@ -180,6 +203,11 @@ Item {
       setIndexWithoutAnimation(currentIndex);
       _layoutStacked();
     }
+  }
+
+  onOnlyGroupChanged: {
+    if (initialized && stacked)
+      _layoutStacked();
   }
 
   onCurrentIndexChanged: {

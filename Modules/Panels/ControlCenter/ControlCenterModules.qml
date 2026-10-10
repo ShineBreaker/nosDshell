@@ -12,8 +12,11 @@ import qs.Commons
 * Ordering follows DDE's own navigation bar; each entry maps to the Noctalia
 * settings tab(s) it opens inside the control center frame. `tabs` holds every
 * tab a module shows, so multi-tab modules (个性化, 任务栏, 电源 …) render their
-* tabs as stacked SettingsGroups on one page. `subTab` preselects the sub-tab
-* when the entry is a single tab with one.
+* tabs as stacked SettingsGroups on one page. `subTab` names the single inner
+* group the module owns when it covers only one slice of a shared tab (蓝牙
+* owns Connections' group 1, 键盘 owns General's keybinds); -1 shows the whole
+* tab. Every inner group of every tab must be reachable through some entry —
+* a `subTab` slice hides its siblings under other modules.
 *
 * This list is the single source of truth for the home grid, the module view's
 * rail and `settings openTab` routing.
@@ -36,7 +39,7 @@ Singleton {
             "tabs": [
                 {
                     "tab": SettingsPanel.Tab.General,
-                    "subTab": -1
+                    "subTab": 0
                 }
             ]
         },
@@ -168,7 +171,7 @@ Singleton {
             "tabs": [
                 {
                     "tab": SettingsPanel.Tab.Location,
-                    "subTab": 1
+                    "subTab": -1
                 }
             ]
         },
