@@ -47,7 +47,7 @@ ShapePath {
   readonly property real boxWidth: panelWidth + ((arrowEdge === "left" || arrowEdge === "right") ? arrowH : 0)
   readonly property real boxHeight: panelHeight + ((arrowEdge === "top" || arrowEdge === "bottom") ? arrowH : 0)
 
-  readonly property bool isRenderable: assignedPanel && assignedPanel.useArrowPopup && panelBg && panelWidth > 0 && panelHeight > 0
+  readonly property bool isRenderable: !!(assignedPanel && assignedPanel.useArrowPopup && panelBg && panelWidth > 0 && panelHeight > 0)
 
   strokeWidth: 1
   strokeColor: Color.borderShell
