@@ -85,10 +85,14 @@ Singleton {
       fullscreenOpen = true;
     }
 
-    _pendingSearch = {
-      "text": searchText || ""
-    };
-    takePendingSearch();
+    // An empty seed must not clobber the model — when
+    // appLauncher.clearSearchOnClose is off the kept text IS the state.
+    if (searchText) {
+      _pendingSearch = {
+        "text": searchText
+      };
+      takePendingSearch();
+    }
     opened();
   }
 
@@ -171,10 +175,12 @@ Singleton {
       fullscreenScreen = screen;
       fullscreenOpen = true;
     }
-    _pendingSearch = {
-      "text": carryText
-    };
-    takePendingSearch();
+    if (carryText) {
+      _pendingSearch = {
+        "text": carryText
+      };
+      takePendingSearch();
+    }
     opened();
   }
 
