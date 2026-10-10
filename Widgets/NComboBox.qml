@@ -280,7 +280,7 @@ NDccRow {
       y: combo.height + Style.marginS
       implicitWidth: combo.width
       implicitHeight: Math.min(Math.round(root.popupHeight * Style.uiScaleRatio), listView.contentHeight + Style.margin2M)
-      padding: 0
+      padding: Style.marginS
 
       onOpened: {
         listView.currentIndex = combo.currentIndex;
@@ -295,15 +295,16 @@ NDccRow {
         highlightMoveDuration: 0
         //showGradientMasks: false
 
-        // Dark menu rows (DESIGN §3.3): full-row accent highlight, no row radius
+        // Dark menu rows (DESIGN §3.3): accent highlight, radiusRow corners
+        // inside the popup padding (DDE hover block pairs with the frame).
         delegate: Rectangle {
           id: delegateRect
           required property int index
           property bool isHighlighted: listView.currentIndex === index
 
           width: listView.availableWidth
-          height: delegateText.implicitHeight + 8
-          radius: 0
+          height: delegateText.implicitHeight + Style.margin2S
+          radius: Style.radiusRow
           color: isHighlighted ? Color.accent : "transparent"
 
           NText {

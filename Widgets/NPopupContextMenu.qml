@@ -528,7 +528,7 @@ PopupWindow {
             anchors.fill: parent
             visible: !menuItem.isSeparator
             color: menuItem.active ? Color.accent : "transparent"
-            radius: 0
+            radius: Style.radiusRow
 
             Behavior on color {
               ColorAnimation {

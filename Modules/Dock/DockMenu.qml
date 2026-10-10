@@ -596,7 +596,7 @@ PopupWindow {
             width: scrollColumn.width
             height: root.rowHeightForItem(modelData)
             color: (!isSeparator && root.hoveredItem === index) ? Color.accent : "transparent"
-            radius: 0
+            radius: Style.radiusRow
 
             // Separator: DDE two-line groove (dark over light, inset 4)
             Item {
@@ -720,7 +720,7 @@ PopupWindow {
           width: fixedColumn.width
           height: root.rowHeightForItem(modelData)
           color: root.hoveredItem === globalIndex ? Color.accent : "transparent"
-          radius: 0
+          radius: Style.radiusRow
 
           Row {
             id: fixedRowLayout

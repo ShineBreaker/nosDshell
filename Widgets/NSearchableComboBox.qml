@@ -415,7 +415,7 @@ NDccRow {
               background: Rectangle {
                 anchors.fill: parent
                 color: highlighted ? Color.accent : "transparent"
-                radius: 0
+                radius: Style.radiusRow
               }
             }
           }

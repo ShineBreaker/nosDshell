@@ -191,12 +191,14 @@ Popup {
           }
         }
 
-        // Full-row accent hover, no radius (menu corners clip it)
+        // Full-row accent hover; rows sit inside the menu's marginS padding
+        // so a small row radius reads cleanly against the rounded frame
+        // (deepin-menu uses fillRect, the corner pairing is the DDE 25+ look).
         Rectangle {
           visible: !listView._isSeparator(modelData)
           anchors.fill: parent
           color: menuItem.highlighted || (menuItem.hovered && menuItem.enabled) ? Color.accent : "transparent"
-          radius: 0
+          radius: Style.radiusRow
 
           Behavior on color {
             ColorAnimation {

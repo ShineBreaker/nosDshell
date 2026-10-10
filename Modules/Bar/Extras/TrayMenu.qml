@@ -314,7 +314,7 @@ PopupWindow {
             id: innerRect
             anchors.fill: parent
             color: mouseArea.containsMouse ? Color.accent : "transparent"
-            radius: 0
+            radius: Style.radiusRow
             visible: !(modelData?.isSeparator ?? false)
 
             RowLayout {
@@ -525,7 +525,7 @@ PopupWindow {
         Layout.preferredWidth: parent.width
         Layout.preferredHeight: Math.round(Style.fontSizeS * 1.33) + 8
         color: pinUnpinMouseArea.containsMouse ? Color.accent : "transparent"
-        radius: 0
+        radius: Style.radiusRow
         border.color: "transparent"
         border.width: Style.borderS
 
