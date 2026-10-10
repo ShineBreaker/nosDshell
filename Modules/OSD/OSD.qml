@@ -682,13 +682,25 @@ Variants {
           id: showDelayTimer
           interval: 30
           onTriggered: {
-            osdItem._hiding = false;
             osdItem.visible = true;
+            hideTimer.start();
+            if (osdItem._hiding) {
+              // Mid-exit: fade/slide back from wherever it is instead of
+              // replaying the entry (upstream: Behavior animates the current
+              // value to 1, so a re-show never re-pops).
+              osdItem._hiding = false;
+              osdItem.opacity = 1;
+              osdItem.slideOffset = 0;
+              return;
+            }
+            // Already visible or mid-entry: values refresh through bindings —
+            // only the hide timer restarts (dde-osd manager.cpp updateUI).
+            if (enterFadeAnim.running || osdItem.opacity > 0)
+              return;
             osdItem.slideOffset = 12;
             osdItem.opacity = 0;
             enterSlideAnim.restart();
             enterFadeAnim.restart();
-            hideTimer.start();
           }
         }
 
