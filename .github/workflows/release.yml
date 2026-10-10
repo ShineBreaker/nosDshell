@@ -1,0 +1,108 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to (re-)publish, e.g. v1.1.0'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+          fetch-depth: 0 # release notes need full history and tags
+
+      - name: Validate release tag
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          base=$(grep -oP 'baseVersion:\s*"\K[^"]+' Commons/Version.qml)
+          dev=$(grep -oP 'isDevelopment:\s*\K\w+' Commons/Version.qml)
+          scm=$(sed -n '/name "nosdshell"/,/version/p' nosdshell.scm | grep -oP 'version "\K[^"]+' | head -1)
+          flake=$(grep -oP 'version = "\K[^"]+(?=_" \+)' flake.nix)
+          nixpkg=$(grep -oP 'version \? "\K[^"]+' nix/package.nix | head -1)
+          printf 'base=%s dev=%s scm=%s flake=%s nix=%s\n' "$base" "$dev" "$scm" "$flake" "$nixpkg"
+          [ "$RELEASE_TAG" = "v$base" ] || { echo "tag $RELEASE_TAG != v$base (Commons/Version.qml)" >&2; exit 1; }
+          [ "$dev" = "false" ] || { echo "isDevelopment=$dev on tagged commit — tag the release commit, not the reopen" >&2; exit 1; }
+          [ "$scm" = "$base" ] || { echo "nosdshell.scm version $scm != $base" >&2; exit 1; }
+          [ "$flake" = "$base" ] || { echo "flake.nix version $flake != $base" >&2; exit 1; }
+          [ "$nixpkg" = "$base" ] || { echo "nix/package.nix version $nixpkg != $base" >&2; exit 1; }
+
+      - name: Create release archive
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p ../nosdshell-release
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.agents' \
+            --exclude='references' \
+            --exclude='docs' \
+            --exclude='nix' \
+            --exclude='flake.nix' \
+            --exclude='flake.lock' \
+            --exclude='result*' \
+            ./ ../nosdshell-release/
+          tar -C .. -czf "nosdshell-${RELEASE_TAG}.tar.gz" nosdshell-release/
+          cp "nosdshell-${RELEASE_TAG}.tar.gz" nosdshell-latest.tar.gz
+          tar -tzf "nosdshell-${RELEASE_TAG}.tar.gz" | wc -l | xargs echo "archive entries:"
+
+      - name: Generate release notes
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          ver="${RELEASE_TAG#v}"
+          # CHANGELOG section for this version is the release body (docs/RELEASE.md);
+          # fall back to a commit list if the entry is missing.
+          notes=$(awk -v v="$ver" '
+            $0 ~ "^## \\[" v "\\]" { f=1; next }
+            /^## \[/ { f=0 }
+            f' CHANGELOG.md)
+          if [ -n "$notes" ]; then
+            printf '# nosDshell %s\n\n' "$RELEASE_TAG" > release_notes.md
+            printf '%s\n' "$notes" >> release_notes.md
+          else
+            prev_tag=$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null \
+              || git tag --sort=-version:refname | grep -vxF "$RELEASE_TAG" | head -n1 || true)
+            range="${prev_tag:-$(git rev-list --max-parents=0 HEAD)}..${RELEASE_TAG}"
+            printf '# nosDshell %s\n\n## Changes since %s\n\n' "$RELEASE_TAG" "${prev_tag:-project start}" > release_notes.md
+            git log "$range" --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" >> release_notes.md
+            printf '\n' >> release_notes.md
+          fi
+          head -20 release_notes.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          assets=("nosdshell-${RELEASE_TAG}.tar.gz" nosdshell-latest.tar.gz)
+          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
+            printf 'Release %s exists; refreshing notes and assets.\n' "$RELEASE_TAG"
+            gh release edit "$RELEASE_TAG" --notes-file release_notes.md
+            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
+            exit 0
+          fi
+          gh release create "$RELEASE_TAG" --verify-tag --notes-file release_notes.md "${assets[@]}"

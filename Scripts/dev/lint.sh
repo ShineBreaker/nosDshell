@@ -25,15 +25,21 @@ mkdir -p "$WORK/logs"
 
 QMLLINT="${QMLLINT:-$HOME/.guix-home/profile/bin/qmllint}"
 [ -x "$QMLLINT" ] || QMLLINT=$(command -v qmllint) || { echo "qmllint not found" >&2; exit 2; }
-QTQML="$HOME/.guix-home/profile/lib/qt6/qml"
+QTQML="${QTQML:-$HOME/.guix-home/profile/lib/qt6/qml}"
+[ -d "$QTQML" ] || QTQML=/usr/lib/qt6/qml   # distro layout fallback (CI containers)
+[ -d "$QTQML" ] || QTQML=""
 
-# upstream quickshell qml dir; noctalia-qs kept as fallback for comparison
-QSQML=""
-for pkg in quickshell noctalia-qs; do
-  d=$(guix build "$pkg" 2>/dev/null | tail -1)/lib/qt6/qml
-  [ -d "$d" ] && { QSQML="$d"; break; }
-done
-echo "qmllint=$QMLLINT  qsqml=$QSQML"
+# upstream quickshell qml dir; noctalia-qs kept as fallback for comparison.
+# QSQML env override wins (CI passes the distro package's lib/qt6/qml);
+# otherwise ask guix only when it exists.
+QSQML="${QSQML:-}"
+if [ -z "$QSQML" ] && command -v guix >/dev/null; then
+  for pkg in quickshell noctalia-qs; do
+    d=$(guix build "$pkg" 2>/dev/null | tail -1)/lib/qt6/qml
+    [ -d "$d" ] && { QSQML="$d"; break; }
+  done
+fi
+echo "qmllint=$QMLLINT  qsqml=${QSQML:-none}"
 
 # --- build mirror tree ---------------------------------------------------
 rm -rf "$MIRROR"; mkdir -p "$MIRROR/qs"
@@ -78,7 +84,7 @@ fi
 TOTAL=0; ERRFILES=0; ERRN=0
 ERRLOG="$WORK/logs/lint-errors.log"; : > "$ERRLOG"
 for f in "${FILES[@]}"; do
-  out=$("$QMLLINT" ${QSQML:+-I "$QSQML"} -I "$QTQML" -I "$MIRROR" "$f" 2>&1)
+  out=$("$QMLLINT" ${QSQML:+-I "$QSQML"} ${QTQML:+-I "$QTQML"} -I "$MIRROR" "$f" 2>&1)
   errs=$(grep -cE "^(Error|Critical|Fatal):" <<<"$out" || true)
   if [ "$errs" -gt 0 ]; then
     echo "== ${f#$REPO/} ($errs)"

@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Full-repo qmllint with real Quickshell imports. Arch's extra/quickshell
+  # tracks the same upstream 0.3.x the shell runs on, so /usr/lib/qt6/qml
+  # provides both Qt's own modules and Quickshell.* qmltypes.
+  qmllint:
+    name: qmllint
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Install tools
+        run: |
+          pacman -Syu --noconfirm --needed git qt6-declarative quickshell
+
+      - uses: actions/checkout@v6
+
+      - name: Locate qmllint
+        id: qmllint
+        run: |
+          bin="$(command -v qmllint || true)"
+          [ -z "$bin" ] && bin="$(find /usr/lib/qt6 -name qmllint -type f | head -1)"
+          [ -n "$bin" ] || { echo "qmllint not found after install" >&2; exit 1; }
+          echo "bin=$bin" >> "$GITHUB_OUTPUT"
+
+      - name: Lint all QML files
+        env:
+          QMLLINT: ${{ steps.qmllint.outputs.bin }}
+          QTQML: /usr/lib/qt6/qml
+          QSQML: /usr/lib/qt6/qml
+          NOSD_VERIFY_DIR: /tmp/nosd-verify
+        run: ./Scripts/dev/lint.sh
+
+  # Cheap sanity for the helper scripts shipped in the repo.
+  scripts:
+    name: scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: bash -n all shell scripts
+        run: |
+          set -euo pipefail
+          find Scripts -name "*.sh" -print0 | xargs -0 -n1 bash -n
+          find Scripts -name "*.sh" | wc -l | xargs echo "bash -n ok:"
+
+      - name: python -m py_compile all python scripts
+        run: |
+          set -euo pipefail
+          find Scripts -name "*.py" -print0 | xargs -0 -n1 python3 -m py_compile
+          find Scripts -name "*.py" | wc -l | xargs echo "py_compile ok:"
+
+  # docs/legacy/ is generated — fail if it drifts from the vendored source
+  # or the converter itself (catches both hand edits and stale output).
+  docs-sync:
+    name: docs-sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fetch vendored docs source (pinned commit)
+        run: |
+          git init /tmp/noctalia-docs
+          git -C /tmp/noctalia-docs remote add origin https://github.com/noctalia-dev/noctalia-docs.git
+          git -C /tmp/noctalia-docs fetch --depth 1 origin ed33c13421ff6b852606d1f755c251dc390031a3
+          git -C /tmp/noctalia-docs checkout FETCH_HEAD
+
+      - name: Regenerate docs/legacy and compare
+        run: |
+          python3 Scripts/docs/vendor-legacy-docs.py /tmp/noctalia-docs
+          git diff --exit-code -- docs/legacy || {
+            echo "::error::docs/legacy/ is out of sync with Scripts/docs/vendor-legacy-docs.py — regenerate it"
+            exit 1
+          }

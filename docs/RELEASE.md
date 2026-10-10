@@ -10,6 +10,7 @@ nav_exclude: true
 - 仓库此前没有任何 tag（本地 `git tag -l`、远端 tags、GitHub Releases 均为零）；`v1.0` 是第一个 tag。
 - 版号唯一真相源是 `Commons/Version.qml` 的 `baseVersion`，其它位置与它同步（下表）。
 - `CHANGELOG.md` 是发版文案来源：发版时对应版本的条目即 GitHub Release 的正文。
+- GitHub Release 由 CI 自动发布（`.github/workflows/release.yml`）：推 `v*` tag 后校验四处版号与 `isDevelopment=false`，抽 CHANGELOG 对应条目做正文，产出 `nosdshell-<tag>.tar.gz` 与 `nosdshell-latest.tar.gz` 两个资产；对已存在的 Release 只刷新正文和资产。也支持 `workflow_dispatch` 手动重发指定 tag。
 
 ## 版号位置
 
@@ -34,7 +35,7 @@ nav_exclude: true
 4. 界面验证：`Scripts/test/verify.sh <名字> --scenes settings-about`（至少覆盖 About 页；涉及任务栏模式 / 停靠方向 / 明暗 / 模糊时按 `AGENTS.md` 加 `--settings` 组合）。
 5. 提交（Conventional Commits，如 `chore(release): ...`），建附注 tag 并推送：
    `git tag -a v<版号> -m "v<版号>" && git push origin v<版号>`，同时把 `main` 推上去。
-6. GitHub 上建 Release，正文粘贴 CHANGELOG 对应条目。
+6. CI 的 Release workflow 自动发布（校验版号、抽 CHANGELOG 条目、上传 tarball）。如需手动重发已存在的 tag：`gh workflow run release.yml -f tag=v<版号>`。
 7. reopen：`isDevelopment` 置回 `true` 再提交一次，`[Unreleased]` 留空待写。
 8. Guix 正式 release 构建：把 `nosdshell.scm` 的 `source` 从 `local-file` 换回 `git-fetch` 的 tag（见文件头注释），填好新 hash；验证 `guix build -f nosdshell.scm`。
 
