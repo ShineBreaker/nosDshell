@@ -274,12 +274,12 @@ NBox {
     enabled: !Settings.data.appLauncher.ignoreMouseInput
     onEntered: {
       if (!launcher.ignoreMouseHover) {
-        launcher.selectedIndex = entry.index;
+        launcher.selectIndex(entry.index);
       }
     }
     onClicked: mouse => {
                  if (mouse.button === Qt.LeftButton) {
-                   launcher.selectedIndex = entry.index;
+                   launcher.selectIndex(entry.index);
                    launcher.activate();
                    mouse.accepted = true;
                  }

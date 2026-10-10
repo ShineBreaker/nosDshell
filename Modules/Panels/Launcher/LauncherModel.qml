@@ -10,9 +10,9 @@ import qs.Widgets
 
 // Non-visual launcher state: providers, search text, results, selection,
 // activation, plugin-provider sync, usage sorting. The fullscreen and mini DDE
-// views consume one instance each and only build UI on top of it.
+// views consume one instance each and only build UI on top of it; LauncherCore
+// (SmartPanel/overviewLayer view) embeds one too, forwarding its public names.
 // Root is an (invisible) Item so the provider Items can be children.
-// The legacy LauncherCore (Noctalia panel view) stays for overviewLayer mode.
 Item {
   id: root
   visible: false

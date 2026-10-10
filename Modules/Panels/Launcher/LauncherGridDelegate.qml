@@ -254,12 +254,12 @@ Item {
 
     onEntered: {
       if (!launcher.ignoreMouseHover) {
-        launcher.selectedIndex = gridEntryContainer.index;
+        launcher.selectIndex(gridEntryContainer.index);
       }
     }
     onClicked: mouse => {
                  if (mouse.button === Qt.LeftButton) {
-                   launcher.selectedIndex = gridEntryContainer.index;
+                   launcher.selectIndex(gridEntryContainer.index);
                    launcher.activate();
                    mouse.accepted = true;
                  }
