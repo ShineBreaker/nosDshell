@@ -12,6 +12,7 @@ Singleton {
   property string locationFile: Quickshell.env("NOSD_WEATHER_FILE") || (Settings.cacheDir + "location.json")
   property int weatherUpdateFrequency: 30 * 60
   property bool isFetchingWeather: false
+  property bool _noCoordsWarned: false
 
   readonly property alias data: adapter
 
@@ -172,9 +173,15 @@ Singleton {
     }
 
     if (adapter.latitude === "" || adapter.longitude === "") {
-      Logger.w("Location", "Cannot fetch weather without coordinates");
+      // Warn once per missing-coordinates episode: the 20 s polling timer
+      // would otherwise repeat the same fact forever (cua finding P3).
+      if (!root._noCoordsWarned) {
+        root._noCoordsWarned = true;
+        Logger.w("Location", "Cannot fetch weather without coordinates");
+      }
       return;
     }
+    root._noCoordsWarned = false;
     const needsWeatherUpdate = (adapter.weatherLastFetch === "") || (adapter.weather === null) || (Time.timestamp >= adapter.weatherLastFetch + weatherUpdateFrequency);
 
     if (needsWeatherUpdate) {
