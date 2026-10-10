@@ -224,7 +224,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dock-context-menu|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -914,6 +914,47 @@ PYEOF
                             shot dock-battery-up
                           else
                             echo "battery widget not found or vinput missing: $BAT_POS"
+                          fi ;;
+    # Right-click the dock's notification-history bell: the NPopupContextMenu
+    # must size to its longest label — short CJK labels used to elide because
+    # calculateWidth never counted the 2x20px row padding.
+    dock-context-menu)    qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 12 > "$WORK/logs/menu-dock-tree.txt" 2>&1 || true
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          BELL_POS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/menu-dock-tree.txt" <<'PYEOF'
+import json,os,re,subprocess,sys
+pos = os.environ.get("DOCK_POSITION","bottom")
+out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
+scr = next(o["rect"] for o in out if o.get("active"))
+dock_w = dock_h = 0
+btn = None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if dock_h == 0:
+        dock_w, dock_h = int(w.group(1)), int(w.group(2))  # DockContent root
+    if "NotificationHistory_QML" in line and btn is None:
+        cx, cy = int(m.group(1)) + int(w.group(1)) // 2, int(m.group(2)) + int(w.group(2)) // 2
+        if pos == "bottom":
+            cy += scr["height"] - dock_h
+        elif pos == "right":
+            cx += scr["width"] - dock_w
+        btn = (cx, cy)
+if btn:
+    print(*btn)
+PYEOF
+)
+                          echo "notification bell at: $BELL_POS"
+                          if [ -n "$BELL_POS" ] && [ -x "$VINPUT" ]; then
+                            "$VINPUT" vinput rclick $BELL_POS 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0
+                            shot dock-context-menu
+                            "$VINPUT" vinput click 300 300 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.8
+                          else
+                            echo "notification bell not found or vinput missing: $BELL_POS"
                           fi ;;
     # Needs NOSD_FAKE_PORTAL=<0|1|2> (spawns Scripts/test/fake-portal.py owning
     # org.freedesktop.portal.Desktop on the private bus) plus a settings seed
