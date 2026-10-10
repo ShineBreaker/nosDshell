@@ -1178,9 +1178,9 @@ Singleton {
 
   onDoNotDisturbChanged: {
     if (_syncingDnd)
-    return;
+      return;
     if (Settings.data.notifications.doNotDisturb !== doNotDisturb)
-    Settings.data.notifications.doNotDisturb = doNotDisturb;
+      Settings.data.notifications.doNotDisturb = doNotDisturb;
     ToastService.showNotice(doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled") : I18n.tr("toast.do-not-disturb.disabled"), doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled-desc") : I18n.tr("toast.do-not-disturb.disabled-desc"), doNotDisturb ? "bell-off" : "bell");
   }
 
