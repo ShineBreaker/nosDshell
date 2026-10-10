@@ -193,7 +193,9 @@ PopupWindow {
             itemWidth += Style.fontSizeXL + Style.marginS;
           }
 
-          itemWidth += Style.margin2M;
+          // RowLayout side padding (itemPadding, 20 each end) — the +8 and
+          // margin2M slack alone don't cover it, so short labels elided.
+          itemWidth += 2 * root.itemPadding + Style.margin2M;
 
           if (itemWidth > maxWidth) {
             maxWidth = itemWidth;
@@ -201,7 +203,9 @@ PopupWindow {
         }
       }
     }
-    calculatedWidth = Math.max(maxWidth + Style.margin2S, minWidth);
+    // Width follows the longest label (DESIGN §3.3: text + 50, cap 500) —
+    // elide only past the cap, never inside a menu that has room.
+    calculatedWidth = Math.max(minWidth, Math.min(Math.round(500 * Style.uiScaleRatio), maxWidth + Style.margin2S));
   }
 
   anchor.item: anchorItem
