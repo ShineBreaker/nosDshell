@@ -25,9 +25,7 @@ Item {
 
   ColumnLayout {
     id: content
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: parent.top
+    anchors.fill: parent
     spacing: Style.marginS
 
     // DND switch row (DSwitchButton: 40x22 capsule, DESIGN §3.5.4)
@@ -64,6 +62,7 @@ Item {
 
     NotificationHistoryList {
       Layout.fillWidth: true
+      Layout.fillHeight: true
       Layout.leftMargin: Style.marginM
       Layout.rightMargin: Style.marginS
       screen: root.screen

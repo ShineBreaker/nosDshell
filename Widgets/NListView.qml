@@ -75,6 +75,7 @@ Item {
   property alias dragging: listView.dragging
   property alias horizontalVelocity: listView.horizontalVelocity
   property alias verticalVelocity: listView.verticalVelocity
+  property alias reuseItems: listView.reuseItems
 
   // Scroll speed multiplier for mouse wheel (1.0 = default, higher = faster)
   property real wheelScrollMultiplier: 2.0

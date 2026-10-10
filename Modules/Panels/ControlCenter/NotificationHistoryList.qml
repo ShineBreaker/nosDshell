@@ -15,7 +15,10 @@ import qs.Widgets
 * panel share one implementation. Interactions (expand/collapse, actions,
 * swipe-dismiss, delete) are preserved; the visuals follow the tokens.
 *
-* Layout contract: give it a width; it grows vertically. `closeOnAction`
+* Layout contract: give it a width and a bounded height (fillHeight in the
+* host page) — the list virtualizes inside that height and owns its scrolling
+* (upstream wrapped the same list in an NScrollView; the Flickable moved in
+* here so delegates stay O(visible), not O(maxHistory)). `closeOnAction`
 * closes the owning panel after a successful action invocation.
 */
 Item {
@@ -96,8 +99,8 @@ Item {
     function onCountChanged() {
       // New arrivals default to shown; re-filter in the same frame.
       root.applyRangeFilter();
-      if (root.focusIndex >= notificationColumn.children.length)
-        root.focusIndex = notificationColumn.children.length - 1;
+      if (root.focusIndex >= notificationList.count)
+        root.focusIndex = notificationList.count - 1;
     }
   }
 
@@ -180,17 +183,15 @@ Item {
                     }
                   }
 
+  // Visible delegate lookup for the keyboard model; the ListView instantiates
+  // only what is on screen, so positionViewAtIndex (moveSelection) keeps the
+  // focused row instantiated before the next key press reads it.
   function delegateAt(visualIndex) {
-    for (var i = 0; i < notificationColumn.children.length; i++) {
-      var child = notificationColumn.children[i];
-      if (child.visualIndex === visualIndex)
-        return child;
-    }
-    return null;
+    return notificationList.itemAtIndex(visualIndex);
   }
 
   function moveSelection(dir) {
-    var count = notificationColumn.children.length;
+    var count = notificationList.count;
     if (count === 0)
       return;
 
@@ -204,7 +205,7 @@ Item {
 
     focusIndex = newIndex;
     actionIndex = -1;
-    scrollToItem(focusIndex);
+    notificationList.positionViewAtIndex(focusIndex, ListView.Contain);
   }
 
   function moveAction(dir) {
@@ -238,31 +239,6 @@ Item {
     var delegate = delegateAt(focusIndex);
     if (delegate)
       delegate.remove();
-  }
-
-  function scrollToItem(visualIndex) {
-    var item = delegateAt(visualIndex);
-    if (!item)
-      return;
-
-    // The list lives inside the host page's scroll container; walk ancestors
-    // for the nearest flickable rather than depending on a concrete type.
-    var flickable = root.parent;
-    while (flickable && flickable.contentY === undefined)
-      flickable = flickable.parent;
-    if (!flickable)
-      return;
-
-    var pos = flickable.contentItem.mapFromItem(item, 0, 0);
-    var itemY = pos.y;
-    var itemBottom = itemY + item.height;
-    var viewTop = flickable.contentY;
-    var viewBottom = viewTop + flickable.height;
-
-    if (itemY < viewTop)
-      flickable.contentY = Math.max(0, itemY - Style.marginS);
-    else if (itemBottom > viewBottom)
-      flickable.contentY = Math.min(flickable.contentHeight - flickable.height, itemBottom - flickable.height + Style.marginS);
   }
 
   ColumnLayout {
@@ -323,29 +299,31 @@ Item {
       }
     }
 
-    // The list itself; clip so a removing row sliding out stays inside.
+    // The list itself: virtualized (delegates are O(visible), not
+    // O(maxHistory)); the slide-out of a removing row stays inside the clip.
     Item {
       id: listBox
       Layout.fillWidth: true
-      Layout.preferredHeight: notificationColumn.implicitHeight
+      Layout.fillHeight: true
       clip: true
       visible: root.hasNotificationsInCurrentRange()
 
-      Column {
-        id: notificationColumn
-        width: root.layoutWidth
+      NListView {
+        id: notificationList
+        anchors.fill: parent
         spacing: Style.marginS
+        reuseItems: true
+        gradientColor: "transparent"
+        reserveScrollbarSpace: false
+        boundsBehavior: Flickable.StopAtBounds
+        model: visualModel
 
-        Repeater {
-          model: visualModel
+        delegate: Item {
+          id: delegateItem
+          width: notificationList.width
+          height: contentColumn.implicitHeight + Style.margin2S
 
-          delegate: Item {
-            id: delegateItem
-            width: parent.width
-            height: contentColumn.implicitHeight + Style.margin2S
-
-            readonly property int visualIndex: index
-            readonly property string notificationId: model.id
+          readonly property string notificationId: model.id
             readonly property string appName: model.appName || ""
             readonly property bool isExpanded: root.expandedId === notificationId
             readonly property bool canExpand: summaryText.truncated || bodyText.truncated
@@ -371,6 +349,10 @@ Item {
             }
 
             property bool isRemoving: false
+            // Item recycling (reuseItems) keeps plain properties across
+            // rebinds: reset the remove-slide state when this instance is
+            // rebind to another notification.
+            onNotificationIdChanged: isRemoving = false
 
             Timer {
               id: removeTimer
@@ -545,4 +527,3 @@ Item {
       }
     }
   }
-}
