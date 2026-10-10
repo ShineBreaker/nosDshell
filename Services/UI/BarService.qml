@@ -637,7 +637,12 @@ Singleton {
       if (dialog) {
         dialog.updateWidgetSettings.connect((sec, idx, settings) => {
                                               var screenName = screen?.name || "";
-                                              if (Settings.hasScreenOverride(screenName, "widgets")) {
+                                              if (sec === "dock") {
+                                                // Fashion dock plugins: the per-instance entry lives in
+                                                // dock.plugins (global, not per-screen); bar widget
+                                                // sections never carry a "dock" key.
+                                                Settings.setDockPluginSettings(idx, settings);
+                                              } else if (Settings.hasScreenOverride(screenName, "widgets")) {
                                                 var overrideWidgets = Settings.getBarWidgetsForScreen(screenName);
                                                 if (overrideWidgets && overrideWidgets[sec] && idx < overrideWidgets[sec].length) {
                                                   overrideWidgets[sec][idx] = Object.assign({}, overrideWidgets[sec][idx], settings);
