@@ -430,9 +430,13 @@ Singleton {
                    // Remove overflow
                    while (popupModel.count > maxPopups) {
                      const last = popupModel.get(popupModel.count - 1);
+                     // Remove the model row BEFORE dismiss(): notification.dismiss()
+                     // synchronously re-enters onClosed → dismissPopup, which would
+                     // otherwise remove this row and let the remove() below eat the
+                     // freshly inserted notification instead.
                      // Overflow only removes from ACTIVE view, but keeps it for history
-                     popupState[last.id]?.notification?.dismiss(); // Visually dismiss
                      popupModel.remove(popupModel.count - 1);
+                     popupState[last.id]?.notification?.dismiss(); // Visually dismiss
                      // DO NOT call cleanupNotification here, we want to keep it for history actions
                    }
                  });
@@ -1174,9 +1178,9 @@ Singleton {
 
   onDoNotDisturbChanged: {
     if (_syncingDnd)
-      return;
+    return;
     if (Settings.data.notifications.doNotDisturb !== doNotDisturb)
-      Settings.data.notifications.doNotDisturb = doNotDisturb;
+    Settings.data.notifications.doNotDisturb = doNotDisturb;
     ToastService.showNotice(doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled") : I18n.tr("toast.do-not-disturb.disabled"), doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled-desc") : I18n.tr("toast.do-not-disturb.disabled-desc"), doNotDisturb ? "bell-off" : "bell");
   }
 
