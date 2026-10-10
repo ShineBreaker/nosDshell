@@ -16,6 +16,8 @@ import qs.Widgets
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   panelContent: Item {
     id: panelContent
 

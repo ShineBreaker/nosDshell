@@ -11,6 +11,8 @@ import qs.Services.UI
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   // Which plugin slot this is (1 or 2)
   property int slotNumber: 1
 

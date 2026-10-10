@@ -97,7 +97,7 @@ PanelWindow {
   property bool isAnyPanelOpen: PanelService.openedPanel !== null
 
   color: {
-    if (dimmerOpacity > 0 && isPanelOpen && !isPanelClosing) {
+    if (dimmerOpacity > 0 && isPanelOpen && !isPanelClosing && (PanelService.openedPanel.dimsBackground ?? true)) {
       return Qt.alpha(Color.veilWallpaper, dimmerOpacity);
     }
     return "transparent";

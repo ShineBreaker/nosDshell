@@ -12,6 +12,8 @@ import qs.Widgets
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   // Do not give exclusive focus to the TrayDrawer or it will prevent the dropdown menu to request it.
   exclusiveKeyboard: false
 

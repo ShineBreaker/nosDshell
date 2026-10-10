@@ -382,6 +382,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 - **宽 408 px，高度占满屏幕，贴住屏幕右边**（`frame.h:53`、`frame.cpp:517-523`）。左侧阴影 20、黑 × 0.5；直角。
 - 背景 `maskDark`。从右侧滑入，`motionEnter`（300 ms OutCubic）。
 - 帧左侧只有共享 dimmer 压暗；全屏透明层背后露出的窗口属正常桌面内容，不另加遮幕。
+- 压暗仅对"帧类面板"生效（控制中心、设置、启动器等占屏帧）；dock 快弹面板（音量、网络、蓝牙、亮度、电池、时钟、媒体、系统监控、托盘抽屉、壁纸、插件槽）设 `SmartPanel.dimsBackground = false`，打开不遮幕壁纸〔演进：DDE 原版弹层本就在无 dimmer 的桌面之上〕。
 - 点击外部关闭；按 Esc 时，如果在子页面就先返回上一级，否则关闭。
 - Noctalia 原有的 `controlCenter.position` 设置不再起作用：控制中心永远在右侧。任务栏在右侧时，控制中心排在任务栏内侧。
 
@@ -659,7 +660,7 @@ Noctalia 卡片的对应关系：
 | `ui.transientOpacity` | `1.0`（0.3–1.0，瞬时面不透明度，§1.2）〔演进〕 |
 | `ui.popupOpacity` | `1.0`（0.3–1.0，`popupShell` 族：菜单/箭头弹层/迷你启动器）〔演进〕 |
 | `dock.backgroundOpacity` | `1.0`（0.3–1.0，dock 背景在 `panelBackgroundOpacity` 上的额外系数）〔演进〕 |
-| `general.dimmerOpacity` | `0.35`（面板背幕压暗）〔演进〕 |
+| `general.dimmerOpacity` | `0.35`（帧类面板背幕压暗，§3.5.1）〔演进〕 |
 | `ui.borderEmphasis` | `1.0`（0–2，描边强度，§1.2）〔演进〕 |
 | `general.shadowStrength` | `1.0`（0–2，阴影强度，§1.6）〔演进〕 |
 | `ui.rowHeightScale` | `1.0`（0.9–1.2，行高系数，§3.5.4）〔演进〕 |

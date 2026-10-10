@@ -11,6 +11,8 @@ import qs.Widgets
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   Component.onCompleted: SystemStatService.registerComponent("panel-systemstats")
   Component.onDestruction: SystemStatService.unregisterComponent("panel-systemstats")
 

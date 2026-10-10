@@ -13,6 +13,8 @@ import qs.Widgets
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   preferredWidth: Math.round(260 * Style.uiScaleRatio)
 
   panelContent: Item {

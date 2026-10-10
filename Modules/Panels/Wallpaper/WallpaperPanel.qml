@@ -14,6 +14,8 @@ import qs.Widgets
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   property var contentItem: null
 
   // §3.10: the strip spans the whole screen and sits on the bottom edge, which

@@ -13,6 +13,8 @@ import qs.Widgets.AudioSpectrum
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
   property var mediaMiniSettings: {

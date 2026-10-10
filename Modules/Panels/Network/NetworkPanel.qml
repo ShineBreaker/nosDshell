@@ -14,6 +14,8 @@ import qs.Widgets
 SmartPanel {
   id: root
 
+  dimsBackground: false
+
   preferredWidth: Math.round(300 * Style.uiScaleRatio)
 
   // Info panel collapsed by default, view mode persisted in settings

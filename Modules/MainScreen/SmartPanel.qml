@@ -21,6 +21,12 @@ Item {
   // Panel size properties
   property real preferredWidth: 700
   property real preferredHeight: 900
+  // Whether opening this panel dims the desktop behind it (MainScreen shared
+  // dimmer). Frame panels (control centre, settings, launcher) dim; quick
+  // popups over the dock/taskbar do not — DESIGN §3.5.1 scopes the dimmer
+  // to the frame, and a full-screen veil under a 300-px popup reads as
+  // "the screen flashed" rather than "the panel popped".
+  property bool dimsBackground: true
   property real preferredWidthRatio
   property real preferredHeightRatio
   property color panelBackgroundColor: Color.mSurface
