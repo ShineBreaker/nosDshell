@@ -879,6 +879,7 @@
       "dark-mode-mode-label": "Dark Mode schedule",
       "dark-mode-mode-manual": "Manual",
       "dark-mode-mode-off": "Off",
+      "dark-mode-mode-system": "Follow system",
       "dark-mode-switch-description": "Switches to a darker theme for easier viewing at night.",
       "delete-error-description": "Failed to delete {scheme}",
       "delete-error-title": "Delete failed",

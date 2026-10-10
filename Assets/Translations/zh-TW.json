@@ -879,6 +879,7 @@
       "dark-mode-mode-label": "深色模式",
       "dark-mode-mode-manual": "手動排程",
       "dark-mode-mode-off": "關閉",
+      "dark-mode-mode-system": "跟隨系統",
       "dark-mode-switch-description": "在夜間切換到深色主題眼睛可以觀看的更輕鬆",
       "delete-error-description": "刪除 {scheme} 配色失敗",
       "delete-error-title": "刪除失敗",

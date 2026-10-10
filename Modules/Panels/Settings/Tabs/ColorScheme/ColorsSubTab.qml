@@ -160,6 +160,10 @@ ColumnLayout {
         {
           "name": I18n.tr("common.location"),
           "key": "location"
+        },
+        {
+          "name": I18n.tr("panels.color-scheme.dark-mode-mode-system"),
+          "key": "system"
         }
       ]
 

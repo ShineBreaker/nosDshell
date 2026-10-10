@@ -655,6 +655,7 @@ Noctalia 卡片的对应关系：
 | `general.showScreenCorners` | `false` |
 | `general.lockScreenBlur` | 启用 |
 | `colorSchemes.predefinedScheme` | `Deepin` |
+| `colorSchemes.schedulingMode` | `"off"`（`off`/`manual`/`location`/`system`；`system` 跟随 xdg-desktop-portal 的 `org.freedesktop.appearance/color-scheme`）〔演进〕 |
 | `bar.enabled` | `false`（可选状态栏，§3.13） |
 | `ui.transientSurface` | `"auto"`（`light`/`dark`/`auto`，§1.2）〔演进〕 |
 | `ui.transientOpacity` | `1.0`（0.3–1.0，瞬时面不透明度，§1.2）〔演进〕 |

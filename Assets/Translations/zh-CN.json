@@ -954,6 +954,7 @@
       "dark-mode-mode-label": "深色模式计划",
       "dark-mode-mode-manual": "手动",
       "dark-mode-mode-off": "关",
+      "dark-mode-mode-system": "跟随系统",
       "dark-mode-switch-description": "切换到更暗的主题，便于夜间观看。",
       "delete-error-description": "删除 {scheme} 失败",
       "delete-error-title": "删除失败",

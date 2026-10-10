@@ -2,6 +2,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.Commons
 
 Singleton {
@@ -90,6 +91,99 @@ Singleton {
       initComplete = true;
       applyCurrentMode(changes);
       scheduleNextMode(changes);
+    } else if (Settings.data.colorSchemes.schedulingMode == "system") {
+      initComplete = true;
+      // A pending scheduled flip from manual/location must not race the
+      // system preference.
+      timer.stop();
+      if (!systemReadProc.running) {
+        systemReadProc.running = true;
+      }
+      if (!systemWatchProc.running) {
+        systemWatchProc.running = true;
+      }
+    } else {
+      if (systemReadProc.running) {
+        systemReadProc.running = false;
+      }
+      if (systemWatchProc.running) {
+        systemWatchProc.running = false;
+      }
+    }
+  }
+
+  // "system" mode: follow the freedesktop color-scheme preference that
+  // xdg-desktop-portal reports (org.freedesktop.appearance/color-scheme).
+  // Values: 0 = no preference, 1 = dark, 2 = light; the conventional
+  // fallback for "no preference" is light.
+  function applySystemScheme(value) {
+    if (Settings.data.colorSchemes.schedulingMode !== "system") {
+      return;
+    }
+    const dark = value === 1;
+    if (Settings.data.colorSchemes.darkMode !== dark) {
+      Logger.i("DarkModeService", "System color-scheme changed:", value, "-> darkMode", dark);
+      Settings.data.colorSchemes.darkMode = dark;
+    }
+  }
+
+  // Initial read: dbus-send --print-reply prints `variant ... uint32 N`;
+  // dbus-send and dbus-monitor ship in the same `dbus` package, so the two
+  // paths stay available together.
+  Process {
+    id: systemReadProc
+    command: ["dbus-send", "--session", "--print-reply", "--dest=org.freedesktop.portal.Desktop", "/org/freedesktop/portal/desktop", "org.freedesktop.portal.Settings.ReadOne", "string:org.freedesktop.appearance", "string:color-scheme"]
+    running: false
+    stdout: StdioCollector {
+      onStreamFinished: {
+        const m = text.match(/uint32\s+(\d+)/);
+        if (m) {
+          root.applySystemScheme(parseInt(m[1]));
+        }
+      }
+    }
+    onExited: (exitCode, exitStatus) => {
+                if (exitCode !== 0)
+                  Logger.w("DarkModeService", "color-scheme read failed (code " + exitCode + "); is xdg-desktop-portal running?");
+              }
+  }
+
+  // Live watch: dbus-monitor prints SettingChanged payloads line-buffered;
+  // the key line is followed by a `variant ... uint32 N` line.
+  property bool _pendingSchemeLine: false
+  Process {
+    id: systemWatchProc
+    command: ["sh", "-c", "exec dbus-monitor \"type='signal',sender='org.freedesktop.portal.Desktop',interface='org.freedesktop.portal.Settings',member='SettingChanged'\""]
+    running: false
+    stdout: SplitParser {
+      onRead: line => {
+                if (!root._pendingSchemeLine) {
+                  if (line.indexOf("\"color-scheme\"") !== -1)
+                    root._pendingSchemeLine = true;
+                  return;
+                }
+                root._pendingSchemeLine = false;
+                const m = line.match(/uint32\s+(\d+)/);
+                if (m) {
+                  root.applySystemScheme(parseInt(m[1]));
+                }
+              }
+    }
+    onExited: (exitCode, exitStatus) => {
+                if (Settings.data.colorSchemes.schedulingMode == "system") {
+                  Logger.w("DarkModeService", "color-scheme monitor exited with code", exitCode, "- retrying");
+                  systemWatchRetry.restart();
+                }
+              }
+  }
+
+  Timer {
+    id: systemWatchRetry
+    interval: 5000
+    repeat: false
+    onTriggered: {
+      if (Settings.data.colorSchemes.schedulingMode == "system")
+        systemWatchProc.running = true;
     }
   }
 

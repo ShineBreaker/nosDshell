@@ -183,7 +183,7 @@ EOF
 
 PKGS="${QS_PKG:-quickshell} sway grim dbus imagemagick libnotify pipewire wireplumber
 font-google-noto font-google-noto-sans-cjk papirus-icon-theme adwaita-icon-theme
-qtwayland qtmultimedia qt5compat qtimageformats python foot
+qtwayland qtmultimedia qt5compat qtimageformats python python-dbus python-pygobject foot
 coreutils findutils grep gawk procps"
 
 # --- inner script --------------------------------------------------------
@@ -224,7 +224,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|dock-fullscreen|dock-power-wheel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|dock-fullscreen|dock-power-wheel|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -287,12 +287,13 @@ unset NIRI_SOCKET HYPRLAND_INSTANCE_SIGNATURE LABWC_PID
 export XDG_CURRENT_DESKTOP=sway
 
 SWAY_PID=""; QS_PID=""; PW_PID=""; WP_PID=""
-FOOT_PIDS=""
+FOOT_PIDS=""; FPORTAL_PID=""
 cleanup() {
   [ -n "$QS_PID" ]   && { qs -p "$REPO" kill 2>/dev/null; kill "$QS_PID" 2>/dev/null; }
   [ -n "$WP_PID" ]   && kill "$WP_PID" 2>/dev/null
   [ -n "$PW_PID" ]   && kill "$PW_PID" 2>/dev/null
   [ -n "$SWAY_PID" ] && { swaymsg exit 2>/dev/null; kill "$SWAY_PID" 2>/dev/null; }
+  [ -n "$FPORTAL_PID" ] && kill "$FPORTAL_PID" 2>/dev/null
   for P in $FOOT_PIDS; do kill "$P" 2>/dev/null; done
 }
 trap cleanup EXIT
@@ -328,6 +329,17 @@ sleep 1
 if [ -n "${NOSD_PAM_BAD:-}" ]; then
   export NOSD_PAM_SERVICE="nosd-verify-nonexistent"
   echo "NOSD_PAM_BAD set: NOSD_PAM_SERVICE=$NOSD_PAM_SERVICE"
+fi
+
+# dark-mode-system run: own org.freedesktop.portal.Desktop on the private bus
+# so DarkModeService's ReadOne + SettingChanged watch hit a controllable fake
+# (Scripts/test/fake-portal.py). NOSD_FAKE_PORTAL sets the initial value
+# (1 = prefer-dark, 2 = prefer-light); the scene flips it via the Emit method.
+if [ -n "${NOSD_FAKE_PORTAL:-}" ]; then
+  python3 "$REPO/Scripts/test/fake-portal.py" "$NOSD_FAKE_PORTAL" \
+      > "$WORK/logs/fake-portal.log" 2>&1 &
+  FPORTAL_PID=$!
+  echo "NOSD_FAKE_PORTAL set: initial color-scheme=$NOSD_FAKE_PORTAL"
 fi
 
 qs -p "$REPO" > "$LOG" 2>&1 &
@@ -861,6 +873,28 @@ PYEOF
                             shot dock-power-up
                           else
                             echo "power button not found or vinput missing: $PWR_POS"
+                          fi ;;
+    # Needs NOSD_FAKE_PORTAL=<0|1|2> (spawns Scripts/test/fake-portal.py owning
+    # org.freedesktop.portal.Desktop on the private bus) plus a settings seed
+    # with colorSchemes.schedulingMode=system:
+    #   NOSD_FAKE_PORTAL=1 ./verify.sh <run> --settings seed.json --scenes dark-mode-system
+    # The fake answers Settings.ReadOne (initial darkMode apply — watch the
+    # "System color-scheme changed" INFO line in the run log) and emits real
+    # SettingChanged signals through its org.nosd.verify.FakePortal.Emit
+    # method; each flip is shot to show the whole shell retokenizing.
+    dark-mode-system)     if [ -z "${NOSD_FAKE_PORTAL:-}" ]; then
+                            echo "dark-mode-system: needs NOSD_FAKE_PORTAL=1 and a schedulingMode=system seed"
+                          else
+                            sleep 1; shot dark-mode-initial
+                            for V in 2 0 1; do
+                              dbus-send --session --print-reply --dest=org.nosd.verify.FakePortal \
+                                /org/freedesktop/portal/desktop \
+                                org.nosd.verify.FakePortal.Emit uint32:$V 2>&1 \
+                                || echo "Emit $V failed"
+                              sleep 1.5
+                              shot "dark-mode-emit-$V"
+                            done
+                            grep "color-scheme" "$LOG" || true
                           fi ;;
     lockscreen)           call lockScreen lock 2.5; shot lockscreen ;;
     # Requires NOSD_PAM_BAD=1 (separate verify run): LockContext then uses a
