@@ -3,6 +3,10 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
+// Shared settings page for widgets whose only user setting is iconColor
+// (DarkMode, NightLight, PerformanceMode, PowerProfile). Loaded via
+// BarWidgetRegistry.widgetSettingsMap; behavior identical to the former
+// per-widget copies.
 ColumnLayout {
   id: root
   spacing: Style.marginM

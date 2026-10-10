@@ -56,7 +56,7 @@ Singleton {
                                      "Clock": "WidgetSettings/ClockSettings.qml",
                                      "ControlCenter": "WidgetSettings/ControlCenterSettings.qml",
                                      "CustomButton": "WidgetSettings/CustomButtonSettings.qml",
-                                     "DarkMode": "WidgetSettings/DarkModeSettings.qml",
+                                     "DarkMode": "WidgetSettings/IconColorSettings.qml",
                                      "KeepAwake": "WidgetSettings/KeepAwakeSettings.qml",
                                      "KeyboardLayout": "WidgetSettings/KeyboardLayoutSettings.qml",
                                      "Launcher": "WidgetSettings/LauncherSettings.qml",
@@ -64,10 +64,10 @@ Singleton {
                                      "MediaMini": "WidgetSettings/MediaMiniSettings.qml",
                                      "Microphone": "WidgetSettings/MicrophoneSettings.qml",
                                      "Network": "WidgetSettings/NetworkSettings.qml",
-                                     "NightLight": "WidgetSettings/NightLightSettings.qml",
-                                     "PerformanceMode": "WidgetSettings/PerformanceModeSettings.qml",
+                                     "NightLight": "WidgetSettings/IconColorSettings.qml",
+                                     "PerformanceMode": "WidgetSettings/IconColorSettings.qml",
                                      "NotificationHistory": "WidgetSettings/NotificationHistorySettings.qml",
-                                     "PowerProfile": "WidgetSettings/PowerProfileSettings.qml",
+                                     "PowerProfile": "WidgetSettings/IconColorSettings.qml",
                                      "SessionMenu": "WidgetSettings/SessionMenuSettings.qml",
                                      "Settings": "WidgetSettings/SettingsSettings.qml",
                                      "Spacer": "WidgetSettings/SpacerSettings.qml",
@@ -76,7 +76,7 @@ Singleton {
                                      "Tray": "WidgetSettings/TraySettings.qml",
                                      "Volume": "WidgetSettings/VolumeSettings.qml",
                                      "VPN": "WidgetSettings/VPNSettings.qml",
-                                     "WallpaperSelector": "WidgetSettings/WallpaperSelectorSettings.qml",
+                                     "WallpaperSelector": "WidgetSettings/IconColorSettings.qml",
                                      "Workspace": "WidgetSettings/WorkspaceSettings.qml"
                                    })
 
