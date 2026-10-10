@@ -63,7 +63,7 @@ Item {
   // fashion: 16 px icons with 10 px spacing on a slim dark pill
   readonly property int iconSize: (efficientMode || fashionMode) ? 16 : Style.toOdd(capsuleHeight * 0.65)
   readonly property int cellSize: efficientMode ? Style.dockPluginSize : (fashionMode ? 16 : capsuleHeight)
-  readonly property int fashionPillHeight: Math.max(24, Math.round(Style.dockItemThickness * 0.66))
+  readonly property int fashionPillHeight: Math.max(24, Math.round(Style.dockPluginTileSize))
   readonly property var fashionItems: filteredItems.concat(dropdownItems)
 
   property var blacklist: widgetSettings.blacklist || widgetMetadata.blacklist || [] // Read from settings
@@ -631,7 +631,7 @@ Item {
     width: root.isVertical ? root.fashionPillHeight : Math.round(fashionIconsFlow.implicitWidth + 12)
     height: root.isVertical ? Math.round(fashionIconsFlow.implicitHeight + 12) : root.fashionPillHeight
     radius: 10
-    color: Color.overlay("subtle")
+    color: Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")
 
     Flow {
       id: fashionIconsFlow
@@ -657,7 +657,7 @@ Item {
     radius: 10
     // Same overlay ramp as the plugin tiles in both states — upstream's dark
     // expanded variant made the collapser read as a different element.
-    color: collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : Color.overlay("subtle")
+    color: collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle"))
 
     NIcon {
       anchors.centerIn: parent

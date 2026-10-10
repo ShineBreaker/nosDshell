@@ -66,8 +66,8 @@ Item {
 
   // Size: use implicit width/height
   // BarWidgetLoader sets explicit width/height to extend click area
-  implicitWidth: fashionMode ? Style.dockItemThickness : contentWidth
-  implicitHeight: fashionMode ? Style.dockItemThickness : contentHeight
+  implicitWidth: fashionMode ? (isBarVertical ? Style.dockItemThickness : Style.dockPluginCellSize) : contentWidth
+  implicitHeight: fashionMode ? (isBarVertical ? Style.dockPluginCellSize : Style.dockItemThickness) : contentHeight
 
   // DDE fashion clock tile: the original gxde-dock clock face with segmented
   // digits, drawn from the copied SVG artwork. Geometry is taken verbatim from
@@ -75,7 +75,7 @@ Item {
   Item {
     id: fashionTile
     visible: root.fashionMode
-    width: Style.dockItemThickness
+    width: Style.dockPluginTileSize
     height: width
     anchors.centerIn: parent
 

@@ -248,7 +248,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 - 悬停提示：延迟 500 ms，用暗色带箭头提示框，箭头尖端距项边缘 2 px。
 - 右键：
   - 点在图标区域（居中、边长为 0.8×min(w,h) 的正方形）内 → 弹出该项的**暗色带箭头菜单**。
-  - 点在图标区域外，或点在空白处 → 弹出**任务栏设置菜单**（浅色），含：模式、位置、大小、状态、插件开关（`docksettings.cpp:208-251`）。
+  - 点在图标区域外，或点在空白处 → 弹出**任务栏设置菜单**〔演进：原版固定浅色菜单改为 `popupShell` 随全局明/暗——`NPopupContextMenu` 的 `"dark"` 变体即主题跟随面，只保留 `"light"` 给显式要 DDE 经典白底的场景〕，含：模式、位置、大小、状态、插件开关（`docksettings.cpp:208-251`）。
 
 #### 3.1.2 时尚模式（fashion）
 
@@ -292,6 +292,9 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 | （新增）Trash | `user-trash[-full]` | 同左；点击打开回收站，弹出层里可清空 |
 
 - 默认插件（时尚模式）：Tray、NotificationHistory、Network、Volume、Battery、Clock、SessionMenu、Trash。
+- 时尚模式插件区两项可调（`dock.*`，均〔演进〕）：
+  - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕；托盘等变长插件长度仍按内容计。
+  - `dock.fusedPlugins`（默认关）：插件瓦片底色收敛为一条共享长条（`overlay("subtle")`），各瓦片自身底chip隐藏，悬停态照旧——现代外观。
 - 原来的 `bar.widgets.{left,center,right}` 合并为 `dock.plugins`（有序列表），旧配置通过迁移转换（§6）。
 
 ### 3.2 带箭头弹出层与提示框（DockPopupWindow / TipsWidget）

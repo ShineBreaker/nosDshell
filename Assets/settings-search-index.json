@@ -692,6 +692,24 @@
     "subTabLabel": "common.appearance"
   },
   {
+    "labelKey": "panels.dock.appearance-plugin-spacing-label",
+    "descriptionKey": "panels.dock.appearance-plugin-spacing-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "common.appearance"
+  },
+  {
+    "labelKey": "panels.dock.appearance-fused-plugins-label",
+    "descriptionKey": "panels.dock.appearance-fused-plugins-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "common.appearance"
+  },
+  {
     "labelKey": "panels.dock.appearance-colorize-icons-label",
     "descriptionKey": "panels.dock.appearance-colorize-icons-description",
     "widget": "NToggle",

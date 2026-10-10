@@ -38,8 +38,8 @@ NIconButton {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
-  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
+  baseSize: fashionMode ? Style.dockPluginCellSize : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screenName))
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: "power"
@@ -53,7 +53,7 @@ NIconButton {
       return I18n.tr("tooltips.session-menu");
   }
   tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
-  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

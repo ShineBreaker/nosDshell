@@ -52,6 +52,29 @@ ColumnLayout {
       text: Math.floor(Settings.data.dock.deadOpacity * 100) + "%"
     }
 
+    NValueSlider {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.dock.appearance-plugin-spacing-label")
+      description: I18n.tr("panels.dock.appearance-plugin-spacing-description")
+      from: 0
+      to: 24
+      stepSize: 1
+      showReset: true
+      value: Settings.data.dock.pluginSpacing
+      defaultValue: Settings.getDefaultValue("dock.pluginSpacing")
+      onMoved: value => Settings.data.dock.pluginSpacing = value
+      text: Math.round(Settings.data.dock.pluginSpacing) + " px"
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.dock.appearance-fused-plugins-label")
+      description: I18n.tr("panels.dock.appearance-fused-plugins-description")
+      checked: Settings.data.dock.fusedPlugins
+      defaultValue: Settings.getDefaultValue("dock.fusedPlugins")
+      onToggled: checked => Settings.data.dock.fusedPlugins = checked
+    }
+
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.dock.appearance-colorize-icons-label")

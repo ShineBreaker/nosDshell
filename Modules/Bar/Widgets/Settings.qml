@@ -57,11 +57,11 @@ NIconButton {
     return open ? "" : I18n.tr("tooltips.open-settings");
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
-  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
+  baseSize: fashionMode ? Style.dockPluginCellSize : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : iconColor
   colorBgHover: onShellSurface ? Color.overlay("hover") : Color.mHover
   colorFgHover: onShellSurface ? Color.onShell : Color.mOnHover

@@ -72,7 +72,7 @@ Item {
   // the item slot; efficient is bare icon with an overlay("hover") hover fill
   // (gxde-dock pluginsitem.cpp paints no idle background).
   readonly property bool onShellSurface: efficientMode || fashionMode
-  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor))
+  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor))
   readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
   // customIconColor/customTextColor also win over onShell — battery state
   // tints use them to recolor dock plugin items.
@@ -81,7 +81,7 @@ Item {
 
   // Painted tile size: fashion is a 36px chip inside the 54px item slot
   // (same ratio as the tray pill); efficient covers the full 26px cell.
-  readonly property real tileSize: fashionMode ? Math.round(buttonSize * 0.66) : buttonSize
+  readonly property real tileSize: fashionMode ? Style.dockPluginTileSize : buttonSize
 
   // DDE status icons are 16 px in both dock modes
   readonly property real iconSize: onShellSurface ? 16 : Style.toOdd(pillHeight * 0.48)
@@ -89,10 +89,10 @@ Item {
   // Content height calculation (for implicit sizing)
   readonly property real contentHeight: {
     if (collapseToIcon) {
-      return hasIcon ? buttonSize : 0;
+      return hasIcon ? (fashionMode ? Style.dockPluginCellSize : buttonSize) : 0;
     }
     var overlap = hasIcon ? pillOverlap : 0;
-    var baseHeight = hasIcon ? buttonSize : 0;
+    var baseHeight = hasIcon ? (fashionMode ? Style.dockPluginCellSize : buttonSize) : 0;
     return baseHeight + Math.max(0, pill.height - overlap);
   }
 

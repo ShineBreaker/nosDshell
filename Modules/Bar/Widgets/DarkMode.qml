@@ -32,11 +32,11 @@ NIconButton {
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: Settings.data.colorSchemes.darkMode ? I18n.tr("tooltips.switch-to-light-mode") : I18n.tr("tooltips.switch-to-dark-mode")
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
-  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
+  baseSize: fashionMode ? Style.dockPluginCellSize : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   onClicked: Settings.data.colorSchemes.darkMode = !Settings.data.colorSchemes.darkMode
 

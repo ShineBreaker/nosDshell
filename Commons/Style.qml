@@ -630,6 +630,12 @@ Singleton {
   // report 26x26, e.g. plugins/shutdown/pluginwidget.cpp:35)
   readonly property int dockPluginSize: 26
 
+  // Fashion-mode plugin cell metrics. dock.pluginSpacing is the air on each
+  // side of the tile — the cell grows from the tile instead of consuming a
+  // full itemThickness slot (which read as oversized gaps between plugins).
+  readonly property real dockPluginTileSize: Math.round(dockItemThickness * 0.66)
+  readonly property real dockPluginCellSize: dockPluginTileSize + Settings.data.dock.pluginSpacing * 2
+
   // DDE fashion clock face geometry, verbatim from
   // gxde-dock/plugins/datetime/datetimewidget.cpp:123-186. Every step there is
   // integer arithmetic on int, so the ratios are truncated the same way here.

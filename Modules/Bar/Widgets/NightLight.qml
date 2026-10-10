@@ -32,11 +32,11 @@ NIconButton {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
-  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
+  baseSize: fashionMode ? Style.dockPluginCellSize : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : (Settings.data.nightLight.enabled ? Color.mPrimary : Style.capsuleColor))
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : (Settings.data.nightLight.enabled ? Color.mPrimary : Style.capsuleColor))
   colorFg: onShellSurface ? Color.onShell : (Settings.data.nightLight.enabled ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

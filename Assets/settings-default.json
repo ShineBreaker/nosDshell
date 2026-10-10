@@ -399,7 +399,9 @@
     "groupContextMenuMode": "extended",
     "groupClickAction": "cycle",
     "deadOpacity": 0.6,
-    "backgroundOpacity": 1.0
+    "backgroundOpacity": 1.0,
+    "pluginSpacing": 4,
+    "fusedPlugins": false
   },
   "network": {
     "bluetoothRssiPollingEnabled": false,

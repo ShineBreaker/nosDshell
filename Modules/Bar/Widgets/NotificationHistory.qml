@@ -61,10 +61,10 @@ NIconButton {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
 
-  baseSize: fashionMode ? Style.dockItemThickness : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
+  baseSize: fashionMode ? Style.dockPluginCellSize : (efficientMode ? Style.dockPluginSize : Style.getCapsuleHeightForScreen(screen?.name))
   // Fashion plugins are a 36 px rounded tile with a 16 px symbolic icon —
   // the DDE plugin-button look (onboard tile), not a bare colored icon.
-  bgSize: fashionMode ? Math.round(baseSize * 0.66) : -1
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
   icon: (Settings.data.notifications.doNotDisturb ?? false) ? "bell-off" : "bell"
@@ -79,7 +79,7 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  colorBg: fashionMode ? Color.overlay("subtle") : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
   colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth

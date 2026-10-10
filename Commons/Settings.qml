@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 76
+  readonly property int settingsVersion: 77
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -655,6 +655,10 @@ Singleton {
       property double deadOpacity: 0.6
       // Extra multiplier on the dock's maskShell background alpha
       property real backgroundOpacity: 1.0
+      // Fashion mode: air on each side of a plugin tile, px (0-24)
+      property int pluginSpacing: 4
+      // Fashion mode: merge plugin tiles into one shared pill background
+      property bool fusedPlugins: false
     }
 
     // network

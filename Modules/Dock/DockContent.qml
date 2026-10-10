@@ -71,8 +71,9 @@ Item {
   }
 
   function pluginAreaLength() {
-    // Tray expands dynamically; each other plugin occupies a square item
-    return pluginList.length * (dockRoot.itemThickness + itemSpacing);
+    // Tray expands dynamically; each other plugin occupies a
+    // tile+pluginSpacing cell (Style.dockPluginCellSize)
+    return pluginList.length * (Style.dockPluginCellSize + itemSpacing) + (Settings.data.dock.fusedPlugins ? Style.marginXS * 2 : 0);
   }
 
   function getAppIcon(appData): string {
@@ -923,27 +924,60 @@ Item {
       }
 
       // ---------------- Plugin area (dock.plugins, fashion presentation) ----------------
-      Repeater {
-        model: pluginList
-        delegate: BarWidgetLoader {
-          required property var modelData
-          required property int index
+      // Single layout child so dock.fusedPlugins can paint one shared pill
+      // behind the whole strip (widgets suppress their own tile chips).
+      Item {
+        id: pluginArea
 
-          widgetId: modelData.id || ""
-          widgetScreen: dock.screen
-          dockPresentation: "fashion"
-          widgetProps: ({
-                          "widgetId": modelData.id,
-                          "section": "dock",
-                          "sectionWidgetIndex": index,
-                          "sectionWidgetsCount": pluginList.length,
-                          "dockPresentation": "fashion",
-                          // The widget's own per-instance settings object lives
-                          // in its dock.plugins entry (there is no bar section
-                          // named "dock" for widgets to look up)
-                          "widgetSettings": modelData
-                        })
-          Layout.alignment: Qt.AlignCenter
+        visible: pluginList.length > 0
+        Layout.alignment: Qt.AlignCenter
+        Layout.preferredWidth: isVertical ? dockRoot.itemThickness : pluginGrid.implicitWidth + fusedPad
+        Layout.preferredHeight: isVertical ? pluginGrid.implicitHeight + fusedPad : dockRoot.itemThickness
+
+        readonly property real fusedPad: Settings.data.dock.fusedPlugins ? Style.marginXS * 2 : 0
+
+        Rectangle {
+          visible: Settings.data.dock.fusedPlugins
+          anchors.centerIn: parent
+          width: isVertical ? Style.dockPluginTileSize + Style.marginXS * 2 : parent.width
+          height: isVertical ? parent.height : Style.dockPluginTileSize + Style.marginXS * 2
+          radius: Style.radiusL
+          color: Color.overlay("subtle")
+          border.color: Style.capsuleBorderColor
+          border.width: Style.capsuleBorderWidth
+        }
+
+        GridLayout {
+          id: pluginGrid
+          anchors.centerIn: parent
+          rows: isVertical ? pluginList.length : 1
+          columns: isVertical ? 1 : pluginList.length
+          rowSpacing: itemSpacing
+          columnSpacing: itemSpacing
+
+          Repeater {
+            model: pluginList
+            delegate: BarWidgetLoader {
+              required property var modelData
+              required property int index
+
+              widgetId: modelData.id || ""
+              widgetScreen: dock.screen
+              dockPresentation: "fashion"
+              widgetProps: ({
+                              "widgetId": modelData.id,
+                              "section": "dock",
+                              "sectionWidgetIndex": index,
+                              "sectionWidgetsCount": pluginList.length,
+                              "dockPresentation": "fashion",
+                              // The widget's own per-instance settings object lives
+                              // in its dock.plugins entry (there is no bar section
+                              // named "dock" for widgets to look up)
+                              "widgetSettings": modelData
+                            })
+              Layout.alignment: Qt.AlignCenter
+            }
+          }
         }
       }
     }
