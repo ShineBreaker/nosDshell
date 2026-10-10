@@ -22,6 +22,9 @@ NDccRow {
   property string settingsPath: ""
   // A labelled combo is a settings row; a bare one is not.
   property bool dccRow: label !== "" || description !== ""
+  // Set when the combo lives on a translucent shell surface — the popup keeps
+  // the blurred popupShell look (see NComboBox.onShellSurface).
+  property bool onShellSurface: false
   // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83).
   property real titleWidth: Style.settingsFieldTitleWidth
 
@@ -420,8 +423,10 @@ NDccRow {
       }
 
       background: Rectangle {
-        color: Color.popupShell
-        border.color: Color.borderShell
+        // Same as NComboBox: page-surface menus stay opaque — popupShell's
+        // translucency would bleed settings page text through the list.
+        color: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
+        border.color: root.onShellSurface ? Color.borderShell : Color.mOutline
         border.width: Style.borderS
         radius: Style.radiusPopup
       }

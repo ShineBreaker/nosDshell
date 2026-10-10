@@ -22,6 +22,10 @@ NDccRow {
   property real baseSize: 1.0
   // A labelled combo is a settings row; a bare one is not.
   property bool dccRow: label !== "" || description !== ""
+  // Set when the combo lives on a translucent shell surface (glass panels):
+  // the popup then keeps the blurred popupShell look instead of an opaque
+  // page-surface menu.
+  property bool onShellSurface: false
 
   readonly property real preferredHeight: Math.round(30 * root.baseSize)
   readonly property var comboBox: combo
@@ -338,8 +342,11 @@ NDccRow {
       }
 
       background: Rectangle {
-        color: Color.popupShell
-        border.color: Color.borderShell
+        // Page-surface menus stay opaque — popupShell's translucency (built
+        // for blurred shell popups) bleeds page text through the list.
+        // On a shell surface the glass look is intentional.
+        color: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
+        border.color: root.onShellSurface ? Color.borderShell : Color.mOutline
         border.width: Style.borderS
         radius: Style.radiusPopup
       }

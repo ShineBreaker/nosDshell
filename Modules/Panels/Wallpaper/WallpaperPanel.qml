@@ -319,6 +319,7 @@ SmartPanel {
         id: sourceCombo
         Layout.preferredWidth: Math.round(140 * Style.uiScaleRatio)
         height: Style.wallpaperStripRowHeight
+        onShellSurface: true
         model: [
           {
             "key": "local",
@@ -359,6 +360,7 @@ SmartPanel {
         id: resolutionCombo
         Layout.preferredWidth: Math.round(190 * Style.uiScaleRatio)
         height: Style.wallpaperStripRowHeight
+        onShellSurface: true
         visible: strip.isWallhaven
         model: [
           {
