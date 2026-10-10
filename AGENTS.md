@@ -25,6 +25,8 @@ DDE 专属素材（时钟表盘、关机按钮、启动器/控制中心图标等
 
 本机是 Guix，没有 Nix——仓库里的 `nix/shell.nix` 是上游留下的，`lefthook.yml` 声明的 pre-commit 因此也没生效（本机 `lefthook` 不在 PATH），**格式化与设置索引要自己跑**。shell 运行在**上游 `quickshell`** 上；`nosdshell.scm` 实际打包的是 `quickshell-nosd`——我们的 fork `ShineBreaker/quickshell-nosd`（上游 0.3.2 + 两个 pipewire UAF 修复 commit），需要 pipewire 补丁就用这个已打包的包。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）。
 
+高频命令有 `justfile` 包装（`just` 列出全部）：`just lint` / `just fmt` / `just verify <名字> --scenes <场景>` / `just bench` / `just tools`（Rust 工具 release 构建）/ `just run`（guix 打工作树包并替换运行中的 shell，`just restore` 回到打包服务）/ `just release <版号>`（发版自动化，脚本本体 `Scripts/dev/release.sh`）。
+
 - **所有运行验证走 `Scripts/test/verify.sh <名字>`**，它自带隔离环境。用户正在使用的 niri 会话里不直接起 `qs`，否则会接管他的通知服务、改动他的配置。截图落在脚本头部注释写的 shots 目录。
 - 需要**真 niri 代码路径**（layer-shell、exclusive zone、焦点/输入投递这类合成器敏感行为，sway 上复现不了）时用 `Scripts/test/niri/`——在真会话里起嵌套 niri 窗口 + 全套隔离 env，会在桌面上开一个窗口，用户在场别跑。用法见目录内 README。
 - 结束进程时，只按自己启动时记下的 PID 去 kill。用户会话里也有同名进程（pipewire、wireplumber 等）在运行。

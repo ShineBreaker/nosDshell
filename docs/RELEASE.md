@@ -29,7 +29,9 @@ nav_exclude: true
 
 ## 发版步骤
 
-1. `CHANGELOG.md`：把 `[Unreleased]` 下的内容落版为 `## [新版号] - YYYY-MM-DD`，并在文件底部补版本链接。
+自动化入口：`Scripts/dev/release.sh <X.Y.Z>`（或 `just release <X.Y.Z>`）走完全部流程。它是两段的——`[Unreleased]` 为空时先按 `v<上一版>..HEAD` 的 commit 生成带链接的条目脚手架（营销段留 TODO）就停；填好简介后重跑同一命令完成落版、版号、校验、提交、tag、推送与 reopen。`--no-push` 只在本地提交+打 tag，`--skip-verify` 跳过 lint 和 About 截图。下面是被自动化的手工步骤，脚本失败时按此逐项执行：
+
+1. `CHANGELOG.md`：把 `[Unreleased]` 下的内容落版为 `## [新版号] - YYYY-MM-DD`，并在文件底部补版本链接。条目结构见文件头注释（简介段 → `---` → 引用 commit 的正文）。
 2. 按上表改版号，`isDevelopment` 置 `false`。
 3. `Scripts/dev/lint.sh --changed` 无新增错误；改过 QML 就跑 `Scripts/dev/qmlfmt.sh <路径>`。
 4. 界面验证：`Scripts/test/verify.sh <名字> --scenes settings-about`（至少覆盖 About 页；涉及任务栏模式 / 停靠方向 / 明暗 / 模糊时按 `AGENTS.md` 加 `--settings` 组合）。
