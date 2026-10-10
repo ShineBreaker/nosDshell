@@ -243,7 +243,6 @@
     "enableClipboardChips": true,
     "clipboardWatchTextCommand": "wl-paste --type text --watch cliphist store",
     "clipboardWatchImageCommand": "wl-paste --type image --watch cliphist store",
-    "position": "center",
     "mode": "fullscreen",
     "displayMode": "free",
     "iconRatio": 0.5,
@@ -252,7 +251,7 @@
     "terminalCommand": "alacritty -e",
     "customLaunchPrefixEnabled": false,
     "customLaunchPrefix": "",
-    "viewMode": "list",
+    "viewMode": "grid",
     "showCategories": true,
     "iconMode": "tabler",
     "showIconBackground": false,
@@ -262,7 +261,6 @@
     "clearSearchOnClose": true,
     "ignoreMouseInput": false,
     "screenshotAnnotationTool": "",
-    "overviewLayer": false,
     "density": "default"
   },
   "controlCenter": {

@@ -75,6 +75,7 @@ Item {
   MouseArea {
     id: hoverArea
     anchors.fill: parent
+    enabled: !Settings.data.appLauncher.ignoreMouseInput
     hoverEnabled: true
     acceptedButtons: Qt.NoButton
   }
@@ -82,6 +83,7 @@ Item {
   MouseArea {
     id: mouseArea
     anchors.fill: parent
+    enabled: !Settings.data.appLauncher.ignoreMouseInput
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton
     cursorShape: Qt.PointingHandCursor

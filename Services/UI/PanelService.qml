@@ -17,10 +17,6 @@ Singleton {
   property var closingPanel: null
   property bool closedImmediately: false
 
-  // Overlay launcher state (separate from normal panels)
-  property bool overlayLauncherOpen: false
-  property var overlayLauncherScreen: null
-  property var overlayLauncherCore: null  // Reference to LauncherCore when overlay is active
   // Brief window after panel opens where Exclusive keyboard is allowed on Hyprland
   // This allows text inputs to receive focus, then switches to OnDemand for click-to-close
   property bool isInitializingKeyboard: false
@@ -298,12 +294,6 @@ Singleton {
 
   // Helper to keep only one panel open at any time
   function willOpenPanel(panel) {
-    // Close overlay launcher if open
-    if (overlayLauncherOpen) {
-      overlayLauncherOpen = false;
-      overlayLauncherScreen = null;
-    }
-
     if (openedPanel && openedPanel !== panel) {
       // Move current panel to closing slot before closing it
       closingPanel = openedPanel;
@@ -325,117 +315,45 @@ Singleton {
     willOpen();
   }
 
-  // Open launcher panel (handles both normal and overlay mode)
+  // ==================== Launcher API ====================
+  // The DDE launcher (fullscreen/mini layer surfaces) owns its own open state
+  // through LauncherState (DESIGN §3.4); these are thin forwards kept for the
+  // IPC and widget call sites.
+
   function openLauncher(screen) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      // Close any regular panel first
-      if (openedPanel) {
-        closingPanel = openedPanel;
-        assignToSlot(1, closingPanel);
-        openedPanel.close();
-        openedPanel = null;
-      }
-      // Open overlay launcher
-      overlayLauncherOpen = true;
-      overlayLauncherScreen = screen;
-      willOpen();
-    } else {
-      // DDE launcher (DESIGN §3.4)
-      LauncherState.open(screen);
-    }
+    LauncherState.open(screen);
   }
 
-  // Toggle launcher panel
   function toggleLauncher(screen) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      if (overlayLauncherOpen && overlayLauncherScreen?.name === screen?.name) {
-        closeOverlayLauncher();
-      } else {
-        openLauncher(screen);
-      }
-    } else {
-      // DDE launcher (DESIGN §3.4): the fullscreen/mini views own their own
-      // windows and open state through LauncherState.
-      LauncherState.toggle(screen);
-    }
+    LauncherState.toggle(screen);
   }
-
-  // Close overlay launcher
-  function closeOverlayLauncher() {
-    if (overlayLauncherOpen) {
-      overlayLauncherOpen = false;
-      overlayLauncherScreen = null;
-      didClose();
-    }
-  }
-
-  // Close overlay launcher immediately (for app launches)
-  function closeOverlayLauncherImmediately() {
-    if (overlayLauncherOpen) {
-      closedImmediately = true;
-      overlayLauncherOpen = false;
-      overlayLauncherScreen = null;
-      didClose();
-    }
-  }
-
-  // ==================== Unified Launcher API ====================
-  // These methods work for both normal (SmartPanel) and overlay modes
 
   function isLauncherOpen(screen) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      return overlayLauncherOpen && overlayLauncherScreen?.name === screen?.name;
-    } else {
-      return LauncherState.isOpen(screen);
-    }
+    return LauncherState.isOpen(screen);
   }
 
   function getLauncherSearchText(screen) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      return overlayLauncherCore ? overlayLauncherCore.searchText : "";
-    } else {
-      var model = LauncherState.modelForScreen(screen);
-      return model ? model.searchText : "";
-    }
+    var model = LauncherState.modelForScreen(screen);
+    return model ? model.searchText : "";
   }
 
   function setLauncherSearchText(screen, text) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      if (overlayLauncherCore)
-        overlayLauncherCore.setSearchText(text);
-    } else {
-      var model = LauncherState.modelForScreen(screen);
-      if (model)
-        model.setSearchText(text);
-    }
+    var model = LauncherState.modelForScreen(screen);
+    if (model)
+      model.setSearchText(text);
   }
 
   function openLauncherWithSearch(screen, searchText) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      openLauncher(screen);
-      // Set search text after core is ready
-      Qt.callLater(() => {
-                     if (overlayLauncherCore)
-                     overlayLauncherCore.setSearchText(searchText);
-                   });
-    } else {
-      LauncherState.openWithSearch(screen, searchText);
-    }
+    LauncherState.openWithSearch(screen, searchText);
   }
 
   function closeLauncher(screen) {
-    if (Settings.data.appLauncher.overviewLayer) {
-      closeOverlayLauncher();
-    } else {
-      LauncherState.close(screen);
-    }
+    LauncherState.close(screen);
   }
 
   // Close any open panel (for general use)
   function closePanel() {
-    if (overlayLauncherOpen) {
-      closeOverlayLauncher();
-    } else if (openedPanel && openedPanel.close) {
+    if (openedPanel && openedPanel.close) {
       openedPanel.close();
     }
   }

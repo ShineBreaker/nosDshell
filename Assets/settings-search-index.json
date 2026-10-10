@@ -1624,18 +1624,9 @@
     "subTabLabel": "common.execute"
   },
   {
-    "labelKey": "common.position",
-    "descriptionKey": "panels.launcher.settings-position-description",
+    "labelKey": "panels.launcher.settings-mode-label",
+    "descriptionKey": "panels.launcher.settings-mode-description",
     "widget": "NComboBox",
-    "tab": 14,
-    "tabLabel": "panels.launcher.title",
-    "subTab": 0,
-    "subTabLabel": "common.general"
-  },
-  {
-    "labelKey": "panels.launcher.settings-overlay-layer-label",
-    "descriptionKey": "panels.launcher.settings-overlay-layer-description",
-    "widget": "NToggle",
     "tab": 14,
     "tabLabel": "panels.launcher.title",
     "subTab": 0,
@@ -1891,6 +1882,15 @@
     "labelKey": "tooltips.do-not-disturb-enabled",
     "descriptionKey": "panels.notifications.settings-do-not-disturb-description",
     "widget": "NToggle",
+    "tab": 17,
+    "tabLabel": "common.notifications",
+    "subTab": 0,
+    "subTabLabel": "common.appearance"
+  },
+  {
+    "labelKey": "common.position",
+    "descriptionKey": "panels.notifications.settings-location-description",
+    "widget": "NComboBox",
     "tab": 17,
     "tabLabel": "common.notifications",
     "subTab": 0,

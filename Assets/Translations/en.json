@@ -741,6 +741,10 @@
       "compact": "Compact",
       "default": "Default"
     },
+    "launcher-mode": {
+      "fullscreen": "Fullscreen",
+      "mini": "Mini"
+    },
     "launcher-view-mode": {
       "grid": "Grid",
       "list": "List"
@@ -1405,13 +1409,12 @@
       "settings-icon-mode-label": "Use native icons",
       "settings-ignore-mouse-input-description": "Disable mouse interaction and scrollwheel in the launcher.",
       "settings-ignore-mouse-input-label": "Ignore mouse input",
-      "settings-overlay-layer-description": "Display the launcher on the overlay layer, above fullscreen windows. When enabled, the launcher will not attach to the bar.",
-      "settings-overlay-layer-label": "Show above fullscreen",
-      "settings-position-description": "Choose where the launcher panel appears.",
       "settings-show-categories-description": "Show category tabs for filtering applications.",
       "settings-show-categories-label": "Show categories",
       "settings-show-icon-background-description": "Show a rounded rectangle background behind icons.",
       "settings-show-icon-background-label": "Show icon background",
+      "settings-mode-label": "Launcher mode",
+      "settings-mode-description": "Choose between the fullscreen and mini launcher.",
       "settings-sort-by-usage-description": "When enabled, frequently launched apps appear first in the list.",
       "settings-sort-by-usage-label": "Sort by most used",
       "settings-terminal-command-description": "Command to launch a terminal. E.g. 'kitty -e' or 'gnome-terminal --'.",

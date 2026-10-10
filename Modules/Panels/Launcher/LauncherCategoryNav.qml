@@ -141,6 +141,7 @@ Item {
       MouseArea {
         id: navItemMouseArea
         anchors.fill: parent
+        enabled: !Settings.data.appLauncher.ignoreMouseInput
         hoverEnabled: true
         acceptedButtons: Qt.LeftButton
         onClicked: root.select(modelData)
@@ -152,6 +153,7 @@ Item {
   MouseArea {
     id: navMouseArea
     anchors.fill: parent
+    enabled: !Settings.data.appLauncher.ignoreMouseInput
     hoverEnabled: true
     acceptedButtons: Qt.NoButton
   }

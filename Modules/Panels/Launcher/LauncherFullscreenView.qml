@@ -43,6 +43,12 @@ Item {
 
   // ---- state ----
   readonly property bool categoryMode: Settings.data.appLauncher.displayMode === "category"
+  // showCategories off → no category affordances at all (nav, toggle button)
+  readonly property bool categoriesAllowed: Settings.data.appLauncher.showCategories
+  readonly property bool navActive: root.categoryMode && root.categoriesAllowed
+  // appLauncher.viewMode: "grid" keeps the app grid, "list" browses as a list
+  readonly property bool browseAsList: Settings.data.appLauncher.viewMode === "list"
+  readonly property bool ignoreMouse: Settings.data.appLauncher.ignoreMouseInput
   readonly property var appsProvider: model.appsProvider
   property bool searchActive: false
   property int focusZone: 0 // 0 = grid, 1 = nav, 2 = search
@@ -56,7 +62,7 @@ Item {
   readonly property bool browsing: model.searchText.trim() === "" && !model.activeProvider
   readonly property var listResults: {
     if (root.browsing)
-      return [];
+      return root.browseAsList ? model.results : [];
     if (model.activeProvider && model.activeProvider !== appsProvider)
       return model.results;
     if (model.searchText.trim() !== "")
@@ -65,7 +71,7 @@ Item {
   }
 
   readonly property var appResults: {
-    if (!root.browsing)
+    if (!root.browsing || root.browseAsList)
       return [];
     if (model.activeProvider && model.activeProvider !== appsProvider)
       return [];
@@ -100,6 +106,7 @@ Item {
     MouseArea {
       anchors.fill: parent
       acceptedButtons: Qt.LeftButton
+      enabled: !root.ignoreMouse
       onClicked: root.requestClose()
     }
 
@@ -190,7 +197,7 @@ Item {
       return;
     }
 
-    if (root.focusZone === 1 && root.categoryMode) {
+    if (root.focusZone === 1 && root.navActive) {
       switch (event.key) {
       case Qt.Key_Up:
         categoryNav.step(-1);
@@ -210,21 +217,26 @@ Item {
         return;
     }
 
+    // A browse-mode list is a single column: rows move by one, left/right
+    // have no column to land on.
+    const navCols = (root.browseAsList && root.browsing) ? 1 : root.columns;
     switch (event.key) {
     case Qt.Key_Up:
-      model.selectPreviousRow(root.columns);
+      model.selectPreviousRow(navCols);
       event.accepted = true;
       break;
     case Qt.Key_Down:
-      model.selectNextRow(root.columns);
+      model.selectNextRow(navCols);
       event.accepted = true;
       break;
     case Qt.Key_Left:
-      model.selectPreviousColumn(root.columns);
+      if (navCols > 1)
+        model.selectPreviousColumn(root.columns);
       event.accepted = true;
       break;
     case Qt.Key_Right:
-      model.selectNextColumn(root.columns);
+      if (navCols > 1)
+        model.selectNextColumn(root.columns);
       event.accepted = true;
       break;
     case Qt.Key_Enter:
@@ -240,7 +252,7 @@ Item {
   }
 
   function cycleFocus() {
-    const zones = categoryMode ? [0, 1, 2] : [0, 2];
+    const zones = navActive ? [0, 1, 2] : [0, 2];
     const idx = zones.indexOf(focusZone);
     focusZone = zones[(idx + 1) % zones.length];
 
@@ -269,6 +281,7 @@ Item {
   // Ctrl + wheel adjusts iconRatio (DESIGN §3.4.1)
   WheelHandler {
     acceptedModifiers: Qt.ControlModifier
+    enabled: !root.ignoreMouse
     onWheel: event => {
                if (event.angleDelta.y > 0)
                root.adjustIconRatio(0.1);
@@ -302,6 +315,7 @@ Item {
 
       // Category / free mode toggle (category_{normal,hover,active}_22px.png)
       LauncherImageButton {
+        visible: root.categoriesAllowed
         Layout.preferredWidth: Style.launcherSearchButtonSizeAlt
         Layout.preferredHeight: Style.launcherSearchButtonSizeAlt
         iconSize: Style.launcherSearchButtonSizeAlt
@@ -396,7 +410,7 @@ Item {
       // taskbar edge when the taskbar is on the left (fullscreenframe.cpp:1348).
       LauncherCategoryNav {
         id: categoryNav
-        visible: root.categoryMode
+        visible: root.navActive
         x: root.leftInset
         width: root.navWidth
         height: parent.height
@@ -422,17 +436,22 @@ Item {
           id: resultsList
           visible: root.listResults.length > 0
           width: root.listWidth
-          height: Math.min(contentHeight, root.height * 0.5)
+          // A browse-mode list owns the results area; search results stay a
+          // capped list under the search row.
+          height: root.browseAsList && root.browsing ? resultsArea.height : Math.min(contentHeight, root.height * 0.5)
           spacing: 0
           clip: true
           gradientColor: "transparent"
           model: root.listResults
           currentIndex: model.selectedIndex
-          interactive: true
+          interactive: !root.ignoreMouse
+          wheelScrollMultiplier: root.ignoreMouse ? 1.0 : 2.0
           reserveScrollbarSpace: false
 
           delegate: LauncherListRow {
             listView: resultsList
+            rowHeight: model.listRowHeight
+            iconSize: model.listIconSize
             onActivated: {
               model.selectIndex(index);
               model.activate();
@@ -445,7 +464,7 @@ Item {
             width: 260
             anchors.top: resultsList.top
             anchors.bottom: resultsList.bottom
-            active: model.activeProvider === model.clipboardProvider
+            active: model.activeProvider === model.clipboardProvider && model.clipboardProvider && model.clipboardProvider.hasPreview
             visible: active
 
             sourceComponent: ClipboardPreview {
@@ -475,7 +494,8 @@ Item {
           // interactive Flickable eats every press on empty canvas and the
           // dismiss MouseArea below can never see them. Wheel scroll still goes
           // through NGridView's own WheelHandler either way.
-          interactive: contentOverflows
+          interactive: contentOverflows && !root.ignoreMouse
+          wheelScrollMultiplier: root.ignoreMouse ? 1.0 : 2.0
           focus: true
           verticalPolicy: ScrollBar.AlwaysOff
           horizontalPolicy: ScrollBar.AlwaysOff
@@ -490,6 +510,7 @@ Item {
             width: Math.max(resultsGrid.contentWidth, resultsGrid.width)
             height: Math.max(resultsGrid.contentHeight, resultsGrid.height)
             acceptedButtons: Qt.LeftButton
+            enabled: !root.ignoreMouse
             onClicked: root.requestClose()
           }
 
@@ -515,7 +536,7 @@ Item {
         // frame that collides with the selected cell's pressDim block.
         Rectangle {
           id: pinnedTitle
-          visible: root.categoryMode && !resultsList.visible
+          visible: root.navActive && !resultsList.visible
           anchors.left: parent.left
           anchors.right: parent.right
           anchors.top: parent.top

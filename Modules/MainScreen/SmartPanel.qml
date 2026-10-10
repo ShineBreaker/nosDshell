@@ -203,7 +203,7 @@ Item {
     if (!root.arrowPopup)
       return false;
     var n = root.objectName || "";
-    var deny = ["launcherPanel", "controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel"];
+    var deny = ["controlCenterPanel", "settingsPanel", "sessionMenuPanel", "wallpaperPanel", "setupWizardPanel"];
     for (var i = 0; i < deny.length; ++i) {
       if (n.indexOf(deny[i] + "-") === 0)
         return false;

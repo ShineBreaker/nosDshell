@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import qs.Commons
+import qs.Services.UI
 import qs.Widgets
 
 ColumnLayout {
@@ -15,57 +16,25 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
     NComboBox {
-      label: I18n.tr("common.position")
-      description: I18n.tr("panels.launcher.settings-position-description")
+      label: I18n.tr("panels.launcher.settings-mode-label")
+      description: I18n.tr("panels.launcher.settings-mode-description")
       Layout.fillWidth: true
       model: [
         {
-          "key": "follow_bar",
-          "name": I18n.tr("positions.follow-bar")
+          "key": "fullscreen",
+          "name": I18n.tr("options.launcher-mode.fullscreen")
         },
         {
-          "key": "center",
-          "name": I18n.tr("positions.center")
-        },
-        {
-          "key": "top_center",
-          "name": I18n.tr("positions.top-center")
-        },
-        {
-          "key": "top_left",
-          "name": I18n.tr("positions.top-left")
-        },
-        {
-          "key": "top_right",
-          "name": I18n.tr("positions.top-right")
-        },
-        {
-          "key": "bottom_left",
-          "name": I18n.tr("positions.bottom-left")
-        },
-        {
-          "key": "bottom_right",
-          "name": I18n.tr("positions.bottom-right")
-        },
-        {
-          "key": "bottom_center",
-          "name": I18n.tr("positions.bottom-center")
+          "key": "mini",
+          "name": I18n.tr("options.launcher-mode.mini")
         }
       ]
-      currentKey: Settings.data.appLauncher.position
+      currentKey: Settings.data.appLauncher.mode
       onSelected: function (key) {
-        Settings.data.appLauncher.position = key;
+        LauncherState.setMode(key);
       }
 
-      defaultValue: Settings.getDefaultValue("appLauncher.position")
-    }
-
-    NToggle {
-      label: I18n.tr("panels.launcher.settings-overlay-layer-label")
-      description: I18n.tr("panels.launcher.settings-overlay-layer-description")
-      checked: Settings.data.appLauncher.overviewLayer
-      onToggled: checked => Settings.data.appLauncher.overviewLayer = checked
-      defaultValue: Settings.getDefaultValue("appLauncher.overviewLayer")
+      defaultValue: Settings.getDefaultValue("appLauncher.mode")
     }
 
     NComboBox {
@@ -107,7 +76,7 @@ ColumnLayout {
           "name": I18n.tr("options.launcher-density.comfortable")
         }
       ]
-      currentKey: Settings.data.appLauncher.density || "compact"
+      currentKey: Settings.data.appLauncher.density || "default"
       onSelected: function (key) {
         Settings.data.appLauncher.density = key;
       }

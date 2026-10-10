@@ -14,7 +14,7 @@ Singleton {
   property var pluginProviders: ({}) // { "plugin:pluginId": component }
   property var pluginProviderMetadata: ({}) // { "plugin:pluginId": metadata }
 
-  // Persistent provider instances — survive LauncherCore destruction/recreation
+  // Persistent provider instances — survive launcher view/model recreation
   // so plugins don't re-parse large datasets on every launcher open.
   property var providerInstances: ({}) // { "plugin:pluginId": instance }
 

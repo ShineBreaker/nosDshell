@@ -564,18 +564,13 @@ Item {
     const isSearching = !!(query && query.trim() !== "");
     showsCategories = !isSearching;
 
-    // Filter by category only when NOT searching.
-    // DDE views (displayMode/fullscreen/mini) use the 11-bucket filtering;
-    // the legacy panel keeps the Noctalia category set.
-    const useDDECategories = Settings.data.appLauncher.displayMode === "category" || Settings.data.appLauncher.mode === "mini" || Settings.data.appLauncher.mode === "fullscreen";
+    // DDE views filter the browse grid by the 11-bucket ddeCategory; with
+    // showCategories off there is no category UI, so the filter pins to "all".
+    const effectiveCategory = Settings.data.appLauncher.showCategories ? ddeCategory : "all";
 
     let filteredEntries = entries;
-    if (!isSearching) {
-      if (useDDECategories) {
-        filteredEntries = entries.filter(app => appMatchesDDECategory(app, ddeCategory));
-      } else if (selectedCategory && selectedCategory !== "all") {
-        filteredEntries = entries.filter(app => appMatchesCategory(app, selectedCategory));
-      }
+    if (!isSearching && effectiveCategory !== "all") {
+      filteredEntries = entries.filter(app => appMatchesDDECategory(app, effectiveCategory));
     }
 
     if (!query || query.trim() === "") {

@@ -371,12 +371,6 @@ PanelWindow {
       screen: root.screen
     }
 
-    Launcher {
-      id: launcherPanel
-      objectName: "launcherPanel-" + (root.screen?.name || "unknown")
-      screen: root.screen
-    }
-
     SessionMenu {
       id: sessionMenuPanel
       objectName: "sessionMenuPanel-" + (root.screen?.name || "unknown")

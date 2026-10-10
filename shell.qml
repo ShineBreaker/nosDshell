@@ -134,14 +134,6 @@ ShellRoot {
       ToastOverlay {}
       OSD {}
 
-      // Launcher overlay window (for overlay layer mode)
-      Loader {
-        active: Settings.data.appLauncher.overviewLayer
-        sourceComponent: Component {
-          LauncherOverlayWindow {}
-        }
-      }
-
       // DDE launcher (DESIGN §3.4): fullscreen layer surface + mini window,
       // opened through LauncherState (taskbar item / IPC / view toggles).
       LauncherFullscreenWindow {}

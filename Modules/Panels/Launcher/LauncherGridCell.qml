@@ -63,14 +63,25 @@ Item {
       Layout.topMargin: Math.max(1, root._side * 0.2 - root.iconSize * 0.3)
       Layout.alignment: Qt.AlignHCenter
 
+      // Optional backing plate behind the icon (appLauncher.showIconBackground)
+      Rectangle {
+        anchors.centerIn: parent
+        width: root.iconSize + Style.marginS * 2
+        height: root.iconSize + Style.marginS * 2
+        radius: Style.radiusRow
+        color: Color.overlayWallpaper("hover")
+        visible: Settings.data.appLauncher.showIconBackground
+      }
+
       NSymbolicImage {
+        id: cellIcon
         anchors.centerIn: parent
         width: root.iconSize
         height: root.iconSize
         source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
         detectSymbolic: true
         color: Color.onWallpaper
-        visible: source !== ""
+        visible: source !== "" && status === Image.Ready
         asynchronous: true
         smooth: true
       }
@@ -78,8 +89,11 @@ Item {
       NIcon {
         anchors.centerIn: parent
         pointSize: root.iconSize * 0.9
+        // Tabler glyph fallback: also covers the themed lookup failing (e.g.
+        // iconMode "tabler" emits glyph names that iconFromName cannot map).
+        icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"
         color: Color.onWallpaper
-        visible: !modelData.icon || modelData.icon === ""
+        visible: !modelData.icon || modelData.icon === "" || cellIcon.status === Image.Error
       }
     }
 
@@ -116,6 +130,7 @@ Item {
   MouseArea {
     id: mouseArea
     anchors.fill: parent
+    enabled: !Settings.data.appLauncher.ignoreMouseInput
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: mouse => {

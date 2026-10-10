@@ -14,12 +14,18 @@ Item {
   required property var modelData
   required property int index
   property var listView: null
+  // Driven by appLauncher.density via the owning view's LauncherModel.
+  property int rowHeight: 36
+  property int iconSize: 24
 
   signal activated
   signal rightClicked(var mouse)
 
   width: listView ? listView.width : 400
-  height: 36
+  height: rowHeight
+
+  readonly property int iconY: Math.round((rowHeight - iconSize) / 2)
+  readonly property bool ignoreMouse: Settings.data.appLauncher.ignoreMouseInput
 
   readonly property bool selected: listView ? listView.currentIndex === index : false
 
@@ -31,13 +37,24 @@ Item {
     color: (mouseArea.containsMouse || root.selected) ? Color.overlayWallpaper("hover") : "transparent"
   }
 
+  // Optional backing plate behind the icon (appLauncher.showIconBackground)
+  Rectangle {
+    x: 10 - Style.marginS
+    y: root.iconY - Style.marginS
+    width: root.iconSize + Style.marginS * 2
+    height: root.iconSize + Style.marginS * 2
+    radius: Style.radiusRow
+    color: Color.overlayWallpaper("hover")
+    visible: Settings.data.appLauncher.showIconBackground && !modelData.isImage
+  }
+
   // Icon — darkened wallpaper surface: symbolic glyphs stay in onWallpaper ink
   NSymbolicImage {
     id: rowIcon
     x: 10
-    width: 24
-    height: 24
-    y: 6
+    width: root.iconSize
+    height: root.iconSize
+    y: root.iconY
     source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
     detectSymbolic: true
     color: Color.onWallpaper
@@ -47,9 +64,9 @@ Item {
 
   NIcon {
     x: 10
-    y: 6
-    width: 24
-    height: 24
+    y: root.iconY
+    width: root.iconSize
+    height: root.iconSize
     pointSize: Style.fontSizeM
     // Fallback when the themed icon fails: only feed real Tabler glyph names
     // to the font path, app icon names would warn and render the fallback.
@@ -59,9 +76,9 @@ Item {
   }
 
   NText {
-    x: 48
-    width: parent.width - 58
-    height: 36
+    x: 10 + root.iconSize + 14
+    width: parent.width - (x + 10)
+    height: root.rowHeight
     verticalAlignment: Text.AlignVCenter
     text: modelData.name || ""
     pointSize: Style.fontSizeBody
@@ -74,6 +91,7 @@ Item {
   MouseArea {
     id: mouseArea
     anchors.fill: parent
+    enabled: !root.ignoreMouse
     hoverEnabled: true
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: mouse => {

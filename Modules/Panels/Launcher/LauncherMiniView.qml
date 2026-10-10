@@ -79,6 +79,20 @@ Item {
     }
   }
 
+  // Turning category display off while the category list/bucket is showing
+  // must retract that state, otherwise the list stays stuck on it.
+  Connections {
+    target: Settings.data.appLauncher
+    function onShowCategoriesChanged() {
+      if (!Settings.data.appLauncher.showCategories) {
+        root.showCategoryList = false;
+        root.catIndex = 0;
+        if (root.appsProvider)
+          root.appsProvider.selectDDECategory("all");
+      }
+    }
+  }
+
   LauncherModel {
     id: model
     screen: root.screen
@@ -213,7 +227,8 @@ Item {
             }
             currentIndex: root.showingCategoryRows ? root.catIndex : model.selectedIndex
             spacing: 0
-            interactive: true
+            interactive: !Settings.data.appLauncher.ignoreMouseInput
+            wheelScrollMultiplier: Settings.data.appLauncher.ignoreMouseInput ? 1.0 : 2.0
             reserveScrollbarSpace: false
 
             delegate: Item {
@@ -226,7 +241,7 @@ Item {
               readonly property bool isActiveRow: isCategoryRow && (modelData === root.ddeCategory || (modelData === "all" && !root.inCategory))
 
               width: appList.width
-              height: Style.launcherMiniRowHeight
+              height: model.listRowHeight
 
               Rectangle {
                 anchors.fill: parent
@@ -245,11 +260,23 @@ Item {
                 }
               }
 
+              // Optional backing plate behind the icon
+              Rectangle {
+                x: 10 - Style.marginS
+                anchors.verticalCenter: parent.verticalCenter
+                width: model.listIconSize + Style.marginS * 2
+                height: model.listIconSize + Style.marginS * 2
+                radius: Style.radiusRow
+                color: Color.overlay("hover")
+                visible: Settings.data.appLauncher.showIconBackground && !isCategoryRow && !modelData.isImage
+              }
+
               NSymbolicImage {
+                id: rowIcon
                 x: 10
-                y: 6
-                width: 24
-                height: 24
+                anchors.verticalCenter: parent.verticalCenter
+                width: model.listIconSize
+                height: model.listIconSize
                 source: (!isCategoryRow && modelData.icon) ? ThemeIcons.iconFromName(modelData.icon) : ""
                 detectSymbolic: true
                 color: Color.onShell
@@ -259,22 +286,22 @@ Item {
 
               NIcon {
                 x: 10
-                y: 6
-                width: 24
-                height: 24
+                anchors.verticalCenter: parent.verticalCenter
+                width: model.listIconSize
+                height: model.listIconSize
                 pointSize: Style.fontSizeM
-                // Shown only when the entry has no icon name at all; keep the
-                // app icon name out of the font path (it would warn).
-                icon: "apps"
+                // Themed lookup failed (or no icon at all): fall back to the
+                // Tabler glyph when the name is one, a generic app glyph else.
+                icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"
                 color: Color.onShell
-                visible: !isCategoryRow && modelData.icon === ""
+                visible: !isCategoryRow && (modelData.icon === "" || rowIcon.status === Image.Error)
               }
 
               // App row label
               NText {
-                x: 48
-                width: parent.width - 58
-                height: 36
+                x: 10 + model.listIconSize + 14
+                width: parent.width - (x + 10)
+                height: model.listRowHeight
                 verticalAlignment: Text.AlignVCenter
                 text: isCategoryRow ? "" : (modelData.name || "")
                 pointSize: Style.fontSizeBody
@@ -301,6 +328,7 @@ Item {
               MouseArea {
                 id: rowMouse
                 anchors.fill: parent
+                enabled: !Settings.data.appLauncher.ignoreMouseInput
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onClicked: {
@@ -328,7 +356,8 @@ Item {
         // in the "all categories" state (miniframeswitchbtn.cpp:32-52).
         Rectangle {
           Layout.fillWidth: true
-          Layout.preferredHeight: Style.launcherMiniRowHeight
+          Layout.preferredHeight: model.listRowHeight
+          visible: Settings.data.appLauncher.showCategories
           radius: Style.radiusRow
           color: switchRowMouse.containsMouse || switchRowMouse.pressed ? Color.overlay("hover") : "transparent"
 
@@ -376,6 +405,7 @@ Item {
           MouseArea {
             id: switchRowMouse
             anchors.fill: parent
+            enabled: !Settings.data.appLauncher.ignoreMouseInput
             hoverEnabled: true
             acceptedButtons: Qt.LeftButton
             onClicked: {

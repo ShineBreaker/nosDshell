@@ -63,7 +63,10 @@ Variants {
     // the cell size, so extra vertical space just leaves the grid scrollable.
     readonly property real screenWidth: liveScreen?.width ?? 0
     readonly property real screenHeight: liveScreen?.height ?? 0
-    readonly property int cellBudget: screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellBudgetNarrow : Style.launcherCellBudgetWide
+    // appLauncher.density scales the cell budget: compact packs more columns,
+    // comfortable grows the cells (and the cell × iconRatio icon with them).
+    readonly property real cellScale: Settings.data.appLauncher.density === "compact" ? 0.85 : (Settings.data.appLauncher.density === "comfortable" ? 1.15 : 1.0)
+    readonly property int cellBudget: Math.round((screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellBudgetNarrow : Style.launcherCellBudgetWide) * cellScale)
     readonly property int cellSpacing: screenWidth <= Style.launcherCellBudgetBreakpoint ? Style.launcherCellSpacingNarrow : Style.launcherCellSpacingWide
     readonly property real gridWidth: Math.max(1, screenWidth - (sidePadding * 2))
     readonly property int columns: Math.max(1, Math.floor(gridWidth / cellBudget))

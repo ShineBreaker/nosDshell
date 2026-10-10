@@ -478,7 +478,6 @@ Singleton {
       property bool enableClipboardChips: true
       property string clipboardWatchTextCommand: "wl-paste --type text --watch cliphist store"
       property string clipboardWatchImageCommand: "wl-paste --type image --watch cliphist store"
-      property string position: "center"  // Position: center, top_left, top_right, bottom_left, bottom_right, bottom_center, top_center
       // DDE launcher view: "fullscreen" | "mini" (DESIGN §3.4)
       property string mode: "fullscreen"
       // DDE launcher layout: "free" | "category"
@@ -490,8 +489,8 @@ Singleton {
       property string terminalCommand: "alacritty -e"
       property bool customLaunchPrefixEnabled: false
       property string customLaunchPrefix: ""
-      // View mode: "list" or "grid"
-      property string viewMode: "list"
+      // DDE fullscreen browse view: "grid" | "list" (search always lists)
+      property string viewMode: "grid"
       property bool showCategories: true
       // Icon mode: "tabler" or "native"
       property string iconMode: "tabler"
@@ -502,7 +501,6 @@ Singleton {
       property bool clearSearchOnClose: true
       property bool ignoreMouseInput: false
       property string screenshotAnnotationTool: ""
-      property bool overviewLayer: false
       property string density: "default" // "compact", "default", "comfortable"
     }
 

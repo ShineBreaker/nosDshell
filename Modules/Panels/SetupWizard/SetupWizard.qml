@@ -582,8 +582,8 @@ PanelWindow {
 
       // The drop, declared after the face on purpose: NDropShadow's layer paints
       // its `source` back out over the same rectangle, so it has to sit on top of
-      // the face (same order as Notification.qml:423-428 and
-      // LauncherOverlayWindow.qml:112-116). Put behind it with z: -1 and the
+      // the face (same order as Notification.qml:423-428).
+      // Put behind it with z: -1 and the
       // copy shows through the translucent face as a second, offset dialog.
       // It is anchored to the face and not to the card: the effect maps `source`
       // onto the item's own rect, so a larger rect would scale the copy off.

@@ -10,8 +10,7 @@ import qs.Widgets
 
 // Non-visual launcher state: providers, search text, results, selection,
 // activation, plugin-provider sync, usage sorting. The fullscreen and mini DDE
-// views consume one instance each and only build UI on top of it; LauncherCore
-// (SmartPanel/overviewLayer view) embeds one too, forwarding its public names.
+// views consume one instance each and only build UI on top of it.
 // Root is an (invisible) Item so the provider Items can be children.
 Item {
   id: root
@@ -68,8 +67,13 @@ Item {
     return Math.round(cellWidth * Settings.data.appLauncher.iconRatio);
   }
 
-  // Row height for list-like views (§3.4.2)
-  readonly property int rowHeight: 36
+  // Density (compact/default/comfortable) scales the DDE list/grid metrics;
+  // both views share these so page navigation stays aligned with the rows.
+  readonly property string densityName: Settings.data.appLauncher.density || "default"
+  readonly property int listRowHeight: Math.round((densityName === "compact" ? 30 : (densityName === "comfortable" ? 44 : 36)) * Settings.data.ui.rowHeightScale)
+  readonly property int listIconSize: densityName === "compact" ? 20 : (densityName === "comfortable" ? 28 : 24)
+  // Fullscreen grid cell budget scale — the icon (cell × iconRatio) follows.
+  readonly property real cellScale: densityName === "compact" ? 0.85 : (densityName === "comfortable" ? 1.15 : 1.0)
 
   // ---------------------------------------------------------------
   // Lifecycle
@@ -244,6 +248,39 @@ Item {
     registerProvider(provider, id);
   }
 
+  function unregisterProvider(provider, id) {
+    const idx = _providers.indexOf(provider);
+    if (idx >= 0)
+      _providers.splice(idx, 1);
+    if (id && _providersById[id]) {
+      delete _providersById[id];
+      _providersById = _providersById;
+    }
+    if (provider.launcher === root)
+      provider.launcher = null;
+    if (_activeProvider === provider)
+      _activeProvider = null;
+  }
+
+  // The DDE views' layer surfaces persist for the whole session, so a
+  // Component.onCompleted gate would only evaluate the setting once — sync
+  // registration on every toggle instead.
+  function syncClipboardProvider() {
+    const want = Settings.data.appLauncher.enableClipboardHistory;
+    const have = _providers.indexOf(clipProvider) !== -1;
+    if (want === have)
+      return;
+    if (want) {
+      registerProviderWithId(clipProvider, "clipProvider");
+      Logger.d("Launcher", "Registered: ClipboardProvider");
+    } else {
+      unregisterProvider(clipProvider, "clipProvider");
+      Logger.d("Launcher", "Unregistered: ClipboardProvider");
+    }
+    if (root.isOpen)
+      updateResults();
+  }
+
   function syncPluginProviders() {
     const registeredIds = LauncherProviderRegistry.getPluginProviders();
     let changed = false;
@@ -318,11 +355,11 @@ Item {
   }
 
   function selectNextPage(entryHeight) {
-    _selectedIndex = LauncherNav.selectNextPage(_selectedIndex, _results.length, entryHeight || rowHeight);
+    _selectedIndex = LauncherNav.selectNextPage(_selectedIndex, _results.length, entryHeight || listRowHeight);
   }
 
   function selectPreviousPage(entryHeight) {
-    _selectedIndex = LauncherNav.selectPreviousPage(_selectedIndex, _results.length, entryHeight || rowHeight);
+    _selectedIndex = LauncherNav.selectPreviousPage(_selectedIndex, _results.length, entryHeight || listRowHeight);
   }
 
   // Column is preserved across rows and (for the free view) sections
@@ -419,11 +456,13 @@ Item {
 
   ClipboardProvider {
     id: clipProvider
-    Component.onCompleted: {
-      if (Settings.data.appLauncher.enableClipboardHistory) {
-        registerProviderWithId(this, "clipProvider");
-        Logger.d("Launcher", "Registered: ClipboardProvider");
-      }
+    Component.onCompleted: root.syncClipboardProvider()
+  }
+
+  Connections {
+    target: Settings.data.appLauncher
+    function onEnableClipboardHistoryChanged() {
+      root.syncClipboardProvider();
     }
   }
 

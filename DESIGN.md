@@ -376,6 +376,20 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
   - 内边距 (18, 0, 12, 18)（`miniframerightbar.cpp:144`）。
 - 列表里的分类项：文字白 × 0.6；选中时文字 `accent`，底色 `rgba(21,21,21,0.2)`，圆角 4。
 
+#### 3.4.3 设置联动
+
+启动器设置页（设置 → 启动器 → 通用）的每个控件都落在上面两种视图上：
+
+- `appLauncher.mode`：全屏 ⇄ 迷你，设置里直接切换（`LauncherState.setMode` 会把打开中的视图热切换）。
+- `appLauncher.viewMode`：`grid`（默认）全屏浏览态用网格；`list` 浏览态改为列表（搜索态本来就是列表）。
+- `appLauncher.density`：行高 30/36/44（×`ui.rowHeightScale`）、列表图标 20/24/28、全屏单元预算 ×0.85/1.0/1.15。
+- `appLauncher.showCategories`：关闭后隐藏全屏分类导航与模式切换按钮、迷你"分类"开关，provider 桶过滤归零；`displayMode` 本身保留。
+- `appLauncher.showIconBackground`：图标后垫 `radiusRow` 底板。
+- `appLauncher.iconMode`：provider 发出 Tabler 字形名时，委托先查主题图标再退字形（`apps` 兜底）。
+- `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
+- `appLauncher.enableClipPreview`：全屏剪贴板预览卡片开关；`enableClipboardHistory` 切换即时注册/注销剪贴板 provider。
+- Noctalia 原有的 `appLauncher.position` 与 `overviewLayer`（SmartPanel/overlay 前端）已随该前端一并移除——启动器只有本节这套 DDE 实现。
+
 ### 3.5 控制中心（dde-control-center）
 
 来源：`gxde-control-center/src/frame/*`。

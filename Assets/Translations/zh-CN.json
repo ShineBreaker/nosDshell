@@ -741,6 +741,10 @@
       "compact": "紧凑",
       "default": "默认"
     },
+    "launcher-mode": {
+      "fullscreen": "全屏",
+      "mini": "迷你"
+    },
     "launcher-view-mode": {
       "grid": "网格",
       "list": "列表"
@@ -1405,13 +1409,12 @@
       "settings-icon-mode-label": "使用本地图标",
       "settings-ignore-mouse-input-description": "禁用启动器中的鼠标交互和滚轮。",
       "settings-ignore-mouse-input-label": "忽略鼠标输入",
-      "settings-overlay-layer-description": "在覆盖层上显示启动器，位于全屏窗口之上。启用时，启动器不会附加到栏。",
-      "settings-overlay-layer-label": "在全屏上方显示",
-      "settings-position-description": "选择启动器面板出现的位置。",
       "settings-show-categories-description": "显示用于筛选应用程序的类别标签。",
       "settings-show-categories-label": "显示类别",
       "settings-show-icon-background-description": "在图标后显示一个圆角矩形背景。",
       "settings-show-icon-background-label": "显示图标背景",
+      "settings-mode-label": "启动器模式",
+      "settings-mode-description": "在全屏启动器和迷你启动器之间选择。",
       "settings-sort-by-usage-description": "启用后，经常启动的应用程序将显示在列表首位。",
       "settings-sort-by-usage-label": "按使用频率排序",
       "settings-terminal-command-description": "启动终端的命令。例如：'kitty -e'或'gnome-terminal --'。",
