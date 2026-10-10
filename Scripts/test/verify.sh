@@ -183,7 +183,7 @@ EOF
 
 PKGS="${QS_PKG:-quickshell} sway grim dbus imagemagick libnotify pipewire wireplumber
 font-google-noto font-google-noto-sans-cjk papirus-icon-theme adwaita-icon-theme
-qtwayland qtmultimedia qt5compat qtimageformats python python-dbus python-pygobject foot
+qtwayland qtmultimedia qt5compat qtimageformats python python-dbus python-pygobject python-pillow foot
 coreutils findutils grep gawk procps"
 
 # --- inner script --------------------------------------------------------
@@ -224,7 +224,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|dock-fullscreen|dock-battery-wheel|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -694,6 +694,35 @@ run_scene() {
                             shot settings-search-outside
                           fi
                           call settings toggle 1 ;;
+    # ComboBox popup on a settings page: find the first combo field by its
+    # caret glyph (the row position scrolls between runs), real-click it open,
+    # shoot the popup — the menu surface must stay opaque over page text and
+    # rows must not clip.
+    settings-combo)       call settings openTab colorscheme 3
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          shot settings-combo-page
+                          COMBO_Y=$(python3 - "$OUT/settings-combo-page.png" 2>>"$WORK/logs/caret-scan.log" <<'PYEOF'
+from PIL import Image
+import sys
+im = Image.open(sys.argv[1]).convert('RGB')
+# The caret is a small light glyph ~12px left of the field's right edge.
+# A field row counts when >=3 bright pixels cluster within a 12px window.
+for y in range(180, 800):
+    hits = sum(1 for x in range(1878, 1904)
+               if all(c > 110 for c in im.getpixel((x, y))))
+    if hits >= 3:
+        print(y + 4)
+        break
+PYEOF
+)
+                          echo "combo field caret at y: $COMBO_Y"
+                          if [ -n "$COMBO_Y" ] && [ -x "$VINPUT" ]; then
+                            "$VINPUT" vinput click 1795 $COMBO_Y 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0
+                            shot settings-combo-popup
+                          fi
+                          call settings toggle 1 ;;
     # A fullscreen window must fully release the dock strip: the dock slides
     # off AND its Overlay-layer surface must stop claiming input there.
     # Probe dockContainer's scene position (off-surface = slid), then inject a
@@ -816,7 +845,17 @@ PYEOF
                             "$VINPUT" vinput rclick $CLOCK_POS 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.2
                             shot dock-widget-menu
+                            # Hover a menu row — the accent hover rect rides the
+                            # row radius (Style.radiusRow) against the rounded frame.
                             qs -p "$REPO" ipc call debug hit opened 10 10 > "$WORK/logs/dock-menu-hit.txt" 2>&1 || true
+                            # Menu opens just above the widget — its first row
+                            # centre sits ~70 px above the widget centre on a
+                            # 1920x1080 bottom dock.
+                            MENU_X=$(( ${CLOCK_POS%% *} - 45 ))
+                            MENU_Y=$(( ${CLOCK_POS#* } - 70 ))
+                            "$VINPUT" vinput move $MENU_X $MENU_Y 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.8
+                            shot dock-widget-menu-hover
                             "$VINPUT" vinput click 300 300 2>>"$WORK/logs/vinput.log" || true
                             sleep 0.8
                           else
