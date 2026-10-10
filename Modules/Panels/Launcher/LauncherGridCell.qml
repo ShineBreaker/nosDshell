@@ -118,49 +118,59 @@ Item {
     acceptedButtons: Qt.LeftButton | Qt.RightButton
     onClicked: mouse => {
                  if (mouse.button === Qt.RightButton) {
-                   appContextMenu.openAtItem(root, mouse.x, mouse.y);
+                   // Build the menu on the first right-click only.
+                   appContextMenuLoader.active = true;
+                   appContextMenuLoader.item?.openAtItem(root, mouse.x, mouse.y);
                  } else {
                    root.activated();
                  }
                }
   }
 
-  // Right-click: DDE dark menu without arrow at the cursor (DESIGN §3.4.1)
-  NContextMenu {
-    id: appContextMenu
-    variant: "dark"
-    arrowEdge: "" // no arrow in the fullscreen launcher
+  // Right-click: DDE dark menu without arrow at the cursor (DESIGN §3.4.1).
+  // Lazy: the grid builds dozens of cells on open/filter, and a resident
+  // Popup tree (background + contentItem) in each one is pure first-open
+  // cost — only a right-click ever needs it.
+  Loader {
+    id: appContextMenuLoader
+    active: false
 
-    readonly property var itemActions: {
-      const provider = root.modelData.provider;
-      if (provider && provider.getItemActions) {
-        return provider.getItemActions(root.modelData) || [];
+    sourceComponent: NContextMenu {
+      id: appContextMenu
+      variant: "dark"
+      arrowEdge: "" // no arrow in the fullscreen launcher
+
+      readonly property var itemActions: {
+        const provider = root.modelData.provider;
+        if (provider && provider.getItemActions) {
+          return provider.getItemActions(root.modelData) || [];
+        }
+        return [];
       }
-      return [];
-    }
 
-    // { label, action: "key:string" } — resolved in onTriggered
-    model: {
-      const actions = appContextMenu.itemActions;
-      const items = [];
-      for (let i = 0; i < actions.length; i++) {
-        items.push({
-                     "label": actions[i].tooltip || actions[i].label || "",
-                     "icon": actions[i].icon || "",
-                     "action": "row:" + i
-                   });
+      // { label, action: "key:string" } — resolved in onTriggered
+      model: {
+        const actions = appContextMenu.itemActions;
+        const items = [];
+        for (let i = 0; i < actions.length; i++) {
+          items.push({
+                       "label": actions[i].tooltip || actions[i].label || "",
+                       "icon": actions[i].icon || "",
+                       "action": "row:" + i
+                     });
+        }
+        return items;
       }
-      return items;
-    }
 
-    onTriggered: (action, item) => {
-                   if (typeof action === "string" && action.startsWith("row:")) {
-                     const idx = parseInt(action.substring(4));
-                     const actions = appContextMenu.itemActions;
-                     if (idx >= 0 && idx < actions.length && actions[idx].action) {
-                       actions[idx].action();
+      onTriggered: (action, item) => {
+                     if (typeof action === "string" && action.startsWith("row:")) {
+                       const idx = parseInt(action.substring(4));
+                       const actions = appContextMenu.itemActions;
+                       if (idx >= 0 && idx < actions.length && actions[idx].action) {
+                         actions[idx].action();
+                       }
                      }
                    }
-                 }
+    }
   }
 }
