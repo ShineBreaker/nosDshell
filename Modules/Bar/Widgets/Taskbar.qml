@@ -833,6 +833,17 @@ Item {
                     smooth: true
                     asynchronous: true
 
+                    // Dim pinned apps that aren't running (dock.deadOpacity;
+                    // DockContent.qml applies the same rule in fashion mode)
+                    opacity: taskbarItem.isRunning ? 1.0 : (Settings.data.dock.deadOpacity ?? 1.0)
+
+                    Behavior on opacity {
+                      NumberAnimation {
+                        duration: Style.animationFast
+                        easing.type: Easing.OutCubic
+                      }
+                    }
+
                     // Apply dock shader to all taskbar icons
                     layer.enabled: widgetSettings.colorizeIcons !== false
                     layer.effect: ShaderEffect {
