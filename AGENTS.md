@@ -43,6 +43,10 @@ DDE 专属素材（时钟表盘、关机按钮、启动器/控制中心图标等
 - **调试：界面行为不符合预期，要取证或复现** → [`DEBUGGING.md`](./DEBUGGING.md)：调试开关四个等价入口、`debug.modules` 与 `debug.logLevel`、场景取证 IPC（`list` / `tree` / `hit` / `opened` / `watch`）、真指针注入、Qt 类别日志与 core 验尸、现成脚本。
 - **要写新工具，或改 `tools/*/` 的依赖** → [`TOOLS.md`](./TOOLS.md)：Rust 工具要求、crate 版本选择与 `Cargo.lock`、`packaging/rust-crates.scm` vendor 同步、`guix build` 验证。
 
+## 文档站点（GitHub Pages）
+
+`docs/` 目录同时是 GitHub Pages 站点（main /docs，地址 `https://shinebreaker.github.io/nosDshell/`）。`docs/legacy/` 里是上游 Noctalia v4 wiki 的存档镜像，由 `Scripts/docs/vendor-legacy-docs.py <noctalia-docs 克隆路径>` 从 `noctalia-dev/noctalia-docs` 的 Starlight MDX 全量重新生成——**不要手改 `docs/legacy/` 里的文件**，要改就改脚本重新跑。站点配置在 `docs/_config.yml`（just-the-docs 主题）。
+
 ## 提交
 
 - **每完成一块可独立验证的工作就提交一次。** 校验通过之后再提交，不要把多个阶段攒在一起。

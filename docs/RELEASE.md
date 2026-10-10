@@ -1,3 +1,8 @@
+---
+title: Release Process
+nav_exclude: true
+---
+
 # 发版流程
 
 ## 现状
