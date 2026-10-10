@@ -15,21 +15,23 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property bool valueShowUnreadBadge: widgetData.showUnreadBadge !== undefined ? widgetData.showUnreadBadge : widgetMetadata.showUnreadBadge
-  property bool valueHideWhenZero: widgetData.hideWhenZero !== undefined ? widgetData.hideWhenZero : widgetMetadata.hideWhenZero
-  property bool valueHideWhenZeroUnread: widgetData.hideWhenZeroUnread !== undefined ? widgetData.hideWhenZeroUnread : widgetMetadata.hideWhenZeroUnread
-  property string valueUnreadBadgeColor: widgetData.unreadBadgeColor !== undefined ? widgetData.unreadBadgeColor : widgetMetadata.unreadBadgeColor
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
+  property bool valueShowUnreadBadge: settingsHelper.value("showUnreadBadge")
+  property bool valueHideWhenZero: settingsHelper.value("hideWhenZero")
+  property bool valueHideWhenZeroUnread: settingsHelper.value("hideWhenZeroUnread")
+  property string valueUnreadBadgeColor: settingsHelper.value("unreadBadgeColor")
+  property string valueIconColor: settingsHelper.value("iconColor")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.showUnreadBadge = valueShowUnreadBadge;
-    settings.hideWhenZero = valueHideWhenZero;
-    settings.hideWhenZeroUnread = valueHideWhenZeroUnread;
-    settings.unreadBadgeColor = valueUnreadBadgeColor;
-    settings.iconColor = valueIconColor;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NToggle {
@@ -37,7 +39,7 @@ ColumnLayout {
     description: I18n.tr("bar.notification-history.show-unread-badge-description")
     checked: valueShowUnreadBadge
     onToggled: checked => {
-                 valueShowUnreadBadge = checked;
+                 settingsHelper.set("showUnreadBadge", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showUnreadBadge
@@ -47,7 +49,7 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor
@@ -58,7 +60,7 @@ ColumnLayout {
     description: I18n.tr("bar.notification-history.unread-badge-color-description")
     currentKey: valueUnreadBadgeColor
     onSelected: key => {
-                  valueUnreadBadgeColor = key;
+                  settingsHelper.set("unreadBadgeColor", key);
                   saveSettings();
                 }
     visible: valueShowUnreadBadge
@@ -70,7 +72,7 @@ ColumnLayout {
     description: I18n.tr("bar.notification-history.hide-widget-when-zero-description")
     checked: valueHideWhenZero
     onToggled: checked => {
-                 valueHideWhenZero = checked;
+                 settingsHelper.set("hideWhenZero", checked);
                  saveSettings();
                }
     enabled: !valueHideWhenZeroUnread
@@ -82,7 +84,7 @@ ColumnLayout {
     description: I18n.tr("bar.notification-history.hide-widget-when-zero-unread-description")
     checked: valueHideWhenZeroUnread
     onToggled: checked => {
-                 valueHideWhenZeroUnread = checked;
+                 settingsHelper.set("hideWhenZeroUnread", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.hideWhenZeroUnread

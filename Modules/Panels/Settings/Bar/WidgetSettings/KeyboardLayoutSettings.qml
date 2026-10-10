@@ -15,19 +15,22 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueDisplayMode: widgetData.displayMode !== undefined ? widgetData.displayMode : widgetMetadata.displayMode
-  property bool valueShowIcon: widgetData.showIcon !== undefined ? widgetData.showIcon : widgetMetadata.showIcon
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
+  property string valueDisplayMode: settingsHelper.value("displayMode")
+  property bool valueShowIcon: settingsHelper.value("showIcon")
+  property string valueIconColor: settingsHelper.value("iconColor")
+  property string valueTextColor: settingsHelper.value("textColor")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.displayMode = valueDisplayMode;
-    settings.showIcon = valueShowIcon;
-    settings.iconColor = valueIconColor;
-    settings.textColor = valueTextColor;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NDisplayModeComboBox {
@@ -35,7 +38,7 @@ ColumnLayout {
     useForceOpen: true
     currentKey: valueDisplayMode
     onSelected: key => {
-                  valueDisplayMode = key;
+                  settingsHelper.set("displayMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.displayMode
@@ -46,7 +49,7 @@ ColumnLayout {
     description: I18n.tr("bar.keyboard-layout.show-icon-description")
     checked: valueShowIcon
     onToggled: checked => {
-                 valueShowIcon = checked;
+                 settingsHelper.set("showIcon", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showIcon
@@ -56,7 +59,7 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor
@@ -66,7 +69,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.textColor

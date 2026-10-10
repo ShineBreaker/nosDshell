@@ -17,21 +17,23 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueIcon: widgetData.icon !== undefined ? widgetData.icon : widgetMetadata.icon
-  property bool valueUseDistroLogo: widgetData.useDistroLogo !== undefined ? widgetData.useDistroLogo : widgetMetadata.useDistroLogo
-  property string valueCustomIconPath: widgetData.customIconPath !== undefined ? widgetData.customIconPath : widgetMetadata.customIconPath
-  property bool valueEnableColorization: widgetData.enableColorization !== undefined ? widgetData.enableColorization : widgetMetadata.enableColorization
-  property string valueColorizeSystemIcon: widgetData.colorizeSystemIcon !== undefined ? widgetData.colorizeSystemIcon : widgetMetadata.colorizeSystemIcon
+  property string valueIcon: settingsHelper.value("icon")
+  property bool valueUseDistroLogo: settingsHelper.value("useDistroLogo")
+  property string valueCustomIconPath: settingsHelper.value("customIconPath")
+  property bool valueEnableColorization: settingsHelper.value("enableColorization")
+  property string valueColorizeSystemIcon: settingsHelper.value("colorizeSystemIcon")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.icon = valueIcon;
-    settings.useDistroLogo = valueUseDistroLogo;
-    settings.customIconPath = valueCustomIconPath;
-    settings.enableColorization = valueEnableColorization;
-    settings.colorizeSystemIcon = valueColorizeSystemIcon;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NToggle {
@@ -39,7 +41,7 @@ ColumnLayout {
     description: I18n.tr("bar.control-center.use-distro-logo-description")
     checked: valueUseDistroLogo
     onToggled: checked => {
-                 valueUseDistroLogo = checked;
+                 settingsHelper.set("useDistroLogo", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.useDistroLogo
@@ -50,7 +52,7 @@ ColumnLayout {
     description: I18n.tr("bar.control-center.enable-colorization-description")
     checked: valueEnableColorization
     onToggled: checked => {
-                 valueEnableColorization = checked;
+                 settingsHelper.set("enableColorization", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.enableColorization
@@ -62,7 +64,7 @@ ColumnLayout {
     description: I18n.tr("bar.control-center.color-selection-description")
     currentKey: valueColorizeSystemIcon
     onSelected: function (key) {
-      valueColorizeSystemIcon = key;
+      settingsHelper.set("colorizeSystemIcon", key);
       saveSettings();
     }
     defaultValue: widgetMetadata.colorizeSystemIcon
@@ -112,8 +114,8 @@ ColumnLayout {
     id: iconPicker
     initialIcon: valueIcon
     onIconSelected: iconName => {
-                      valueIcon = iconName;
-                      valueCustomIconPath = "";
+                      settingsHelper.set("icon", iconName);
+                      settingsHelper.set("customIconPath", "");
                       saveSettings();
                     }
   }
@@ -126,7 +128,7 @@ ColumnLayout {
     initialPath: Quickshell.env("HOME")
     onAccepted: paths => {
                   if (paths.length > 0) {
-                    valueCustomIconPath = paths[0];
+                    settingsHelper.set("customIconPath", paths[0]);
                     saveSettings();
                   }
                 }

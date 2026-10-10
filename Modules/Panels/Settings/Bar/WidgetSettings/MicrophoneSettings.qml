@@ -15,25 +15,28 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueDisplayMode: widgetData.displayMode !== undefined ? widgetData.displayMode : widgetMetadata.displayMode
-  property string valueMiddleClickCommand: widgetData.middleClickCommand !== undefined ? widgetData.middleClickCommand : widgetMetadata.middleClickCommand
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
+  property string valueDisplayMode: settingsHelper.value("displayMode")
+  property string valueMiddleClickCommand: settingsHelper.value("middleClickCommand")
+  property string valueIconColor: settingsHelper.value("iconColor")
+  property string valueTextColor: settingsHelper.value("textColor")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.displayMode = valueDisplayMode;
-    settings.middleClickCommand = valueMiddleClickCommand;
-    settings.iconColor = valueIconColor;
-    settings.textColor = valueTextColor;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NDisplayModeComboBox {
     currentKey: valueDisplayMode
     onSelected: key => {
-                  valueDisplayMode = key;
+                  settingsHelper.set("displayMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.displayMode
@@ -43,7 +46,7 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor
@@ -53,7 +56,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.textColor
@@ -66,7 +69,7 @@ ColumnLayout {
     placeholderText: I18n.tr("panels.audio.external-mixer-placeholder")
     text: valueMiddleClickCommand
     onTextChanged: {
-      valueMiddleClickCommand = text;
+      settingsHelper.set("middleClickCommand", text);
       saveSettings();
     }
     defaultValue: widgetMetadata.middleClickCommand

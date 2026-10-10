@@ -16,26 +16,27 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueDisplayMode: widgetData.displayMode !== undefined ? widgetData.displayMode : widgetMetadata.displayMode
-  property string valueDeviceNativePath: widgetData.deviceNativePath !== undefined ? widgetData.deviceNativePath : widgetMetadata.deviceNativePath
-  property bool valueShowPowerProfiles: widgetData.showPowerProfiles !== undefined ? widgetData.showPowerProfiles : widgetMetadata.showPowerProfiles
-  property bool valueShowPerformanceMode: widgetData.showPerformanceMode !== undefined ? widgetData.showPerformanceMode : widgetMetadata.showPerformanceMode
-  property bool valueHideIfNotDetected: widgetData.hideIfNotDetected !== undefined ? widgetData.hideIfNotDetected : widgetMetadata.hideIfNotDetected
-  property bool valueHideIfIdle: widgetData.hideIfIdle !== undefined ? widgetData.hideIfIdle : widgetMetadata.hideIfIdle
+  property string valueDisplayMode: settingsHelper.value("displayMode")
+  property string valueDeviceNativePath: settingsHelper.value("deviceNativePath")
+  property bool valueShowPowerProfiles: settingsHelper.value("showPowerProfiles")
+  property bool valueShowPerformanceMode: settingsHelper.value("showPerformanceMode")
+  property bool valueHideIfNotDetected: settingsHelper.value("hideIfNotDetected")
+  property bool valueHideIfIdle: settingsHelper.value("hideIfIdle")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
+    var settings = settingsHelper.save();
     if (widgetData && widgetData.id) {
       settings.id = widgetData.id;
     }
-    settings.displayMode = valueDisplayMode;
-    settings.showPowerProfiles = valueShowPowerProfiles;
-    settings.showPerformanceMode = valueShowPerformanceMode;
-    settings.hideIfNotDetected = valueHideIfNotDetected;
-    settings.hideIfIdle = valueHideIfIdle;
-    settings.deviceNativePath = valueDeviceNativePath;
     settingsChanged(settings);
+    return settings;
   }
 
   NComboBox {
@@ -47,7 +48,7 @@ ColumnLayout {
     model: BatteryService.deviceModel
     currentKey: root.valueDeviceNativePath
     onSelected: key => {
-                  root.valueDeviceNativePath = key;
+                  settingsHelper.set("deviceNativePath", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.deviceNativePath
@@ -82,7 +83,7 @@ ColumnLayout {
     ]
     currentKey: root.valueDisplayMode
     onSelected: key => {
-                  root.valueDisplayMode = key;
+                  settingsHelper.set("displayMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.displayMode
@@ -93,7 +94,7 @@ ColumnLayout {
     description: I18n.tr("bar.battery.hide-if-not-detected-description")
     checked: valueHideIfNotDetected
     onToggled: checked => {
-                 valueHideIfNotDetected = checked;
+                 settingsHelper.set("hideIfNotDetected", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.hideIfNotDetected
@@ -104,7 +105,7 @@ ColumnLayout {
     description: I18n.tr("bar.battery.hide-if-idle-description")
     checked: valueHideIfIdle
     onToggled: checked => {
-                 valueHideIfIdle = checked;
+                 settingsHelper.set("hideIfIdle", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.hideIfIdle
@@ -119,7 +120,7 @@ ColumnLayout {
     description: I18n.tr("bar.battery.show-power-profile-description")
     checked: valueShowPowerProfiles
     onToggled: checked => {
-                 valueShowPowerProfiles = checked;
+                 settingsHelper.set("showPowerProfiles", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showPowerProfiles
@@ -130,7 +131,7 @@ ColumnLayout {
     description: I18n.tr("bar.battery.show-performance-mode-description")
     checked: valueShowPerformanceMode
     onToggled: checked => {
-                 valueShowPerformanceMode = checked;
+                 settingsHelper.set("showPerformanceMode", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showPerformanceMode

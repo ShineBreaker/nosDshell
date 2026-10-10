@@ -15,20 +15,22 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property string valueStatType: widgetData.statType !== undefined ? widgetData.statType : widgetMetadata.statType
-  property string valueDiskPath: widgetData.diskPath !== undefined ? widgetData.diskPath : widgetMetadata.diskPath
-  property bool valueShowBackground: widgetData.showBackground !== undefined ? widgetData.showBackground : widgetMetadata.showBackground
-  property bool valueRoundedCorners: widgetData.roundedCorners !== undefined ? widgetData.roundedCorners : widgetMetadata.roundedCorners
-  property string valueLayout: widgetData.layout !== undefined ? widgetData.layout : widgetMetadata.layout
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property string valueStatType: settingsHelper.value("statType")
+  property string valueDiskPath: settingsHelper.value("diskPath")
+  property bool valueShowBackground: settingsHelper.value("showBackground")
+  property bool valueRoundedCorners: settingsHelper.value("roundedCorners")
+  property string valueLayout: settingsHelper.value("layout")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.statType = valueStatType;
-    settings.diskPath = valueDiskPath;
-    settings.showBackground = valueShowBackground;
-    settings.roundedCorners = valueRoundedCorners;
-    settings.layout = valueLayout;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NComboBox {
@@ -64,7 +66,7 @@ ColumnLayout {
       return items;
     }
     onSelected: key => {
-                  valueStatType = key;
+                  settingsHelper.set("statType", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.statType
@@ -84,7 +86,7 @@ ColumnLayout {
     }
     currentKey: valueDiskPath
     onSelected: key => {
-                  valueDiskPath = key;
+                  settingsHelper.set("diskPath", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.diskPath
@@ -100,7 +102,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.system-stat-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 valueShowBackground = checked;
+                 settingsHelper.set("showBackground", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showBackground
@@ -113,7 +115,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.system-stat-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 valueRoundedCorners = checked;
+                 settingsHelper.set("roundedCorners", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.roundedCorners
@@ -140,7 +142,7 @@ ColumnLayout {
       }
     ]
     onSelected: key => {
-                  valueLayout = key;
+                  settingsHelper.set("layout", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.layout

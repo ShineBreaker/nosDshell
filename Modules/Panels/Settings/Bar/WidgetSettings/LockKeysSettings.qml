@@ -15,27 +15,28 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  // Local state
-  property bool valueShowCapsLock: widgetData.showCapsLock !== undefined ? widgetData.showCapsLock : widgetMetadata.showCapsLock
-  property bool valueShowNumLock: widgetData.showNumLock !== undefined ? widgetData.showNumLock : widgetMetadata.showNumLock
-  property bool valueShowScrollLock: widgetData.showScrollLock !== undefined ? widgetData.showScrollLock : widgetMetadata.showScrollLock
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
 
-  property string capsIcon: widgetData.capsLockIcon !== undefined ? widgetData.capsLockIcon : widgetMetadata.capsLockIcon
-  property string numIcon: widgetData.numLockIcon !== undefined ? widgetData.numLockIcon : widgetMetadata.numLockIcon
-  property string scrollIcon: widgetData.scrollLockIcon !== undefined ? widgetData.scrollLockIcon : widgetMetadata.scrollLockIcon
+  // Local state
+  property bool valueShowCapsLock: settingsHelper.value("showCapsLock")
+  property bool valueShowNumLock: settingsHelper.value("showNumLock")
+  property bool valueShowScrollLock: settingsHelper.value("showScrollLock")
+
+  property string capsIcon: settingsHelper.value("capsLockIcon")
+  property string numIcon: settingsHelper.value("numLockIcon")
+  property string scrollIcon: settingsHelper.value("scrollLockIcon")
 
   property bool valueHideWhenOff: widgetData.hideWhenOff !== undefined ? widgetData.hideWhenOff : (widgetMetadata.hideWhenOff !== undefined ? widgetMetadata.hideWhenOff : false)
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.showCapsLock = valueShowCapsLock;
-    settings.showNumLock = valueShowNumLock;
-    settings.showScrollLock = valueShowScrollLock;
-    settings.capsLockIcon = capsIcon;
-    settings.numLockIcon = numIcon;
-    settings.scrollLockIcon = scrollIcon;
+    var settings = settingsHelper.save();
     settings.hideWhenOff = valueHideWhenOff;
     settingsChanged(settings);
+    return settings;
   }
 
   RowLayout {
@@ -46,7 +47,7 @@ ColumnLayout {
       description: I18n.tr("bar.lock-keys.show-caps-lock-description")
       checked: valueShowCapsLock
       onToggled: checked => {
-                   valueShowCapsLock = checked;
+                   settingsHelper.set("showCapsLock", checked);
                    saveSettings();
                  }
       defaultValue: widgetMetadata.showCapsLock
@@ -71,7 +72,7 @@ ColumnLayout {
     initialIcon: capsIcon
     query: "letter-c"
     onIconSelected: function (iconName) {
-      capsIcon = iconName;
+      settingsHelper.set("capsLockIcon", iconName);
       saveSettings();
     }
   }
@@ -84,7 +85,7 @@ ColumnLayout {
       description: I18n.tr("bar.lock-keys.show-num-lock-description")
       checked: valueShowNumLock
       onToggled: checked => {
-                   valueShowNumLock = checked;
+                   settingsHelper.set("showNumLock", checked);
                    saveSettings();
                  }
       defaultValue: widgetMetadata.showNumLock
@@ -109,7 +110,7 @@ ColumnLayout {
     initialIcon: numIcon
     query: "letter-n"
     onIconSelected: function (iconName) {
-      numIcon = iconName;
+      settingsHelper.set("numLockIcon", iconName);
       saveSettings();
     }
   }
@@ -122,7 +123,7 @@ ColumnLayout {
       description: I18n.tr("bar.lock-keys.show-scroll-lock-description")
       checked: valueShowScrollLock
       onToggled: checked => {
-                   valueShowScrollLock = checked;
+                   settingsHelper.set("showScrollLock", checked);
                    saveSettings();
                  }
       defaultValue: widgetMetadata.showScrollLock
@@ -147,7 +148,7 @@ ColumnLayout {
     initialIcon: scrollIcon
     query: "letter-s"
     onIconSelected: function (iconName) {
-      scrollIcon = iconName;
+      settingsHelper.set("scrollLockIcon", iconName);
       saveSettings();
     }
   }

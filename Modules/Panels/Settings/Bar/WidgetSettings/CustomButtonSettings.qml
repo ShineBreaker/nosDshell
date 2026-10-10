@@ -17,28 +17,32 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Bar orientation (per-screen)
   property bool barIsVertical: (Settings.getBarPositionForScreen(screen?.name) === "left" || Settings.getBarPositionForScreen(screen?.name) === "right")
 
-  property string valueIcon: widgetData.icon !== undefined ? widgetData.icon : widgetMetadata.icon
-  property string valueIconPosition: widgetData.iconPosition !== undefined ? widgetData.iconPosition : widgetMetadata.iconPosition
-  property bool valueTextStream: widgetData.textStream !== undefined ? widgetData.textStream : widgetMetadata.textStream
-  property bool valueParseJson: widgetData.parseJson !== undefined ? widgetData.parseJson : widgetMetadata.parseJson
+  property string valueIcon: settingsHelper.value("icon")
+  property string valueIconPosition: settingsHelper.value("iconPosition")
+  property bool valueTextStream: settingsHelper.value("textStream")
+  property bool valueParseJson: settingsHelper.value("parseJson")
   property int valueMaxTextLengthHorizontal: widgetData?.maxTextLength?.horizontal ?? widgetMetadata?.maxTextLength?.horizontal
   property int valueMaxTextLengthVertical: widgetData?.maxTextLength?.vertical ?? widgetMetadata?.maxTextLength?.vertical
-  property string valueHideMode: (widgetData.hideMode !== undefined) ? widgetData.hideMode : widgetMetadata.hideMode
-  property bool valueShowIcon: (widgetData.showIcon !== undefined) ? widgetData.showIcon : widgetMetadata.showIcon
-  property bool valueShowExecTooltip: widgetData.showExecTooltip !== undefined ? widgetData.showExecTooltip : widgetMetadata.showExecTooltip
-  property bool valueShowTextTooltip: widgetData.showTextTooltip !== undefined ? widgetData.showTextTooltip : widgetMetadata.showTextTooltip
-  property string valueColorizeSystemIcon: widgetData.colorizeSystemIcon !== undefined ? widgetData.colorizeSystemIcon : widgetMetadata.colorizeSystemIcon
-  property string valueColorizeSystemText: widgetData.colorizeSystemText !== undefined ? widgetData.colorizeSystemText : widgetMetadata.colorizeSystemText
-  property string valueIpcIdentifier: widgetData.ipcIdentifier !== undefined ? widgetData.ipcIdentifier : widgetMetadata.ipcIdentifier
-  property string valueGeneralTooltipText: widgetData.generalTooltipText !== undefined ? widgetData.generalTooltipText : widgetMetadata.generalTooltipText
+  property string valueHideMode: settingsHelper.value("hideMode")
+  property bool valueShowIcon: settingsHelper.value("showIcon")
+  property bool valueShowExecTooltip: settingsHelper.value("showExecTooltip")
+  property bool valueShowTextTooltip: settingsHelper.value("showTextTooltip")
+  property string valueColorizeSystemIcon: settingsHelper.value("colorizeSystemIcon")
+  property string valueColorizeSystemText: settingsHelper.value("colorizeSystemText")
+  property string valueIpcIdentifier: settingsHelper.value("ipcIdentifier")
+  property string valueGeneralTooltipText: settingsHelper.value("generalTooltipText")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.icon = valueIcon;
-    settings.iconPosition = valueIconPosition;
+    var settings = settingsHelper.save();
     settings.leftClickExec = leftClickExecInput.text;
     settings.leftClickUpdateText = leftClickUpdateText.checked;
     settings.rightClickExec = rightClickExecInput.text;
@@ -54,22 +58,13 @@ ColumnLayout {
     settings.wheelDownUpdateText = wheelDownUpdateText.checked;
     settings.textCommand = textCommandInput.text;
     settings.textCollapse = textCollapseInput.text;
-    settings.textStream = valueTextStream;
-    settings.parseJson = valueParseJson;
-    settings.showIcon = valueShowIcon;
-    settings.showExecTooltip = valueShowExecTooltip;
-    settings.showTextTooltip = valueShowTextTooltip;
-    settings.hideMode = valueHideMode;
     settings.maxTextLength = {
       "horizontal": valueMaxTextLengthHorizontal,
       "vertical": valueMaxTextLengthVertical
     };
     settings.textIntervalMs = parseInt(textIntervalInput.text || textIntervalInput.placeholderText, 10);
-    settings.colorizeSystemIcon = valueColorizeSystemIcon;
-    settings.colorizeSystemText = valueColorizeSystemText;
-    settings.ipcIdentifier = valueIpcIdentifier;
-    settings.generalTooltipText = valueGeneralTooltipText;
     settingsChanged(settings);
+    return settings;
   }
 
   NTabBar {
@@ -319,7 +314,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.show-icon-description")
         checked: valueShowIcon
         onToggled: checked => {
-                     valueShowIcon = checked;
+                     settingsHelper.set("showIcon", checked);
                      saveSettings();
                    }
         visible: textCommandInput.text !== ""
@@ -352,7 +347,7 @@ ColumnLayout {
         id: iconPicker
         initialIcon: valueIcon
         onIconSelected: function (iconName) {
-          valueIcon = iconName;
+          settingsHelper.set("icon", iconName);
           saveSettings();
         }
       }
@@ -383,7 +378,7 @@ ColumnLayout {
                                ]
         currentKey: valueIconPosition
         onSelected: key => {
-                      valueIconPosition = key;
+                      settingsHelper.set("iconPosition", key);
                       saveSettings();
                     }
         defaultValue: widgetMetadata.iconPosition
@@ -394,7 +389,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.icon-color-selection-description")
         currentKey: valueColorizeSystemIcon
         onSelected: key => {
-                      valueColorizeSystemIcon = key;
+                      settingsHelper.set("colorizeSystemIcon", key);
                       saveSettings();
                     }
         defaultValue: widgetMetadata.colorizeSystemIcon
@@ -407,7 +402,7 @@ ColumnLayout {
         placeholderText: I18n.tr("placeholders.enter-tooltip")
         text: valueGeneralTooltipText
         onTextChanged: {
-          valueGeneralTooltipText = text;
+          settingsHelper.set("generalTooltipText", text);
           saveSettings();
         }
         defaultValue: widgetMetadata.generalTooltipText
@@ -419,7 +414,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.show-exec-tooltip-description")
         checked: valueShowExecTooltip
         onToggled: checked => {
-                     valueShowExecTooltip = checked;
+                     settingsHelper.set("showExecTooltip", checked);
                      saveSettings();
                    }
         defaultValue: widgetMetadata.showExecTooltip
@@ -431,7 +426,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.show-text-tooltip-description")
         checked: valueShowTextTooltip
         onToggled: checked => {
-                     valueShowTextTooltip = checked;
+                     settingsHelper.set("showTextTooltip", checked);
                      saveSettings();
                    }
         defaultValue: widgetMetadata.showTextTooltip
@@ -444,7 +439,7 @@ ColumnLayout {
         placeholderText: I18n.tr("placeholders.enter-ipc-identifier")
         text: valueIpcIdentifier
         onTextChanged: {
-          valueIpcIdentifier = text;
+          settingsHelper.set("ipcIdentifier", text);
           saveSettings();
         }
         defaultValue: widgetMetadata.ipcIdentifier
@@ -460,7 +455,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.text-color-selection-description")
         currentKey: valueColorizeSystemText
         onSelected: key => {
-                      valueColorizeSystemText = key;
+                      settingsHelper.set("colorizeSystemText", key);
                       saveSettings();
                     }
         defaultValue: widgetMetadata.colorizeSystemText
@@ -498,7 +493,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.text-stream-description")
         checked: valueTextStream
         onToggled: checked => {
-                     valueTextStream = checked;
+                     settingsHelper.set("textStream", checked);
                      saveSettings();
                    }
         defaultValue: widgetMetadata.textStream
@@ -510,7 +505,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.parse-json-description")
         checked: valueParseJson
         onToggled: checked => {
-                     valueParseJson = checked;
+                     settingsHelper.set("parseJson", checked);
                      saveSettings();
                    }
         defaultValue: widgetMetadata.parseJson
@@ -571,7 +566,7 @@ ColumnLayout {
         ]
         currentKey: valueHideMode
         onSelected: key => {
-                      valueHideMode = key;
+                      settingsHelper.set("hideMode", key);
                       saveSettings();
                     }
         visible: textCommandInput.text !== "" && valueTextStream == true

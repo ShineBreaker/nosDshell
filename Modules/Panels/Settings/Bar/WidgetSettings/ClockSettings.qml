@@ -17,14 +17,20 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueClockColor: widgetData.clockColor !== undefined ? widgetData.clockColor : widgetMetadata.clockColor
-  property bool valueUseCustomFont: widgetData.useCustomFont !== undefined ? widgetData.useCustomFont : widgetMetadata.useCustomFont
-  property string valueCustomFont: widgetData.customFont !== undefined ? widgetData.customFont : widgetMetadata.customFont
-  property string valueFormatHorizontal: widgetData.formatHorizontal !== undefined ? widgetData.formatHorizontal : widgetMetadata.formatHorizontal
-  property string valueFormatVertical: widgetData.formatVertical !== undefined ? widgetData.formatVertical : widgetMetadata.formatVertical
-  property string valueTooltipFormat: widgetData.tooltipFormat !== undefined ? widgetData.tooltipFormat : widgetMetadata.tooltipFormat
-  property int valueLineSpacing: widgetData.lineSpacing !== undefined ? widgetData.lineSpacing : widgetMetadata.lineSpacing
+  property string valueClockColor: settingsHelper.value("clockColor")
+  property bool valueUseCustomFont: settingsHelper.value("useCustomFont")
+  property string valueCustomFont: settingsHelper.value("customFont")
+  property string valueFormatHorizontal: settingsHelper.value("formatHorizontal")
+  property string valueFormatVertical: settingsHelper.value("formatVertical")
+  property string valueTooltipFormat: settingsHelper.value("tooltipFormat")
+  property int valueLineSpacing: settingsHelper.value("lineSpacing")
 
   readonly property color textColor: Color.resolveColorKey(valueClockColor)
 
@@ -35,15 +41,9 @@ ColumnLayout {
   readonly property var now: Time.now
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.clockColor = valueClockColor;
-    settings.useCustomFont = valueUseCustomFont;
-    settings.customFont = valueCustomFont;
-    settings.formatHorizontal = valueFormatHorizontal.trim();
-    settings.formatVertical = valueFormatVertical.trim();
-    settings.tooltipFormat = valueTooltipFormat.trim();
-    settings.lineSpacing = valueLineSpacing;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   // Function to insert token at cursor position in the focused input
@@ -77,7 +77,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueClockColor
     onSelected: key => {
-                  valueClockColor = key;
+                  settingsHelper.set("clockColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.clockColor
@@ -89,7 +89,7 @@ ColumnLayout {
     description: I18n.tr("bar.clock.use-custom-font-description")
     checked: valueUseCustomFont
     onToggled: checked => {
-                 valueUseCustomFont = checked;
+                 settingsHelper.set("useCustomFont", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.useCustomFont
@@ -107,7 +107,7 @@ ColumnLayout {
     popupHeight: 420
     minimumWidth: 300
     onSelected: function (key) {
-      valueCustomFont = key;
+      settingsHelper.set("customFont", key);
       saveSettings();
     }
     defaultValue: Settings.data.ui.fontDefault
@@ -144,7 +144,7 @@ ColumnLayout {
         placeholderText: "HH:mm ddd, MMM dd"
         text: valueFormatHorizontal
         onTextChanged: {
-          valueFormatHorizontal = text;
+          settingsHelper.set("formatHorizontal", text);
           saveSettings();
         }
         Component.onCompleted: {
@@ -172,7 +172,7 @@ ColumnLayout {
         placeholderText: "HH mm dd MM"
         text: valueFormatVertical
         onTextChanged: {
-          valueFormatVertical = text;
+          settingsHelper.set("formatVertical", text);
           saveSettings();
         }
         Component.onCompleted: {
@@ -195,7 +195,7 @@ ColumnLayout {
         placeholderText: "HH:mm, ddd MMM dd"
         text: valueTooltipFormat
         onTextChanged: {
-          valueTooltipFormat = text;
+          settingsHelper.set("tooltipFormat", text);
           saveSettings();
         }
         Component.onCompleted: {
@@ -218,7 +218,7 @@ ColumnLayout {
         to: 20
         value: valueLineSpacing
         onValueChanged: {
-          valueLineSpacing = value;
+          settingsHelper.set("lineSpacing", value);
           saveSettings();
         }
         defaultValue: widgetMetadata.lineSpacing

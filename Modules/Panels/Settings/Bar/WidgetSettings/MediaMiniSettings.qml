@@ -15,42 +15,33 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  // Local state
-  property string valueHideMode: widgetData.hideMode !== undefined ? widgetData.hideMode : widgetMetadata.hideMode
-  // Deprecated: hideWhenIdle now folded into hideMode = "idle"
-  property bool valueHideWhenIdle: widgetData.hideWhenIdle !== undefined ? widgetData.hideWhenIdle : widgetMetadata.hideWhenIdle
-  property bool valueShowAlbumArt: widgetData.showAlbumArt !== undefined ? widgetData.showAlbumArt : widgetMetadata.showAlbumArt
-  property bool valuePanelShowAlbumArt: widgetData.panelShowAlbumArt !== undefined ? widgetData.panelShowAlbumArt : widgetMetadata.panelShowAlbumArt
-  property bool valueShowArtistFirst: widgetData.showArtistFirst !== undefined ? widgetData.showArtistFirst : widgetMetadata.showArtistFirst
-  property bool valueShowVisualizer: widgetData.showVisualizer !== undefined ? widgetData.showVisualizer : widgetMetadata.showVisualizer
-  property string valueVisualizerType: widgetData.visualizerType !== undefined ? widgetData.visualizerType : widgetMetadata.visualizerType
-  property string valueScrollingMode: widgetData.scrollingMode !== undefined ? widgetData.scrollingMode : widgetMetadata.scrollingMode
-  property int valueMaxWidth: widgetData.maxWidth !== undefined ? widgetData.maxWidth : widgetMetadata.maxWidth
-  property bool valueUseFixedWidth: widgetData.useFixedWidth !== undefined ? widgetData.useFixedWidth : widgetMetadata.useFixedWidth
-  property bool valueShowProgressRing: widgetData.showProgressRing !== undefined ? widgetData.showProgressRing : widgetMetadata.showProgressRing
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
-
-  Component.onCompleted: {
-    if (widgetData && widgetData.hideMode !== undefined) {
-      valueHideMode = widgetData.hideMode;
-    }
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
   }
 
+  // Local state
+  property string valueHideMode: settingsHelper.value("hideMode")
+  // Deprecated: hideWhenIdle now folded into hideMode = "idle"
+  property bool valueHideWhenIdle: settingsHelper.value("hideWhenIdle")
+  property bool valueShowAlbumArt: settingsHelper.value("showAlbumArt")
+  property bool valuePanelShowAlbumArt: settingsHelper.value("panelShowAlbumArt")
+  property bool valueShowArtistFirst: settingsHelper.value("showArtistFirst")
+  property bool valueShowVisualizer: settingsHelper.value("showVisualizer")
+  property string valueVisualizerType: settingsHelper.value("visualizerType")
+  property string valueScrollingMode: settingsHelper.value("scrollingMode")
+  property int valueMaxWidth: settingsHelper.value("maxWidth")
+  property bool valueUseFixedWidth: settingsHelper.value("useFixedWidth")
+  property bool valueShowProgressRing: settingsHelper.value("showProgressRing")
+  property string valueTextColor: settingsHelper.value("textColor")
+
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.hideMode = valueHideMode;
+    var settings = settingsHelper.save();
     // No longer store hideWhenIdle separately; kept for backward compatibility only
-    settings.showAlbumArt = valueShowAlbumArt;
-    settings.panelShowAlbumArt = valuePanelShowAlbumArt;
-    settings.showArtistFirst = valueShowArtistFirst;
-    settings.showVisualizer = valueShowVisualizer;
-    settings.visualizerType = valueVisualizerType;
-    settings.scrollingMode = valueScrollingMode;
     settings.maxWidth = parseInt(widthInput.text) || widgetMetadata.maxWidth;
-    settings.useFixedWidth = valueUseFixedWidth;
-    settings.showProgressRing = valueShowProgressRing;
-    settings.textColor = valueTextColor;
     settingsChanged(settings);
+    return settings;
   }
 
   NComboBox {
@@ -77,7 +68,7 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-                  root.valueHideMode = key;
+                  settingsHelper.set("hideMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.hideMode
@@ -88,7 +79,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.show-album-art-description")
     checked: valueShowAlbumArt
     onToggled: checked => {
-                 valueShowAlbumArt = checked;
+                 settingsHelper.set("showAlbumArt", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showAlbumArt
@@ -99,7 +90,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.show-artist-first-description")
     checked: valueShowArtistFirst
     onToggled: checked => {
-                 valueShowArtistFirst = checked;
+                 settingsHelper.set("showArtistFirst", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showArtistFirst
@@ -110,7 +101,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.show-visualizer-description")
     checked: valueShowVisualizer
     onToggled: checked => {
-                 valueShowVisualizer = checked;
+                 settingsHelper.set("showVisualizer", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showVisualizer
@@ -136,7 +127,7 @@ ColumnLayout {
     ]
     currentKey: valueVisualizerType
     onSelected: key => {
-                  valueVisualizerType = key;
+                  settingsHelper.set("visualizerType", key);
                   saveSettings();
                 }
     minimumWidth: 200
@@ -159,7 +150,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.use-fixed-width-description")
     checked: valueUseFixedWidth
     onToggled: checked => {
-                 valueUseFixedWidth = checked;
+                 settingsHelper.set("useFixedWidth", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.useFixedWidth
@@ -170,7 +161,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.show-progress-ring-description")
     checked: valueShowProgressRing
     onToggled: checked => {
-                 valueShowProgressRing = checked;
+                 settingsHelper.set("showProgressRing", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showProgressRing
@@ -180,7 +171,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.textColor
@@ -205,7 +196,7 @@ ColumnLayout {
     ]
     currentKey: valueScrollingMode
     onSelected: key => {
-                  valueScrollingMode = key;
+                  settingsHelper.set("scrollingMode", key);
                   saveSettings();
                 }
     minimumWidth: 200
@@ -228,7 +219,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.show-album-art-description")
     checked: valuePanelShowAlbumArt
     onToggled: checked => {
-                 valuePanelShowAlbumArt = checked;
+                 settingsHelper.set("panelShowAlbumArt", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.panelShowAlbumArt

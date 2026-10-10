@@ -15,33 +15,28 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  // Local state
-  property bool valueShowIcon: widgetData.showIcon !== undefined ? widgetData.showIcon : widgetMetadata.showIcon
-  property bool valueShowText: widgetData.showText !== undefined ? widgetData.showText : widgetMetadata.showText
-  property string valueHideMode: widgetData.hideMode !== undefined ? widgetData.hideMode : widgetMetadata.hideMode
-  property string valueScrollingMode: widgetData.scrollingMode || widgetMetadata.scrollingMode
-  property int valueMaxWidth: widgetData.maxWidth !== undefined ? widgetData.maxWidth : widgetMetadata.maxWidth
-  property bool valueUseFixedWidth: widgetData.useFixedWidth !== undefined ? widgetData.useFixedWidth : widgetMetadata.useFixedWidth
-  property bool valueColorizeIcons: widgetData.colorizeIcons !== undefined ? widgetData.colorizeIcons : widgetMetadata.colorizeIcons
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
-
-  Component.onCompleted: {
-    if (widgetData && widgetData.hideMode !== undefined) {
-      valueHideMode = widgetData.hideMode;
-    }
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
   }
 
+  // Local state
+  property bool valueShowIcon: settingsHelper.value("showIcon")
+  property bool valueShowText: settingsHelper.value("showText")
+  property string valueHideMode: settingsHelper.value("hideMode")
+  property string valueScrollingMode: settingsHelper.value("scrollingMode")
+  property int valueMaxWidth: settingsHelper.value("maxWidth")
+  property bool valueUseFixedWidth: settingsHelper.value("useFixedWidth")
+  property bool valueColorizeIcons: settingsHelper.value("colorizeIcons")
+  property string valueTextColor: settingsHelper.value("textColor")
+
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.hideMode = valueHideMode;
-    settings.showIcon = valueShowIcon;
-    settings.showText = valueShowText;
+    var settings = settingsHelper.save();
     settings.scrollingMode = valueScrollingMode;
     settings.maxWidth = parseInt(widthInput.text) || widgetMetadata.maxWidth;
-    settings.useFixedWidth = valueUseFixedWidth;
-    settings.colorizeIcons = valueColorizeIcons;
-    settings.textColor = valueTextColor;
     settingsChanged(settings);
+    return settings;
   }
 
   NComboBox {
@@ -64,7 +59,7 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-                  root.valueHideMode = key;
+                  settingsHelper.set("hideMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.hideMode
@@ -74,7 +69,7 @@ ColumnLayout {
     label: I18n.tr("common.select-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.textColor
@@ -86,7 +81,7 @@ ColumnLayout {
     description: I18n.tr("bar.active-window.show-app-text-description")
     checked: root.valueShowText
     onToggled: checked => {
-                 root.valueShowText = checked;
+                 settingsHelper.set("showText", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showText
@@ -98,7 +93,7 @@ ColumnLayout {
     description: I18n.tr("bar.active-window.show-app-icon-description")
     checked: root.valueShowIcon
     onToggled: checked => {
-                 root.valueShowIcon = checked;
+                 settingsHelper.set("showIcon", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showIcon
@@ -110,7 +105,7 @@ ColumnLayout {
     description: I18n.tr("bar.active-window.colorize-icons-description")
     checked: root.valueColorizeIcons
     onToggled: checked => {
-                 root.valueColorizeIcons = checked;
+                 settingsHelper.set("colorizeIcons", checked);
                  saveSettings();
                }
     visible: root.valueShowIcon
@@ -134,7 +129,7 @@ ColumnLayout {
     description: I18n.tr("bar.media-mini.use-fixed-width-description")
     checked: valueUseFixedWidth
     onToggled: checked => {
-                 valueUseFixedWidth = checked;
+                 settingsHelper.set("useFixedWidth", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.useFixedWidth

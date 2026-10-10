@@ -13,24 +13,24 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property int valueWidth: widgetData.width !== undefined ? widgetData.width : widgetMetadata.width
-  property int valueHeight: widgetData.height !== undefined ? widgetData.height : widgetMetadata.height
-  property string valueVisualizerType: widgetData.visualizerType !== undefined ? widgetData.visualizerType : widgetMetadata.visualizerType
-  property string valueColorName: widgetData.colorName !== undefined ? widgetData.colorName : widgetMetadata.colorName
-  property bool valueHideWhenIdle: widgetData.hideWhenIdle !== undefined ? widgetData.hideWhenIdle : widgetMetadata.hideWhenIdle
-  property bool valueShowBackground: widgetData.showBackground !== undefined ? widgetData.showBackground : widgetMetadata.showBackground
-  property bool valueRoundedCorners: widgetData.roundedCorners !== undefined ? widgetData.roundedCorners : widgetMetadata.roundedCorners
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property int valueWidth: settingsHelper.value("width")
+  property int valueHeight: settingsHelper.value("height")
+  property string valueVisualizerType: settingsHelper.value("visualizerType")
+  property string valueColorName: settingsHelper.value("colorName")
+  property bool valueHideWhenIdle: settingsHelper.value("hideWhenIdle")
+  property bool valueShowBackground: settingsHelper.value("showBackground")
+  property bool valueRoundedCorners: settingsHelper.value("roundedCorners")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.width = valueWidth;
-    settings.height = valueHeight;
-    settings.visualizerType = valueVisualizerType;
-    settings.colorName = valueColorName;
-    settings.hideWhenIdle = valueHideWhenIdle;
-    settings.showBackground = valueShowBackground;
-    settings.roundedCorners = valueRoundedCorners;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NTextInput {
@@ -44,7 +44,7 @@ ColumnLayout {
     onEditingFinished: {
       const parsed = parseInt(text);
       if (!isNaN(parsed) && parsed > 0) {
-        valueWidth = parsed;
+        settingsHelper.set("width", parsed);
         saveSettings();
       } else {
         text = String(valueWidth);
@@ -64,7 +64,7 @@ ColumnLayout {
     onEditingFinished: {
       const parsed = parseInt(text);
       if (!isNaN(parsed) && parsed > 0) {
-        valueHeight = parsed;
+        settingsHelper.set("height", parsed);
         saveSettings();
       } else {
         text = String(valueHeight);
@@ -93,7 +93,7 @@ ColumnLayout {
     ]
     currentKey: valueVisualizerType
     onSelected: key => {
-                  valueVisualizerType = key;
+                  settingsHelper.set("visualizerType", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.visualizerType
@@ -105,7 +105,7 @@ ColumnLayout {
     description: I18n.tr("bar.audio-visualizer.color-name-description")
     currentKey: valueColorName
     onSelected: key => {
-                  valueColorName = key;
+                  settingsHelper.set("colorName", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.colorName
@@ -117,7 +117,7 @@ ColumnLayout {
     description: I18n.tr("bar.audio-visualizer.hide-when-idle-description")
     checked: valueHideWhenIdle
     onToggled: checked => {
-                 valueHideWhenIdle = checked;
+                 settingsHelper.set("hideWhenIdle", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.hideWhenIdle
@@ -133,7 +133,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 valueShowBackground = checked;
+                 settingsHelper.set("showBackground", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showBackground
@@ -146,7 +146,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 valueRoundedCorners = checked;
+                 settingsHelper.set("roundedCorners", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.roundedCorners

@@ -15,16 +15,21 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property bool valueHideWhenIdle: widgetData.hideWhenIdle !== undefined ? widgetData.hideWhenIdle : widgetMetadata.hideWhenIdle
-  property string valueColorName: widgetData.colorName !== undefined ? widgetData.colorName : widgetMetadata.colorName
+  property bool valueHideWhenIdle: settingsHelper.value("hideWhenIdle")
+  property string valueColorName: settingsHelper.value("colorName")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
+    var settings = settingsHelper.save();
     settings.width = parseInt(widthInput.text) || widgetMetadata.width;
-    settings.hideWhenIdle = valueHideWhenIdle;
-    settings.colorName = valueColorName;
     settingsChanged(settings);
+    return settings;
   }
 
   NTextInput {
@@ -32,7 +37,7 @@ ColumnLayout {
     Layout.fillWidth: true
     label: I18n.tr("common.width")
     description: I18n.tr("bar.audio-visualizer.width-description")
-    text: widgetData.width || widgetMetadata.width
+    text: String(settingsHelper.value("width", ""))
     placeholderText: I18n.tr("placeholders.enter-width-pixels")
     onTextChanged: saveSettings()
     defaultValue: String(widgetMetadata.width)
@@ -44,7 +49,7 @@ ColumnLayout {
     description: I18n.tr("bar.audio-visualizer.color-name-description")
     currentKey: root.valueColorName
     onSelected: key => {
-                  root.valueColorName = key;
+                  settingsHelper.set("colorName", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.colorName
@@ -55,7 +60,7 @@ ColumnLayout {
     description: I18n.tr("bar.audio-visualizer.hide-when-idle-description")
     checked: valueHideWhenIdle
     onToggled: checked => {
-                 valueHideWhenIdle = checked;
+                 settingsHelper.set("hideWhenIdle", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.hideWhenIdle

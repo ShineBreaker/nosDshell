@@ -15,10 +15,17 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
+    var settings = settingsHelper.save();
     settings.width = parseInt(widthInput.text) || widgetMetadata.width;
     settingsChanged(settings);
+    return settings;
   }
 
   NTextInput {
@@ -26,7 +33,7 @@ ColumnLayout {
     Layout.fillWidth: true
     label: I18n.tr("common.width")
     description: I18n.tr("bar.spacer.width-description")
-    text: widgetData.width || widgetMetadata.width
+    text: String(settingsHelper.value("width", ""))
     placeholderText: I18n.tr("placeholders.enter-width-pixels")
     onTextChanged: saveSettings()
     defaultValue: String(widgetMetadata.width)

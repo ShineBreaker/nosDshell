@@ -18,19 +18,25 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property string valueIconColor: settingsHelper.value("iconColor")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.iconColor = valueIconColor;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NColorChoice {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor

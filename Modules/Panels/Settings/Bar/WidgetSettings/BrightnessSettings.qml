@@ -16,27 +16,30 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueDisplayMode: widgetData.displayMode !== undefined ? widgetData.displayMode : widgetMetadata.displayMode
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
-  property bool valueApplyToAllMonitors: widgetData.applyToAllMonitors !== undefined ? widgetData.applyToAllMonitors : widgetMetadata.applyToAllMonitors
+  property string valueDisplayMode: settingsHelper.value("displayMode")
+  property string valueIconColor: settingsHelper.value("iconColor")
+  property string valueTextColor: settingsHelper.value("textColor")
+  property bool valueApplyToAllMonitors: settingsHelper.value("applyToAllMonitors")
 
   readonly property bool hasMultipleMonitors: (Quickshell.screens || []).length > 1
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.displayMode = valueDisplayMode;
-    settings.iconColor = valueIconColor;
-    settings.textColor = valueTextColor;
-    settings.applyToAllMonitors = valueApplyToAllMonitors;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NDisplayModeComboBox {
     currentKey: valueDisplayMode
     onSelected: key => {
-                  valueDisplayMode = key;
+                  settingsHelper.set("displayMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.displayMode
@@ -46,7 +49,7 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor
@@ -56,7 +59,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.textColor
@@ -69,7 +72,7 @@ ColumnLayout {
     description: I18n.tr("bar.brightness.apply-all-description")
     checked: valueApplyToAllMonitors
     onToggled: checked => {
-                 valueApplyToAllMonitors = checked;
+                 settingsHelper.set("applyToAllMonitors", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.applyToAllMonitors

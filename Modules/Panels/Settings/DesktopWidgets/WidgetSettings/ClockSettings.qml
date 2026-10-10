@@ -15,13 +15,19 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property bool valueShowBackground: widgetData.showBackground !== undefined ? widgetData.showBackground : widgetMetadata.showBackground
-  property bool valueRoundedCorners: widgetData.roundedCorners !== undefined ? widgetData.roundedCorners : widgetMetadata.roundedCorners
-  property string valueClockStyle: widgetData.clockStyle !== undefined ? widgetData.clockStyle : widgetMetadata.clockStyle
-  property string valueClockColor: widgetData.clockColor !== undefined ? widgetData.clockColor : widgetMetadata.clockColor
-  property bool valueUseCustomFont: widgetData.useCustomFont !== undefined ? widgetData.useCustomFont : widgetMetadata.useCustomFont
-  property string valueCustomFont: widgetData.customFont !== undefined ? widgetData.customFont : widgetMetadata.customFont
-  property string valueFormat: widgetData.format !== undefined ? widgetData.format : widgetMetadata.format
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property bool valueShowBackground: settingsHelper.value("showBackground")
+  property bool valueRoundedCorners: settingsHelper.value("roundedCorners")
+  property string valueClockStyle: settingsHelper.value("clockStyle")
+  property string valueClockColor: settingsHelper.value("clockColor")
+  property bool valueUseCustomFont: settingsHelper.value("useCustomFont")
+  property string valueCustomFont: settingsHelper.value("customFont")
+  property string valueFormat: settingsHelper.value("format")
 
   // Track the currently focused input field
   property var focusedInput: null
@@ -30,15 +36,9 @@ ColumnLayout {
   readonly property var now: Time.now
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.showBackground = valueShowBackground;
-    settings.roundedCorners = valueRoundedCorners;
-    settings.clockStyle = valueClockStyle;
-    settings.clockColor = valueClockColor;
-    settings.useCustomFont = valueUseCustomFont;
-    settings.customFont = valueCustomFont;
-    settings.format = valueFormat.trim();
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   // Function to insert token at cursor position in the focused input
@@ -94,7 +94,7 @@ ColumnLayout {
       }
     ]
     onSelected: key => {
-                  valueClockStyle = key;
+                  settingsHelper.set("clockStyle", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.clockStyle
@@ -105,7 +105,7 @@ ColumnLayout {
     description: I18n.tr("common.select-color-description")
     currentKey: valueClockColor
     onSelected: key => {
-                  valueClockColor = key;
+                  settingsHelper.set("clockColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.clockColor
@@ -117,7 +117,7 @@ ColumnLayout {
     description: I18n.tr("bar.clock.use-custom-font-description")
     checked: valueUseCustomFont
     onToggled: checked => {
-                 valueUseCustomFont = checked;
+                 settingsHelper.set("useCustomFont", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.useCustomFont
@@ -135,7 +135,7 @@ ColumnLayout {
     popupHeight: 420
     minimumWidth: 300
     onSelected: function (key) {
-      valueCustomFont = key;
+      settingsHelper.set("customFont", key);
       saveSettings();
     }
     enabled: valueClockStyle === "minimal"
@@ -175,7 +175,7 @@ ColumnLayout {
         placeholderText: "HH:mm\\nd MMMM yyyy"
         text: valueFormat
         onTextChanged: {
-          valueFormat = text;
+          settingsHelper.set("format", text);
           settingsChanged(saveSettings());
         }
         Component.onCompleted: {
@@ -272,7 +272,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.clock-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 valueShowBackground = checked;
+                 settingsHelper.set("showBackground", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showBackground
@@ -285,7 +285,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.clock-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 valueRoundedCorners = checked;
+                 settingsHelper.set("roundedCorners", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.roundedCorners

@@ -16,53 +16,41 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property bool isVerticalBar: barPosition === "left" || barPosition === "right"
 
   // Local, editable state for checkboxes
-  property bool valueCompactMode: widgetData.compactMode !== undefined ? widgetData.compactMode : widgetMetadata.compactMode
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
-  property bool valueUseMonospaceFont: widgetData.useMonospaceFont !== undefined ? widgetData.useMonospaceFont : widgetMetadata.useMonospaceFont
-  property bool valueUsePadding: widgetData.usePadding !== undefined ? widgetData.usePadding : widgetMetadata.usePadding
-  property bool valueShowCpuUsage: widgetData.showCpuUsage !== undefined ? widgetData.showCpuUsage : widgetMetadata.showCpuUsage
-  property bool valueShowCpuCores: widgetData.showCpuCores !== undefined ? widgetData.showCpuCores : widgetMetadata.showCpuCores
-  property bool valueShowCpuFreq: widgetData.showCpuFreq !== undefined ? widgetData.showCpuFreq : widgetMetadata.showCpuFreq
-  property bool valueShowCpuTemp: widgetData.showCpuTemp !== undefined ? widgetData.showCpuTemp : widgetMetadata.showCpuTemp
-  property bool valueShowGpuTemp: widgetData.showGpuTemp !== undefined ? widgetData.showGpuTemp : widgetMetadata.showGpuTemp
-  property bool valueShowLoadAverage: widgetData.showLoadAverage !== undefined ? widgetData.showLoadAverage : widgetMetadata.showLoadAverage
-  property bool valueShowMemoryUsage: widgetData.showMemoryUsage !== undefined ? widgetData.showMemoryUsage : widgetMetadata.showMemoryUsage
-  property bool valueShowMemoryAsPercent: widgetData.showMemoryAsPercent !== undefined ? widgetData.showMemoryAsPercent : widgetMetadata.showMemoryAsPercent
-  property bool valueShowSwapUsage: widgetData.showSwapUsage !== undefined ? widgetData.showSwapUsage : widgetMetadata.showSwapUsage
-  property bool valueShowNetworkStats: widgetData.showNetworkStats !== undefined ? widgetData.showNetworkStats : widgetMetadata.showNetworkStats
-  property bool valueShowDiskUsage: widgetData.showDiskUsage !== undefined ? widgetData.showDiskUsage : widgetMetadata.showDiskUsage
-  property bool valueShowDiskUsageAsPercent: widgetData.showDiskUsageAsPercent !== undefined ? widgetData.showDiskUsageAsPercent : widgetMetadata.showDiskUsageAsPercent
-  property bool valueShowDiskAvailable: widgetData.showDiskAvailable !== undefined ? widgetData.showDiskAvailable : widgetMetadata.showDiskAvailable
-  property string valueDiskPath: widgetData.diskPath !== undefined ? widgetData.diskPath : widgetMetadata.diskPath
+  property bool valueCompactMode: settingsHelper.value("compactMode")
+  property string valueIconColor: settingsHelper.value("iconColor")
+  property string valueTextColor: settingsHelper.value("textColor")
+  property bool valueUseMonospaceFont: settingsHelper.value("useMonospaceFont")
+  property bool valueUsePadding: settingsHelper.value("usePadding")
+  property bool valueShowCpuUsage: settingsHelper.value("showCpuUsage")
+  property bool valueShowCpuCores: settingsHelper.value("showCpuCores")
+  property bool valueShowCpuFreq: settingsHelper.value("showCpuFreq")
+  property bool valueShowCpuTemp: settingsHelper.value("showCpuTemp")
+  property bool valueShowGpuTemp: settingsHelper.value("showGpuTemp")
+  property bool valueShowLoadAverage: settingsHelper.value("showLoadAverage")
+  property bool valueShowMemoryUsage: settingsHelper.value("showMemoryUsage")
+  property bool valueShowMemoryAsPercent: settingsHelper.value("showMemoryAsPercent")
+  property bool valueShowSwapUsage: settingsHelper.value("showSwapUsage")
+  property bool valueShowNetworkStats: settingsHelper.value("showNetworkStats")
+  property bool valueShowDiskUsage: settingsHelper.value("showDiskUsage")
+  property bool valueShowDiskUsageAsPercent: settingsHelper.value("showDiskUsageAsPercent")
+  property bool valueShowDiskAvailable: settingsHelper.value("showDiskAvailable")
+  property string valueDiskPath: settingsHelper.value("diskPath")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.compactMode = valueCompactMode;
-    settings.iconColor = valueIconColor;
-    settings.textColor = valueTextColor;
-    settings.useMonospaceFont = valueUseMonospaceFont;
-    settings.usePadding = valueUsePadding;
-    settings.showCpuUsage = valueShowCpuUsage;
-    settings.showCpuCores = valueShowCpuCores;
-    settings.showCpuFreq = valueShowCpuFreq;
-    settings.showCpuTemp = valueShowCpuTemp;
-    settings.showGpuTemp = valueShowGpuTemp;
-    settings.showLoadAverage = valueShowLoadAverage;
-    settings.showMemoryUsage = valueShowMemoryUsage;
-    settings.showMemoryAsPercent = valueShowMemoryAsPercent;
-    settings.showSwapUsage = valueShowSwapUsage;
-    settings.showNetworkStats = valueShowNetworkStats;
-    settings.showDiskUsage = valueShowDiskUsage;
-    settings.showDiskUsageAsPercent = valueShowDiskUsageAsPercent;
-    settings.showDiskAvailable = valueShowDiskAvailable;
-    settings.diskPath = valueDiskPath;
+    var settings = settingsHelper.save();
 
     settingsChanged(settings);
+    return settings;
   }
 
   NToggle {
@@ -71,7 +59,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.compact-mode-description")
     checked: valueCompactMode
     onToggled: checked => {
-                 valueCompactMode = checked;
+                 settingsHelper.set("compactMode", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.compactMode
@@ -81,7 +69,7 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor
@@ -91,7 +79,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     visible: !valueCompactMode
@@ -104,7 +92,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.use-monospace-font-description")
     checked: valueUseMonospaceFont
     onToggled: checked => {
-                 valueUseMonospaceFont = checked;
+                 settingsHelper.set("useMonospaceFont", checked);
                  saveSettings();
                }
     visible: !valueCompactMode
@@ -117,7 +105,7 @@ ColumnLayout {
     description: isVerticalBar ? I18n.tr("bar.system-monitor.use-padding-description-disabled-vertical") : !valueUseMonospaceFont ? I18n.tr("bar.system-monitor.use-padding-description-disabled-monospace-font") : I18n.tr("bar.system-monitor.use-padding-description")
     checked: valueUsePadding && !isVerticalBar && valueUseMonospaceFont
     onToggled: checked => {
-                 valueUsePadding = checked;
+                 settingsHelper.set("usePadding", checked);
                  saveSettings();
                }
     visible: !valueCompactMode
@@ -136,7 +124,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.cpu-usage-description")
     checked: valueShowCpuUsage
     onToggled: checked => {
-                 valueShowCpuUsage = checked;
+                 settingsHelper.set("showCpuUsage", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showCpuUsage
@@ -149,7 +137,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.cpu-cores-description")
     checked: valueShowCpuCores
     onToggled: checked => {
-                 valueShowCpuCores = checked;
+                 settingsHelper.set("showCpuCores", checked);
                  saveSettings();
                }
     visible: valueCompactMode
@@ -162,7 +150,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.cpu-frequency-description")
     checked: valueShowCpuFreq
     onToggled: checked => {
-                 valueShowCpuFreq = checked;
+                 settingsHelper.set("showCpuFreq", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showCpuFreq
@@ -175,7 +163,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.cpu-temperature-description")
     checked: valueShowCpuTemp
     onToggled: checked => {
-                 valueShowCpuTemp = checked;
+                 settingsHelper.set("showCpuTemp", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showCpuTemp
@@ -188,7 +176,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.load-average-description")
     checked: valueShowLoadAverage
     onToggled: checked => {
-                 valueShowLoadAverage = checked;
+                 settingsHelper.set("showLoadAverage", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showLoadAverage
@@ -201,7 +189,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.gpu-temperature-description")
     checked: valueShowGpuTemp
     onToggled: checked => {
-                 valueShowGpuTemp = checked;
+                 settingsHelper.set("showGpuTemp", checked);
                  saveSettings();
                }
     visible: SystemStatService.gpuAvailable
@@ -215,7 +203,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.memory-usage-description")
     checked: valueShowMemoryUsage
     onToggled: checked => {
-                 valueShowMemoryUsage = checked;
+                 settingsHelper.set("showMemoryUsage", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showMemoryUsage
@@ -228,7 +216,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.memory-percentage-description")
     checked: valueShowMemoryAsPercent
     onToggled: checked => {
-                 valueShowMemoryAsPercent = checked;
+                 settingsHelper.set("showMemoryAsPercent", checked);
                  saveSettings();
                }
     visible: valueShowMemoryUsage
@@ -242,7 +230,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.swap-usage-description")
     checked: valueShowSwapUsage
     onToggled: checked => {
-                 valueShowSwapUsage = checked;
+                 settingsHelper.set("showSwapUsage", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showSwapUsage
@@ -255,7 +243,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.network-traffic-description")
     checked: valueShowNetworkStats
     onToggled: checked => {
-                 valueShowNetworkStats = checked;
+                 settingsHelper.set("showNetworkStats", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showNetworkStats
@@ -272,7 +260,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.storage-usage-description")
     checked: valueShowDiskUsage
     onToggled: checked => {
-                 valueShowDiskUsage = checked;
+                 settingsHelper.set("showDiskUsage", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showDiskUsage
@@ -285,7 +273,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.storage-as-percentage-description")
     checked: valueShowDiskUsageAsPercent
     onToggled: checked => {
-                 valueShowDiskUsageAsPercent = checked;
+                 settingsHelper.set("showDiskUsageAsPercent", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showDiskUsageAsPercent
@@ -298,7 +286,7 @@ ColumnLayout {
     description: I18n.tr("bar.system-monitor.storage-available-description")
     checked: valueShowDiskAvailable
     onToggled: checked => {
-                 valueShowDiskAvailable = checked;
+                 settingsHelper.set("showDiskAvailable", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showDiskAvailable
@@ -318,7 +306,7 @@ ColumnLayout {
     }
     currentKey: valueDiskPath
     onSelected: key => {
-                  valueDiskPath = key;
+                  settingsHelper.set("diskPath", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.diskPath

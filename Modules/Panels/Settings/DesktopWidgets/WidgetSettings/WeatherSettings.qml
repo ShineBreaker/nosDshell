@@ -13,14 +13,19 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property bool valueShowBackground: widgetData.showBackground !== undefined ? widgetData.showBackground : widgetMetadata.showBackground
-  property bool valueRoundedCorners: widgetData.roundedCorners !== undefined ? widgetData.roundedCorners : widgetMetadata.roundedCorners
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property bool valueShowBackground: settingsHelper.value("showBackground")
+  property bool valueRoundedCorners: settingsHelper.value("roundedCorners")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.showBackground = valueShowBackground;
-    settings.roundedCorners = valueRoundedCorners;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NToggle {
@@ -29,7 +34,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.weather-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 valueShowBackground = checked;
+                 settingsHelper.set("showBackground", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showBackground
@@ -42,7 +47,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.clock-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 valueRoundedCorners = checked;
+                 settingsHelper.set("roundedCorners", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.roundedCorners

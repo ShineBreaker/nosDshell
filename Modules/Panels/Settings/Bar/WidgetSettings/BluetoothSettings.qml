@@ -14,23 +14,27 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
-  property string valueDisplayMode: widgetData.displayMode !== undefined ? widgetData.displayMode : widgetMetadata.displayMode
-  property string valueIconColor: widgetData.iconColor !== undefined ? widgetData.iconColor : widgetMetadata.iconColor
-  property string valueTextColor: widgetData.textColor !== undefined ? widgetData.textColor : widgetMetadata.textColor
+  property string valueDisplayMode: settingsHelper.value("displayMode")
+  property string valueIconColor: settingsHelper.value("iconColor")
+  property string valueTextColor: settingsHelper.value("textColor")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.displayMode = valueDisplayMode;
-    settings.iconColor = valueIconColor;
-    settings.textColor = valueTextColor;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NDisplayModeComboBox {
     currentKey: root.valueDisplayMode
     onSelected: key => {
-                  root.valueDisplayMode = key;
+                  settingsHelper.set("displayMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.displayMode
@@ -40,7 +44,7 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  valueIconColor = key;
+                  settingsHelper.set("iconColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.iconColor
@@ -50,7 +54,7 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  valueTextColor = key;
+                  settingsHelper.set("textColor", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.textColor

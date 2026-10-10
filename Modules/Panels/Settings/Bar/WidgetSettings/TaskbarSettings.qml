@@ -15,43 +15,32 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   readonly property bool isVerticalBar: Settings.getBarPositionForScreen(screen?.name) === "left" || Settings.getBarPositionForScreen(screen?.name) === "right"
 
   // Local state
-  property string valueHideMode: widgetData.hideMode !== undefined ? widgetData.hideMode : widgetMetadata.hideMode
-  property bool valueOnlyActiveWorkspaces: widgetData.onlyActiveWorkspaces !== undefined ? widgetData.onlyActiveWorkspaces : widgetMetadata.onlyActiveWorkspaces
-  property bool valueOnlySameOutput: widgetData.onlySameOutput !== undefined ? widgetData.onlySameOutput : widgetMetadata.onlySameOutput
-  property bool valueColorizeIcons: widgetData.colorizeIcons !== undefined ? widgetData.colorizeIcons : widgetMetadata.colorizeIcons
-  property bool valueShowTitle: widgetData.showTitle !== undefined ? widgetData.showTitle : widgetMetadata.showTitle
-  property bool valueSmartWidth: widgetData.smartWidth !== undefined ? widgetData.smartWidth : widgetMetadata.smartWidth
-  property int valueMaxTaskbarWidth: widgetData.maxTaskbarWidth !== undefined ? widgetData.maxTaskbarWidth : widgetMetadata.maxTaskbarWidth
-  property int valueTitleWidth: widgetData.titleWidth !== undefined ? widgetData.titleWidth : widgetMetadata.titleWidth
-  property bool valueShowPinnedApps: widgetData.showPinnedApps !== undefined ? widgetData.showPinnedApps : widgetMetadata.showPinnedApps
-  property real valueIconScale: widgetData.iconScale !== undefined ? widgetData.iconScale : widgetMetadata.iconScale
-
-  Component.onCompleted: {
-    if (widgetData && widgetData.hideMode !== undefined) {
-      valueHideMode = widgetData.hideMode;
-    } else if (widgetMetadata && widgetMetadata.hideMode !== undefined) {
-      valueHideMode = widgetMetadata.hideMode;
-    }
-  }
+  property string valueHideMode: settingsHelper.value("hideMode")
+  property bool valueOnlyActiveWorkspaces: settingsHelper.value("onlyActiveWorkspaces")
+  property bool valueOnlySameOutput: settingsHelper.value("onlySameOutput")
+  property bool valueColorizeIcons: settingsHelper.value("colorizeIcons")
+  property bool valueShowTitle: settingsHelper.value("showTitle")
+  property bool valueSmartWidth: settingsHelper.value("smartWidth")
+  property int valueMaxTaskbarWidth: settingsHelper.value("maxTaskbarWidth")
+  property int valueTitleWidth: settingsHelper.value("titleWidth")
+  property bool valueShowPinnedApps: settingsHelper.value("showPinnedApps")
+  property real valueIconScale: settingsHelper.value("iconScale")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.hideMode = valueHideMode;
-    settings.onlySameOutput = valueOnlySameOutput;
-    settings.onlyActiveWorkspaces = valueOnlyActiveWorkspaces;
-    settings.colorizeIcons = valueColorizeIcons;
-    if (!isVerticalBar) {
-      settings.showTitle = valueShowTitle;
-    }
-    settings.smartWidth = valueSmartWidth;
-    settings.maxTaskbarWidth = valueMaxTaskbarWidth;
+    var settings = settingsHelper.save();
+    if (!isVerticalBar) {}
     settings.titleWidth = parseInt(titleWidthInput.text) || widgetMetadata.titleWidth;
-    settings.showPinnedApps = valueShowPinnedApps;
-    settings.iconScale = valueIconScale;
     settingsChanged(settings);
+    return settings;
   }
 
   NComboBox {
@@ -74,7 +63,7 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-                  root.valueHideMode = key;
+                  settingsHelper.set("hideMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.hideMode
@@ -86,7 +75,7 @@ ColumnLayout {
     description: I18n.tr("bar.taskbar.only-same-monitor-description")
     checked: root.valueOnlySameOutput
     onToggled: checked => {
-                 root.valueOnlySameOutput = checked;
+                 settingsHelper.set("onlySameOutput", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.onlySameOutput
@@ -98,7 +87,7 @@ ColumnLayout {
     description: I18n.tr("bar.taskbar.only-active-workspaces-description")
     checked: root.valueOnlyActiveWorkspaces
     onToggled: checked => {
-                 root.valueOnlyActiveWorkspaces = checked;
+                 settingsHelper.set("onlyActiveWorkspaces", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.onlyActiveWorkspaces
@@ -110,7 +99,7 @@ ColumnLayout {
     description: I18n.tr("bar.taskbar.colorize-icons-description")
     checked: root.valueColorizeIcons
     onToggled: checked => {
-                 root.valueColorizeIcons = checked;
+                 settingsHelper.set("colorizeIcons", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.colorizeIcons
@@ -122,7 +111,7 @@ ColumnLayout {
     description: I18n.tr("bar.taskbar.show-pinned-apps-description")
     checked: root.valueShowPinnedApps
     onToggled: checked => {
-                 root.valueShowPinnedApps = checked;
+                 settingsHelper.set("showPinnedApps", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showPinnedApps
@@ -139,7 +128,7 @@ ColumnLayout {
     value: root.valueIconScale
     defaultValue: widgetMetadata.iconScale
     onMoved: value => {
-               root.valueIconScale = value;
+               settingsHelper.set("iconScale", value);
                saveSettings();
              }
     text: Math.round(root.valueIconScale * 100) + "%"
@@ -151,7 +140,7 @@ ColumnLayout {
     description: isVerticalBar ? I18n.tr("bar.taskbar.show-title-description-disabled") : I18n.tr("bar.taskbar.show-title-description")
     checked: root.valueShowTitle
     onToggled: checked => {
-                 root.valueShowTitle = checked;
+                 settingsHelper.set("showTitle", checked);
                  saveSettings();
                }
     enabled: !isVerticalBar
@@ -164,7 +153,7 @@ ColumnLayout {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.title-width-label")
     description: I18n.tr("bar.taskbar.title-width-description")
-    text: widgetData.titleWidth || widgetMetadata.titleWidth
+    text: String(settingsHelper.value("titleWidth", ""))
     placeholderText: I18n.tr("placeholders.enter-width-pixels")
     onTextChanged: saveSettings()
     defaultValue: String(widgetMetadata.titleWidth)
@@ -177,7 +166,7 @@ ColumnLayout {
     description: I18n.tr("bar.taskbar.smart-width-description")
     checked: root.valueSmartWidth
     onToggled: checked => {
-                 root.valueSmartWidth = checked;
+                 settingsHelper.set("smartWidth", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.smartWidth
@@ -195,7 +184,7 @@ ColumnLayout {
     value: root.valueMaxTaskbarWidth
     defaultValue: widgetMetadata.maxTaskbarWidth
     onMoved: value => {
-               root.valueMaxTaskbarWidth = Math.round(value);
+               settingsHelper.set("maxTaskbarWidth", Math.round(value));
                saveSettings();
              }
     text: Math.round(root.valueMaxTaskbarWidth) + "%"

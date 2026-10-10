@@ -14,12 +14,18 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
   // Local state
   property var localBlacklist: widgetData.blacklist || []
-  property bool valueColorizeIcons: widgetData.colorizeIcons !== undefined ? widgetData.colorizeIcons : widgetMetadata.colorizeIcons
-  property string valueChevronColor: widgetData.chevronColor !== undefined ? widgetData.chevronColor : widgetMetadata.chevronColor
-  property bool valueDrawerEnabled: widgetData.drawerEnabled !== undefined ? widgetData.drawerEnabled : widgetMetadata.drawerEnabled
-  property bool valueHidePassive: widgetData.hidePassive !== undefined ? widgetData.hidePassive : widgetMetadata.hidePassive
+  property bool valueColorizeIcons: settingsHelper.value("colorizeIcons")
+  property string valueChevronColor: settingsHelper.value("chevronColor")
+  property bool valueDrawerEnabled: settingsHelper.value("drawerEnabled")
+  property bool valueHidePassive: settingsHelper.value("hidePassive")
 
   ListModel {
     id: blacklistModel
@@ -45,7 +51,7 @@ ColumnLayout {
     description: I18n.tr("bar.tray.drawer-enabled-description")
     checked: root.valueDrawerEnabled
     onToggled: checked => {
-                 root.valueDrawerEnabled = checked;
+                 settingsHelper.set("drawerEnabled", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.drawerEnabled
@@ -56,7 +62,7 @@ ColumnLayout {
     description: I18n.tr("bar.tray.chevron-color-description")
     currentKey: root.valueChevronColor
     onSelected: key => {
-                  root.valueChevronColor = key;
+                  settingsHelper.set("chevronColor", key);
                   saveSettings();
                 }
     visible: root.valueDrawerEnabled
@@ -69,7 +75,7 @@ ColumnLayout {
     description: I18n.tr("bar.tray.colorize-icons-description")
     checked: root.valueColorizeIcons
     onToggled: checked => {
-                 root.valueColorizeIcons = checked;
+                 settingsHelper.set("colorizeIcons", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.colorizeIcons
@@ -81,7 +87,7 @@ ColumnLayout {
     description: I18n.tr("bar.tray.hide-passive-description")
     checked: root.valueHidePassive
     onToggled: checked => {
-                 root.valueHidePassive = checked;
+                 settingsHelper.set("hidePassive", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.hidePassive
@@ -188,12 +194,9 @@ ColumnLayout {
     }
 
     // Return the updated settings for this widget instance
-    var settings = Object.assign({}, widgetData || {});
+    var settings = settingsHelper.save();
     settings.blacklist = newBlacklist;
-    settings.colorizeIcons = root.valueColorizeIcons;
-    settings.chevronColor = root.valueChevronColor;
-    settings.drawerEnabled = root.valueDrawerEnabled;
-    settings.hidePassive = root.valueHidePassive;
     settingsChanged(settings);
+    return settings;
   }
 }

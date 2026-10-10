@@ -15,48 +15,37 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property string valueLabelMode: widgetData.labelMode !== undefined ? widgetData.labelMode : widgetMetadata.labelMode
-  property bool valueHideUnoccupied: widgetData.hideUnoccupied !== undefined ? widgetData.hideUnoccupied : widgetMetadata.hideUnoccupied
-  property bool valueFollowFocusedScreen: widgetData.followFocusedScreen !== undefined ? widgetData.followFocusedScreen : widgetMetadata.followFocusedScreen
-  property int valueCharacterCount: widgetData.characterCount !== undefined ? widgetData.characterCount : widgetMetadata.characterCount
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property string valueLabelMode: settingsHelper.value("labelMode")
+  property bool valueHideUnoccupied: settingsHelper.value("hideUnoccupied")
+  property bool valueFollowFocusedScreen: settingsHelper.value("followFocusedScreen")
+  property int valueCharacterCount: settingsHelper.value("characterCount")
 
   // Grouped mode settings
-  property bool valueShowApplications: widgetData.showApplications !== undefined ? widgetData.showApplications : widgetMetadata.showApplications
-  property bool valueShowApplicationsHover: widgetData.showApplicationsHover !== undefined ? widgetData.showApplicationsHover : widgetMetadata.showApplicationsHover
-  property bool valueShowLabelsOnlyWhenOccupied: widgetData.showLabelsOnlyWhenOccupied !== undefined ? widgetData.showLabelsOnlyWhenOccupied : widgetMetadata.showLabelsOnlyWhenOccupied
-  property bool valueColorizeIcons: widgetData.colorizeIcons !== undefined ? widgetData.colorizeIcons : widgetMetadata.colorizeIcons
-  property real valueUnfocusedIconsOpacity: widgetData.unfocusedIconsOpacity !== undefined ? widgetData.unfocusedIconsOpacity : widgetMetadata.unfocusedIconsOpacity
-  property real valueGroupedBorderOpacity: widgetData.groupedBorderOpacity !== undefined ? widgetData.groupedBorderOpacity : widgetMetadata.groupedBorderOpacity
-  property bool valueEnableScrollWheel: widgetData.enableScrollWheel !== undefined ? widgetData.enableScrollWheel : widgetMetadata.enableScrollWheel
-  property real valueIconScale: widgetData.iconScale !== undefined ? widgetData.iconScale : widgetMetadata.iconScale
-  property string valueFocusedColor: widgetData.focusedColor !== undefined ? widgetData.focusedColor : widgetMetadata.focusedColor
-  property string valueOccupiedColor: widgetData.occupiedColor !== undefined ? widgetData.occupiedColor : widgetMetadata.occupiedColor
-  property string valueEmptyColor: widgetData.emptyColor !== undefined ? widgetData.emptyColor : widgetMetadata.emptyColor
-  property bool valueShowBadge: widgetData.showBadge !== undefined ? widgetData.showBadge : widgetMetadata.showBadge
-  property real valuePillSize: widgetData.pillSize !== undefined ? widgetData.pillSize : widgetMetadata.pillSize
-  property string valueFontWeight: widgetData.fontWeight !== undefined ? widgetData.fontWeight : widgetMetadata.fontWeight
+  property bool valueShowApplications: settingsHelper.value("showApplications")
+  property bool valueShowApplicationsHover: settingsHelper.value("showApplicationsHover")
+  property bool valueShowLabelsOnlyWhenOccupied: settingsHelper.value("showLabelsOnlyWhenOccupied")
+  property bool valueColorizeIcons: settingsHelper.value("colorizeIcons")
+  property real valueUnfocusedIconsOpacity: settingsHelper.value("unfocusedIconsOpacity")
+  property real valueGroupedBorderOpacity: settingsHelper.value("groupedBorderOpacity")
+  property bool valueEnableScrollWheel: settingsHelper.value("enableScrollWheel")
+  property real valueIconScale: settingsHelper.value("iconScale")
+  property string valueFocusedColor: settingsHelper.value("focusedColor")
+  property string valueOccupiedColor: settingsHelper.value("occupiedColor")
+  property string valueEmptyColor: settingsHelper.value("emptyColor")
+  property bool valueShowBadge: settingsHelper.value("showBadge")
+  property real valuePillSize: settingsHelper.value("pillSize")
+  property string valueFontWeight: settingsHelper.value("fontWeight")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.labelMode = valueLabelMode;
-    settings.hideUnoccupied = valueHideUnoccupied;
-    settings.characterCount = valueCharacterCount;
-    settings.followFocusedScreen = valueFollowFocusedScreen;
-    settings.showApplications = valueShowApplications;
-    settings.showApplicationsHover = valueShowApplicationsHover;
-    settings.showLabelsOnlyWhenOccupied = valueShowLabelsOnlyWhenOccupied;
-    settings.colorizeIcons = valueColorizeIcons;
-    settings.unfocusedIconsOpacity = valueUnfocusedIconsOpacity;
-    settings.groupedBorderOpacity = valueGroupedBorderOpacity;
-    settings.enableScrollWheel = valueEnableScrollWheel;
-    settings.iconScale = valueIconScale;
-    settings.focusedColor = valueFocusedColor;
-    settings.occupiedColor = valueOccupiedColor;
-    settings.emptyColor = valueEmptyColor;
-    settings.showBadge = valueShowBadge;
-    settings.pillSize = valuePillSize;
-    settings.fontWeight = valueFontWeight;
+    var settings = settingsHelper.save();
     settingsChanged(settings);
+    return settings;
   }
 
   NComboBox {
@@ -81,9 +70,9 @@ ColumnLayout {
         "name": I18n.tr("options.workspace-labels.index-and-name")
       }
     ]
-    currentKey: widgetData.labelMode || widgetMetadata.labelMode
+    currentKey: settingsHelper.value("labelMode")
     onSelected: key => {
-                  valueLabelMode = key;
+                  settingsHelper.set("labelMode", key);
                   saveSettings();
                 }
     minimumWidth: 200
@@ -96,7 +85,7 @@ ColumnLayout {
     to: 10
     value: valueCharacterCount
     onValueChanged: {
-      valueCharacterCount = value;
+      settingsHelper.set("characterCount", value);
       saveSettings();
     }
     visible: valueLabelMode === "name"
@@ -112,7 +101,7 @@ ColumnLayout {
     defaultValue: widgetMetadata.pillSize
     showReset: true
     onMoved: value => {
-               valuePillSize = value;
+               settingsHelper.set("pillSize", value);
                saveSettings();
              }
     text: Math.round(valuePillSize * 100) + "%"
@@ -141,9 +130,9 @@ ColumnLayout {
         "name": I18n.tr("common.font-weight-bold")
       },
     ]
-    currentKey: widgetData.fontWeight || widgetMetadata.fontWeight
+    currentKey: settingsHelper.value("fontWeight")
     onSelected: key => {
-                  valueFontWeight = key;
+                  settingsHelper.set("fontWeight", key);
                   saveSettings();
                 }
     minimumWidth: 200
@@ -154,7 +143,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.hide-unoccupied-description")
     checked: valueHideUnoccupied
     onToggled: checked => {
-                 valueHideUnoccupied = checked;
+                 settingsHelper.set("hideUnoccupied", checked);
                  saveSettings();
                }
   }
@@ -164,7 +153,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.show-labels-only-when-occupied-description")
     checked: valueShowLabelsOnlyWhenOccupied
     onToggled: checked => {
-                 valueShowLabelsOnlyWhenOccupied = checked;
+                 settingsHelper.set("showLabelsOnlyWhenOccupied", checked);
                  saveSettings();
                }
   }
@@ -174,7 +163,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.follow-focused-screen-description")
     checked: valueFollowFocusedScreen
     onToggled: checked => {
-                 valueFollowFocusedScreen = checked;
+                 settingsHelper.set("followFocusedScreen", checked);
                  saveSettings();
                }
   }
@@ -184,7 +173,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.enable-scrollwheel-description")
     checked: valueEnableScrollWheel
     onToggled: checked => {
-                 valueEnableScrollWheel = checked;
+                 settingsHelper.set("enableScrollWheel", checked);
                  saveSettings();
                }
   }
@@ -198,7 +187,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.show-applications-description")
     checked: valueShowApplications
     onToggled: checked => {
-                 valueShowApplications = checked;
+                 settingsHelper.set("showApplications", checked);
                  saveSettings();
                }
   }
@@ -208,7 +197,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.show-applications-hover-description")
     checked: valueShowApplicationsHover
     onToggled: checked => {
-                 valueShowApplicationsHover = checked;
+                 settingsHelper.set("showApplicationsHover", checked);
                  saveSettings();
                }
     visible: valueShowApplications
@@ -219,7 +208,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.show-badge-description")
     checked: valueShowBadge
     onToggled: checked => {
-                 valueShowBadge = checked;
+                 settingsHelper.set("showBadge", checked);
                  saveSettings();
                }
     visible: valueShowApplications
@@ -230,7 +219,7 @@ ColumnLayout {
     description: I18n.tr("bar.active-window.colorize-icons-description")
     checked: valueColorizeIcons
     onToggled: checked => {
-                 valueColorizeIcons = checked;
+                 settingsHelper.set("colorizeIcons", checked);
                  saveSettings();
                }
     visible: valueShowApplications
@@ -246,7 +235,7 @@ ColumnLayout {
     value: valueUnfocusedIconsOpacity
     defaultValue: widgetMetadata.unfocusedIconsOpacity
     onMoved: value => {
-               valueUnfocusedIconsOpacity = value;
+               settingsHelper.set("unfocusedIconsOpacity", value);
                saveSettings();
              }
     text: Math.floor(valueUnfocusedIconsOpacity * 100) + "%"
@@ -263,7 +252,7 @@ ColumnLayout {
     value: valueGroupedBorderOpacity
     defaultValue: widgetMetadata.groupedBorderOpacity
     onMoved: value => {
-               valueGroupedBorderOpacity = value;
+               settingsHelper.set("groupedBorderOpacity", value);
                saveSettings();
              }
     text: Math.floor(valueGroupedBorderOpacity * 100) + "%"
@@ -280,7 +269,7 @@ ColumnLayout {
     value: valueIconScale
     defaultValue: widgetMetadata.iconScale
     onMoved: value => {
-               valueIconScale = value;
+               settingsHelper.set("iconScale", value);
                saveSettings();
              }
     text: Math.round(valueIconScale * 100) + "%"
@@ -296,7 +285,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.focused-color-description")
     currentKey: valueFocusedColor
     onSelected: key => {
-                  valueFocusedColor = key;
+                  settingsHelper.set("focusedColor", key);
                   saveSettings();
                 }
   }
@@ -306,7 +295,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.occupied-color-description")
     currentKey: valueOccupiedColor
     onSelected: key => {
-                  valueOccupiedColor = key;
+                  settingsHelper.set("occupiedColor", key);
                   saveSettings();
                 }
   }
@@ -316,7 +305,7 @@ ColumnLayout {
     description: I18n.tr("bar.workspace.empty-color-description")
     currentKey: valueEmptyColor
     onSelected: key => {
-                  valueEmptyColor = key;
+                  settingsHelper.set("emptyColor", key);
                   saveSettings();
                 }
   }

@@ -13,24 +13,25 @@ ColumnLayout {
 
   signal settingsChanged(var settings)
 
-  property bool valueShowBackground: widgetData.showBackground !== undefined ? widgetData.showBackground : widgetMetadata.showBackground
+  WidgetSettingsHelper {
+    id: settingsHelper
+    widgetData: root.widgetData
+    widgetMetadata: root.widgetMetadata
+  }
+
+  property bool valueShowBackground: settingsHelper.value("showBackground")
   property string valueVisualizerType: widgetData.visualizerType ? widgetData.visualizerType : widgetMetadata.visualizerType
-  property string valueHideMode: widgetData.hideMode !== undefined ? widgetData.hideMode : widgetMetadata.hideMode
-  property bool valueShowButtons: widgetData.showButtons !== undefined ? widgetData.showButtons : widgetMetadata.showButtons
-  property bool valueShowAlbumArt: widgetData.showAlbumArt !== undefined ? widgetData.showAlbumArt : widgetMetadata.showAlbumArt
-  property bool valueShowVisualizer: widgetData.showVisualizer !== undefined ? widgetData.showVisualizer : widgetMetadata.showVisualizer
-  property bool valueRoundedCorners: widgetData.roundedCorners !== undefined ? widgetData.roundedCorners : widgetMetadata.roundedCorners
+  property string valueHideMode: settingsHelper.value("hideMode")
+  property bool valueShowButtons: settingsHelper.value("showButtons")
+  property bool valueShowAlbumArt: settingsHelper.value("showAlbumArt")
+  property bool valueShowVisualizer: settingsHelper.value("showVisualizer")
+  property bool valueRoundedCorners: settingsHelper.value("roundedCorners")
 
   function saveSettings() {
-    var settings = Object.assign({}, widgetData || {});
-    settings.showBackground = valueShowBackground;
+    var settings = settingsHelper.save();
     settings.visualizerType = valueVisualizerType;
-    settings.hideMode = valueHideMode;
-    settings.showButtons = valueShowButtons;
-    settings.showAlbumArt = valueShowAlbumArt;
-    settings.showVisualizer = valueShowVisualizer;
-    settings.roundedCorners = valueRoundedCorners;
     settingsChanged(settings);
+    return settings;
   }
 
   NToggle {
@@ -39,7 +40,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 valueShowBackground = checked;
+                 settingsHelper.set("showBackground", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showBackground
@@ -51,7 +52,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 valueRoundedCorners = checked;
+                 settingsHelper.set("roundedCorners", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.roundedCorners
@@ -63,7 +64,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-show-album-art-description")
     checked: valueShowAlbumArt
     onToggled: checked => {
-                 valueShowAlbumArt = checked;
+                 settingsHelper.set("showAlbumArt", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showAlbumArt
@@ -75,7 +76,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-show-visualizer-description")
     checked: valueShowVisualizer
     onToggled: checked => {
-                 valueShowVisualizer = checked;
+                 settingsHelper.set("showVisualizer", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showVisualizer
@@ -87,7 +88,7 @@ ColumnLayout {
     description: I18n.tr("panels.desktop-widgets.media-player-show-buttons-description")
     checked: valueShowButtons
     onToggled: checked => {
-                 valueShowButtons = checked;
+                 settingsHelper.set("showButtons", checked);
                  saveSettings();
                }
     defaultValue: widgetMetadata.showButtons
@@ -140,7 +141,7 @@ ColumnLayout {
     ]
     currentKey: valueHideMode
     onSelected: key => {
-                  valueHideMode = key;
+                  settingsHelper.set("hideMode", key);
                   saveSettings();
                 }
     defaultValue: widgetMetadata.hideMode
