@@ -7,6 +7,7 @@ QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这�
 - 颜色从 `Color.*` 取，尺寸、圆角、时长从 `Style.*` 取；DDE 专用的表面和叠加色用 `Color.maskDark`、`Color.overlay(level)` 这类语义令牌。组件内部只做布局。
 - 新数值若 `Commons/Style.qml` / `Commons/Color.qml` 里没有令牌，先去 `references/` 找出处、把它加进令牌文件，最后才在组件里使用。`DESIGN.md` 的禁用清单把「在组件里写死颜色、尺寸或时长」列为禁止项——本节是它的正面形式。
 - `references/` 的引用格式是 `仓库/路径:行号`（权威见 `DESIGN.md` §1）。
+- **跟随全局 = 接入令牌/主题体系，不是在组件里自造。** 发现某个界面元素不随全局变化（深色模式下菜单仍是浅色、间距不吃 `Style` 令牌），先找它本该消费的 `Color`/`Style` 令牌或公共件参数（菜单 `variant`、弹层 `Color.popupShell`）把接入点修回来；组件内部另写一份配色/尺寸，本身就是"没接入"的证据。
 
 ## 设置项四处同步
 
@@ -61,7 +62,7 @@ QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这�
 ## 服务语义守恒
 
 - `Services/`、`Commons/` 是 Noctalia 的业务内核：重写样式时不要改动它们的属性签名、信号时机和副作用。上游语义被替换必须写出依据（平台差异，如 niri/PipeWire），否则视为回归。
-- `Assets/settings-default.json` 的每个键都要有消费方；注册表里每个挂件要有可用的配置入口。发现"数据活着、界面死了"先恢复接入，而不是当死代码删掉（参考 `bar.widgets` 的教训：服务链路活着，只是 UI 被砍）。
+- `Assets/settings-default.json` 的每个键都要有消费方，且**设置项必须与活跃前端一一对应**——只接到死代码/非默认路径（如已删的 overlay launcher）等价于死键。发现"数据活着、界面死了"先恢复接入，而不是当死代码删掉（参考 `bar.widgets` 的教训：服务链路活着，只是 UI 被砍）。
 - 删功能要连带清数据键并写迁移（`Commons/Migrations/`）；留着孤儿键就是留一颗哑弹。
 
 ## `modelData` 按稳定字段比对
