@@ -20,6 +20,9 @@ NIconButton {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -57,13 +60,16 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockPluginCellSize : Style.getCapsuleHeightForScreen(screen?.name)
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
-  customRadius: Style.radiusL
-  colorBg: Style.capsuleColor
-  colorFg: iconColor
-  colorBgHover: Color.mHover
-  colorFgHover: Color.mOnHover
+  customRadius: fashionMode ? Style.radiusPopup : Style.radiusL
+  iconRatio: fashionMode ? 0.45 : 0.48
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : Style.capsuleColor
+  colorFg: fashionMode ? Color.onShell : iconColor
+  colorBgHover: fashionMode ? Color.overlay("hover") : Color.mHover
+  colorFgHover: fashionMode ? Color.onShell : Color.mOnHover
+  border.width: fashionMode ? 0 : Style.borderS
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
 

@@ -19,6 +19,9 @@ Item {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   // Settings
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
@@ -56,8 +59,8 @@ Item {
   Component.onCompleted: LockKeysService.registerComponent("bar-lockkeys:" + (screen?.name || "unknown"))
   Component.onDestruction: LockKeysService.unregisterComponent("bar-lockkeys:" + (screen?.name || "unknown"))
 
-  implicitHeight: contentHeight
-  implicitWidth: contentWidth
+  implicitHeight: fashionMode ? Style.dockPluginCellSize : contentHeight
+  implicitWidth: fashionMode ? Style.dockPluginCellSize : contentWidth
 
   NPopupContextMenu {
     id: contextMenu
@@ -83,6 +86,7 @@ Item {
   // Visual capsule centered in parent
   Rectangle {
     id: visualCapsule
+    visible: !root.fashionMode
     anchors.centerIn: parent
     color: Style.capsuleColor
     width: root.contentWidth
@@ -153,6 +157,7 @@ Item {
 
   // MouseArea at root level for extended click area
   MouseArea {
+    enabled: !root.fashionMode
     acceptedButtons: Qt.RightButton
     anchors.fill: parent
 
@@ -161,5 +166,17 @@ Item {
                    PanelService.showContextMenu(contextMenu, root, screen);
                  }
                }
+  }
+
+  // Fashion dock: the glyph row collapses to a keyboard tile; the icon goes
+  // accent while Caps Lock is engaged, right-click keeps the widget menu.
+  FashionTile {
+    anchors.centerIn: parent
+    visible: root.fashionMode
+    icon: root.capsIcon
+    colorFg: LockKeysService.capsLockOn ? Color.mTertiary : Color.onShell
+    tooltipText: I18n.tr("widgets.label-lock-keys")
+    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
+    onRightClicked: PanelService.showContextMenu(contextMenu, root, root.screen)
   }
 }

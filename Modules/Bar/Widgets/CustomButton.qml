@@ -40,6 +40,8 @@ Item {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -228,6 +230,7 @@ Item {
     visible: _pillVisible
     opacity: _pillOpacity
     screen: root.screen
+    dockPresentation: root.dockPresentation
     oppositeDirection: BarService.getPillDirection(root)
     iconPosition: root.iconPosition
     icon: _pillIcon

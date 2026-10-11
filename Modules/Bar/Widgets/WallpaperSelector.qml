@@ -17,6 +17,9 @@ NIconButton {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   readonly property string screenName: screen ? screen.name : ""
@@ -33,9 +36,11 @@ NIconButton {
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
 
   enabled: Settings.data.wallpaper.enabled
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockPluginCellSize : Style.getCapsuleHeightForScreen(screen?.name)
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
-  customRadius: Style.radiusL
+  customRadius: fashionMode ? Style.radiusPopup : Style.radiusL
+  iconRatio: fashionMode ? 0.45 : 0.48
   icon: "wallpaper-selector"
   tooltipText: {
     if (PanelService.getPanel("wallpaperPanel", screen)?.isPanelOpen) {
@@ -45,10 +50,10 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  colorBg: Style.capsuleColor
-  colorFg: Color.resolveColorKey(iconColorKey)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : Style.capsuleColor
+  colorFg: fashionMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
   NPopupContextMenu {
     id: contextMenu

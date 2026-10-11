@@ -18,6 +18,9 @@ Item {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   // Explicit screenName property ensures reactive binding when screen changes
   readonly property string screenName: screen ? screen.name : ""
@@ -66,9 +69,9 @@ Item {
   readonly property real contentWidth: !shouldShow ? 0 : isVerticalBar ? capsuleHeight : visualizerWidth
   readonly property real contentHeight: !shouldShow ? 0 : isVerticalBar ? visualizerWidth : capsuleHeight
 
-  implicitWidth: contentWidth
-  implicitHeight: contentHeight
-  visible: shouldShow
+  implicitWidth: fashionMode ? Style.dockPluginCellSize : contentWidth
+  implicitHeight: fashionMode ? Style.dockPluginCellSize : contentHeight
+  visible: shouldShow || fashionMode
   opacity: shouldShow ? 1.0 : 0.0
 
   Behavior on implicitWidth {
@@ -90,6 +93,7 @@ Item {
   // Visual capsule centered in parent
   Rectangle {
     id: background
+    visible: !root.fashionMode
     width: root.contentWidth
     height: root.contentHeight
     anchors.centerIn: parent
@@ -158,6 +162,7 @@ Item {
   // Click to cycle through visualizer types
   MouseArea {
     id: mouseArea
+    enabled: !root.fashionMode
     anchors.fill: parent
     cursorShape: Qt.PointingHandCursor
     hoverEnabled: true
@@ -211,6 +216,25 @@ Item {
       showMinimumSignal: true
       vertical: root.isVerticalBar
       mirrored: Settings.data.audio.spectrumMirrored
+    }
+  }
+
+  // Fashion dock: the live spectrum collapses to a tile; left-click keeps the
+  // type cycling, right-click keeps the widget menu.
+  FashionTile {
+    anchors.centerIn: parent
+    visible: root.fashionMode
+    icon: "wave-saw-tool"
+    tooltipText: I18n.tr("widgets.label-audio-visualizer")
+    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
+    onClicked: {
+      const types = ["linear", "mirrored", "wave"];
+      const nextIndex = (types.indexOf(root.currentVisualizerType) + 1) % types.length;
+      Settings.data.audio.visualizerType = types[nextIndex];
+    }
+    onRightClicked: {
+      if (root.screen)
+        PanelService.showContextMenu(contextMenu, root, root.screen);
     }
   }
 }

@@ -292,6 +292,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 | （新增）Trash | `user-trash[-full]` | 同左；点击打开回收站，弹出层里可清空 |
 
 - 默认插件（时尚模式）：Tray、NotificationHistory、Network、Volume、Battery、Clock、SessionMenu、Trash。
+- **统一接口 `dockPresentation`**：时尚 dock 加载挂件时注入该属性（`BarWidgetLoader`，经 `widgetProps` 守卫式赋值——不能进 `setSource` 初始属性，第三方插件挂件没声明它会炸 "Cannot assign to non-existent property"）。每个可被 `dock.plugins` 引用的挂件都必须声明它并实现时尚呈现：图标按钮类挂件直接把 `baseSize`/`bgSize`/`iconRatio`/`colorBg`/`border` 切成瓦片分支；`BarPill` 类挂件把属性转发给 pill 即可（pill 已实现 `collapseToIcon`）；自绘挂件（ActiveWindow、MediaMini、SystemMonitor、AudioVisualizer、LockKeys 等 bar 文字/图形无法收进一格的）隐藏原内容并显示 `Modules/Bar/Extras/FashionTile`——一格共享瓦片 + 主点击行为镜像。未声明属性的第三方插件挂件按 bar 形态退化渲染（不错位、不报错）。
 - 时尚模式插件区两项可调（`dock.*`，均〔演进〕）：
   - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕；托盘等变长插件长度仍按内容计。
   - `dock.fusedPlugins`（默认关）：插件瓦片底色收敛为一条共享长条（`overlay("subtle")`），各瓦片自身底chip隐藏，悬停态照旧——现代外观。

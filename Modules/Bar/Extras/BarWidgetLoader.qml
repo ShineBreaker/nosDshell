@@ -87,6 +87,10 @@ Item {
   // but still load correctly — and plugins that DO define them (e.g. for unique
   // SpectrumService keys with multiple instances) get correct values from the start.
   function _initialProps() {
+    // dockPresentation deliberately stays OUT of the initial props: setSource
+    // applies them unfiltered, so any widget (or third-party plugin) that does
+    // not declare it would die with "Cannot assign to non-existent property".
+    // The guarded post-load pass below assigns it where declared instead.
     var props = {
       "screen": widgetScreen,
       "widgetId": widgetProps.widgetId || "",
@@ -94,9 +98,6 @@ Item {
       "sectionWidgetIndex": widgetProps.sectionWidgetIndex || 0,
       "sectionWidgetsCount": widgetProps.sectionWidgetsCount || 0
     };
-    // Only inject when set — bar widgets are not required to declare it
-    if (root.dockPresentation !== "")
-      props["dockPresentation"] = root.dockPresentation;
     return props;
   }
 

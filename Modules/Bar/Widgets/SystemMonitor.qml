@@ -20,6 +20,9 @@ Item {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -71,8 +74,8 @@ Item {
 
   // Size: use implicit width/height
   // BarWidgetLoader sets explicit width/height to extend click area
-  implicitWidth: contentWidth
-  implicitHeight: contentHeight
+  implicitWidth: fashionMode ? Style.dockPluginCellSize : contentWidth
+  implicitHeight: fashionMode ? Style.dockPluginCellSize : contentHeight
 
   Component.onCompleted: SystemStatService.registerComponent("bar-sysmon:" + (screen?.name || "unknown"))
   Component.onDestruction: SystemStatService.unregisterComponent("bar-sysmon:" + (screen?.name || "unknown"))
@@ -174,6 +177,7 @@ Item {
   // Visual capsule centered in parent
   Rectangle {
     id: visualCapsule
+    visible: !root.fashionMode
     width: root.contentWidth
     height: root.contentHeight
     anchors.centerIn: parent
@@ -910,6 +914,7 @@ Item {
   // MouseArea at root level for extended click area
   MouseArea {
     id: tooltipArea
+    enabled: !root.fashionMode
     anchors.fill: parent
     cursorShape: Qt.PointingHandCursor
     acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
@@ -946,6 +951,25 @@ Item {
       if (tooltipArea.containsMouse) {
         TooltipService.updateText(buildTooltipContent());
       }
+    }
+  }
+
+  // Fashion dock: the stat grid collapses to a tile; clicks mirror the bar
+  // widget's bindings (panel toggle, external monitor, widget menu).
+  FashionTile {
+    anchors.centerIn: parent
+    visible: root.fashionMode
+    icon: "cpu-usage"
+    tooltipText: root.buildTooltipContent()
+    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
+    onClicked: {
+      TooltipService.hide(root);
+      PanelService.getPanel("systemStatsPanel", root.screen)?.toggle(root);
+    }
+    onMiddleClicked: root.openExternalMonitor()
+    onRightClicked: {
+      TooltipService.hide(root);
+      PanelService.showContextMenu(contextMenu, root, root.screen);
     }
   }
 }

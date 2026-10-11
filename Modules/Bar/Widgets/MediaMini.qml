@@ -17,6 +17,9 @@ Item {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   // Settings
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
@@ -103,8 +106,8 @@ Item {
   // Layout
   // For horizontal bars, height is always capsuleHeight (no animation needed to prevent jitter)
   // For vertical bars, collapse to 0 when hidden
-  implicitWidth: isVertical ? (isHidden ? 0 : verticalSize) : (isHidden ? 0 : contentWidth)
-  implicitHeight: isVertical ? (isHidden ? 0 : verticalSize) : capsuleHeight
+  implicitWidth: fashionMode ? Style.dockPluginCellSize : (isVertical ? (isHidden ? 0 : verticalSize) : (isHidden ? 0 : contentWidth))
+  implicitHeight: fashionMode ? Style.dockPluginCellSize : (isVertical ? (isHidden ? 0 : verticalSize) : capsuleHeight)
   visible: !shouldHideIdle && (hideMode !== "hidden" || opacity > 0)
   opacity: isHidden ? 0.0 : ((hideMode === "transparent" && !hasPlayer) ? 0.0 : 1.0)
 
@@ -232,6 +235,7 @@ Item {
   // Main container - stays at content size, pixel-perfect centered in parent
   Rectangle {
     id: container
+    visible: !root.fashionMode
     x: Style.pixelAlignCenter(parent.width, width)
     y: Style.pixelAlignCenter(parent.height, height)
     width: Style.toOdd(isVertical ? (isHidden ? 0 : verticalSize) : (isHidden ? 0 : contentWidth))
@@ -380,6 +384,7 @@ Item {
   // Mouse interaction
   MouseArea {
     id: mainMouseArea
+    enabled: !root.fashionMode
     anchors.fill: parent
 
     // Extend click area to screen edge if widget is at the start/end
@@ -506,5 +511,26 @@ Item {
       ctx.lineCap = "round";
       ctx.stroke();
     }
+  }
+
+  // Fashion dock: album-art/text collapses to a tile showing the track art
+  // (music glyph without a player); clicks mirror the bar widget's bindings.
+  FashionTile {
+    anchors.centerIn: parent
+    visible: root.fashionMode
+    iconSource: root.hasPlayer ? (MediaService.trackArtUrl || "") : ""
+    recolorIcon: false
+    icon: "music"
+    tooltipText: root.title
+    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
+    onClicked: {
+      TooltipService.hide(root);
+      PanelService.getPanel("mediaPlayerPanel", root.screen)?.toggle(root);
+    }
+    onMiddleClicked: {
+      if (root.hasPlayer)
+        MediaService.playPause();
+    }
+    onRightClicked: PanelService.showContextMenu(contextMenu, root, root.screen)
   }
 }

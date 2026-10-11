@@ -931,16 +931,18 @@ Item {
 
         visible: pluginList.length > 0
         Layout.alignment: Qt.AlignCenter
-        Layout.preferredWidth: isVertical ? dockRoot.itemThickness : pluginGrid.implicitWidth + fusedPad
-        Layout.preferredHeight: isVertical ? pluginGrid.implicitHeight + fusedPad : dockRoot.itemThickness
+        // implicit size = real item size in the layout cell (a bare Item
+        // reports 0 and the fused pill below would collapse with it)
+        implicitWidth: isVertical ? dockRoot.itemThickness : pluginGrid.implicitWidth + fusedPad
+        implicitHeight: isVertical ? pluginGrid.implicitHeight + fusedPad : dockRoot.itemThickness
 
         readonly property real fusedPad: Settings.data.dock.fusedPlugins ? Style.marginXS * 2 : 0
 
         Rectangle {
           visible: Settings.data.dock.fusedPlugins
           anchors.centerIn: parent
-          width: isVertical ? Style.dockPluginTileSize + Style.marginXS * 2 : parent.width
-          height: isVertical ? parent.height : Style.dockPluginTileSize + Style.marginXS * 2
+          width: isVertical ? Style.dockPluginTileSize + Style.marginXS * 2 : pluginGrid.implicitWidth + parent.fusedPad
+          height: isVertical ? pluginGrid.implicitHeight + parent.fusedPad : Style.dockPluginTileSize + Style.marginXS * 2
           radius: Style.radiusL
           color: Color.overlay("subtle")
           border.color: Style.capsuleBorderColor

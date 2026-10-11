@@ -19,6 +19,9 @@ NIconButton {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   readonly property string screenName: screen ? screen.name : ""
@@ -34,13 +37,15 @@ NIconButton {
 
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
 
-  baseSize: Style.getCapsuleHeightForScreen(screen?.name)
+  baseSize: fashionMode ? Style.dockPluginCellSize : Style.getCapsuleHeightForScreen(screen?.name)
+  bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
-  customRadius: Style.radiusL
-  colorBg: PowerProfileService.performanceMode ? Color.mPrimary : Style.capsuleColor
-  colorFg: PowerProfileService.performanceMode ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey)
+  customRadius: fashionMode ? Style.radiusPopup : Style.radiusL
+  iconRatio: fashionMode ? 0.45 : 0.48
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (PowerProfileService.performanceMode ? Color.mPrimary : Style.capsuleColor)
+  colorFg: fashionMode ? Color.onShell : (PowerProfileService.performanceMode ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
-  border.width: Style.capsuleBorderWidth
+  border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 
   icon: PowerProfileService.performanceMode ? "rocket" : "rocket-off"
   tooltipText: PowerProfileService.performanceMode ? I18n.tr("tooltips.performance-mode-enabled") : I18n.tr("tooltips.performance-mode-disabled")

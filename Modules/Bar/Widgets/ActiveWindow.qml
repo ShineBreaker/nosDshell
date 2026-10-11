@@ -24,6 +24,9 @@ Item {
   property string section: ""
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
+  // "fashion" = DDE fashion dock presentation (icon-only tile)
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] || {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -64,8 +67,8 @@ Item {
 
   // For horizontal bars, height is always barHeight (no animation needed)
   // For vertical bars, collapse to 0 when hidden
-  implicitHeight: isVerticalBar ? (((!hasFocusedWindow) && hideMode === "hidden") ? 0 : verticalSize) : barHeight
-  implicitWidth: isVerticalBar ? (((!hasFocusedWindow) && hideMode === "hidden") ? 0 : verticalSize) : (((!hasFocusedWindow) && hideMode === "hidden") ? 0 : dynamicWidth)
+  implicitHeight: fashionMode ? Style.dockPluginCellSize : (isVerticalBar ? (((!hasFocusedWindow) && hideMode === "hidden") ? 0 : verticalSize) : barHeight)
+  implicitWidth: fashionMode ? Style.dockPluginCellSize : (isVerticalBar ? (((!hasFocusedWindow) && hideMode === "hidden") ? 0 : verticalSize) : (((!hasFocusedWindow) && hideMode === "hidden") ? 0 : dynamicWidth))
 
   // "visible": Always Visible, "hidden": Hide When Empty, "transparent": Transparent When Empty
   visible: (hideMode !== "hidden" || hasFocusedWindow) || opacity > 0
@@ -197,7 +200,7 @@ Item {
 
   Rectangle {
     id: windowActiveRect
-    visible: root.visible
+    visible: root.visible && !root.fashionMode
     x: isVerticalBar ? Style.pixelAlignCenter(parent.width, width) : 0
     y: isVerticalBar ? 0 : Style.pixelAlignCenter(parent.height, height)
     width: isVerticalBar ? ((!hasFocusedWindow) && hideMode === "hidden" ? 0 : verticalSize) : ((!hasFocusedWindow) && (hideMode === "hidden") ? 0 : dynamicWidth)
@@ -381,5 +384,18 @@ Item {
         Logger.w("ActiveWindow", "Error in onWindowListChanged:", e);
       }
     }
+  }
+
+  // Fashion dock: the bar text/icon row collapses to the focused app's icon
+  // tile (full color, like dock app icons); right-click keeps the widget menu.
+  FashionTile {
+    anchors.centerIn: parent
+    visible: root.fashionMode
+    iconSource: root.hasFocusedWindow ? root.getAppIcon() : ""
+    recolorIcon: false
+    icon: root.fallbackIcon
+    tooltipText: root.windowTitle
+    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
+    onRightClicked: PanelService.showContextMenu(contextMenu, root, root.screen)
   }
 }

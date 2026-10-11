@@ -63,6 +63,7 @@ QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这�
 
 - `Services/`、`Commons/` 是 Noctalia 的业务内核：重写样式时不要改动它们的属性签名、信号时机和副作用。上游语义被替换必须写出依据（平台差异，如 niri/PipeWire），否则视为回归。
 - `Assets/settings-default.json` 的每个键都要有消费方，且**设置项必须与活跃前端一一对应**——只接到死代码/非默认路径（如已删的 overlay launcher）等价于死键。发现"数据活着、界面死了"先恢复接入，而不是当死代码删掉（参考 `bar.widgets` 的教训：服务链路活着，只是 UI 被砍）。
+- **挂件注入属性只能走 `BarWidgetLoader.widgetProps` 的守卫式赋值**，不能进 `Loader.setSource` 的初始属性——初始属性不过滤，挂件没声明就 `Cannot assign to non-existent property`（第三方插件挂件尤其躲不掉）。dock 侧注入见 `dockPresentation`（DESIGN §3.1.4）。
 - 删功能要连带清数据键并写迁移（`Commons/Migrations/`）；留着孤儿键就是留一颗哑弹。
 
 ## `modelData` 按稳定字段比对
