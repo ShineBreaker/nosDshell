@@ -646,22 +646,11 @@ PopupWindow {
               radius: Style.radiusRow
 
               // Separator: DDE two-line groove (dark over light, inset 4)
-              Item {
+              NDivider {
+                variant: "ddeGroove"
                 visible: parent.isSeparator
                 anchors.centerIn: parent
                 width: parent.width - Style.margin2XS
-                height: 2
-                Rectangle {
-                  width: parent.width
-                  height: 1
-                  color: Qt.rgba(0, 0, 0, 0.1)
-                }
-                Rectangle {
-                  y: 1
-                  width: parent.width
-                  height: 1
-                  color: Qt.rgba(1, 1, 1, 0.1)
-                }
               }
 
               Row {
@@ -720,8 +709,10 @@ PopupWindow {
         }
       }
 
-      Item {
+      // DDE two-line groove (dark over light)
+      NDivider {
         id: separator
+        variant: "ddeGroove"
         visible: root.splitExtendedLayout
         anchors.left: parent.left
         anchors.right: parent.right
@@ -729,20 +720,6 @@ PopupWindow {
         anchors.leftMargin: Style.marginXS
         anchors.rightMargin: Style.marginXS
         anchors.topMargin: Style.marginS
-        height: 2
-
-        // DDE two-line groove (dark over light)
-        Rectangle {
-          width: parent.width
-          height: 1
-          color: Qt.rgba(0, 0, 0, 0.1)
-        }
-        Rectangle {
-          y: 1
-          width: parent.width
-          height: 1
-          color: Qt.rgba(1, 1, 1, 0.1)
-        }
       }
 
       Column {

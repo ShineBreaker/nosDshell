@@ -421,7 +421,7 @@ Singleton {
   readonly property color _accentOverride: {
     const s = Settings.data.ui.accentOverride;
     if (typeof s !== "string" || s === "")
-      return "transparent";
+    return "transparent";
     if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(s)) {
       if (!_accentWarned) {
         _accentWarned = true;
@@ -567,6 +567,13 @@ Singleton {
   // Module header separator: 1 px line, white x 0.15 in dark mode (DESIGN
   // §3.5.4). Adaptive via onShell so light mode reads black x 0.15.
   readonly property color separator: Qt.alpha(onShell, 0.15)
+
+  // DDE menu separator groove (§3.3, dmenucontent literals): 1 px black
+  // x 0.1 over 1 px white x 0.1. On light menus the white leg fades into
+  // the surface, leaving a plain recessed line. Drawn by NDivider's
+  // "ddeGroove" variant — never re-instantiate the pair by hand.
+  readonly property color grooveShadow: Qt.rgba(0, 0, 0, 0.1)
+  readonly property color grooveLine: Qt.rgba(1, 1, 1, 0.1)
 
   // White overlay ladder on dark surfaces (black on light) — DESIGN §1.3
   readonly property var overlayLevels: ({

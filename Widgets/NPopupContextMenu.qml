@@ -514,24 +514,11 @@ PopupWindow {
             color: "transparent"
 
             // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
-            Rectangle {
+            NDivider {
+              variant: "ddeGroove"
               visible: menuItem.isSeparator
               anchors.centerIn: parent
               width: parent.width - Style.margin2XS
-              height: 2
-              color: "transparent"
-
-              Rectangle {
-                width: parent.width
-                height: 1
-                color: Qt.rgba(0, 0, 0, 0.1)
-              }
-              Rectangle {
-                y: 1
-                width: parent.width
-                height: 1
-                color: Qt.rgba(1, 1, 1, 0.1)
-              }
             }
 
             Rectangle {
