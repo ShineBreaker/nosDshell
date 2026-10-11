@@ -500,18 +500,12 @@ Variants {
               border.color: Color.stackAlpha(Color.borderTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
               border.width: Style.borderS
 
-              NDropShadow {
-                anchors.fill: parent
-                source: bubbleBody
-                autoPaddingEnabled: true
-                shadow: Style.shadowBubble
-              }
-
-              // App / notification image at (11,11)
+              // App / notification image, inset from the left and vertically
+              // centered so tall bubbles don't pin it to a corner
               NImageRounded {
                 id: bubbleIcon
                 x: Style.bubbleIconInset
-                y: Style.bubbleIconInset
+                anchors.verticalCenter: parent.verticalCenter
                 width: Style.bubbleIconSize
                 height: Style.bubbleIconSize
                 radius: Style.radiusRow
@@ -762,6 +756,17 @@ Variants {
                   card.swipeOffsetY = 0;
                 }
               }
+            }
+
+            // The drop, declared after the bubble as a sibling of its source:
+            // inside the source the layer would sample its own output and feed
+            // back frame to frame (see Toast.qml for the same pattern). It
+            // lives under `card`, so slide/swipe transforms carry it too.
+            NDropShadow {
+              anchors.fill: bubbleBody
+              source: bubbleBody
+              autoPaddingEnabled: true
+              shadow: Style.shadowBubble
             }
           }
         }

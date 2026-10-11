@@ -79,14 +79,20 @@ Popup {
     }
   }
 
-  background: Rectangle {
-    id: backgroundRect
-    color: Color.mSurface
-    radius: Style.radiusL
-    border.color: Color.mOutline
-    border.width: Style.borderM
+  background: Item {
+    Rectangle {
+      id: backgroundRect
+      anchors.fill: parent
+      color: Color.mSurface
+      radius: Style.radiusL
+      border.color: Color.mOutline
+      border.width: Style.borderM
+    }
 
+    // Sibling of its source, declared after it — inside the rect the layer
+    // would sample its own output and feed back (same pattern as Toast.qml).
     NDropShadow {
+      anchors.fill: backgroundRect
       source: backgroundRect
     }
   }

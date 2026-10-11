@@ -581,20 +581,6 @@ Variants {
           border.color: Color.borderTransient
           border.width: Style.borderS
 
-          // Shadow: must not inflate the window. autoPaddingEnabled grows an
-          // anchors.fill child, which would push the panel surface past
-          // 140x140 and scale the whole tile; anchor it to the tile's own
-          // geometry instead.
-          NDropShadow {
-            x: tile.x
-            y: tile.y
-            width: tile.width
-            height: tile.height
-            source: tile
-            autoPaddingEnabled: false
-            shadow: Style.shadowOsd
-          }
-
           // ---- progress types: volume / input volume / brightness ----
           // Absolute positioning: DDE draws the glyph at a fixed offset from the
           // tile top and the bar at a fixed offset (dde-osd/common.cpp
@@ -673,6 +659,21 @@ Variants {
             elide: Text.ElideNone
             horizontalAlignment: Text.AlignHCenter
           }
+        }
+
+        // Shadow: must not inflate the window. autoPaddingEnabled grows the
+        // shadow item past the tile, which would push the panel surface past
+        // 140x140 and scale the whole tile; keep it at the tile's own geometry.
+        // Sibling of its source, declared after it — inside the tile the layer
+        // would sample its own output and feed back (same pattern as Toast.qml).
+        NDropShadow {
+          x: tile.x
+          y: tile.y
+          width: tile.width
+          height: tile.height
+          source: tile
+          autoPaddingEnabled: false
+          shadow: Style.shadowOsd
         }
 
         // Delay showing the OSD to allow the layout to settle after activation.

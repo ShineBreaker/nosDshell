@@ -205,7 +205,7 @@ settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-icon notification-long notification-resave osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu lockscreen settings-tree" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow lockscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -800,6 +800,13 @@ PYEOF
     notification-long)    notify-send -a nosdshell-verify "Long body" \
                           "第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行 第一行"$'\n'"第二行 第二行 第二行 第二行 第二行 第二行 第二行 第二行"$'\n'"第三行 第三行 第三行 第三行 第三行 第三行 第三行 第三行" 2>/dev/null
                           sleep 0.8; shot notification-long ;;
+    # Image + 3-line body on one bubble; 5 captures ~0.6 s apart prove the
+    # drop shadow stays put (an NDropShadow inside its own source fed back
+    # frame to frame and the shape drifted).
+    notification-shadow)  notify-send -a nosdshell-verify -i "$REPO/Scripts/test/assets/audio-volume-high-symbolic.png" \
+                          "Tall notification" "第一行 第一行 第一行 第一行 第一行 第一行 第一行"$'\n'"第二行 第二行 第二行 第二行 第二行 第二行 第二行"$'\n'"第三行 第三行 第三行 第三行 第三行 第三行" 2>/dev/null
+                          sleep 0.8
+                          for i in 1 2 3 4 5; do shot "notification-shadow-$i"; sleep 0.6; done ;;
     # DND toggles write Settings -> onSettingsSaved; the notification server
     # must survive that save (it used to destroy+recreate and race the bus
     # name, cua P4). The notify-send afterwards proves the name is still held.
