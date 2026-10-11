@@ -35,7 +35,6 @@ Each tool is optional. If it is missing, only the feature it backs stops working
 ## Icons
 
 - [Tabler Icons](https://tabler.io/icons): the interface glyph set
-- [Riyan Resdian on Noun Project](https://thenounproject.com/creator/yaicon/): plug icon
 
 ## Audio assets
 
