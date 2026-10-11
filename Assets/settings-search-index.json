@@ -301,7 +301,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 1,
-    "subTabLabel": "common.bluetooth"
+    "subTabLabel": "common.bluetooth",
+    "visibleWhen": [
+      "BluetoothService.enabled"
+    ]
   },
   {
     "labelKey": "bluetooth.panel.paired-devices",
@@ -310,7 +313,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 1,
-    "subTabLabel": "common.bluetooth"
+    "subTabLabel": "common.bluetooth",
+    "visibleWhen": [
+      "BluetoothService.enabled"
+    ]
   },
   {
     "labelKey": "bluetooth.panel.available-devices",
@@ -319,7 +325,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 1,
-    "subTabLabel": "common.bluetooth"
+    "subTabLabel": "common.bluetooth",
+    "visibleWhen": [
+      "BluetoothService.enabled"
+    ]
   },
   {
     "labelKey": "panels.connections.bluetooth-auto-connect-label",
@@ -328,7 +337,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 1,
-    "subTabLabel": "common.bluetooth"
+    "subTabLabel": "common.bluetooth",
+    "visibleWhen": [
+      "BluetoothService.enabled"
+    ]
   },
   {
     "labelKey": "panels.connections.hide-unnamed-devices-label",
@@ -337,7 +349,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 1,
-    "subTabLabel": "common.bluetooth"
+    "subTabLabel": "common.bluetooth",
+    "visibleWhen": [
+      "BluetoothService.enabled"
+    ]
   },
   {
     "labelKey": "panels.connections.bluetooth-rssi-polling-label",
@@ -346,7 +361,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 1,
-    "subTabLabel": "common.bluetooth"
+    "subTabLabel": "common.bluetooth",
+    "visibleWhen": [
+      "BluetoothService.enabled"
+    ]
   },
   {
     "labelKey": "panels.connections.bluetooth-rssi-polling-interval-label",
@@ -357,6 +375,7 @@
     "subTab": 1,
     "subTabLabel": "common.bluetooth",
     "visibleWhen": [
+      "BluetoothService.enabled",
       "Settings.data.network.bluetoothRssiPollingEnabled"
     ]
   },
@@ -415,7 +434,10 @@
     "tab": 16,
     "tabLabel": "panels.connections.title",
     "subTab": 0,
-    "subTabLabel": "common.wifi"
+    "subTabLabel": "common.wifi",
+    "visibleWhen": [
+      "BluetoothService.bluetoothAvailable"
+    ]
   },
   {
     "labelKey": "wifi.panel.network-name-ssid",

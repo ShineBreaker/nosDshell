@@ -190,6 +190,21 @@ def is_resolvable_condition(cond: str) -> bool:
     return any(check.startswith(p) for p in RESOLVABLE_PREFIXES)
 
 
+def resolvable_conditions(cond: str):
+    """The resolvable clauses of a visibility condition.
+
+    `a && b` needs every clause to hold, so the resolvable ones stay valid
+    necessary conditions even when a sibling clause (root.foo, a local id)
+    cannot be evaluated by the search UI. `a || b` is kept whole or dropped —
+    one clause alone is not a necessary condition.
+    """
+    if is_resolvable_condition(cond):
+        return [cond]
+    if "||" in cond:
+        return []
+    return [p for p in (part.strip(" ()\t") for part in cond.split("&&")) if is_resolvable_condition(p)]
+
+
 def build_scopes(content: str):
     """
     Brace-track the file. Returns per-line scope stacks plus scope conditions.
@@ -288,7 +303,7 @@ def extract_entries(
             cond = own.group(1).strip()
             if cond != "true" and cond not in conditions:
                 conditions.append(cond)
-        conditions = [c for c in conditions if is_resolvable_condition(c)]
+        conditions = [c for cond in conditions for c in resolvable_conditions(cond)]
         entry = {
             "labelKey": label_key,
             "descriptionKey": desc_key,
