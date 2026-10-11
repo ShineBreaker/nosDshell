@@ -1,56 +1,80 @@
-# AGENTS.md — nosDshell
+# AGENTS.md：nosDshell
 
-nosDshell 基于 Noctalia v4 修改（Quickshell/QML Wayland shell），目标是**以 DDE 15（deepin 15）的风格呈现 Noctalia 的全部功能**——Noctalia 的业务内核（Services、设置数据、挂件体系、插件机制）原样继承，改造只发生在表现层和交互编排。
+nosDshell 是 Noctalia v4（基于 Quickshell/QML 的 Wayland shell）的分叉，目标是用 DDE 15（deepin 15）的界面呈现 Noctalia 的全部功能。Noctalia 的业务内核原样继承，包括 Services、设置数据、挂件体系和插件机制。改造只发生在表现层和交互编排。
 
-## 业务保真（先于一切样式工作）
+## 工作方式
 
-- 分叉点是 `a08ff3619`（上游 `legacy-v4` 末梢），上游完整历史就在本仓库里。比较基线：`git diff a08ff3619..HEAD`——**拿不准"上游本来怎么做"时先查它，而不是猜或重写**。
-- **不许另起炉灶**：功能先复用 `Services/`、`Commons/`、注册表里的现有实现。改 UI 时不得顺手改 Service 的属性签名、信号语义、副作用；Service 的行为改动必须能在 commit 里说清"为什么上游语义在这里不适用"（如 niri/PipeWire 补丁这类平台差异）。
-- **数据活着 UI 死了 = bug**。`settings-default.json` 的键、注册表的挂件、Service 的接口一旦没有 UI/消费方，要么恢复接入，要么连同数据一起清理（带迁移）；最常见的退化形态就是"上游功能被砍成只剩数据"。
-- **砍掉上游能力需要显式理由**：noctalia 身份类（遥测、版本更新检查、GitHub/赞助者服务、吉祥物）是已记录的例外；其他任何上游能力的删除都要在提交正文写依据，并在 `DESIGN.md` 相应章节注明落点（或"不落地"）。
-- 排查顺序：业务问题先查本仓库 git 历史和上游实现，表现问题再查 `references/` 的 DDE 源码。
+这个仓库要长期维护。修一个问题，目标是让同一类问题以后不再出现。任何改动都要让代码库更收敛，即同一件事只有一种做法、一处实现。
 
-## 必读
+动手修改之前，先查清三件事：
 
-- **视觉和交互以 `DESIGN.md` 为唯一依据。** 改任何可见界面、加组件、调颜色/尺寸/动效、决定 Noctalia 的某个功能落到 DDE 的哪个模块（对照表在 §2）之前，先读 `DESIGN.md` 对应章节（`DESIGN.md:5`）。
-- 数值链路：`DESIGN.md` → `Commons/Style.qml` / `Commons/Color.qml` 令牌 → 组件。新数值两处都没有，就去 `references/` 找出处，先把令牌加上，最后才在组件里用。
+1. 根因。用一句话写出问题为什么会发生。如果只能描述现象（"这里颜色不对"），说明还没查到底，要继续追到是哪个数据、令牌、绑定或接口给出了错误的值。业务问题先查本仓库 git 历史和上游实现（见「业务保真」），表现问题再查 `references/` 里的 DDE 源码。
+2. 影响面。列出根因牵连的全部代码：同一个令牌、公共件、Service 属性或设置键的所有消费方，以及用同一种写法写成的同类实现（用 grep 搜同一模式）。
+3. 收口点。找到这些实例共同经过的那一层，通常是令牌、公共件、Service、迁移或注册表。修复放在这一层，让所有实例一起改正。只有找不到共同层时才逐个文件修改，并在提交正文里说明原因。
 
-## 参考源码 `references/`
+修复之后留一道护栏，让同类问题再出现时被拦下或一眼认出。护栏可以是新令牌、收敛出来的公共件、迁移、`verify.sh` 场景，或分支文档里的一条通用规则。
 
-GXDE-OS（DDE 15 社区维护版）的浅克隆；查数值、查结构、查行为，组件↔仓库对照见 `references/README.md`。
+一次修复做完的标准：
 
-DDE 专属素材（时钟表盘、关机按钮、启动器/控制中心图标等）直接复制原件到 `Assets/DDE/<仓库>/<原相对路径>`，每个仓库目录配一份 `NOTICE`，提交说明写来源路径（`DESIGN.md` §1.9）。应用图标和状态图标仍在运行时从系统图标主题读取（推荐 Papirus 或 deepin）。
+- 根因写进了提交正文。
+- 影响面里同一根因的实例全部修好；根因不同的相关问题列给用户，由用户决定是否一起处理。
+- 护栏已经就位，提交正文写明它是什么。
 
-## 运行环境与校验
+## 业务保真
 
-本机是 Guix，没有 Nix——仓库里的 `nix/shell.nix` 是上游留下的，`lefthook.yml` 声明的 pre-commit 因此也没生效（本机 `lefthook` 不在 PATH），**格式化与设置索引要自己跑**。shell 运行在**上游 `quickshell`** 上；`nosdshell.scm` 实际打包的是 `quickshell-nosd`——我们的 fork `ShineBreaker/quickshell-nosd`（上游 0.3.2 + 两个 pipewire UAF 修复 commit），需要 pipewire 补丁就用这个已打包的包。音频频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）。
+- 分叉点是 `a08ff3619`（上游 `legacy-v4` 分支的最后一个提交），上游完整历史就在本仓库里。想知道上游原本怎么做，先看 `git show a08ff3619:<路径>` 或 `git diff a08ff3619..HEAD -- <路径>`，再决定怎么改。
+- 功能优先复用 `Services/`、`Commons/` 和各注册表里的现有实现。改界面时保持 Service 的属性签名、信号语义和副作用不变。确实要改 Service 的行为，就在提交正文里写明上游语义为什么在这里不适用，例如 niri 或 PipeWire 的平台差异。
+- 每份数据都要有消费方，包括 `Assets/settings-default.json` 的键、注册表里的挂件和 Service 暴露的接口。最常见的退化是上游功能的界面被砍掉而数据还留着。遇到这种情况先恢复接入；确定不要这个功能时，按下面的设置键规则清理。
+- 设置键只有三种合法状态：
+  - 活跃：有行为消费方。用户可调的键还要在当前生效的前端里有控件，只接在已删除或非默认前端上的控件不算。
+  - 兼容：上游代码仍然读取它，但在 DDE 形态下取值固定。迁移把它钉在固定值上，`Commons/Settings.qml` 的声明处和 `DESIGN.md` 的对应章节都注明它是兼容数据以及原因。
+  - 删除：功能已经不存在。写迁移从用户已存的配置里删掉它。
 
-高频命令有 `justfile` 包装（`just` 列出全部）：`just lint` / `just fmt` / `just verify <名字> --scenes <场景>` / `just bench` / `just tools`（Rust 工具 release 构建）/ `just run`（guix 打工作树包并替换运行中的 shell，`just restore` 回到打包服务）/ `just release <版号>`（发版自动化，脚本本体 `Scripts/dev/release.sh`）。
+  迁移的写法见 `CODING_STANDARDS.md`。
+- 删除任何上游能力都要有明确理由，写进提交正文，并登记到 `DESIGN.md` §6.1。noctalia 身份类组件（遥测、版本更新检查、GitHub 与赞助者服务、吉祥物）已经登记。
 
-- **所有运行验证走 `Scripts/test/verify.sh <名字>`**，它自带隔离环境。用户正在使用的 niri 会话里不直接起 `qs`，否则会接管他的通知服务、改动他的配置。截图落在脚本头部注释写的 shots 目录。
-- 需要**真 niri 代码路径**（layer-shell、exclusive zone、焦点/输入投递这类合成器敏感行为，sway 上复现不了）时用 `Scripts/test/niri/`——在真会话里起嵌套 niri 窗口 + 全套隔离 env，会在桌面上开一个窗口，用户在场别跑。用法见目录内 README。
-- 结束进程时，只按自己启动时记下的 PID 去 kill。用户会话里也有同名进程（pipewire、wireplumber 等）在运行。
-- 分级：
-  - 每次改完：`Scripts/dev/lint.sh --changed` 不出现新的错误（全仓库检查不加参数，用法见脚本头部）。
-  - 界面改动：再用 `verify.sh` 截一组图，用眼睛和 `DESIGN.md` 逐条对照，同时确认日志里没有新增的 `TypeError`、`ReferenceError`、`.qml:行号` 报错。
-  - 性能相关改动（启动、面板开合延迟）：用 `Scripts/test/bench.sh` 建基线再对比——先丢弃一轮预热环境（guix shell 拉包、磁盘缓存冷会让首轮 startup 系统性偏高），再跑三轮取中位；两项指标口径见脚本头部注释。
-  - 已知的离线噪声（没有 NetworkManager、天气数据为 null、隔离环境里打开蓝牙子页时 `quickshell.dbus.properties` 写 Discoverable 的 WARN）不算回归。
-  - 改到两种任务栏模式、四个停靠方向、亮色/暗色、模糊开关时，要用 `--settings` 把这些组合分别截图验证。
+## 依据
 
-## 分支细则
+- 视觉和交互以 `DESIGN.md` 为唯一依据。改任何可见界面、加组件、调颜色、尺寸或动效，或者决定 Noctalia 的某个功能落到 DDE 的哪个模块（对照表在 §2）之前，先读 `DESIGN.md` 的对应章节。
+- 数值只有一条来路。`DESIGN.md` 给出数值，`Commons/Style.qml` 和 `Commons/Color.qml` 把它定义成令牌，组件只读令牌。新数值在两个令牌文件里都没有时，先去 `references/` 找出处，把令牌加上，最后才在组件里使用。
+- `references/` 是 GXDE-OS（DDE 15 的社区维护版）源码的浅克隆，只读，已被 git 忽略。数值、结构和行为都在这里查，仓库与组件的对照见 `references/README.md`。
+- DDE 专属素材（时钟表盘、关机按钮、启动器和控制中心图标等）从 `references/` 复制原件，规则见 `DESIGN.md` §1.9。
 
-按这次改动的性质取一份；每份文件单读即可执行，不用回头翻本文件。
+## 运行与校验
 
-- **写 QML、加设置、改界面文案或注释** → [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)：令牌优先、设置项四处同步、挂件设置页 `value()`/`set()` 与公共件先查再造、`I18n.tr` 文案、`Logger.d/i/w/e` 日志、`PanelService` / `BarWidgetRegistry` 注册、`modelData` 按稳定字段比对、格式化与注释。
-- **调试：界面行为不符合预期，要取证或复现** → [`DEBUGGING.md`](./DEBUGGING.md)：调试开关四个等价入口、`debug.modules` 与 `debug.logLevel`、场景取证 IPC（`list` / `tree` / `hit` / `opened` / `watch`）、真指针注入、Qt 类别日志与 core 验尸、现成脚本。
-- **要写新工具，或改 `tools/*/` 的依赖** → [`TOOLS.md`](./TOOLS.md)：Rust 工具要求、crate 版本选择与 `Cargo.lock`、`packaging/rust-crates.scm` vendor 同步、`guix build` 验证。
+开发机是 Guix，没有 Nix。`lefthook.yml` 声明的 pre-commit（QML 格式化、重建设置索引）要靠 `nix/shell.nix` 提供 lefthook，在本机不会执行，这两步要自己跑。
 
-## 文档站点（GitHub Pages）
+- shell 跑在上游 `quickshell` 上。上游缺少两个 PipeWire 释放后使用（UAF）修复，需要它们时用 `nosdshell.scm` 打包的 `quickshell-nosd`（我们的 fork）。上游 quickshell 也没有内置音频频谱，频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）。
+- 常用命令包在 `justfile` 里，运行 `just` 可以列出全部。`just run` 和 `just restore` 会替换用户正在使用的 shell，`just release` 会推送 tag 和 main，这三条只在用户要求时运行。
+- 运行验证一律用 `Scripts/test/verify.sh <名字>`。它在隔离的 dbus 会话和无头 sway 里运行，截图与日志的位置写在脚本头部。在用户的 niri 会话里直接起 `qs` 会接管他的通知服务并改写他的配置。
+- 问题依赖真实 niri 行为时（layer-shell、exclusive zone、焦点与输入投递这类 sway 上复现不了的问题），用 `Scripts/test/niri/`，用法见目录内的 README。它会在用户桌面上打开一个窗口，用户在场时先征得同意。
+- 结束进程时只 kill 自己启动时记下的 PID。用户会话里也有同名进程，例如 pipewire 和 wireplumber。
 
-`docs/` 目录同时是 GitHub Pages 站点（main /docs，地址 `https://shinebreaker.github.io/nosDshell/`）。`docs/legacy/` 里是上游 Noctalia v4 wiki 的存档镜像，由 `Scripts/docs/vendor-legacy-docs.py <noctalia-docs 克隆路径>` 从 `noctalia-dev/noctalia-docs` 的 Starlight MDX 全量重新生成——**不要手改 `docs/legacy/` 里的文件**，要改就改脚本重新跑。站点配置在 `docs/_config.yml`（just-the-docs 主题）。
+校验分级：
+
+- 每次改完都跑 `Scripts/dev/lint.sh --changed`，不能出现新的错误。
+- 界面改动还要用 `verify.sh` 截图，逐条对照 `DESIGN.md`，并确认日志里没有新增的 `TypeError`、`ReferenceError` 或 `.qml:行号` 报错。"新增"以改动前的状态为基线。拿不准时，用 `git worktree add <临时目录> <基线提交>` 取出基线，在那里先跑 `just tools` 构建 Rust 工具，再跑同一组场景对比，用完 `git worktree remove`。隔离环境缺少 NetworkManager、天气网络和完整的 BlueZ，由此产生的 WARN 在基线里同样存在，不算回归。
+- 改动牵连到的每个设置维度，都要用 `--settings` 覆盖它的全部取值并分别截图。最常牵连的维度是两种任务栏模式、四个停靠方向、亮色与暗色、模糊开关。
+- 涉及启动耗时或面板开合延迟的改动，先用 `Scripts/test/bench.sh` 建基线再对比，轮次和取值方法见脚本头部。
+
+## 分支文档
+
+按这次改动的性质读对应的文件：
+
+- 写 QML、新增或修改设置、改界面文案时，读 [`CODING_STANDARDS.md`](./CODING_STANDARDS.md)。
+- 界面行为不符合预期、需要取证或复现时，读 [`DEBUGGING.md`](./DEBUGGING.md)。
+- 新写工具或改 `tools/*/` 的依赖时，读 [`TOOLS.md`](./TOOLS.md)。
+- 发版时，读 [`docs/RELEASE.md`](./docs/RELEASE.md)。
+
+## 维护文档
+
+- 每条规则只写在一个地方。本文件放每次任务都用得上的规则，分支文档放只在某类任务里用的规则，`DESIGN.md` 放视觉与交互规格，其他位置需要时链接过去。
+- 把一次修复的经验写进文档时，写成通用规则：在哪一类情况下怎么做，为什么。需要时附一个代码位置作为例子。事故经过写在提交正文里。
+- `docs/` 同时是 GitHub Pages 站点，配置在 `docs/_config.yml`。`docs/legacy/` 由 `Scripts/docs/vendor-legacy-docs.py` 从上游 noctalia-docs 生成，CI 会重新生成并比对；要改其中内容，就改脚本后重新生成。
 
 ## 提交
 
-- **每完成一块可独立验证的工作就提交一次。** 校验通过之后再提交，不要把多个阶段攒在一起。
-- 提交说明沿用仓库原有的 Conventional Commits 风格，例如 `feat(dock): ...`、`style(tokens): ...`、`docs(design): ...`。正文写清楚：为什么改，以及依据的参考位置（`仓库/路径:行号`）。
+- 每完成一块可以独立验证的工作，校验通过后就提交一次。
+- 提交说明沿用 Conventional Commits，例如 `feat(dock): ...`、`style(tokens): ...`、`docs(design): ...`。正文写清为什么改、根因是什么、依据的参考位置（格式为 `仓库/路径:行号`）。
+- 只提交本次任务改动的文件。工作区里有其他会话未提交的改动时，用 `git add <路径>` 只暂存自己的文件。
 - 不 push，不改写历史。
