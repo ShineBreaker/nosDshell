@@ -71,9 +71,12 @@ Item {
   }
 
   function pluginAreaLength() {
-    // Tray expands dynamically; each other plugin occupies a
-    // tile+pluginSpacing cell (Style.dockPluginCellSize)
-    return pluginList.length * (Style.dockPluginCellSize + itemSpacing) + (Settings.data.dock.fusedPlugins ? Style.marginXS * 2 : 0);
+    // Measure the real plugin area: Tray's expanded pill and the clock's
+    // full item slot are variable-width, so a uniform cellSize estimate
+    // under-reports and the dock clips the trailing plugins.
+    if (pluginList.length === 0)
+      return 0;
+    return isVertical ? pluginArea.implicitHeight : pluginArea.implicitWidth;
   }
 
   function getAppIcon(appData): string {

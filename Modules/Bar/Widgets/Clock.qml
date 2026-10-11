@@ -66,8 +66,11 @@ Item {
 
   // Size: use implicit width/height
   // BarWidgetLoader sets explicit width/height to extend click area
-  implicitWidth: fashionMode ? (isBarVertical ? Style.dockItemThickness : Style.dockPluginCellSize) : contentWidth
-  implicitHeight: fashionMode ? (isBarVertical ? Style.dockPluginCellSize : Style.dockItemThickness) : contentHeight
+  // The datetime plugin occupies a FULL item slot like app icons — not a
+  // small plugin chip (datetimewidget.cpp sizeHint returns the item slot,
+  // and the face is drawn at 0.8 of it). pluginSpacing does not apply.
+  implicitWidth: fashionMode ? Style.dockItemThickness : contentWidth
+  implicitHeight: fashionMode ? Style.dockItemThickness : contentHeight
 
   // DDE fashion clock tile: the original gxde-dock clock face with segmented
   // digits, drawn from the copied SVG artwork. Geometry is taken verbatim from
@@ -75,7 +78,7 @@ Item {
   Item {
     id: fashionTile
     visible: root.fashionMode
-    width: Style.dockPluginTileSize
+    width: Style.dockItemThickness
     height: width
     anchors.centerIn: parent
 

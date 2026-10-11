@@ -280,7 +280,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 |---|---|---|
 | Launcher | 启动器图标（0.7） | 启动器图标（0.6–0.8） |
 | Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
-| Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 圆角方形"时钟图标"，上面是大号数字时间（用 QML 画） |
+| Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 满格 item 槽的"时钟图标"，表盘 = 槽 × 0.8、上面是大号数字时间（与应用图标同级，不是小瓦片；`datetimewidget.cpp` sizeHint 返回 item 槽）。不吃 `dock.pluginSpacing` |
 | Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊可展开/收起；分隔线 2 px 白 × 0.1（`fashiontraycontrolwidget.cpp`）。**胶囊底色用与其他插件一致的 `overlay` 梯度（`subtle`/`hover`/`checked`）〔派生：上游展开态是暗色 #282828@0.5，nosDshell 按用户要求统一为插件瓦片底色〕** |
 | Volume / Microphone / Network / Bluetooth / VPN / Brightness / Battery | 16 px symbolic 图标，sizeHint 26×26；Battery 在图标右侧加百分比文字 | 0.8 倍的图标 |
 | SessionMenu | `system-shutdown` symbolic | `system-shutdown` 彩色图标 |
@@ -294,7 +294,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 - 默认插件（时尚模式）：Tray、NotificationHistory、Network、Volume、Battery、Clock、SessionMenu、Trash。
 - **统一接口 `dockPresentation`**：时尚 dock 加载挂件时注入该属性（`BarWidgetLoader`，经 `widgetProps` 守卫式赋值——不能进 `setSource` 初始属性，第三方插件挂件没声明它会炸 "Cannot assign to non-existent property"）。每个可被 `dock.plugins` 引用的挂件都必须声明它并实现时尚呈现：图标按钮类挂件直接把 `baseSize`/`bgSize`/`iconRatio`/`colorBg`/`border` 切成瓦片分支；`BarPill` 类挂件把属性转发给 pill 即可（pill 已实现 `collapseToIcon`）；自绘挂件（ActiveWindow、MediaMini、SystemMonitor、AudioVisualizer、LockKeys 等 bar 文字/图形无法收进一格的）隐藏原内容并显示 `Modules/Bar/Extras/FashionTile`——一格共享瓦片 + 主点击行为镜像。未声明属性的第三方插件挂件按 bar 形态退化渲染（不错位、不报错）。
 - 时尚模式插件区两项可调（`dock.*`，均〔演进〕）：
-  - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕；托盘等变长插件长度仍按内容计。
+  - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕；托盘展开胶囊、时钟满格槽等变宽插件按内容实宽计——`pluginAreaLength` 实测 grid 总宽而不是按格宽估算，否则末尾插件会被 dock 边裁掉。
   - `dock.fusedPlugins`（默认关）：插件瓦片底色收敛为一条共享长条（`overlay("subtle")`），各瓦片自身底chip隐藏，悬停态照旧——现代外观。
 - 原来的 `bar.widgets.{left,center,right}` 合并为 `dock.plugins`（有序列表），旧配置通过迁移转换（§6）。
 
