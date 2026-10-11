@@ -72,7 +72,14 @@ Variants {
 
       color: "transparent"
 
-      // Make shadow area click-through, only notification content is clickable
+      // Only the bubbles take input; shadows and gaps are click-through.
+      // Each delegate Subtracts its live bubbleBody rect from the window
+      // rect, and the Xor against the full-surface base leaves exactly the
+      // bubbles clickable (PendingRegion::applyTo Intersection semantics).
+      // Item tracking follows the Translate slide/swipe animations — the
+      // per-card sentinel inside each contributed region re-emits `changed`
+      // every frame, the same trap NSurfaceRegion's slideX/slideY exists
+      // for; a multi-bubble union just doesn't fit its single trackedItem.
       mask: Region {
         x: 0
         y: 0
@@ -80,15 +87,11 @@ Variants {
         height: notifWindow.height
         intersection: Intersection.Xor
 
-        Region {
-          // The clickable content area is inset by shadowPadding from all edges
-          x: notifWindow.shadowPadding
-          y: notifWindow.shadowPadding
-          width: notifWindow.notifWidth
-          height: Math.max(0, notifWindow.height - notifWindow.shadowPadding * 2)
-          intersection: Intersection.Subtract
-        }
+        regions: notifWindow._maskRegions
       }
+
+      // Bubble regions contributed by the delegates below.
+      property var _maskRegions: []
 
       // Parse location setting
       readonly property string location: Settings.data.notifications.location || "top_right"
@@ -308,7 +311,32 @@ Variants {
               animInDelayTimer.start();
             }
 
-            Component.onCompleted: triggerEntryAnimation()
+            // This bubble's clickable rect in the window mask: item tracking
+            // follows the Translate slide/swipe animations, and the nested
+            // zero-size sentinel re-emits `changed` each animated frame.
+            Region {
+              id: cardMaskRegion
+              item: bubbleBody
+              radius: Style.radiusWindow
+              intersection: Intersection.Subtract
+
+              Region {
+                x: card.slideOffset + card.enterOffset + card.swipeOffset + card.swipeOffsetY
+                width: 0
+                height: 0
+              }
+            }
+
+            Component.onCompleted: {
+              notifWindow._maskRegions = notifWindow._maskRegions.concat([cardMaskRegion]);
+              triggerEntryAnimation();
+            }
+
+            Component.onDestruction: {
+              notifWindow._maskRegions = notifWindow._maskRegions.filter(function (r) {
+                return r !== cardMaskRegion;
+              });
+            }
 
             onNotificationIdChanged: triggerEntryAnimation()
 

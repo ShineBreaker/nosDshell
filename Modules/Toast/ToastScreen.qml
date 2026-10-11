@@ -212,22 +212,19 @@ Item {
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
-      // Make shadow area click-through, only toast content is clickable
-      mask: Region {
-        x: 0
-        y: 0
-        width: panel.width
-        height: panel.height
-        intersection: Intersection.Xor
+      // Only the bubble takes input; the shadow area is click-through.
+      // The bubble rect is tracked live — the swipe Translate and the
+      // scale entry/exit animation move it without touching x/y, so the
+      // mask needs the NSurfaceRegion sentinels to rebuild each frame.
+      mask: toastMask.region
 
-        Region {
-          // The clickable content area is inset by shadowPadding from all edges
-          x: panel.shadowPadding
-          y: panel.shadowPadding
-          width: Math.max(0, panel.width - panel.shadowPadding * 2)
-          height: Math.max(0, panel.height - panel.shadowPadding * 2)
-          intersection: Intersection.Subtract
-        }
+      NSurfaceRegion {
+        id: toastMask
+        trackedItem: toastItem.bubble
+        radius: Style.radiusL
+        slideX: toastItem.swipeOffset
+        slideY: toastItem.swipeOffsetY
+        watch: toastItem.scale
       }
 
       function showToast(title, description, icon, type, duration, actionLabel, actionCallback) {

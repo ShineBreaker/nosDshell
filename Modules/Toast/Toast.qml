@@ -17,6 +17,10 @@ Item {
   property var actionCallback: null
   readonly property real initialScale: 0.7
 
+  // The visible bubble rect, shadow padding excluded. ToastScreen's input
+  // mask tracks it via NSurfaceRegion.
+  readonly property alias bubble: background
+
   signal hidden
 
   readonly property bool isCompact: Settings.data.notifications?.density === "compact"

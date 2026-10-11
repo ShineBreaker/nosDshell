@@ -62,6 +62,11 @@ Item {
   property real slideX: 0
   property real slideY: 0
 
+  // Any other ANIMATED property that moves the tracked rect — e.g. a scale
+  // grow/shrink entry animation. Folded into the sentinel so each animated
+  // frame re-emits `changed`. Leave 0 when nothing else moves the rect.
+  property real watch: 0
+
   // Composite mode: the caller-provided active tree. When null, the internal
   // tracked-item region below is used.
   property Region activeRegion: null
@@ -86,7 +91,7 @@ Item {
     }
 
     Region {
-      x: root.slideX + root.slideY
+      x: root.slideX + root.slideY + root.watch
       width: 0
       height: 0
     }
