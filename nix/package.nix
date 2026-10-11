@@ -99,6 +99,10 @@ fi
 exec ${quickshell}/bin/qs "$@"
 EOF
     chmod +x $out/bin/nosdshell
+    mkdir -p $out/share/bash-completion/completions $out/share/zsh/site-functions $out/share/fish/vendor_completions.d
+    cp completions/nosdshell.bash $out/share/bash-completion/completions/nosdshell
+    cp completions/_nosdshell $out/share/zsh/site-functions/_nosdshell
+    cp completions/nosdshell.fish $out/share/fish/vendor_completions.d/nosdshell.fish
   '';
 
   preFixup = ''

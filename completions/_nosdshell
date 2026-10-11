@@ -1,0 +1,121 @@
+#compdef nosdshell
+#
+# zsh completion for nosdshell.
+#
+# Completes nosdshell's own --version/-V plus the quickshell CLI it forwards
+# to (subcommands log/list/kill/ipc/msg and their flags). The flag lists are
+# a snapshot of the quickshell-nosd 0.3.2 CLI; refresh them from
+# `quickshell --help` / `quickshell <subcommand> --help` when bumping the fork.
+
+_nosdshell() {
+  local context state line
+  typeset -A opt_args
+
+  # Instance/config selection flags shared by log/list/kill/ipc/msg.
+  local -a instance_args
+  instance_args=(
+    '(-h --help)'{-h,--help}'[Print help message and exit]'
+    '(-i --id)'{-i,--id}'[The instance id to operate on]:id:'
+    '--pid[The process id of the instance to operate on]:pid:'
+    '(-p --path)'{-p,--path}'[Path to a QML file or config folder]:path:_files'
+    '(-c --config)'{-c,--config}'[Name of a quickshell configuration to run]:name:'
+    '(-m --manifest)'{-m,--manifest}'[Path to a quickshell manifest (deprecated)]:manifest:_files'
+    '(-n --newest)'{-n,--newest}'[Operate on the most recently launched instance instead of the oldest]'
+    '--any-display[Do not filter instances by display connection]'
+  )
+
+  _arguments -C \
+    '(-h --help)'{-h,--help}'[Print help message and exit]' \
+    '(-V --version)'{-V,--version}'[Print version and exit]' \
+    '(-n --no-duplicate)'{-n,--no-duplicate}'[Exit if another instance of the given config is running]' \
+    '(-d --daemonize)'{-d,--daemonize}'[Detach from the controlling terminal]' \
+    '(-p --path)'{-p,--path}'[Path to a QML file or config folder]:path:_files' \
+    '(-c --config)'{-c,--config}'[Name of a quickshell configuration to run]:name:' \
+    '(-m --manifest)'{-m,--manifest}'[Path to a quickshell manifest (deprecated)]:manifest:_files' \
+    '--no-color[Disable colored logging]' \
+    '--log-times[Log timestamps with each message]' \
+    '--log-rules[Log rules, in QT_LOGGING_RULES format]:rules:' \
+    '(-v --verbose)'{-v,--verbose}'[Increase log verbosity]' \
+    '--debug[Open the given port for a QML debugger connection]:port:' \
+    '--waitfordebug[Wait for a QML debugger to connect before executing]' \
+    '1:subcommand:->subcmds' \
+    '*:: :->args' \
+    && return 0
+
+  case "$state" in
+    subcmds)
+      local -a subcmds
+      subcmds=(
+        'log:Print quickshell logs'
+        'list:List running quickshell instances'
+        'kill:Kill quickshell instances'
+        'ipc:Communicate with other Quickshell instances'
+        'msg:Deprecated alias of ipc call'
+      )
+      _describe -t subcommands 'subcommand' subcmds
+      ;;
+    args)
+      case "${line[1]}" in
+        log)
+          _arguments \
+            '(-h --help)'{-h,--help}'[Print help message and exit]' \
+            '(-t --tail)'{-t,--tail}'[Maximum number of lines to print from the bottom]:lines:' \
+            '(-f --follow)'{-f,--follow}'[Keep reading the log until the logging process terminates]' \
+            '(-r --rules)'{-r,--rules}'[Rules for the log being read]:rules:' \
+            "${instance_args[@]}" \
+            '--no-color[Disable colored logging]' \
+            '--log-times[Log timestamps with each message]' \
+            '--log-rules[Log rules]:rules:' \
+            '(-v --verbose)'{-v,--verbose}'[Increase log verbosity]' \
+            '*: :_files'
+          ;;
+        list)
+          _arguments \
+            '(-h --help)'{-h,--help}'[Print help message and exit]' \
+            '(-a --all)'{-a,--all}'[List all instances]' \
+            '(-j --json)'{-j,--json}'[Output the list as json]' \
+            '--show-dead[Include dead instances in the list]' \
+            "${instance_args[@]}" \
+            '*: :_files'
+          ;;
+        kill)
+          _arguments \
+            "${instance_args[@]}" \
+            '*: :_files'
+          ;;
+        msg)
+          _arguments \
+            '(-h --help)'{-h,--help}'[Print help message and exit]' \
+            '(-s --show)'{-s,--show}'[Print information about a function or target]' \
+            "${instance_args[@]}" \
+            '*: :_files'
+          ;;
+        ipc)
+          _arguments -C \
+            "${instance_args[@]}" \
+            '1:nested subcommand:->ipcnested' \
+            '*:: :->ipcargs' \
+            && return 0
+          case "$state" in
+            ipcnested)
+              local -a ipcnested
+              ipcnested=(
+                'show:Print information about available IPC targets'
+                'call:Call an IpcHandler function'
+                'wait:Wait for one IpcHandler signal'
+                'listen:Listen for IpcHandler signals'
+                'prop:Manipulate IpcHandler properties'
+              )
+              _describe -t nested 'nested subcommand' ipcnested
+              ;;
+            ipcargs)
+              _arguments \
+                '(-h --help)'{-h,--help}'[Print help message and exit]' \
+                '*: :_files'
+              ;;
+          esac
+          ;;
+      esac
+      ;;
+  esac
+}

@@ -82,6 +82,7 @@
 | 其他 | 克隆本仓库，运行 `qs -p <仓库路径>` |
 
 安装后运行 `nosdshell --version` 即可查看 shell 与 quickshell 的版本。
+bash/zsh/fish 的终端补全随包安装到标准目录，新开 shell 自动生效。
 
 ---
 

@@ -13,6 +13,7 @@
 ### 新功能
 
 - `nosdshell --version` 显示 shell 与 quickshell 版本（Guix 构建附带 fork commit）
+- bash/zsh/fish 终端补全（`completions/`），随 Guix/Nix 包安装到标准目录
 
 ## [1.1.6] - 2026-10-12
 

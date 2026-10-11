@@ -172,6 +172,22 @@ and Matugen-compatible template rendering.")
                 (("\\[\"rfkill\", \"unblock\", \"bluetooth\"\\]")
                  (string-append "[\"" (search-input-file inputs "sbin/rfkill")
                                 "\", \"unblock\", \"bluetooth\"]")))))
+          (add-after 'install 'install-completions
+            (lambda* (#:key source #:allow-other-keys)
+              ;; completions/ holds one file per shell; install each under its
+              ;; standard name so profiles pick it up automatically.
+              ;; (New files must be committed: the package source only includes
+              ;; git-tracked files, so staged-but-uncommitted files are invisible here.)
+              (let ((share (string-append #$output "/share")))
+                (mkdir-p (string-append share "/bash-completion/completions"))
+                (mkdir-p (string-append share "/zsh/site-functions"))
+                (mkdir-p (string-append share "/fish/vendor_completions.d"))
+                (copy-file (string-append source "/completions/nosdshell.bash")
+                           (string-append share "/bash-completion/completions/nosdshell"))
+                (copy-file (string-append source "/completions/_nosdshell")
+                           (string-append share "/zsh/site-functions/_nosdshell"))
+                (copy-file (string-append source "/completions/nosdshell.fish")
+                           (string-append share "/fish/vendor_completions.d/nosdshell.fish")))))
           (add-after 'install 'make-wrapper
             (lambda* (#:key inputs #:allow-other-keys)
               (let ((script "nosdshell"))
