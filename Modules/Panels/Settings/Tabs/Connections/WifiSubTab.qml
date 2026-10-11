@@ -271,6 +271,8 @@ Item {
   Popup {
     id: addNetworkPopup
     visible: false
+    enter: NPopupEnter {}
+    exit: NPopupExit {}
     anchors.centerIn: parent
     width: Math.min(parent.width * 0.9, 400 * Style.uiScaleRatio)
     height: addNetworkContent.implicitHeight + Style.margin2L

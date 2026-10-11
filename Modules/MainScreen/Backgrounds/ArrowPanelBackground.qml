@@ -49,10 +49,15 @@ ShapePath {
 
   readonly property bool isRenderable: !!(assignedPanel && assignedPanel.useArrowPopup && panelBg && panelWidth > 0 && panelHeight > 0)
 
+  // Body, border and shadow fade with the panel content during the popup
+  // reveal (§1.7): the Shape paints the path at the panel's own opacity,
+  // and NDropShadow takes the same source so the shadow follows.
+  readonly property real _fade: assignedPanel ? assignedPanel.opacity : 0
+
   strokeWidth: 1
-  strokeColor: Color.borderShell
+  strokeColor: isRenderable ? Qt.rgba(Color.borderShell.r, Color.borderShell.g, Color.borderShell.b, Color.borderShell.a * _fade) : "transparent"
   joinStyle: ShapePath.MiterJoin
-  fillColor: isRenderable ? Color.popupShell : "transparent"
+  fillColor: isRenderable ? Qt.rgba(Color.popupShell.r, Color.popupShell.g, Color.popupShell.b, Color.popupShell.a * _fade) : "transparent"
 
   startX: 0
   startY: 0

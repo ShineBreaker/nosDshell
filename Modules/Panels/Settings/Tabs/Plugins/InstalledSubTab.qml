@@ -450,6 +450,8 @@ ColumnLayout {
     parent: Overlay.overlay
     modal: true
     dim: false
+    enter: NPopupEnter {}
+    exit: NPopupExit {}
     anchors.centerIn: parent
     width: 400 * Style.uiScaleRatio
     padding: Style.marginL

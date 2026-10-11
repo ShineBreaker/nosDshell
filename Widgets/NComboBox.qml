@@ -281,6 +281,8 @@ NDccRow {
       implicitWidth: combo.width
       implicitHeight: Math.min(Math.round(root.popupHeight * Style.uiScaleRatio), listView.contentHeight + Style.margin2M)
       padding: Style.marginS
+      enter: NPopupEnter {}
+      exit: NPopupExit {}
 
       onOpened: {
         listView.currentIndex = combo.currentIndex;

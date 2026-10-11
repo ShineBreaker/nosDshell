@@ -89,10 +89,10 @@ PanelWindow {
 
   // Hold the window mapped briefly so popup content can play its own
   // fade-out before the surface goes away (TrayMenu/NPopupContextMenu run
-  // ~animationFast).
+  // ~motionPopupOut).
   Timer {
     id: closeTimer
-    interval: Style.animationFast + 40
+    interval: Style.motionPopupOut + 40
     onTriggered: {
       root.visible = false;
       root._finishClose();

@@ -286,8 +286,8 @@ PopupWindow {
 
   function toggleAppPin(appId) {
     AppIdMatcher.toggleAppPin(appId, {
-      useDesktopEntryId: true
-    });
+                                useDesktopEntryId: true
+                              });
   }
 
   // Dock position for context menu placement
@@ -341,6 +341,12 @@ PopupWindow {
     if (!item) {
       return;
     }
+
+    // Cancel a pending close so reopening replays the enter animation and
+    // doesn't race the hide timer.
+    hideTimer.stop();
+    _closing = false;
+    _resetOnHide = false;
 
     // First hide completely
     visible = false;
@@ -428,13 +434,45 @@ PopupWindow {
       menuFlick.contentY = 0;
   }
 
+  // Fade-out before the popup surface unmaps (DESIGN §1.7): _closing drives
+  // the reveal's exit, the timer then flips visible and applies the deferred
+  // state reset for hide().
+  property bool _closing: false
+  property bool _resetOnHide: false
+  // visible stays true through the exit fade; use shown for open/closed logic
+  readonly property bool shown: visible && !_closing
+
+  Timer {
+    id: hideTimer
+    interval: Style.motionPopupOut
+    repeat: false
+    onTriggered: {
+      root.visible = false;
+      root._closing = false;
+      if (root._resetOnHide) {
+        root._resetOnHide = false;
+        root.resetMenuState();
+      }
+    }
+  }
+
+  function _startHide(reset) {
+    if (_closing) {
+      // A second hide() while the exit plays must still reset afterwards.
+      _resetOnHide = _resetOnHide || reset;
+      return;
+    }
+    _closing = true;
+    _resetOnHide = reset;
+    hideTimer.restart();
+  }
+
   function hide() {
-    visible = false;
-    resetMenuState();
+    _startHide(true);
   }
 
   function hideWithoutReset() {
-    visible = false;
+    _startHide(false);
   }
 
   function closeAndReset() {
@@ -522,115 +560,228 @@ PopupWindow {
     }
   }
 
-  NArrowRect {
-    id: menuBody
-    anchors.fill: parent
-    arrowEdge: root.arrowEdge
-    arrowPosition: root._arrowPos
-    fillColor: Color.popupShell
-    radius: Style.radiusPopup
-    borderColor: Color.borderShell
-    borderWidth: Style.borderS
-    shadow: Style.shadowPopup
+  // Reveal (DESIGN §1.7): background, shadow and menu content fade and
+  // slide together along the arrow edge.
+  NPopupReveal {
+    id: reveal
 
-    HoverHandler {
-      id: menuHoverHandler
-      acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-      onHoveredChanged: {
-        if (hovered) {
-          closeTimer.stop();
-        } else {
-          root.hoveredItem = -1;
-          if (root.canAutoClose) {
-            closeTimer.start();
+    active: root.visible
+    closing: root._closing
+    edge: root.arrowEdge
+
+    NArrowRect {
+      id: menuBody
+      anchors.fill: parent
+      arrowEdge: root.arrowEdge
+      arrowPosition: root._arrowPos
+      fillColor: Color.popupShell
+      radius: Style.radiusPopup
+      borderColor: Color.borderShell
+      borderWidth: Style.borderS
+      shadow: Style.shadowPopup
+
+      HoverHandler {
+        id: menuHoverHandler
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onHoveredChanged: {
+          if (hovered) {
+            closeTimer.stop();
+          } else {
+            root.hoveredItem = -1;
+            if (root.canAutoClose) {
+              closeTimer.start();
+            }
           }
         }
       }
-    }
 
-    WheelHandler {
-      acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-      onWheel: event => {
-                 if (!root.isScrollableHovered(event.y))
-                 return;
-                 const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
-                 root.onWheelScroll(delta);
-                 event.accepted = true;
-               }
-    }
+      WheelHandler {
+        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+        onWheel: event => {
+                   if (!root.isScrollableHovered(event.y))
+                   return;
+                   const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
+                   root.onWheelScroll(delta);
+                   event.accepted = true;
+                 }
+      }
 
-    Flickable {
-      id: menuFlick
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.top: parent.top
-      anchors.leftMargin: Style.marginM + (root.arrowEdge === "left" ? Style.popupArrowHeight : 0)
-      anchors.rightMargin: Style.marginM + (root.arrowEdge === "right" ? Style.popupArrowHeight : 0)
-      anchors.topMargin: Style.marginM + (root.arrowEdge === "top" ? Style.popupArrowHeight : 0)
-      height: root.scrollAreaHeight
-      clip: true
-      contentWidth: width
-      contentHeight: scrollColumn.height
-      flickableDirection: Flickable.VerticalFlick
-      boundsBehavior: Flickable.StopAtBounds
-      interactive: contentHeight > height
+      Flickable {
+        id: menuFlick
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.leftMargin: Style.marginM + (root.arrowEdge === "left" ? Style.popupArrowHeight : 0)
+        anchors.rightMargin: Style.marginM + (root.arrowEdge === "right" ? Style.popupArrowHeight : 0)
+        anchors.topMargin: Style.marginM + (root.arrowEdge === "top" ? Style.popupArrowHeight : 0)
+        height: root.scrollAreaHeight
+        clip: true
+        contentWidth: width
+        contentHeight: scrollColumn.height
+        flickableDirection: Flickable.VerticalFlick
+        boundsBehavior: Flickable.StopAtBounds
+        interactive: contentHeight > height
 
-      ScrollBar.vertical: ScrollBar {
-        id: menuScrollBar
-        policy: ScrollBar.AsNeeded
-        visible: root.listOverflowing
-        interactive: true
-        hoverEnabled: true
+        ScrollBar.vertical: ScrollBar {
+          id: menuScrollBar
+          policy: ScrollBar.AsNeeded
+          visible: root.listOverflowing
+          interactive: true
+          hoverEnabled: true
+        }
+
+        Column {
+          id: scrollColumn
+          width: menuFlick.width
+          spacing: 0
+
+          Repeater {
+            model: root.scrollItems
+
+            Rectangle {
+              readonly property bool isSeparator: modelData && modelData.separator === true
+              width: scrollColumn.width
+              height: root.rowHeightForItem(modelData)
+              color: (!isSeparator && root.hoveredItem === index) ? Color.accent : "transparent"
+              radius: Style.radiusRow
+
+              // Separator: DDE two-line groove (dark over light, inset 4)
+              Item {
+                visible: parent.isSeparator
+                anchors.centerIn: parent
+                width: parent.width - Style.margin2XS
+                height: 2
+                Rectangle {
+                  width: parent.width
+                  height: 1
+                  color: Qt.rgba(0, 0, 0, 0.1)
+                }
+                Rectangle {
+                  y: 1
+                  width: parent.width
+                  height: 1
+                  color: Qt.rgba(1, 1, 1, 0.1)
+                }
+              }
+
+              Row {
+                id: rowLayout
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.leftMargin: Style.menuItemPadding
+                anchors.rightMargin: Style.menuItemPadding
+                spacing: Style.marginS
+                visible: !isSeparator
+
+                NIcon {
+                  icon: modelData.icon
+                  pointSize: Style.fontSizeL
+                  color: root.hoveredItem === index ? Color.onAccent : Color.onShellSecondary
+                  visible: icon !== ""
+                  anchors.verticalCenter: parent.verticalCenter
+                }
+
+                NText {
+                  text: modelData.text
+                  pointSize: Style.fontSizeS
+                  color: root.hoveredItem === index ? Color.onAccent : Color.onShell
+                  anchors.verticalCenter: parent.verticalCenter
+                  width: rowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
+                  elide: Text.ElideRight
+                }
+              }
+
+              MouseArea {
+                anchors.fill: parent
+                enabled: !parent.isSeparator && root.isItemActionable(index)
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                acceptedButtons: Qt.LeftButton
+
+                onEntered: {
+                  root.hoveredItem = index;
+                }
+
+                onExited: {
+                  if (root.hoveredItem === index) {
+                    root.hoveredItem = -1;
+                  }
+                }
+
+                onClicked: {
+                  if (root.isItemActionable(index)) {
+                    root.items[index].action.call();
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+      Item {
+        id: separator
+        visible: root.splitExtendedLayout
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: menuFlick.bottom
+        anchors.leftMargin: Style.marginXS
+        anchors.rightMargin: Style.marginXS
+        anchors.topMargin: Style.marginS
+        height: 2
+
+        // DDE two-line groove (dark over light)
+        Rectangle {
+          width: parent.width
+          height: 1
+          color: Qt.rgba(0, 0, 0, 0.1)
+        }
+        Rectangle {
+          y: 1
+          width: parent.width
+          height: 1
+          color: Qt.rgba(1, 1, 1, 0.1)
+        }
       }
 
       Column {
-        id: scrollColumn
-        width: menuFlick.width
+        id: fixedColumn
+        visible: root.splitExtendedLayout && root.fixedItems.length > 0
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: Style.marginM + (root.arrowEdge === "left" ? Style.popupArrowHeight : 0)
+        anchors.rightMargin: Style.marginM + (root.arrowEdge === "right" ? Style.popupArrowHeight : 0)
+        anchors.topMargin: Style.marginS
+        anchors.bottomMargin: Style.marginM + (root.arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
+        anchors.top: separator.bottom
         spacing: 0
 
         Repeater {
-          model: root.scrollItems
+          model: root.fixedItems
 
           Rectangle {
-            readonly property bool isSeparator: modelData && modelData.separator === true
-            width: scrollColumn.width
+            id: fixedItemRect
+            readonly property int globalIndex: root.fixedItemGlobalIndex(index)
+            width: fixedColumn.width
             height: root.rowHeightForItem(modelData)
-            color: (!isSeparator && root.hoveredItem === index) ? Color.accent : "transparent"
+            color: root.hoveredItem === globalIndex ? Color.accent : "transparent"
             radius: Style.radiusRow
 
-            // Separator: DDE two-line groove (dark over light, inset 4)
-            Item {
-              visible: parent.isSeparator
-              anchors.centerIn: parent
-              width: parent.width - Style.margin2XS
-              height: 2
-              Rectangle {
-                width: parent.width
-                height: 1
-                color: Qt.rgba(0, 0, 0, 0.1)
-              }
-              Rectangle {
-                y: 1
-                width: parent.width
-                height: 1
-                color: Qt.rgba(1, 1, 1, 0.1)
-              }
-            }
-
             Row {
-              id: rowLayout
+              id: fixedRowLayout
               anchors.left: parent.left
               anchors.right: parent.right
               anchors.verticalCenter: parent.verticalCenter
               anchors.leftMargin: Style.menuItemPadding
               anchors.rightMargin: Style.menuItemPadding
               spacing: Style.marginS
-              visible: !isSeparator
 
               NIcon {
                 icon: modelData.icon
                 pointSize: Style.fontSizeL
-                color: root.hoveredItem === index ? Color.onAccent : Color.onShellSecondary
+                color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShellSecondary
                 visible: icon !== ""
                 anchors.verticalCenter: parent.verticalCenter
               }
@@ -638,137 +789,34 @@ PopupWindow {
               NText {
                 text: modelData.text
                 pointSize: Style.fontSizeS
-                color: root.hoveredItem === index ? Color.onAccent : Color.onShell
+                color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShell
                 anchors.verticalCenter: parent.verticalCenter
-                width: rowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
+                width: fixedRowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
                 elide: Text.ElideRight
               }
             }
 
             MouseArea {
               anchors.fill: parent
-              enabled: !parent.isSeparator && root.isItemActionable(index)
+              enabled: root.isItemActionable(parent.globalIndex)
               hoverEnabled: true
               cursorShape: Qt.PointingHandCursor
               acceptedButtons: Qt.LeftButton
 
               onEntered: {
-                root.hoveredItem = index;
+                root.hoveredItem = parent.globalIndex;
               }
 
               onExited: {
-                if (root.hoveredItem === index) {
+                if (root.hoveredItem === parent.globalIndex) {
                   root.hoveredItem = -1;
                 }
               }
 
               onClicked: {
-                if (root.isItemActionable(index)) {
-                  root.items[index].action.call();
+                if (root.isItemActionable(parent.globalIndex)) {
+                  root.items[parent.globalIndex].action.call();
                 }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    Item {
-      id: separator
-      visible: root.splitExtendedLayout
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.top: menuFlick.bottom
-      anchors.leftMargin: Style.marginXS
-      anchors.rightMargin: Style.marginXS
-      anchors.topMargin: Style.marginS
-      height: 2
-
-      // DDE two-line groove (dark over light)
-      Rectangle {
-        width: parent.width
-        height: 1
-        color: Qt.rgba(0, 0, 0, 0.1)
-      }
-      Rectangle {
-        y: 1
-        width: parent.width
-        height: 1
-        color: Qt.rgba(1, 1, 1, 0.1)
-      }
-    }
-
-    Column {
-      id: fixedColumn
-      visible: root.splitExtendedLayout && root.fixedItems.length > 0
-      anchors.left: parent.left
-      anchors.right: parent.right
-      anchors.bottom: parent.bottom
-      anchors.leftMargin: Style.marginM + (root.arrowEdge === "left" ? Style.popupArrowHeight : 0)
-      anchors.rightMargin: Style.marginM + (root.arrowEdge === "right" ? Style.popupArrowHeight : 0)
-      anchors.topMargin: Style.marginS
-      anchors.bottomMargin: Style.marginM + (root.arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
-      anchors.top: separator.bottom
-      spacing: 0
-
-      Repeater {
-        model: root.fixedItems
-
-        Rectangle {
-          id: fixedItemRect
-          readonly property int globalIndex: root.fixedItemGlobalIndex(index)
-          width: fixedColumn.width
-          height: root.rowHeightForItem(modelData)
-          color: root.hoveredItem === globalIndex ? Color.accent : "transparent"
-          radius: Style.radiusRow
-
-          Row {
-            id: fixedRowLayout
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.verticalCenter: parent.verticalCenter
-            anchors.leftMargin: Style.menuItemPadding
-            anchors.rightMargin: Style.menuItemPadding
-            spacing: Style.marginS
-
-            NIcon {
-              icon: modelData.icon
-              pointSize: Style.fontSizeL
-              color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShellSecondary
-              visible: icon !== ""
-              anchors.verticalCenter: parent.verticalCenter
-            }
-
-            NText {
-              text: modelData.text
-              pointSize: Style.fontSizeS
-              color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShell
-              anchors.verticalCenter: parent.verticalCenter
-              width: fixedRowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
-              elide: Text.ElideRight
-            }
-          }
-
-          MouseArea {
-            anchors.fill: parent
-            enabled: root.isItemActionable(parent.globalIndex)
-            hoverEnabled: true
-            cursorShape: Qt.PointingHandCursor
-            acceptedButtons: Qt.LeftButton
-
-            onEntered: {
-              root.hoveredItem = parent.globalIndex;
-            }
-
-            onExited: {
-              if (root.hoveredItem === parent.globalIndex) {
-                root.hoveredItem = -1;
-              }
-            }
-
-            onClicked: {
-              if (root.isItemActionable(parent.globalIndex)) {
-                root.items[parent.globalIndex].action.call();
               }
             }
           }

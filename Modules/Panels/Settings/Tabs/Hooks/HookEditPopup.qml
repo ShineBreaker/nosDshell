@@ -8,6 +8,8 @@ Popup {
   id: root
   modal: true
   closePolicy: Popup.NoAutoClose
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
   dim: true
   anchors.centerIn: parent
 

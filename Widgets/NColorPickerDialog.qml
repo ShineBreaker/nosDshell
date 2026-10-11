@@ -9,6 +9,8 @@ import qs.Widgets
 
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property var screen
   property color selectedColor: "black"

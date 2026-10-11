@@ -278,11 +278,10 @@ Item {
     // Style.effectivePanelOpacity, with their own shadowPopup shadow.
     Item {
       anchors.fill: parent
-      // Arrow popups close with zero rendered frames (§1.7 瞬变): when the
-      // last slot detaches, hide the whole branch synchronously with the
-      // panel hide. Without the gate, the asynchronous Shape can keep
-      // compositing its last tessellated arrow path — a black ghost rect —
-      // until a frame the render loop may starve on arrives.
+      // When the last slot detaches, hide the whole branch synchronously
+      // with the panel hide. Without the gate, the asynchronous Shape can
+      // keep compositing its last tessellated arrow path — a black ghost
+      // rect — until a frame the render loop may starve on arrives.
       visible: arrowSlot0.assignedPanel !== null || arrowSlot1.assignedPanel !== null
 
       Shape {

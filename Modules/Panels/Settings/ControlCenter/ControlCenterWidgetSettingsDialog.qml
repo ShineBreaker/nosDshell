@@ -8,6 +8,8 @@ import qs.Widgets
 // Widget Settings Dialog Component
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property int widgetIndex: -1
   property var widgetData: null

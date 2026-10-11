@@ -105,12 +105,13 @@ Item {
       opacityTrigger.start();
     }
 
-    // Start open watchdog timer (skip when animations disabled - everything
-    // completes synchronously). Arrow popups likewise: their zero-duration
-    // fade finishes before this point, so the Behavior's running change has
-    // no chance to disarm the timer afterwards and every open would log a
-    // false watchdog timeout.
-    if (!root.animationsDisabled && !root.useArrowPopup) {
+    // Start the open watchdog only when the fade will actually run: a
+    // zero-duration fade completes synchronously, the Behavior's running
+    // change never fires afterwards, and the armed timer would log a false
+    // timeout on every open. Reading the animation's resolved duration
+    // covers animationsDisabled and performanceMode (both produce 0)
+    // uniformly for arrow popups and panels.
+    if (opacityAnimation.duration > 0) {
       root.openWatchdogActive = true;
       openWatchdogTimer.start();
     }
@@ -231,7 +232,7 @@ Item {
   // edge for status-bar widgets, the taskbar/dock edge for dock plugins
   // (DESIGN §3.13: 挂件弹层跟随所在的表面). Falls back to the taskbar
   // edge when the host surface can't be resolved.
-  readonly property string anchorEdge: hasAnchorItem ? (PanelService.surfaceEdgeOf(root.buttonItem) || dockPosition) : "";
+  readonly property string anchorEdge: hasAnchorItem ? (PanelService.surfaceEdgeOf(root.buttonItem) || dockPosition) : ""
 
   // Arrow edge = the side of the popup facing the anchor's shell strip;
   // "" = no arrow (popup opened without a resolvable anchor, or no taskbar).
@@ -243,6 +244,29 @@ Item {
   // Arrow tip coordinate along the arrow edge (popup-box coordinates).
   // -1 hides the arrow.
   property real arrowTipPosition: -1
+
+  // Anchored reveal slide (DESIGN §1.7 motionPopupIn/Out): the popup
+  // starts popupEnterOffset toward the anchor edge and slides to rest on
+  // enter; on exit it drifts popupExitOffset back toward it. Everything
+  // reading panelBackground geometry — background shape, blur region and
+  // content — follows the same offset (revealDX/DY in x/y below).
+  property real revealDistance: (isPanelVisible && sizeAnimationComplete && !isClosing) ? 0 : (isClosing ? Style.popupExitOffset : Style.popupEnterOffset)
+
+  Behavior on revealDistance {
+    // Only the open↔close slide animates; while the panel is hidden the
+    // offset must snap to the enter position so the next open starts
+    // displaced — same gating as the edge-sheet x Behavior below.
+    enabled: root.useArrowPopup && root.isPanelVisible && !PanelService.closedImmediately
+    NumberAnimation {
+      duration: root.isClosing ? Style.motionPopupOut : Style.motionPopupIn
+      easing.type: root.isClosing ? Easing.InCubic : Easing.OutCubic
+    }
+  }
+
+  // Slide components derived from the anchor edge ("" = fade only, e.g.
+  // popups opened via IPC with no resolvable anchor).
+  readonly property real revealDX: (useArrowPopup && hasAnchorItem) ? (anchorEdge === "left" ? -revealDistance : (anchorEdge === "right" ? revealDistance : 0)) : 0
+  readonly property real revealDY: (useArrowPopup && hasAnchorItem) ? (anchorEdge === "top" ? -revealDistance : (anchorEdge === "bottom" ? revealDistance : 0)) : 0
 
   // Keyboard event handler
   // These are called from MainScreen's centralized shortcuts
@@ -1029,8 +1053,9 @@ Item {
     enabled: !PanelService.closedImmediately
     NumberAnimation {
       id: opacityAnimation
-      // Arrow popups show/hide instantly (DESIGN §1.7 瞬变清单, §3.2)
-      duration: root.useArrowPopup ? 0 : (root.isClosing ? Style.animationFaster : Style.animationFast)
+      // Arrow popups fade on the popup-motion tokens (DESIGN §1.7
+      // motionPopupIn/Out); panels keep the generic fast beat.
+      duration: root.useArrowPopup ? (root.isClosing ? Style.motionPopupOut : Style.motionPopupIn) : (root.isClosing ? Style.animationFaster : Style.animationFast)
       easing.type: root.isClosing ? Easing.InCubic : Easing.OutCubic
 
       onRunningChanged: {
@@ -1371,7 +1396,8 @@ Item {
       // Priority: horizontal edges (top/bottom) take precedence over vertical edges (left/right)
       // This prevents diagonal animations when panel is attached to a corner
       // Use reactive values here - they're evaluated BEFORE isPanelVisible becomes true
-      // Arrow popups never grow/shrink — opacity fade only (DESIGN §3.2)
+      // Arrow popups never grow/shrink — they fade and slide along the
+      // anchor edge instead (DESIGN §3.2, §1.7)
       readonly property bool shouldAnimateWidth: !root.useArrowPopup && !slidesAlongEdge && !shouldAnimateHeight && (animateFromLeft || animateFromRight)
       readonly property bool shouldAnimateHeight: !root.useArrowPopup && !slidesAlongEdge && (animateFromTop || animateFromBottom)
 
@@ -1406,6 +1432,9 @@ Item {
             return root.edgeSheetEdge === "right" ? targetX + targetWidth : targetX - targetWidth;
           return targetX;
         }
+        // Arrow popups carry the anchored reveal offset (§1.7).
+        if (root.useArrowPopup)
+          return targetX + root.revealDX;
         // Offset x to make panel grow/shrink from the appropriate edge
         // Use CACHED values to prevent recalculation during animation
         if (root.cachedAnimateFromRight && root.cachedShouldAnimateWidth) {
@@ -1434,6 +1463,9 @@ Item {
         }
       }
       y: {
+        // Arrow popups carry the anchored reveal offset (§1.7).
+        if (root.useArrowPopup)
+          return targetY + root.revealDY;
         // Offset y to make panel grow/shrink from the appropriate edge
         // Use CACHED values to prevent recalculation during animation
         if (root.cachedAnimateFromBottom && root.cachedShouldAnimateHeight) {

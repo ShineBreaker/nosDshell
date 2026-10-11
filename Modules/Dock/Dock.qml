@@ -148,7 +148,7 @@ Loader {
       }
 
       function closeAllContextMenus() {
-        if (currentContextMenu && currentContextMenu.visible) {
+        if (currentContextMenu && currentContextMenu.shown) {
           currentContextMenu.hide();
         }
       }
@@ -551,7 +551,7 @@ Loader {
         onTriggered: {
           if (root.dragSourceIndex !== -1)
             return;
-          if (!root.currentContextMenu || !root.currentContextMenu.visible)
+          if (!root.currentContextMenu || !root.currentContextMenu.shown)
             root.menuHovered = false;
           if (root.autoHide && !root.dockHovered && !root.anyAppHovered && !root.menuHovered) {
             root.closeAllContextMenus();

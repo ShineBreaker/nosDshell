@@ -10,6 +10,8 @@ import qs.Widgets
 
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property int widgetIndex: -1
   property var widgetData: null

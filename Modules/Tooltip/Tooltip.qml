@@ -20,10 +20,6 @@ PopupWindow {
   property int hideDelay: 0
   property int maxWidth: 340
 
-  // DDE shows/hides tips instantly (§1.7 瞬变清单); kept as a property so
-  // callers can still opt into a duration.
-  property int animationDuration: 0
-
   // Font scale calculation matching NText behavior
   readonly property real gridFontScale: {
     const baseScale = (tooltipText.family === Settings.data.ui.fontDefault ? Settings.data.ui.fontDefaultScale : Settings.data.ui.fontFixedScale);
@@ -138,7 +134,7 @@ PopupWindow {
       property: "opacity"
       from: 0.0
       to: 1.0
-      duration: root.animationDuration
+      duration: Style.motionPopupIn
       easing.type: Easing.OutCubic
     }
   }
@@ -152,7 +148,7 @@ PopupWindow {
       property: "opacity"
       from: 1.0
       to: 0.0
-      duration: root.animationDuration * 0.75 // Slightly faster hide
+      duration: Style.motionPopupOut
       easing.type: Easing.InCubic
     }
 

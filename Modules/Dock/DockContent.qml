@@ -396,7 +396,7 @@ Item {
                        return;
 
                        if (mouse.button === Qt.RightButton) {
-                         if (dockRoot.currentContextMenu === launcherContextMenu && launcherContextMenu.visible) {
+                         if (dockRoot.currentContextMenu === launcherContextMenu && launcherContextMenu.shown) {
                            dockRoot.closeAllContextMenus();
                            return;
                          }
@@ -419,7 +419,7 @@ Item {
           menuMode: "launcher"
 
           onHoveredChanged: {
-            if (dockRoot.currentContextMenu === launcherContextMenu && launcherContextMenu.visible) {
+            if (dockRoot.currentContextMenu === launcherContextMenu && launcherContextMenu.shown) {
               dockRoot.menuHovered = hovered;
             } else {
               dockRoot.menuHovered = false;
@@ -693,7 +693,7 @@ Item {
             id: contextMenu
             dockPosition: dockRoot.dockPosition
             onHoveredChanged: {
-              if (dockRoot.currentContextMenu === contextMenu && contextMenu.visible) {
+              if (dockRoot.currentContextMenu === contextMenu && contextMenu.shown) {
                 dockRoot.menuHovered = hovered;
               } else {
                 dockRoot.menuHovered = false;
@@ -763,14 +763,14 @@ Item {
               dock.itemEntered();
               const appName = appButton.appTitle || appButton.appId || "Unknown";
               const tooltipText = appName.length > 40 ? appName.substring(0, 37) + "..." : appName;
-              if (!contextMenu.visible) {
+              if (!contextMenu.shown) {
                 TooltipService.show(appButton, tooltipText, tooltipDirection, Style.tooltipDelayDock);
               }
             }
 
             onExited: {
               dock.itemExited();
-              if (!dockRoot.currentContextMenu || !dockRoot.currentContextMenu.visible) {
+              if (!dockRoot.currentContextMenu || !dockRoot.currentContextMenu.shown) {
                 dockRoot.menuHovered = false;
               }
             }
@@ -785,7 +785,7 @@ Item {
                              DockSettingsMenu.openAtItemPoint(targetScreen, appMouseArea, mouse.x, mouse.y);
                              return;
                            }
-                           if (dockRoot.currentContextMenu === contextMenu && contextMenu.visible) {
+                           if (dockRoot.currentContextMenu === contextMenu && contextMenu.shown) {
                              dockRoot.closeAllContextMenus();
                              return;
                            }

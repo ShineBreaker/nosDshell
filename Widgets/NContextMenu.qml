@@ -35,6 +35,8 @@ import qs.Commons
 */
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property var model: []
   property real itemHeight: -1 // -1 = auto: font height + 8
@@ -101,8 +103,8 @@ Popup {
   }
 
   contentItem: NListView {
-    gradientColor: "transparent"
     id: listView
+    gradientColor: "transparent"
     implicitHeight: Math.max(contentHeight, root._rowHeight)
     spacing: 0
     interactive: contentHeight > root.height

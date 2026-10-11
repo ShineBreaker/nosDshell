@@ -406,204 +406,220 @@ PopupWindow {
     }
   }
 
-  NArrowRect {
-    id: menuBackground
-    anchors.fill: parent
-    arrowEdge: root.arrowEdge
-    arrowPosition: root.arrowPosition
-    radius: root._radius
-    fillColor: root._bgColor
-    borderColor: root._borderColor
-    borderWidth: Style.borderS
-    shadow: root._shadow
-    // DDE menus appear/disappear instantly (deepin-menu has no animations)
-    opacity: root.visible && !root._closing ? 1.0 : 0.0
-  }
+  // Reveal (DESIGN §1.7): background, shadow and menu content fade and
+  // slide together. Submenus and absolute-point menus (anchorItem is a
+  // ~1x1 click point, e.g. PopupMenuWindow's dynamic menu) fade only.
+  NPopupReveal {
+    id: reveal
 
-  Flickable {
-    id: flickable
-    x: menuBackground.bodyRect.x + Style.marginS
-    y: menuBackground.bodyRect.y + Style.marginS
-    width: menuBackground.bodyRect.width - Style.margin2S
-    height: menuBackground.bodyRect.height - Style.margin2S
-    contentHeight: columnLayout.implicitHeight
-    interactive: true
-    clip: true
-    opacity: root.visible && !root._closing ? 1.0 : 0.0
+    active: root.visible
+    closing: root._closing
+    edge: {
+      if (root.isSubmenu)
+        return "";
+      if (root.arrowEdge !== "")
+        return root.arrowEdge;
+      if (root.anchorItem && (root.anchorItem.width > 1 || root.anchorItem.height > 1))
+        return root.hostEdge;
+      return "";
+    }
 
-    ColumnLayout {
-      id: columnLayout
-      width: flickable.width
-      spacing: 0
+    NArrowRect {
+      id: menuBackground
+      anchors.fill: parent
+      arrowEdge: root.arrowEdge
+      arrowPosition: root.arrowPosition
+      radius: root._radius
+      fillColor: root._bgColor
+      borderColor: root._borderColor
+      borderWidth: Style.borderS
+      shadow: root._shadow
+    }
 
-      Repeater {
-        id: repeater
+    Flickable {
+      id: flickable
+      x: menuBackground.bodyRect.x + Style.marginS
+      y: menuBackground.bodyRect.y + Style.marginS
+      width: menuBackground.bodyRect.width - Style.margin2S
+      height: menuBackground.bodyRect.height - Style.margin2S
+      contentHeight: columnLayout.implicitHeight
+      interactive: true
+      clip: true
 
-        delegate: Rectangle {
-          id: menuItem
-          required property var modelData
-          required property int index
+      ColumnLayout {
+        id: columnLayout
+        width: flickable.width
+        spacing: 0
 
-          readonly property bool isSeparator: root._isSeparator(modelData)
-          readonly property bool rowEnabled: modelData.enabled !== false
-          readonly property bool hasSubmenu: root._hasSubmenu(modelData)
-          readonly property bool active: rowEnabled && (mouseArea.containsMouse || root.highlightIndex === index)
-          property var subMenu: null
+        Repeater {
+          id: repeater
 
-          // Open this row's submenu beside the parent menu. The child is a
-          // nested PopupWindow anchored to this row (TrayMenu.qml pattern).
-          function _openSubmenu() {
-            if (menuItem.subMenu || !menuItem.hasSubmenu)
-              return;
-            var sub = Qt.createComponent("NPopupContextMenu.qml").createObject(root, {
-                                                                                 "isSubmenu": true,
-                                                                                 "variant": root.variant,
-                                                                                 "screen": root.screen,
-                                                                                 "minWidth": root.minWidth,
-                                                                                 "submenuAnchorX": menuItem.width - Style.marginS,
-                                                                                 "submenuAnchorY": 0,
-                                                                                 "anchorItem": menuItem,
-                                                                                 "model": menuItem.modelData.submenu || []
-                                                                               });
-            if (!sub)
-              return;
-            menuItem.subMenu = sub;
-            sub.triggered.connect(function (action, item) {
-              root.triggered(action, item);
-            });
-            sub.visible = true;
-            Qt.callLater(() => {
-                           if (menuItem.subMenu)
-                           menuItem.subMenu.anchor.updateAnchor();
-                         });
-          }
+          delegate: Rectangle {
+            id: menuItem
+            required property var modelData
+            required property int index
 
-          Timer {
-            id: submenuOpenTimer
-            interval: 250
-            repeat: false
-            onTriggered: menuItem._openSubmenu()
-          }
+            readonly property bool isSeparator: root._isSeparator(modelData)
+            readonly property bool rowEnabled: modelData.enabled !== false
+            readonly property bool hasSubmenu: root._hasSubmenu(modelData)
+            readonly property bool active: rowEnabled && (mouseArea.containsMouse || root.highlightIndex === index)
+            property var subMenu: null
 
-          Component.onDestruction: {
-            if (subMenu) {
-              subMenu.close();
-              subMenu.destroy();
-              subMenu = null;
+            // Open this row's submenu beside the parent menu. The child is a
+            // nested PopupWindow anchored to this row (TrayMenu.qml pattern).
+            function _openSubmenu() {
+              if (menuItem.subMenu || !menuItem.hasSubmenu)
+                return;
+              var sub = Qt.createComponent("NPopupContextMenu.qml").createObject(root, {
+                                                                                   "isSubmenu": true,
+                                                                                   "variant": root.variant,
+                                                                                   "screen": root.screen,
+                                                                                   "minWidth": root.minWidth,
+                                                                                   "submenuAnchorX": menuItem.width - Style.marginS,
+                                                                                   "submenuAnchorY": 0,
+                                                                                   "anchorItem": menuItem,
+                                                                                   "model": menuItem.modelData.submenu || []
+                                                                                 });
+              if (!sub)
+                return;
+              menuItem.subMenu = sub;
+              sub.triggered.connect(function (action, item) {
+                root.triggered(action, item);
+              });
+              sub.visible = true;
+              Qt.callLater(() => {
+                             if (menuItem.subMenu)
+                             menuItem.subMenu.anchor.updateAnchor();
+                           });
             }
-          }
 
-          Layout.preferredWidth: parent.width
-          Layout.preferredHeight: modelData.visible !== false ? (isSeparator ? Style.marginS : root._rowHeight) : 0
-          visible: modelData.visible !== false
-          color: "transparent"
+            Timer {
+              id: submenuOpenTimer
+              interval: 250
+              repeat: false
+              onTriggered: menuItem._openSubmenu()
+            }
 
-          // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
-          Rectangle {
-            visible: menuItem.isSeparator
-            anchors.centerIn: parent
-            width: parent.width - Style.margin2XS
-            height: 2
+            Component.onDestruction: {
+              if (subMenu) {
+                subMenu.close();
+                subMenu.destroy();
+                subMenu = null;
+              }
+            }
+
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: modelData.visible !== false ? (isSeparator ? Style.marginS : root._rowHeight) : 0
+            visible: modelData.visible !== false
             color: "transparent"
 
+            // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
             Rectangle {
-              width: parent.width
-              height: 1
-              color: Qt.rgba(0, 0, 0, 0.1)
-            }
-            Rectangle {
-              y: 1
-              width: parent.width
-              height: 1
-              color: Qt.rgba(1, 1, 1, 0.1)
-            }
-          }
+              visible: menuItem.isSeparator
+              anchors.centerIn: parent
+              width: parent.width - Style.margin2XS
+              height: 2
+              color: "transparent"
 
-          Rectangle {
-            id: innerRect
-            anchors.fill: parent
-            visible: !menuItem.isSeparator
-            color: menuItem.active ? Color.accent : "transparent"
-            radius: Style.radiusRow
-
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
+              Rectangle {
+                width: parent.width
+                height: 1
+                color: Qt.rgba(0, 0, 0, 0.1)
+              }
+              Rectangle {
+                y: 1
+                width: parent.width
+                height: 1
+                color: Qt.rgba(1, 1, 1, 0.1)
               }
             }
 
-            RowLayout {
+            Rectangle {
+              id: innerRect
               anchors.fill: parent
-              anchors.leftMargin: root.itemPadding
-              anchors.rightMargin: root.itemPadding
-              spacing: Style.marginS
+              visible: !menuItem.isSeparator
+              color: menuItem.active ? Color.accent : "transparent"
+              radius: Style.radiusRow
 
-              NIcon {
-                visible: modelData.icon !== undefined
-                icon: modelData.icon || ""
-                pointSize: Style.fontSizeS
-                applyUiScale: false
-                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
-                verticalAlignment: Text.AlignVCenter
+              Behavior on color {
+                ColorAnimation {
+                  duration: Style.animationFast
+                }
+              }
 
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
+              RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: root.itemPadding
+                anchors.rightMargin: root.itemPadding
+                spacing: Style.marginS
+
+                NIcon {
+                  visible: modelData.icon !== undefined
+                  icon: modelData.icon || ""
+                  pointSize: Style.fontSizeS
+                  applyUiScale: false
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
+                  verticalAlignment: Text.AlignVCenter
+
+                  Behavior on color {
+                    ColorAnimation {
+                      duration: Style.animationFast
+                    }
                   }
                 }
-              }
 
-              NText {
-                text: modelData.label || modelData.text || ""
-                pointSize: Style.fontSizeS
-                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
-                verticalAlignment: Text.AlignVCenter
-                Layout.fillWidth: true
+                NText {
+                  text: modelData.label || modelData.text || ""
+                  pointSize: Style.fontSizeS
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
+                  verticalAlignment: Text.AlignVCenter
+                  Layout.fillWidth: true
 
-                Behavior on color {
-                  ColorAnimation {
-                    duration: Style.animationFast
+                  Behavior on color {
+                    ColorAnimation {
+                      duration: Style.animationFast
+                    }
                   }
                 }
-              }
 
-              // Check mark / submenu chevron, 12px on the right
-              NIcon {
-                visible: modelData.checked === true || menuItem.hasSubmenu || modelData.hasSubmenu === true
-                icon: (menuItem.hasSubmenu || modelData.hasSubmenu === true) ? "chevron-right" : "check"
-                pointSize: Style.fontSizeXL
-                color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : Color.accent
-              }
-            }
-
-            MouseArea {
-              id: mouseArea
-              anchors.fill: parent
-              hoverEnabled: true
-              enabled: menuItem.rowEnabled && root.visible
-              cursorShape: Qt.PointingHandCursor
-
-              onEntered: {
-                if (menuItem.hasSubmenu) {
-                  root._closeSubmenusExcept(menuItem);
-                  submenuOpenTimer.restart();
-                } else {
-                  root._closeSubmenus();
+                // Check mark / submenu chevron, 12px on the right
+                NIcon {
+                  visible: modelData.checked === true || menuItem.hasSubmenu || modelData.hasSubmenu === true
+                  icon: (menuItem.hasSubmenu || modelData.hasSubmenu === true) ? "chevron-right" : "check"
+                  pointSize: Style.fontSizeXL
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : Color.accent
                 }
               }
 
-              onExited: {
-                submenuOpenTimer.stop();
-              }
+              MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: menuItem.rowEnabled && root.visible
+                cursorShape: Qt.PointingHandCursor
 
-              onClicked: {
-                if (menuItem.hasSubmenu) {
-                  menuItem._openSubmenu();
-                  return;
+                onEntered: {
+                  if (menuItem.hasSubmenu) {
+                    root._closeSubmenusExcept(menuItem);
+                    submenuOpenTimer.restart();
+                  } else {
+                    root._closeSubmenus();
+                  }
                 }
-                if (menuItem.modelData.enabled !== false) {
-                  root.triggered(menuItem.modelData.action || menuItem.modelData.key || menuItem.index.toString(), menuItem.modelData);
-                  // Don't call root.close() here - let the parent PopupMenuWindow handle closing
+
+                onExited: {
+                  submenuOpenTimer.stop();
+                }
+
+                onClicked: {
+                  if (menuItem.hasSubmenu) {
+                    menuItem._openSubmenu();
+                    return;
+                  }
+                  if (menuItem.modelData.enabled !== false) {
+                    root.triggered(menuItem.modelData.action || menuItem.modelData.key || menuItem.index.toString(), menuItem.modelData);
+                    // Don't call root.close() here - let the parent PopupMenuWindow handle closing
+                  }
                 }
               }
             }
@@ -661,12 +677,12 @@ PopupWindow {
       _closeSubmenus();
   }
 
-  // Fade-out before the popup surface unmaps: _closing drops the content
-  // opacity (the Behavior animates it), the timer then flips visible.
+  // Fade-out before the popup surface unmaps: _closing drives the reveal's
+  // exit (the Behavior animates it), the timer then flips visible.
   property bool _closing: false
   Timer {
     id: hideTimer
-    interval: Style.animationFast
+    interval: Style.motionPopupOut
     onTriggered: {
       root.visible = false;
       root._closing = false;

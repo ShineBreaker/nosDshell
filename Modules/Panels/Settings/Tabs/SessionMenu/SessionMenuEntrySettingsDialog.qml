@@ -7,6 +7,8 @@ import qs.Widgets
 // Session Menu Entry Settings Dialog Component
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property int entryIndex: -1
   property var entryData: null

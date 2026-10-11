@@ -8,6 +8,8 @@ import qs.Widgets
 
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property ShellScreen screen
 

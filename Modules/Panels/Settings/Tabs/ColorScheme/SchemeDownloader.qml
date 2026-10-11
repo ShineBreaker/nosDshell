@@ -10,6 +10,8 @@ import qs.Widgets
 
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property var availableSchemes: []
   property bool fetching: false

@@ -139,6 +139,8 @@ SmartPanel {
             y: parent.height
             width: 180
             padding: Style.marginS
+            enter: NPopupEnter {}
+            exit: NPopupExit {}
 
             background: Rectangle {
               color: Color.popupShell

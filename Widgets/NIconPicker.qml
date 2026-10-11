@@ -8,6 +8,8 @@ import qs.Widgets
 Popup {
   id: root
   modal: true
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   property string selectedIcon: ""
   property string initialIcon: ""

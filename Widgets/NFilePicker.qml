@@ -9,6 +9,8 @@ import qs.Widgets
 
 Popup {
   id: root
+  enter: NPopupEnter {}
+  exit: NPopupExit {}
 
   // Properties
   property string title: I18n.tr("widget.file-picker.title")

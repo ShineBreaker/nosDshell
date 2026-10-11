@@ -200,12 +200,12 @@ PopupWindow {
                  });
   }
 
-  // Fade-out before the popup surface unmaps: _closing drops the content
-  // opacity (the Behavior animates it), the timer then flips visible.
+  // Fade-out before the popup surface unmaps: _closing drives the reveal's
+  // exit (the Behavior animates it), the timer then flips visible.
   property bool _closing: false
   Timer {
     id: hideTimer
-    interval: Style.animationFast
+    interval: Style.motionPopupOut
     onTriggered: {
       root.visible = false;
       root._closing = false;
@@ -239,331 +239,336 @@ PopupWindow {
     menu: root.menu
   }
 
-  NArrowRect {
-    id: menuBody
-    anchors.fill: parent
-    radius: Style.radiusPopup
-    fillColor: Color.popupShell
-    borderColor: Color.borderShell
-    borderWidth: Style.borderS
-    shadow: Style.shadowPopup
+  // Reveal (DESIGN §1.7): background, shadow and menu content fade and
+  // slide together along the host surface's edge; submenus fade only.
+  NPopupReveal {
+    id: reveal
 
-    // DDE menus appear/disappear instantly (deepin-menu has no animations)
-    opacity: root.visible && !root._closing ? 1.0 : 0.0
-  }
+    active: root.visible
+    closing: root._closing
+    edge: root.isSubMenu ? "" : root.hostEdge
 
-  Flickable {
-    id: flickable
-    x: menuBody.bodyRect.x + Style.marginS
-    y: menuBody.bodyRect.y + Style.marginS
-    width: menuBody.bodyRect.width - Style.margin2S
-    height: menuBody.bodyRect.height - Style.margin2S
-    contentHeight: columnLayout.implicitHeight
-    interactive: true
+    NArrowRect {
+      id: menuBody
+      anchors.fill: parent
+      radius: Style.radiusPopup
+      fillColor: Color.popupShell
+      borderColor: Color.borderShell
+      borderWidth: Style.borderS
+      shadow: Style.shadowPopup
+    }
 
-    opacity: root.visible && !root._closing ? 1.0 : 0.0
+    Flickable {
+      id: flickable
+      x: menuBody.bodyRect.x + Style.marginS
+      y: menuBody.bodyRect.y + Style.marginS
+      width: menuBody.bodyRect.width - Style.margin2S
+      height: menuBody.bodyRect.height - Style.margin2S
+      contentHeight: columnLayout.implicitHeight
+      interactive: true
 
-    // Use a ColumnLayout to handle menu item arrangement
-    ColumnLayout {
-      id: columnLayout
-      width: flickable.width
-      spacing: 0
+      // Use a ColumnLayout to handle menu item arrangement
+      ColumnLayout {
+        id: columnLayout
+        width: flickable.width
+        spacing: 0
 
-      Repeater {
-        model: opener.children ? [...opener.children.values] : []
+        Repeater {
+          model: opener.children ? [...opener.children.values] : []
 
-        delegate: Rectangle {
-          id: entry
-          required property var modelData
+          delegate: Rectangle {
+            id: entry
+            required property var modelData
 
-          Layout.preferredWidth: parent.width
-          Layout.preferredHeight: {
-            if (modelData?.isSeparator) {
-              return Style.marginS;
-            } else {
-              // Row height = font height + 8
-              const textHeight = text.contentHeight || (Style.fontSizeS * 1.2);
-              return textHeight + 8;
+            Layout.preferredWidth: parent.width
+            Layout.preferredHeight: {
+              if (modelData?.isSeparator) {
+                return Style.marginS;
+              } else {
+                // Row height = font height + 8
+                const textHeight = text.contentHeight || (Style.fontSizeS * 1.2);
+                return textHeight + 8;
+              }
             }
-          }
 
-          color: "transparent"
-          property var subMenu: null
-
-          // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
-          Rectangle {
-            visible: modelData?.isSeparator ?? false
-            anchors.centerIn: parent
-            width: parent.width - Style.margin2XS
-            height: 2
             color: "transparent"
+            property var subMenu: null
+
+            // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
+            Rectangle {
+              visible: modelData?.isSeparator ?? false
+              anchors.centerIn: parent
+              width: parent.width - Style.margin2XS
+              height: 2
+              color: "transparent"
+
+              Rectangle {
+                width: parent.width
+                height: 1
+                color: Qt.rgba(0, 0, 0, 0.1)
+              }
+              Rectangle {
+                y: 1
+                width: parent.width
+                height: 1
+                color: Qt.rgba(1, 1, 1, 0.1)
+              }
+            }
 
             Rectangle {
-              width: parent.width
-              height: 1
-              color: Qt.rgba(0, 0, 0, 0.1)
-            }
-            Rectangle {
-              y: 1
-              width: parent.width
-              height: 1
-              color: Qt.rgba(1, 1, 1, 0.1)
-            }
-          }
-
-          Rectangle {
-            id: innerRect
-            anchors.fill: parent
-            color: mouseArea.containsMouse ? Color.accent : "transparent"
-            radius: Style.radiusRow
-            visible: !(modelData?.isSeparator ?? false)
-
-            RowLayout {
+              id: innerRect
               anchors.fill: parent
-              anchors.leftMargin: Style.menuItemPadding
-              anchors.rightMargin: Style.menuItemPadding
-              spacing: Style.marginS
+              color: mouseArea.containsMouse ? Color.accent : "transparent"
+              radius: Style.radiusRow
+              visible: !(modelData?.isSeparator ?? false)
 
-              // Indicator Container
-              Item {
-                visible: (modelData?.buttonType ?? QsMenuButtonType.None) !== QsMenuButtonType.None
+              RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Style.menuItemPadding
+                anchors.rightMargin: Style.menuItemPadding
+                spacing: Style.marginS
 
-                implicitWidth: Math.round(Style.baseWidgetSize * 0.5)
-                implicitHeight: Math.round(Style.baseWidgetSize * 0.5)
-                Layout.alignment: Qt.AlignVCenter
+                // Indicator Container
+                Item {
+                  visible: (modelData?.buttonType ?? QsMenuButtonType.None) !== QsMenuButtonType.None
 
-                // Helper properties
-                readonly property int type: modelData?.buttonType ?? QsMenuButtonType.None
-                readonly property bool isRadio: type === QsMenuButtonType.RadioButton
-                readonly property bool isChecked: modelData?.checkState === Qt.Checked || (modelData?.checked ?? false)
+                  implicitWidth: Math.round(Style.baseWidgetSize * 0.5)
+                  implicitHeight: Math.round(Style.baseWidgetSize * 0.5)
+                  Layout.alignment: Qt.AlignVCenter
 
-                // Color Logic — OptionItem style: accent check, white when the row is hovered
-                readonly property color activeColor: mouseArea.containsMouse ? Color.onAccent : Color.accent
-                readonly property color borderColor: activeColor
+                  // Helper properties
+                  readonly property int type: modelData?.buttonType ?? QsMenuButtonType.None
+                  readonly property bool isRadio: type === QsMenuButtonType.RadioButton
+                  readonly property bool isChecked: modelData?.checkState === Qt.Checked || (modelData?.checked ?? false)
 
-                // Checkbox Visuals
-                Rectangle {
-                  visible: !parent.isRadio
-                  anchors.centerIn: parent
-                  width: Math.round(Style.baseWidgetSize * 0.5)
-                  height: Math.round(Style.baseWidgetSize * 0.5)
-                  radius: Style.radiusRow
-                  color: "transparent" // Transparent to match RadioButton style
-                  border.color: "transparent"
-                  border.width: Style.borderM
+                  // Color Logic — OptionItem style: accent check, white when the row is hovered
+                  readonly property color activeColor: mouseArea.containsMouse ? Color.onAccent : Color.accent
+                  readonly property color borderColor: activeColor
 
-                  Behavior on border.color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
-
-                  NIcon {
-                    visible: parent.parent.isChecked
-                    anchors.centerIn: parent
-                    anchors.horizontalCenterOffset: -1
-                    icon: "check"
-                    color: parent.parent.activeColor
-                    pointSize: Math.max(Style.fontSizeXXS, parent.width * 0.6)
-                  }
-                }
-
-                // RadioButton Visuals — accent dot, no ring
-                Rectangle {
-                  visible: parent.isRadio
-                  anchors.centerIn: parent
-                  width: Style.toOdd(Style.baseWidgetSize * 0.5)
-                  height: Style.toOdd(Style.baseWidgetSize * 0.5)
-                  radius: width / 2
-                  color: "transparent"
-                  border.color: "transparent"
-                  border.width: Style.borderM // Slightly thicker for radio look
-
+                  // Checkbox Visuals
                   Rectangle {
-                    visible: parent.parent.isChecked
+                    visible: !parent.isRadio
                     anchors.centerIn: parent
-                    width: Style.toOdd(parent.width * 0.5)
-                    height: Style.toOdd(parent.height * 0.5)
-                    radius: width / 2
-                    color: parent.parent.activeColor
+                    width: Math.round(Style.baseWidgetSize * 0.5)
+                    height: Math.round(Style.baseWidgetSize * 0.5)
+                    radius: Style.radiusRow
+                    color: "transparent" // Transparent to match RadioButton style
+                    border.color: "transparent"
+                    border.width: Style.borderM
 
-                    Behavior on color {
+                    Behavior on border.color {
                       ColorAnimation {
                         duration: Style.animationFast
                       }
                     }
+
+                    NIcon {
+                      visible: parent.parent.isChecked
+                      anchors.centerIn: parent
+                      anchors.horizontalCenterOffset: -1
+                      icon: "check"
+                      color: parent.parent.activeColor
+                      pointSize: Math.max(Style.fontSizeXXS, parent.width * 0.6)
+                    }
                   }
+
+                  // RadioButton Visuals — accent dot, no ring
+                  Rectangle {
+                    visible: parent.isRadio
+                    anchors.centerIn: parent
+                    width: Style.toOdd(Style.baseWidgetSize * 0.5)
+                    height: Style.toOdd(Style.baseWidgetSize * 0.5)
+                    radius: width / 2
+                    color: "transparent"
+                    border.color: "transparent"
+                    border.width: Style.borderM // Slightly thicker for radio look
+
+                    Rectangle {
+                      visible: parent.parent.isChecked
+                      anchors.centerIn: parent
+                      width: Style.toOdd(parent.width * 0.5)
+                      height: Style.toOdd(parent.height * 0.5)
+                      radius: width / 2
+                      color: parent.parent.activeColor
+
+                      Behavior on color {
+                        ColorAnimation {
+                          duration: Style.animationFast
+                        }
+                      }
+                    }
+                  }
+                }
+
+                NText {
+                  id: text
+                  Layout.fillWidth: true
+                  color: (modelData?.enabled ?? true) ? (mouseArea.containsMouse ? Color.onAccent : Color.onShell) : Color.textDisabledDark
+                  text: modelData?.text !== "" ? modelData?.text.replace(/[\n\r]+/g, ' ') : "..."
+                  pointSize: Style.fontSizeS
+                  verticalAlignment: Text.AlignVCenter
+                  wrapMode: Text.WordWrap
+                }
+
+                Image {
+                  Layout.preferredWidth: Style.marginL
+                  Layout.preferredHeight: Style.marginL
+                  source: modelData?.icon ?? ""
+                  visible: (modelData?.icon ?? "") !== ""
+                  fillMode: Image.PreserveAspectFit
+                }
+
+                NIcon {
+                  icon: modelData?.hasChildren ? "chevron-right" : ""
+                  pointSize: Style.fontSizeXL
+                  applyUiScale: false
+                  verticalAlignment: Text.AlignVCenter
+                  visible: modelData?.hasChildren ?? false
+                  color: (mouseArea.containsMouse ? Color.onAccent : Color.onShellSecondary)
                 }
               }
 
-              NText {
-                id: text
-                Layout.fillWidth: true
-                color: (modelData?.enabled ?? true) ? (mouseArea.containsMouse ? Color.onAccent : Color.onShell) : Color.textDisabledDark
-                text: modelData?.text !== "" ? modelData?.text.replace(/[\n\r]+/g, ' ') : "..."
-                pointSize: Style.fontSizeS
-                verticalAlignment: Text.AlignVCenter
-                wrapMode: Text.WordWrap
-              }
+              MouseArea {
+                id: mouseArea
+                anchors.fill: parent
+                hoverEnabled: true
+                enabled: (modelData?.enabled ?? true) && !(modelData?.isSeparator ?? false) && root.visible
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-              Image {
-                Layout.preferredWidth: Style.marginL
-                Layout.preferredHeight: Style.marginL
-                source: modelData?.icon ?? ""
-                visible: (modelData?.icon ?? "") !== ""
-                fillMode: Image.PreserveAspectFit
-              }
+                onClicked: mouse => {
+                             if (modelData && !modelData.isSeparator) {
+                               if (modelData.hasChildren) {
+                                 // Click on items with children toggles submenu
+                                 if (entry.subMenu) {
+                                   // Close existing submenu
+                                   entry.subMenu.hideMenu();
+                                   entry.subMenu.destroy();
+                                   entry.subMenu = null;
+                                 } else {
+                                   // Close any other open submenus first
+                                   for (var i = 0; i < columnLayout.children.length; i++) {
+                                     const sibling = columnLayout.children[i];
+                                     if (sibling !== entry && sibling.subMenu) {
+                                       sibling.subMenu.hideMenu();
+                                       sibling.subMenu.destroy();
+                                       sibling.subMenu = null;
+                                     }
+                                   }
 
-              NIcon {
-                icon: modelData?.hasChildren ? "chevron-right" : ""
-                pointSize: Style.fontSizeXL
-                applyUiScale: false
-                verticalAlignment: Text.AlignVCenter
-                visible: modelData?.hasChildren ?? false
-                color: (mouseArea.containsMouse ? Color.onAccent : Color.onShellSecondary)
-              }
-            }
+                                   // Determine submenu opening direction
+                                   let openLeft = false;
+                                   const barPosition = root.hostEdge;
+                                   const globalPos = entry.mapToItem(null, 0, 0);
 
-            MouseArea {
-              id: mouseArea
-              anchors.fill: parent
-              hoverEnabled: true
-              enabled: (modelData?.enabled ?? true) && !(modelData?.isSeparator ?? false) && root.visible
-              acceptedButtons: Qt.LeftButton | Qt.RightButton
+                                   if (barPosition === "right") {
+                                     openLeft = true;
+                                   } else if (barPosition === "left") {
+                                     openLeft = false;
+                                   } else {
+                                     openLeft = (root.widgetSection === "right");
+                                   }
 
-              onClicked: mouse => {
-                           if (modelData && !modelData.isSeparator) {
-                             if (modelData.hasChildren) {
-                               // Click on items with children toggles submenu
-                               if (entry.subMenu) {
-                                 // Close existing submenu
-                                 entry.subMenu.hideMenu();
-                                 entry.subMenu.destroy();
-                                 entry.subMenu = null;
-                               } else {
-                                 // Close any other open submenus first
-                                 for (var i = 0; i < columnLayout.children.length; i++) {
-                                   const sibling = columnLayout.children[i];
-                                   if (sibling !== entry && sibling.subMenu) {
-                                     sibling.subMenu.hideMenu();
-                                     sibling.subMenu.destroy();
-                                     sibling.subMenu = null;
+                                   // Open new submenu
+                                   entry.subMenu = Qt.createComponent("TrayMenu.qml").createObject(root, {
+                                                                                                     "menu": modelData,
+                                                                                                     "isSubMenu": true,
+                                                                                                     "screen": root.screen
+                                                                                                   });
+
+                                   if (entry.subMenu) {
+                                     const overlap = 60;
+                                     entry.subMenu.anchorItem = entry;
+                                     entry.subMenu.anchorX = openLeft ? -overlap : overlap;
+                                     entry.subMenu.anchorY = 0;
+                                     entry.subMenu.visible = true;
+                                     // Force anchor update with new position
+                                     Qt.callLater(() => {
+                                                    entry.subMenu.anchor.updateAnchor();
+                                                  });
                                    }
                                  }
+                               } else {
+                                 // Click on regular items triggers them
+                                 modelData.triggered();
+                                 root.hideMenu();
 
-                                 // Determine submenu opening direction
-                                 let openLeft = false;
-                                 const barPosition = root.hostEdge;
-                                 const globalPos = entry.mapToItem(null, 0, 0);
-
-                                 if (barPosition === "right") {
-                                   openLeft = true;
-                                 } else if (barPosition === "left") {
-                                   openLeft = false;
-                                 } else {
-                                   openLeft = (root.widgetSection === "right");
-                                 }
-
-                                 // Open new submenu
-                                 entry.subMenu = Qt.createComponent("TrayMenu.qml").createObject(root, {
-                                                                                                   "menu": modelData,
-                                                                                                   "isSubMenu": true,
-                                                                                                   "screen": root.screen
-                                                                                                 });
-
-                                 if (entry.subMenu) {
-                                   const overlap = 60;
-                                   entry.subMenu.anchorItem = entry;
-                                   entry.subMenu.anchorX = openLeft ? -overlap : overlap;
-                                   entry.subMenu.anchorY = 0;
-                                   entry.subMenu.visible = true;
-                                   // Force anchor update with new position
-                                   Qt.callLater(() => {
-                                                  entry.subMenu.anchor.updateAnchor();
-                                                });
-                                 }
-                               }
-                             } else {
-                               // Click on regular items triggers them
-                               modelData.triggered();
-                               root.hideMenu();
-
-                               // Close the drawer if it's open
-                               if (root.screen) {
-                                 const panel = PanelService.getPanel("trayDrawerPanel", root.screen);
-                                 if (panel && panel.visible) {
-                                   panel.close();
+                                 // Close the drawer if it's open
+                                 if (root.screen) {
+                                   const panel = PanelService.getPanel("trayDrawerPanel", root.screen);
+                                   if (panel && panel.visible) {
+                                     panel.close();
+                                   }
                                  }
                                }
                              }
                            }
-                         }
+              }
+            }
+
+            Component.onDestruction: {
+              if (subMenu) {
+                subMenu.destroy();
+                subMenu = null;
+              }
+            }
+          }
+        }
+
+        // PIN / UNPIN
+        Rectangle {
+          visible: {
+            if (widgetSection === "" || widgetIndex < 0)
+              return false;
+            var widgets = Settings.getBarWidgetsForScreen(root.screen?.name)[widgetSection];
+            if (!widgets || widgetIndex >= widgets.length)
+              return false;
+            var widgetSettings = widgets[widgetIndex];
+            if (!widgetSettings)
+              return false;
+            return widgetSettings.drawerEnabled ?? false;
+          }
+          Layout.preferredWidth: parent.width
+          Layout.preferredHeight: Math.round(Style.fontSizeS * 1.33) + 8
+          color: pinUnpinMouseArea.containsMouse ? Color.accent : "transparent"
+          radius: Style.radiusRow
+          border.color: "transparent"
+          border.width: Style.borderS
+
+          RowLayout {
+            anchors.fill: parent
+            anchors.leftMargin: Style.menuItemPadding
+            anchors.rightMargin: Style.menuItemPadding
+            spacing: Style.marginS
+
+            NIcon {
+              icon: root.isPinned ? "unpin" : "pin"
+              pointSize: Style.fontSizeS
+              applyUiScale: false
+              verticalAlignment: Text.AlignVCenter
+              color: pinUnpinMouseArea.containsMouse ? Color.onAccent : Color.accent
+            }
+
+            NText {
+              Layout.fillWidth: true
+              color: pinUnpinMouseArea.containsMouse ? Color.onAccent : Color.accent
+              text: root.isPinned ? I18n.tr("panels.bar.tray-unpin-application") : I18n.tr("panels.bar.tray-pin-application")
+              pointSize: Style.fontSizeS
+              verticalAlignment: Text.AlignVCenter
+              elide: Text.ElideRight
             }
           }
 
-          Component.onDestruction: {
-            if (subMenu) {
-              subMenu.destroy();
-              subMenu = null;
-            }
-          }
-        }
-      }
+          MouseArea {
+            id: pinUnpinMouseArea
+            anchors.fill: parent
+            hoverEnabled: true
 
-      // PIN / UNPIN
-      Rectangle {
-        visible: {
-          if (widgetSection === "" || widgetIndex < 0)
-            return false;
-          var widgets = Settings.getBarWidgetsForScreen(root.screen?.name)[widgetSection];
-          if (!widgets || widgetIndex >= widgets.length)
-            return false;
-          var widgetSettings = widgets[widgetIndex];
-          if (!widgetSettings)
-            return false;
-          return widgetSettings.drawerEnabled ?? false;
-        }
-        Layout.preferredWidth: parent.width
-        Layout.preferredHeight: Math.round(Style.fontSizeS * 1.33) + 8
-        color: pinUnpinMouseArea.containsMouse ? Color.accent : "transparent"
-        radius: Style.radiusRow
-        border.color: "transparent"
-        border.width: Style.borderS
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.leftMargin: Style.menuItemPadding
-          anchors.rightMargin: Style.menuItemPadding
-          spacing: Style.marginS
-
-          NIcon {
-            icon: root.isPinned ? "unpin" : "pin"
-            pointSize: Style.fontSizeS
-            applyUiScale: false
-            verticalAlignment: Text.AlignVCenter
-            color: pinUnpinMouseArea.containsMouse ? Color.onAccent : Color.accent
-          }
-
-          NText {
-            Layout.fillWidth: true
-            color: pinUnpinMouseArea.containsMouse ? Color.onAccent : Color.accent
-            text: root.isPinned ? I18n.tr("panels.bar.tray-unpin-application") : I18n.tr("panels.bar.tray-pin-application")
-            pointSize: Style.fontSizeS
-            verticalAlignment: Text.AlignVCenter
-            elide: Text.ElideRight
-          }
-        }
-
-        MouseArea {
-          id: pinUnpinMouseArea
-          anchors.fill: parent
-          hoverEnabled: true
-
-          onClicked: {
-            if (root.isPinned) {
-              root.removeFromPinned();
-            } else {
-              root.addToPinned();
+            onClicked: {
+              if (root.isPinned) {
+                root.removeFromPinned();
+              } else {
+                root.addToPinned();
+              }
             }
           }
         }

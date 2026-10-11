@@ -597,11 +597,13 @@ PanelWindow {
         var op = PanelService.openedPanel;
         if (!op || op.screen !== root.screen || op.blurEnabled === false)
           return null;
-        // A panel whose close fade is zero-duration is already invisible at
-        // close() time — drop its blur rect now so the detach rides the same
-        // surface commit as the content hide instead of waiting for a
-        // post-finalize frame the render loop may starve on (Wayland frame
-        // callbacks gate QQuickWindow.update(), so the extra frame can lag).
+        // Blur cannot fade with the closing popup — DESIGN §1.7 drops it at
+        // exit start, so an arrow popup's blur rect detaches the moment
+        // isClosing flips (with animationFaster === 0 every panel fades
+        // instantly and gets the same treatment). Detaching now also lets
+        // the removal ride the same surface commit as the content hide
+        // instead of waiting for a post-finalize frame the render loop may
+        // starve on (Wayland frame callbacks gate QQuickWindow.update()).
         if (op.isClosing && (op.useArrowPopup || Style.animationFaster === 0))
           return null;
         var region = op.panelRegion;
@@ -613,6 +615,7 @@ PanelWindow {
         var cp = PanelService.closingPanel;
         if (!cp || cp.screen !== root.screen || cp.blurEnabled === false)
           return null;
+        // Same early detach as panelBg — blur does not fade (§1.7).
         if (cp.isClosing && (cp.useArrowPopup || Style.animationFaster === 0))
           return null;
         var region = cp.panelRegion;

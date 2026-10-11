@@ -362,6 +362,14 @@ Singleton {
   readonly property int motionBubbleOut: _motion(300)
   readonly property int motionOsdIn: _motion(160)
   readonly property int motionOsdOut: _motion(120)
+  // Popup surfaces (DESIGN §1.7): fade in/out; anchored surfaces also
+  // slide along the anchor edge — enter starts popupEnterOffset toward
+  // the anchor, exit drifts popupExitOffset back toward it. The offsets
+  // are unscaled like the popupArrow*/popupGap geometry tokens.
+  readonly property int motionPopupIn: _motion(160)
+  readonly property int motionPopupOut: _motion(120)
+  readonly property int popupEnterOffset: 8
+  readonly property int popupExitOffset: 4
   readonly property int motionNavZoom: _motion(300)
   readonly property int motionSwitch: _motion(150)
   // gxde-launcher applistview.cpp:105-112 — wheel inertia scroll

@@ -252,6 +252,8 @@ NDccRow {
       width: combo.width
       height: Math.round((root.popupHeight + 60) * Style.uiScaleRatio)
       padding: Style.marginS
+      enter: NPopupEnter {}
+      exit: NPopupExit {}
 
       contentItem: ColumnLayout {
         spacing: Style.marginS
