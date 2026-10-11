@@ -631,7 +631,7 @@ Noctalia 卡片的对应关系：
 - DDE 15 本身没有状态栏。这是借 Noctalia 的 bar 管线提供的可选扩展，定位类似 macOS 的菜单栏：显示系统信息和全局挂件，不显示窗口任务列表。
 - 只在时尚模式下可用。高效模式下任务栏本身就是通栏，状态栏不出现；切换模式时自动隐藏或恢复，用户不用重新设置。
 - 开关是 `bar.enabled`（默认关）。位置是 `bar.position`（默认 `top`），与 `dock.position` 相互独立。显示在哪些显示器上由 `bar.monitors` 决定（留空表示全部）。显示模式是 `bar.displayMode`（`always_visible`、`non_exclusive`、`auto_hide`，沿用 `bar.autoHideDelay`、`bar.autoShowDelay`、`bar.showOnWorkspaceSwitch`）。
-- 形态是 `bar.barType`（默认 `simple`；`floating` 悬浮并加 `marginVertical`/`marginHorizontal` 外边距，`framed` 加 `frameThickness`/`frameRadius` 的框体）；外圆角 `bar.outerCorners` 只在 `simple` 下生效。§7 的栏体兼容形态只对状态栏开放。
+- 形态是 `bar.barType`（默认 `simple`；`framed` 加 `frameThickness`/`frameRadius` 的框体）。`bar.floating`（默认关）是独立修饰：让整个栏面四边离开屏幕边缘，外边距是 `marginVertical`/`marginHorizontal`，`simple` 和 `framed` 均可叠加（旧配置里的 `barType: "floating"` 由迁移 v81 转成 `barType: "simple"` + `floating: true`）。外圆角 `bar.outerCorners` 只在非悬浮的 `simple` 下生效。§7 的栏体兼容形态只对状态栏开放。
 - 空白处右键执行 `bar.rightClickAction`（默认 `controlCenter`，另有 `settings`、`launcherPanel`、`command`；`command` 用 `bar.rightClickCommand`，`bar.rightClickFollowMouse` 控制弹出面板是否跟随光标）。
 - 挂件内容用 `bar.widgets` 的左、中、右三段布局。默认左侧是启动器、时钟、系统监视器、活动窗口、迷你媒体，中间是工作区，右侧是托盘、通知、电量、音量、亮度等。
 - 两个位置函数含义不同。`getBarPositionForScreen()` 返回 bar 窗口所在的边：时尚模式开着状态栏时是 `bar.position`，否则是任务栏所在的边。`getTaskbarPositionForScreen()` 总是返回任务栏所在的边，启动器定位、按屏覆盖编辑器和避让判断都用它。挂件弹层跟随所在的表面：dock 里的挂件弹层按任务栏的边，状态栏里的挂件弹层按状态栏的边。
@@ -721,7 +721,7 @@ Noctalia 卡片的对应关系：
 
 - `bar.widgets` 复制为 `dock.plugins`，`bar.position` 复制为 `dock.position`。两个旧键保留，现在分别是状态栏（§3.13）的挂件布局和位置。
 - 原来启用了 Bar 的用户，`dock.mode` 设为 `"efficient"`。
-- `bar.barType` 保留原值。高效模式下不生效（按 `simple` 绘制），时尚模式的状态栏按它绘制圆角，状态栏页有形态选择器（§3.13）。
+- `bar.barType` 保留原值（旧的 `"floating"` 取值由迁移 v81 转为 `bar.floating` 独立开关，§3.13）。高效模式下不生效（按 `simple` 绘制），时尚模式的状态栏按它绘制圆角，状态栏页有形态选择器（§3.13）。
 
 ### 6.1 上游功能移除清单
 

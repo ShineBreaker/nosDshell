@@ -395,10 +395,6 @@ ColumnLayout {
                 "name": I18n.tr("options.bar.type-simple") ?? "Simple"
               },
               {
-                "key": "floating",
-                "name": I18n.tr("options.bar.type-floating") ?? "Floating"
-              },
-              {
                 "key": "framed",
                 "name": I18n.tr("options.bar.type-framed") ?? "Framed"
               }

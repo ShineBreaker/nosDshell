@@ -470,14 +470,15 @@ Variants {
           return 0;
 
         let base = Style.marginM;
+        const isVertical = position === "top" || position === "bottom";
+        const floatExtra = Math.ceil(Settings.isBarFloating() ? (isVertical ? Settings.data.bar.marginVertical : Settings.data.bar.marginHorizontal) : 0);
         if (screenBarPosition === position) {
-          const isVertical = position === "top" || position === "bottom";
-          const floatExtra = Math.ceil(Settings.getEffectiveBarType() === "floating" ? (isVertical ? Settings.data.bar.marginVertical : Settings.data.bar.marginHorizontal) : 0);
           return barHeight + base + floatExtra;
         }
 
+        // A framed ring band sits on every edge; floating lifts it too
         if (isFramed) {
-          return base + frameThickness;
+          return base + frameThickness + floatExtra;
         }
 
         return base;

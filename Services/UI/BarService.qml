@@ -631,13 +631,20 @@ Singleton {
       return 0;
     if (Settings.getBarPositionForScreen(screenName) === edge) {
       var t = Style.getBarHeightForScreen(screenName);
-      if (Settings.getEffectiveBarType() === "floating") {
+      if (Settings.isBarFloating()) {
         t += Math.ceil((edge === "left" || edge === "right") ? Settings.data.bar.marginHorizontal : Settings.data.bar.marginVertical);
       }
       return t;
     }
-    if (Settings.getEffectiveBarType() === "framed")
-      return Settings.data.bar.frameThickness ?? 12;
+    // Framed: the ring band sits on every edge; floating lifts it by the
+    // float margin too (DESIGN §3.13).
+    if (Settings.getEffectiveBarType() === "framed") {
+      var ft = Settings.data.bar.frameThickness ?? 12;
+      if (Settings.isBarFloating()) {
+        ft += Math.ceil((edge === "left" || edge === "right") ? Settings.data.bar.marginHorizontal : Settings.data.bar.marginVertical);
+      }
+      return ft;
+    }
     return 0;
   }
 

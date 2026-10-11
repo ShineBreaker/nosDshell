@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 80
+  readonly property int settingsVersion: 81
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -213,7 +213,11 @@ Singleton {
       // Optional status bar (DESIGN §3.7): fashion mode only — efficient mode
       // already renders the taskbar as its bar. Independent of dock.enabled.
       property bool enabled: false
-      property string barType: "simple" // "simple", "floating", "framed"
+      property string barType: "simple" // "simple" or "framed"
+      // Floating is a modifier, not a form: the whole bar surface lifts off
+      // the screen edges by marginVertical/marginHorizontal, in either
+      // barType (DESIGN §3.13). Formerly a barType value — v81 migration.
+      property bool floating: false
       property string position: "top" // "top", "bottom", "left", or "right"
       property list<string> monitors: [] // holds bar visibility per monitor
       property string density: "default" // "compact", "default", "comfortable"
@@ -1127,11 +1131,18 @@ Singleton {
 
   // -----------------------------------------------------
   // The bar only exists in efficient mode, where it is always "simple"
-  // (framed/floating bar types are inert — see DESIGN.md §6).
+  // (framed/floating are fashion status-bar options — see DESIGN.md §6).
   function getEffectiveBarType() {
     if (data.dock.mode === "efficient")
       return "simple";
     return data.bar.barType;
+  }
+
+  // Efficient mode never floats either — the taskbar is always edge-flush.
+  function isBarFloating() {
+    if (data.dock.mode === "efficient")
+      return false;
+    return data.bar.floating;
   }
 
   // -----------------------------------------------------

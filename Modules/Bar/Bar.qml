@@ -70,7 +70,7 @@ Item {
   // Bar positioning properties (per-screen)
   readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
-  readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
+  readonly property bool barFloating: Settings.isBarFloating()
 
   // Bar density (per-screen)
   readonly property string barDensity: Settings.getBarDensityForScreen(screen?.name)

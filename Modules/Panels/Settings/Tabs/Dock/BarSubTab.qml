@@ -140,10 +140,6 @@ ColumnLayout {
             "name": I18n.tr("options.bar.type-simple")
           },
           {
-            "key": "floating",
-            "name": I18n.tr("options.bar.type-floating")
-          },
-          {
             "key": "framed",
             "name": I18n.tr("options.bar.type-framed")
           }
@@ -151,6 +147,15 @@ ColumnLayout {
         currentKey: Settings.data.bar.barType
         defaultValue: Settings.getDefaultValue("bar.barType")
         onSelected: key => Settings.data.bar.barType = key
+      }
+
+      NToggle {
+        Layout.fillWidth: true
+        label: I18n.tr("options.bar.type-floating")
+        description: I18n.tr("panels.bar.appearance-floating-description")
+        checked: Settings.data.bar.floating
+        defaultValue: Settings.getDefaultValue("bar.floating")
+        onToggled: checked => Settings.data.bar.floating = checked
       }
 
       NValueSlider {
@@ -375,7 +380,7 @@ ColumnLayout {
 
     NToggle {
       Layout.fillWidth: true
-      visible: Settings.getEffectiveBarType() === "simple"
+      visible: Settings.getEffectiveBarType() === "simple" && !Settings.isBarFloating()
       label: I18n.tr("panels.bar.appearance-outer-corners-label")
       description: I18n.tr("panels.bar.appearance-outer-corners-description")
       checked: Settings.data.bar.outerCorners
@@ -413,7 +418,7 @@ ColumnLayout {
     }
 
     NSpinBox {
-      visible: Settings.getEffectiveBarType() === "floating"
+      visible: Settings.isBarFloating()
       label: I18n.tr("panels.bar.appearance-margins-vertical")
       description: I18n.tr("panels.bar.appearance-margins-description")
       from: 0
@@ -425,7 +430,7 @@ ColumnLayout {
     }
 
     NSpinBox {
-      visible: Settings.getEffectiveBarType() === "floating"
+      visible: Settings.isBarFloating()
       label: I18n.tr("panels.bar.appearance-margins-horizontal")
       description: I18n.tr("panels.bar.appearance-margins-description")
       from: 0

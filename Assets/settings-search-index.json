@@ -744,6 +744,18 @@
     ]
   },
   {
+    "labelKey": "options.bar.type-floating",
+    "descriptionKey": "panels.bar.appearance-floating-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.enabled"
+    ]
+  },
+  {
     "labelKey": "panels.bar.appearance-font-scale-label",
     "descriptionKey": "panels.bar.appearance-font-scale-description",
     "widget": "NValueSlider",
@@ -875,7 +887,7 @@
     "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.getEffectiveBarType() === \"simple\""
+      "Settings.getEffectiveBarType() === \"simple\" && !Settings.isBarFloating()"
     ]
   },
   {
@@ -911,7 +923,7 @@
     "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.getEffectiveBarType() === \"floating\""
+      "Settings.isBarFloating()"
     ]
   },
   {
@@ -923,7 +935,7 @@
     "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.getEffectiveBarType() === \"floating\""
+      "Settings.isBarFloating()"
     ]
   },
   {

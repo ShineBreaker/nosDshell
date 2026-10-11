@@ -75,7 +75,7 @@ Item {
   readonly property real maxTaskbarWidth: {
     if (!screen || isVerticalBar || !smartWidth || maxTaskbarWidthPercent <= 0)
       return 0;
-    var barFloating = Settings.getEffectiveBarType() === "floating";
+    var barFloating = Settings.isBarFloating();
     var barMarginH = barFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
     var availableWidth = screen.width - (barMarginH * 2);
     return Math.round(availableWidth * (maxTaskbarWidthPercent / 100));
@@ -221,8 +221,8 @@ Item {
 
   function isAppIdPinned(appId, pinnedApps) {
     return AppIdMatcher.isAppIdPinned(appId, pinnedApps, {
-             resolveEntry: true
-           });
+                                        resolveEntry: true
+                                      });
   }
 
   function resolveToDesktopEntryId(appId) {
@@ -239,14 +239,14 @@ Item {
 
   function isAppPinned(appId) {
     return AppIdMatcher.isAppPinned(appId, {
-             resolveEntry: true
-           });
+                                      resolveEntry: true
+                                    });
   }
 
   function toggleAppPin(appId) {
     AppIdMatcher.toggleAppPin(appId, {
-      useDesktopEntryId: true
-    });
+                                useDesktopEntryId: true
+                              });
   }
 
   // Function to update the combined model

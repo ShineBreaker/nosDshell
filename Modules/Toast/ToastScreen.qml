@@ -156,35 +156,34 @@ Item {
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
 
       readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(panel.screen?.name) : ""
-      readonly property bool isFloating: hasBar && Settings.getEffectiveBarType() === "floating"
+      readonly property bool isFloating: hasBar && Settings.isBarFloating()
       readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(panel.screen?.name) : 0
+      readonly property real floatMarginV: isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
+      readonly property real floatMarginH: isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
 
-      // Calculate bar and frame offsets for each edge separately
+      // Calculate bar and frame offsets for each edge separately. On a
+      // non-bar edge a framed ring still takes its band + float margin.
       readonly property int barOffsetTop: {
         if (barPos !== "top")
-          return isFramed ? frameThickness : 0;
-        const floatMarginV = isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0;
+          return isFramed ? frameThickness + floatMarginV : 0;
         return barHeight + floatMarginV;
       }
 
       readonly property int barOffsetBottom: {
         if (barPos !== "bottom")
-          return isFramed ? frameThickness : 0;
-        const floatMarginV = isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0;
+          return isFramed ? frameThickness + floatMarginV : 0;
         return barHeight + floatMarginV;
       }
 
       readonly property int barOffsetLeft: {
         if (barPos !== "left")
-          return isFramed ? frameThickness : 0;
-        const floatMarginH = isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
+          return isFramed ? frameThickness + floatMarginH : 0;
         return barHeight + floatMarginH;
       }
 
       readonly property int barOffsetRight: {
         if (barPos !== "right")
-          return isFramed ? frameThickness : 0;
-        const floatMarginH = isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
+          return isFramed ? frameThickness + floatMarginH : 0;
         return barHeight + floatMarginH;
       }
 

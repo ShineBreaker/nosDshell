@@ -150,6 +150,9 @@ PanelWindow {
       readonly property real barThickness: Style.barHeight
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
       readonly property string barPos: Settings.getBarPositionForScreen(root.screen?.name) || "top"
+      // A floating framed ring is inset by the float margins on all sides
+      readonly property real barMarginH: barPlaceholder.barMarginH
+      readonly property real barMarginV: barPlaceholder.barMarginV
 
       // Bar / Frame Mask
       Region {
@@ -165,36 +168,37 @@ PanelWindow {
       Region {
         // Top side
         Region {
-          x: 0
-          y: 0
-          width: (barMaskRegion.isFramed && root.barShouldShow) ? root.width : 0
+          x: barMaskRegion.barMarginH
+          y: barMaskRegion.barMarginV
+          width: (barMaskRegion.isFramed && root.barShouldShow) ? root.width - barMaskRegion.barMarginH * 2 : 0
           height: (barMaskRegion.isFramed && root.barShouldShow) ? (barMaskRegion.barPos === "top" ? barMaskRegion.barThickness : barMaskRegion.frameThickness) : 0
           intersection: Intersection.Subtract
         }
 
         // Bottom side
         Region {
-          x: 0
-          y: (barMaskRegion.isFramed && root.barShouldShow) ? (root.height - (barMaskRegion.barPos === "bottom" ? barMaskRegion.barThickness : barMaskRegion.frameThickness)) : 0
-          width: (barMaskRegion.isFramed && root.barShouldShow) ? root.width : 0
+          x: barMaskRegion.barMarginH
+          y: (barMaskRegion.isFramed && root.barShouldShow) ? (root.height - barMaskRegion.barMarginV - (barMaskRegion.barPos === "bottom" ? barMaskRegion.barThickness : barMaskRegion.frameThickness)) : 0
+          width: (barMaskRegion.isFramed && root.barShouldShow) ? root.width - barMaskRegion.barMarginH * 2 : 0
           height: (barMaskRegion.isFramed && root.barShouldShow) ? (barMaskRegion.barPos === "bottom" ? barMaskRegion.barThickness : barMaskRegion.frameThickness) : 0
           intersection: Intersection.Subtract
         }
 
         // Left side
         Region {
-          x: 0
-          y: 0
+          x: barMaskRegion.barMarginH
+          y: barMaskRegion.barMarginV
           width: (barMaskRegion.isFramed && root.barShouldShow) ? (barMaskRegion.barPos === "left" ? barMaskRegion.barThickness : barMaskRegion.frameThickness) : 0
-          height: (barMaskRegion.isFramed && root.barShouldShow) ? root.height : 0
+          height: (barMaskRegion.isFramed && root.barShouldShow) ? root.height - barMaskRegion.barMarginV * 2 : 0
           intersection: Intersection.Subtract
         }
 
         // Right side
         Region {
-          x: (barMaskRegion.isFramed && root.barShouldShow) ? (root.width - (barMaskRegion.barPos === "right" ? barMaskRegion.barThickness : barMaskRegion.frameThickness)) : 0
+          x: (barMaskRegion.isFramed && root.barShouldShow) ? (root.width - barMaskRegion.barMarginH - (barMaskRegion.barPos === "right" ? barMaskRegion.barThickness : barMaskRegion.frameThickness)) : 0
+          y: barMaskRegion.barMarginV
           width: (barMaskRegion.isFramed && root.barShouldShow) ? (barMaskRegion.barPos === "right" ? barMaskRegion.barThickness : barMaskRegion.frameThickness) : 0
-          height: (barMaskRegion.isFramed && root.barShouldShow) ? root.height : 0
+          height: (barMaskRegion.isFramed && root.barShouldShow) ? root.height - barMaskRegion.barMarginV * 2 : 0
           intersection: Intersection.Subtract
         }
       }
@@ -244,12 +248,13 @@ PanelWindow {
         bottomRightRadius: Backgrounds.ShapeCornerHelper.getRegionRadius(barPlaceholder.bottomRightCornerState, Style.radiusL)
       }
 
-      // ── Framed bar: full screen minus rounded hole ──
+      // ── Framed bar: frame rect minus rounded hole ──
       Region {
-        x: 0
-        y: 0
-        width: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.width : 0
-        height: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.height : 0
+        x: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.barMarginH : 0
+        y: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? barPlaceholder.barMarginV : 0
+        width: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.width - barPlaceholder.barMarginH * 2 : 0
+        height: (barPlaceholder.isFramed && root.barShouldShow && !barPlaceholder.effectivelyHidden) ? root.height - barPlaceholder.barMarginV * 2 : 0
+        radius: barPlaceholder.barFloating ? Style.radiusL : 0
 
         Region {
           intersection: Intersection.Subtract
@@ -447,7 +452,7 @@ PanelWindow {
       readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
       readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-      readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
+      readonly property bool barFloating: Settings.isBarFloating()
       readonly property real barMarginH: barFloating ? Math.floor(Settings.data.bar.marginHorizontal) : 0
       readonly property real barMarginV: barFloating ? Math.floor(Settings.data.bar.marginVertical) : 0
       readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
@@ -498,7 +503,7 @@ PanelWindow {
         if (barPosition === "right")
           bx = root.width - barHeight - barMarginH;
         else if (isFramed && !barIsVertical)
-          bx = frameThickness;
+          bx = barMarginH + frameThickness;
         else
           bx = barMarginH;
         return bx + hiddenSlideX;
@@ -508,7 +513,7 @@ PanelWindow {
         if (barPosition === "bottom")
           by = root.height - barHeight - barMarginV;
         else if (isFramed && barIsVertical)
-          by = frameThickness;
+          by = barMarginV + frameThickness;
         else
           by = barMarginV;
         return by + hiddenSlideY;
@@ -518,7 +523,7 @@ PanelWindow {
           return barHeight;
         }
         if (isFramed)
-          return root.width - frameThickness * 2;
+          return root.width - (barMarginH + frameThickness) * 2;
         return root.width - barMarginH * 2;
       }
       height: {
@@ -526,7 +531,7 @@ PanelWindow {
           return barHeight;
         }
         if (isFramed)
-          return root.height - frameThickness * 2;
+          return root.height - (barMarginV + frameThickness) * 2;
         return root.height - barMarginV * 2;
       }
 
@@ -623,11 +628,12 @@ PanelWindow {
       }
 
       // Framed bar: inner hole boundary (where the hole begins on each axis)
-      // These are the x/y coordinates of the 4 inner hole corners
-      readonly property real frameHoleX: barPlaceholder.barPosition === "left" ? barPlaceholder.barHeight : barPlaceholder.frameThickness
-      readonly property real frameHoleY: barPlaceholder.barPosition === "top" ? barPlaceholder.barHeight : barPlaceholder.frameThickness
-      readonly property real frameHoleX2: root.width - (barPlaceholder.barPosition === "right" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
-      readonly property real frameHoleY2: root.height - (barPlaceholder.barPosition === "bottom" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
+      // These are the x/y coordinates of the 4 inner hole corners; a floating
+      // ring shifts them in by the float margins.
+      readonly property real frameHoleX: barPlaceholder.barMarginH + (barPlaceholder.barPosition === "left" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
+      readonly property real frameHoleY: barPlaceholder.barMarginV + (barPlaceholder.barPosition === "top" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
+      readonly property real frameHoleX2: root.width - barPlaceholder.barMarginH - (barPlaceholder.barPosition === "right" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
+      readonly property real frameHoleY2: root.height - barPlaceholder.barMarginV - (barPlaceholder.barPosition === "bottom" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
       readonly property real frameR: Settings.data.bar.frameRadius ?? 20
     }
 

@@ -20,9 +20,11 @@ PanelWindow {
 
   readonly property bool autoHide: Settings.getBarDisplayModeForScreen(screen?.name) === "auto_hide"
   readonly property bool nonExclusive: Settings.getBarDisplayModeForScreen(screen?.name) === "non_exclusive"
-  readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
-  readonly property real barMarginH: (barFloating && edge === Settings.getBarPositionForScreen(screen?.name)) ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
-  readonly property real barMarginV: (barFloating && edge === Settings.getBarPositionForScreen(screen?.name)) ? Math.ceil(Settings.data.bar.marginVertical) : 0
+  readonly property bool barFloating: Settings.isBarFloating()
+  // A floating bar surface is inset on every edge — for a framed bar this
+  // zone exists on all four edges and each one floats by the axis margin.
+  readonly property real barMarginH: barFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
+  readonly property real barMarginV: barFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
   // Allow users to enable a 1-physical-pixel inset for the exclusion zone so window borders can bleed under the bar
   readonly property real bleedOffset: Settings.data.bar.enableExclusionZoneInset ? 1.0 : 0.0
   readonly property real bleedInset: {

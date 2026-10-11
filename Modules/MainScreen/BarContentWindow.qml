@@ -46,7 +46,7 @@ PanelWindow {
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
   readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-  readonly property bool barFloating: Settings.getEffectiveBarType() === "floating"
+  readonly property bool barFloating: Settings.isBarFloating()
   readonly property real barMarginH: Math.ceil(barFloating ? Settings.data.bar.marginHorizontal : 0)
   readonly property real barMarginV: Math.ceil(barFloating ? Settings.data.bar.marginVertical : 0)
   readonly property real barHeight: Style.getBarHeightForScreen(barWindow.screen?.name)
@@ -198,12 +198,14 @@ PanelWindow {
     }
   }
 
-  // Handle floating margins and framed mode offsets
+  // Handle floating margins and framed mode offsets. Floating shifts the
+  // whole surface in on every edge; on the three non-anchored edges a framed
+  // bar adds its frame band on top of the float margin.
   margins {
-    top: (barPosition === "top") ? barMarginV : (isFramed ? frameThickness : barMarginV)
-    bottom: (barPosition === "bottom") ? barMarginV : (isFramed ? frameThickness : barMarginV)
-    left: (barPosition === "left") ? barMarginH : (isFramed ? frameThickness : barMarginH)
-    right: (barPosition === "right") ? barMarginH : (isFramed ? frameThickness : barMarginH)
+    top: barMarginV + (barPosition === "top" ? 0 : (isFramed ? frameThickness : 0))
+    bottom: barMarginV + (barPosition === "bottom" ? 0 : (isFramed ? frameThickness : 0))
+    left: barMarginH + (barPosition === "left" ? 0 : (isFramed ? frameThickness : 0))
+    right: barMarginH + (barPosition === "right" ? 0 : (isFramed ? frameThickness : 0))
   }
 
   // Set a tight window size: 0 on the anchored dimension lets the compositor

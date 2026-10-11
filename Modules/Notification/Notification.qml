@@ -103,11 +103,13 @@ Variants {
 
       readonly property bool hasBar: BarService.hasBarOnScreen(notifWindow.screen?.name)
       readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(notifWindow.screen?.name) : ""
-      readonly property bool isFloating: hasBar && Settings.getEffectiveBarType() === "floating"
+      readonly property bool isFloating: hasBar && Settings.isBarFloating()
       readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(notifWindow.screen?.name) : 0
 
       readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
       readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
+      readonly property real floatMarginV: isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
+      readonly property real floatMarginH: isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
 
       // Left of the control center when it is open (DESIGN §3.6,
       // dde-osd/notification/bubblemanager.cpp getX: bubbles sit left of the CC)
@@ -124,32 +126,29 @@ Variants {
       // bubble.h Padding), and stacks bubbles 10 px apart when maxVisible > 1.
       readonly property int edgeOffset: Style.bubbleEdgeOffset
 
-      // Calculate bar and frame offsets for each edge separately
+      // Calculate bar and frame offsets for each edge separately. On a
+      // non-bar edge a framed ring still takes its band + float margin.
       readonly property int barOffsetTop: {
         if (barPos !== "top")
-          return isFramed ? frameThickness : 0;
-        const floatMarginV = isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0;
+          return isFramed ? frameThickness + floatMarginV : 0;
         return barHeight + floatMarginV;
       }
 
       readonly property int barOffsetBottom: {
         if (barPos !== "bottom")
-          return isFramed ? frameThickness : 0;
-        const floatMarginV = isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0;
+          return isFramed ? frameThickness + floatMarginV : 0;
         return barHeight + floatMarginV;
       }
 
       readonly property int barOffsetLeft: {
         if (barPos !== "left")
-          return isFramed ? frameThickness : 0;
-        const floatMarginH = isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
+          return isFramed ? frameThickness + floatMarginH : 0;
         return barHeight + floatMarginH;
       }
 
       readonly property int barOffsetRight: {
         if (barPos !== "right")
-          return isFramed ? frameThickness : 0;
-        const floatMarginH = isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
+          return isFramed ? frameThickness + floatMarginH : 0;
         return barHeight + floatMarginH;
       }
 

@@ -553,10 +553,11 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
 
 ```nix
 {
-  settingsVersion = 76;
+  settingsVersion = 81;
   bar = {
     enabled = false;
     barType = "simple";
+    floating = false;
     position = "top";
     monitors = [ ];
     density = "default";

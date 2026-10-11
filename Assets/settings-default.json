@@ -1,8 +1,9 @@
 {
-  "settingsVersion": 80,
+  "settingsVersion": 81,
   "bar": {
     "enabled": false,
     "barType": "simple",
+    "floating": false,
     "position": "top",
     "monitors": [],
     "density": "default",
