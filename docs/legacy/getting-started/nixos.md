@@ -615,6 +615,9 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     middleClickAction = "none";
     middleClickFollowMouse = false;
     middleClickCommand = "";
+    rightClickAction = "controlCenter";
+    rightClickFollowMouse = true;
+    rightClickCommand = "";
     screenOverrides = [ ];
   };
   general = {
