@@ -644,14 +644,15 @@ Loader {
 
           // Blur behind the dock rect (only when the compositor can blur, §1.2).
           // The hidden-state detach (empty-object swap while fullscreenCovered)
-          // is NSurfaceRegion's activeWhen.
-          BackgroundEffect.blurRegion: Color.blurActive ? dockBlurRegion.region : null
+          // is NSurfaceRegion's activeWhen; blurActive rides the same swap —
+          // a null assignment would replay the unreliable rebind trap.
+          BackgroundEffect.blurRegion: dockBlurRegion.region
           NSurfaceRegion {
             id: dockBlurRegion
 
             trackedItem: dockContent.dockContainer
             radius: Style.radiusItem
-            activeWhen: !root.fullscreenCovered
+            activeWhen: Color.blurActive && !root.fullscreenCovered
             slideX: dockSlide.x
             slideY: dockSlide.y
           }

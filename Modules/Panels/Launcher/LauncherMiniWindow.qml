@@ -134,7 +134,7 @@ Variants {
       // open/close slide runs on surface's Translate transform, so the region
       // tracks panelBg and the sentinel feeds the animated slide values
       // (NSurfaceRegion).
-      BackgroundEffect.blurRegion: Color.blurActive ? miniBlurRegion.region : null
+      BackgroundEffect.blurRegion: miniBlurRegion.region
       NSurfaceRegion {
         id: miniBlurRegion
 
@@ -145,7 +145,8 @@ Variants {
         // rect where the window used to be (same class as 72808f3fd on the
         // dock strip). Swap to the empty region as soon as the window is no
         // longer active — the last committed state before unmap must be empty.
-        activeWhen: screenItem.isActive
+        // blurActive rides the same object swap instead of a null assignment.
+        activeWhen: Color.blurActive && screenItem.isActive
         slideX: surface.slideX
         slideY: surface.slideY
       }

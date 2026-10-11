@@ -74,6 +74,18 @@ Item {
   // The Region object to assign to mask / BackgroundEffect.blurRegion.
   readonly property Region region: root.activeWhen ? (root.activeRegion ?? internalActive) : internalEmpty
 
+  // A region-object swap only reaches the compositor with a surface commit;
+  // a frame-starved window (occluded, idle render loop) can hold the pending
+  // swap indefinitely and leave the stale region ghosted — the same class
+  // SmartPanel's close-time flushWaylandState guards. Force the pending
+  // state out on every swap; callLater lets the blurRegion binding settle
+  // before the flush.
+  onRegionChanged: Qt.callLater(() => {
+                    const win = Window.window;
+                    if (win && win.flushWaylandState)
+                      win.flushWaylandState();
+                  })
+
   Region {
     id: internalEmpty
   }

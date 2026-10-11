@@ -138,7 +138,7 @@ Variants {
       // brightens, §1.5 needs the wallpaper surface dark).
       color: "transparent"
 
-      BackgroundEffect.blurRegion: Color.blurActive ? fullscreenBlurRegion.region : null
+      BackgroundEffect.blurRegion: fullscreenBlurRegion.region
       NSurfaceRegion {
         id: fullscreenBlurRegion
 
@@ -146,7 +146,8 @@ Variants {
         trackedItem: window.contentItem
         // Same niri stale-region trap as the mini window: detach when hidden
         // so no blurred ghost stays behind after the surface unmaps.
-        activeWhen: screenItem.isActive
+        // blurActive rides the same object swap instead of a null assignment.
+        activeWhen: Color.blurActive && screenItem.isActive
       }
 
       // The layer surface covers the whole output, taskbar area included; the

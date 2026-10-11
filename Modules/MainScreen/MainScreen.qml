@@ -219,12 +219,13 @@ PanelWindow {
   // While the bar is fully hidden and no panel is open (e.g. an active
   // fullscreen window) the region is detached — NSurfaceRegion's activeWhen
   // swaps in the empty object so a stale band can't keep blurring where the
-  // bar used to be.
-  BackgroundEffect.blurRegion: Color.blurActive ? screenBlurRegion.region : null
+  // bar used to be. Color.blurActive rides the same object-swap: assigning
+  // null here would replay the unreliable null→object rebind trap.
+  BackgroundEffect.blurRegion: screenBlurRegion.region
   NSurfaceRegion {
     id: screenBlurRegion
 
-    activeWhen: !barPlaceholder.effectivelyHidden || root.isAnyPanelOpen
+    activeWhen: Color.blurActive && (!barPlaceholder.effectivelyHidden || root.isAnyPanelOpen)
     activeRegion: mainScreenBlurTree
 
     Region {
