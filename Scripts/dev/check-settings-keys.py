@@ -278,6 +278,88 @@ def unregistered_deletes():
     return hits
 
 
+FUNC_DECL = re.compile(r"\bfunction\s+(\w+)\s*\(")
+SERVICE_WRITE = re.compile(
+    r"Settings\s*\??\.\s*data\s*\??\.[\w.?\[\]\"']+\s*(?:[+\-*/]?=|\bpush\b|\bsplice\b|\bshift\b|\bunshift\b|\bpop\b)"
+)
+DATA_WRITE = re.compile(r"\bSettings\s*\??\.\s*data\s*\??\.\s*([\w.]+)\s*=(?!=)")
+
+
+def _function_bodies(lines):
+    """Yield (start_line, name, body_text) for each `function name(...)` block."""
+    i = 0
+    while i < len(lines):
+        m = FUNC_DECL.search(lines[i])
+        if m:
+            depth, j, started = 0, i, False
+            while j < len(lines):
+                for ch in lines[j]:
+                    if ch == "{":
+                        depth += 1
+                        started = True
+                    elif ch == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+                j += 1
+            yield i + 1, m.group(1), "\n".join(lines[i : j + 1])
+            i = j
+        i += 1
+
+
+def orphaned_service_writes(corpus):
+    """Settings.data-writing functions in Services/** with no caller anywhere.
+
+    An entry point that writes settings but nothing calls is exactly the
+    wallpaper regression class: the frontend control got removed while the
+    service kept the write path. IPCService.qml is exempt — its functions
+    are the IPC surface itself, invoked by name through `qs ipc`.
+    """
+    hits = []
+    candidates = []
+    for rel, text in corpus.items():
+        if not rel.parts[0] == "Services" or rel.name == "IPCService.qml":
+            continue
+        for start, name, body in _function_bodies(text.splitlines()):
+            if SERVICE_WRITE.search(body):
+                candidates.append((rel, start, name))
+    for rel, start, name in candidates:
+        pat = re.compile(r"\b" + re.escape(name) + r"\b")
+        for other, text in corpus.items():
+            if other == rel:
+                # own file: definition + optional self-references don't
+                # count as an entry path
+                if len(pat.findall(text)) > 1:
+                    break
+            elif pat.search(text):
+                break
+        else:
+            hits.append(f"{rel}:{start} {name}")
+    return hits
+
+
+def undeclared_writes(corpus, declared):
+    """`Settings.data.<path> =` writes to paths the schema never declares.
+
+    The reverse of the no-reader check: a control (or service) persisting
+    under an undeclared path writes a key the adapter will never read —
+    dead data or a typo'd key name. Writing a declared *container* (e.g.
+    `Settings.data.bar.widgets = {...}`) is fine, so declared paths are
+    closed under prefixes.
+    """
+    closure = set()
+    for path in declared:
+        for i in range(1, len(path) + 1):
+            closure.add(".".join(path[:i]))
+    hits = []
+    for rel, text in corpus.items():
+        for m in DATA_WRITE.finditer(text):
+            if m.group(1) not in closure:
+                line = text[: m.start()].count("\n") + 1
+                hits.append(f"{rel}:{line} Settings.data.{m.group(1)}")
+    return hits
+
+
 def main():
     defaults_json = json.loads(DEFAULTS.read_text())
     defaults = set(default_paths(defaults_json))
@@ -324,6 +406,14 @@ def main():
 
     for hit in unregistered_deletes():
         print(f"unregistered removal: {hit} — register it in DESIGN.md §6.1, or cite §6.1 in the migration")
+        problems += 1
+
+    for hit in orphaned_service_writes(corpus):
+        print(f"orphaned entry point: {hit} — nothing calls this Settings.data write; restore its control or delete it")
+        problems += 1
+
+    for hit in undeclared_writes(corpus, declared):
+        print(f"undeclared write: {hit} — the adapter never reads this path; check the key name or declare it")
         problems += 1
 
     if problems:
