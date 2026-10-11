@@ -233,6 +233,8 @@ def declared_version(text):
 
 
 FALLBACK = re.compile(r"\bSettings\s*\??\.\s*data\s*\??\.\s*((?:\w+\s*\??\.\s*)*\w+)\s*\?\?")
+MIGRATION_DELETE = re.compile(r"\bdelete\s+rawJson\.([\w.]+)")
+MIGRATION_RENAME = re.compile(r"=\s*rawJson\.([\w.]+)")
 
 
 def declared_fallbacks(corpus, declared):
@@ -245,6 +247,34 @@ def declared_fallbacks(corpus, declared):
             if path in names:
                 line = text[: m.start()].count("\n") + 1
                 hits.append(f"{rel}:{line}")
+    return hits
+
+
+def unregistered_deletes():
+    """`delete rawJson.X.Y` in migrations whose key never reached DESIGN §6.1.
+
+    A migration that deletes a key while the capability behind it was
+    removed must register the removal in the §6.1 table (AGENTS.md:
+    删除任何上游能力都要登记 §6.1). Two exemptions:
+      - renames: the deleted path is also read as an assignment RHS
+        (`new.key = rawJson.old.key`) — the value moved, nothing removed;
+      - the migration file itself cites §6.1 (dead-key sweeps exempted by
+        §6.1's scope note, e.g. Migration80).
+    """
+    design = (ROOT / "DESIGN.md").read_text(errors="replace")
+    m = re.search(r"### 6\.1.*?\n## ", design, re.S)
+    section = m.group(0) if m else ""
+    hits = []
+    for path in sorted((ROOT / "Commons" / "Migrations").glob("Migration*.qml")):
+        text = path.read_text(errors="replace")
+        if "§6.1" in text:
+            continue
+        renames = set(MIGRATION_RENAME.findall(text))
+        for key in MIGRATION_DELETE.findall(text):
+            if key in renames:
+                continue
+            if key not in section:
+                hits.append(f"{path.name}: {key}")
     return hits
 
 
@@ -290,6 +320,10 @@ def main():
     # history of freezing the wrong constant (frameThickness ?? 12 vs. 8).
     for hit in declared_fallbacks(corpus, declared):
         print(f"?? fallback on declared key: {hit} — the adapter always supplies the declared value")
+        problems += 1
+
+    for hit in unregistered_deletes():
+        print(f"unregistered removal: {hit} — register it in DESIGN.md §6.1, or cite §6.1 in the migration")
         problems += 1
 
     if problems:

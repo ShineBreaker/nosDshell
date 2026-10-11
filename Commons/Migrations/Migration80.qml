@@ -9,6 +9,8 @@ QtObject {
     // files forever and would silently re-enter if a same-named key is ever
     // reintroduced. bar.rightClick* and dock.backgroundOpacity came back as
     // live keys (Migrations 76/79) and are deliberately NOT deleted.
+    // This is a dead-key sweep, not a capability removal — §6.1's scope
+    // note exempts it from the removal registry.
     if (rawJson.dock) {
       delete rawJson.dock.dockType;
       delete rawJson.dock.displayMode;

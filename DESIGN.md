@@ -414,7 +414,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - `appLauncher.iconMode`：provider 给出 Tabler 字形名时，列表项先查主题图标，找不到再用字形（`apps` 为最后的兜底）。
 - `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
 - `appLauncher.enableClipPreview`：全屏模式剪贴板预览卡片的开关。切换 `enableClipboardHistory` 会立即注册或注销剪贴板 provider。
-- Noctalia 原有的 `appLauncher.position` 和 `overviewLayer` 属于 SmartPanel/overlay 前端，已随该前端一起移除。启动器只有本节这一套 DDE 实现。
+- Noctalia 原有的 `appLauncher.position` 和 `overviewLayer` 属于 SmartPanel/overlay 前端，已随该前端一起移除（登记见 §6.1）。启动器只有本节这一套 DDE 实现。
 
 ### 3.5 控制中心（dde-control-center）
 
@@ -427,7 +427,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - 外框左侧只有共享的 dimmer 压暗（`general.dimmerOpacity`，默认 0.35〔演进〕）。透过全屏透明层看到的窗口是正常的桌面内容，不再另加遮罩。
 - 压暗只对占据屏幕的帧类面板生效（控制中心、设置、启动器等）。dock 弹出的小面板（音量、网络、蓝牙、亮度、电池、时钟、媒体、系统监控、托盘抽屉、壁纸、插件槽）设置 `SmartPanel.dimsBackground = false`，打开时不压暗壁纸〔演进：DDE 原版的弹层本来就叠在没有 dimmer 的桌面上〕。
 - 点击外部关闭；按 Esc 时，如果在子页面就先返回上一级，否则关闭。
-- Noctalia 原有的 `controlCenter.position` 设置不再起作用，控制中心永远在右侧，v78 迁移已从用户配置中删除。任务栏在右侧时，控制中心排在任务栏内侧。
+- 控制中心永远在右侧；任务栏在右侧时，控制中心排在任务栏内侧（`controlCenter.position` 的移除登记见 §6.1）。
 
 #### 3.5.2 首页
 
@@ -579,7 +579,7 @@ Noctalia 卡片的对应关系：
 - 点击空白处取消。
 - 倒计时（`sessionMenu.enableCountdown`）：在按钮行下方 40 px 处显示一行白色文字，例如"将在 N 秒后关机"。按任意键取消倒计时。
 - 有程序阻止关机（inhibitor）时，按钮行换成警告视图，列出程序名和原因，下面是"仍然关机"（`accent` 文字）和"取消"两个按钮。
-- Noctalia 原有的布局选项（`sessionMenu.position`、`showHeader`、`largeButtonsStyle`、`largeButtonsLayout`）在 DDE 布局下没有对应物，不提供设置项，v78 迁移已从用户配置中删除。
+- Noctalia 原有的会话菜单布局选项在 DDE 布局下没有对应物（移除登记见 §6.1）。
 
 ### 3.9 锁屏（dde-lock）
 
@@ -603,7 +603,7 @@ Noctalia 卡片的对应关系：
 - 认证进行中：在密码框内显示一个白 × 0.35 的加载动画。
 - 指纹（`allowPasswordWithFprintd`）：密码框里的占位文字显示"验证指纹或输入密码"。
 - Noctalia 锁屏上的天气、电池、倒计时等附加信息，以白 × 0.8 的小号文字放在时钟右侧，默认关闭。
-- Noctalia 的紧凑锁屏布局（`general.compactLockScreen`）在 DDE 中没有对应物，不提供设置项，v78 迁移已从用户配置中删除。
+- Noctalia 的紧凑锁屏布局在 DDE 中没有对应物（移除登记见 §6.1）。
 
 ### 3.10 壁纸选择〔派生〕
 
@@ -740,11 +740,19 @@ Noctalia 卡片的对应关系：
 | 移除项 | 理由 |
 |---|---|
 | `Services/Noctalia/UpdateService.qml` 应用内更新检查、`Panels/Changelog` 更新日志弹窗、`general.showChangelogOnStartup` | nosDshell 经 Guix 打包分发，更新统一走系统包管理器；应用内更新检查会引导用户绕过包管理。版本信息仍在"关于"页展示 |
-| `Services/Noctalia/TelemetryService.qml` 遥测 | 隐私考量，fork 不向外部服务上报使用数据 |
+| `Services/Noctalia/TelemetryService.qml` 遥测（`general.telemetryEnabled`） | 隐私考量，fork 不向外部服务上报使用数据 |
 | `Services/Noctalia/GitHubService.qml`、`SupporterService.qml`、About 页的 Contributors/Supporters 子页 | 用于展示上游 noctalia 项目的贡献者和赞助者，这份名单不代表本项目。配色方案下载不依赖它们（`SchemeDownloader` 直接访问 colorschemes 仓库） |
-| Talia 天气吉祥物（`weatherTaliaMascotAlways` 等） | noctalia 品牌资产，随重命名移除 |
+| Talia 天气吉祥物（`location.weatherMascotAlways`、`location.weatherTaliaMascotAlways`） | noctalia 品牌资产，随重命名移除（v65/v66 迁移删除持久化键） |
 | `Panels/NotificationHistory` 独立弹窗 | 并入控制中心通知页（§3.5.2），键盘操作模型已随 `NotificationHistoryList` 保留 |
+| `general.showSessionButtonsOnLockScreen`、`general.showHibernateOnLockScreen` | DDE 锁屏的电源按钮固定显示（§3.9），休眠可见性由 `sessionMenu.powerOptions` 与系统能力决定，这两个开关不再门控任何东西；v67 迁移删除 |
+| `general.compactLockScreen` | DDE 锁屏没有紧凑布局变体（§3.9）；v78 迁移删除 |
+| `sessionMenu.position`、`sessionMenu.showHeader`、`sessionMenu.largeButtonsStyle`、`sessionMenu.largeButtonsLayout` | DDE 会话菜单是固定全屏按钮行（§3.8），这些布局选项没有对应物；v78 迁移删除 |
+| `controlCenter.position` | 控制中心固定贴屏幕右缘（§3.5.1）；v78 迁移删除 |
+| `Modules/Panels/Dock/StaticDockPanel.qml`（上游的 dock 样式面板） | 没有任何打开路径（无 open()/toggle()/PanelService 入口），随 `d3f2097f2` 与其专属键一起移除 |
+| 启动器的 SmartPanel/overlay 前端（`Modules/Launcher/LauncherOverlayWindow.qml` 等，`appLauncher.position`、`appLauncher.overviewLayer`） | §3.4 的 DDE 视图是唯一激活前端，overlay 前端没有任何显示路径，`390d8de79` 移除 |
 | 把旧配置目录 `~/.config/noctalia` 自动搬到 `~/.config/nosdshell` | 不做。nosDshell 是独立的 shell，不是 noctalia 的就地升级；`MigrationNN` 只负责 nosDshell 自身配置的逐键演进 |
+
+本表只登记被移除的**上游能力**。清理已无读取方的死键不算移除：v55/v65 的键改名、`dock.windowPreviews`（v68，分叉点即无读取方）、v80 的 25 个 Noctalia 旧键（清单见 `Commons/Migrations/Migration80.qml`）均不进本表。
 
 ---
 
