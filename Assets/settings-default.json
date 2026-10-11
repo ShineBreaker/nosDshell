@@ -89,7 +89,6 @@
     "screenRadiusRatio": 1,
     "animationSpeed": 1,
     "animationDisabled": false,
-    "compactLockScreen": false,
     "lockScreenAnimations": false,
     "lockOnSuspend": true,
     "enableLockScreenMediaControls": false,
@@ -264,7 +263,6 @@
     "density": "default"
   },
   "controlCenter": {
-    "position": "close_to_bar_button",
     "diskPath": "/",
     "shortcuts": {
       "left": [
@@ -415,11 +413,7 @@
   "sessionMenu": {
     "enableCountdown": true,
     "countdownDuration": 10000,
-    "position": "center",
-    "showHeader": true,
     "showKeybinds": true,
-    "largeButtonsStyle": true,
-    "largeButtonsLayout": "single-row",
     "powerOptions": [
       {
         "action": "shutdown",

@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 77
+  readonly property int settingsVersion: 78
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -322,9 +322,6 @@ Singleton {
       property real screenRadiusRatio: 1.0
       property real animationSpeed: 1.0
       property bool animationDisabled: false
-      // Inert under the DDE lock layout (DESIGN §3.9): no compact variant
-      // exists and no UI control is exposed; kept for config compatibility only.
-      property bool compactLockScreen: false
       property bool lockScreenAnimations: false
       property bool lockOnSuspend: true
       property bool enableLockScreenMediaControls: false
@@ -506,8 +503,6 @@ Singleton {
 
     // control center
     property JsonObject controlCenter: JsonObject {
-      // Position: close_to_bar_button, center, top_left, top_right, bottom_left, bottom_right, bottom_center, top_center
-      property string position: "close_to_bar_button"
       property string diskPath: "/"
       property JsonObject shortcuts
       shortcuts: JsonObject {
@@ -676,13 +671,7 @@ Singleton {
     property JsonObject sessionMenu: JsonObject {
       property bool enableCountdown: true
       property int countdownDuration: 10000
-      // Noctalia layout options are inert under the DDE full-screen form
-      // (DESIGN §3.8) — kept so existing configs still load.
-      property string position: "center"
-      property bool showHeader: true
       property bool showKeybinds: true
-      property bool largeButtonsStyle: true
-      property string largeButtonsLayout: "single-row"
       property list<var> powerOptions: [
         {
           "action": "shutdown",

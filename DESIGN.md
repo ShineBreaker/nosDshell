@@ -422,7 +422,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - 外框左侧只有共享的 dimmer 压暗（`general.dimmerOpacity`，默认 0.35〔演进〕）。透过全屏透明层看到的窗口是正常的桌面内容，不再另加遮罩。
 - 压暗只对占据屏幕的帧类面板生效（控制中心、设置、启动器等）。dock 弹出的小面板（音量、网络、蓝牙、亮度、电池、时钟、媒体、系统监控、托盘抽屉、壁纸、插件槽）设置 `SmartPanel.dimsBackground = false`，打开时不压暗壁纸〔演进：DDE 原版的弹层本来就叠在没有 dimmer 的桌面上〕。
 - 点击外部关闭；按 Esc 时，如果在子页面就先返回上一级，否则关闭。
-- Noctalia 原有的 `controlCenter.position` 设置不再起作用，控制中心永远在右侧。任务栏在右侧时，控制中心排在任务栏内侧。
+- Noctalia 原有的 `controlCenter.position` 设置不再起作用，控制中心永远在右侧，v78 迁移已从用户配置中删除。任务栏在右侧时，控制中心排在任务栏内侧。
 
 #### 3.5.2 首页
 
@@ -574,7 +574,7 @@ Noctalia 卡片的对应关系：
 - 点击空白处取消。
 - 倒计时（`sessionMenu.enableCountdown`）：在按钮行下方 40 px 处显示一行白色文字，例如"将在 N 秒后关机"。按任意键取消倒计时。
 - 有程序阻止关机（inhibitor）时，按钮行换成警告视图，列出程序名和原因，下面是"仍然关机"（`accent` 文字）和"取消"两个按钮。
-- Noctalia 原有的布局选项（`sessionMenu.position`、`showHeader`、`largeButtonsStyle`、`largeButtonsLayout`）在 DDE 布局下没有对应物，不提供设置项。这些键没有读者，按 `AGENTS.md`「业务保真」的设置键规则用迁移删除。
+- Noctalia 原有的布局选项（`sessionMenu.position`、`showHeader`、`largeButtonsStyle`、`largeButtonsLayout`）在 DDE 布局下没有对应物，不提供设置项，v78 迁移已从用户配置中删除。
 
 ### 3.9 锁屏（dde-lock）
 
@@ -598,7 +598,7 @@ Noctalia 卡片的对应关系：
 - 认证进行中：在密码框内显示一个白 × 0.35 的加载动画。
 - 指纹（`allowPasswordWithFprintd`）：密码框里的占位文字显示"验证指纹或输入密码"。
 - Noctalia 锁屏上的天气、电池、倒计时等附加信息，以白 × 0.8 的小号文字放在时钟右侧，默认关闭。
-- Noctalia 的紧凑锁屏布局（`general.compactLockScreen`）在 DDE 中没有对应物，不提供设置项。这个键没有读者，按设置键规则用迁移删除。
+- Noctalia 的紧凑锁屏布局（`general.compactLockScreen`）在 DDE 中没有对应物，不提供设置项，v78 迁移已从用户配置中删除。
 
 ### 3.10 壁纸选择〔派生〕
 

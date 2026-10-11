@@ -19,9 +19,9 @@ import qs.Widgets
 * dimmer, Esc handling, blur regions and background/shadow rendering — while
 * presenting the DDE frame: 408 px wide, full screen height, flush right edge,
 * square corners, maskShell, left-side Style.shadowControlCenter, sliding in
-* from the right with Style.motionEnter (OutCubic). Always on the right,
-* regardless of controlCenter.position; with the taskbar on the right the frame
-* sits on its inner side.
+* from the right with Style.motionEnter (OutCubic). Always on the right —
+* Noctalia's controlCenter.position option was removed (Migration78); with
+* the taskbar on the right the frame sits on its inner side.
 */
 SmartPanel {
   id: root
