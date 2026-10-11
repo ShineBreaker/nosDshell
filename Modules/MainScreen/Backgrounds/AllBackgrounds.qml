@@ -49,6 +49,11 @@ Item {
         preferredRendererType: Shape.CurveRenderer
         asynchronous: true
         enabled: false
+        // Gate on the slots so an emptied shape stops painting with the same
+        // synchronous update as the panel hide — an asynchronous Shape can
+        // otherwise keep compositing its last tessellated geometry (a ghost
+        // rect) until a frame the render loop may starve on arrives.
+        visible: root.bar !== null || unifiedSlot0.assignedPanel !== null || unifiedSlot1.assignedPanel !== null
 
         Component.onCompleted: {
           Logger.d("AllBackgrounds", "AllBackgrounds initialized");
@@ -71,6 +76,7 @@ Item {
 
         // Slot 0: Currently open/opening panel
         PanelBackground {
+          id: unifiedSlot0
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
             // Only render if this panel belongs to this screen
@@ -82,6 +88,7 @@ Item {
 
         // Slot 1: Closing panel (during transitions)
         PanelBackground {
+          id: unifiedSlot1
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
             // Only render if this panel belongs to this screen
@@ -118,6 +125,10 @@ Item {
       // Panel backgrounds with panel opacity
       Item {
         anchors.fill: parent
+        // Gate on the slots so an emptied panel background stops painting
+        // (shape and shadow together) with the same synchronous update as
+        // the panel hide — see the arrow-popup branch note below.
+        visible: panelSlot0.assignedPanel !== null || panelSlot1.assignedPanel !== null
 
         layer.enabled: true
         opacity: Style.effectivePanelOpacity
@@ -136,6 +147,7 @@ Item {
 
           // Slot 0: Currently open/opening panel
           PanelBackground {
+            id: panelSlot0
             assignedPanel: {
               var p = PanelService.backgroundSlotAssignments[0];
               // Only render if this panel belongs to this screen
@@ -147,6 +159,7 @@ Item {
 
           // Slot 1: Closing panel (during transitions)
           PanelBackground {
+            id: panelSlot1
             assignedPanel: {
               var p = PanelService.backgroundSlotAssignments[1];
               // Only render if this panel belongs to this screen
@@ -213,6 +226,7 @@ Item {
     // would be multiplied twice.
     Item {
       anchors.fill: parent
+      visible: ownAlphaSlot0.assignedPanel !== null || ownAlphaSlot1.assignedPanel !== null
 
       Shape {
         id: ownAlphaPanelShape
@@ -223,6 +237,7 @@ Item {
 
         // Slot 0: Currently open/opening panel
         PanelBackground {
+          id: ownAlphaSlot0
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
             return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
@@ -233,6 +248,7 @@ Item {
 
         // Slot 1: Closing panel (during transitions)
         PanelBackground {
+          id: ownAlphaSlot1
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
             return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
@@ -262,6 +278,12 @@ Item {
     // Style.effectivePanelOpacity, with their own shadowPopup shadow.
     Item {
       anchors.fill: parent
+      // Arrow popups close with zero rendered frames (§1.7 瞬变): when the
+      // last slot detaches, hide the whole branch synchronously with the
+      // panel hide. Without the gate, the asynchronous Shape can keep
+      // compositing its last tessellated arrow path — a black ghost rect —
+      // until a frame the render loop may starve on arrives.
+      visible: arrowSlot0.assignedPanel !== null || arrowSlot1.assignedPanel !== null
 
       Shape {
         id: arrowPopupShape
@@ -272,6 +294,7 @@ Item {
 
         // Slot 0: Currently open/opening panel
         ArrowPanelBackground {
+          id: arrowSlot0
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
             return (p && p.screen === root.windowRoot.screen) ? p : null;
@@ -281,6 +304,7 @@ Item {
 
         // Slot 1: Closing panel (during transitions)
         ArrowPanelBackground {
+          id: arrowSlot1
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
             return (p && p.screen === root.windowRoot.screen) ? p : null;

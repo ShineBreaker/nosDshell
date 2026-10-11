@@ -597,6 +597,13 @@ PanelWindow {
         var op = PanelService.openedPanel;
         if (!op || op.screen !== root.screen || op.blurEnabled === false)
           return null;
+        // A panel whose close fade is zero-duration is already invisible at
+        // close() time — drop its blur rect now so the detach rides the same
+        // surface commit as the content hide instead of waiting for a
+        // post-finalize frame the render loop may starve on (Wayland frame
+        // callbacks gate QQuickWindow.update(), so the extra frame can lag).
+        if (op.isClosing && (op.useArrowPopup || Style.animationFaster === 0))
+          return null;
         var region = op.panelRegion;
         return (region && region.visible) ? region.panelItem : null;
       }
@@ -605,6 +612,8 @@ PanelWindow {
       readonly property var closingPanelBg: {
         var cp = PanelService.closingPanel;
         if (!cp || cp.screen !== root.screen || cp.blurEnabled === false)
+          return null;
+        if (cp.isClosing && (cp.useArrowPopup || Style.animationFaster === 0))
           return null;
         var region = cp.panelRegion;
         return (region && region.visible) ? region.panelItem : null;
