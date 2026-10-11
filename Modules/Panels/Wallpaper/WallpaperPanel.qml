@@ -19,7 +19,7 @@ SmartPanel {
   property var contentItem: null
 
   // §3.10: the strip spans the whole screen and sits on the bottom edge, which
-// SmartPanel's bottom edge-sheet branch handles.
+  // SmartPanel's bottom edge-sheet branch handles.
   edgeSheet: true
   edgeSheetEdge: "bottom"
 
@@ -73,16 +73,16 @@ SmartPanel {
     Component.onCompleted: {
       root.contentItem = strip;
     }
-    readonly property real contentPreferredWidth: root.width;
+    readonly property real contentPreferredWidth: root.width
     // The sheet is pinned to the screen bottom edge; clear the taskbar here so
     // the thumbnails are never clipped by the floating dock.
-    readonly property real barInset: root.barPosition === "bottom" && !root.barIsVertical ? Style.getBarHeightForScreen(targetScreenName) + root.barMarginV : 0;
-    readonly property real contentPreferredHeight: Style.wallpaperStripHeight + barInset;
+    readonly property real barInset: root.barPosition === "bottom" && !root.barIsVertical ? Style.getBarHeightForScreen(targetScreenName) + root.barMarginV : 0
+    readonly property real contentPreferredHeight: Style.wallpaperStripHeight + barInset
     readonly property string targetScreenName: root.screen ? root.screen.name : ""
     readonly property bool isWallhaven: Settings.data.wallpaper.useWallhaven
     readonly property string currentSlot: Settings.data.colorSchemes.darkMode ? "dark" : "light"
     readonly property string otherSlot: currentSlot === "dark" ? "light" : "dark"
-    readonly property bool wallhavenBusy: typeof WallhavenService !== "undefined" && WallhavenService.fetching;
+    readonly property bool wallhavenBusy: typeof WallhavenService !== "undefined" && WallhavenService.fetching
 
     property string filterText: ""
     property string currentWallpaper: ""
@@ -194,12 +194,12 @@ SmartPanel {
         const w = list[i];
         const url = WallhavenService.getThumbnailUrl(w, "large");
         stripModel.append({
-                           "path": url,
-                           "wallhavenId": w.id,
-                           "name": w.resolution || w.id,
-                           "isDirectory": false,
-                           "thumbUrl": url
-                         });
+                            "path": url,
+                            "wallhavenId": w.id,
+                            "name": w.resolution || w.id,
+                            "isDirectory": false,
+                            "thumbUrl": url
+                          });
       }
       stripView.currentIndex = stripModel.count > 0 ? 0 : -1;
     }
@@ -339,21 +339,21 @@ SmartPanel {
           });
         }
         onSelected: key => {
-          if (skipNextSelected)
-            return;
-          const useWallhaven = key === "wallhaven";
-          Settings.data.wallpaper.useWallhaven = useWallhaven;
-          searchInput.text = useWallhaven ? (Settings.data.wallpaper.wallhavenQuery || "") : strip.filterText;
-          if (useWallhaven && typeof WallhavenService !== "undefined") {
-            WallhavenService.categories = Settings.data.wallpaper.wallhavenCategories;
-            WallhavenService.purity = Settings.data.wallpaper.wallhavenPurity;
-            WallhavenService.sorting = Settings.data.wallpaper.wallhavenSorting;
-            WallhavenService.order = Settings.data.wallpaper.wallhavenOrder;
-            stripView.contentX = 0;
-            WallhavenService.search(searchInput.text, 1);
-          }
-          strip.refresh();
-        }
+                      if (skipNextSelected)
+                      return;
+                      const useWallhaven = key === "wallhaven";
+                      Settings.data.wallpaper.useWallhaven = useWallhaven;
+                      searchInput.text = useWallhaven ? (Settings.data.wallpaper.wallhavenQuery || "") : strip.filterText;
+                      if (useWallhaven && typeof WallhavenService !== "undefined") {
+                        WallhavenService.categories = Settings.data.wallpaper.wallhavenCategories;
+                        WallhavenService.purity = Settings.data.wallpaper.wallhavenPurity;
+                        WallhavenService.sorting = Settings.data.wallpaper.wallhavenSorting;
+                        WallhavenService.order = Settings.data.wallpaper.wallhavenOrder;
+                        stripView.contentX = 0;
+                        WallhavenService.search(searchInput.text, 1);
+                      }
+                      strip.refresh();
+                    }
       }
 
       NComboBox {
@@ -386,23 +386,32 @@ SmartPanel {
           return (w && h) ? w + "x" + h : "";
         }
         onSelected: key => {
-          if (key === "") {
-            Settings.data.wallpaper.wallhavenResolutionWidth = "";
-            Settings.data.wallpaper.wallhavenResolutionHeight = "";
-          } else {
-            const parts = key.split("x");
-            Settings.data.wallpaper.wallhavenResolutionWidth = parts[0];
-            Settings.data.wallpaper.wallhavenResolutionHeight = parts[1];
-          }
-          if (typeof WallhavenService !== "undefined") {
-            stripView.contentX = 0;
-            WallhavenService.search(searchInput.text, 1);
-          }
-        }
+                      if (key === "") {
+                        Settings.data.wallpaper.wallhavenResolutionWidth = "";
+                        Settings.data.wallpaper.wallhavenResolutionHeight = "";
+                      } else {
+                        const parts = key.split("x");
+                        Settings.data.wallpaper.wallhavenResolutionWidth = parts[0];
+                        Settings.data.wallpaper.wallhavenResolutionHeight = parts[1];
+                      }
+                      if (typeof WallhavenService !== "undefined") {
+                        stripView.contentX = 0;
+                        WallhavenService.search(searchInput.text, 1);
+                      }
+                    }
       }
 
       Item {
         Layout.fillWidth: true
+      }
+
+      NIconButton {
+        icon: "palette"
+        baseSize: Style.wallpaperStripRowHeight
+        tooltipText: I18n.tr("wallpaper.panel.solid-color-tooltip")
+        colorBg: Settings.data.wallpaper.useSolidColor ? Color.mPrimary : "transparent"
+        colorFg: Settings.data.wallpaper.useSolidColor ? Color.mOnPrimary : Color.onShellSecondary
+        onClicked: solidColorPicker.open()
       }
 
       NIconButton {
@@ -543,6 +552,61 @@ SmartPanel {
           }
         }
 
+        // Favorite star (top-left of the thumbnail). Local files only —
+        // a Wallhaven entry's path is a remote thumbnail URL, not a local
+        // wallpaper, so favoriting it would be meaningless.
+        Rectangle {
+          id: favStar
+
+          readonly property bool isFavorited: {
+            WallpaperService.favoritesRevision;
+            return !thumb.isDirectory && !strip.isWallhaven && WallpaperService.isFavorite(thumb.path);
+          }
+
+          anchors.top: thumbFrame.top
+          anchors.left: thumbFrame.left
+          anchors.margins: Style.marginS
+          width: Style.baseWidgetSize
+          height: width
+          radius: width / 2
+          z: 11
+          visible: isFavorited || thumb.hovered
+          color: {
+            if (isFavorited)
+              return starHover.hovered ? Color.mHover : Color.mPrimary;
+            return starHover.hovered ? Color.mSurfaceVariant : Color.mSurface;
+          }
+          opacity: isFavorited || starHover.hovered ? 1.0 : 0.7
+
+          Behavior on color {
+            ColorAnimation {
+              duration: Style.animationFast
+            }
+          }
+
+          NIcon {
+            icon: favStar.isFavorited ? "star-filled" : "star"
+            pointSize: Style.fontSizeM
+            color: {
+              if (favStar.isFavorited)
+                return starHover.hovered ? Color.mOnHover : Color.mOnPrimary;
+              return starHover.hovered ? Color.mOnSurface : Color.mOnSurfaceVariant;
+            }
+            anchors.centerIn: parent
+          }
+
+          HoverHandler {
+            id: starHover
+          }
+
+          TapHandler {
+            onTapped: {
+              var mon = Settings.data.wallpaper.setWallpaperOnAllMonitors ? undefined : strip.targetScreenName;
+              WallpaperService.toggleFavorite(thumb.path, WallpaperService.wallpaperSelectionAppearance, mon);
+            }
+          }
+        }
+
         // §3.10: hovering reveals "current / other / both"
         Row {
           id: actions
@@ -602,10 +666,10 @@ SmartPanel {
           onTapped: {
             stripView.currentIndex = thumb.index;
             strip.selectItem({
-                           "path": thumb.path,
-                           "isDirectory": thumb.isDirectory,
-                           "wallhavenId": thumb.wallhavenId
-                         });
+                               "path": thumb.path,
+                               "isDirectory": thumb.isDirectory,
+                               "wallhavenId": thumb.wallhavenId
+                             });
           }
         }
       }
@@ -634,6 +698,13 @@ SmartPanel {
     WallhavenSettingsPopup {
       id: wallhavenPopup
       screen: root.screen
+    }
+
+    NColorPickerDialog {
+      id: solidColorPicker
+      screen: root.screen
+      selectedColor: Settings.data.wallpaper.solidColor
+      onColorSelected: color => WallpaperService.setSolidColor(color.toString())
     }
   }
 }

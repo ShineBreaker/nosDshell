@@ -610,6 +610,8 @@ Noctalia 卡片的对应关系：
   - 当前壁纸：外圈 2 px `accent` 描边。
   - 悬停的缩略图：下方叠出"当前外观""另一外观""都设置"三个按钮（按钮样式同 §3.5.4）。原版的三个按钮是"仅桌面""仅锁屏""都设置"。本 shell 没有单独的锁屏壁纸：`LockScreenBackground` 复用桌面壁纸的预模糊缓存，`WallpaperService.changeWallpaper` 只区分 `"light"` 和 `"dark"` 两个外观（`WallpaperService.qml:422-424`），所以三个按钮对应亮、暗两个外观，结构与原版一致。以后加入单独的锁屏壁纸时，再改回原版的三个按钮。
 - 顶部一行（目录、Wallhaven 来源、搜索）按 §3.5.4 的控件样式绘制。
+  - 右侧的调色盘按钮打开取色器，选色后走 `WallpaperService.setSolidColor` 切换到纯色壁纸（`wallpaper.solidColor` + `useSolidColor`）；纯色生效时按钮按选中态着色。
+- 本地缩略图左上角有收藏星标：悬停或已收藏时可见，点击走 `WallpaperService.toggleFavorite`；收藏项排在列表最前（上游 `a08ff3619` 的同名行为）。Wallhaven 项不显示星标——其 path 是远程缩略图 URL，不是本地壁纸。
 
 ### 3.11 对话框（DDialog）
 
