@@ -144,6 +144,9 @@ Variants {
 
         // The whole output, no corners on a fullscreen surface.
         trackedItem: window.contentItem
+        // Same niri stale-region trap as the mini window: detach when hidden
+        // so no blurred ghost stays behind after the surface unmaps.
+        activeWhen: screenItem.isActive
       }
 
       // The layer surface covers the whole output, taskbar area included; the

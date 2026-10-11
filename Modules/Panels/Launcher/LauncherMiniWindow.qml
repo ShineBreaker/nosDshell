@@ -140,6 +140,12 @@ Variants {
 
         trackedItem: panelBg
         radius: Style.radiusItem
+        // Detach while hidden: niri keeps the last-seen ext-background-effect
+        // region for a composited/unmapped surface, leaving a blurred ghost
+        // rect where the window used to be (same class as 72808f3fd on the
+        // dock strip). Swap to the empty region as soon as the window is no
+        // longer active — the last committed state before unmap must be empty.
+        activeWhen: screenItem.isActive
         slideX: surface.slideX
         slideY: surface.slideY
       }
