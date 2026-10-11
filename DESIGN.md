@@ -328,6 +328,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - 分区标题：白 × 0.6、字号 S。分隔线：1 px、白 × 0.1。滑块高 22。
 - 点击外部或按 Esc 关闭。显隐用 `motionPopupIn` / `motionPopupOut`，沿箭头所在边位移〔演进：`dockpopupwindow.cpp:84-148` 原版算好位置后直接 show/hide，见 §1.7〕。
 - 提示框：同样的形态，只放白色文字；宽 = 文字宽 + 6 × 字高；没有图标。
+- 网络面板的连接详情卡片支持 grid/list 两种排布，右上角有切换按钮，分别持久化在 `network.wifiDetailsViewMode` 与 `network.ethernetDetailsViewMode`；以太网排布另在 设置 → 连接 页底部的以太网组里有下拉框（设置树里没有专门的以太网页）。
 
 ### 3.3 菜单（deepin-menu）
 
@@ -404,6 +405,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 启动器设置页（设置 → 启动器 → 通用）的每个控件都落在上面两种视图上：
 
 - `appLauncher.mode`：在全屏和迷你之间切换。`LauncherState.setMode` 会把正在打开的视图直接切换过去。
+- `appLauncher.displayMode`：`free`（默认，应用平铺滚动）或 `category`（左侧分类导航栏），对应 §3.4.1 的两种显示方式；全屏视图搜索行的分类按钮和 `launcher switchDisplayMode` IPC 写的是同一个键。
 - `appLauncher.viewMode`：`grid`（默认）全屏浏览态用网格；`list` 浏览态改为列表（搜索态本来就是列表）。
 - `appLauncher.density`：行高 30/36/44（×`ui.rowHeightScale`）、列表图标 20/24/28、全屏单元预算 ×0.85/1.0/1.15。
 - `appLauncher.showCategories`：关闭后隐藏全屏模式的分类导航和模式切换按钮，以及迷你模式的"分类"按钮，provider 不再按分类过滤；`displayMode` 的取值保留。

@@ -265,6 +265,46 @@ Item {
       checked: NetworkService.airplaneModeEnabled
       onToggled: checked => NetworkService.setAirplaneMode(checked)
     }
+
+    // Ethernet details layout — the same card lives in the network popup
+    // panel (DESIGN §3.2); this row exposes the persisted view mode here
+    // because the settings tree has no dedicated Ethernet page.
+    ColumnLayout {
+      visible: !root.showOnlyLists && NetworkService.ethernetAvailable
+      Layout.fillWidth: true
+      spacing: Style.marginM
+
+      NHeader {
+        visible: !root.flat
+        label: I18n.tr("common.ethernet")
+      }
+
+      ColumnLayout {
+        Layout.fillWidth: true
+        spacing: Style.settingsGroupGap
+
+        NComboBox {
+          Layout.fillWidth: true
+          label: I18n.tr("panels.connections.ethernet-details-view-label")
+          description: I18n.tr("panels.connections.ethernet-details-view-description")
+          model: [
+            {
+              "key": "grid",
+              "name": I18n.tr("options.launcher-view-mode.grid")
+            },
+            {
+              "key": "list",
+              "name": I18n.tr("options.launcher-view-mode.list")
+            }
+          ]
+          currentKey: Settings.data.network.ethernetDetailsViewMode
+          onSelected: function (key) {
+            Settings.data.network.ethernetDetailsViewMode = key;
+          }
+          defaultValue: Settings.getDefaultValue("network.ethernetDetailsViewMode")
+        }
+      }
+    }
   }
 
   // Add Hidden Network Popup

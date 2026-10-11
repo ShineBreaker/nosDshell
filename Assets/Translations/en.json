@@ -693,6 +693,10 @@
       "compact": "Compact",
       "default": "Default"
     },
+    "launcher-display-mode": {
+      "free": "Free",
+      "category": "Category"
+    },
     "launcher-mode": {
       "fullscreen": "Fullscreen",
       "mini": "Mini"
@@ -945,6 +949,8 @@
       "bluetooth-rssi-polling-interval-description": "Configure how often to update signal strength for connected devices.",
       "bluetooth-rssi-polling-interval-label": "Polling interval",
       "bluetooth-rssi-polling-label": "Bluetooth signal polling",
+      "ethernet-details-view-description": "Choose how connection details are laid out in the network panel's Ethernet card.",
+      "ethernet-details-view-label": "Ethernet details view",
       "hide-unnamed-devices-description": "Hide devices that appear only as Bluetooth addresses.",
       "hide-unnamed-devices-label": "Hide unnamed devices",
       "pin-instructions": "Please enter the PIN code displayed on your device.",
@@ -1228,6 +1234,8 @@
       "settings-custom-launch-prefix-label": "Custom launch prefix",
       "settings-density-description": "Adjust the size of application icons and the density of the launcher.",
       "settings-density-label": "Density",
+      "settings-display-mode-description": "Choose between the free app grid and the category sidebar.",
+      "settings-display-mode-label": "Display mode",
       "settings-enable-session-search-description": "Show session actions (lock, shutdown, reboot, etc.) when searching in the launcher.",
       "settings-enable-session-search-label": "Enable session search",
       "settings-enable-settings-search-description": "Show settings results when searching in the launcher.",

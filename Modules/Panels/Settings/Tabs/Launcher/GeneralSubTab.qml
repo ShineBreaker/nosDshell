@@ -59,6 +59,27 @@ ColumnLayout {
     }
 
     NComboBox {
+      label: I18n.tr("panels.launcher.settings-display-mode-label")
+      description: I18n.tr("panels.launcher.settings-display-mode-description")
+      Layout.fillWidth: true
+      model: [
+        {
+          "key": "free",
+          "name": I18n.tr("options.launcher-display-mode.free")
+        },
+        {
+          "key": "category",
+          "name": I18n.tr("options.launcher-display-mode.category")
+        }
+      ]
+      currentKey: Settings.data.appLauncher.displayMode
+      onSelected: function (key) {
+        Settings.data.appLauncher.displayMode = key;
+      }
+      defaultValue: Settings.getDefaultValue("appLauncher.displayMode")
+    }
+
+    NComboBox {
       label: I18n.tr("panels.launcher.settings-density-label")
       description: I18n.tr("panels.launcher.settings-density-description")
       Layout.fillWidth: true

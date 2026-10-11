@@ -693,6 +693,10 @@
       "compact": "紧凑",
       "default": "默认"
     },
+    "launcher-display-mode": {
+      "free": "自由",
+      "category": "分类"
+    },
     "launcher-mode": {
       "fullscreen": "全屏",
       "mini": "迷你"
@@ -945,6 +949,8 @@
       "bluetooth-rssi-polling-interval-description": "配置已连接设备的信号强度更新频率。",
       "bluetooth-rssi-polling-interval-label": "轮询间隔",
       "bluetooth-rssi-polling-label": "蓝牙信号轮询",
+      "ethernet-details-view-description": "选择网络面板以太网详情卡片的排布方式。",
+      "ethernet-details-view-label": "以太网详情视图",
       "hide-unnamed-devices-description": "隐藏仅显示为 Bluetooth 地址的设备。",
       "hide-unnamed-devices-label": "隐藏未命名设备",
       "pin-instructions": "请输入您设备上显示的PIN码。",
@@ -1228,6 +1234,8 @@
       "settings-custom-launch-prefix-label": "自定义启动前缀",
       "settings-density-description": "调整应用程序图标大小和 Launcher 密度。",
       "settings-density-label": "密度",
+      "settings-display-mode-description": "在全屏启动器的自由平铺与分类侧栏之间选择。",
+      "settings-display-mode-label": "显示方式",
       "settings-enable-session-search-description": "在 Launcher 中搜索时显示会话操作（锁定、关机、重启等）。",
       "settings-enable-session-search-label": "启用会话搜索",
       "settings-enable-settings-search-description": "在启动器中搜索时显示设置结果。",

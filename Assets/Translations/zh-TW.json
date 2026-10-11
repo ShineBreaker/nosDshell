@@ -628,6 +628,10 @@
       "compact": "緊湊",
       "default": "預設"
     },
+    "launcher-display-mode": {
+      "free": "自由",
+      "category": "分類"
+    },
     "launcher-view-mode": {
       "grid": "網格",
       "list": "列表"
@@ -857,6 +861,8 @@
       "bluetooth-rssi-polling-interval-description": "配置已連線裝置的訊號強度更新頻率。",
       "bluetooth-rssi-polling-interval-label": "輪詢間隔",
       "bluetooth-rssi-polling-label": "藍牙訊號輪詢",
+      "ethernet-details-view-description": "選擇網路面板乙太網路詳細資訊卡片的排列方式。",
+      "ethernet-details-view-label": "乙太網路詳細資訊檢視",
       "hide-unnamed-devices-description": "隱藏僅顯示為 Bluetooth 位址的裝置。",
       "hide-unnamed-devices-label": "隱藏未命名裝置",
       "pin-instructions": "請輸入您裝置上顯示的PIN碼。",
@@ -1124,6 +1130,8 @@
       "settings-custom-launch-prefix-label": "自訂啟動前綴",
       "settings-density-description": "調整應用程式圖示大小和 Launcher 密度。",
       "settings-density-label": "密度",
+      "settings-display-mode-description": "在全螢幕啟動器的自由排列與分類側欄之間選擇。",
+      "settings-display-mode-label": "顯示方式",
       "settings-enable-session-search-description": "在 Launcher 中搜尋時顯示工作階段動作（鎖定、關機、重新啟動等）。",
       "settings-enable-session-search-label": "啟用工作階段搜尋",
       "settings-enable-settings-search-description": "在啟動器中搜尋時顯示設定結果。",
