@@ -32,7 +32,7 @@ nosDshell 是 Noctalia v4（基于 Quickshell/QML 的 Wayland shell）的分叉�
   - 兼容：上游代码仍然读取它，但在 DDE 形态下取值固定。迁移把它钉在固定值上，`Commons/Settings.qml` 的声明处和 `DESIGN.md` 的对应章节都注明它是兼容数据以及原因。
   - 删除：功能已经不存在。写迁移从用户已存的配置里删掉它。
 
-  迁移的写法见 `CODING_STANDARDS.md`。
+  迁移的写法见 `CODING_STANDARDS.md`。`lint.sh` 里的 `check-settings-keys.py` 强制这条规则，报 `no reader` 的键按上面三种状态处理。
 - 删除任何上游能力都要有明确理由，写进提交正文，并登记到 `DESIGN.md` §6.1。noctalia 身份类组件（遥测、版本更新检查、GitHub 与赞助者服务、吉祥物）已经登记。
 
 ## 依据

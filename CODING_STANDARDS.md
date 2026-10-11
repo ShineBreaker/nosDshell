@@ -33,6 +33,8 @@
 - 删除功能：从 `rawJson` 删除对应键，参考 `Migration67.qml`。
 - 兼容数据：把值钉在 DDE 形态要求的取值上，并在 `Commons/Settings.qml` 的声明处注释原因，参考 `Migration72.qml`。
 
+`Scripts/dev/check-settings-keys.py` 把这套规则固化成检查：默认值与声明必须同步，每个键必须代码里有读者（注释、迁移和生成的搜索索引不算），挂在 `lint.sh` 和 CI 里。注释里提到键名不算读者——迁移删掉的 `controlCenter.position` 就是被这条抓出来的。
+
 ### 设置页
 
 - 设置页的分组和可见性规则见 `DESIGN.md` §3.5.3。实现上，功能关闭时用 `visible` 隐藏它的配置项；整个子页失效时把 `NSubTabsPane` 里对应 `Title` 的 `shown` 设为 false，隐藏子页签。
@@ -79,7 +81,9 @@
 
 ## 界面文字
 
-界面文字一律用 `I18n.tr("key")`。新 key 至少写进 `Assets/Translations/en.json` 和 `Assets/Translations/zh-CN.json`。
+界面文字一律用 `I18n.tr("key")`。新 key 至少写进 `Assets/Translations/en.json` 和 `Assets/Translations/zh-CN.json`；其余语言文件是子集，缺键时回落到英文。
+
+`Scripts/dev/check-translations.py` 检查两边一致：代码引用的 key 必须存在于 en.json（`trp` 还要 `-plural` 形式），en.json 里不被引用的 key 用 `--fix` 删掉（动态拼接的 key 靠前缀识别，别用纯 grep 判断死活），也挂在 `lint.sh` 和 CI 里。
 
 ## 日志
 

@@ -60,6 +60,14 @@ jobs:
           find Scripts -name "*.py" -print0 | xargs -0 -n1 python3 -m py_compile
           find Scripts -name "*.py" | wc -l | xargs echo "py_compile ok:"
 
+      # Repo consistency: every settings key declared in both defaults and
+      # Settings.qml with a reader; every translation key referenced by code.
+      - name: settings/translation key checks
+        run: |
+          set -euo pipefail
+          python3 Scripts/dev/check-settings-keys.py
+          python3 Scripts/dev/check-translations.py
+
   # docs/legacy/ is generated — fail if it drifts from the vendored source
   # or the converter itself (catches both hand edits and stale output).
   docs-sync:

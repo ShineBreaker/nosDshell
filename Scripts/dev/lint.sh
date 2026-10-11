@@ -15,6 +15,10 @@
 # Prints only Error:/Critical:/Fatal: diagnostics; full output for failing
 # files goes to $NOSD_VERIFY_DIR/logs/lint-errors.log. Exits non-zero if any
 # file produces an error.
+#
+# Repo-level consistency checks (settings keys, translations) always run too,
+# even under --changed: dead keys are only detectable against the whole
+# corpus, not per file.
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,6 +26,15 @@ REPO="$(cd "$SCRIPT_DIR/../.." && pwd)"
 WORK="${NOSD_VERIFY_DIR:-/tmp/nosd-verify}"
 MIRROR="$WORK/qmlimp"
 mkdir -p "$WORK/logs"
+
+# --- repo consistency checks ---------------------------------------------
+FAIL=0
+for check in check-settings-keys check-translations; do
+  if ! python3 "$SCRIPT_DIR/$check.py"; then
+    FAIL=1
+  fi
+done
+[ "$FAIL" -gt 0 ] && exit 1
 
 QMLLINT="${QMLLINT:-$HOME/.guix-home/profile/bin/qmllint}"
 [ -x "$QMLLINT" ] || QMLLINT=$(command -v qmllint) || { echo "qmllint not found" >&2; exit 2; }
