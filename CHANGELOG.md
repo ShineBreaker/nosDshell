@@ -10,6 +10,24 @@
 
 ## [Unreleased]
 
+## [1.1.6] - 2026-10-12
+
+状态栏的可定制项补全了：形态（简约/悬浮/边框）、非独占显示模式、工作区切换时唤出、空白处右键动作（含自定义命令和跟随光标）都回到了设置页；老配置里残留的右键设置会被保留。
+
+---
+
+### 新功能
+
+- restore upstream status-bar customization surface：[`f083f3dee`](https://github.com/ShineBreaker/nosDshell/commit/f083f3deebe22920bf9b75eda1385afb3974dda4)
+
+### 修复
+
+- install python in the qmllint container：[`b503a8902`](https://github.com/ShineBreaker/nosDshell/commit/b503a89024f4c65535bcf2be4b1b141872ffeefb)
+
+### 文档
+
+- regenerate settings reference for v1.1.5：[`0c5cb0c9b`](https://github.com/ShineBreaker/nosDshell/commit/0c5cb0c9bdfdeefabcb35bd6ce4a1857c790dfa4)
+
 ## [1.1.5] - 2026-10-11
 
 一轮动效与稳定性的整体打磨：右键菜单、小组件弹层和全部下拉框、对话框补上了统一的淡入滑出动效，关闭弹层后偶发残留的模糊色块一并清除；通知图标在加高的气泡里垂直居中、气泡阴影不再偶发变形；还修掉了一类偶发崩溃——窗口或设备恰好在列表刷新的间隙被销毁时，dock、媒体、蓝牙、托盘、音频、电池等列表都可能踩到，这次统一收口。通用设置页正式接入 DDE 各视图，dock 设置按功能分组并可给插件条加间距、拼成时尚一体的胶囊。
@@ -212,7 +230,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.5...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.6...HEAD
+[1.1.6]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.1...v1.1.5
 [1.1.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.2...v1.1.0
