@@ -1,79 +1,91 @@
-# CODING_STANDARDS — nosDshell 代码约定
+# CODING_STANDARDS：代码约定
 
-QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这里写成文字。**视觉与交互仍以 [`DESIGN.md`](./DESIGN.md) 为唯一依据**；要写工具见 [`TOOLS.md`](./TOOLS.md)，要取证见 [`DEBUGGING.md`](./DEBUGGING.md)。
+写 QML、新增或修改设置、改界面文案时遵守本文件。这些约定多数继承自 Noctalia，在配置文件里看不出来。视觉与交互以 [`DESIGN.md`](./DESIGN.md) 为准。
 
-## 令牌优先
+本文件的每一节都是 `AGENTS.md`「工作方式」在代码里的落点：令牌、设置管线、公共件和注册表就是各类问题的收口点。改动先落在这些层上，组件里只写布局和组合。
 
-- 颜色从 `Color.*` 取，尺寸、圆角、时长从 `Style.*` 取；DDE 专用的表面和叠加色用 `Color.maskDark`、`Color.overlay(level)` 这类语义令牌。组件内部只做布局。
-- 新数值若 `Commons/Style.qml` / `Commons/Color.qml` 里没有令牌，先去 `references/` 找出处、把它加进令牌文件，最后才在组件里使用。`DESIGN.md` 的禁用清单把「在组件里写死颜色、尺寸或时长」列为禁止项——本节是它的正面形式。
-- `references/` 的引用格式是 `仓库/路径:行号`（权威见 `DESIGN.md` §1）。
-- **跟随全局 = 接入令牌/主题体系，不是在组件里自造。** 发现某个界面元素不随全局变化（深色模式下菜单仍是浅色、间距不吃 `Style` 令牌），先找它本该消费的 `Color`/`Style` 令牌或公共件参数（菜单 `variant`、弹层 `Color.popupShell`）把接入点修回来；组件内部另写一份配色/尺寸，本身就是"没接入"的证据。
+## 令牌
 
-## 设置项四处同步
+- 颜色读 `Color.*`，尺寸、圆角、时长读 `Style.*`。DDE 的表面和叠加色用语义令牌，例如 `Color.maskShell`、`Color.popupShell`、`Color.overlay(level)`（定义见 `DESIGN.md` §1.2、§1.3）。组件内部只做布局。
+- 某个界面元素不随全局设置变化（深色模式下仍是浅色、间距不随 `Style` 缩放），说明它没有接入令牌体系。修法是找到它本该读取的令牌或公共件参数（例如菜单的 `variant`、弹层的 `Color.popupShell`），把接入点接回去。组件里另写一份配色或尺寸，本身就是没接入的证据。一个组件没接入时，同类组件往往也没接入，按影响面一起查。
+- 新数值先加令牌再使用，来路见 `AGENTS.md`「依据」。引用 `references/` 的格式是 `仓库/路径:行号`。
 
-新增或修改一个设置，四处同时改（权威清单见 `DESIGN.md` §6）：
+## 设置
+
+### 新增或修改设置
+
+一个设置要同时改四处：
 
 1. `Assets/settings-default.json`
 2. `Commons/Settings.qml`
-3. 新的 `Commons/Migrations/MigrationNN.qml`，登记到 `Commons/Migrations/MigrationRegistry.qml`，并递增 `settingsVersion`（当前值读 `Commons/Settings.qml` 的 `settingsVersion` 属性）
-4. 跑 `python3 Scripts/test/build-settings-search-index.py` 重建设置搜索索引
+3. 新建 `Commons/Migrations/MigrationNN.qml`，登记到 `Commons/Migrations/MigrationRegistry.qml`，并把 `Commons/Settings.qml` 的 `settingsVersion` 加一
+4. 重建设置搜索索引：`python3 Scripts/test/build-settings-search-index.py`（或 `just search-index`）
 
-迁移时旧字段原样保留。`lefthook.yml` 声明了 pre-commit 里的格式化与索引重建，但本机 hook 未生效（`lefthook` 不在 PATH，`core.hooksPath` 下没有 pre-commit），所以第 4 步和下面的格式化都要自己跑。
+用户能看到的新文字同时加翻译（见「界面文字」）。第 4 步和格式化在本机没有 hook 代劳，原因见 `AGENTS.md`「运行与校验」。
+
+### 迁移写法
+
+设置键的三种合法状态（活跃、兼容、删除）定义在 `AGENTS.md`「业务保真」。迁移按变更类型写：
+
+- 新增键：用户配置里缺这个键时写入默认值。判断缺键读 `rawJson`，参考 `Migration75.qml`。
+- 改名或搬迁：把旧值搬到新键，再从 `rawJson` 删除旧键，参考 `Migration65.qml`。
+- 改默认值：只改仍等于旧默认值的配置，用户自己设过的值保留，参考 `Migration76.qml`。
+- 删除功能：从 `rawJson` 删除对应键，参考 `Migration67.qml`。
+- 兼容数据：把值钉在 DDE 形态要求的取值上，并在 `Commons/Settings.qml` 的声明处注释原因，参考 `Migration72.qml`。
+
+### 设置页
+
+- 设置页的分组和可见性规则见 `DESIGN.md` §3.5.3。实现上，功能关闭时用 `visible` 隐藏它的配置项；整个子页失效时把 `NSubTabsPane` 里对应 `Title` 的 `shown` 设为 false，隐藏子页签。
+- 控件接在当前生效的前端上。只接在已删除或非默认前端上的控件等于没有控件。
+
+### 挂件设置页
+
+挂件设置页（`Modules/Panels/Settings/{Bar,DesktopWidgets,ControlCenter}/WidgetSettings/`）内嵌 `Widgets/WidgetSettingsHelper.qml` 读写设置：
+
+- 读：`settingsHelper.value("key", fallback?)`，依次取编辑中的值、已存值、metadata 默认值、`fallback`。回退链由它负责，页面里不再写三元表达式或 `||`、`??` 回退。
+- 写：`settingsHelper.set("key", v)`，整体替换编辑对象，`value()` 的绑定随之刷新。
+- 存：`var settings = settingsHelper.save()`，在已存设置的基础上只覆盖编辑过的字段，没改过的字段不写盘。
+
+`value()` 在没有已存值时会回退到默认值。需要"没有已存值就显示空，靠 placeholder 提示默认值"的控件保留直读写法，例如 `Bar/CustomButtonSettings.qml` 的 `textIntervalMs`。在 `saveSettings` 里组装嵌套字段的 SpinBox 也保留原写法。
+
+## 公共件
+
+写新的样板代码之前先查这张表。表里每一项都是已经收敛的公共实现，API 细节看各文件头部注释。同样的写法出现第二次时，把它收敛成公共件，并登记到这张表。
+
+| 公共件 | 负责的事 |
+| --- | --- |
+| `Widgets/NSubTabsPane.qml` | 设置页的子页导航骨架，取代按 `currentIndex === N` 判断序号 |
+| `Widgets/NDisplayModeComboBox.qml` | onhover / alwaysShow / alwaysHide 三选一组合框 |
+| `Widgets/WidgetSettingsHelper.qml` | 挂件设置页的读、写、存（见上节） |
+| `Modules/Panels/Settings/Bar/WidgetSettings/IconColorSettings.qml` | 只有 iconColor 一项设置的挂件设置页，在 `BarWidgetRegistry` 的 `widgetSettingsMap` 里直接映射到它 |
+| `Modules/Bar/Extras/BarWidgetSettingsMenu.qml` | 挂件右键菜单骨架（固定的挂件设置尾项和打开前的准备） |
+| `Modules/Bar/Extras/BarWidgetLoader.qml` | 加载挂件并经 `widgetProps` 向挂件注入属性（见「QML 规则」） |
+| `Modules/Bar/Extras/FashionTile.qml` | 时尚 dock 里放不下原内容的挂件共用的一格瓦片 |
+| `Commons/Settings.getWidgetSettings()` | 按屏幕、区段和序号解析挂件实例的设置 |
+| `Commons/AppIdMatcher.qml` | appId 归一化、驻留判定、desktop entry 解析 |
+| `Commons/SessionActions.qml` | 电源动作分发（锁定、关机、重启等） |
+| `Commons/WorkspaceQuery.js` | 筛选属于某块屏幕的工作区 |
+| `Commons/NSurfaceRegion.qml` | 表面输入区域和模糊区域的注册，内含 Quickshell 的平台陷阱处理 |
+
+## 注册
+
+面板通过 `PanelService` 注册和打开，任务栏挂件通过 `BarWidgetRegistry` 注册。新面板和新挂件沿用同一套注册机制。
+
+## QML 规则
+
+- 向不受我们控制的组件注入属性时（第三方插件挂件尤其如此），先确认对方声明了该属性再赋值。`Loader.setSource` 的初始属性不做过滤，对方没有声明就会报 `Cannot assign to non-existent property`。挂件一律经 `BarWidgetLoader` 的 `widgetProps` 守卫式赋值，dock 侧的 `dockPresentation` 也走这条路（`DESIGN.md` §3.1.4）。
+- `Item.visible` 读出的是有效可见性：自身和所有祖先都可见时才为 true。祖先一隐藏，子项读出的值就一直是 false。要判断某一项本身是否被设为隐藏，另存一个标志属性再读它，例如 `NSubTabsPane` 给页签按钮加的 `tabShown`。
+- JS 对象数组作为 `Repeater` 或 `ListView` 的 model 时会被 QVariant 包装，`modelData` 拿到的是副本，和原数组元素用 `===` 比较永远为 false。选中态和按引用查下标会静默失效（不报错，只是不高亮）。比较一律用稳定字段（`modelData.id === x.id`）；需要保存对象时，先换回原数组里的元素。
 
 ## 界面文字
 
-全部用 `I18n.tr("key")`。新增的 key 至少写进 `Assets/Translations/en.json` 和 `zh-CN.json`。
+界面文字一律用 `I18n.tr("key")`。新 key 至少写进 `Assets/Translations/en.json` 和 `Assets/Translations/zh-CN.json`。
 
 ## 日志
 
-用 `Logger.d/i/w/e("模块名", ...)`——QML 代码里没有 `console.log`。`Logger.d` 受 `debug.enabled` 门控，验证环境没开调试时它不输出（见 [`DEBUGGING.md`](./DEBUGGING.md)）。
-
-## 面板与任务栏挂件
-
-面板通过 `PanelService` 注册和打开，任务栏挂件通过 `BarWidgetRegistry` 注册；新增的面板或挂件沿用同一套注册机制。
-
-### 挂件设置页样板
-
-挂件设置页（`Modules/Panels/Settings/{Bar,DesktopWidgets,ControlCenter}/WidgetSettings/`）读写设置一律内嵌 `Widgets/WidgetSettingsHelper.qml`，不再手写回退与保存样板：
-
-- 读：`settingsHelper.value("key", fallback?)`——链为 编辑值 → 已存值 → metadata 默认 → fallback。不要再写 `widgetData.X !== undefined ? ... : widgetMetadata.X` 三元，也不要写 `||` / `??` 回退。
-- 写：`settingsHelper.set("key", v)`——整体替换 edits 对象，`value()` 绑定保持刷新。
-- 存：`var settings = settingsHelper.save()`——复制基座后只覆盖编辑过的字段，没动过的字段不落盘。
-
-只有 iconColor 一项设置的挂件直接映 `WidgetSettings/IconColorSettings.qml`（`widgetSettingsMap` 里 DarkMode / NightLight / PerformanceMode / PowerProfile / WallpaperSelector 五处共用），不新建页面。
-
-两类有意保留的例外，改的时候别顺手"修"成 `value()`：直读控件的空值特判三元（无已存值时必须显示空、靠 placeholder 兜底，见 Bar/CustomButtonSettings 的 textIntervalMs）与 SpinBox 组装路线（嵌套字段在 saveSettings 组装）——换成 `value()` 会改变空值显示行为。
-
-### 公共件先查再造
-
-写新样板之前先查这份清单——以下是已收敛的公共实现，逐个手抄就是造克隆（API 细节看各组件头部注释）：
-
-| 公共件 | 取代的样板 |
-| --- | --- |
-| `Widgets/NSubTabsPane` | 设置页 SubTab 导航骨架、`currentIndex === N` 序号判断 |
-| `Widgets/NDisplayModeComboBox` | onhover / alwaysShow / alwaysHide 组合框整块 |
-| `Modules/Bar/Extras/BarWidgetSettingsMenu` | 挂件右键菜单骨架（widget-settings 固定尾项 + 开合前置） |
-| `Commons/Settings.getWidgetSettings()` | 按屏/区段/序号解析挂件实例设置 |
-| `Commons/AppIdMatcher.qml` | appId 归一化、pinned 判定、desktop-entry 解析 |
-| `Commons/SessionActions.qml` | 电源动作分发（lock/shutdown/reboot/...） |
-| `Commons/WorkspaceQuery.js` | "哪些工作区属于这块屏"的筛选 |
-| `Commons/NSurfaceRegion.qml` | surface 的 blur/mask region 注册（Quickshell 平台陷阱知识） |
-
-## 服务语义守恒
-
-- `Services/`、`Commons/` 是 Noctalia 的业务内核：重写样式时不要改动它们的属性签名、信号时机和副作用。上游语义被替换必须写出依据（平台差异，如 niri/PipeWire），否则视为回归。
-- `Assets/settings-default.json` 的每个键都要有消费方，且**设置项必须与活跃前端一一对应**——只接到死代码/非默认路径（如已删的 overlay launcher）等价于死键。发现"数据活着、界面死了"先恢复接入，而不是当死代码删掉（参考 `bar.widgets` 的教训：服务链路活着，只是 UI 被砍）。
-- **设置页分组**：功能开关在前、该功能的配置紧随其后；同一功能的开关和配置不许跨子页/跨分组散落（DESIGN §3.5.3）。
-- **关闭即隐藏**：功能关闭时用 `visible` 隐藏它的全部配置项——不用 `enabled` 置灰；整页失效时连子页签一起隐藏（`NSubTabsPane.Title.shown`）。模式/状态专属设置随条件绑定自动隐藏，不在文案里标注"（某模式）"——可见性本身表达适用范围。
-- `Item.visible` 的 getter 返回的是**有效可见性**（自身 && 所有祖先），不是本地标志：祖先一藏，子项读出恒为 false。需要判断"这项自己是不是被显式隐藏"时另存一个标志属性（如 `NTabButton.tabShown`），别直接读 `.visible`（`NTabBar.groupIndexShown` 踩过这个坑）。
-- **挂件注入属性只能走 `BarWidgetLoader.widgetProps` 的守卫式赋值**，不能进 `Loader.setSource` 的初始属性——初始属性不过滤，挂件没声明就 `Cannot assign to non-existent property`（第三方插件挂件尤其躲不掉）。dock 侧注入见 `dockPresentation`（DESIGN §3.1.4）。
-- 删功能要连带清数据键并写迁移（`Commons/Migrations/`）；留着孤儿键就是留一颗哑弹。
-
-## `modelData` 按稳定字段比对
-
-JS 对象数组进 `Repeater` / `ListView` 的 model 会被 QVariant 包装，`modelData` 拿到的是副本，与原数组元素 `===` 恒 false——选中态和按引用查下标会静默失效（不报错，只是不亮）。一律按稳定字段比（`modelData.id === x.id`）；需要把对象存下来时，先归一化回原数组元素。已踩坑：`SettingsModuleView` 的 rail 点击与高亮。
+日志一律用 `Logger.d/i/w/e("模块名", ...)`。`Logger.d` 只在调试模式下输出，验证时的用法见 [`DEBUGGING.md`](./DEBUGGING.md)「打开调试」。
 
 ## 格式化与注释
 
-- 改完的文件跑 `Scripts/dev/qmlfmt.sh <路径>`（缩进、行宽和版本相关的参数都写死在脚本里；直呼 `qmlformat` 会绕过脚本的版本分支）。
-- 现有注释保留；新代码只在不显而易见的地方加一行注释。
+- 改过的 QML 文件跑 `Scripts/dev/qmlfmt.sh <路径>`（或 `just fmt <路径>`）。缩进、行宽和按 Qt 版本切换的参数都写在脚本里，直接调用 `qmlformat` 会绕过这些设置。
+- 保留现有注释。新代码只在意图不显而易见的地方加一行注释。
