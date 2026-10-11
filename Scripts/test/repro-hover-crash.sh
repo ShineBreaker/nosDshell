@@ -40,13 +40,16 @@ export NOSD_CONFIG_DIR="$WORK/config/nosdshell/"
 export NOSD_CACHE_DIR="$WORK/cache/nosdshell/"
 mkdir -p "$NOSD_CONFIG_DIR" "$NOSD_CACHE_DIR"
 
-# Same seed as verify.sh except displayMode — the reporter runs auto_hide
+# Same seed as verify.sh except hideMode — the reporter auto-hides the dock
 # (keep-hidden leaves a 2px sliver), which slides the dock in/out during the
 # sweep and is part of the trigger space being tested.
-python3 - <<'PYEOF'
+# settingsVersion read from Commons/Settings.qml (single source, same as
+# verify.sh): a stale number runs migrations, which rewrite the seed.
+SEED_SV=$(sed -n 's/.*readonly property int settingsVersion: *\([0-9][0-9]*\).*/\1/p' "$REPO/Commons/Settings.qml")
+SEED_SV="$SEED_SV" python3 - <<'PYEOF'
 import json, os
-base = {"settingsVersion": 69,
-        "dock": {"displayMode": "auto_hide", "onlySameOutput": False},
+base = {"settingsVersion": int(os.environ["SEED_SV"]),
+        "dock": {"hideMode": "keep-hidden", "onlySameOutput": False},
         "general": {"telemetryEnabled": False, "showChangelogOnStartup": False}}
 cfg = os.environ["NOSD_CONFIG_DIR"].rstrip("/")
 cch = os.environ["NOSD_CACHE_DIR"].rstrip("/")

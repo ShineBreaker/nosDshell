@@ -27,9 +27,11 @@ export NOSD_CONFIG_DIR="$WORK/config/nosdshell/"
 export NOSD_CACHE_DIR="$WORK/cache/nosdshell/"
 mkdir -p "$NOSD_CONFIG_DIR" "$NOSD_CACHE_DIR"
 
-# same seed as verify.sh (settingsVersion in lockstep with Commons/Settings.qml)
-cat > "$NOSD_CONFIG_DIR/settings.json" <<'EOF'
-{"settingsVersion":69,"dock":{"displayMode":"always_visible","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}
+# same seed as verify.sh (settingsVersion read from Commons/Settings.qml —
+# a stale number runs migrations, which rewrite the seed)
+SEED_SV=$(sed -n 's/.*readonly property int settingsVersion: *\([0-9][0-9]*\).*/\1/p' "$REPO/Commons/Settings.qml")
+cat > "$NOSD_CONFIG_DIR/settings.json" <<EOF
+{"settingsVersion":$SEED_SV,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}
 EOF
 cat > "$NOSD_CACHE_DIR/shell-state.json" <<'EOF'
 {"changelogState":{"lastSeenVersion":"4.7.8"},"telemetry":{"instanceId":"smoke"},"notificationsState":{"lastSeenTs":0}}

@@ -136,10 +136,12 @@ write_app nosd-pluma       "Pluma Text Editor"  "accessories-text-editor" "pluma
 # --- seed settings.json / shell-state.json (no wizard, no telemetry) --------
 # Same rationale as verify.sh — settings.json existing at all keeps the setup
 # wizard away; telemetry/changelog popups disabled; shell-state marks the
-# changelog/telemetry intro as seen. settingsVersion must match
-# Commons/Settings.qml or migrations rewrite the seed.
-cat > "$NOSD_CONFIG_DIR/settings.json" <<'EOF'
-{"settingsVersion":75,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}
+# changelog/telemetry intro as seen. settingsVersion is read from
+# Commons/Settings.qml (the single source): a stale number runs migrations,
+# which rewrite the seed.
+SEED_SV=$(sed -n 's/.*readonly property int settingsVersion: *\([0-9][0-9]*\).*/\1/p' "$REPO/Commons/Settings.qml")
+cat > "$NOSD_CONFIG_DIR/settings.json" <<EOF
+{"settingsVersion":$SEED_SV,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}
 EOF
 cat > "$NOSD_CACHE_DIR/shell-state.json" <<'EOF'
 {"changelogState":{"lastSeenVersion":"4.7.8"},"telemetry":{"instanceId":"bench"},"notificationsState":{"lastSeenTs":0}}

@@ -72,10 +72,12 @@ EOF
 # --- settings seed -----------------------------------------------------------
 # Same rationale as verify.sh (keep the comments there in sync):
 #   settings.json must exist or the SetupWizard eats the first frame;
-#   settingsVersion MUST equal Commons/Settings.qml's settingsVersion or the
-#   migration chain rewrites the seed back to Assets defaults at first load.
+#   settingsVersion is read from Commons/Settings.qml (the single source) —
+#   a stale number runs the migration chain, which rewrites the seed back to
+#   Assets defaults at first load.
 # shell-state.json marks changelog/telemetry prompts as already-seen.
-SEED='{"settingsVersion":76,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED_SV=$(sed -n 's/.*readonly property int settingsVersion: *\([0-9][0-9]*\).*/\1/p' "$REPO/Commons/Settings.qml")
+SEED="{\"settingsVersion\":$SEED_SV,\"dock\":{\"hideMode\":\"keep-showing\",\"onlySameOutput\":false},\"general\":{\"telemetryEnabled\":false,\"showChangelogOnStartup\":false}}"
 export SEED
 python3 - <<'PYEOF' || { echo "FATAL: settings seed write failed" >&2; exit 1; }
 import json, os

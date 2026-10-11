@@ -162,18 +162,19 @@ fi
 # shell-state.json changelogState.lastSeenVersion >= telemetryIntroVersion
 #   (4.0.2) -> UpdateService.shouldShowTelemetryWizard() false
 #   (UpdateService.qml:211-225); also marks changelog "seen" for v4.7.8
-# settingsVersion must match Commons/Settings.qml`settingsVersion` (79): a
-# mismatch makes Settings run the versioned migrations on first load, which
-# rewrite the seed's dock.*/general.* keys back to Assets defaults before the
-# run starts (verified: seed 64 vs runtime 67 lost displayMode/onlySameOutput
-# and let the setup wizard take over the screen). Keep in lockstep.
+# settingsVersion is read from Commons/Settings.qml (the single source): a
+# stale number makes Settings run the versioned migrations on first load,
+# which rewrite the seed's dock.*/general.* keys back to Assets defaults
+# before the run starts (verified: seed 64 vs runtime 67 lost
+# displayMode/onlySameOutput and let the setup wizard take over the screen).
 # dock.hideMode gates the taskbar auto-hide in both modes (DESIGN §3.1.1):
 # keep-showing reserves space, keep-hidden auto-hides, smart-hide hides on overlap.
 # dock.onlySameOutput=false: the headless sway reports toplevel .screens as a
 # list the Quickshell ShellScreen object never satisfies, so leaving the
 # default true silently drops every running app from the dock (verified: with
 # it on, no toplevel reaches dockApps; off, all three appear).
-SEED='{"settingsVersion":79,"dock":{"hideMode":"keep-showing","onlySameOutput":false},"general":{"telemetryEnabled":false,"showChangelogOnStartup":false}}'
+SEED_SV=$(sed -n 's/.*readonly property int settingsVersion: *\([0-9][0-9]*\).*/\1/p' "$REPO/Commons/Settings.qml")
+SEED="{\"settingsVersion\":$SEED_SV,\"dock\":{\"hideMode\":\"keep-showing\",\"onlySameOutput\":false},\"general\":{\"telemetryEnabled\":false,\"showChangelogOnStartup\":false}}"
 
 # minimal sway config
 cat > "$WORK/sway/config" <<'EOF'
