@@ -628,7 +628,6 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     screenRadiusRatio = 1;
     animationSpeed = 1;
     animationDisabled = false;
-    compactLockScreen = false;
     lockScreenAnimations = false;
     lockOnSuspend = true;
     enableLockScreenMediaControls = false;
@@ -754,7 +753,6 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     enableClipboardChips = true;
     clipboardWatchTextCommand = "wl-paste --type text --watch cliphist store";
     clipboardWatchImageCommand = "wl-paste --type image --watch cliphist store";
-    position = "center";
     mode = "fullscreen";
     displayMode = "free";
     iconRatio = 0.5;
@@ -763,7 +761,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     terminalCommand = "alacritty -e";
     customLaunchPrefixEnabled = false;
     customLaunchPrefix = "";
-    viewMode = "list";
+    viewMode = "grid";
     showCategories = true;
     iconMode = "tabler";
     showIconBackground = false;
@@ -773,11 +771,9 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     clearSearchOnClose = true;
     ignoreMouseInput = false;
     screenshotAnnotationTool = "";
-    overviewLayer = false;
     density = "default";
   };
   controlCenter = {
-    position = "close_to_bar_button";
     diskPath = "/";
     shortcuts = {
       left = [ {
@@ -887,6 +883,8 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     groupClickAction = "cycle";
     deadOpacity = 0.6;
     backgroundOpacity = 1.0;
+    pluginSpacing = 4;
+    fusedPlugins = false;
   };
   network = {
     bluetoothRssiPollingEnabled = false;
@@ -900,11 +898,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
   sessionMenu = {
     enableCountdown = true;
     countdownDuration = 10000;
-    position = "center";
-    showHeader = true;
     showKeybinds = true;
-    largeButtonsStyle = true;
-    largeButtonsLayout = "single-row";
     powerOptions = [ {
         action = "shutdown";
         enabled = true;
