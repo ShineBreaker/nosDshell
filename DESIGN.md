@@ -1,8 +1,11 @@
-# nosDshell 设计规范 —— DDE 15 视觉语言
+# nosDshell 设计规范：DDE 15 视觉语言
 
-本文件规定 nosDshell 的视觉和交互风格。目标：Noctalia 的每项功能都用 **deepin 15（DDE 15）** 的界面方式呈现。凡是界面改动，都要符合本规范；如果和本规范冲突，就改代码，不改规范。确实要改规范，单独提交，并在提交说明里写清理由。
+本文件规定 nosDshell 的视觉和交互风格，目标是让 Noctalia 的每项功能都以 deepin 15（DDE 15）的界面方式呈现。所有界面改动都要符合本规范。代码与规范冲突时改代码；确实要改规范，就单独提交，并在提交说明里写清理由。
 
-事实来源：`references/` 下的 GXDE-OS 仓库（DDE 15 的社区维护版，GPL-3.0，只供阅读）。本文中的数值都来自这些源码，形如 `gxde-dock/frame/item/appitem.cpp:297`（路径相对 `references/`）。参考源码里没有、由本规范推导出来的值，标为 **〔派生〕**。
+数值的来源是 `references/` 下的 GXDE-OS 仓库（DDE 15 的社区维护版，GPL-3.0，只供阅读）。出处写成 `gxde-dock/frame/item/appitem.cpp:297` 的形式，路径相对 `references/`。两种标记说明数值不是直接取自源码：
+
+- 〔派生〕：参考源码里没有，由本规范按 DDE 的总体规则推导。
+- 〔演进〕：有意偏离原版的现代化取值（见 §0「2026 演绎」），新值取代原值生效。
 
 ---
 
@@ -12,23 +15,23 @@
 
 DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色蒙版"，要么是"模糊加白色蒙版"。悬停、按下、选中这几种状态，只靠白色叠加层的透明度来区分，不换颜色。表面上不放彩色，强调色只用在"当前项"上。
 
-> **2026 演绎**：结构、布局、交互逐条忠于 DDE 15；渲染层按现代惯例精修——可见的发丝描边、更软更深的阴影、可跟随主题的瞬时面（OSD/通知/吐司，见 §1.2）。这类有意偏离原版的数值标 **〔演进〕**，标注处的新值取代原值生效。默认值仍落在 DDE 15 的范围内，超出范围的调节交给设置项（§6）。
+> **2026 演绎**：结构、布局和交互逐条忠于 DDE 15，渲染层按现代惯例精修，包括看得见的发丝描边、更柔和的阴影，以及能跟随主题的瞬时面（OSD、通知、吐司，见 §1.2）。这些取值标为〔演进〕。默认值仍落在 DDE 15 的范围内，超出范围的调节交给设置项（§6）。
 
 ### 设计原则
 
-1. **蒙版，而不是色块。** 常驻面板背景 = 背后模糊 + 半透明蒙版。蒙版颜色取自配色方案的表面角色〔演进：原为纯黑/纯白字面量〕——面板取 `mSurface`、弹出层取 `mSurfaceVariant`，蒙版自身的 DDE 透明度和模糊行为不变。Deepin 方案的表面值（暗 `#181818` / 浅 `#F8F8F8`）就是 DDE 15 的近黑/近白观感；其他方案得到各自色调的玻璃，这是方案染色可定制性的落点（§5）。面板背景不用渐变，不用 Material 实色 tonal surface 直接铺。OSD 和通知气泡这类瞬时提示是例外——它们不读蒙版，走 `maskTransient` 令牌体系：经典形态是不透明浅色实底（DDE 原版），也可切换为深色玻璃或跟随明暗模式（§1.2，`ui.transientSurface`）。
-2. **前景透明度阶梯。** 表面上所有层级都是"该表面前景色 × 某个透明度"——暗色面用 `onShell`、壁纸面用恒白、浅色瞬时用深文字色（§1.3）。
+1. **用蒙版，不用色块。** 常驻面板的背景是背后模糊加一层半透明蒙版。蒙版颜色取自配色方案的表面角色〔演进：原为纯黑、纯白字面量〕，面板取 `mSurface`，弹出层取 `mSurfaceVariant`；蒙版的 DDE 透明度和模糊行为不变。Deepin 方案的表面值（暗 `#181818`、浅 `#F8F8F8`）就是 DDE 15 的近黑、近白观感，其他方案得到各自色调的玻璃（§5）。面板背景不用渐变，也不直接铺 Material 的不透明 tonal surface。OSD 和通知气泡这类瞬时提示例外，它们读 `maskTransient` 令牌族：经典形态是不透明浅色实底（DDE 原版），也可以切换为深色玻璃或跟随明暗模式（§1.2，`ui.transientSurface`）。
+2. **前景透明度阶梯。** 表面上的所有层级都是"该表面的前景色 × 某个透明度"。暗色面用 `onShell`，壁纸面用恒白，浅色瞬时面用深色文字色（§1.3）。
 3. **一个强调色。** `#2CA7F8` 只用在：当前活动项、菜单悬停行、按下态、进度和高亮、链接。其他地方不出现。
 4. **小圆角。** 圆角在 4–10 px 之间（§1.4）。除头像、圆点这类正圆外，不要胶囊形，不要大圆角卡片。
-5. **贴边并居中。** 任务栏贴住屏幕边缘并居中；控制中心贴右边、占满屏高；弹出层用带箭头的矩形指向触发它的任务栏图标。**弹出层不和栏融合成一体**（不要 Noctalia 的 attached panel 和反向圆角）。
-6. **少动效。** 指针状态（悬停、按下、选中、禁用）一律瞬变——DDE 的 hover 高亮全是即时重绘，菜单与提示框没有任何显隐动画。能动的只有模型/生命周期驱动的变化：进入用 `OutCubic`，位移和尺寸用 `InOutCubic`，时长基准 300 ms，退场比进场快且收 ease-in。不要弹簧，不要回弹，不要水波纹。
+5. **贴边并居中。** 任务栏贴住屏幕边缘并居中；控制中心贴右边、占满屏高；弹出层用带箭头的矩形指向触发它的任务栏图标，与栏保持分离，不用 Noctalia 的 attached panel 和反向圆角。
+6. **少动效。** 指针状态（悬停、按下、选中、禁用）一律瞬变，因为 DDE 的 hover 高亮全是即时重绘，菜单与提示框也没有显隐动画。只有数据或生命周期驱动的变化才做动画：进入用 `OutCubic`，位移和尺寸用 `InOutCubic`，时长基准 300 ms，退场比进场快并使用 ease-in 曲线。弹簧、回弹和水波纹都不用。
 7. **每个效果都要有降级方案。** 关掉模糊时，蒙版要更不透明（§1.2）。关掉动画时，时长为 0。
 
 ---
 
 ## 1. 设计令牌（Design Tokens）
 
-令牌放在 `Commons/Style.qml`（尺寸、时长）和 `Commons/Color.qml`（颜色）。**组件里不要写死数值**，需要新数值就先在这里加令牌。
+令牌放在 `Commons/Style.qml`（尺寸、时长）和 `Commons/Color.qml`（颜色）。组件只读令牌；需要新数值时，先在这两个文件里加令牌。
 
 ### 1.1 强调色与功能色
 
@@ -47,34 +50,38 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 | 令牌 | 有模糊时 | 无模糊时 | 来源 |
 |---|---|---|---|
-| `maskDark` | `mSurface` × `ui.panelBackgroundOpacity`（默认 **0.65**） | `mSurface` × **0.8** | dtkwidget `DBlurEffectWidget::maskColor()`（DarkColor：有模糊用 maskAlpha，无模糊用 `MASK_COLOR_ALPHA_DEFAULT=204`）；Deepin 原默认 `opacity=0.4`（`gxde-desktop-schemas` `com.deepin.dde.appearance`），我们抬到 0.65 压透出文字〔演进〕；RGB 改取方案表面色〔演进〕——Deepin `#181818` ≈ 原 `#000000` |
-| `maskLight` | `mSurface` × `ui.panelBackgroundOpacity` 〔派生，与暗色对称〕 | `mSurface` × **0.8** | 同上（LightColor）；RGB 改取方案表面色〔演进〕——Deepin `#F8F8F8` ≈ 原 `#FFFFFF` |
-| `popupDark` | `mSurfaceVariant` × 0.86 × `ui.popupOpacity`（`popupShell` 应用层再乘系数） | 同左 | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）；RGB 改取方案 surfaceVariant〔演进〕——Deepin `#2A2A2A` ≈ 原 `#242424` |
-| `borderDark` | `mOutline` × 0.10〔演进：原版 0.05 在现代屏上近乎不可见，提到 Win11 式可见发丝边；底色改取方案 mOutline——Deepin `#3A3A3A` ≈ 原 `#2C3238`〕 | `mOutline` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
-| `borderLight` | `mOutline` × 0.08〔演进：原版 0.04；底色改取方案 mOutline——Deepin `#D5D5D5` ≈ 原 `#E5E5E5`〕 | `mOutline` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
+| `maskDark` | `mSurface` × `ui.panelBackgroundOpacity`（默认 0.65） | `mSurface` × 0.8 | dtkwidget `DBlurEffectWidget::maskColor()`（DarkColor：有模糊时用 maskAlpha，无模糊时用 `MASK_COLOR_ALPHA_DEFAULT=204`）。Deepin 原默认 `opacity=0.4`（`gxde-desktop-schemas` `com.deepin.dde.appearance`），这里提到 0.65，压住透上来的文字〔演进〕。RGB 改取方案表面色〔演进〕，Deepin 的 `#181818` 接近原版 `#000000` |
+| `maskLight` | `mSurface` × `ui.panelBackgroundOpacity`〔派生，与暗色对称〕 | `mSurface` × 0.8 | 同上（LightColor）。RGB 改取方案表面色〔演进〕，Deepin 的 `#F8F8F8` 接近原版 `#FFFFFF` |
+| `popupDark` | `mSurfaceVariant` × 0.86 × `ui.popupOpacity`（默认 1.0，范围 0.3–1.0；`popupShell` 在应用层再乘这个系数） | 同左 | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）。RGB 改取方案 `mSurfaceVariant`〔演进〕，Deepin 的 `#2A2A2A` 接近原版 `#242424` |
+| `borderDark` | `mOutline` × 0.10〔演进：原版 0.05 在现代屏幕上几乎看不见，提高到看得见的发丝边。底色改取方案 `mOutline`，Deepin 的 `#3A3A3A` 接近原版 `#2C3238`〕 | `mOutline` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
+| `borderLight` | `mOutline` × 0.08〔演进：原版 0.04。底色改取方案 `mOutline`，Deepin 的 `#D5D5D5` 接近原版 `#E5E5E5`〕 | `mOutline` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
 
 规则：
 
-- **任务栏、控制中心、启动器小窗口、任务栏弹出层、暗色菜单**都用 `maskDark`。其中任务栏弹出层和暗色菜单用 `popupDark`（这两者的面积小，需要更高的不透明度才看得清）。
-- **OSD、通知气泡、吐司**用 `maskTransient` 令牌族。瞬时面的形态由 `ui.transientSurface` 控制（§6）：
-  - `light`：不透明浅色实底 + 深文字——DDE 15 的原版形态：浅色瞬时提示叠在暗色常驻外壳之上。底色取方案浅色面〔演进〕：浅色模式下即 `mSurface`（Deepin `#F8F8F8`，其他浅色方案各随其调）；暗色模式下方案没有浅色面，退为固定经典值 `#F8F8F8`，保证"light"始终是 DDE 那块浅砖。DDE 原版用 `DBlurEffectWidget::LightColor`（近不透明），半透明会浑浊且毁对比度，故取实色。
-  - `dark`〔演进〕：深色玻璃，暗色模式底色取方案 `mSurfaceVariant`（Deepin `#2A2A2A`）；浅色模式下方案没有深色面，退为固定 `#242424`。有模糊时 alpha = `0.86 × ui.transientOpacity`（下限 0.5），无模糊时下限抬到 0.9——同样是"宁可平坦，不可浑浊"。文字/描边/叠加层整体翻为暗面规格（见下表"瞬时令牌"）。
-  - `auto`（默认）〔演进〕：暗色模式按 `dark`，浅色模式按 `light`——跟随系统观感。
-  - `ui.transientOpacity`（默认 1.0，范围 0.3–1.0）同时作用于两种形态：有模糊时直接乘在各自的基准 alpha 上（light 基准 1.0，dark 基准 0.86），无模糊时最终 alpha 一律抬到 ≥0.9——同样是"宁可平坦，不可浑浊"。`notifications.backgroundOpacity` 作为通知专属系数继续叠加。
-- **全屏界面**（全屏启动器、关机界面、锁屏）不用蒙版，背景是**预先模糊好的壁纸**（§1.8）。
-- "有模糊"= `Settings.data.general.enableBlurBehind` 为真 **且** 合成器确实提供 `ext-background-effect-v1`（启动时探测，见 §4 `nosd-helpers wl-probe`）。合成器不支持时一律按"无模糊"取 0.8 蒙版，否则半透明蒙版下面是清晰的壁纸，文字不可读。组件只读 `Color.maskDark` 这类令牌，不自己算透明度。
-- 组件实际使用的是下列**语义令牌**：
+- 任务栏、控制中心和启动器小窗口用 `maskDark`。任务栏弹出层和暗色菜单面积小，需要更高的不透明度才看得清，用 `popupDark`。
+- OSD、通知气泡和吐司用 `maskTransient` 令牌族。瞬时面的形态由 `ui.transientSurface` 控制：
+  - `light`：不透明的浅色实底配深色文字，即 DDE 15 原版形态，浅色瞬时提示叠在暗色常驻外壳之上。底色取方案的浅色面〔演进〕。浅色模式下就是 `mSurface`（Deepin 为 `#F8F8F8`，其他浅色方案各随其色调）；暗色模式下方案没有浅色面，退为固定的经典值 `#F8F8F8`，保证 `light` 始终是 DDE 的那块浅色方块。DDE 原版用近乎不透明的 `DBlurEffectWidget::LightColor`，半透明会发浑并降低对比度，所以取实色。
+  - `dark`〔演进〕：深色玻璃。暗色模式下底色取方案的 `mSurfaceVariant`（Deepin 为 `#2A2A2A`）；浅色模式下方案没有深色面，退为固定的 `#242424`。有模糊时 alpha 不低于 0.5。文字、描边和叠加层整体换成暗面规格（见本节最后一条）。
+  - `auto`（默认）〔演进〕：暗色模式按 `dark`，浅色模式按 `light`，跟随系统观感。
+  - `ui.transientOpacity`（默认 1.0，范围 0.3–1.0）作用于两种形态。有模糊时直接乘在各自的基准 alpha 上（light 为 1.0，dark 为 0.86）；无模糊时最终 alpha 一律不低于 0.9，因为没有模糊的半透明面会发浑，宁可平坦。`notifications.backgroundOpacity` 是通知专属的系数，在此基础上再相乘。
+- 全屏界面（全屏启动器、关机界面、锁屏）不用蒙版，背景是预先模糊好的壁纸（§1.8）。
+- "有模糊"指 `Settings.data.general.enableBlurBehind` 为真，并且合成器确实提供 `ext-background-effect-v1`（启动时探测，见 §4.1）。合成器不支持时一律按无模糊处理，取 0.8 蒙版；否则半透明蒙版下面是清晰的壁纸，文字无法阅读。透明度只由令牌计算，组件直接读 `Color.maskDark` 这类令牌。
+- 组件实际读的是下列语义令牌：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
-  - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原固定白 × 0.9〕。
-  - `Color.borderShell` / `Color.borderTransient`：分别对应 `borderDark` / `borderLight`（浅色外壳使用 `borderLight`）；描边透明度受 `ui.borderEmphasis`（0–2，默认 1，0 = 无边框）整体缩放〔演进〕。
-  - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司），取值按上面的 `transientSurface` 规则解析——不再恒为不透明 `#F8F8F8`〔演进〕。
-- 与之配套的前景色：`Color.onShell` = 方案的 `mOnSurface`〔演进〕——Deepin 仍是暗 `#FFFFFF` / 浅 `#303030`，其他方案的壳上文字随方案色相（如 Gruvbox 的米黄）。`Color.onTransient` 同理：浅色瞬时面 = 浅深文字（浅色模式取 `onShell`，暗色模式固定 `#303030` 经典值），深色瞬时面 = 浅文字。`onShellSecondary` / `onShellTertiary` 是它的弱化级：暗色侧用 DDE 规格 alpha 0.8 / 0.6，浅色侧 tertiary 提到 0.7——`#303030` × 0.6 在白帧上只有约 3.8:1，0.7 落到 ≈`#6E6E6E`（~5:1），对齐浅色方案的 `mOnSurfaceVariant`（`#6B6B6B`）。§1.3 的叠加阶梯以对应表面的前景色为底色。
-- 瞬时面为 `dark` 时，整组瞬时令牌翻转〔演进〕：暗色模式下 `onTransient`→`onShell`（方案白/米白等）、`onTransientBody`→前景 × 0.85、`onTransientTrack`→前景 × 0.15、`onTransientTick`→前景 × 0.5、`overlayTransient(level)`→前景阶梯、动作文字 `transientAction`→`accent`（浅色面上是 `accentAction`）；浅色模式强制 dark 砖时前景退为固定恒白。组件永远只读这些令牌，不判断当前形态。
-- 壁纸面（全屏启动器、关机界面、锁屏，§1.8 的预模糊壁纸 + 暗色压暗）在两种模式下都是暗色表面，上面的内容用不随主题翻转的令牌：`Color.onWallpaper` / `onWallpaperSecondary` / `onWallpaperTertiary`（恒白阶梯）、`overlayWallpaper(level)`（恒白叠加阶梯）、`onWallpaperShadow`（§1.5 文字投影 `rgba(0,0,0,0.31)`）。这些面上禁用 `onShell` 和 `overlay()`。
+  - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原为固定白色 × 0.9〕。
+  - `Color.borderShell` 和 `Color.borderTransient`：分别对应 `borderDark` 和 `borderLight`，浅色外壳使用 `borderLight`。描边透明度整体乘以 `ui.borderEmphasis`（0–2，默认 1，0 表示无描边）〔演进〕。
+  - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司），按上面的 `ui.transientSurface` 规则取值〔演进：原版恒为不透明 `#F8F8F8`〕。
+- 配套的前景色：
+  - `Color.onShell` 是方案的 `mOnSurface`〔演进〕。Deepin 仍是暗色 `#FFFFFF`、浅色 `#303030`，其他方案的外壳文字随方案色相（例如 Gruvbox 的米黄）。
+  - `Color.onTransient` 同理：浅色瞬时面用深色文字（浅色模式取 `onShell`，暗色模式固定为经典值 `#303030`），深色瞬时面用浅色文字。
+  - `onShellSecondary` 和 `onShellTertiary` 是弱化级。暗色侧按 DDE 规格取 alpha 0.8 和 0.6。浅色侧的 tertiary 提到 0.7：`#303030` × 0.6 在白底上对比度只有约 3.8:1，0.7 约为 `#6E6E6E`（约 5:1），与浅色方案的 `mOnSurfaceVariant`（`#6B6B6B`）一致。
+  - §1.3 的叠加阶梯以对应表面的前景色为底色。
+- 瞬时面为 `dark` 时，整组瞬时令牌翻转〔演进〕。暗色模式下，`onTransient` 取 `onShell`（方案的白色或米白等），`onTransientBody` 取前景 × 0.85，`onTransientTrack` 取前景 × 0.15，`onTransientTick` 取前景 × 0.5，`overlayTransient(level)` 取前景阶梯，动作文字 `transientAction` 取 `accent`（浅色面上是 `accentAction`）。浅色模式下强制使用深色方块时，前景退为固定的白色。组件只读这些令牌，不判断当前是哪种形态。
+- 壁纸面（全屏启动器、关机界面、锁屏，即 §1.8 的预模糊壁纸加暗色压暗）在两种模式下都是暗色表面，上面的内容使用不随主题翻转的令牌：`Color.onWallpaper`、`onWallpaperSecondary`、`onWallpaperTertiary`（恒白阶梯），`overlayWallpaper(level)`（恒白叠加阶梯），`onWallpaperShadow`（§1.5 的文字投影 `rgba(0,0,0,0.31)`）。这些表面上不用 `onShell` 和 `overlay()`。
 
 ### 1.3 前景叠加阶梯（MD3 state layer）
 
-阶梯底色的规则同 MD3 state layer：**状态色 = 该表面的前景色 × 层级透明度**。`Color.overlay(level)` 以 `onShell` 为底——暗色模式即 `mOnSurface`（Deepin 为白，其他方案随其色相）；浅色模式同理取 `mOnSurface` 的深色值（Deepin `#303030` ≈ 原黑阶梯）〔演进：原为白/黑字面量〕。壁纸面另用 `overlayWallpaper`（恒白），瞬时面用 `overlayTransient`（取 `onTransient`）。
+阶梯的规则与 MD3 state layer 相同：状态色等于该表面的前景色乘以层级透明度。`Color.overlay(level)` 以 `onShell` 为底色，也就是方案的 `mOnSurface`：暗色模式下 Deepin 为白色，其他方案随各自色相；浅色模式下取 `mOnSurface` 的深色值，Deepin 为 `#303030`，接近原版的黑色阶梯〔演进：原为白色、黑色字面量〕。壁纸面改用 `overlayWallpaper`（恒白），瞬时面用 `overlayTransient`（以 `onTransient` 为底色）。
 
 | 层级 | α | 典型用途 | 来源 |
 |---|---|---|---|
@@ -97,8 +104,8 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | `radiusWindow` | 8 | 通知气泡、对话框（`dtk-window-radius`）、浅色菜单 | `bubble.cpp:288-296`；xsettings `dtk-window-radius=8` |
 | `radiusLarge` | 10 | OSD、关机按钮选中块、启动器网格悬停、时尚托盘胶囊、小窗口启动器贴近任务栏的那个角 | `dde-osd/container.cpp:318-321`；`rounditembutton.cpp`；`appitemdelegate.cpp:131`；`gxde-launcher/src/windowedframe.h:159` |
 
-- **禁止**超过 10 px 的圆角，正圆除外——约束的是基准令牌值；`radiusRatio`/`iRadiusRatio`（0–200%）允许用户把整套圆角等比放大超出该上限，这是有意的自由度出口。
-- `general.radiusRatio` / `iRadiusRatio` 继续作为整体缩放系数，默认 1。
+- 圆角令牌的基准值不超过 10 px，正圆除外。
+- `general.radiusRatio` 和 `iRadiusRatio`（取值 0–2，即 0–200%，默认 1）继续作为整体缩放系数。用户可以借它把整套圆角等比放大到超过 10 px，这是有意留给用户的调节空间。
 - 控制中心贴边部分是直角（`frame.cpp:150`）。任务栏在高效模式下是直角。
 
 ### 1.5 文字
@@ -109,43 +116,43 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | 基础字号 | 9 pt（约 12 px） | appearance `font-size=9.0` |
 | 暗色表面主文字 | `#FFFFFF` | 多处 |
 | 暗色次要文字 | 白 × 0.8（数值、提示）；白 × 0.6（导航默认态、容量） | control-center `TipsLabel`；launcher `categorybutton.cpp:193-213` |
-| 浅色表面标题 | `#303030`，字重 460 → 用 Medium(500) | `dde-osd/notification/appbody.cpp:30-31` |
+| 浅色表面标题 | `#303030`，原版字重 460，取 Medium(500) | `dde-osd/notification/appbody.cpp:30-31` |
 | 浅色表面正文 | `rgba(0,0,0,0.9)` | 同上 |
 | 页面标题 | 14 px，字重 500，居中 | control-center `QLabel#ContentTitle` |
-| 设置组标题 | 字重 550 → 用 DemiBold(600) | `settingshead.cpp` + common.qss |
+| 设置组标题 | 原版字重 550，取 DemiBold(600) | `settingshead.cpp` + common.qss |
 | 控制中心时钟 | 46 px，Light | `mainwidget.cpp:99-107` |
 | 锁屏时钟 | 68 px，Light（原版字体为 Maven Pro Light；退回 `Noto Sans` Light），日期 16 px | `dde-lock/timewidget.cpp:36-60` |
 | 模糊壁纸上的文字 | 白色，加一层黑色投影 `rgba(0,0,0,0.31)`，偏移 (0,1) | `appitemdelegate.cpp:142-153` |
 
-- 字重只用 Light(300)、Regular(400)、Medium(500)、DemiBold(600)。**不用 Bold**。
+- 字重只用 Light(300)、Regular(400)、Medium(500)、DemiBold(600)，不用 Bold。
 - 字体相关设置项（`ui.fontDefault` 等）保留。默认值为空，表示按上表依次回退。
 
 ### 1.6 阴影
 
 | 用途 | 模糊半径 | 偏移 | 颜色 | 来源 |
 |---|---|---|---|---|
-| 带箭头弹出层 | 32 | (0,3) | 黑 × 0.18 〔演进：原版 20/(0,2)/0.5，更大半径更低不透明度是现代软阴影〕 | `dockitem.cpp:64-67` |
+| 带箭头弹出层 | 32 | (0,3) | 黑 × 0.18〔演进：原版为 20、(0,2)、0.5，改为半径更大、不透明度更低的柔和阴影〕 | `dockitem.cpp:64-67` |
 | 控制中心 | 32 | (-16,0) | 黑 × 0.24 〔演进〕 | `frame.cpp:151-154` |
 | OSD | 24 | (0,5) | 黑 × 0.14 〔演进：原版 16/0.27〕 | `container.cpp:73-78` |
 | 通知气泡 | 24 | (0,4) | 黑 × 0.18 〔演进：原版 14/0.39〕 | `bubble.cpp:133-134` |
 | 浅色菜单 | 20 | (0,8) | 黑 × 0.12 〔演进：原版 12/0.2〕 | `dmenubase.cpp:88-96` |
 | 对话框 | 32 | (0,0) | 黑 × 0.18 〔演进〕 | `dockitem.cpp:64-67` |
 
-任务栏本身**没有阴影**（`mainwindow.cpp:104-110`）。阴影统一走 `NDropShadow`，参数从令牌读取。原来的 `general.shadowDirection` / `shadowOffset*` 设置保留，但默认值改为上表。`general.shadowStrength`（0–2，默认 1）整体缩放阴影颜色的不透明度〔演进〕。阴影色不透明度刻意压到 ≲0.24：剪影式阴影在源轮廓内部是全 alpha 平台，矩形气泡下会读成"高透明度的黑色背景块"；低 alpha + 大模糊半径让平台区淡化为柔和投影。
+任务栏本身没有阴影（`mainwindow.cpp:104-110`）。阴影统一用 `NDropShadow` 绘制，参数从令牌读取。原有的 `general.shadowDirection` 和 `shadowOffset*` 设置保留，默认值改为上表。`general.shadowStrength`（0–2，默认 1）整体缩放阴影颜色的不透明度〔演进〕。阴影颜色的不透明度刻意压在 0.24 以下：剪影式阴影在原轮廓内部是一整块满 alpha 的区域，放在矩形气泡下会看成一块半透明黑底；低 alpha 加大模糊半径能让这块区域淡成柔和的投影。
 
 ### 1.7 动效
 
-DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象；dock 的弹出层、tooltip、窗口预览全部瞬变；hover 高亮在 mouse 事件里直接重绘。真正插值的动画集中在三层：**微反馈**（≤180 ms）、**空间过渡**（300 ms 主节拍）、**长动效**（壁纸交叉淡化、滚轮惯性、attention 摆动）。
+DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 的弹出层、tooltip 和窗口预览全部瞬变；hover 高亮在鼠标事件里直接重绘。真正做插值的动画分三层：微反馈（不超过 180 ms）、空间过渡（300 ms 主节拍）、长动效（壁纸交叉淡化、滚轮惯性、attention 摆动）。
 
 | 令牌 | 时长 | 曲线 | 用于 | 来源 |
 |---|---|---|---|---|
 | `motionPanel` | 300 ms | InOutCubic | 任务栏显示/隐藏/尺寸变化、控制中心内的页面切换 | `gxde-dock/frame/window/mainwindow.cpp:360-386`；`gxde-control-center/src/frame/framewidget.cpp:44-51` |
 | `motionEnter` | 300 ms | OutCubic | 控制中心整窗滑入、各类面板出现 | `gxde-control-center/src/frame/frame.cpp:71,90-95` |
-| `motionBubbleIn` | 180 ms | OutCubic，从锚定缘水平滑入 12 px 并淡入（DDE 右下气泡：waylandEnterOffset −12→0 加在 rightMargin） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:218-225,496-508` |
+| `motionBubbleIn` | 180 ms | OutCubic，从锚定的屏幕边水平滑入 12 px 并淡入（DDE 右下角气泡把 waylandEnterOffset 从 −12 变到 0，加在 rightMargin 上） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:218-225,496-508` |
 | `motionBubbleOut` | 300 ms | OutCubic，向右滑出（DDE 为向右缘塌缩的 geometry 动画） | 通知消失 | `gxde-session-ui/dde-osd/notification/bubble.cpp:486-488` |
-| `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic，下缘 margin 偏移 −12→0（自下向上入）/ →−8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
+| `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic。进入时下边距偏移从 −12 变到 0（自下而上），退出时变到 −8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
 | 壁纸过渡 | 1000 ms | InOutCubic | `wallpaper.transitionDuration`（默认 1000，设置滑杆 0.5–10 s） | `gxde-session-ui/widgets/fullscreenbackground.cpp:51-74` |
-| `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停放大 1.0→1.2 | `gxde-launcher/src/widgets/navigationwidget.cpp:213-230` |
+| `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停时从 1.0 放大到 1.2 | `gxde-launcher/src/widgets/navigationwidget.cpp:213-230` |
 | `motionSettingsScroll` | 1400 ms | OutQuint | 设置页内定位与页内长滚动 | `gxde-control-center/src/frame/widgets/contentwidget.cpp:51,106-112` |
 | `motionScrollWheel` | 800 ms | OutQuint | 滚轮惯性滚动（列表/网格/滚动视图） | `gxde-launcher/src/view/applistview.cpp:105-112` |
 | `motionProgramScroll` | 300 ms | OutQuad | 程序化滚动定位（点分类跳锚点、滚动到可见） | `gxde-launcher/src/fullscreenframe.cpp:189-204`（未显式设时长，Qt 默认 250，归并到 300 主节拍） |
@@ -157,18 +164,18 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 规则：
 
-- **瞬变清单**（DDE 明确不动画，禁止补动效）：菜单出现/消失/悬停/子菜单；任务栏弹出层与提示框的显隐；指针态颜色与透明度（hover/press/checked/disabled）；attention 图标切换；OSD 数值条；密码错误反馈（描边 + 文字，无抖动）；启动器显示模式切换。
-- **曲线词汇表**：`OutCubic` = 进入；`InOutCubic` = 位移/尺寸/页面切换；`InCubic` = 快速退场；`OutQuad` = 程序化滚动定位；`OutQuint` = 滚轮长惯性；`Linear` = 旋转/循环/计时/拖拽跟手。其余曲线（Back、Elastic、Bounce、Spring、自定义 `BezierSpline`）一律禁用。
-- **不对称退场**：退出比进入短且收 ease-in（OSD 160/120、`OutCubic`→`InCubic` 是范本）。
-- **合并语义**：运行中的动画被再次触发时只改目标值、不打断（QML `Behavior` 天然如此；手写 `start()` 前先沿用当前值）。
-- **延时不是动画**：tooltip 500 ms、预览 200/300 ms、自动隐藏收起 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换的防抖，不换算成缓动。
-- **适配说明**：DDE 的启动器开合、关机界面是零动画瞬显；本实现为这两类全屏毛玻璃面保留 `motionEnter` 短淡入——layer-shell 全屏面瞬显在合成器上会闪，且要等模糊壁纸首帧。这是有意的偏离，不是疏漏。
+- **瞬变清单。** DDE 明确不做动画的地方，这里也不补动效：菜单出现/消失/悬停/子菜单；任务栏弹出层与提示框的显隐；指针态颜色与透明度（hover/press/checked/disabled）；attention 图标切换；OSD 数值条；密码错误反馈（描边 + 文字，无抖动）；启动器显示模式切换。
+- **曲线词汇表。** `OutCubic` = 进入；`InOutCubic` = 位移/尺寸/页面切换；`InCubic` = 快速退场；`OutQuad` = 程序化滚动定位；`OutQuint` = 滚轮长惯性；`Linear` = 旋转/循环/计时/拖拽跟手。其余曲线（Back、Elastic、Bounce、Spring、自定义 `BezierSpline`）一律禁用。
+- **不对称退场。** 退出比进入短，并使用 ease-in 曲线。OSD 的 160/120 ms、`OutCubic` 进入配 `InCubic` 退出是范例。
+- **合并语义。** 运行中的动画再次被触发时，只改目标值，不打断。QML 的 `Behavior` 本来就这样；手写 `start()` 时先以当前值为起点。
+- **延时不是动画。** tooltip 的 500 ms、预览的 200/300 ms、自动隐藏的 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换前的防抖等待，不换算成缓动。
+- 有意的偏离：DDE 的启动器开合和关机界面都是零动画瞬显，本实现为这两类全屏毛玻璃面保留 `motionEnter` 短淡入。layer-shell 全屏面瞬间出现时合成器上会闪一下，而且要等模糊壁纸的第一帧。
 - 关闭模糊时，panel/enter 类动画时长改为 150 ms（`framewidget.cpp:172`）。`animationDisabled` 为真时一律为 0。
-- 已有的 `Style.animationFast/Normal/...` 继续保留给通用场景（如拖拽跟手、装饰性循环），但上表里列出的场景**必须**用对应令牌。
+- 已有的 `Style.animationFast/Normal/...` 继续留给通用场景（如拖拽跟手、装饰性循环）。上表列出的场景一律用表中的令牌。
 
 ### 1.8 背景与模糊壁纸
 
-- 全屏启动器、关机界面、锁屏都画**预先模糊的当前壁纸**：按 cover 方式（等比放大后居中裁切）缩放到屏幕尺寸，最底下先铺一层纯黑（`fullscreenbackground.cpp:142,259-275`）。
+- 全屏启动器、关机界面和锁屏都画预先模糊好的当前壁纸，按 cover 方式（等比放大后居中裁切）缩放到屏幕尺寸，最底下先铺一层纯黑（`fullscreenbackground.cpp:142,259-275`）。
 - 模糊图由 Rust 工具 `nosd-blur` 生成并缓存（对应 deepin 的 `com.deepin.daemon.ImageBlur`，见 §4）。缓存图还没生成好时，先用 `MultiEffect` 实时模糊顶替。
 - 启动器上下两端各有 60 px 的渐隐带（`GradientLabel`，`constants.h:41`）。
 
@@ -176,7 +183,7 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 - **应用图标**：全彩，取系统图标主题（推荐 Papirus 或 deepin；不随仓库分发）。
 - **状态与托盘图标**：16 px 的 `*-symbolic` 主题图标（`battery-*-symbolic`、`audio-volume-*-symbolic`、`network-*-symbolic`）。主题里找不到时，退回 Tabler 字形。
-- **电池图标的状态色**〔演进〕：接通电源（充电中或满电）图标与电量文字着 `positive` 绿，低于 `systemMonitor.batteryWarningThreshold`（默认 20%，阈值页可调）着 `alert` 红——DDE 自有电源素材本来就是分色的（`battery_*_plugged.svg`/`battery_plugged.svg` 绿、`battery_0.svg` 红、`battery_2.svg` 琥珀），这里按原色归一化到令牌。
+- **电池图标的状态色**〔演进〕：接通电源（充电中或已充满）时，图标和电量文字着 `positive` 绿色；电量低于 `systemMonitor.batteryWarningThreshold`（默认 20%，在阈值页调整）时着 `alert` 红色。DDE 自己的电源素材本来就分颜色（`battery_*_plugged.svg` 和 `battery_plugged.svg` 为绿色，`battery_0.svg` 为红色，`battery_2.svg` 为琥珀色），这里把原色统一到令牌。
 - **界面字形**：继续用 Tabler 线性图标（风格和 DDE 15 的细线图标一致）。常用尺寸 16 / 22 / 24 px，**不用填充（filled）变体**。
 - 控制中心模块图标 24 px，关机按钮图标 75 px，锁屏头像 100 px（§3）。
 - **DDE 专属素材可以直接复用**（本仓库与参考仓库同为 GPL-3.0）。凡是 DDE 15 自带、系统图标主题里没有对应物的界面素材，优先从 `references/` 复制原件，而不是用 Tabler 字形或 QML 重画近似物：
@@ -194,33 +201,33 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 ---
 
-## 2. Noctalia 功能 → DDE 15 模块对照
+## 2. Noctalia 功能与 DDE 15 模块的对照
 
-左列每项 Noctalia 功能，都必须落到右列的 DDE 形态上。
+左列的每项 Noctalia 功能都落到右列的 DDE 形态上。
 
 | Noctalia | DDE 15 形态 | 规格章节 |
 |---|---|---|
-| `Modules/Bar`（顶栏） | **任务栏 · 高效模式**（贴边通栏） | §3.1 |
-| `Modules/Dock` | **任务栏 · 时尚模式**（居中） | §3.1 |
-| Bar 上的挂件（`Modules/Bar/Widgets/*`） | **任务栏插件**（两种模式下样式不同） | §3.1.4 |
-| Bar 和 Dock 上的弹出面板（Audio / Network / Bluetooth / Battery / Brightness / Clock / Media / SystemStats / Tray 抽屉 / 插件面板） | **带箭头弹出层**（DockPopupWindow） | §3.2 |
+| `Modules/Bar`（顶栏） | 任务栏 · 高效模式（贴边通栏） | §3.1 |
+| `Modules/Dock` | 任务栏 · 时尚模式（居中） | §3.1 |
+| Bar 上的挂件（`Modules/Bar/Widgets/*`） | 任务栏插件（两种模式下样式不同） | §3.1.4 |
+| Bar 和 Dock 上的弹出面板（Audio / Network / Bluetooth / Battery / Brightness / Clock / Media / SystemStats / Tray 抽屉 / 插件面板） | 带箭头弹出层（DockPopupWindow） | §3.2 |
 | 提示框 `Modules/Tooltip` | 暗色带箭头的提示框（TipsWidget） | §3.2 |
-| 右键菜单 `NContextMenu` / `NPopupContextMenu` / `TrayMenu` / `DockMenu` | **deepin-menu**：暗色带箭头菜单 / 浅色菜单 | §3.3 |
-| 启动器 `Panels/Launcher` | **全屏启动器**（默认）+ **小窗口启动器** | §3.4 |
-| 控制中心 `Panels/ControlCenter` + 卡片 | **控制中心首页**（右侧滑出） | §3.5 |
-| 设置 `Panels/Settings` | **控制中心设置页**（56 px 图标导航条 + 内容区） | §3.5.3 |
-| 通知历史 `Panels/NotificationHistory` | 控制中心首页的**通知页**（铃铛按钮切换） | §3.5.2 |
-| 通知 `Modules/Notification` | **浅色通知气泡** | §3.6 |
+| 右键菜单 `NContextMenu` / `NPopupContextMenu` / `TrayMenu` / `DockMenu` | deepin-menu：暗色带箭头菜单 / 浅色菜单 | §3.3 |
+| 启动器 `Panels/Launcher` | 全屏启动器（默认）+ 小窗口启动器 | §3.4 |
+| 控制中心 `Panels/ControlCenter` + 卡片 | 控制中心首页（右侧滑出） | §3.5 |
+| 设置 `Panels/Settings` | 控制中心设置页（56 px 图标导航条 + 内容区） | §3.5.3 |
+| 通知历史 `Panels/NotificationHistory` | 控制中心首页的通知页（铃铛按钮切换） | §3.5.2 |
+| 通知 `Modules/Notification` | 浅色通知气泡 | §3.6 |
 | 吐司 `Modules/Toast` | 浅色气泡的简化版 | §3.6 |
-| OSD `Modules/OSD` | **dde-osd 浅色方块** | §3.7 |
-| 会话菜单 `Panels/SessionMenu` | **dde-shutdown 全屏关机界面** | §3.8 |
-| 锁屏 `Modules/LockScreen` | **dde-lock** | §3.9 |
+| OSD `Modules/OSD` | dde-osd 浅色方块 | §3.7 |
+| 会话菜单 `Panels/SessionMenu` | dde-shutdown 全屏关机界面 | §3.8 |
+| 锁屏 `Modules/LockScreen` | dde-lock | §3.9 |
 | 壁纸 `Panels/Wallpaper` | 底部壁纸选择条〔派生自 dde-desktop，参考仓库中没有〕 | §3.10 |
 | 首次设置向导 `Panels/SetupWizard` | 类似 dde-welcome：模糊壁纸 + 居中的暗色对话框 | §3.11 |
-| 各类确认弹窗 | **DDialog** 暗色对话框 | §3.11 |
+| 各类确认弹窗 | DDialog 暗色对话框 | §3.11 |
 | 桌面挂件 `Modules/DesktopWidgets` | 暗色毛玻璃小卡片 | §3.12 |
-| 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | **DDE 中没有**。保留功能代码，默认关闭；屏幕圆角在"个性化"，栏体细节在"任务栏"〔演进：按对象归位，不再堆"高级"〕 | — |
-| 多个配色方案 / 壁纸取色 | 默认用 **Deepin** 方案；切换其他方案只改强调色 | §5 |
+| 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | DDE 中没有。保留功能代码，默认关闭。屏幕圆角的设置在"个性化"，栏体细节在"任务栏"〔演进：按配置对象归位，不集中放在"高级"〕 | — |
+| 多个配色方案、壁纸取色 | 默认用 Deepin 方案。切换方案时，表面色调、文字色相和强调色随方案变化 | §5 |
 
 ---
 
@@ -228,42 +235,42 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 ### 3.1 任务栏（Dock）
 
-一个任务栏，两种模式，同一时刻只显示一种。由 `dock.mode` 控制：`"fashion"`（默认）或 `"efficient"`。
+任务栏只有一个，有两种模式，同一时刻只显示一种，由 `dock.mode` 选择：`"fashion"`（默认）或 `"efficient"`。
 来源：`gxde-dock`；默认值取自 `com.deepin.dde.dock.gschema.xml`。
 
 #### 3.1.1 通用
 
-- 位置：`bottom`（默认）/ `top` / `left` / `right`，贴住屏幕边缘。
-- 尺寸：图标尺寸分小 30、中 **36**（默认）、大 48 三档（`docksettings.cpp:42-44`）。
+- 位置：`bottom`（默认）、`top`、`left`、`right`，贴住屏幕边缘。
+- 尺寸：图标尺寸分小 30、中 36（默认）、大 48 三档（`docksettings.cpp:42-44`）。
   - 项高 = 图标尺寸 × 1.5（时尚）或 × 1.2（高效）。
   - 项宽 = 项高 × 1.1（时尚）或 × 1.4（高效）。
   - 项内图标边长 = min(w,h) × 0.8（时尚）或 × 0.7（高效）。
-- 背景：`maskDark`，直接贴边，**没有阴影、没有边框**。时尚模式在启用合成时圆角为 5（`radiusItem`），高效模式为直角。
+- 背景：`maskDark`，再乘 `dock.backgroundOpacity`（默认 1.0，范围 0.3–1.0）〔演进〕。直接贴边，没有阴影，没有边框。时尚模式在启用合成时圆角为 5（`radiusItem`），高效模式为直角。
 - 隐藏模式（对应 DDE 的 `hide-mode`）：
-  - `keep-showing` → 预留屏幕空间（exclusive）
-  - `keep-hidden` → 自动隐藏
-  - `smart-hide` → 有窗口挡住时隐藏；合成器不支持时按 keep-hidden 处理
-- **全屏**：窗口在某输出上全屏时，该输出的任务栏/dock 无条件隐藏（不含 2 px 感应条，悬停不唤出），退出全屏即恢复。〔派生：DDE 的真实全屏应用覆盖 dock〕
+  - `keep-showing`：预留屏幕空间（exclusive）。
+  - `keep-hidden`：自动隐藏。
+  - `smart-hide`：有窗口挡住时隐藏；合成器不支持时按 `keep-hidden` 处理。
+- 全屏：某个输出上有窗口全屏时，该输出的任务栏无条件隐藏，不留 2 px 感应条，悬停也不唤出；退出全屏后恢复。〔派生：DDE 里真正全屏的应用会盖住 dock〕
 - 隐藏和显示：沿屏幕边缘滑动，`motionPanel`。显示延迟 100 ms（`show-timeout`），隐藏延迟 100 ms。隐藏后只在边缘留 2 px 的感应条。
 - 悬停提示：延迟 500 ms，用暗色带箭头提示框，箭头尖端距项边缘 2 px。
 - 右键：
-  - 点在图标区域（居中、边长为 0.8×min(w,h) 的正方形）内 → 弹出该项的**暗色带箭头菜单**。
-  - 点在图标区域外，或点在空白处 → 弹出**任务栏设置菜单**〔演进：原版固定浅色菜单改为 `popupShell` 随全局明/暗——`NPopupContextMenu` 的 `"dark"` 变体即主题跟随面，只保留 `"light"` 给显式要 DDE 经典白底的场景〕，含：模式、位置、大小、状态、插件开关（`docksettings.cpp:208-251`）。
+  - 点在图标区域内（居中、边长为 0.8 × min(w,h) 的正方形），弹出该项的暗色带箭头菜单。
+  - 点在图标区域外，或点在空白处，弹出任务栏设置菜单，包含模式、位置、大小、状态和插件开关（`docksettings.cpp:208-251`）。〔演进：原版固定为浅色菜单，这里改用随全局明暗变化的 `popupShell`。`NPopupContextMenu` 的 `"dark"` 变体就是跟随主题的表面，`"light"` 只留给明确要求 DDE 经典白底的场景。〕
 
 #### 3.1.2 时尚模式（fashion）
 
 - 居中。最大长度 = 屏幕边长 − 60 px（`FASHION_MODE_PADDING=30`）。
-- 从左到右（竖放时从上到下）：**启动器图标 → 驻留和运行中的应用 → 插件区**。插件区紧接在应用后面，中间留一道细缝。
+- 从左到右（竖放时从上到下）依次是启动器图标、驻留和运行中的应用、插件区。插件区紧接在应用后面，中间留一道细缝。
 - 运行指示：
-  - 运行中：在贴屏幕边的一侧画一条 **20×2 px** 的横条（竖放时 2×20），距项边缘 1–3 px，颜色白 × 0.25。
+  - 运行中：在贴屏幕边的一侧画一条 20×2 px 的横条（竖放时 2×20），距项边缘 1–3 px，颜色白 × 0.25。
   - 活动窗口：同一位置，颜色为 `accent`，两端渐隐（`appitem.cpp:320-358`）。
-- 悬停：图标整体提亮（相当于 `QColor::lighter`；QML 中用 `MultiEffect.brightness` ≈ 0.15 实现），**不画悬停底色**。
+- 悬停：图标整体提亮（相当于 `QColor::lighter`，QML 中用约 0.15 的 `MultiEffect.brightness` 实现），不画悬停底色。
 - 请求注意：图标轻微摆动（swing），同时指示条变为 `attention` 色。
 - 应用太多放不下时，按比例缩小每个项（`mainpanel.cpp:623-698`）。
 
 #### 3.1.3 高效模式（efficient）
 
-- 占满整条屏幕边。从左到右：**启动器 → 任务列表 → 伸缩空白 → 托盘与插件区 → 显示桌面条**。
+- 占满整条屏幕边。从左到右依次是启动器、任务列表、伸缩空白、托盘与插件区、显示桌面条。
 - 应用项（`appitem.cpp:291-317`），各状态都在项的矩形内、四周缩进 1 px：
   - 活动：填充 `accent` × 0.3，并在贴屏幕边的一侧画一条 `accent` 线，项高 > 50 时线宽 4 px，否则 2 px。
   - 运行中：填充白 × 0.2。
@@ -280,8 +287,8 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 |---|---|---|
 | Launcher | 启动器图标（0.7） | 启动器图标（0.6–0.8） |
 | Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
-| Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 满格 item 槽的"时钟图标"，表盘 = 槽 × 0.8、上面是大号数字时间（与应用图标同级，不是小瓦片；`datetimewidget.cpp` sizeHint 返回 item 槽）。不吃 `dock.pluginSpacing` |
-| Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊可展开/收起；分隔线 2 px 白 × 0.1（`fashiontraycontrolwidget.cpp`）。**胶囊底色用与其他插件一致的 `overlay` 梯度（`subtle`/`hover`/`checked`）〔派生：上游展开态是暗色 #282828@0.5，nosDshell 按用户要求统一为插件瓦片底色〕** |
+| Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 占满一个应用项大小的槽位，显示"时钟图标"：表盘为槽位的 0.8 倍，上面是大号数字时间。它与应用图标同级，不是小瓦片（`datetimewidget.cpp` 的 sizeHint 返回应用项槽位），不受 `dock.pluginSpacing` 影响 |
+| Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊，可展开、收起；分隔线 2 px，白 × 0.1（`fashiontraycontrolwidget.cpp`）。胶囊底色与其他插件瓦片一致，用 `overlay` 阶梯（`subtle`、`hover`、`checked`）〔演进：上游展开态是暗色 `#282828` × 0.5〕 |
 | Volume / Microphone / Network / Bluetooth / VPN / Brightness / Battery | 16 px symbolic 图标，sizeHint 26×26；Battery 在图标右侧加百分比文字 | 0.8 倍的图标 |
 | SessionMenu | `system-shutdown` symbolic | `system-shutdown` 彩色图标 |
 | NotificationHistory | 铃铛 symbolic（有未读时显示角标） | 铃铛图标；点击打开控制中心的通知页 |
@@ -292,23 +299,32 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 | （新增）Trash | `user-trash[-full]` | 同左；点击打开回收站，弹出层里可清空 |
 
 - 默认插件（时尚模式）：Tray、NotificationHistory、Network、Volume、Battery、Clock、SessionMenu、Trash。
-- **统一接口 `dockPresentation`**：时尚 dock 加载挂件时注入该属性（`BarWidgetLoader`，经 `widgetProps` 守卫式赋值——不能进 `setSource` 初始属性，第三方插件挂件没声明它会炸 "Cannot assign to non-existent property"）。每个可被 `dock.plugins` 引用的挂件都必须声明它并实现时尚呈现：图标按钮类挂件直接把 `baseSize`/`bgSize`/`iconRatio`/`colorBg`/`border` 切成瓦片分支；`BarPill` 类挂件把属性转发给 pill 即可（pill 已实现 `collapseToIcon`）；自绘挂件（ActiveWindow、MediaMini、SystemMonitor、AudioVisualizer、LockKeys 等 bar 文字/图形无法收进一格的）隐藏原内容并显示 `Modules/Bar/Extras/FashionTile`——一格共享瓦片 + 主点击行为镜像。未声明属性的第三方插件挂件按 bar 形态退化渲染（不错位、不报错）。
-- 时尚模式插件区两项可调（`dock.*`，均〔演进〕）：
-  - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕。**任意宽度插件都遵守同一条格宽规则：格宽 = 自身视觉宽 + spacing × 2**——托盘收合态的 20 px 折叠钮也是 20 + spacing × 2 而不是只占 20 px 格，这样所有相邻插件的边到边间距恒等于 2·spacing + `itemSpacing`，融合长条下不会因各格内边距不同而出现不等距。`pluginAreaLength` 实测 grid 总宽而不是按格宽估算，否则末尾插件会被 dock 边裁掉。
-  - `dock.fusedPlugins`（默认关）：插件瓦片底色收敛为一条共享长条（`overlay("subtle")`），各瓦片自身底chip隐藏，悬停态照旧——现代外观。
-- **折叠瓦片内部必须自居中**：`BarPill` 的 `iconCircle` 在 `collapseToIcon` 下尺寸 = `dockPluginTileSize` 并在格内居中（与 `pillBackground` 同矩形），不能沿用展开态的 `pillHeight` 满槽尺寸靠边定位——那会让图标中心偏出瓦片正中（修复前偏 8.5 px，融合态下肉眼可见间距不等）。时钟满格槽是唯一的"项级"例外（§3.1.4 表），不收进 spacing 规则。
-- 原来的 `bar.widgets.{left,center,right}` 合并为 `dock.plugins`（有序列表），旧配置通过迁移转换（§6）。
+- 统一接口 `dockPresentation`：时尚 dock 加载挂件时注入这个属性，注入方式见 `CODING_STANDARDS.md`「QML 规则」。每个可以被 `dock.plugins` 引用的挂件都要声明它并实现时尚呈现，按挂件类型分三种做法：
+  - 图标按钮类：把 `baseSize`、`bgSize`、`iconRatio`、`colorBg`、`border` 切换到瓦片取值。
+  - `BarPill` 类：把属性转发给 pill，pill 已经实现了 `collapseToIcon`。
+  - 自绘类（ActiveWindow、MediaMini、SystemMonitor、AudioVisualizer、LockKeys 等，文字或图形收不进一格）：隐藏原内容，显示 `Modules/Bar/Extras/FashionTile`，即一格共享瓦片，点击行为与原挂件的主操作相同。
+
+  没有声明这个属性的第三方插件挂件按 bar 形态显示，不错位、不报错。
+- 时尚模式插件区的布局规则〔演进：上游每个插件固定占一个 `itemThickness` 方格，间隔过大〕：
+  - 每个插件占一格，格宽等于插件自身的视觉宽度加两侧各一个 `dock.pluginSpacing`。固定瓦片的格宽是 `Style.dockPluginCellSize`（`dockPluginTileSize` + 2 × spacing），托盘这类宽度会变的插件按当前视觉宽度计算。这样任意两个相邻插件的边到边距离都等于 2 × spacing + `itemSpacing`，合并底色时间距也均匀。
+  - 瓦片内容（图标、底色块）在自己的格子里居中，格内留白只来自 spacing。
+  - 插件区总长度按实际排布测量，不按格数估算，末尾的插件才不会被 dock 边缘裁掉。
+  - 时钟是唯一的例外：它占满一个应用项槽位（见上表），不参与格宽规则。
+- 时尚模式插件区的两个设置〔演进〕：
+  - `dock.pluginSpacing`（默认 4 px，范围 0–24）：瓦片两侧的留白。
+  - `dock.fusedPlugins`（默认关）：所有插件瓦片的底色合并成一条共享长条（`overlay("subtle")`），各瓦片自己的底色块隐藏，悬停态不变。
+- 旧配置的 `bar.widgets.{left,center,right}` 由迁移复制为有序列表 `dock.plugins`（§6）。
 
 ### 3.2 带箭头弹出层与提示框（DockPopupWindow / TipsWidget）
 
 凡是从任务栏项弹出的面板，都用这个形态：
 
-- 形状：圆角矩形，`radiusPopup` = 6；箭头 **宽 18 × 高 10**，指向触发项，箭头尖端距项边缘 2 px（`dockitem.cpp:64-71,441-456`）。
-- 背景 `popupDark`，描边 `borderDark`，阴影 20 / (0,2)。
-- **不和任务栏连在一起**。Noctalia 的 `panelsAttachedToBar` 对这类面板一律不起作用。
+- 形状：圆角矩形，`radiusPopup` = 6；箭头宽 18、高 10，指向触发项，箭头尖端距项边缘 2 px（`dockitem.cpp:64-71,441-456`）。
+- 背景 `popupDark`，描边 `borderDark`，阴影见 §1.6。
+- 与任务栏保持分离。Noctalia 的 `panelsAttachedToBar` 对这类面板不起作用。
 - 内容宽度：200–320 px（声音 200、磁盘 300）。行高 36，左右内边距 10–20。
 - 分区标题：白 × 0.6、字号 S。分隔线：1 px、白 × 0.1。滑块高 22。
-- 点击外部关闭；按 Esc 关闭。显隐瞬变，不做动画（`dockpopupwindow.cpp:84-148`：算好位置直接 show/hide）。
+- 点击外部或按 Esc 关闭。显隐瞬变，不做动画（`dockpopupwindow.cpp:84-148` 算好位置后直接 show/hide）。
 - 提示框：同样的形态，只放白色文字；宽 = 文字宽 + 6 × 字高；没有图标。
 
 ### 3.3 菜单（deepin-menu）
@@ -319,8 +335,8 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 - 外框同 §3.2，箭头宽 18 × 高 10。
 - 行高 = 字高 + 8（上下内边距各 4）。左右内边距 20。宽 = 最长文字 + 50，最大 500。
-- 普通项：透明底、白字。悬停：**整行填 `accent`**，白字。禁用：`#646464`。
-- 悬停块带 `radiusRow`（4）圆角〔演进：`dmenucontent.cpp:181` 原版 `fillRect` 直角，行已经在 `marginS` 内边距里，圆角与外框圆角配对，对应新版 DDE 观感〕。
+- 普通项：透明底、白字。悬停：整行填 `accent`，白字。禁用：`#646464`。
+- 悬停块带 `radiusRow`（4）圆角〔演进：`dmenucontent.cpp:181` 原版用 `fillRect` 画直角。行已经缩在 `marginS` 内边距里，加圆角后与外框圆角相配，接近新版 DDE 的观感〕。
 - 分隔行高 6 px，中间是一道"凹槽"：上一条 1 px `rgba(0,0,0,0.1)`、下一条 1 px `rgba(255,255,255,0.1)`，左右各缩进 4 px。
 - 键盘：↑ / ↓ 移动，Enter 激活，Esc 关闭。
 - 允许有勾选标记和子菜单箭头（DDE 有这些素材但没画出来）。用 12 px 的 Tabler 字形，放在右侧。
@@ -339,12 +355,12 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 - 覆盖整个屏幕。背景为模糊壁纸（§1.8）。点击空白处关闭；Esc 关闭；直接打字即开始搜索。
 - 布局（`fullscreenframe.cpp`、`appsmanager.h:50-51`）：
-  - 顶部留 30 px（任务栏在顶部时再加上任务栏高度），然后是**搜索行**。
-  - 搜索行（`searchwidget.cpp:81-103`）：左边距 30 → 分类切换按钮（22 px）→ 伸缩 → 搜索框（**宽 290，水平居中**，底色 `strong`，圆角 5，左右内边距 25 / 20，白字）→ 伸缩 → 切换到小窗口按钮 → 30 → 设置按钮 → 30 → 电源按钮（打开 §3.8）→ 右边距 30。按钮图片用原版多态素材（§1.9）。
-  - 搜索行下方 20 px（`APPS_AREA_TOP_MARGIN`）是应用网格。网格左右各留 **180 px**（屏幕宽 ≤ 1366 时 130 px，`calculate_util.cpp:47-54`）；任务栏在底部时，网格底部留 60 px。
+  - 顶部留 30 px（任务栏在顶部时再加上任务栏高度），然后是搜索行。
+  - 搜索行（`searchwidget.cpp:81-103`）从左到右依次为：左边距 30、分类切换按钮（22 px）、伸缩空白、搜索框（宽 290，水平居中，底色 `strong`，圆角 5，左右内边距 25 和 20，白字）、伸缩空白、切换到小窗口按钮、间距 30、设置按钮、间距 30、电源按钮（打开 §3.8）、右边距 30。按钮图片用原版多态素材（§1.9）。
+  - 搜索行下方 20 px（`APPS_AREA_TOP_MARGIN`）是应用网格。网格左右各留 180 px（屏幕宽 ≤ 1366 时 130 px，`calculate_util.cpp:47-54`）；任务栏在底部时，网格底部留 60 px。
   - 启动器窗口覆盖整个屏幕（包括任务栏占用的区域），任务栏保持显示在启动器之上。
 - 网格（`calculate_util.cpp:104-145`）：
-  - 单元宽度预算：屏幕宽 ≤ 1440 时 170 px，否则 200 px；间距 10 / 14。列数 = (屏幕宽 − 2×左右留白) ÷ 宽度预算；实际单元边长 = (容器宽 − 间距×列数×2) ÷ 列数。**单元是正方形**，行高不随容器高度拉伸（`calculate_util.cpp:104-145`）。
+  - 单元宽度预算：屏幕宽 ≤ 1440 时 170 px，否则 200 px；间距 10 / 14。列数 = (屏幕宽 − 2×左右留白) ÷ 宽度预算；实际单元边长 = (容器宽 − 间距 × 列数 × 2) ÷ 列数。单元是正方形，行高不随容器高度拉伸。
   - 图标边长 = 单元尺寸 × `appLauncher.iconRatio`（默认 0.5，范围 0.2–0.6，Ctrl+± 调整）。
   - 标签：12 px 白字，最多两行，超出用 `…` 截断，带投影（§1.5）。
   - 悬停或选中：黑色压暗块（`rgba(0,0,0,0.41)`），圆角 10。
@@ -354,13 +370,13 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
   - `category`：左侧分类导航栏（屏幕宽 > 1366 时 180 px，否则 130 px）。
     - 11 个分类：网络、社交、音乐、视频、图像、游戏、办公、阅读、编程、系统、其他。
     - 每个按钮高约 42，22 px 图标加文字。文字白 × 0.6 / 0.8（悬停）/ 1.0（选中）。悬停时整列放大到 1.2。
-    - 右侧每个分类有一行标题（高 50）：文字后跟一条 1 px 渐隐线（白 × 0.3 → 0）。滚动时，当前分类的标题吸附在网格顶部。
+    - 右侧每个分类有一行标题（高 50），文字后面跟一条 1 px 的渐隐线，从白 × 0.3 渐变到透明。滚动时，当前分类的标题吸附在网格顶部。
 - 滚动：`OutQuad` 动画，滚动条隐藏。
-- 非应用类结果（计算器、剪贴板、表情、命令、窗口、会话、设置搜索）：在网格上方显示成**分组列表**，行样式同 §3.4.2，宽度与搜索框对齐、最大 600 〔派生〕。剪贴板预览放在列表右侧的暗色卡片里。
+- 非应用类结果（计算器、剪贴板、表情、命令、窗口、会话、设置搜索）：在网格上方显示成分组列表，行样式同 §3.4.2，宽度与搜索框对齐，最大 600〔派生〕。剪贴板预览放在列表右侧的暗色卡片里。
 
 #### 3.4.2 小窗口模式（mini）
 
-- 尺寸：高 **502**，宽 = 320（左侧窗格）+ 右栏（约 160）（`windowedframe.cpp:158,169`）。
+- 尺寸：高 502，宽为左侧窗格 320 加右栏约 160（`windowedframe.cpp:158,169`）。
 - 紧贴任务栏，间距 1 px。高效模式下贴在屏幕角落；时尚模式下与任务栏起始边对齐。
 - 背景 `maskDark`。描边 `rgba(255,255,255,0.1)`。圆角 5；高效模式下只有贴近任务栏的那个角是 10。
 - 左侧窗格，从上到下：
@@ -369,14 +385,14 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
   3. 10 px 间距
   4. 1 px 分隔线
   5. 4 px 间距
-  6. 应用列表（行高 **36**；图标 24 px 放在 x=10；文字从 x=48 开始，过长时右侧截断；悬停底色 `hover`，圆角 4，缩进 1 px）
-  7. "所有应用 ⇄ 分类"切换按钮（悬停/选中底色 `hover`，圆角 4；按下时文字变 `accent`）。应用列表态显示"分类"+ 20 px 进入箭头；分类视图（分类列表或分类内）显示"返回"。点击循环：全部应用 → 分类列表 → 点分类进分类内 → 返回分类列表（`windowedframe.cpp` `onSwitchBtnClicked`）
+  6. 应用列表（行高 36；图标 24 px 放在 x=10；文字从 x=48 开始，过长时右侧截断；悬停底色 `hover`，圆角 4，缩进 1 px）
+  7. 全部应用与分类之间的切换按钮（悬停、选中底色 `hover`，圆角 4；按下时文字变为 `accent`）。在应用列表里显示"分类"加 20 px 的进入箭头；在分类视图（分类列表或某个分类内）显示"返回"。从全部应用点它进入分类列表，点某个分类进入该分类，点"返回"回到分类列表（`windowedframe.cpp` 的 `onSwitchBtnClicked`）
   8. 15 px 间距
 - 右栏：
   - 左边缘一条 1 px 竖线（白 × 0.1）。
-  - 顶部先留 30 px，然后是 **60×60 圆形头像**（`avatar.cpp:42`），左对齐。
-  - 中部：常用位置按钮（计算机、视频、音乐、图片、文档、下载），**纯文字**、无图标（`miniframerightbar.cpp:61-67` 只传 `tr("Computer")` 等文本）；字号 max(基础字号 px + 2, **14 px**)（`miniframebutton.cpp:43-48`）；悬停/键盘选中时显示选中底（白 × 0.1，圆角 4）。DDE 还有第 7 个 "Manual" 项，仅当系统装有 `dman` 时显示（`miniframerightbar.cpp:57`）；nosDshell 没有手册应用，不显示。
-  - 底部：先是时间（**40 px**，白色，`datetimewidget.cpp:35`），下面一行日期；再下面横排"设置"和"电源"两个按钮，文字加左侧图标（原版 `settings.svg` / `power.svg`，`miniframerightbar.cpp:95-96`）。
+  - 顶部先留 30 px，然后是 60×60 的圆形头像（`avatar.cpp:42`），左对齐。
+  - 中部：常用位置按钮（计算机、视频、音乐、图片、文档、下载），只有文字、没有图标（`miniframerightbar.cpp:61-67` 只传入 `tr("Computer")` 这类文本）；字号取基础字号（px）+ 2 与 14 px 中的较大者（`miniframebutton.cpp:43-48`）；悬停或键盘选中时显示选中底（白 × 0.1，圆角 4）。DDE 还有第 7 个 "Manual" 项，仅当系统装有 `dman` 时显示（`miniframerightbar.cpp:57`）；nosDshell 没有手册应用，不显示。
+  - 底部：先是时间（40 px，白色，`datetimewidget.cpp:35`），下面一行日期；再下面横排"设置"和"电源"两个按钮，文字加左侧图标（原版 `settings.svg` / `power.svg`，`miniframerightbar.cpp:95-96`）。
   - 右上角：24×24 的全屏切换按钮，用原版 `fullscreen_{normal,hover,press}.png`。
   - 内边距 (18, 0, 12, 18)（`miniframerightbar.cpp:144`）。
 - 列表里的分类项：文字白 × 0.6；选中时文字 `accent`，底色 `rgba(21,21,21,0.2)`，圆角 4。
@@ -385,15 +401,15 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 启动器设置页（设置 → 启动器 → 通用）的每个控件都落在上面两种视图上：
 
-- `appLauncher.mode`：全屏 ⇄ 迷你，设置里直接切换（`LauncherState.setMode` 会把打开中的视图热切换）。
+- `appLauncher.mode`：在全屏和迷你之间切换。`LauncherState.setMode` 会把正在打开的视图直接切换过去。
 - `appLauncher.viewMode`：`grid`（默认）全屏浏览态用网格；`list` 浏览态改为列表（搜索态本来就是列表）。
 - `appLauncher.density`：行高 30/36/44（×`ui.rowHeightScale`）、列表图标 20/24/28、全屏单元预算 ×0.85/1.0/1.15。
-- `appLauncher.showCategories`：关闭后隐藏全屏分类导航与模式切换按钮、迷你"分类"开关，provider 桶过滤归零；`displayMode` 本身保留。
+- `appLauncher.showCategories`：关闭后隐藏全屏模式的分类导航和模式切换按钮，以及迷你模式的"分类"按钮，provider 不再按分类过滤；`displayMode` 的取值保留。
 - `appLauncher.showIconBackground`：图标后垫 `radiusRow` 底板。
-- `appLauncher.iconMode`：provider 发出 Tabler 字形名时，委托先查主题图标再退字形（`apps` 兜底）。
+- `appLauncher.iconMode`：provider 给出 Tabler 字形名时，列表项先查主题图标，找不到再用字形（`apps` 为最后的兜底）。
 - `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
-- `appLauncher.enableClipPreview`：全屏剪贴板预览卡片开关；`enableClipboardHistory` 切换即时注册/注销剪贴板 provider。
-- Noctalia 原有的 `appLauncher.position` 与 `overviewLayer`（SmartPanel/overlay 前端）已随该前端一并移除——启动器只有本节这套 DDE 实现。
+- `appLauncher.enableClipPreview`：全屏模式剪贴板预览卡片的开关。切换 `enableClipboardHistory` 会立即注册或注销剪贴板 provider。
+- Noctalia 原有的 `appLauncher.position` 和 `overviewLayer` 属于 SmartPanel/overlay 前端，已随该前端一起移除。启动器只有本节这一套 DDE 实现。
 
 ### 3.5 控制中心（dde-control-center）
 
@@ -401,12 +417,12 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 
 #### 3.5.1 外框
 
-- **宽 408 px，高度占满屏幕，贴住屏幕右边**（`frame.h:53`、`frame.cpp:517-523`）。左侧阴影 20、黑 × 0.5；直角。
+- 宽 408 px，高度占满屏幕，贴住屏幕右边（`frame.h:53`、`frame.cpp:517-523`），直角。阴影见 §1.6。
 - 背景 `maskDark`。从右侧滑入，`motionEnter`（300 ms OutCubic）。
-- 帧左侧只有共享 dimmer 压暗；全屏透明层背后露出的窗口属正常桌面内容，不另加遮幕。
-- 压暗仅对"帧类面板"生效（控制中心、设置、启动器等占屏帧）；dock 快弹面板（音量、网络、蓝牙、亮度、电池、时钟、媒体、系统监控、托盘抽屉、壁纸、插件槽）设 `SmartPanel.dimsBackground = false`，打开不遮幕壁纸〔演进：DDE 原版弹层本就在无 dimmer 的桌面之上〕。
+- 外框左侧只有共享的 dimmer 压暗（`general.dimmerOpacity`，默认 0.35〔演进〕）。透过全屏透明层看到的窗口是正常的桌面内容，不再另加遮罩。
+- 压暗只对占据屏幕的帧类面板生效（控制中心、设置、启动器等）。dock 弹出的小面板（音量、网络、蓝牙、亮度、电池、时钟、媒体、系统监控、托盘抽屉、壁纸、插件槽）设置 `SmartPanel.dimsBackground = false`，打开时不压暗壁纸〔演进：DDE 原版的弹层本来就叠在没有 dimmer 的桌面上〕。
 - 点击外部关闭；按 Esc 时，如果在子页面就先返回上一级，否则关闭。
-- Noctalia 原有的 `controlCenter.position` 设置不再起作用：控制中心永远在右侧。任务栏在右侧时，控制中心排在任务栏内侧。
+- Noctalia 原有的 `controlCenter.position` 设置不再起作用，控制中心永远在右侧。任务栏在右侧时，控制中心排在任务栏内侧。
 
 #### 3.5.2 首页
 
@@ -421,13 +437,13 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 3. **中部**，可滚动，有两个页面，由铃铛切换：
    - **模块页**：先排已启用的 Noctalia 卡片（天气、媒体、系统监控、日历），每张卡片底色 `idle`、圆角 5、内边距 10–20；然后是**模块网格**。网格 3 列，每个格子缩进 5、圆角 5，默认 `idle`、悬停 `hover`；格子里是 24 px 图标加文字。
    - **通知页**：通知历史列表。
-     - 每条：浅色气泡的暗色版本——白字，底色 `strong`，圆角 5。
+     - 每条是浅色气泡的暗色版本：白字，底色 `strong`，圆角 5。
      - 顶部"全部清除"按钮：底色 `idle`，内边距 4。
      - 列表为空时居中显示"没有系统通知"。
      - 删除一条时，它沿宽度方向收起。
-4. **快捷控制面板**（底部，`quick_control/*`），分页显示，页与页之间用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余 × 0.3）。所有页共享同一个页面槽高（`quickControlPanelHeight`），翻页时新页沿行进方向滑入淡入（`motionPanel`），圆点在深色帧上呈白色、浅色帧上自动翻为深色：
+4. **快捷控制面板**（底部，`quick_control/*`），分页显示，用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余为 × 0.3，所以在深色外框上是白色，在浅色外框上自动变深）。所有页共用同一个页面高度（`quickControlPanelHeight`），翻页时新页沿翻页方向滑入并淡入（`motionPanel`）：
    - **基础页**：音量和亮度两条滑块（两端各有 24 px 图标），下面一排快捷开关。
-   - **快捷开关**：每个 **70×60**，图标靠下对齐，距底部 20 px。开启时，背后画一块白 × 0.2 的底，圆角 6，下边距 5。原 Noctalia 的 `controlCenter.shortcuts` 全部放到这里。
+   - **快捷开关**：每个 70×60，图标靠下对齐，距底部 20 px。开启时，背后画一块白 × 0.2 的底，圆角 6，下边距 5。原 Noctalia 的 `controlCenter.shortcuts` 全部放到这里。
    - **Wi-Fi 页、蓝牙页、显示页、VPN 页**：列表行高 36，样式同 §3.5.4；列表限制在页面槽内，超出时滚动。
 
 Noctalia 卡片的对应关系：
@@ -441,17 +457,17 @@ Noctalia 卡片的对应关系：
 
 #### 3.5.3 设置页（原 Settings 面板）
 
-- DDE 15 的设置页是**一整页"所有设置"**（`settingswidget.cpp:90`），不是一次只显示一个模块：所有模块按顺序纵向排在同一个滚动区里，每个模块以"模块头"开头。从首页模块网格点某个模块进来，等于打开"所有设置"并滚动到该模块。
-- 进入设置页后，控制中心外框不动，但**首页的头部（头像/时钟）和底部快捷控制面板都隐藏**，整个外框高度只给两栏（`frame.cpp:127-137`，参照 `references/1.jpg`）：
-  - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体**垂直居中**（上下各一段伸缩），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标用原版 24 px 的 `nav_<模块>_normal.svg`（默认）/ `nav_<模块>.svg`（选中）（§1.9）；上游没有的扩展模块（任务栏/启动器/控制中心/通知/桌面挂件/系统监视/插件/高级）用 `Assets/Nav/` 下同规格自绘素材（24 px、白色、normal 态内嵌 0.2 透明度），不混用其他图标族。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
+- DDE 15 的设置页是一整页"所有设置"（`settingswidget.cpp:90`），所有模块按顺序纵向排在同一个滚动区里，每个模块以"模块头"开头。从首页模块网格点某个模块进来，等于打开"所有设置"并滚动到该模块。
+- 进入设置页后，控制中心外框不动，首页的头部（头像、时钟）和底部快捷控制面板都隐藏，整个外框高度只留给两栏（`frame.cpp:127-137`，参照 `references/1.jpg`）：
+  - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体垂直居中（上下各一段伸缩空白），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标用原版 24 px 的 `nav_<模块>_normal.svg`（默认）和 `nav_<模块>.svg`（选中）（§1.9）。上游没有的扩展模块（任务栏、启动器、控制中心、通知、桌面挂件、系统监视、插件、高级）用 `Assets/Nav/` 下同规格的自绘素材（24 px、白色、默认态内嵌 0.2 透明度），不混用其他图标族。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
   - **右栏**：内容区，宽 352。
 - 导航与滚动联动：
-  - 点导航按钮 → 内容区平滑滚动到该模块头，`OutQuint` **1400 ms**（`contentwidget.cpp:51,106-112`）。
-  - 用户滚动停下后 → 选中项更新为视口中第一个顶部可见的模块（`settingswidget.cpp:342-380`）。
+  - 点导航按钮时，内容区平滑滚动到该模块头，`OutQuint` 1400 ms（`contentwidget.cpp:51,106-112`）。
+  - 用户滚动停下后，导航选中项更新为视口中第一个顶部可见的模块（`settingswidget.cpp:342-380`）。
 - 模块头（`modulewidget.cpp`）：左边距 11，24×24 的模块图标（与导航选中态同一个 `nav_<模块>.svg`），接大号标题（LargeLabel，白色），上下内边距 5（`modulewidgetheader.cpp`）。模块之间留 1 个分组间距。
 - 内容区顶部：返回按钮（24×24 圆角 4 的方块，底色白 × 0.2），居中标题"所有设置"（14 px / 500），再下面 15 px 是一条分隔线。内容可滚动，滚动条隐藏。
 - 二级页（NextPageWidget 进入）：新页面从右侧推入，旧页面向左推出，`motionPanel`（300 ms InOutCubic）；位移过程中按距离同步淡出。二级页的标题换成该页名称，返回按钮回到"所有设置"。
-- 性能：所有模块一次性展开代价较大。允许按顺序异步加载（`Loader.asynchronous`），先加载目标模块及其前后各一个，其余空闲时补齐；未加载的模块用估计高度占位，加载完成后保持当前目标模块的头部位置不跳动。
+- 性能：一次展开所有模块代价较大，允许按顺序异步加载（`Loader.asynchronous`）。先加载目标模块和它前后各一个，其余在空闲时补齐。未加载的模块用估计高度占位，加载完成后当前目标模块的头部位置保持不动。
 - 模块顺序与对应（DDE 原有顺序见 `navigationbar.cpp:39-85`）：
 
 | DDE 模块 | 承载的 Noctalia 设置 Tab |
@@ -459,7 +475,7 @@ Noctalia 卡片的对应关系：
 | 账户 accounts | General（头像、用户名） |
 | 显示 display | Display（亮度、夜灯） |
 | 个性化 personalization | ColorScheme、Wallpaper、UserInterface |
-| 任务栏 dock | Dock（常规/状态栏/显示器/插件）〔演进：常规页合并原"外观"页，状态栏页吸收原散在常规页底部的状态栏开关组〕。常规页 = `dock.enabled` 开关 + 其下全部 dock 设置（模式/位置/大小/状态 → 外观 → 窗口分组）；状态栏页 = `bar.enabled` 开关 + 位置/显示/密度/字体/显示器/挂件配置，其下是任意模式下都作用于当前 Bar 的外观/行为/自动隐藏组。原 Noctalia 的 `bar.*`/`dock.*` 细节设置（透明度、间距、分组、点击动作等）按对象收进这里〔演进：不再堆进"高级"，见下方归位原则〕 |
+| 任务栏 dock | Dock，分常规、状态栏、显示器、插件四个子页〔演进：常规页合并了原"外观"页，状态栏页收进了原来放在常规页底部的状态栏开关组〕。常规页先是 `dock.enabled` 开关，下面依次是模式、位置、大小、状态，然后是外观和窗口分组。状态栏页先是 `bar.enabled` 开关和状态栏自己的位置、显示、密度、字体、显示器、挂件配置，下面是任何模式下都作用于当前 Bar 的外观、行为和自动隐藏设置。原 Noctalia 的 `bar.*`、`dock.*` 细节设置（透明度、间距、分组、点击动作等）都按配置对象收在这里〔演进：不集中放在"高级"，见下方归位原则〕 |
 | 启动器 launcher | Launcher |
 | 控制中心 | ControlCenter |
 | 网络 network | Connections / Wi-Fi |
@@ -472,93 +488,93 @@ Noctalia 卡片的对应关系：
 | 桌面挂件 | DesktopWidgets |
 | 系统监控 | SystemMonitor |
 | 插件 | Plugins |
-| 高级 | Hooks。只收"在任何 DDE 模块里都没有语义归属"的项；曾经的溢出页（dock/bar 细节、面板圆角）已按对象归位到任务栏/个性化〔演进〕 |
+| 高级 | Hooks。只放在任何 DDE 模块里都没有归属的设置；曾经放在这里的 dock、bar 细节和面板圆角已按配置对象移到任务栏和个性化〔演进〕 |
 | 系统信息 systeminfo | About |
 
-- **设置项归位原则**〔演进〕：新设置项按"它配置的对象"进对应模块（dock/bar 的外观与行为 → 任务栏，面板/圆角/阴影/动画这类 shell 全局观感 → 个性化，per-monitor 覆写 → 任务栏·显示器），不因为"DDE 没有对应开关"就堆进高级；高级只留完全没有归属的项（目前只有 Hooks）。
+- **设置项归位原则**〔演进〕：新设置项放进它所配置的对象对应的模块。dock 和 bar 的外观与行为放在任务栏；面板、圆角、阴影、动画这类 shell 全局观感放在个性化；按显示器的覆盖设置放在任务栏的显示器子页。DDE 没有对应开关不是放进高级的理由，高级只放完全没有归属的设置（目前只有 Hooks）。
 - **设置分组与可见性原则**〔演进〕：
-  - 页内一律"功能开关在前、该功能的配置紧随其后"——开关与它的配置不许跨子页、跨分组散落。
-  - 功能关闭时其全部配置项用 `visible` 隐藏（不用 `enabled` 置灰）；整页都失效时连同子页签一起隐藏（`NSubTabsPane.Title.shown`，任务栏页的显示器/插件随 `dock.enabled` 隐藏）。
-  - 模式/状态专属的设置随条件绑定自动隐藏（时尚专属项绑 `dock.mode === "fashion"`，状态栏开关组在高效模式下整块消失——高效模式下 Bar 就是任务栏本体），**不在文案里标注"（时尚模式）"**——可见性本身就表达了适用范围。
-- 原来的子 Tab 不再用横向标签栏，改为**分组**（SettingsGroup，每组带组标题）。内容较多的子页，用"下一页"行（NextPageWidget）进入二级页。
-- `ui.settingsPanelMode = "window"` 继续可用：在一个居中的 DDialog 风格窗口里显示同样的两栏结构（总宽 = 56 + 640）。默认值为 `"controlCenter"`。
+  - 页内先放功能开关，紧接着放这个功能的配置。开关和它的配置放在同一个子页、同一个分组里。
+  - 功能关闭时，它的全部配置项隐藏（用 `visible`，不用 `enabled` 置灰）。整页都失效时，连子页签一起隐藏，例如任务栏页的显示器和插件子页随 `dock.enabled` 隐藏。
+  - 只在某种模式或状态下有意义的设置随条件自动隐藏。时尚模式专属项绑定 `dock.mode === "fashion"`；高效模式下 Bar 就是任务栏本身，状态栏开关组整块隐藏。文案里不标注"（时尚模式）"，能否看到就说明了适用范围。
+- 原来的子 Tab 不再用横向标签栏，改为分组（SettingsGroup，每组带组标题）。内容较多的子页，用"下一页"行（NextPageWidget）进入二级页。
+- 设置页只在控制中心外框里显示。`ui.settingsPanelMode` 是兼容数据，迁移把它固定为 `"controlCenter"`（§6）。
 
 #### 3.5.4 设置项控件（dcc::widgets）
 
 - **SettingsGroup**：一组行纵向排列，行与行之间留 1 px 缝隙（透出下面的蒙版，形成分隔效果）。整组外缘：第一行上方两角、最后一行下方两角为圆角 5。
 - **SettingsItem**：行底色 `strong`（`rgba(238,238,238,0.2)`）。可交互的行悬停时为 `checked`（0.3）。出错时画 2 px 的 `alert` 色描边。
 - **SettingsHead**：高 24，左右内边距 (20, 10)。标题 DemiBold、白色。右侧可放"编辑"文字按钮（`accentAlt`）。
-- **标准行**：高 **36**，左右内边距 (20, 10)。
+- **标准行**：高 36，左右内边距 (20, 10)。
   - 下一页行：标题，右侧是数值（白 × 0.8），再右侧是一个 `›` 箭头。
   - 开关行：标题，右侧是开关。
 - **开关**（DSwitchButton）〔派生自 DTK〕：外形 40×22 的胶囊（开关是唯一允许用胶囊形的控件）。关闭时底色白 × 0.2；开启时底色 `accent`；滑块为白色圆点，直径 18。切换动画 150 ms。
 - **滑块**（DSlider）：
-  - 整个控件高 35，滑槽只有 2 px：已填充部分为 `accent`，未填充部分为白 × 0.2。
-  - 滑块按钮是 12 px 白色圆点 〔派生〕。
+  - 整个控件高 35，滑槽只有 2 px，已填充部分为 `accent`，未填充部分为白 × 0.2。
+  - 滑块按钮是 12 px 的白色圆点〔派生〕。
   - 下方可加刻度注释（`DCCSliderAnnotated`），文字白 × 0.6。
-- **文本输入**：高 30 〔派生〕，底色 `field`，圆角 5，白字。获得焦点时画 1 px `accent` 描边；出错时描边为 `alert`。
-- **下拉框**：外观同文本输入，右侧有 ▾；弹出的列表用暗色菜单（§3.3），**不带箭头**。页面上的弹层底色用不透明的 `mSurfaceVariant`——设置页的菜单叠在不透明页面上，`popupShell` 的半透明（为模糊壳面设计）会让页面文字透上来；只有落在半透明壳面上时（如壁纸条的来源下拉，`onShellSurface`）才沿用 `popupShell` 的玻璃感。
+- **文本输入**：高 30〔派生〕，底色 `field`，圆角 5，白字。获得焦点时画 1 px `accent` 描边；出错时描边为 `alert`。
+- **下拉框**：外观同文本输入，右侧有 ▾。弹出的列表用暗色菜单（§3.3），不带箭头。设置页上的弹层底色用不透明的 `mSurfaceVariant`，因为设置页本身不透明，`popupShell` 为模糊外壳设计的半透明会让页面文字透上来。只有弹层落在半透明外壳上时（例如壁纸条的来源下拉框，`onShellSurface`），才沿用 `popupShell` 的玻璃效果。
 - **按钮**（DDE 的 RoundedButton 样式）：
   - 圆角 15 的胶囊（这是第二处允许胶囊形的地方），底色白 × 0.2。悬停白 × 0.5，按下 `accent`。
   - 推荐操作按钮：文字为 `accent`。
 - **单选 / 复选**（OptionItem）：整行可点，选中时右侧显示 `accent` 色的 ✓。DDE 不使用圆形单选框。
 - **分隔线**：1 px，前景 × 0.15（`separator` 令牌）。
-- **行高系数**〔演进〕：行高类令牌（`detailRowHeight`/`settingsRowHeight`/`launcherMiniRowHeight`/`dialogButtonHeight`/`sliderBasicHeight`/`settingsFieldHeight`）整体乘 `ui.rowHeightScale`（0.9–1.2，默认 1）。写死行高的组件不受控，新代码一律走令牌。
-- **表面令牌边界**：设置页里的行、列表、嵌板一律来自叠加阶梯（`overlay`）或蒙版（`maskShell`）。方案染色只经由令牌层进入组件——**禁止**组件直接用 `mSurface`/`mSurfaceVariant`/`mOutline` 这类 Material 实色做行或卡片的填充：它们是**不透明**色（方案要供 GTK/终端模板用），跳过令牌的透明度处理后会在玻璃面上糊成实块。`m*` 实色只允许出现在两处：配色方案预览等"数据本身即颜色"的展示面，以及徽章/状态点的语义色。
-- **列表页**（Wi-Fi 网络、蓝牙设备、插件、配色模板这类"可选多项"清单）：每一项就是一个 SettingsItem 行；选中/已连接态用右侧 `accent` ✓ 与状态文字表达，**不给整行换底色**；进行中用行内转圈；行内展开区（密码、详情）用 `overlay("field")` + `radiusItem` 嵌板，行尾接一个可点的"添加/新建"行。
-- **堆叠子页**：`NTabView.stacked` 时每个子页 = 一个 NHeader + 一个 SettingsGroup。组头与它的组之间只有 1 px 缝，组与组之间 15 px——间距全部落在"上一组末行与下一组头"之间，头与组之间不再额外留白。
-- **行内可展开的编辑器**：行本身（clickable + 右侧 chevron）负责开合，展开内容直接挂在行组内、跟随组缝排列，不自包实色容器。
+- **行高系数**〔演进〕：行高类令牌（`detailRowHeight`、`settingsRowHeight`、`launcherMiniRowHeight`、`dialogButtonHeight`、`sliderBasicHeight`、`settingsFieldHeight`）整体乘以 `ui.rowHeightScale`（0.9–1.2，默认 1）。写死行高的组件不会跟着缩放，所以行高一律读令牌。
+- **表面令牌边界**：设置页里的行、列表和嵌板一律用叠加阶梯（`overlay`）或蒙版（`maskShell`）。配色方案只经由令牌层影响组件。组件不直接用 `mSurface`、`mSurfaceVariant`、`mOutline` 这类 Material 颜色填充行或卡片：方案颜色是不透明的（要供 GTK 和终端模板使用），绕过令牌的透明度处理后会在玻璃面上变成实心色块。`m*` 颜色只在两处直接使用：配色方案预览这类"内容本身就是颜色"的展示，以及徽章、状态点的语义色。
+- **列表页**（Wi-Fi 网络、蓝牙设备、插件、配色模板这类可选多项的清单）：每一项是一个 SettingsItem 行。选中或已连接用右侧的 `accent` ✓ 和状态文字表示，整行底色不变。进行中的操作用行内转圈表示。行内展开区（密码、详情）用 `overlay("field")` 加 `radiusItem` 的嵌板。列表末尾接一个可点击的"添加"或"新建"行。
+- **堆叠子页**：`NTabView.stacked` 时，每个子页是一个 NHeader 加一个 SettingsGroup。组头与它的组之间只有 1 px 缝，组与组之间 15 px。间距全部放在上一组末行与下一组头之间，组头与组之间不再额外留白。
+- **行内可展开的编辑器**：行本身（可点击，右侧有 chevron）负责展开和收起。展开的内容直接放在行组里，跟随组内的 1 px 缝排列，不另包一层实色容器。
 
 ### 3.6 通知气泡（dde-osd notification）
 
 来源：`gxde-session-ui/dde-osd/notification/*`。
 
 - **表面**：背景 `maskTransient`（默认 auto 跟随模式，规格见 §1.2；`light` 形态下为不透明 `#F8F8F8`），描边 `borderTransient`，圆角 8，阴影见 §1.6。
-- 尺寸：基准 **300×70**。正文较长时允许增高，但最多显示 3 行。
-- 位置：**屏幕右上角**，距离屏幕边缘 20 px（这是 DDE 15 原版行为，`bubblemanager.cpp` 的 `getY()`）。
+- 尺寸：基准 300×70。正文较长时允许增高，但最多显示 3 行。
+- 位置：屏幕右上角，距离屏幕边缘 20 px（DDE 15 原版行为，见 `bubblemanager.cpp` 的 `getY()`）。
   - 任务栏在顶部时，气泡排在任务栏下方；控制中心打开时，气泡排在控制中心左侧。
-  - `notifications.location` 仍然可改；GXDE 默认的"右下角"作为一个可选项提供。
+  - `notifications.location` 仍然可以修改，GXDE 默认的右下角是可选项之一。
 - 布局：
   - 应用图标 48×48，位于 (11, 11)。
   - 正文从 x=70 开始，宽 220；有动作按钮时宽 150。
   - 标题 `onTransient`、Medium；正文 `onTransientBody`；超出按行截断。
-- 动作按钮：竖排在右侧，宽 70。文字 `transientAction`（浅色面上 = `accentAction`）；悬停时变为白字配按钮文字色实底。按钮之间用 1 px `overlayTransient("hover")` 分隔线。
+- 动作按钮：竖排在右侧，宽 70。文字用 `transientAction`（浅色面上就是 `accentAction`）；悬停时变为白字，底色是原来的按钮文字色。按钮之间用 1 px `overlayTransient("hover")` 分隔线。
 - 动效：出现用 `motionBubbleIn`，消失用 `motionBubbleOut`（向右滑出）。
 - 时长：普通通知 5000 ms；低优先级沿用 Noctalia 设置；紧急通知不自动消失。
-- 堆叠：**默认同一时刻只显示一条**，其余排队（DDE 行为）。`notifications.maxVisible`（默认 1）可以调大，调大后多条气泡纵向堆叠，间距 10。
+- 堆叠：默认同一时刻只显示一条，其余排队（DDE 行为）。`notifications.maxVisible`（默认 1）可以调大，调大后多条气泡纵向堆叠，间距 10。
 - 如果新通知的 `replacesId` 与已有通知相同，就原地更新那条气泡的内容。
-- 吐司（Toast）：同样的浅色气泡，没有动作按钮；高度随内容；屏幕上方居中显示 〔派生〕。
+- 吐司（Toast）：同样的气泡，没有动作按钮，高度随内容，显示在屏幕上方居中〔派生〕。
 
 ### 3.7 OSD（dde-osd）
 
 来源：`gxde-session-ui/dde-osd/container.cpp`、`common.cpp`。
 
 - **方块**：背景 `maskTransient`（默认 auto 跟随模式，规格见 §1.2；`light` 形态下为不透明 `#F8F8F8`），圆角 10，阴影见 §1.6，描边 `borderTransient`。
-- 尺寸 **140×140**。
-- 位置：水平居中，方块底边距离屏幕底边 **180 px**。`osd.location` 仍然可以修改，但默认值改为 `"bottom_center"`。
+- 尺寸 140×140。
+- 位置：水平居中，方块底边距离屏幕底边 180 px。`osd.location` 仍然可以修改，默认值改为 `"bottom_center"`。
 - 内容：
-  - 图标居中：只有图标时距顶 40，下面有文字时距顶 25，下面有进度条时距顶 30。图标着 `onTransient`（`light` 形态下为深色），字号 `osdIconSize`（48 pt ≈ 原版 64 px SVG 的墨迹量，`icons/OSD_*.svg`）。
-  - 进度条：**80×4**，距顶 110，圆角 2。滑槽 `onTransientTrack`，已填充部分 `onTransient` 实色。
+  - 图标居中：只有图标时距顶 40，下面有文字时距顶 25，下面有进度条时距顶 30。图标着 `onTransient`（`light` 形态下为深色），字号 `osdIconSize`（48 pt，墨迹量约等于原版 64 px 的 SVG，`icons/OSD_*.svg`）。
+  - 进度条：80×4，距顶 110，圆角 2。滑槽 `onTransientTrack`，已填充部分 `onTransient` 实色。
   - 音量超过 100% 时，在滑槽 2/3 处画两条 1×5 的刻度线（`onTransientTick`）。
-- 键盘布局 OSD：竖向列表，宽度 = max(文字宽, 200) + 30，行高 = 字高 + 10，当前行底色 `overlayTransient("hover")`。
-- 锁定键 OSD（大写/数字锁定）：只显示图标和文字。
-- 出现和消失用 `motionOsdIn` / `motionOsdOut`。显示 1000 ms（`osd.autoHideMs` 默认改为 1000）。
+- 键盘布局 OSD：竖向列表，宽度为文字宽与 200 中的较大者再加 30，行高为字高加 10，当前行底色 `overlayTransient("hover")`。
+- 锁定键 OSD（大写锁定、数字锁定）：只显示图标和文字。
+- 出现和消失用 `motionOsdIn` 和 `motionOsdOut`。显示 1000 ms（`osd.autoHideMs` 默认值改为 1000）。
 
 ### 3.8 关机界面（dde-shutdown）
 
 来源：`gxde-session-ui/dde-shutdown/*`、`widgets/rounditembutton.cpp`。
 
 - 覆盖整个屏幕，背景为模糊壁纸。
-- 按钮横排一行，**垂直居中**，按钮间距 10。按钮顺序：关机、重启、待机、休眠、锁定、切换用户、注销；再加 Noctalia 独有的"重启到 UEFI"。按 `sessionMenu.powerOptions` 过滤和排序。
+- 按钮横排一行，垂直居中，按钮间距 10。按钮顺序为关机、重启、待机、休眠、锁定、切换用户、注销，另加 Noctalia 独有的"重启到 UEFI"。实际显示哪些按钮、按什么顺序，由 `sessionMenu.powerOptions` 决定。
 - 每个按钮（RoundItemButton）：
-  - 尺寸 **140×140**。图标 **75×75**，图标下方 10 px 是文字（白色，可换行）。
+  - 尺寸 140×140。图标 75×75，图标下方 10 px 是文字（白色，可换行）。
   - 悬停或选中：黑色压暗块，圆角 10。不可用时整体透明度 0.5。
 - 打开时默认选中"锁定"。
-- 键盘：← / → 移动选中，Enter 执行，Esc 取消。Noctalia 的数字快捷键（1–7）保留，数字显示在按钮文字后面，颜色白 × 0.6。
+- 键盘：左右方向键移动选中，Enter 执行，Esc 取消。保留 Noctalia 的数字快捷键（1–7），数字显示在按钮文字后面，颜色白 × 0.6。
 - 点击空白处取消。
 - 倒计时（`sessionMenu.enableCountdown`）：在按钮行下方 40 px 处显示一行白色文字，例如"将在 N 秒后关机"。按任意键取消倒计时。
-- 有程序阻止关机（inhibitor）时，按钮行换成警告视图：列出程序名和原因；下面是"仍然关机"（`accent` 文字）和"取消"两个按钮。
-- `sessionMenu.position`、`largeButtonsStyle`、`showHeader` 等 Noctalia 原有布局选项，都放到"高级"下；默认值对应上面的 DDE 布局。
+- 有程序阻止关机（inhibitor）时，按钮行换成警告视图，列出程序名和原因，下面是"仍然关机"（`accent` 文字）和"取消"两个按钮。
+- Noctalia 原有的布局选项（`sessionMenu.position`、`showHeader`、`largeButtonsStyle`、`largeButtonsLayout`）在 DDE 布局下没有对应物，不提供设置项。这些键没有读者，按 `AGENTS.md`「业务保真」的设置键规则用迁移删除。
 
 ### 3.9 锁屏（dde-lock）
 
@@ -566,23 +582,23 @@ Noctalia 卡片的对应关系：
 
 - 背景：模糊壁纸（`general.lockScreenBlur` 默认改为启用）。
 - 窗口底部有一条高 132 的区域，上下各留 33 px 边距：
-  - **左下**：时间，68 px Light 白色，左对齐，左边距 48。时间下方是日期，16 px，格式 `yyyy-MM-dd dddd`。
-  - **右下**：一排控制按钮，间距 26，右侧留 60：
+  - 左下：时间，68 px，Light，白色，左对齐，左边距 48。时间下方是日期，16 px，格式 `yyyy-MM-dd dddd`。
+  - 右下：一排控制按钮，间距 26，右侧留 60：
     - 媒体控制（MPRIS，可选）
     - 键盘布局
     - 切换用户
     - 电源。电源按钮会在锁屏内打开 §3.8 的按钮行；此时密码区隐藏。
 - 中央，从上到下：
-  - 头像：**100 px 圆形**，无描边。
+  - 头像：100 px 圆形，无描边。
   - 用户名：16 px 白字，在头像下方 25 px。
-  - 用户名下方 20 px 是密码框：**280×36**，底色 `field`，圆角 6，白字。右侧嵌着解锁图标按钮。
-  - 这一整块的垂直位置，以"屏幕高度减去 132 px 底部区域"后的剩余空间为准居中。
+  - 用户名下方 20 px 是密码框：280×36，底色 `field`，圆角 6，白字，右侧嵌着解锁图标按钮。
+  - 这一整块在屏幕高度减去 132 px 底部区域后的剩余空间里垂直居中。
 - 密码错误：密码框描边变为 1 px `alert`；框下方弹出一个白底提示（文字 `alert`），并带一个指向密码框的箭头。
 - 大写锁定开启时，密码框内左侧显示一个提示图标。
 - 认证进行中：在密码框内显示一个白 × 0.35 的加载动画。
 - 指纹（`allowPasswordWithFprintd`）：密码框里的占位文字显示"验证指纹或输入密码"。
-- Noctalia 锁屏上的天气、电池、倒计时等附加信息：以白 × 0.8 的小号文字放在时钟右侧；默认关闭。
-- Noctalia 的紧凑锁屏布局（`general.compactLockScreen`）在 DDE 中没有对应物：字段保留为兼容数据但不生效，不提供设置项。
+- Noctalia 锁屏上的天气、电池、倒计时等附加信息，以白 × 0.8 的小号文字放在时钟右侧，默认关闭。
+- Noctalia 的紧凑锁屏布局（`general.compactLockScreen`）在 DDE 中没有对应物，不提供设置项。这个键没有读者，按设置键规则用迁移删除。
 
 ### 3.10 壁纸选择〔派生〕
 
@@ -590,12 +606,12 @@ Noctalia 卡片的对应关系：
 - 一条贴住屏幕底边的横条，背景 `maskDark`，高约 160。
 - 缩略图 16:9、宽 160，间距 10，横向滚动。
   - 当前壁纸：外圈 2 px `accent` 描边。
-  - 悬停的缩略图：在下方叠出"当前外观 / 另一外观 / 都设置"三个按钮（按钮样式同 §3.5.4）。本 shell 没有独立的锁屏壁纸目标——`LockScreenBackground` 复用桌面壁纸的预模糊缓存，`WallpaperService.changeWallpaper` 的外观槽只有 `"light"`/`"dark"` 两个取值（`WallpaperService.qml:422-424`）——所以三按钮落在亮/暗外观槽上，结构与原版"仅桌面/仅锁屏/都设置"一致。若将来引入锁屏壁纸写入路径，再改回原三按钮语义。
+  - 悬停的缩略图：下方叠出"当前外观""另一外观""都设置"三个按钮（按钮样式同 §3.5.4）。原版的三个按钮是"仅桌面""仅锁屏""都设置"。本 shell 没有单独的锁屏壁纸：`LockScreenBackground` 复用桌面壁纸的预模糊缓存，`WallpaperService.changeWallpaper` 只区分 `"light"` 和 `"dark"` 两个外观（`WallpaperService.qml:422-424`），所以三个按钮对应亮、暗两个外观，结构与原版一致。以后加入单独的锁屏壁纸时，再改回原版的三个按钮。
 - 顶部一行（目录、Wallhaven 来源、搜索）按 §3.5.4 的控件样式绘制。
 
 ### 3.11 对话框（DDialog）
 
-- 暗色：背景 `maskDark`，圆角 8，阴影 20。
+- 暗色：背景 `maskDark`，圆角 8，阴影见 §1.6。
 - 宽 380（polkit 对话框的最大宽度，`AuthDialog.cpp:277`），内容多时最大 640。
 - 左上 48 px 图标，标题 Medium，正文白 × 0.8。
 - 底部按钮行横跨对话框全宽，按钮之间用 1 px 白 × 0.1 的分隔线隔开；推荐操作按钮的文字为 `accent`。
@@ -606,38 +622,38 @@ Noctalia 卡片的对应关系：
 
 - DDE 15 没有桌面挂件，这里按 DDE 的通用规则处理：卡片背景 `maskDark`，圆角 8，不加阴影。文字规格同 §1.5。
 - 时钟挂件采用控制中心时钟的样式（46 px Light）。
-- 拖拽时只用白 × 0.1 的描边表示可放置区域，不要发光效果。
+- 拖拽时只用白 × 0.1 的描边表示可放置区域，不加发光效果。
 
 ### 3.13 状态栏〔nosd 扩展〕
 
-- DDE 15 本体没有状态栏；本条是借 Noctalia 的 bar 管线提供的可选扩展，定位类似 macOS 的菜单栏（显示系统信息与全局挂件，不承担窗口任务列表）。
-- **仅时尚模式可用**：高效模式下任务栏本身就是通栏条，状态栏不再出现；切换模式时自动失效/恢复，不需要用户重选。
-- 开关：`bar.enabled`（默认关）。位置：`bar.position`（默认 `top`），独立于 `dock.position`；显示器选择走 `bar.monitors`（空 = 全部）。显示模式走 `bar.displayMode`（`always_visible` / `auto_hide`，沿用 `bar.autoHideDelay` / `bar.autoShowDelay` / `bar.showOnWorkspaceSwitch`）。
-- 挂件内容：`bar.widgets` 三段式布局（默认左侧启动器/时钟/系统监视器/活动窗口/迷你媒体，中间工作区，右侧托盘/通知/电量/音量/亮度等）。
-- 语义拆分：`getBarPositionForScreen()` 指**bar 窗口所在边**（时尚+状态栏时 = `bar.position`，否则 = 任务栏边）；`getTaskbarPositionForScreen()` 恒指任务栏/dock 边（启动器定位、屏覆盖编辑器、避让判断用它）。挂件弹层跟随其宿主表面：dock 区挂件弹层用任务栏边，bar 区挂件弹层用状态栏边。
-- 状态栏与 dock 允许同边（dock 悬浮居中会叠在状态栏上方），建议错开摆放。
-- 自动隐藏时状态栏收进屏幕边缘，贴边悬停触发区唤出；常驻时 `BarExclusionZone` 为它保留空间（同任务栏规则）。
-- 视觉：沿用 §3.5 的面板体系（`Color.maskShell` 底、无阴影、圆角按 `bar.barType`）；与任务栏同屏时不额外加描边或发光。
+- DDE 15 本身没有状态栏。这是借 Noctalia 的 bar 管线提供的可选扩展，定位类似 macOS 的菜单栏：显示系统信息和全局挂件，不显示窗口任务列表。
+- 只在时尚模式下可用。高效模式下任务栏本身就是通栏，状态栏不出现；切换模式时自动隐藏或恢复，用户不用重新设置。
+- 开关是 `bar.enabled`（默认关）。位置是 `bar.position`（默认 `top`），与 `dock.position` 相互独立。显示在哪些显示器上由 `bar.monitors` 决定（留空表示全部）。显示模式是 `bar.displayMode`（`always_visible` 或 `auto_hide`，沿用 `bar.autoHideDelay`、`bar.autoShowDelay`、`bar.showOnWorkspaceSwitch`）。
+- 挂件内容用 `bar.widgets` 的左、中、右三段布局。默认左侧是启动器、时钟、系统监视器、活动窗口、迷你媒体，中间是工作区，右侧是托盘、通知、电量、音量、亮度等。
+- 两个位置函数含义不同。`getBarPositionForScreen()` 返回 bar 窗口所在的边：时尚模式开着状态栏时是 `bar.position`，否则是任务栏所在的边。`getTaskbarPositionForScreen()` 总是返回任务栏所在的边，启动器定位、按屏覆盖编辑器和避让判断都用它。挂件弹层跟随所在的表面：dock 里的挂件弹层按任务栏的边，状态栏里的挂件弹层按状态栏的边。
+- 状态栏和 dock 可以在同一条边上（悬浮居中的 dock 会叠在状态栏上方），建议放在不同的边。
+- 自动隐藏时状态栏收进屏幕边缘，鼠标停在边缘的触发区时唤出。常驻时 `BarExclusionZone` 为它保留屏幕空间，规则与任务栏相同。
+- 视觉：底色 `Color.maskShell`，无阴影，圆角按 `bar.barType`。与任务栏同屏时不额外加描边或发光。
 
 ---
 
 ## 4. 工具：`nosd-blur`（Rust）
 
-- 作用：对应 deepin 的 `com.deepin.daemon.ImageBlur`，为全屏界面生成**预模糊壁纸**。原因：QML 的 `MultiEffect` 最大只能模糊 64，强度不够；每帧全屏实时模糊也太费资源。
+- 作用：对应 deepin 的 `com.deepin.daemon.ImageBlur`，为全屏界面生成预模糊壁纸。QML 的 `MultiEffect` 最大模糊半径只有 64，强度不够，而且每帧全屏实时模糊太耗资源。
 - 位置：`tools/nosd-blur/`（Cargo 项目）。
 - 命令行：`nosd-blur <src> <dst> --width W --height H [--sigma S]`。
-  - 处理流程：按 cover 方式缩放并居中裁切 → 做近似高斯的三次 box blur → 写出 PNG 或 JPEG。
+  - 处理流程：先按 cover 方式缩放并居中裁切，再做三次 box blur 近似高斯模糊，最后写出 PNG 或 JPEG。
   - 进程退出码 0 表示成功。
 - 调用方式：由 `ImageCacheService` 调用。
-  - 缓存键 = 源路径 + 修改时间 + 尺寸 + sigma 的哈希；缓存目录为 `Settings.cacheDir + "blur/"`。
+  - 缓存键是源路径、修改时间、尺寸和 sigma 的哈希；缓存目录为 `Settings.cacheDir + "blur/"`。
   - 找不到 `nosd-blur` 时，退回 `MultiEffect` 实时模糊，并输出一次警告日志。
-- sigma：屏幕短边的 3%（1080p 约为 32）〔派生〕；`wallpaper.blurSigma` 为正数时改用该固定值〔演进〕。deepin 原版的 `image-blur-helper` 参数没有包含在参考仓库中。
+- sigma：默认取屏幕短边的 3%（1080p 约为 32）〔派生〕。`wallpaper.blurSigma`（默认 0，表示自动）为正数时改用这个固定值〔演进〕。deepin 原版 `image-blur-helper` 的参数不在参考仓库里。
 
 ### 4.1 `nosd-helpers wl-probe`
 
-- 作用：探测当前 Wayland 合成器公布的全局接口，供 §1.2 判断"合成器是否支持模糊"。QML 侧拿不到注册表，Quickshell 在不支持时只打印一行警告。
+- 作用：探测当前 Wayland 合成器公布的全局接口，供 §1.2 判断合成器是否支持模糊。QML 拿不到 Wayland 注册表，Quickshell 在不支持时只打印一行警告。
 - 命令行：`nosd-helpers wl-probe`，向 stdout 输出一行 JSON：`{"compositor_blur": true|false, "globals": ["wl_compositor", ...]}`；`compositor_blur` 为真当且仅当存在 `ext_background_effect_manager_v1`。连不上 Wayland 时退出码非 0。
-- 调用方式：shell 启动时调用一次，结果存进 `CompositorService.blurSupported`；`Color.blurActive` = 设置开启 且 `blurSupported`。工具缺失或执行失败时按"支持"处理（保持旧行为），并输出一次 `Logger.w`。
+- 调用方式：shell 启动时调用一次，结果存进 `CompositorService.blurSupported`。设置开启且 `blurSupported` 为真时，`Color.blurActive` 才为真。工具缺失或执行失败时按"支持"处理（与加入探测前的行为一致），并输出一次 `Logger.w`。
 
 ---
 
@@ -646,21 +662,18 @@ Noctalia 卡片的对应关系：
 - 新增预设方案 `Assets/ColorScheme/Deepin/Deepin.json`，并设为默认（`colorSchemes.predefinedScheme = "Deepin"`）。
   - 暗色：`mPrimary #2CA7F8`、`mOnPrimary #FFFFFF`、`mSecondary #01BDFF`、`mOnSecondary #FFFFFF`、`mTertiary #0087FF`、`mOnTertiary #FFFFFF`、`mError #F9704F`、`mOnError #FFFFFF`、`mSurface #181818`、`mOnSurface #FFFFFF`、`mSurfaceVariant #2A2A2A`、`mOnSurfaceVariant #B4B4B4`、`mOutline #3A3A3A`、`mShadow #000000`、`mHover #2CA7F8`、`mOnHover #FFFFFF`。
   - 浅色：强调色相同；`mSurface #F8F8F8`、`mOnSurface #303030`、`mSurfaceVariant #EBEBEB`、`mOnSurfaceVariant #6B6B6B`、`mOutline #D5D5D5`、`mShadow #000000`。
-  - 方案中的颜色**一律不透明**，因为模板（GTK、终端）要直接使用这些颜色，尚未改造的组件也会把 `mSurfaceVariant` 当作实色来画。DDE 的半透明表面只从 §1.2 和 §1.3 的令牌获得。
-- **表面令牌读取配色方案的表面角色**〔演进：原为只看明暗模式〕：蒙版取 `mSurface`、弹出层取 `mSurfaceVariant`、描边取 `mOutline`、壳上前景和叠加阶梯取 `mOnSurface`、`alert` 取 `mError`、禁用文字按 MD3 规则 = `onSurface` × 0.38。切换方案或壁纸取色时，表面色调、文字色相、状态层、错误色全部随方案走——这是方案染色可定制性的完整落点。Deepin 方案的这些角色被刻意设成 DDE 15 的值（`#181818`/`#2A2A2A`/`#3A3A3A`/`#FFFFFF`/`#F9704F`），所以默认观感不变。例外仍是固定签名：壁纸面的恒白阶梯、强制反向模式时的瞬时经典值、浅色菜单的固定浅色调色板（`popupLight*`）、分隔槽的刻线对、以及 §6 的强调色行为。
-- **`ui.accentOverride`**（默认空）〔演进〕：非空且为合法颜色时，`Color.mPrimary` / `mSecondary` / `mTertiary` / `mHover` 四个强调色角色一律取覆盖色（`Color.qml` 里方案值存 `_​*Raw`，公开 m* 令牌随覆盖解析），各 `mOn*` 对应色按覆盖色亮度取白或 `#303030`；`accent` / `accentAlt` / `accentAction` / `onAccent` 语义令牌仍是 m* 的别名，所以直接读 `mPrimary` 的组件（进度环、滑块、勾选态）同样跟随。`mError` 与表面系令牌不受影响；GTK/终端模板读方案 JSON 生成、不经 `Color.qml`，照常按方案出。副作用：设置页里"当前方案"预览条显示的是生效色（即覆盖色），各方案的候选色板仍显示方案自带颜色。
+  - 方案中的颜色一律不透明，因为 GTK、终端等模板要直接使用这些颜色，尚未改造的组件也会把 `mSurfaceVariant` 当作实色来画。DDE 的半透明表面只从 §1.2 和 §1.3 的令牌获得。
+- **表面令牌读取配色方案的表面角色**〔演进：原来只看明暗模式〕：蒙版取 `mSurface`，弹出层取 `mSurfaceVariant`，描边取 `mOutline`，外壳前景和叠加阶梯取 `mOnSurface`，`alert` 取 `mError`，禁用文字按 MD3 规则取 `onSurface` × 0.38。切换方案或用壁纸取色时，表面色调、文字色相、状态层和错误色都随方案变化。Deepin 方案的这些角色特意设成 DDE 15 的值（`#181818`、`#2A2A2A`、`#3A3A3A`、`#FFFFFF`、`#F9704F`），所以默认观感不变。以下颜色固定，不随方案变化：壁纸面的恒白阶梯、强制使用相反形态时瞬时面的经典值、浅色菜单的固定浅色调色板（`popupLight*`）、分隔槽的一对刻线，以及下一条的强调色覆盖。
+- **`ui.accentOverride`**（默认空）〔演进〕：值为合法颜色时，`Color.mPrimary`、`mSecondary`、`mTertiary`、`mHover` 四个强调色角色都取这个颜色，对应的 `mOn*` 按它的亮度取白色或 `#303030`。`accent`、`accentAlt`、`accentAction`、`onAccent` 是这些 `m*` 角色的别名，所以直接读 `mPrimary` 的组件（进度环、滑块、勾选态）也会跟着变。`mError` 和表面类令牌不受影响。GTK 和终端模板直接读方案 JSON，不经过 `Color.qml`，照常使用方案颜色。设置页"当前方案"的预览条显示生效的颜色（即覆盖色），各方案的候选色板仍显示方案自带的颜色。
 - 模板功能（GTK、终端等配色文件的生成）照常使用当前方案的完整颜色。
 
 ---
 
 ## 6. 设置与兼容
 
-- 新增或修改设置时，四处同步改：
-  - `Assets/settings-default.json`
-  - `Commons/Settings.qml`（JsonAdapter）
-  - 新建迁移文件 `Commons/Migrations/MigrationNN.qml`，并登记到 `MigrationRegistry`，同时递增 `settingsVersion`
-  - 运行 `Scripts/test/build-settings-search-index.py`
-- 主要默认值变化：
+新增或修改设置的步骤见 `CODING_STANDARDS.md`「设置」，设置键的三种合法状态（活跃、兼容、删除）见 `AGENTS.md`「业务保真」。本节记录设计层面的取值和迁移含义。
+
+下表列出相对上游 Noctalia 新增或改变了默认值的主要设置，完整默认值以 `Assets/settings-default.json` 为准。新设置的默认值体现了 DDE 规格或〔演进〕取舍时，在这里登记一行并注明规格章节。
 
 | 设置 | 新默认值 |
 |---|---|
@@ -692,28 +705,32 @@ Noctalia 卡片的对应关系：
 | `general.shadowStrength` | `1.0`（0–2，阴影强度，§1.6）〔演进〕 |
 | `ui.rowHeightScale` | `1.0`（0.9–1.2，行高系数，§3.5.4）〔演进〕 |
 | `ui.accentOverride` | `""`（合法颜色时覆盖强调色系，§5）〔演进〕 |
-| `wallpaper.blurSigma` | `0`（0 = 自动 = 短边 3%，正数为固定 px，§4）〔演进〕 |
+| `wallpaper.blurSigma` | `0`（0 表示自动，取屏幕短边的 3%；正数为固定 px，§4）〔演进〕 |
+| `dock.pluginSpacing` | `4`（0–24 px，时尚模式插件瓦片两侧留白，§3.1.4）〔演进〕 |
+| `dock.fusedPlugins` | `false`（时尚模式插件底色合并为长条，§3.1.4）〔演进〕 |
 
-- `ui.settingsPanelMode`：设置面板固定为控制中心模式，选择器已移除；字段仅作兼容数据保留（Migration72 会把旧值钉回 `controlCenter`）。
-- 旧配置的迁移：
-  - `bar.widgets` → `dock.plugins`
-  - `bar.position` → `dock.position`
-  - 原来启用了 Bar 的用户 → `dock.mode = "efficient"`
-  - `bar.barType` 的 `framed` / `floating` → 保留数值，但不再生效
-- 迁移不能丢失用户数据。用不上的旧字段原样保留，不删除。
+兼容数据：
+
+- `ui.settingsPanelMode`：设置页只在控制中心里显示，选择器已移除。上游的面板代码仍读取这个键，`Migration72` 把旧值固定为 `controlCenter`。
+
+从上游 Noctalia 配置升级时的迁移：
+
+- `bar.widgets` 复制为 `dock.plugins`，`bar.position` 复制为 `dock.position`。两个旧键保留，现在分别是状态栏（§3.13）的挂件布局和位置。
+- 原来启用了 Bar 的用户，`dock.mode` 设为 `"efficient"`。
+- `bar.barType` 保留原值。高效模式下不生效（按 `simple` 绘制），时尚模式的状态栏按它绘制圆角。
 
 ### 6.1 上游功能移除清单
 
-以下 Noctalia v4 能力被有意移除，逐项记录理由（对应 AGENTS.md 的业务保真规则：删除上游功能必须有明确依据并登记于此）：
+以下 Noctalia v4 能力是有意移除的，逐项记录理由。删除上游能力的规则见 `AGENTS.md`「业务保真」，每次删除都登记在这里。
 
 | 移除项 | 理由 |
 |---|---|
 | `Services/Noctalia/UpdateService.qml` 应用内更新检查、`Panels/Changelog` 更新日志弹窗、`general.showChangelogOnStartup` | nosDshell 经 Guix 打包分发，更新统一走系统包管理器；应用内更新检查会引导用户绕过包管理。版本信息仍在"关于"页展示 |
 | `Services/Noctalia/TelemetryService.qml` 遥测 | 隐私考量，fork 不向外部服务上报使用数据 |
-| `Services/Noctalia/GitHubService.qml`、`SupporterService.qml`、About 页的 Contributors/Supporters 子页 | 服务于上游 noctalia 项目的贡献者与赞助展示；fork 不应继续以该名单代表自己。配色方案下载不依赖它们（SchemeDownloader 直连 colorschemes 仓库） |
+| `Services/Noctalia/GitHubService.qml`、`SupporterService.qml`、About 页的 Contributors/Supporters 子页 | 用于展示上游 noctalia 项目的贡献者和赞助者，这份名单不代表本项目。配色方案下载不依赖它们（`SchemeDownloader` 直接访问 colorschemes 仓库） |
 | Talia 天气吉祥物（`weatherTaliaMascotAlways` 等） | noctalia 品牌资产，随重命名移除 |
 | `Panels/NotificationHistory` 独立弹窗 | 并入控制中心通知页（§3.5.2），键盘操作模型已随 `NotificationHistoryList` 保留 |
-| `~/.config/noctalia` → `~/.config/nosdshell` 旧配置目录自动搬迁 | 不做。nosDshell 是独立 shell 身份而非 noctalia 的就地升级；MigrationNN 管线负责 nosdshell 自身配置的键级演进 |
+| 把旧配置目录 `~/.config/noctalia` 自动搬到 `~/.config/nosdshell` | 不做。nosDshell 是独立的 shell，不是 noctalia 的就地升级；`MigrationNN` 只负责 nosDshell 自身配置的逐键演进 |
 
 ---
 
@@ -722,7 +739,7 @@ Noctalia 卡片的对应关系：
 以下做法与 DDE 15 冲突，评审时一律退回：
 
 - 胶囊形外观（开关和圆角按钮除外）、超过 10 px 的圆角、Material 风格的彩色表面、水波纹、按压时的缩放、弹簧或回弹动画。
-- 弹出层和栏融合在一起、反向圆角、外圆角、框架式栏（framed bar）——仅保留为默认关闭的兼容选项。
+- 弹出层和栏融合在一起、反向圆角、外圆角、框架式栏（framed bar）。这些只作为默认关闭的兼容选项保留。
 - 用彩色区分状态（例外：活动项 `accent`、请求注意 `attention`、错误 `alert`、充电态 `positive`）。
 - 加粗（Bold / ExtraBold）；全大写的标题；字间距不为 0 的正文。
 - 在一个界面里同时出现两个强调色；用渐变给表面着色。
