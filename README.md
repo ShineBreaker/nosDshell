@@ -25,7 +25,7 @@
 [Noctalia](https://github.com/noctalia-dev/noctalia-shell) v4 是基于 Quickshell 的 Wayland 桌面 shell。nosDshell 从它分叉而来，保留它的全部功能，把每一个界面按 deepin 15（DDE 15）重做：任务栏、启动器、控制中心、通知、OSD、关机界面和锁屏。
 
 - **数值有出处。** 尺寸、透明度、圆角和动效时长取自 [GXDE-OS](https://github.com/GXDE-OS)（DDE 15 的社区维护版）源码，逐项记录在 [`DESIGN.md`](DESIGN.md) 里并注明源码位置。有意偏离原版的地方，例如更清楚的描边和更柔和的阴影，在规范里标为〔演进〕。
-- **功能完整继承 Noctalia v4。** 支持 Niri、Hyprland、Sway、Scroll、Labwc、MangoWC 六种合成器，以及多显示器、壁纸管理、桌面挂件、插件和设置迁移。移除的只有遥测、版本更新检查、赞助者展示这类 Noctalia 品牌相关的组件，完整清单见 [`DESIGN.md`](DESIGN.md) §6.1。
+- **功能完整继承 Noctalia v4。** 支持 Niri、Hyprland、Sway、Scroll、Labwc、MangoWC 六种合成器，以及多显示器、壁纸管理、桌面挂件、插件和设置迁移。不适用的上游组件与选项被移除——遥测、版本更新检查、赞助者展示等品牌服务，以及 Noctalia 布局下没有对应物的锁屏、会话菜单与面板选项，完整清单见 [`DESIGN.md`](DESIGN.md) §6.1。
 - **亮色与暗色主题。** 玻璃表面随主题切换。单色图标和 `*-symbolic` 图标会自动反色，亮色表面上显示深色，暗色表面上显示浅色。全屏启动器、锁屏和关机界面以壁纸为背景，在两种主题下都保持深色，白色文字始终清晰。
 
 ---

@@ -30,7 +30,7 @@
 - 新增键：用户配置里缺这个键时写入默认值。判断缺键读 `rawJson`，参考 `Migration75.qml`。
 - 改名或搬迁：把旧值搬到新键，再从 `rawJson` 删除旧键，参考 `Migration65.qml`。
 - 改默认值：只改仍等于旧默认值的配置，用户自己设过的值保留，参考 `Migration76.qml`。
-- 删除功能：从 `rawJson` 删除对应键，参考 `Migration67.qml`。
+- 删除功能：从 `rawJson` 删除对应键，并在 `DESIGN.md` §6.1 登记移除项，参考 `Migration67.qml` 与 §6.1 的对应行。
 - 兼容数据：把值钉在 DDE 形态要求的取值上，并在 `Commons/Settings.qml` 的声明处注释原因，参考 `Migration72.qml`。
 
 `Scripts/dev/check-settings-keys.py` 把这套规则固化成检查：默认值与声明必须同步，每个键必须代码里有读者（注释、迁移和生成的搜索索引不算），挂在 `lint.sh` 和 CI 里。注释里提到键名不算读者——迁移删掉的 `controlCenter.position` 就是被这条抓出来的。
