@@ -22,14 +22,18 @@ QtObject {
       logger.i("Settings", "Migrated dock.position:", rawBar.position);
     }
 
-    // bar.monitors is compat data — dock.monitors is the single multi-screen
-    // list for both modes (DDE "one taskbar"). Carry over only when set.
+    // dock.monitors is the taskbar's screen list. bar.monitors later became
+    // the status bar's own list (v73, DESIGN §3.13); at this version the
+    // status bar did not exist yet, so carry the legacy value over only
+    // when dock.monitors was never set explicitly.
     if (rawBar.monitors !== undefined && rawDock.monitors === undefined) {
       adapter.dock.monitors = rawBar.monitors;
       logger.i("Settings", "Migrated dock.monitors:", JSON.stringify(rawBar.monitors));
     }
 
-    // Additive only: legacy keys (dock.displayMode, bar.position, bar.monitors) are kept.
+    // Additive only: legacy keys are kept. bar.position/monitors became the
+    // status bar keys at v73 (DESIGN §3.13); dock.displayMode stayed dead
+    // and was deleted by v80.
     return true;
   }
 }

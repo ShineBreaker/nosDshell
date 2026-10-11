@@ -409,6 +409,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - `appLauncher.viewMode`：`grid`（默认）全屏浏览态用网格；`list` 浏览态改为列表（搜索态本来就是列表）。
 - `appLauncher.density`：行高 30/36/44（×`ui.rowHeightScale`）、列表图标 20/24/28、全屏单元预算 ×0.85/1.0/1.15。
 - `appLauncher.showCategories`：关闭后隐藏全屏模式的分类导航和模式切换按钮，以及迷你模式的"分类"按钮，provider 不再按分类过滤；`displayMode` 的取值保留。
+- `appLauncher.iconRatio`：全屏网格的图标边长系数（0.2–0.6），入口是全屏视图内的 Ctrl+滚轮/±，设置页不开放（§6）。
 - `appLauncher.showIconBackground`：图标后垫 `radiusRow` 底板。
 - `appLauncher.iconMode`：provider 给出 Tabler 字形名时，列表项先查主题图标，找不到再用字形（`apps` 为最后的兜底）。
 - `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
@@ -720,6 +721,11 @@ Noctalia 卡片的对应关系：
 兼容数据：
 
 - `ui.settingsPanelMode`：设置页只在控制中心里显示，选择器已移除。上游的面板代码仍读取这个键，`Migration72` 把旧值固定为 `controlCenter`。
+
+无设置页控件的活跃键（不是兼容钉值——消费方健在，用户入口在别处或刻意不开放）：
+
+- `appLauncher.iconRatio`：全屏启动器内 Ctrl+滚轮/± 调整（§3.4.1）；DDE 把图标大小调节放在启动器内，设置页不开放。
+- `general.shadowOffsetX`、`general.shadowOffsetY`：经 `Commons/Style.qml` 令牌读取（`NDropShadow`），DDE 阴影偏移是 §1.6 的固定规格而非偏好项，设置页不开放；上游键保留，手改 JSON 仍生效。
 
 从上游 Noctalia 配置升级时的迁移：
 

@@ -213,13 +213,15 @@ Singleton {
       // Optional status bar (DESIGN §3.7): fashion mode only — efficient mode
       // already renders the taskbar as its bar. Independent of dock.enabled.
       property bool enabled: false
-      property string barType: "simple" // "simple" or "framed"
+      property string barType: "simple" // "simple" or "framed" (§3.13)
       // Floating is a modifier, not a form: the whole bar surface lifts off
       // the screen edges by marginVertical/marginHorizontal, in either
       // barType (DESIGN §3.13). Formerly a barType value — v81 migration.
       property bool floating: false
+      // Status bar edge in fashion mode — independent of dock.position (§3.13).
       property string position: "top" // "top", "bottom", "left", or "right"
-      property list<string> monitors: [] // holds bar visibility per monitor
+      // Status bar visibility per monitor; empty means all screens (§3.13).
+      property list<string> monitors: []
       property string density: "default" // "compact", "default", "comfortable"
       property bool showOutline: false
       property bool showCapsule: true
@@ -336,6 +338,9 @@ Singleton {
       property bool enableLockScreenMediaControls: false
       property bool enableShadows: true
       property bool enableBlurBehind: true
+      // DDE drop-shadow spec (§1.6): read through the Style tokens by
+      // NDropShadow. No UI control by design — the offset is the spec, not
+      // a preference; upstream keys kept, hand-edited JSON still applies.
       property int shadowOffsetX: 0
       property int shadowOffsetY: 2
       property real shadowStrength: 1.0
@@ -488,7 +493,9 @@ Singleton {
       property string mode: "fullscreen"
       // DDE launcher layout: "free" | "category"
       property string displayMode: "free"
-      // Grid icon size as a fraction of the cell width (0.2-0.6)
+      // Grid icon size as a fraction of the cell width (0.2-0.6). The user
+      // entry is Ctrl+wheel/± inside the fullscreen launcher (§3.4.1); no
+      // settings-page control by design (§6).
       property real iconRatio: 0.5
       property list<string> pinnedApps: []
       property bool sortByMostUsed: true
