@@ -74,17 +74,51 @@ Item {
   // The Region object to assign to mask / BackgroundEffect.blurRegion.
   readonly property Region region: root.activeWhen ? (root.activeRegion ?? internalActive) : internalEmpty
 
-  // A region-object swap only reaches the compositor with a surface commit;
-  // a frame-starved window (occluded, idle render loop) can hold the pending
-  // swap indefinitely and leave the stale region ghosted — the same class
-  // SmartPanel's close-time flushWaylandState guards. Force the pending
-  // state out on every swap; callLater lets the blurRegion binding settle
-  // before the flush.
-  onRegionChanged: Qt.callLater(() => {
-                    const win = Window.window;
-                    if (win && win.flushWaylandState)
-                      win.flushWaylandState();
-                  })
+  // A region-object swap or a content mutation only reaches the compositor
+  // with a surface commit; a frame-starved window (occluded, idle render
+  // loop, or an instant show/hide transition that renders zero frames —
+  // e.g. an arrow popup toggling closed) can hold the pending state
+  // indefinitely and leave the stale region ghosted — the same class
+  // SmartPanel's close-time flush guards. Flush after every change; the
+  // flag coalesces a burst of mutations into one deferred flush, and
+  // callLater lets the lazy geometry bindings re-evaluate so the final
+  // state is what gets committed.
+  property bool _flushQueued: false
+
+  // flushWaylandState only exists on noctalia-qs (it polishes and commits
+  // the wl_surface directly); on stock quickshell the QML-reachable way to
+  // force the same pending state out is QQuickWindow.update() — it
+  // schedules a frame whose present carries the region change. On a fully
+  // occluded surface the frame may wait for a compositor callback, but a
+  // ghosted region is by definition still being composited.
+  function scheduleRegionFlush() {
+    if (_flushQueued)
+      return;
+    _flushQueued = true;
+    Qt.callLater(() => {
+                   _flushQueued = false;
+                   const win = Window.window;
+                   if (!win)
+                     return;
+                   if (win.flushWaylandState)
+                     win.flushWaylandState();
+                   else if (win.update)
+                     win.update();
+                 });
+  }
+
+  onRegionChanged: scheduleRegionFlush()
+
+  // Content mutations (geometry/item updates inside the assigned tree)
+  // emit changed on the Region object without swapping identity — same
+  // commit gap as an object swap. During animations changed fires per
+  // frame; scheduleRegionFlush coalesces them.
+  Connections {
+    target: root.region
+    function onChanged() {
+      root.scheduleRegionFlush();
+    }
+  }
 
   Region {
     id: internalEmpty

@@ -472,7 +472,7 @@ Item {
     // Flush pending double-buffered Wayland state (blur regions) that won't
     // be committed otherwise — after an app launch the compositor may stop
     // sending frame callbacks, leaving the render loop idle.
-    Window.window?.flushWaylandState();
+    flushSurfaceState();
 
     Logger.d("SmartPanel", "Panel closed immediately", objectName);
   }
@@ -503,9 +503,26 @@ Item {
     closed();
 
     // Flush pending double-buffered Wayland state (blur regions).
-    Window.window?.flushWaylandState();
+    flushSurfaceState();
 
     Logger.d("SmartPanel", "Panel close finalized", objectName);
+  }
+
+  // Push pending double-buffered Wayland state (blur/mask regions) to the
+  // compositor without waiting for a rendered frame — an instant close can
+  // render zero frames, leaving the last committed region ghosted.
+  // flushWaylandState only exists on noctalia-qs (calling a missing method
+  // throws a TypeError even through ?.); on stock quickshell
+  // QQuickWindow.update() schedules the frame whose present carries the
+  // same pending state. Same dispatch as NSurfaceRegion.scheduleRegionFlush.
+  function flushSurfaceState() {
+    const win = Window.window;
+    if (!win)
+      return;
+    if (win.flushWaylandState)
+      win.flushWaylandState();
+    else if (win.update)
+      win.update();
   }
 
   function setPosition() {
