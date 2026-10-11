@@ -26,6 +26,11 @@ Item {
 
   component Title: Item {
     property string text: ""
+    // Feature switches hide their sub-tabs (monitors/plugins when the dock is
+    // off, the status bar when nothing can render it). Hidden titles keep their
+    // declared index so remaining buttons still map to the same NTabView page.
+    // (Named `shown` because Item.visible is FINAL and cannot be redeclared.)
+    property bool shown: true
   }
 
   Item {
@@ -45,6 +50,12 @@ Item {
       text: modelData.text
       tabIndex: index
       checked: root.bar && root.bar.currentIndex === index
+      // Item.visible's GETTER reports effective visibility (self && all
+      // ancestors): once the bar collapses itself in groupMode every button
+      // reads false regardless of its own flag. `tabShown` keeps the local
+      // flag readable for NTabBar.groupIndexShown.
+      property bool tabShown: modelData.shown
+      visible: tabShown
     }
   }
 

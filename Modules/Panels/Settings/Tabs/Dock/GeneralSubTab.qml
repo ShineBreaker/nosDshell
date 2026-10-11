@@ -2,20 +2,24 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
-import "../../Bar" as BarSettings
 import qs.Commons
-import qs.Services.Compositor
+import qs.Services.System
+import qs.Services.UI
 import qs.Widgets
 
-// DDE taskbar "General" page (DESIGN §3.1.1): the five settings of the
-// original dock settings menu — enabled, mode, position, size, status.
-// All bindings target the live keys (dock.mode / position / iconSize /
-// hideMode); see DockSettingsMenu.qml for the menu-side wording.
-// The optional status bar group below is a nosd extension (DESIGN §3.13).
+// DDE taskbar "常规" page (DESIGN §3.1.1, §3.5.3): everything that configures
+// the dock itself lives under its feature switch — mode/position/size/status,
+// then appearance, then window grouping. Disabling the dock hides the whole
+// configuration tree below the toggle (a feature switch hides its settings,
+// it does not merely grey them out). Fashion-only options hide with the mode
+// instead of being labelled "(fashion)".
 ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
+
+  readonly property color launcherPreviewColor: Color.resolveColorKey((Settings.data.dock.launcherIconColor !== undefined) ? Settings.data.dock.launcherIconColor : "none")
+  readonly property bool fashionMode: Settings.data.dock.mode === "fashion"
 
   NToggle {
     Layout.fillWidth: true
@@ -26,138 +30,10 @@ ColumnLayout {
     onToggled: checked => Settings.data.dock.enabled = checked
   }
 
-  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
-  NDccGap {
-    Layout.fillWidth: true
-  }
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    enabled: Settings.data.dock.enabled
-
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("dock-menu.mode")
-      description: I18n.tr("settings.taskbar.mode-description")
-      model: [
-        {
-          "key": "fashion",
-          "name": I18n.tr("dock-menu.mode-fashion")
-        },
-        {
-          "key": "efficient",
-          "name": I18n.tr("dock-menu.mode-efficient")
-        }
-      ]
-      currentKey: Settings.data.dock.mode
-      defaultValue: Settings.getDefaultValue("dock.mode")
-      onSelected: key => Settings.data.dock.mode = key
-    }
-
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("dock-menu.location")
-      model: [
-        {
-          "key": "top",
-          "name": I18n.tr("dock-menu.location-top")
-        },
-        {
-          "key": "bottom",
-          "name": I18n.tr("dock-menu.location-bottom")
-        },
-        {
-          "key": "left",
-          "name": I18n.tr("dock-menu.location-left")
-        },
-        {
-          "key": "right",
-          "name": I18n.tr("dock-menu.location-right")
-        }
-      ]
-      currentKey: Settings.data.dock.position
-      defaultValue: Settings.getDefaultValue("dock.position")
-      onSelected: key => Settings.data.dock.position = key
-    }
-
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("dock-menu.size")
-      description: I18n.tr("settings.taskbar.size-description")
-      model: [
-        {
-          "key": "30",
-          "name": I18n.tr("dock-menu.size-small")
-        },
-        {
-          "key": "36",
-          "name": I18n.tr("dock-menu.size-medium")
-        },
-        {
-          "key": "48",
-          "name": I18n.tr("dock-menu.size-large")
-        }
-      ]
-      currentKey: String(Settings.data.dock.iconSize)
-      defaultValue: String(Settings.getDefaultValue("dock.iconSize"))
-      onSelected: key => Settings.data.dock.iconSize = parseInt(key)
-    }
-
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("dock-menu.state")
-      description: I18n.tr("settings.taskbar.state-description")
-      model: [
-        {
-          "key": "keep-showing",
-          "name": I18n.tr("dock-menu.state-keep-showing")
-        },
-        {
-          "key": "keep-hidden",
-          "name": I18n.tr("dock-menu.state-keep-hidden")
-        },
-        {
-          "key": "smart-hide",
-          "name": I18n.tr("dock-menu.state-smart-hide")
-        }
-      ]
-      currentKey: Settings.data.dock.hideMode
-      defaultValue: Settings.getDefaultValue("dock.hideMode")
-      onSelected: key => Settings.data.dock.hideMode = key
-    }
-  }
-
-  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
-  NDccGap {
-    Layout.fillWidth: true
-    visible: Settings.data.dock.mode === "fashion"
-  }
-  // ---- Status bar (DESIGN §3.13) ----
-  // macOS-style optional status bar, independent of the dock/taskbar. It only
-  // exists in fashion mode — in efficient mode the taskbar already is the
-  // bar, so the whole section collapses instead of showing dead controls.
   ColumnLayout {
     Layout.fillWidth: true
     spacing: 0
-    visible: Settings.data.dock.mode === "fashion"
-
-    NHeader {
-      label: I18n.tr("settings.taskbar.statusbar")
-    }
-
-    ColumnLayout {
-      Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
-
-      NToggle {
-        Layout.fillWidth: true
-        label: I18n.tr("settings.taskbar.statusbar-enabled-label")
-        description: I18n.tr("settings.taskbar.statusbar-enabled-description")
-        checked: Settings.data.bar.enabled
-        defaultValue: Settings.getDefaultValue("bar.enabled")
-        onToggled: checked => Settings.data.bar.enabled = checked
-      }
-    }
+    visible: Settings.data.dock.enabled
 
     // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
     NDccGap {
@@ -166,11 +42,29 @@ ColumnLayout {
     ColumnLayout {
       Layout.fillWidth: true
       spacing: Style.settingsGroupGap
-      enabled: Settings.data.bar.enabled
 
       NComboBox {
         Layout.fillWidth: true
-        label: I18n.tr("settings.taskbar.statusbar-position")
+        label: I18n.tr("dock-menu.mode")
+        description: I18n.tr("settings.taskbar.mode-description")
+        model: [
+          {
+            "key": "fashion",
+            "name": I18n.tr("dock-menu.mode-fashion")
+          },
+          {
+            "key": "efficient",
+            "name": I18n.tr("dock-menu.mode-efficient")
+          }
+        ]
+        currentKey: Settings.data.dock.mode
+        defaultValue: Settings.getDefaultValue("dock.mode")
+        onSelected: key => Settings.data.dock.mode = key
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        label: I18n.tr("dock-menu.location")
         model: [
           {
             "key": "top",
@@ -189,97 +83,276 @@ ColumnLayout {
             "name": I18n.tr("dock-menu.location-right")
           }
         ]
-        currentKey: Settings.data.bar.position
-        defaultValue: Settings.getDefaultValue("bar.position")
-        onSelected: key => Settings.data.bar.position = key
+        currentKey: Settings.data.dock.position
+        defaultValue: Settings.getDefaultValue("dock.position")
+        onSelected: key => Settings.data.dock.position = key
       }
 
       NComboBox {
         Layout.fillWidth: true
-        label: I18n.tr("settings.taskbar.statusbar-state")
+        label: I18n.tr("dock-menu.size")
+        description: I18n.tr("settings.taskbar.size-description")
         model: [
           {
-            "key": "always_visible",
+            "key": "30",
+            "name": I18n.tr("dock-menu.size-small")
+          },
+          {
+            "key": "36",
+            "name": I18n.tr("dock-menu.size-medium")
+          },
+          {
+            "key": "48",
+            "name": I18n.tr("dock-menu.size-large")
+          }
+        ]
+        currentKey: String(Settings.data.dock.iconSize)
+        defaultValue: String(Settings.getDefaultValue("dock.iconSize"))
+        onSelected: key => Settings.data.dock.iconSize = parseInt(key)
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        label: I18n.tr("dock-menu.state")
+        description: I18n.tr("settings.taskbar.state-description")
+        model: [
+          {
+            "key": "keep-showing",
             "name": I18n.tr("dock-menu.state-keep-showing")
           },
           {
-            "key": "auto_hide",
+            "key": "keep-hidden",
             "name": I18n.tr("dock-menu.state-keep-hidden")
+          },
+          {
+            "key": "smart-hide",
+            "name": I18n.tr("dock-menu.state-smart-hide")
           }
         ]
-        currentKey: Settings.data.bar.displayMode
-        defaultValue: Settings.getDefaultValue("bar.displayMode")
-        onSelected: key => Settings.data.bar.displayMode = key
+        currentKey: Settings.data.dock.hideMode
+        defaultValue: Settings.getDefaultValue("dock.hideMode")
+        onSelected: key => Settings.data.dock.hideMode = key
+      }
+    }
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+      Layout.fillWidth: true
+    }
+
+    // SettingsGroup: dock appearance (fashion/efficient shared keys)
+    ColumnLayout {
+      Layout.fillWidth: true
+      spacing: Style.settingsGroupGap
+      NHeader {
+        label: I18n.tr("settings.advanced.dock-appearance")
       }
 
-      NText {
-        visible: (Quickshell.screens || []).length > 1
-        text: I18n.tr("settings.taskbar.statusbar-monitors")
-        wrapMode: Text.WordWrap
+      NValueSlider {
         Layout.fillWidth: true
+        label: I18n.tr("panels.dock.appearance-background-opacity-label")
+        description: I18n.tr("panels.dock.appearance-background-opacity-description")
+        from: 0.3
+        to: 1
+        stepSize: 0.01
+        showReset: true
+        value: Settings.data.dock.backgroundOpacity
+        defaultValue: Settings.getDefaultValue("dock.backgroundOpacity")
+        onMoved: value => Settings.data.dock.backgroundOpacity = value
+        text: Math.floor(Settings.data.dock.backgroundOpacity * 100) + "%"
       }
 
-      Repeater {
-        model: (Quickshell.screens || []).length > 1 ? (Quickshell.screens || []) : []
-        delegate: NCheckbox {
+      NValueSlider {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.dock.appearance-dead-opacity-label")
+        description: I18n.tr("panels.dock.appearance-dead-opacity-description")
+        from: 0
+        to: 1
+        stepSize: 0.01
+        showReset: true
+        value: Settings.data.dock.deadOpacity
+        defaultValue: Settings.getDefaultValue("dock.deadOpacity")
+        onMoved: value => Settings.data.dock.deadOpacity = value
+        text: Math.floor(Settings.data.dock.deadOpacity * 100) + "%"
+      }
+
+      NValueSlider {
+        Layout.fillWidth: true
+        visible: root.fashionMode
+        label: I18n.tr("panels.dock.appearance-plugin-spacing-label")
+        description: I18n.tr("panels.dock.appearance-plugin-spacing-description")
+        from: 0
+        to: 24
+        stepSize: 1
+        showReset: true
+        value: Settings.data.dock.pluginSpacing
+        defaultValue: Settings.getDefaultValue("dock.pluginSpacing")
+        onMoved: value => Settings.data.dock.pluginSpacing = value
+        text: Math.round(Settings.data.dock.pluginSpacing) + " px"
+      }
+
+      NToggle {
+        Layout.fillWidth: true
+        visible: root.fashionMode
+        label: I18n.tr("panels.dock.appearance-fused-plugins-label")
+        description: I18n.tr("panels.dock.appearance-fused-plugins-description")
+        checked: Settings.data.dock.fusedPlugins
+        defaultValue: Settings.getDefaultValue("dock.fusedPlugins")
+        onToggled: checked => Settings.data.dock.fusedPlugins = checked
+      }
+
+      NToggle {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.dock.appearance-colorize-icons-label")
+        description: I18n.tr("panels.dock.appearance-colorize-icons-description")
+        checked: Settings.data.dock.colorizeIcons
+        defaultValue: Settings.getDefaultValue("dock.colorizeIcons")
+        onToggled: checked => Settings.data.dock.colorizeIcons = checked
+      }
+
+      NToggle {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.dock.appearance-launcher-use-distro-logo-label")
+        description: I18n.tr("panels.dock.appearance-launcher-use-distro-logo-description")
+        checked: Settings.data.dock.launcherUseDistroLogo
+        defaultValue: Settings.getDefaultValue("dock.launcherUseDistroLogo")
+        onToggled: checked => Settings.data.dock.launcherUseDistroLogo = checked
+      }
+
+      NDccRow {
+        Layout.fillWidth: true
+        interactive: false
+
+        NLabel {
           Layout.fillWidth: true
-          required property var modelData
-          readonly property real compositorScale: {
-            const info = CompositorService.displayScales[modelData.name];
-            return (info && info.scale) ? info.scale : 1.0;
-          }
-          label: modelData.name || "Unknown"
-          description: {
-            I18n.tr("system.monitor-description", {
-                      "model": modelData.model,
-                      "width": modelData.width * compositorScale,
-                      "height": modelData.height * compositorScale,
-                      "scale": compositorScale
-                    });
-          }
-          checked: (Settings.data.bar.monitors || []).indexOf(modelData.name) !== -1
-          onToggled: checked => {
-                       var arr = (Settings.data.bar.monitors || []).slice();
-                       if (checked) {
-                         if (arr.indexOf(modelData.name) === -1)
-                         arr.push(modelData.name);
-                       } else {
-                         arr = arr.filter(function (n) {
-                           return n !== modelData.name;
-                         });
-                       }
-                       Settings.data.bar.monitors = arr;
-                     }
+          label: I18n.tr("panels.dock.appearance-launcher-icon-label")
+          description: I18n.tr("panels.dock.appearance-launcher-icon-description")
+          labelWeight: Style.fontWeightRegular
         }
 
-        // Widget layout — expands the global bar.widgets editor inline.
-        NDccRow {
-          id: widgetsRow
-          Layout.fillWidth: true
-          clickable: true
-          onClicked: widgetsEditor.visible = !widgetsEditor.visible
-
-          NText {
-            text: I18n.tr("panels.bar.monitor-configure-widgets")
-            pointSize: Style.fontSizeS
-            color: Color.onShell
-            Layout.fillWidth: true
-          }
-
-          NIcon {
-            icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
-            pointSize: Style.fontSizeL
-            color: Color.onShellTertiary
-          }
+        NIconButton {
+          visible: !Settings.data.dock.launcherUseDistroLogo
+          enabled: !Settings.data.dock.launcherUseDistroLogo
+          icon: (Settings.data.dock.launcherIcon && Settings.data.dock.launcherIcon !== "") ? Settings.data.dock.launcherIcon : "search"
+          colorFg: root.launcherPreviewColor
+          colorFgHover: root.launcherPreviewColor
+          tooltipText: I18n.tr("bar.control-center.browse-library")
+          onClicked: launcherIconPicker.open()
         }
 
-        BarSettings.MonitorWidgetsConfig {
-          id: widgetsEditor
-          visible: false
-          screen: null
-          Layout.fillWidth: true
-          Layout.topMargin: Style.marginM
+        Rectangle {
+          visible: Settings.data.dock.launcherUseDistroLogo
+          width: Style.toOdd(Style.baseWidgetSize * Style.uiScaleRatio)
+          height: width
+          radius: Math.min(Style.radiusItem, width / 2)
+          color: Color.overlay("field")
+          border.color: Color.borderShell
+          border.width: Style.borderS
+
+          Image {
+            anchors.centerIn: parent
+            width: parent.width * 0.62
+            height: width
+            source: HostService.osLogo
+            fillMode: Image.PreserveAspectFit
+            smooth: true
+            asynchronous: true
+            layer.enabled: visible
+            layer.effect: ShaderEffect {
+              property color targetColor: root.launcherPreviewColor
+              property real colorizeMode: 2.0
+
+              fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
+            }
+          }
         }
+      }
+
+      NIconPicker {
+        id: launcherIconPicker
+        initialIcon: (Settings.data.dock.launcherIcon && Settings.data.dock.launcherIcon !== "") ? Settings.data.dock.launcherIcon : "search"
+        onIconSelected: iconName => {
+                          Settings.data.dock.launcherIcon = iconName;
+                          Settings.saveImmediate();
+                        }
+      }
+
+      NColorChoice {
+        Layout.fillWidth: true
+        label: I18n.tr("common.select-icon-color")
+        currentKey: Settings.data.dock.launcherIconColor
+        defaultValue: Settings.getDefaultValue("dock.launcherIconColor")
+        onSelected: key => Settings.data.dock.launcherIconColor = key
+      }
+    }
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+      Layout.fillWidth: true
+    }
+
+    // SettingsGroup: dock window grouping
+    ColumnLayout {
+      Layout.fillWidth: true
+      spacing: Style.settingsGroupGap
+      NHeader {
+        label: I18n.tr("settings.advanced.dock-grouping")
+      }
+
+      NToggle {
+        label: I18n.tr("panels.dock.appearance-pinned-static-label")
+        description: I18n.tr("panels.dock.appearance-pinned-static-description")
+        checked: Settings.data.dock.pinnedStatic
+        defaultValue: Settings.getDefaultValue("dock.pinnedStatic")
+        onToggled: checked => Settings.data.dock.pinnedStatic = checked
+      }
+
+      NToggle {
+        label: I18n.tr("panels.dock.appearance-group-apps-label")
+        description: I18n.tr("panels.dock.appearance-group-apps-description")
+        checked: Settings.data.dock.groupApps
+        defaultValue: Settings.getDefaultValue("dock.groupApps")
+        onToggled: checked => Settings.data.dock.groupApps = checked
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        visible: Settings.data.dock.groupApps
+        label: I18n.tr("panels.dock.appearance-group-click-action-label")
+        description: I18n.tr("panels.dock.appearance-group-click-action-description")
+        model: [
+          {
+            "key": "cycle",
+            "name": I18n.tr("panels.dock.appearance-group-click-action-cycle")
+          },
+          {
+            "key": "list",
+            "name": I18n.tr("panels.dock.appearance-group-click-action-list")
+          }
+        ]
+        currentKey: Settings.data.dock.groupClickAction
+        defaultValue: Settings.getDefaultValue("dock.groupClickAction")
+        onSelected: key => Settings.data.dock.groupClickAction = key
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        visible: Settings.data.dock.groupApps
+        label: I18n.tr("panels.dock.appearance-group-context-menu-mode-label")
+        description: I18n.tr("panels.dock.appearance-group-context-menu-mode-description")
+        model: [
+          {
+            "key": "list",
+            "name": I18n.tr("panels.dock.appearance-group-context-menu-mode-list")
+          },
+          {
+            "key": "extended",
+            "name": I18n.tr("panels.dock.appearance-group-context-menu-mode-extended")
+          }
+        ]
+        currentKey: Settings.data.dock.groupContextMenuMode
+        defaultValue: Settings.getDefaultValue("dock.groupContextMenuMode")
+        onSelected: key => Settings.data.dock.groupContextMenuMode = key
       }
     }
   }

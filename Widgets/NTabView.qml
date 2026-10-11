@@ -46,15 +46,21 @@ Item {
   readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.settingsGroupGap : 0
 
   // Content-item indices taking part in the stack. With onlyGroup the view
-  // owns a single slice; otherwise every page is a group.
+  // owns a single slice; otherwise every page is a group — except pages whose
+  // sub-tab title is hidden (a feature switch hides its settings, including
+  // the stacked group; NTabBar.groupIndexShown reads the button's live
+  // visibility so this re-evaluates on toggle).
   readonly property var _groups: {
     if (contentItems.length === 0)
       return [];
     if (onlyGroup >= 0 && onlyGroup < contentItems.length)
       return [onlyGroup];
+    const bar = _findTabBar();
     var all = [];
-    for (var i = 0; i < contentItems.length; i++)
-      all.push(i);
+    for (var i = 0; i < contentItems.length; i++) {
+      if (!bar || bar.groupIndexShown(i))
+        all.push(i);
+    }
     return all;
   }
 
@@ -131,7 +137,8 @@ Item {
     for (let i = 0; i < contentItems.length; i++) {
       const child = contentItems[i];
       child.y = Qt.binding(() => root._stackedOffset(i) + root.stackHeadHeight);
-      child.visible = root._groups.indexOf(i) >= 0;
+      // Bound (not imperative): a hidden sub-tab drops its stacked group live.
+      child.visible = Qt.binding(() => root._groups.indexOf(i) >= 0);
     }
   }
 

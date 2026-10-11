@@ -63,6 +63,9 @@ QML 约定多数继承自 Noctalia、配置文件里看不出来，所以在这�
 
 - `Services/`、`Commons/` 是 Noctalia 的业务内核：重写样式时不要改动它们的属性签名、信号时机和副作用。上游语义被替换必须写出依据（平台差异，如 niri/PipeWire），否则视为回归。
 - `Assets/settings-default.json` 的每个键都要有消费方，且**设置项必须与活跃前端一一对应**——只接到死代码/非默认路径（如已删的 overlay launcher）等价于死键。发现"数据活着、界面死了"先恢复接入，而不是当死代码删掉（参考 `bar.widgets` 的教训：服务链路活着，只是 UI 被砍）。
+- **设置页分组**：功能开关在前、该功能的配置紧随其后；同一功能的开关和配置不许跨子页/跨分组散落（DESIGN §3.5.3）。
+- **关闭即隐藏**：功能关闭时用 `visible` 隐藏它的全部配置项——不用 `enabled` 置灰；整页失效时连子页签一起隐藏（`NSubTabsPane.Title.shown`）。模式/状态专属设置随条件绑定自动隐藏，不在文案里标注"（某模式）"——可见性本身表达适用范围。
+- `Item.visible` 的 getter 返回的是**有效可见性**（自身 && 所有祖先），不是本地标志：祖先一藏，子项读出恒为 false。需要判断"这项自己是不是被显式隐藏"时另存一个标志属性（如 `NTabButton.tabShown`），别直接读 `.visible`（`NTabBar.groupIndexShown` 踩过这个坑）。
 - **挂件注入属性只能走 `BarWidgetLoader.widgetProps` 的守卫式赋值**，不能进 `Loader.setSource` 的初始属性——初始属性不过滤，挂件没声明就 `Cannot assign to non-existent property`（第三方插件挂件尤其躲不掉）。dock 侧注入见 `dockPresentation`（DESIGN §3.1.4）。
 - 删功能要连带清数据键并写迁移（`Commons/Migrations/`）；留着孤儿键就是留一颗哑弹。
 

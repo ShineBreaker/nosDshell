@@ -665,145 +665,37 @@
     "subTabLabel": "common.night-light"
   },
   {
-    "labelKey": "settings.advanced.dock-appearance",
-    "descriptionKey": null,
-    "widget": "NHeader",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-background-opacity-label",
-    "descriptionKey": "panels.dock.appearance-background-opacity-description",
-    "widget": "NValueSlider",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-dead-opacity-label",
-    "descriptionKey": "panels.dock.appearance-dead-opacity-description",
-    "widget": "NValueSlider",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-plugin-spacing-label",
-    "descriptionKey": "panels.dock.appearance-plugin-spacing-description",
-    "widget": "NValueSlider",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-fused-plugins-label",
-    "descriptionKey": "panels.dock.appearance-fused-plugins-description",
+    "labelKey": "settings.taskbar.statusbar-enabled-label",
+    "descriptionKey": "settings.taskbar.statusbar-enabled-description",
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-colorize-icons-label",
-    "descriptionKey": "panels.dock.appearance-colorize-icons-description",
-    "widget": "NToggle",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-launcher-use-distro-logo-label",
-    "descriptionKey": "panels.dock.appearance-launcher-use-distro-logo-description",
-    "widget": "NToggle",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-launcher-icon-label",
-    "descriptionKey": "panels.dock.appearance-launcher-icon-description",
-    "widget": "NLabel",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "common.select-icon-color",
-    "descriptionKey": null,
-    "widget": "NColorChoice",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "settings.advanced.dock-grouping",
-    "descriptionKey": null,
-    "widget": "NHeader",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-pinned-static-label",
-    "descriptionKey": "panels.dock.appearance-pinned-static-description",
-    "widget": "NToggle",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-group-apps-label",
-    "descriptionKey": "panels.dock.appearance-group-apps-description",
-    "widget": "NToggle",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance"
-  },
-  {
-    "labelKey": "panels.dock.appearance-group-click-action-label",
-    "descriptionKey": "panels.dock.appearance-group-click-action-description",
-    "widget": "NComboBox",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance",
-    "visibleWhen": [
-      "Settings.data.dock.groupApps"
-    ]
-  },
-  {
-    "labelKey": "panels.dock.appearance-group-context-menu-mode-label",
-    "descriptionKey": "panels.dock.appearance-group-context-menu-mode-description",
-    "widget": "NComboBox",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 1,
-    "subTabLabel": "common.appearance",
-    "visibleWhen": [
-      "Settings.data.dock.groupApps"
-    ]
-  },
-  {
-    "labelKey": "settings.advanced.bar-appearance",
-    "descriptionKey": null,
-    "widget": "NHeader",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 2,
     "subTabLabel": "panels.bar.title"
+  },
+  {
+    "labelKey": "settings.taskbar.statusbar-position",
+    "descriptionKey": null,
+    "widget": "NComboBox",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.enabled"
+    ]
+  },
+  {
+    "labelKey": "settings.taskbar.statusbar-state",
+    "descriptionKey": null,
+    "widget": "NComboBox",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.enabled"
+    ]
   },
   {
     "labelKey": "panels.bar.appearance-density-label",
@@ -811,28 +703,10 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
-    "subTabLabel": "panels.bar.title"
-  },
-  {
-    "labelKey": "panels.bar.appearance-use-separate-opacity-label",
-    "descriptionKey": "panels.bar.appearance-use-separate-opacity-description",
-    "widget": "NToggle",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 2,
-    "subTabLabel": "panels.bar.title"
-  },
-  {
-    "labelKey": "panels.bar.appearance-background-opacity-label",
-    "descriptionKey": "panels.bar.appearance-background-opacity-description",
-    "widget": "NValueSlider",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.data.bar.useSeparateOpacity"
+      "Settings.data.bar.enabled"
     ]
   },
   {
@@ -841,8 +715,41 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.enabled"
+    ]
+  },
+  {
+    "labelKey": "settings.advanced.bar-appearance",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
+  },
+  {
+    "labelKey": "panels.bar.appearance-use-separate-opacity-label",
+    "descriptionKey": "panels.bar.appearance-use-separate-opacity-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title"
+  },
+  {
+    "labelKey": "panels.bar.appearance-background-opacity-label",
+    "descriptionKey": "panels.bar.appearance-background-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.useSeparateOpacity"
+    ]
   },
   {
     "labelKey": "panels.bar.appearance-widget-spacing-label",
@@ -850,7 +757,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -859,7 +766,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -868,7 +775,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -877,7 +784,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -886,7 +793,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.bar.showCapsule"
@@ -898,7 +805,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.bar.showCapsule"
@@ -910,7 +817,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -919,7 +826,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "CompositorService.isNiri"
@@ -931,7 +838,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -940,7 +847,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -949,7 +856,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -958,7 +865,7 @@
     "widget": "NSpinBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -967,7 +874,7 @@
     "widget": "NSpinBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -976,7 +883,7 @@
     "widget": "NHeader",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -985,7 +892,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -994,7 +901,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.bar.mouseWheelAction !== \"none\""
@@ -1006,7 +913,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.bar.mouseWheelAction === \"workspace\""
@@ -1018,7 +925,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title"
   },
   {
@@ -1027,7 +934,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.bar.middleClickAction === \"command\""
@@ -1039,7 +946,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.bar.middleClickAction !== \"none\" && Settings.data.bar.middleClickAction !== \"command\""
@@ -1051,7 +958,7 @@
     "widget": "NHeader",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.dock.hideMode !== \"keep-showing\""
@@ -1063,7 +970,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.dock.hideMode !== \"keep-showing\""
@@ -1075,7 +982,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.dock.hideMode !== \"keep-showing\""
@@ -1087,7 +994,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 2,
+    "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
       "Settings.data.dock.hideMode !== \"keep-showing\""
@@ -1109,7 +1016,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
   },
   {
     "labelKey": "dock-menu.location",
@@ -1118,7 +1028,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
   },
   {
     "labelKey": "dock-menu.size",
@@ -1127,7 +1040,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
   },
   {
     "labelKey": "dock-menu.state",
@@ -1136,10 +1052,13 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
-    "subTabLabel": "settings.taskbar.general"
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
   },
   {
-    "labelKey": "settings.taskbar.statusbar",
+    "labelKey": "settings.advanced.dock-appearance",
     "descriptionKey": null,
     "widget": "NHeader",
     "tab": 10,
@@ -1147,43 +1066,165 @@
     "subTab": 0,
     "subTabLabel": "settings.taskbar.general",
     "visibleWhen": [
-      "Settings.data.dock.mode === \"fashion\""
+      "Settings.data.dock.enabled"
     ]
   },
   {
-    "labelKey": "settings.taskbar.statusbar-enabled-label",
-    "descriptionKey": "settings.taskbar.statusbar-enabled-description",
+    "labelKey": "panels.dock.appearance-background-opacity-label",
+    "descriptionKey": "panels.dock.appearance-background-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-dead-opacity-label",
+    "descriptionKey": "panels.dock.appearance-dead-opacity-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-plugin-spacing-label",
+    "descriptionKey": "panels.dock.appearance-plugin-spacing-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-fused-plugins-label",
+    "descriptionKey": "panels.dock.appearance-fused-plugins-description",
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
     "subTabLabel": "settings.taskbar.general",
     "visibleWhen": [
-      "Settings.data.dock.mode === \"fashion\""
+      "Settings.data.dock.enabled"
     ]
   },
   {
-    "labelKey": "settings.taskbar.statusbar-position",
+    "labelKey": "panels.dock.appearance-colorize-icons-label",
+    "descriptionKey": "panels.dock.appearance-colorize-icons-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-launcher-use-distro-logo-label",
+    "descriptionKey": "panels.dock.appearance-launcher-use-distro-logo-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-launcher-icon-label",
+    "descriptionKey": "panels.dock.appearance-launcher-icon-description",
+    "widget": "NLabel",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "common.select-icon-color",
     "descriptionKey": null,
+    "widget": "NColorChoice",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "settings.advanced.dock-grouping",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-pinned-static-label",
+    "descriptionKey": "panels.dock.appearance-pinned-static-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-group-apps-label",
+    "descriptionKey": "panels.dock.appearance-group-apps-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.appearance-group-click-action-label",
+    "descriptionKey": "panels.dock.appearance-group-click-action-description",
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
     "subTabLabel": "settings.taskbar.general",
     "visibleWhen": [
-      "Settings.data.dock.mode === \"fashion\""
+      "Settings.data.dock.enabled",
+      "Settings.data.dock.groupApps"
     ]
   },
   {
-    "labelKey": "settings.taskbar.statusbar-state",
-    "descriptionKey": null,
+    "labelKey": "panels.dock.appearance-group-context-menu-mode-label",
+    "descriptionKey": "panels.dock.appearance-group-context-menu-mode-description",
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 0,
     "subTabLabel": "settings.taskbar.general",
     "visibleWhen": [
-      "Settings.data.dock.mode === \"fashion\""
+      "Settings.data.dock.enabled",
+      "Settings.data.dock.groupApps"
     ]
   },
   {
@@ -1192,7 +1233,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 3,
+    "subTab": 2,
     "subTabLabel": "settings.taskbar.monitors"
   },
   {
@@ -2886,7 +2927,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2895,7 +2936,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2904,7 +2945,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2913,7 +2954,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2922,7 +2963,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2931,7 +2972,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2940,7 +2981,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2949,7 +2990,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2958,7 +2999,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2967,7 +3008,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2976,7 +3017,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2985,7 +3026,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -2994,7 +3035,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3003,7 +3044,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3012,7 +3053,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3021,7 +3062,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3030,7 +3071,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3039,7 +3080,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3048,7 +3089,7 @@
     "widget": "NSearchableComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3057,7 +3098,7 @@
     "widget": "NHeader",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3066,7 +3107,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3075,7 +3116,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3084,7 +3125,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3093,7 +3134,7 @@
     "widget": "NSpinBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3102,7 +3143,7 @@
     "widget": "NLabel",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3111,7 +3152,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3120,7 +3161,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3129,7 +3170,7 @@
     "widget": "NLabel",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3138,7 +3179,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3147,7 +3188,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3156,7 +3197,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3165,7 +3206,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3174,7 +3215,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3183,7 +3224,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3192,7 +3233,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3201,7 +3242,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3210,7 +3251,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3219,7 +3260,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3228,7 +3269,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3237,7 +3278,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3246,7 +3287,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3255,7 +3296,7 @@
     "widget": "NSpinBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3264,7 +3305,7 @@
     "widget": "NSpinBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3273,7 +3314,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3282,7 +3323,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3291,7 +3332,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3300,7 +3341,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3309,7 +3350,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3318,7 +3359,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3327,7 +3368,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3336,7 +3377,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3345,7 +3386,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3354,7 +3395,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3363,7 +3404,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3372,7 +3413,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3381,7 +3422,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3390,7 +3431,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3399,7 +3440,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3408,7 +3449,7 @@
     "widget": "NLabel",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3417,7 +3458,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3426,7 +3467,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3435,7 +3476,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3444,7 +3485,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3453,7 +3494,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3462,7 +3503,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3471,7 +3512,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3480,7 +3521,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3489,7 +3530,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3498,7 +3539,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3507,7 +3548,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3516,7 +3557,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3525,7 +3566,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins",
     "visibleWhen": [
       "SystemStatService.gpuAvailable"
@@ -3537,7 +3578,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3546,7 +3587,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3555,7 +3596,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3564,7 +3605,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3573,7 +3614,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3582,7 +3623,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3591,7 +3632,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3600,7 +3641,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3609,7 +3650,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3618,7 +3659,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3627,7 +3668,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3636,7 +3677,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3645,7 +3686,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3654,7 +3695,7 @@
     "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3663,7 +3704,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3672,7 +3713,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3681,7 +3722,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3690,7 +3731,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3699,7 +3740,7 @@
     "widget": "NHeader",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3708,7 +3749,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3717,7 +3758,7 @@
     "widget": "NSpinBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3726,7 +3767,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3735,7 +3776,7 @@
     "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3744,7 +3785,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3753,7 +3794,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3762,7 +3803,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3771,7 +3812,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3780,7 +3821,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3789,7 +3830,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3798,7 +3839,7 @@
     "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3807,7 +3848,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3816,7 +3857,7 @@
     "widget": "NValueSlider",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3825,7 +3866,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3834,7 +3875,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {
@@ -3843,7 +3884,7 @@
     "widget": "NColorChoice",
     "tab": 10,
     "tabLabel": "panels.dock.title",
-    "subTab": 4,
+    "subTab": 3,
     "subTabLabel": "settings.taskbar.plugins"
   },
   {

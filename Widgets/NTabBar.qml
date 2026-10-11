@@ -46,17 +46,43 @@ Rectangle {
     tabRow.spacing = groupMode ? Style.marginS : root.spacing;
   }
 
-  // The titles a stacked NTabView draws as its per-tab SettingsHeads.
+  // The titles a stacked NTabView draws as its per-tab SettingsHeads. Ordered
+  // by tabIndex: pane-generated buttons land in children in incubation order,
+  // which is NOT the declared page order.
   function groupTitles() {
-    const titles = [];
+    const entries = [];
     if (!tabRow || !tabRow.children)
-      return titles;
+      return entries;
     for (let i = 0; i < tabRow.children.length; i++) {
       const child = tabRow.children[i];
       if (child && child.isTabButton === true)
-        titles.push(child.text);
+        entries.push(child);
     }
+    entries.sort(function (a, b) {
+      return a.tabIndex - b.tabIndex;
+    });
+    const titles = [];
+    for (const child of entries)
+      titles.push(child.text);
     return titles;
+  }
+
+  // Whether the sub-tab at pageIndex is shown — read live from the generated
+  // button so a hidden title also drops its stacked group (feature switches
+  // hide their settings, DESIGN §3.5.3). Matched by tabIndex, not position:
+  // children order is incubation order. The flag is `tabShown`, NOT
+  // `visible` — Item.visible's getter reports effective visibility, and this
+  // bar hides itself in groupMode, which would make every button read false.
+  // Hand-declared NTabButtons have no `tabShown` and are always shown.
+  function groupIndexShown(pageIndex) {
+    if (!tabRow || !tabRow.children)
+      return true;
+    for (var i = 0; i < tabRow.children.length; i++) {
+      const child = tabRow.children[i];
+      if (child && child.isTabButton === true && child.tabIndex === pageIndex)
+        return child.tabShown !== undefined ? child.tabShown : true;
+    }
+    return true;
   }
 
   function _updateFirstLast() {

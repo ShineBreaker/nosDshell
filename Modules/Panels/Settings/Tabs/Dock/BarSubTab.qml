@@ -2,60 +2,233 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import "../../Bar" as BarSettings
 import qs.Commons
 import qs.Services.Compositor
 import qs.Services.UI
 import qs.Widgets
 
 // Bar keys — the "状态栏" sub-tab of the stacked 任务栏 module page
-// (DESIGN §3.5.3): appearance, behaviour and auto-hide groups. The bar is
-// the taskbar itself in efficient mode and the optional status bar in
-// fashion mode.
+// (DESIGN §3.5.3): the optional status bar feature switch first, then its
+// placement/density/monitor configuration; then the bar appearance,
+// behaviour and auto-hide groups that apply to whichever bar exists. The
+// status-bar section is fashion-only (in efficient mode the bar IS the
+// taskbar — BarService.effectivelyVisible) so it hides with the mode, and
+// its configuration hides when the feature is off.
 ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
 
+  readonly property bool fashionMode: Settings.data.dock.mode === "fashion"
   readonly property string effectiveWheelAction: Settings.data.bar.mouseWheelAction || "none"
   readonly property string effectiveMiddleClickAction: Settings.data.bar.middleClickAction || "none"
+
+  // ---- Status bar feature (DESIGN §3.13): switch, then its settings ----
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: 0
+    visible: root.fashionMode
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("settings.taskbar.statusbar-enabled-label")
+      description: I18n.tr("settings.taskbar.statusbar-enabled-description")
+      checked: Settings.data.bar.enabled
+      defaultValue: Settings.getDefaultValue("bar.enabled")
+      onToggled: checked => Settings.data.bar.enabled = checked
+    }
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+      Layout.fillWidth: true
+      visible: Settings.data.bar.enabled
+    }
+
+    ColumnLayout {
+      Layout.fillWidth: true
+      spacing: Style.settingsGroupGap
+      visible: Settings.data.bar.enabled
+
+      NComboBox {
+        Layout.fillWidth: true
+        label: I18n.tr("settings.taskbar.statusbar-position")
+        model: [
+          {
+            "key": "top",
+            "name": I18n.tr("dock-menu.location-top")
+          },
+          {
+            "key": "bottom",
+            "name": I18n.tr("dock-menu.location-bottom")
+          },
+          {
+            "key": "left",
+            "name": I18n.tr("dock-menu.location-left")
+          },
+          {
+            "key": "right",
+            "name": I18n.tr("dock-menu.location-right")
+          }
+        ]
+        currentKey: Settings.data.bar.position
+        defaultValue: Settings.getDefaultValue("bar.position")
+        onSelected: key => Settings.data.bar.position = key
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        label: I18n.tr("settings.taskbar.statusbar-state")
+        model: [
+          {
+            "key": "always_visible",
+            "name": I18n.tr("dock-menu.state-keep-showing")
+          },
+          {
+            "key": "auto_hide",
+            "name": I18n.tr("dock-menu.state-keep-hidden")
+          }
+        ]
+        currentKey: Settings.data.bar.displayMode
+        defaultValue: Settings.getDefaultValue("bar.displayMode")
+        onSelected: key => Settings.data.bar.displayMode = key
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.bar.appearance-density-label")
+        description: I18n.tr("panels.bar.appearance-density-description")
+        model: [
+          {
+            "key": "mini",
+            "name": I18n.tr("options.bar.density-mini")
+          },
+          {
+            "key": "compact",
+            "name": I18n.tr("options.bar.density-compact")
+          },
+          {
+            "key": "default",
+            "name": I18n.tr("options.bar.density-default")
+          },
+          {
+            "key": "comfortable",
+            "name": I18n.tr("options.bar.density-comfortable")
+          },
+          {
+            "key": "spacious",
+            "name": I18n.tr("options.bar.density-spacious")
+          }
+        ]
+        currentKey: Settings.data.bar.density
+        defaultValue: Settings.getDefaultValue("bar.density")
+        onSelected: key => Settings.data.bar.density = key
+      }
+
+      NValueSlider {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.bar.appearance-font-scale-label")
+        description: I18n.tr("panels.bar.appearance-font-scale-description")
+        from: 0.5
+        to: 2.0
+        stepSize: 0.01
+        showReset: true
+        value: Settings.data.bar.fontScale
+        defaultValue: Settings.getDefaultValue("bar.fontScale")
+        onMoved: value => Settings.data.bar.fontScale = value
+        text: Math.floor(Settings.data.bar.fontScale * 100) + "%"
+      }
+
+      NText {
+        visible: (Quickshell.screens || []).length > 1
+        text: I18n.tr("settings.taskbar.statusbar-monitors")
+        wrapMode: Text.WordWrap
+        Layout.fillWidth: true
+      }
+
+      Repeater {
+        model: (Quickshell.screens || []).length > 1 ? (Quickshell.screens || []) : []
+        delegate: NCheckbox {
+          Layout.fillWidth: true
+          required property var modelData
+          readonly property real compositorScale: {
+            const info = CompositorService.displayScales[modelData.name];
+            return (info && info.scale) ? info.scale : 1.0;
+          }
+          label: modelData.name || "Unknown"
+          description: {
+            I18n.tr("system.monitor-description", {
+                      "model": modelData.model,
+                      "width": modelData.width * compositorScale,
+                      "height": modelData.height * compositorScale,
+                      "scale": compositorScale
+                    });
+          }
+          checked: (Settings.data.bar.monitors || []).indexOf(modelData.name) !== -1
+          onToggled: checked => {
+                       var arr = (Settings.data.bar.monitors || []).slice();
+                       if (checked) {
+                         if (arr.indexOf(modelData.name) === -1)
+                         arr.push(modelData.name);
+                       } else {
+                         arr = arr.filter(function (n) {
+                           return n !== modelData.name;
+                         });
+                       }
+                       Settings.data.bar.monitors = arr;
+                     }
+        }
+
+        // Widget layout — expands the global bar.widgets editor inline.
+        NDccRow {
+          id: widgetsRow
+          Layout.fillWidth: true
+          clickable: true
+          onClicked: widgetsEditor.visible = !widgetsEditor.visible
+
+          NText {
+            text: I18n.tr("panels.bar.monitor-configure-widgets")
+            pointSize: Style.fontSizeS
+            color: Color.onShell
+            Layout.fillWidth: true
+          }
+
+          NIcon {
+            icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
+            pointSize: Style.fontSizeL
+            color: Color.onShellTertiary
+          }
+        }
+
+        BarSettings.MonitorWidgetsConfig {
+          id: widgetsEditor
+          visible: false
+          screen: null
+          Layout.fillWidth: true
+          Layout.topMargin: Style.marginM
+        }
+      }
+    }
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+      Layout.fillWidth: true
+      visible: root.anyBarAlive
+    }
+  }
+
+  // Groups below configure whichever bar is on screen: in efficient mode the
+  // bar is always the taskbar, in fashion mode only the enabled status bar —
+  // so with the feature off they are dead settings and hide too.
+  readonly property bool anyBarAlive: !fashionMode || Settings.data.bar.enabled
 
   // SettingsGroup: bar appearance (efficient-mode bar still reads these)
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
+    visible: root.anyBarAlive
     NHeader {
       label: I18n.tr("settings.advanced.bar-appearance")
-    }
-
-    NComboBox {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.bar.appearance-density-label")
-      description: I18n.tr("panels.bar.appearance-density-description")
-      model: [
-        {
-          "key": "mini",
-          "name": I18n.tr("options.bar.density-mini")
-        },
-        {
-          "key": "compact",
-          "name": I18n.tr("options.bar.density-compact")
-        },
-        {
-          "key": "default",
-          "name": I18n.tr("options.bar.density-default")
-        },
-        {
-          "key": "comfortable",
-          "name": I18n.tr("options.bar.density-comfortable")
-        },
-        {
-          "key": "spacious",
-          "name": I18n.tr("options.bar.density-spacious")
-        }
-      ]
-      currentKey: Settings.data.bar.density
-      defaultValue: Settings.getDefaultValue("bar.density")
-      onSelected: key => Settings.data.bar.density = key
     }
 
     NToggle {
@@ -79,20 +252,6 @@ ColumnLayout {
       defaultValue: Settings.getDefaultValue("bar.backgroundOpacity")
       onMoved: value => Settings.data.bar.backgroundOpacity = value
       text: Math.floor(Settings.data.bar.backgroundOpacity * 100) + "%"
-    }
-
-    NValueSlider {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.bar.appearance-font-scale-label")
-      description: I18n.tr("panels.bar.appearance-font-scale-description")
-      from: 0.5
-      to: 2.0
-      stepSize: 0.01
-      showReset: true
-      value: Settings.data.bar.fontScale
-      defaultValue: Settings.getDefaultValue("bar.fontScale")
-      onMoved: value => Settings.data.bar.fontScale = value
-      text: Math.floor(Settings.data.bar.fontScale * 100) + "%"
     }
 
     NValueSlider {
@@ -247,6 +406,7 @@ ColumnLayout {
 
   NDccGap {
     Layout.fillWidth: true
+    visible: root.anyBarAlive
   }
 
   // SettingsGroup: bar behavior (wheel + middle click; right click is
@@ -254,6 +414,7 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
+    visible: root.anyBarAlive
     NHeader {
       label: I18n.tr("settings.advanced.bar-behavior")
     }
@@ -365,14 +526,14 @@ ColumnLayout {
 
   NDccGap {
     Layout.fillWidth: true
-    visible: Settings.data.dock.hideMode !== "keep-showing"
+    visible: root.anyBarAlive && Settings.data.dock.hideMode !== "keep-showing"
   }
 
   // SettingsGroup: auto-hide delays (effective when hideMode hides the bar)
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    visible: Settings.data.dock.hideMode !== "keep-showing"
+    visible: root.anyBarAlive && Settings.data.dock.hideMode !== "keep-showing"
     NHeader {
       label: I18n.tr("settings.advanced.bar-autohide")
     }

@@ -294,8 +294,9 @@ DDE 15 的动效是"先砍再调"。`deepin-menu` 整库没有一个动画对象
 - 默认插件（时尚模式）：Tray、NotificationHistory、Network、Volume、Battery、Clock、SessionMenu、Trash。
 - **统一接口 `dockPresentation`**：时尚 dock 加载挂件时注入该属性（`BarWidgetLoader`，经 `widgetProps` 守卫式赋值——不能进 `setSource` 初始属性，第三方插件挂件没声明它会炸 "Cannot assign to non-existent property"）。每个可被 `dock.plugins` 引用的挂件都必须声明它并实现时尚呈现：图标按钮类挂件直接把 `baseSize`/`bgSize`/`iconRatio`/`colorBg`/`border` 切成瓦片分支；`BarPill` 类挂件把属性转发给 pill 即可（pill 已实现 `collapseToIcon`）；自绘挂件（ActiveWindow、MediaMini、SystemMonitor、AudioVisualizer、LockKeys 等 bar 文字/图形无法收进一格的）隐藏原内容并显示 `Modules/Bar/Extras/FashionTile`——一格共享瓦片 + 主点击行为镜像。未声明属性的第三方插件挂件按 bar 形态退化渲染（不错位、不报错）。
 - 时尚模式插件区两项可调（`dock.*`，均〔演进〕）：
-  - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕；托盘展开胶囊、时钟满格槽等变宽插件按内容实宽计——`pluginAreaLength` 实测 grid 总宽而不是按格宽估算，否则末尾插件会被 dock 边裁掉。
+  - `dock.pluginSpacing`（默认 4 px，0–24）：瓦片两侧的留白。插件格宽 = `Style.dockPluginCellSize` = `dockPluginTileSize` + spacing × 2〔演进：上游每个插件固定占一格 `itemThickness` 方格，视觉间隔过大〕。**任意宽度插件都遵守同一条格宽规则：格宽 = 自身视觉宽 + spacing × 2**——托盘收合态的 20 px 折叠钮也是 20 + spacing × 2 而不是只占 20 px 格，这样所有相邻插件的边到边间距恒等于 2·spacing + `itemSpacing`，融合长条下不会因各格内边距不同而出现不等距。`pluginAreaLength` 实测 grid 总宽而不是按格宽估算，否则末尾插件会被 dock 边裁掉。
   - `dock.fusedPlugins`（默认关）：插件瓦片底色收敛为一条共享长条（`overlay("subtle")`），各瓦片自身底chip隐藏，悬停态照旧——现代外观。
+- **折叠瓦片内部必须自居中**：`BarPill` 的 `iconCircle` 在 `collapseToIcon` 下尺寸 = `dockPluginTileSize` 并在格内居中（与 `pillBackground` 同矩形），不能沿用展开态的 `pillHeight` 满槽尺寸靠边定位——那会让图标中心偏出瓦片正中（修复前偏 8.5 px，融合态下肉眼可见间距不等）。时钟满格槽是唯一的"项级"例外（§3.1.4 表），不收进 spacing 规则。
 - 原来的 `bar.widgets.{left,center,right}` 合并为 `dock.plugins`（有序列表），旧配置通过迁移转换（§6）。
 
 ### 3.2 带箭头弹出层与提示框（DockPopupWindow / TipsWidget）
@@ -458,7 +459,7 @@ Noctalia 卡片的对应关系：
 | 账户 accounts | General（头像、用户名） |
 | 显示 display | Display（亮度、夜灯） |
 | 个性化 personalization | ColorScheme、Wallpaper、UserInterface |
-| 任务栏 dock | Dock（常规/外观/状态栏/显示器/插件）。该模块暴露 §3.1.1 设置菜单的五项——模式、位置、大小、状态、插件开关，外加插件分组和多屏覆盖。原 Noctalia 的 `bar.*`/`dock.*` 细节设置（透明度、密度、间距、分组、点击动作等）按对象收进这里〔演进：不再堆进"高级"，见下方归位原则〕 |
+| 任务栏 dock | Dock（常规/状态栏/显示器/插件）〔演进：常规页合并原"外观"页，状态栏页吸收原散在常规页底部的状态栏开关组〕。常规页 = `dock.enabled` 开关 + 其下全部 dock 设置（模式/位置/大小/状态 → 外观 → 窗口分组）；状态栏页 = `bar.enabled` 开关 + 位置/显示/密度/字体/显示器/挂件配置，其下是任意模式下都作用于当前 Bar 的外观/行为/自动隐藏组。原 Noctalia 的 `bar.*`/`dock.*` 细节设置（透明度、间距、分组、点击动作等）按对象收进这里〔演进：不再堆进"高级"，见下方归位原则〕 |
 | 启动器 launcher | Launcher |
 | 控制中心 | ControlCenter |
 | 网络 network | Connections / Wi-Fi |
@@ -475,6 +476,10 @@ Noctalia 卡片的对应关系：
 | 系统信息 systeminfo | About |
 
 - **设置项归位原则**〔演进〕：新设置项按"它配置的对象"进对应模块（dock/bar 的外观与行为 → 任务栏，面板/圆角/阴影/动画这类 shell 全局观感 → 个性化，per-monitor 覆写 → 任务栏·显示器），不因为"DDE 没有对应开关"就堆进高级；高级只留完全没有归属的项（目前只有 Hooks）。
+- **设置分组与可见性原则**〔演进〕：
+  - 页内一律"功能开关在前、该功能的配置紧随其后"——开关与它的配置不许跨子页、跨分组散落。
+  - 功能关闭时其全部配置项用 `visible` 隐藏（不用 `enabled` 置灰）；整页都失效时连同子页签一起隐藏（`NSubTabsPane.Title.shown`，任务栏页的显示器/插件随 `dock.enabled` 隐藏）。
+  - 模式/状态专属的设置随条件绑定自动隐藏（时尚专属项绑 `dock.mode === "fashion"`，状态栏开关组在高效模式下整块消失——高效模式下 Bar 就是任务栏本体），**不在文案里标注"（时尚模式）"**——可见性本身就表达了适用范围。
 - 原来的子 Tab 不再用横向标签栏，改为**分组**（SettingsGroup，每组带组标题）。内容较多的子页，用"下一页"行（NextPageWidget）进入二级页。
 - `ui.settingsPanelMode = "window"` 继续可用：在一个居中的 DDialog 风格窗口里显示同样的两栏结构（总宽 = 56 + 640）。默认值为 `"controlCenter"`。
 
