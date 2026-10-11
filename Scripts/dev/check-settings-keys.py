@@ -220,12 +220,34 @@ def is_referenced(path, indexes):
     return False
 
 
+def declared_version(text):
+    """The singleton's settingsVersion (the file's `readonly property int`)."""
+    m = re.search(r"readonly\s+property\s+int\s+settingsVersion\s*:\s*(\d+)", text)
+    return int(m.group(1)) if m else None
+
+
 def main():
-    defaults = set(default_paths(json.loads(DEFAULTS.read_text())))
-    declared, decl_lines = adapter_paths(SETTINGS_QML.read_text())
+    defaults_json = json.loads(DEFAULTS.read_text())
+    defaults = set(default_paths(defaults_json))
+    settings_text = SETTINGS_QML.read_text()
+    declared, decl_lines = adapter_paths(settings_text)
     declared = set(declared)
 
     problems = 0
+    # The defaults file's version is the schema version: it must match the
+    # JsonAdapter's target. generateDefaultSettings() only runs when invoked
+    # by hand, so a hand-edit can leave this stale (it drifted to 76 while
+    # migrations 77-79 moved Settings.qml to 79).
+    version = declared_version(settings_text)
+    if version is None:
+        print("settingsVersion not found in Commons/Settings.qml")
+        problems += 1
+    elif defaults_json.get("settingsVersion") != version:
+        print(f"settingsVersion drift: settings-default.json={defaults_json.get('settingsVersion')} "
+              f"Settings.qml={version} — regenerate defaults (Settings.generateDefaultSettings) "
+              "or sync the number by hand")
+        problems += 1
+
     for path in sorted(defaults - declared):
         print(f"only in settings-default.json: {'.'.join(path)}")
         problems += 1
