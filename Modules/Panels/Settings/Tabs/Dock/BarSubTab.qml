@@ -23,6 +23,7 @@ ColumnLayout {
   readonly property bool fashionMode: Settings.data.dock.mode === "fashion"
   readonly property string effectiveWheelAction: Settings.data.bar.mouseWheelAction || "none"
   readonly property string effectiveMiddleClickAction: Settings.data.bar.middleClickAction || "none"
+  readonly property string effectiveRightClickAction: Settings.data.bar.rightClickAction || "controlCenter"
 
   // ---- Status bar feature (DESIGN §3.13): switch, then its settings ----
   ColumnLayout {
@@ -85,6 +86,10 @@ ColumnLayout {
             "name": I18n.tr("dock-menu.state-keep-showing")
           },
           {
+            "key": "non_exclusive",
+            "name": I18n.tr("hide-modes.non-exclusive")
+          },
+          {
             "key": "auto_hide",
             "name": I18n.tr("dock-menu.state-keep-hidden")
           }
@@ -123,6 +128,29 @@ ColumnLayout {
         currentKey: Settings.data.bar.density
         defaultValue: Settings.getDefaultValue("bar.density")
         onSelected: key => Settings.data.bar.density = key
+      }
+
+      NComboBox {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.bar.appearance-type-label")
+        description: I18n.tr("panels.bar.appearance-type-description")
+        model: [
+          {
+            "key": "simple",
+            "name": I18n.tr("options.bar.type-simple")
+          },
+          {
+            "key": "floating",
+            "name": I18n.tr("options.bar.type-floating")
+          },
+          {
+            "key": "framed",
+            "name": I18n.tr("options.bar.type-framed")
+          }
+        ]
+        currentKey: Settings.data.bar.barType
+        defaultValue: Settings.getDefaultValue("bar.barType")
+        onSelected: key => Settings.data.bar.barType = key
       }
 
       NValueSlider {
@@ -178,35 +206,35 @@ ColumnLayout {
                        Settings.data.bar.monitors = arr;
                      }
         }
+      }
 
-        // Widget layout — expands the global bar.widgets editor inline.
-        NDccRow {
-          id: widgetsRow
+      // Widget layout — expands the global bar.widgets editor inline.
+      NDccRow {
+        id: widgetsRow
+        Layout.fillWidth: true
+        clickable: true
+        onClicked: widgetsEditor.visible = !widgetsEditor.visible
+
+        NText {
+          text: I18n.tr("panels.bar.monitor-configure-widgets")
+          pointSize: Style.fontSizeS
+          color: Color.onShell
           Layout.fillWidth: true
-          clickable: true
-          onClicked: widgetsEditor.visible = !widgetsEditor.visible
-
-          NText {
-            text: I18n.tr("panels.bar.monitor-configure-widgets")
-            pointSize: Style.fontSizeS
-            color: Color.onShell
-            Layout.fillWidth: true
-          }
-
-          NIcon {
-            icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
-            pointSize: Style.fontSizeL
-            color: Color.onShellTertiary
-          }
         }
 
-        BarSettings.MonitorWidgetsConfig {
-          id: widgetsEditor
-          visible: false
-          screen: null
-          Layout.fillWidth: true
-          Layout.topMargin: Style.marginM
+        NIcon {
+          icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
+          pointSize: Style.fontSizeL
+          color: Color.onShellTertiary
         }
+      }
+
+      BarSettings.MonitorWidgetsConfig {
+        id: widgetsEditor
+        visible: false
+        screen: null
+        Layout.fillWidth: true
+        Layout.topMargin: Style.marginM
       }
     }
 
@@ -347,6 +375,7 @@ ColumnLayout {
 
     NToggle {
       Layout.fillWidth: true
+      visible: Settings.getEffectiveBarType() === "simple"
       label: I18n.tr("panels.bar.appearance-outer-corners-label")
       description: I18n.tr("panels.bar.appearance-outer-corners-description")
       checked: Settings.data.bar.outerCorners
@@ -356,6 +385,7 @@ ColumnLayout {
 
     NValueSlider {
       Layout.fillWidth: true
+      visible: Settings.getEffectiveBarType() === "framed"
       label: I18n.tr("panels.bar.appearance-frame-thickness")
       description: I18n.tr("panels.bar.appearance-frame-settings-description")
       from: 4
@@ -370,6 +400,7 @@ ColumnLayout {
 
     NValueSlider {
       Layout.fillWidth: true
+      visible: Settings.getEffectiveBarType() === "framed"
       label: I18n.tr("panels.bar.appearance-frame-radius")
       from: 4
       to: 24
@@ -382,6 +413,7 @@ ColumnLayout {
     }
 
     NSpinBox {
+      visible: Settings.getEffectiveBarType() === "floating"
       label: I18n.tr("panels.bar.appearance-margins-vertical")
       description: I18n.tr("panels.bar.appearance-margins-description")
       from: 0
@@ -393,6 +425,7 @@ ColumnLayout {
     }
 
     NSpinBox {
+      visible: Settings.getEffectiveBarType() === "floating"
       label: I18n.tr("panels.bar.appearance-margins-horizontal")
       description: I18n.tr("panels.bar.appearance-margins-description")
       from: 0
@@ -409,8 +442,9 @@ ColumnLayout {
     visible: root.anyBarAlive
   }
 
-  // SettingsGroup: bar behavior (wheel + middle click; right click is
-  // hardcoded to the settings menu so it has no control)
+  // SettingsGroup: bar behavior (wheel + middle click; the right-click trio
+  // only applies to the fashion status bar — in efficient mode right-click
+  // is the DDE dock settings menu, so its controls hide with the mode)
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
@@ -522,18 +556,82 @@ ColumnLayout {
       onToggled: checked => Settings.data.bar.middleClickFollowMouse = checked
       visible: Settings.data.bar.middleClickAction !== "none" && Settings.data.bar.middleClickAction !== "command"
     }
+
+    NComboBox {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.bar.behavior-right-click-label")
+      description: I18n.tr("panels.bar.behavior-right-click-description")
+      model: [
+        {
+          "key": "none",
+          "name": I18n.tr("common.none")
+        },
+        {
+          "key": "controlCenter",
+          "name": I18n.tr("tooltips.open-control-center")
+        },
+        {
+          "key": "settings",
+          "name": I18n.tr("tooltips.open-settings")
+        },
+        {
+          "key": "launcherPanel",
+          "name": I18n.tr("actions.open-launcher")
+        },
+        {
+          "key": "command",
+          "name": I18n.tr("actions.run-custom-command")
+        }
+      ]
+      currentKey: root.effectiveRightClickAction
+      defaultValue: Settings.getDefaultValue("bar.rightClickAction")
+      onSelected: key => Settings.data.bar.rightClickAction = key
+      visible: root.fashionMode && Settings.data.bar.enabled
+    }
+
+    NTextInput {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.bar.behavior-right-click-command-label")
+      description: I18n.tr("panels.bar.behavior-right-click-command-description")
+      placeholderText: I18n.tr("panels.bar.behavior-right-click-command-placeholder")
+      text: Settings.data.bar.rightClickCommand
+      fontFamily: Settings.data.ui.fontFixed
+      onTextChanged: Settings.data.bar.rightClickCommand = text
+      visible: root.fashionMode && Settings.data.bar.enabled && Settings.data.bar.rightClickAction === "command"
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.bar.behavior-right-click-follow-mouse-label")
+      description: I18n.tr("panels.bar.behavior-right-click-follow-mouse-description")
+      checked: Settings.data.bar.rightClickFollowMouse
+      defaultValue: Settings.getDefaultValue("bar.rightClickFollowMouse")
+      onToggled: checked => Settings.data.bar.rightClickFollowMouse = checked
+      visible: root.fashionMode && Settings.data.bar.enabled && Settings.data.bar.rightClickAction !== "none" && Settings.data.bar.rightClickAction !== "command" && !(Settings.data.bar.rightClickAction === "settings" && Settings.data.ui.settingsPanelMode === "window")
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.bar.appearance-show-on-workspace-switch-label")
+      description: I18n.tr("panels.bar.appearance-show-on-workspace-switch-description")
+      checked: Settings.data.bar.showOnWorkspaceSwitch
+      defaultValue: Settings.getDefaultValue("bar.showOnWorkspaceSwitch")
+      onToggled: checked => Settings.data.bar.showOnWorkspaceSwitch = checked
+    }
   }
 
   NDccGap {
     Layout.fillWidth: true
-    visible: root.anyBarAlive && Settings.data.dock.hideMode !== "keep-showing"
+    visible: root.anyBarAlive && (Settings.data.dock.hideMode !== "keep-showing" || (root.fashionMode && Settings.data.bar.enabled && Settings.data.bar.displayMode === "auto_hide"))
   }
 
-  // SettingsGroup: auto-hide delays (effective when hideMode hides the bar)
+  // SettingsGroup: auto-hide delays (effective when hideMode hides the bar,
+  // or when the fashion status bar auto-hides while the dock stays shown —
+  // BarContentWindow feeds the status-bar path from these delays)
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    visible: root.anyBarAlive && Settings.data.dock.hideMode !== "keep-showing"
+    visible: root.anyBarAlive && (Settings.data.dock.hideMode !== "keep-showing" || (root.fashionMode && Settings.data.bar.enabled && Settings.data.bar.displayMode === "auto_hide"))
     NHeader {
       label: I18n.tr("settings.advanced.bar-autohide")
     }
@@ -564,15 +662,6 @@ ColumnLayout {
       defaultValue: Settings.getDefaultValue("bar.autoShowDelay")
       onMoved: value => Settings.data.bar.autoShowDelay = value
       text: Settings.data.bar.autoShowDelay + "ms"
-    }
-
-    NToggle {
-      Layout.fillWidth: true
-      label: I18n.tr("panels.bar.appearance-show-on-workspace-switch-label")
-      description: I18n.tr("panels.bar.appearance-show-on-workspace-switch-description")
-      checked: Settings.data.bar.showOnWorkspaceSwitch
-      defaultValue: Settings.getDefaultValue("bar.showOnWorkspaceSwitch")
-      onToggled: checked => Settings.data.bar.showOnWorkspaceSwitch = checked
     }
   }
 }

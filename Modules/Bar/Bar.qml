@@ -455,9 +455,11 @@ Item {
                          // light dock settings menu (widget-level right-click
                          // actions are unchanged). In fashion mode this bar
                          // surface is the optional status bar, not the taskbar
-                         // — swallow the click instead of showing dock options.
+                         // — it runs the configurable bar action instead.
                          if (bar.efficientMode) {
                            DockSettingsMenu.openAtItemPoint(screen, bar, mouse.x, mouse.y);
+                         } else {
+                           bar.handleEmptyBarClick(Settings.data.bar.rightClickAction || "controlCenter", Settings.data.bar.rightClickFollowMouse, Settings.data.bar.rightClickCommand, mouse);
                          }
                          mouse.accepted = true;
                          return;

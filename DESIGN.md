@@ -228,7 +228,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 | 首次设置向导 `Panels/SetupWizard` | 类似 dde-welcome：模糊壁纸 + 居中的暗色对话框 | §3.11 |
 | 各类确认弹窗 | DDialog 暗色对话框 | §3.11 |
 | 桌面挂件 `Modules/DesktopWidgets` | 暗色毛玻璃小卡片 | §3.12 |
-| 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | DDE 中没有。保留功能代码，默认关闭。屏幕圆角的设置在"个性化"，栏体细节在"任务栏"〔演进：按配置对象归位，不集中放在"高级"〕 | — |
+| 屏幕圆角 `ScreenCorners`、栏的 framed/floating 形态、外圆角 | DDE 中没有。屏幕圆角保留功能代码、默认关闭；栏体形态只对可选状态栏开放（§3.13），任务栏永远是 `simple`。屏幕圆角的设置在"个性化"，栏体细节在"任务栏"〔演进：按配置对象归位，不集中放在"高级"〕 | — |
 | 多个配色方案、壁纸取色 | 默认用 Deepin 方案。切换方案时，表面色调、文字色相和强调色随方案变化 | §5 |
 
 ---
@@ -477,7 +477,7 @@ Noctalia 卡片的对应关系：
 | 账户 accounts | General（头像、用户名） |
 | 显示 display | Display（亮度、夜灯） |
 | 个性化 personalization | ColorScheme、Wallpaper、UserInterface |
-| 任务栏 dock | Dock，分常规、状态栏、显示器、插件四个子页〔演进：常规页合并了原"外观"页，状态栏页收进了原来放在常规页底部的状态栏开关组〕。常规页先是 `dock.enabled` 开关，下面依次是模式、位置、大小、状态，然后是外观和窗口分组。状态栏页先是 `bar.enabled` 开关和状态栏自己的位置、显示、密度、字体、显示器、挂件配置，下面是任何模式下都作用于当前 Bar 的外观、行为和自动隐藏设置。原 Noctalia 的 `bar.*`、`dock.*` 细节设置（透明度、间距、分组、点击动作等）都按配置对象收在这里〔演进：不集中放在"高级"，见下方归位原则〕 |
+| 任务栏 dock | Dock，分常规、状态栏、显示器、插件四个子页〔演进：常规页合并了原"外观"页，状态栏页收进了原来放在常规页底部的状态栏开关组〕。常规页先是 `dock.enabled` 开关，下面依次是模式、位置、大小、状态，然后是外观和窗口分组。状态栏页先是 `bar.enabled` 开关和状态栏自己的位置、显示、形态、密度、字体、显示器、挂件配置，下面是任何模式下都作用于当前 Bar 的外观、行为和自动隐藏设置；状态栏空白处的右键动作只在状态栏启用时出现，高效模式右键是固定的任务栏设置菜单。原 Noctalia 的 `bar.*`、`dock.*` 细节设置（透明度、间距、分组、点击动作等）都按配置对象收在这里〔演进：不集中放在"高级"，见下方归位原则〕 |
 | 启动器 launcher | Launcher |
 | 控制中心 | ControlCenter |
 | 网络 network | Connections / Wi-Fi |
@@ -630,7 +630,9 @@ Noctalia 卡片的对应关系：
 
 - DDE 15 本身没有状态栏。这是借 Noctalia 的 bar 管线提供的可选扩展，定位类似 macOS 的菜单栏：显示系统信息和全局挂件，不显示窗口任务列表。
 - 只在时尚模式下可用。高效模式下任务栏本身就是通栏，状态栏不出现；切换模式时自动隐藏或恢复，用户不用重新设置。
-- 开关是 `bar.enabled`（默认关）。位置是 `bar.position`（默认 `top`），与 `dock.position` 相互独立。显示在哪些显示器上由 `bar.monitors` 决定（留空表示全部）。显示模式是 `bar.displayMode`（`always_visible` 或 `auto_hide`，沿用 `bar.autoHideDelay`、`bar.autoShowDelay`、`bar.showOnWorkspaceSwitch`）。
+- 开关是 `bar.enabled`（默认关）。位置是 `bar.position`（默认 `top`），与 `dock.position` 相互独立。显示在哪些显示器上由 `bar.monitors` 决定（留空表示全部）。显示模式是 `bar.displayMode`（`always_visible`、`non_exclusive`、`auto_hide`，沿用 `bar.autoHideDelay`、`bar.autoShowDelay`、`bar.showOnWorkspaceSwitch`）。
+- 形态是 `bar.barType`（默认 `simple`；`floating` 悬浮并加 `marginVertical`/`marginHorizontal` 外边距，`framed` 加 `frameThickness`/`frameRadius` 的框体）；外圆角 `bar.outerCorners` 只在 `simple` 下生效。§7 的栏体兼容形态只对状态栏开放。
+- 空白处右键执行 `bar.rightClickAction`（默认 `controlCenter`，另有 `settings`、`launcherPanel`、`command`；`command` 用 `bar.rightClickCommand`，`bar.rightClickFollowMouse` 控制弹出面板是否跟随光标）。
 - 挂件内容用 `bar.widgets` 的左、中、右三段布局。默认左侧是启动器、时钟、系统监视器、活动窗口、迷你媒体，中间是工作区，右侧是托盘、通知、电量、音量、亮度等。
 - 两个位置函数含义不同。`getBarPositionForScreen()` 返回 bar 窗口所在的边：时尚模式开着状态栏时是 `bar.position`，否则是任务栏所在的边。`getTaskbarPositionForScreen()` 总是返回任务栏所在的边，启动器定位、按屏覆盖编辑器和避让判断都用它。挂件弹层跟随所在的表面：dock 里的挂件弹层按任务栏的边，状态栏里的挂件弹层按状态栏的边。
 - 状态栏和 dock 可以在同一条边上（悬浮居中的 dock 会叠在状态栏上方），建议放在不同的边。
@@ -719,7 +721,7 @@ Noctalia 卡片的对应关系：
 
 - `bar.widgets` 复制为 `dock.plugins`，`bar.position` 复制为 `dock.position`。两个旧键保留，现在分别是状态栏（§3.13）的挂件布局和位置。
 - 原来启用了 Bar 的用户，`dock.mode` 设为 `"efficient"`。
-- `bar.barType` 保留原值。高效模式下不生效（按 `simple` 绘制），时尚模式的状态栏按它绘制圆角。
+- `bar.barType` 保留原值。高效模式下不生效（按 `simple` 绘制），时尚模式的状态栏按它绘制圆角，状态栏页有形态选择器（§3.13）。
 
 ### 6.1 上游功能移除清单
 
@@ -741,7 +743,7 @@ Noctalia 卡片的对应关系：
 以下做法与 DDE 15 冲突，评审时一律退回：
 
 - 胶囊形外观（开关和圆角按钮除外）、超过 10 px 的圆角、Material 风格的彩色表面、水波纹、按压时的缩放、弹簧或回弹动画。
-- 弹出层和栏融合在一起、反向圆角、外圆角、框架式栏（framed bar）。这些只作为默认关闭的兼容选项保留。
+- 弹出层和栏融合在一起、反向圆角、外圆角、框架式栏（framed bar）。任务栏和 DDE 表面一律不采用；栏体的 floating/framed 形态与外圆角只作为可选状态栏（§3.13）上的非默认选项保留。
 - 用彩色区分状态（例外：活动项 `accent`、请求注意 `attention`、错误 `alert`、充电态 `positive`）。
 - 加粗（Bold / ExtraBold）；全大写的标题；字间距不为 0 的正文。
 - 在一个界面里同时出现两个强调色；用渐变给表面着色。

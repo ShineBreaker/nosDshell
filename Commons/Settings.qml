@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 78
+  readonly property int settingsVersion: 79
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -305,6 +305,11 @@ Singleton {
       property string middleClickAction: "none"
       property bool middleClickFollowMouse: false
       property string middleClickCommand: ""
+      // Right-click on empty bar space — only the fashion-mode status bar
+      // honors these; in efficient mode right-click is the DDE dock menu.
+      property string rightClickAction: "controlCenter"
+      property bool rightClickFollowMouse: true
+      property string rightClickCommand: ""
       // Per-screen overrides for position and widgets
       // Format: [{ "name": "HDMI-1", "position": "left" }, { "name": "DP-1", "position": "bottom", "widgets": {...} }]
       property list<var> screenOverrides: []

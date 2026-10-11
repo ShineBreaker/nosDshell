@@ -732,6 +732,18 @@
     ]
   },
   {
+    "labelKey": "panels.bar.appearance-type-label",
+    "descriptionKey": "panels.bar.appearance-type-description",
+    "widget": "NComboBox",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.enabled"
+    ]
+  },
+  {
     "labelKey": "panels.bar.appearance-font-scale-label",
     "descriptionKey": "panels.bar.appearance-font-scale-description",
     "widget": "NValueSlider",
@@ -861,7 +873,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "panels.bar.title"
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.getEffectiveBarType() === \"simple\""
+    ]
   },
   {
     "labelKey": "panels.bar.appearance-frame-thickness",
@@ -870,7 +885,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "panels.bar.title"
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.getEffectiveBarType() === \"framed\""
+    ]
   },
   {
     "labelKey": "panels.bar.appearance-frame-radius",
@@ -879,7 +897,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "panels.bar.title"
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.getEffectiveBarType() === \"framed\""
+    ]
   },
   {
     "labelKey": "panels.bar.appearance-margins-vertical",
@@ -888,7 +909,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "panels.bar.title"
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.getEffectiveBarType() === \"floating\""
+    ]
   },
   {
     "labelKey": "panels.bar.appearance-margins-horizontal",
@@ -897,7 +921,10 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "panels.bar.title"
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.getEffectiveBarType() === \"floating\""
+    ]
   },
   {
     "labelKey": "settings.advanced.bar-behavior",
@@ -975,39 +1002,44 @@
     ]
   },
   {
-    "labelKey": "settings.advanced.bar-autohide",
-    "descriptionKey": null,
-    "widget": "NHeader",
+    "labelKey": "panels.bar.behavior-right-click-label",
+    "descriptionKey": "panels.bar.behavior-right-click-description",
+    "widget": "NComboBox",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.data.dock.hideMode !== \"keep-showing\""
+      "Settings.data.bar.enabled"
     ]
   },
   {
-    "labelKey": "panels.bar.appearance-auto-hide-delay-label",
-    "descriptionKey": "panels.bar.appearance-auto-hide-delay-description",
-    "widget": "NValueSlider",
+    "labelKey": "panels.bar.behavior-right-click-command-label",
+    "descriptionKey": "panels.bar.behavior-right-click-command-description",
+    "widget": "NTextInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.data.dock.hideMode !== \"keep-showing\""
+      "Settings.data.bar.enabled",
+      "Settings.data.bar.rightClickAction === \"command\""
     ]
   },
   {
-    "labelKey": "panels.bar.appearance-auto-show-delay-label",
-    "descriptionKey": "panels.bar.appearance-auto-show-delay-description",
-    "widget": "NValueSlider",
+    "labelKey": "panels.bar.behavior-right-click-follow-mouse-label",
+    "descriptionKey": "panels.bar.behavior-right-click-follow-mouse-description",
+    "widget": "NToggle",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
     "subTabLabel": "panels.bar.title",
     "visibleWhen": [
-      "Settings.data.dock.hideMode !== \"keep-showing\""
+      "Settings.data.bar.enabled",
+      "Settings.data.bar.rightClickAction !== \"none\"",
+      "Settings.data.bar.rightClickAction !== \"command\"",
+      "!(Settings.data.bar.rightClickAction === \"settings\"",
+      "Settings.data.ui.settingsPanelMode === \"window\""
     ]
   },
   {
@@ -1017,10 +1049,34 @@
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 1,
-    "subTabLabel": "panels.bar.title",
-    "visibleWhen": [
-      "Settings.data.dock.hideMode !== \"keep-showing\""
-    ]
+    "subTabLabel": "panels.bar.title"
+  },
+  {
+    "labelKey": "settings.advanced.bar-autohide",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title"
+  },
+  {
+    "labelKey": "panels.bar.appearance-auto-hide-delay-label",
+    "descriptionKey": "panels.bar.appearance-auto-hide-delay-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title"
+  },
+  {
+    "labelKey": "panels.bar.appearance-auto-show-delay-label",
+    "descriptionKey": "panels.bar.appearance-auto-show-delay-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title"
   },
   {
     "labelKey": "panels.dock.enabled-label",
