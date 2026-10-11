@@ -10,6 +10,58 @@
 
 ## [Unreleased]
 
+## [1.1.5] - 2026-10-11
+
+一轮动效与稳定性的整体打磨：右键菜单、小组件弹层和全部下拉框、对话框补上了统一的淡入滑出动效，关闭弹层后偶发残留的模糊色块一并清除；通知图标在加高的气泡里垂直居中、气泡阴影不再偶发变形；还修掉了一类偶发崩溃——窗口或设备恰好在列表刷新的间隙被销毁时，dock、媒体、蓝牙、托盘、音频、电池等列表都可能踩到，这次统一收口。通用设置页正式接入 DDE 各视图，dock 设置按功能分组并可给插件条加间距、拼成时尚一体的胶囊。
+
+---
+
+### 新功能
+
+- fade and slide popups, menus and tooltips on popup motion tokens：[`ee4c08d10`](https://github.com/ShineBreaker/nosDshell/commit/ee4c08d10587ca23dce1b539517067cecfff73c1)
+- consistency checkers for settings keys and translations：[`46c9e6f82`](https://github.com/ShineBreaker/nosDshell/commit/46c9e6f8242e1e834d7e47414c9fa5f413c8f8f6)
+- regroup the dock page by feature and hide what its switch disables：[`bbcf8c852`](https://github.com/ShineBreaker/nosDshell/commit/bbcf8c852366bcba1797d75967f2a4c1051d640e)
+- plugin strip spacing knob + optional fused pill (fashion)：[`2f1c04513`](https://github.com/ShineBreaker/nosDshell/commit/2f1c04513242990d7bd05b364cf949035d1aed58)
+- wire general settings into the DDE views, drop overlay frontend：[`390d8de79`](https://github.com/ShineBreaker/nosDshell/commit/390d8de7937def9d611ee8047873374767534f64)
+
+### 修复
+
+- keep service-owned QObjects out of remaining delegate models：[`db0b4f582`](https://github.com/ShineBreaker/nosDshell/commit/db0b4f582f6c28000221ab4b2c21d5b71cc22151)
+- never nest NDropShadow inside its source; center bubble icon：[`559660a19`](https://github.com/ShineBreaker/nosDshell/commit/559660a19041a69c1a8ccd9a2c9945c3cdb331a5)
+- keep Toplevel refs out of the app Repeater's delegate model：[`4f3563d8a`](https://github.com/ShineBreaker/nosDshell/commit/4f3563d8a22fc7244b9dacd927fe07a82f4bcdf4)
+- re-send settled surface regions to dodge niri's blur cache race：[`11073ca12`](https://github.com/ShineBreaker/nosDshell/commit/11073ca12ec6ef53e2b2734ae9d84df31a5b8d0e)
+- skip open watchdog for zero-frame popups：[`6ee22258a`](https://github.com/ShineBreaker/nosDshell/commit/6ee22258a4f9b2a4efa27a9948505a870b4c8af3)
+- ride zero-frame popup cleanup on the hide commit：[`2d9ad9e95`](https://github.com/ShineBreaker/nosDshell/commit/2d9ad9e95e98b67ac1a7a23e575f2bcb7b145538)
+- force pending blur-region commits on stock quickshell：[`97847f810`](https://github.com/ShineBreaker/nosDshell/commit/97847f810bb588d1e9c9b536939f2d3116cde404)
+- commit blur region swaps so stale bands can't ghost：[`1af3caf9e`](https://github.com/ShineBreaker/nosDshell/commit/1af3caf9e91210b9f2653e928a9c5fab95b2e228)
+- anchor popups and edge sheets to their host surface edge：[`2716aacda`](https://github.com/ShineBreaker/nosDshell/commit/2716aacda85850e14e6a5f1937dea099a7abff18)
+- track animated bubble rects in notification and toast masks：[`ce27217c5`](https://github.com/ShineBreaker/nosDshell/commit/ce27217c584a8bf14c8a7625b157057c0c55aab4)
+- keep resolvable clauses of compound visibleWhen in search index：[`2af064177`](https://github.com/ShineBreaker/nosDshell/commit/2af064177b972c225ba8d3891422e4533453ab81)
+- wire strings to I18n.tr and drop unreferenced keys：[`f9f26f83a`](https://github.com/ShineBreaker/nosDshell/commit/f9f26f83a9391a4f89b6f30ee324908950addb5d)
+- drop dead Noctalia layout keys via v78 migration：[`5fbffb3ce`](https://github.com/ShineBreaker/nosDshell/commit/5fbffb3ce42a7f4be14ad2f4b491857c4fea7b0a)
+- center collapsed pill icons in their tile and normalize fashion cell padding：[`69713bc2c`](https://github.com/ShineBreaker/nosDshell/commit/69713bc2c05e92fc7754cd842f826417d27fa5b2)
+- measure the real plugin area and restore the fashion clock's full item slot：[`e4a1db595`](https://github.com/ShineBreaker/nosDshell/commit/e4a1db595f396bd418874256f87175cb3c7b94f4)
+- uniform dockPresentation interface and fashion tiles for every plugin：[`41bf38c2c`](https://github.com/ShineBreaker/nosDshell/commit/41bf38c2cc14858986af34777a86e0d6696a1b1f)
+- detach launcher blur regions while their windows are hidden：[`c320aa9e2`](https://github.com/ShineBreaker/nosDshell/commit/c320aa9e2e2e134f19b675290a77503ccce18060)
+- settings context menu follows the shell theme：[`05da309d8`](https://github.com/ShineBreaker/nosDshell/commit/05da309d8cff787b491b53592571a825d21d17e0)
+- apply dock.deadOpacity to pinned apps in the taskbar widget：[`9f61def00`](https://github.com/ShineBreaker/nosDshell/commit/9f61def0099acf057a7fb73630c314c41f9af224)
+- clearSearchOnClose now actually preserves text on reopen：[`bb5cf532c`](https://github.com/ShineBreaker/nosDshell/commit/bb5cf532c1fc6e95bc844da2865b273af6f39b69)
+
+### 文档
+
+- drop unverifiable plug-icon attribution：[`b80cc1a2f`](https://github.com/ShineBreaker/nosDshell/commit/b80cc1a2ff641e081859ec5e61bf1a438e0ca818)
+- plain prose, one source per value, stale rules corrected：[`0b9042793`](https://github.com/ShineBreaker/nosDshell/commit/0b90427939dfa08161fd25a83055f09ed28fed9d)
+- regroup by layer, migration recipes, general QML rules：[`157fa3f4d`](https://github.com/ShineBreaker/nosDshell/commit/157fa3f4d956df6bda802d9caebee2546311c48f)
+- name the layer each fix belongs to：[`670fb8103`](https://github.com/ShineBreaker/nosDshell/commit/670fb8103148499c099da3ecb69f14f5abe9048a)
+- plain, checked descriptions in README and CREDITS：[`e370d59e7`](https://github.com/ShineBreaker/nosDshell/commit/e370d59e78b51774fa458f125c980725362fdd48)
+- plain prose and current facts in the auxiliary docs：[`afc6e35c1`](https://github.com/ShineBreaker/nosDshell/commit/afc6e35c126c8f5b54ff9224269d1bc3390147fc)
+- root-cause working method and one source per rule：[`c26c0b865`](https://github.com/ShineBreaker/nosDshell/commit/c26c0b8653891b1874d666cbcbeb84703c419f0e)
+- global-token integration + settings↔frontend parity：[`d953b6f1f`](https://github.com/ShineBreaker/nosDshell/commit/d953b6f1f115bf197ab5383ccc8e6231a3acf0a2)
+
+### 其他
+
+- just task runner + automated release script：[`4e5513a20`](https://github.com/ShineBreaker/nosDshell/commit/4e5513a20416adf4bee5c56cba366e619a66ede7)
+
 ## [1.1.1] - 2026-10-10
 
 一轮观感抛光，顺带补了两项功能：深色模式可以跟随系统切换，电池挂上充电绿/低电红并支持滚轮调亮度；dock 小弹层不再压暗全屏，悬浮阴影的半透明黑块、下拉菜单透出页面文字、右键菜单省略文字这批毛边一并修平。
@@ -160,7 +212,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.5...HEAD
+[1.1.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.1...v1.1.5
 [1.1.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.0.1...v1.0.2
