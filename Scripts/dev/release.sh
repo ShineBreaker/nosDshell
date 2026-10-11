@@ -11,7 +11,8 @@
 #      intro paragraph plus a commit-linked bullet list grouped by type — then
 #      STOPS. Write the marketing intro, re-run the same command.
 #   2. With a filled [Unreleased] it lands the entry as `## [X.Y.Z] - <date>`,
-#      bumps the four version spots, lints, shoots the About page, commits
+#      bumps the five version spots (incl. the --version line in nosdshell.scm),
+#      lints, shoots the About page, commits
 #      `chore(release):`, tags -a, pushes main+tag, then reopens development
 #      (isDevelopment=true) with a second commit.
 #
@@ -118,6 +119,7 @@ PYEOF
 # ---------- version bumps ----------------------------------------------------
 sed -i "s/baseVersion: \"$PREV\"/baseVersion: \"$VER\"/; s/isDevelopment: true/isDevelopment: false/" Commons/Version.qml
 sed -i "s/(version \"$PREV\")/(version \"$VER\")/" nosdshell.scm
+sed -i "s/nosdshell v$PREV/nosdshell v$VER/" nosdshell.scm
 sed -i "s/version = \"${PREV}_\" + (self.shortRev or \"dirty\");/version = \"${VER}_\" + (self.shortRev or \"dirty\");/" flake.nix
 sed -i "s/version ? \"$PREV\",/version ? \"$VER\",/" nix/package.nix
 

@@ -87,7 +87,18 @@ stdenvNoCC.mkDerivation {
   installPhase = ''
     mkdir -p $out/share/nosdshell $out/bin
     cp -r . $out/share/nosdshell
-    ln -s ${quickshell}/bin/qs $out/bin/nosdshell
+    cat > $out/bin/nosdshell <<'EOF'
+#!${stdenvNoCC.shell}
+# --version/-V reports the shell and quickshell versions without
+# starting the shell (lowercase -v is quickshell's verbose flag and
+# must fall through); everything else goes to quickshell.
+if [ "$1" = "--version" ] || [ "$1" = "-V" ]; then
+  echo "nosdshell v${version} (with quickshell v${quickshell.version})"
+  exit 0
+fi
+exec ${quickshell}/bin/qs "$@"
+EOF
+    chmod +x $out/bin/nosdshell
   '';
 
   preFixup = ''

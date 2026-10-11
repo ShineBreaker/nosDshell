@@ -16,11 +16,14 @@ nav_exclude: true
 | `Commons/Version.qml` | `baseVersion` | 新版号（如 `"1.1"`） |
 | `Commons/Version.qml` | `isDevelopment` | 发版提交里设为 `false`，发版后再用一次 reopen 提交改回 `true` |
 | `nosdshell.scm` | `(version ...)` | 与 `baseVersion` 一致 |
+| `nosdshell.scm` | wrapper 里 `--version` 输出行 | 与 `baseVersion` 一致（CI 校验） |
 | `flake.nix` | `version` 引号内的主版本号 | 新版号，保留 `_<shortRev>` 后缀 |
 | `nix/package.nix` | `version ? ...` 的默认值 | 与 `baseVersion` 一致 |
 | `tools/*/Cargo.toml` | 各工具的 `version` | 独立版本，按需修改，不跟随 shell 版号 |
 
 `Modules/Panels/Settings/Tabs/About/VersionSubTab.qml` 用正则从 store 名 `nosdshell-<version>_<commit>` 里提取 commit，适用于任何版号，改版号时不用动它。
+
+`nosdshell --version`（或 `-V`）直接打印 `nosdshell v<版号> (with quickshell v<版号> <commit>)`，不启动 shell；Guix 构建附带 fork commit，Nix 构建附带 nixpkgs quickshell 版号。小写 `-v` 是 quickshell 的 verbose 开关，会正常透传启动。
 
 关于页的版本显示：`isDevelopment=false` 时显示 `v<baseVersion>`；日常开发时显示 `v<baseVersion>-git`，后面附 commit 短 hash。
 

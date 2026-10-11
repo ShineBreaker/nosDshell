@@ -81,6 +81,8 @@
 | Nix / NixOS | `flake.nix`，含 home-manager 和 NixOS 模块 |
 | 其他 | 克隆本仓库，运行 `qs -p <仓库路径>` |
 
+安装后运行 `nosdshell --version` 即可查看 shell 与 quickshell 的版本。
+
 ---
 
 ## 文档

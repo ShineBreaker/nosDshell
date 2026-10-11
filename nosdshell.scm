@@ -175,10 +175,19 @@ and Matugen-compatible template rendering.")
           (add-after 'install 'make-wrapper
             (lambda* (#:key inputs #:allow-other-keys)
               (let ((script "nosdshell"))
+                ;; --version/-V prints the shell and quickshell versions without
+                ;; starting the shell (lowercase -v is quickshell's verbose flag
+                ;; and must fall through). release.sh bumps the nosdshell version
+                ;; below together with (version ...); keep the quickshell part in
+                ;; sync with quickshell/nosd above.
                 (with-output-to-file script
                   (lambda ()
                     (format #t "~
 #!~a
+if [ \"$1\" = \"--version\" ] || [ \"$1\" = \"-V\" ]; then
+  echo \"nosdshell v1.1.6 (with quickshell v0.3.2 903a70a)\"
+  exit 0
+fi
 exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
                             (search-input-file inputs "bin/sh")
                             (search-input-file inputs "bin/quickshell")

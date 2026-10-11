@@ -39,12 +39,14 @@ jobs:
           scm=$(sed -n '/name "nosdshell"/,/version/p' nosdshell.scm | grep -oP 'version "\K[^"]+' | head -1)
           flake=$(grep -oP 'version = "\K[^"]+(?=_" \+)' flake.nix)
           nixpkg=$(grep -oP 'version \? "\K[^"]+' nix/package.nix | head -1)
-          printf 'base=%s dev=%s scm=%s flake=%s nix=%s\n' "$base" "$dev" "$scm" "$flake" "$nixpkg"
+          wrap=$(grep -oP 'nosdshell v\K[0-9.]+' nosdshell.scm | head -1)
+          printf 'base=%s dev=%s scm=%s flake=%s nix=%s wrap=%s\n' "$base" "$dev" "$scm" "$flake" "$nixpkg" "$wrap"
           [ "$RELEASE_TAG" = "v$base" ] || { echo "tag $RELEASE_TAG != v$base (Commons/Version.qml)" >&2; exit 1; }
           [ "$dev" = "false" ] || { echo "isDevelopment=$dev on tagged commit — tag the release commit, not the reopen" >&2; exit 1; }
           [ "$scm" = "$base" ] || { echo "nosdshell.scm version $scm != $base" >&2; exit 1; }
           [ "$flake" = "$base" ] || { echo "flake.nix version $flake != $base" >&2; exit 1; }
           [ "$nixpkg" = "$base" ] || { echo "nix/package.nix version $nixpkg != $base" >&2; exit 1; }
+          [ "$wrap" = "$base" ] || { echo "nosdshell.scm --version line $wrap != $base" >&2; exit 1; }
 
       - name: Create release archive
         env:
