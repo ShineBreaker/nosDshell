@@ -74,7 +74,7 @@ Item {
           const mm = ("0" + d.getMinutes()).slice(-2);
           return hh + ":" + mm;
         }
-        font.pointSize: Math.max(1, Style.fontSizeClockCC * (Settings.data.ui.fontDefaultScale ?? 1.0) * Style.uiScaleRatio)
+        font.pointSize: Math.max(1, Style.fontSizeClockCC * (Settings.data.ui.fontDefaultScale) * Style.uiScaleRatio)
         font.weight: Style.fontWeightLight
         color: Color.onShell
         horizontalAlignment: Text.AlignHCenter

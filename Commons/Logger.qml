@@ -29,7 +29,7 @@ Singleton {
   // Settings.data.debug.modules ("" = everything passes). The first arg is
   // the module tag whenever there is more than one arg.
   function _debugModuleAllowed(args) {
-    var filter = (Settings?.data?.debug?.modules ?? "").trim();
+    var filter = (Settings?.data?.debug?.modules).trim();
     if (filter === "" || args.length < 2) {
       return true;
     }
@@ -54,7 +54,7 @@ Singleton {
   // Info log (suppressed by debug.logLevel="warn" for a minimal stream;
   // debug mode always restores the full stream so nothing is lost)
   function i(...args) {
-    if (!Settings?.isDebug && (Settings?.data?.debug?.logLevel ?? "info") === "warn") {
+    if (!Settings?.isDebug && (Settings?.data?.debug?.logLevel) === "warn") {
       return;
     }
     var msg = _formatMessage(...args);

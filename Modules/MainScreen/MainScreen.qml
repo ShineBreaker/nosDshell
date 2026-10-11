@@ -91,7 +91,7 @@ PanelWindow {
   }
 
   // Desktop dimming when panels are open
-  property real dimmerOpacity: Settings.data.general.dimmerOpacity ?? 0.8
+  property real dimmerOpacity: Settings.data.general.dimmerOpacity
   property bool isPanelOpen: (PanelService.openedPanel !== null) && (PanelService.openedPanel.screen?.name === screen?.name)
   property bool isPanelClosing: (PanelService.openedPanel !== null) && PanelService.openedPanel.isClosing
   property bool isAnyPanelOpen: PanelService.openedPanel !== null
@@ -148,7 +148,7 @@ PanelWindow {
 
       readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
       readonly property real barThickness: Style.barHeight
-      readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
+      readonly property real frameThickness: Settings.data.bar.frameThickness
       readonly property string barPos: Settings.getBarPositionForScreen(root.screen?.name) || "top"
       // A floating framed ring is inset by the float margins on all sides
       readonly property real barMarginH: barPlaceholder.barMarginH
@@ -451,7 +451,7 @@ PanelWindow {
       readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
       readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
       readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
+      readonly property real frameThickness: Settings.data.bar.frameThickness
       readonly property bool barFloating: Settings.isBarFloating()
       readonly property real barMarginH: barFloating ? Math.floor(Settings.data.bar.marginHorizontal) : 0
       readonly property real barMarginV: barFloating ? Math.floor(Settings.data.bar.marginVertical) : 0
@@ -634,7 +634,7 @@ PanelWindow {
       readonly property real frameHoleY: barPlaceholder.barMarginV + (barPlaceholder.barPosition === "top" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
       readonly property real frameHoleX2: root.width - barPlaceholder.barMarginH - (barPlaceholder.barPosition === "right" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
       readonly property real frameHoleY2: root.height - barPlaceholder.barMarginV - (barPlaceholder.barPosition === "bottom" ? barPlaceholder.barHeight : barPlaceholder.frameThickness)
-      readonly property real frameR: Settings.data.bar.frameRadius ?? 20
+      readonly property real frameR: Settings.data.bar.frameRadius
     }
 
     // Native idle inhibitor — one per active MainScreen window.

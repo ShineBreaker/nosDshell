@@ -40,21 +40,21 @@ Item {
         spacing: Style.marginS
 
         NIcon {
-          icon: (Settings.data.notifications.doNotDisturb ?? false) ? "bell-off" : "bell"
+          icon: (Settings.data.notifications.doNotDisturb) ? "bell-off" : "bell"
           pointSize: Style.fontSizeXL
-          color: (Settings.data.notifications.doNotDisturb ?? false) ? Color.accent : Color.onShellSecondary
+          color: (Settings.data.notifications.doNotDisturb) ? Color.accent : Color.onShellSecondary
         }
 
         NText {
           Layout.fillWidth: true
-          text: (Settings.data.notifications.doNotDisturb ?? false) ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd")
+          text: (Settings.data.notifications.doNotDisturb) ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd")
           pointSize: Style.fontSizeM
           elide: Text.ElideRight
         }
 
         NToggle {
           label: ""
-          checked: Settings.data.notifications.doNotDisturb ?? false
+          checked: Settings.data.notifications.doNotDisturb
           onToggled: checked => Settings.data.notifications.doNotDisturb = checked
         }
       }

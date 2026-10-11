@@ -44,8 +44,8 @@ ShapePath {
 
   // Framed bar properties
   readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
-  readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
-  readonly property real frameRadius: Settings.data.bar.frameRadius ?? 20
+  readonly property real frameThickness: Settings.data.bar.frameThickness
+  readonly property real frameRadius: Settings.data.bar.frameRadius
 
   // Bar position - since bar's parent fills the screen and Shape also fills the screen,
   // we can use bar.x and bar.y directly (they're already in screen coordinates)

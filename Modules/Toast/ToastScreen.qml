@@ -153,7 +153,7 @@ Item {
 
       readonly property bool hasBar: BarService.hasBarOnScreen(panel.screen?.name)
       readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
+      readonly property real frameThickness: Settings.data.bar.frameThickness
 
       readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(panel.screen?.name) : ""
       readonly property bool isFloating: hasBar && Settings.isBarFloating()

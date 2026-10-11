@@ -13,6 +13,12 @@ Two checks, both over the full key paths (e.g. `dock.pluginSpacing`,
    with no reference is dead data: either wire it back to the frontend or
    delete it with a migration (AGENTS.md, settings key states).
 
+3. No declared-key fallbacks: `Settings.data.<declared key> ?? <literal>` is
+   always wrong — the JsonAdapter supplies the declared default, so the
+   fallback is dead code at best and a frozen stale constant at worst (the
+   repo had `frameThickness ?? 12` against declared 8). Undeclared reads are
+   caught by check 2 instead.
+
 A key counts as referenced when a source file (QML, JS, Python, shell, Rust)
 contains one of
   - the dotted tail `<parent>.<key>` or `<parent>?.<key>`
@@ -226,6 +232,22 @@ def declared_version(text):
     return int(m.group(1)) if m else None
 
 
+FALLBACK = re.compile(r"\bSettings\s*\??\.\s*data\s*\??\.\s*((?:\w+\s*\??\.\s*)*\w+)\s*\?\?")
+
+
+def declared_fallbacks(corpus, declared):
+    """`Settings.data.<declared key> ?? ...` occurrences, as "rel:line" strings."""
+    names = {".".join(path) for path in declared}
+    hits = []
+    for rel, text in corpus.items():
+        for m in FALLBACK.finditer(text):
+            path = re.sub(r"[\s?]", "", m.group(1))
+            if path in names:
+                line = text[: m.start()].count("\n") + 1
+                hits.append(f"{rel}:{line}")
+    return hits
+
+
 def main():
     defaults_json = json.loads(DEFAULTS.read_text())
     defaults = set(default_paths(defaults_json))
@@ -255,13 +277,20 @@ def main():
         print(f"only in Commons/Settings.qml: {'.'.join(path)}")
         problems += 1
 
-    indexes = [index_file(text) for text in load_corpus(decl_lines).values()]
+    corpus = load_corpus(decl_lines)
+    indexes = [index_file(text) for text in corpus.values()]
     for path in sorted(defaults | declared):
         if path == ("settingsVersion",):
             continue
         if not is_referenced(path, indexes):
             print(f"no reader: {'.'.join(path)}")
             problems += 1
+
+    # ?? on a declared key is dead code that hides schema drift — and has a
+    # history of freezing the wrong constant (frameThickness ?? 12 vs. 8).
+    for hit in declared_fallbacks(corpus, declared):
+        print(f"?? fallback on declared key: {hit} — the adapter always supplies the declared value")
+        problems += 1
 
     if problems:
         print(f"\n{problems} settings key problem(s). Wire the key to its consumer, or delete it with a migration "

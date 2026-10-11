@@ -16,7 +16,7 @@ PanelWindow {
 
   // Edge to anchor to and thickness to reserve
   property string edge: Settings.getBarPositionForScreen(screen?.name)
-  property real thickness: (edge === Settings.getBarPositionForScreen(screen?.name)) ? Style.getBarHeightForScreen(screen?.name) : (Settings.data.bar.frameThickness ?? 12)
+  property real thickness: (edge === Settings.getBarPositionForScreen(screen?.name)) ? Style.getBarHeightForScreen(screen?.name) : (Settings.data.bar.frameThickness)
 
   readonly property bool autoHide: Settings.getBarDisplayModeForScreen(screen?.name) === "auto_hide"
   readonly property bool nonExclusive: Settings.getBarDisplayModeForScreen(screen?.name) === "non_exclusive"

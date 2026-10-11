@@ -56,14 +56,14 @@ ColumnLayout {
       enabled: SoundService.multimediaAvailable
       label: I18n.tr("panels.notifications.sounds-enabled-label")
       description: I18n.tr("panels.notifications.sounds-enabled-description")
-      checked: Settings.data.notifications?.sounds?.enabled ?? false
+      checked: Settings.data.notifications?.sounds?.enabled
       onToggled: checked => Settings.data.notifications.sounds.enabled = checked
       defaultValue: Settings.getDefaultValue("notifications.sounds.enabled")
     }
 
     // Sound Volume
     NValueSlider {
-      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
       Layout.fillWidth: true
       label: I18n.tr("panels.notifications.sounds-volume-label")
       description: I18n.tr("panels.notifications.sounds-volume-description")
@@ -71,19 +71,19 @@ ColumnLayout {
       to: 1
       stepSize: 0.01
       showReset: true
-      value: Settings.data.notifications?.sounds?.volume ?? 0.5
+      value: Settings.data.notifications?.sounds?.volume
       onMoved: value => Settings.data.notifications.sounds.volume = value
-      text: Math.round((Settings.data.notifications?.sounds?.volume ?? 0.5) * 100) + "%"
+      text: Math.round((Settings.data.notifications?.sounds?.volume) * 100) + "%"
       defaultValue: Settings.getDefaultValue("notifications.sounds.volume")
     }
 
     // Separate Sounds Toggle
     NToggle {
-      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
       Layout.fillWidth: true
       label: I18n.tr("panels.notifications.sounds-separate-label")
       description: I18n.tr("panels.notifications.sounds-separate-description")
-      checked: Settings.data.notifications?.sounds?.separateSounds ?? false
+      checked: Settings.data.notifications?.sounds?.separateSounds
       onToggled: checked => Settings.data.notifications.sounds.separateSounds = checked
       defaultValue: Settings.getDefaultValue("notifications.sounds.separateSounds")
     }
@@ -95,8 +95,8 @@ ColumnLayout {
   }
   // Unified Sound File (shown when separateSounds is false)
   ColumnLayout {
-    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
-    visible: !(Settings.data.notifications?.sounds?.separateSounds ?? false)
+    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
+    visible: !(Settings.data.notifications?.sounds?.separateSounds)
     spacing: Style.marginXXS
     Layout.fillWidth: true
 
@@ -109,7 +109,7 @@ ColumnLayout {
       enabled: parent.enabled
       Layout.fillWidth: true
       placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-      text: Settings.data.notifications?.sounds?.normalSoundFile ?? ""
+      text: Settings.data.notifications?.sounds?.normalSoundFile
       buttonIcon: "folder-open"
       buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
       onInputTextChanged: text => {
@@ -134,7 +134,7 @@ ColumnLayout {
   }
   // Separate Sound Files (shown when separateSounds is true)
   ColumnLayout {
-    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false) && (Settings.data.notifications?.sounds?.separateSounds ?? false)
+    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && (Settings.data.notifications?.sounds?.separateSounds)
     spacing: Style.marginXXS
     Layout.fillWidth: true
 
@@ -152,7 +152,7 @@ ColumnLayout {
         enabled: parent.enabled
         Layout.fillWidth: true
         placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.notifications?.sounds?.lowSoundFile ?? ""
+        text: Settings.data.notifications?.sounds?.lowSoundFile
         buttonIcon: "folder-open"
         buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
         onInputTextChanged: text => Settings.data.notifications.sounds.lowSoundFile = text
@@ -174,7 +174,7 @@ ColumnLayout {
         enabled: parent.enabled
         Layout.fillWidth: true
         placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.notifications?.sounds?.normalSoundFile ?? ""
+        text: Settings.data.notifications?.sounds?.normalSoundFile
         buttonIcon: "folder-open"
         buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
         onInputTextChanged: text => Settings.data.notifications.sounds.normalSoundFile = text
@@ -196,7 +196,7 @@ ColumnLayout {
         enabled: parent.enabled
         Layout.fillWidth: true
         placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.notifications?.sounds?.criticalSoundFile ?? ""
+        text: Settings.data.notifications?.sounds?.criticalSoundFile
         buttonIcon: "folder-open"
         buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
         onInputTextChanged: text => Settings.data.notifications.sounds.criticalSoundFile = text
@@ -211,7 +211,7 @@ ColumnLayout {
   }
   // Excluded Apps List
   ColumnLayout {
-    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false)
+    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
     spacing: Style.marginXXS
     Layout.fillWidth: true
 
@@ -224,7 +224,7 @@ ColumnLayout {
       enabled: parent.enabled
       Layout.fillWidth: true
       placeholderText: I18n.tr("panels.notifications.sounds-excluded-apps-placeholder")
-      text: Settings.data.notifications?.sounds?.excludedApps ?? ""
+      text: Settings.data.notifications?.sounds?.excludedApps
       onTextChanged: Settings.data.notifications.sounds.excludedApps = text
     }
   }

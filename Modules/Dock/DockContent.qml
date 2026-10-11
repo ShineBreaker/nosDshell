@@ -655,10 +655,10 @@ Item {
               asynchronous: true
 
               // Dim pinned apps that aren't running
-              opacity: appButton.isRunning ? 1.0 : (Settings.data.dock.deadOpacity ?? 1.0)
+              opacity: appButton.isRunning ? 1.0 : (Settings.data.dock.deadOpacity)
 
               // Apply dock-specific colorization shader only to non-focused apps
-              layer.enabled: !appButton.isActive && (Settings.data.dock.colorizeIcons ?? false)
+              layer.enabled: !appButton.isActive && (Settings.data.dock.colorizeIcons)
               layer.smooth: true
               layer.effect: ShaderEffect {
                 property color targetColor: Color.onShell

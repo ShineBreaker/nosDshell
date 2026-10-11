@@ -20,7 +20,7 @@ Singleton {
   // Configuration
   // DDE shows one bubble at a time and queues the rest (DESIGN §3.6,
   // notifications.maxVisible default 1).
-  readonly property int maxPopups: Math.max(1, Settings.data.notifications?.maxVisible ?? 1)
+  readonly property int maxPopups: Math.max(1, Settings.data.notifications?.maxVisible)
   property int maxHistory: 100
   property string historyFile: Quickshell.env("NOSD_NOTIF_HISTORY_FILE") || (Settings.cacheDir + "notifications.json")
 
@@ -159,7 +159,7 @@ Singleton {
     target: Settings
     function onSettingsLoaded() {
       _syncingDnd = true;
-      root.doNotDisturb = Settings.data.notifications?.doNotDisturb ?? false;
+      root.doNotDisturb = Settings.data.notifications?.doNotDisturb;
       _syncingDnd = false;
       updateNotificationServer();
     }
@@ -173,7 +173,7 @@ Singleton {
   Connections {
     target: Settings.data.notifications
     function onDoNotDisturbChanged() {
-      const v = Settings.data.notifications?.doNotDisturb ?? false;
+      const v = Settings.data.notifications?.doNotDisturb;
       if (root.doNotDisturb === v)
         return;
       root._syncingDnd = true;
@@ -267,7 +267,7 @@ Singleton {
     lastSoundTime = now;
 
     // Play sound using existing SoundService
-    const volume = Settings.data.notifications?.sounds?.volume ?? 0.5;
+    const volume = Settings.data.notifications?.sounds?.volume;
     SoundService.playSound(soundFile, {
                              volume: volume,
                              fallback: false,
@@ -1178,9 +1178,9 @@ Singleton {
 
   onDoNotDisturbChanged: {
     if (_syncingDnd)
-      return;
+    return;
     if (Settings.data.notifications.doNotDisturb !== doNotDisturb)
-      Settings.data.notifications.doNotDisturb = doNotDisturb;
+    Settings.data.notifications.doNotDisturb = doNotDisturb;
     ToastService.showNotice(doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled") : I18n.tr("toast.do-not-disturb.disabled"), doNotDisturb ? I18n.tr("toast.do-not-disturb.enabled-desc") : I18n.tr("toast.do-not-disturb.disabled-desc"), doNotDisturb ? "bell-off" : "bell");
   }
 

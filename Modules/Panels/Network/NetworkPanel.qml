@@ -21,7 +21,7 @@ SmartPanel {
   // Info panel collapsed by default, view mode persisted in settings
   // Ethernet details UI state (mirrors Wi‑Fi info behavior)
   property bool ethernetInfoExpanded: false
-  property bool ethernetDetailsGrid: ((Settings.data.network.ethernetDetailsViewMode ?? Settings.data.network.wifiDetailsViewMode ?? "grid") === "grid")
+  property bool ethernetDetailsGrid: Settings.data.network.ethernetDetailsViewMode === "grid"
   property int ipVersion: 4
 
   // Unified panel view mode: "wifi" | "ethernet" (persisted)

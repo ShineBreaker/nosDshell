@@ -463,7 +463,7 @@ Variants {
       readonly property string screenBarPosition: hasBar ? Settings.getBarPositionForScreen(root.modelData?.name) : ""
       readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(root.modelData?.name) : 0
       readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
+      readonly property real frameThickness: Settings.data.bar.frameThickness
 
       function calculateMargin(isAnchored, position) {
         if (!isAnchored)

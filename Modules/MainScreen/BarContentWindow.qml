@@ -45,7 +45,7 @@ PanelWindow {
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property bool isFramed: Settings.getEffectiveBarType() === "framed"
-  readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
+  readonly property real frameThickness: Settings.data.bar.frameThickness
   readonly property bool barFloating: Settings.isBarFloating()
   readonly property real barMarginH: Math.ceil(barFloating ? Settings.data.bar.marginHorizontal : 0)
   readonly property real barMarginV: Math.ceil(barFloating ? Settings.data.bar.marginVertical : 0)

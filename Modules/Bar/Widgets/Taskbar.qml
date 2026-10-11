@@ -835,7 +835,7 @@ Item {
 
                     // Dim pinned apps that aren't running (dock.deadOpacity;
                     // DockContent.qml applies the same rule in fashion mode)
-                    opacity: taskbarItem.isRunning ? 1.0 : (Settings.data.dock.deadOpacity ?? 1.0)
+                    opacity: taskbarItem.isRunning ? 1.0 : (Settings.data.dock.deadOpacity)
 
                     Behavior on opacity {
                       NumberAnimation {

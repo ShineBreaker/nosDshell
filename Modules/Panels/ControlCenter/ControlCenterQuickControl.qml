@@ -28,7 +28,7 @@ Item {
   readonly property real listWidth: Math.max(1, root.width - Style.margin2M)
 
   // ---------------- pages ----------------
-  readonly property var shortcuts: (Settings.data.controlCenter.shortcuts?.left ?? []).concat(Settings.data.controlCenter.shortcuts?.right ?? [])
+  readonly property var shortcuts: (Settings.data.controlCenter.shortcuts?.left).concat(Settings.data.controlCenter.shortcuts?.right)
   // The basic page already shows the first 5; switch pages only carry the
   // overflow past them (§3.5.2 "overflow spills onto extra switch pages").
   readonly property int switchPageCount: Math.max(0, Math.ceil((shortcuts.length - 5) / 5))

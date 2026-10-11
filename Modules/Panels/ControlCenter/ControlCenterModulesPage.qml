@@ -29,7 +29,7 @@ Item {
   signal moduleSelected(var module)
 
   readonly property real contentWidth: Math.max(1, root.width - Style.margin2M)
-  readonly property var cards: Settings.data.controlCenter.cards ?? []
+  readonly property var cards: Settings.data.controlCenter.cards
   readonly property var modules: ControlCenterModules.modules.filter(m => ControlCenterModules.isVisible(m))
   readonly property int gridColumns: 3
 

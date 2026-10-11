@@ -284,7 +284,7 @@ Item {
   readonly property real barHeight: barShouldShow ? Style.getBarHeightForScreen(screen?.name) : 0
   readonly property bool hasBar: modelData && modelData.name ? BarService.hasBarOnScreen(modelData.name) : false
   readonly property bool isFramed: Settings.getEffectiveBarType() === "framed" && hasBar
-  readonly property real frameThickness: Settings.data.bar.frameThickness ?? 12
+  readonly property real frameThickness: Settings.data.bar.frameThickness
   readonly property bool barFloating: Settings.isBarFloating()
   readonly property real barMarginH: (barFloating && barShouldShow) ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
   readonly property real barMarginV: (barFloating && barShouldShow) ? Math.ceil(Settings.data.bar.marginVertical) : 0

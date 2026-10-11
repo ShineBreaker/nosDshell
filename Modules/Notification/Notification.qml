@@ -107,7 +107,7 @@ Variants {
       readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(notifWindow.screen?.name) : 0
 
       readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness ?? 8
+      readonly property real frameThickness: Settings.data.bar.frameThickness
       readonly property real floatMarginV: isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
       readonly property real floatMarginH: isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
 

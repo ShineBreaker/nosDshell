@@ -639,7 +639,7 @@ Singleton {
     // Framed: the ring band sits on every edge; floating lifts it by the
     // float margin too (DESIGN §3.13).
     if (Settings.getEffectiveBarType() === "framed") {
-      var ft = Settings.data.bar.frameThickness ?? 12;
+      var ft = Settings.data.bar.frameThickness;
       if (Settings.isBarFloating()) {
         ft += Math.ceil((edge === "left" || edge === "right") ? Settings.data.bar.marginHorizontal : Settings.data.bar.marginVertical);
       }

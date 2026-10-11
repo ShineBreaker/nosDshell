@@ -304,9 +304,9 @@ Singleton {
     try {
       toplevels = ToplevelManager ? (ToplevelManager.toplevels.values || []).length : -1;
     } catch (e) {}
-    var lines = ["isDebug=" + Settings.isDebug + " (env=" + Settings.envDebug + " persisted=" + (Settings.data.debug.enabled ?? false) + ")", "modules='" + Settings.data.debug.modules + "' logLevel=" + Settings.data.debug.logLevel, "screens=" + screens.join(" | "), "toplevels=" + toplevels, "roots=" + (rootNames() || "<none>"), "watches=" + (Object.keys(
-                                                                                                                                                                                                                                                                                                                                                          _watches).join(
-                                                                                                                                                                                                                                                                                                                                                          ", ") || "<none>"),
+    var lines = ["isDebug=" + Settings.isDebug + " (env=" + Settings.envDebug + " persisted=" + (Settings.data.debug.enabled) + ")", "modules='" + Settings.data.debug.modules + "' logLevel=" + Settings.data.debug.logLevel, "screens=" + screens.join(" | "), "toplevels=" + toplevels, "roots=" + (rootNames() || "<none>"), "watches=" + (Object.keys(
+                                                                                                                                                                                                                                                                                                                                                 _watches).join(", ")
+                                                                                                                                                                                                                                                                                                                                               || "<none>"),
                  "qtTrace= QT_LOGGING_RULES env must be set before launch — e.g. qt.quick.hover.trace=true"];
     return lines.join("\n");
   }

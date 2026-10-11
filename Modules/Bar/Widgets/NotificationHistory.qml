@@ -67,8 +67,8 @@ NIconButton {
   bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  icon: (Settings.data.notifications.doNotDisturb ?? false) ? "bell-off" : "bell"
-  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny((Settings.data.notifications.doNotDisturb ?? false) ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : ""
+  icon: (Settings.data.notifications.doNotDisturb) ? "bell-off" : "bell"
+  iconSource: onShellSurface ? ThemeIcons.symbolicOnlyAny((Settings.data.notifications.doNotDisturb) ? ["notification-disabled", "notifications-disabled"] : ["notification", "preferences-system-notifications"]) : ""
   recolorIcon: onShellSurface
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
   tooltipText: {
@@ -91,9 +91,9 @@ NIconButton {
 
     model: [
       {
-        "label": (Settings.data.notifications.doNotDisturb ?? false) ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd"),
+        "label": (Settings.data.notifications.doNotDisturb) ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd"),
         "action": "toggle-dnd",
-        "icon": (Settings.data.notifications.doNotDisturb ?? false) ? "bell" : "bell-off"
+        "icon": (Settings.data.notifications.doNotDisturb) ? "bell" : "bell-off"
       },
       {
         "label": I18n.tr("actions.clear-history"),
@@ -112,7 +112,7 @@ NIconButton {
                    PanelService.closeContextMenu(screen);
 
                    if (action === "toggle-dnd") {
-                     Settings.data.notifications.doNotDisturb = !(Settings.data.notifications.doNotDisturb ?? false);
+                     Settings.data.notifications.doNotDisturb = !(Settings.data.notifications.doNotDisturb);
                    } else if (action === "clear-history") {
                      NotificationService.clearHistory();
                    } else if (action === "widget-settings") {
