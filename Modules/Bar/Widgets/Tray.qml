@@ -318,12 +318,17 @@ Item {
   readonly property real capsuleWidth: isVertical ? capsuleHeight : Math.round(trayFlow.implicitWidth + capsulePadding * 2)
   readonly property real capsuleContentHeight: isVertical ? Math.round(trayFlow.implicitHeight + capsulePadding * 2) : capsuleHeight
 
+  // Every fashion item sits in a cell = visual length + one pluginSpacing pad
+  // on each side (cellSize − tileSize), so edge-to-edge gaps stay uniform no
+  // matter how wide the widget's own visual is.
+  readonly property real fashionCellPad: (Style.dockPluginCellSize - Style.dockPluginTileSize) / 2
+
   function _fashionLength() {
     if (!trayExpanded)
-      return Math.round(isVertical ? fashionCollapser.height : fashionCollapser.width);
+      return Math.round((isVertical ? fashionCollapser.height : fashionCollapser.width) + fashionCellPad * 2);
     const pillLen = isVertical ? fashionExpandedPill.height : fashionExpandedPill.width;
     const colLen = isVertical ? fashionCollapser.height : fashionCollapser.width;
-    return Math.round(pillLen + 6 + colLen);
+    return Math.round(pillLen + 6 + colLen + fashionCellPad * 2);
   }
   implicitWidth: {
     if (fashionMode)
@@ -626,8 +631,8 @@ Item {
   Rectangle {
     id: fashionExpandedPill
     visible: root.fashionMode && root.trayExpanded
-    x: 0
-    y: root.isVertical ? 0 : Math.round((Style.dockItemThickness - height) / 2)
+    x: root.isVertical ? Math.round((Style.dockItemThickness - width) / 2) : root.fashionCellPad
+    y: root.isVertical ? root.fashionCellPad : Math.round((Style.dockItemThickness - height) / 2)
     width: root.isVertical ? root.fashionPillHeight : Math.round(fashionIconsFlow.implicitWidth + 12)
     height: root.isVertical ? Math.round(fashionIconsFlow.implicitHeight + 12) : root.fashionPillHeight
     radius: 10
@@ -650,8 +655,8 @@ Item {
   Rectangle {
     id: fashionCollapser
     visible: root.fashionMode
-    x: root.isVertical ? Math.round((Style.dockItemThickness - width) / 2) : (root.trayExpanded ? fashionExpandedPill.width + 6 : 0)
-    y: root.isVertical ? (root.trayExpanded ? fashionExpandedPill.height + 6 : 0) : Math.round((Style.dockItemThickness - height) / 2)
+    x: root.isVertical ? Math.round((Style.dockItemThickness - width) / 2) : (root.trayExpanded ? root.fashionCellPad + fashionExpandedPill.width + 6 : Math.round((root.width - width) / 2))
+    y: root.isVertical ? (root.trayExpanded ? root.fashionCellPad + fashionExpandedPill.height + 6 : Math.round((root.height - height) / 2)) : Math.round((Style.dockItemThickness - height) / 2)
     width: root.isVertical ? root.fashionPillHeight : 20
     height: root.isVertical ? 20 : root.fashionPillHeight
     radius: 10

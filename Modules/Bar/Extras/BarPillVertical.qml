@@ -207,14 +207,16 @@ Item {
 
   Rectangle {
     id: iconCircle
-    width: buttonSize
-    height: buttonSize
+    // Collapsed (fashion/forceClose): the "circle" IS the tile — size it to
+    // the chip, not the full pill slot, and center it like pillBackground.
+    width: collapseToIcon ? tileSize : buttonSize
+    height: collapseToIcon ? tileSize : buttonSize
     radius: Math.min(Style.radiusL, width / 2)
     color: "transparent" // Make icon background transparent to avoid double opacity
 
     // Icon positioning based on direction
     x: 0
-    y: openUpward ? (root.contentHeight - height) : 0
+    y: collapseToIcon ? Math.round((root.contentHeight - height) / 2) : (openUpward ? (root.contentHeight - height) : 0)
     anchors.horizontalCenter: parent.horizontalCenter
 
     IconImage {

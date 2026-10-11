@@ -202,14 +202,16 @@ Item {
 
   Rectangle {
     id: iconCircle
-    width: hasIcon ? pillHeight : 0
-    height: pillHeight
+    // Collapsed (fashion/forceClose): the "circle" IS the tile — size it to
+    // the chip, not the full pill slot, and center it like pillBackground.
+    width: hasIcon ? (collapseToIcon ? tileSize : pillHeight) : 0
+    height: collapseToIcon ? tileSize : pillHeight
     radius: Math.min(Style.radiusL, width / 2)
     color: "transparent" // Make icon background transparent to avoid double opacity
     anchors.verticalCenter: parent.verticalCenter
 
     // iconPosition takes precedence, fallback to oppositeDirection
-    x: iconPosition ? (iconPosition === "right" ? (parent.width - width) : 0) : (oppositeDirection ? 0 : (parent.width - width))
+    x: collapseToIcon ? Math.round((parent.width - width) / 2) : (iconPosition ? (iconPosition === "right" ? (parent.width - width) : 0) : (oppositeDirection ? 0 : (parent.width - width)))
 
     IconImage {
       visible: root.iconSource !== ""
