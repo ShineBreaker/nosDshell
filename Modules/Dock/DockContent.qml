@@ -452,34 +452,39 @@ Item {
 
       // ---------------- App items ----------------
       Repeater {
-        model: dockRoot.dockApps
+        // Model is index keys, not the entries: a JS-array model boxes each
+        // element into a QVariantMap, which turns the entry's Toplevel refs
+        // into raw pointers that lose QPointer tracking (CODING_STANDARDS
+        // "QML 规则"). The delegate resolves the live JS entry itself.
+        model: dockRoot.dockApps.map((_, i) => i)
 
         delegate: Item {
           id: appButton
+          readonly property var entry: dockRoot.dockApps[index]
           readonly property real appItemLength: Math.round(dockRoot.itemLength * shrinkFactor)
           readonly property real appIconContent: Math.round(Math.min(appItemLength, dockRoot.itemThickness) * 0.8)
           Layout.preferredWidth: isVertical ? dockRoot.itemThickness : appItemLength
           Layout.preferredHeight: isVertical ? appItemLength : dockRoot.itemThickness
           Layout.alignment: Qt.AlignCenter
 
-          property var toplevels: dock.getValidToplevels(modelData)
+          property var toplevels: dock.getValidToplevels(entry)
           property bool isActive: ToplevelManager && ToplevelManager.activeToplevel && toplevels.includes(ToplevelManager.activeToplevel)
           property bool hovered: appMouseArea.containsMouse
-          property string appId: modelData ? modelData.appId : ""
+          property string appId: entry ? entry.appId : ""
           property int groupedCount: toplevels.length
-          property bool isUrgentApp: dock.isUrgent(modelData)
+          property bool isUrgentApp: dock.isUrgent(entry)
           property string appTitle: {
-            if (!modelData)
+            if (!entry)
               return "";
-            const primaryToplevel = dock.getPrimaryToplevel(modelData);
+            const primaryToplevel = dock.getPrimaryToplevel(entry);
             if (primaryToplevel) {
               const toplevelTitle = primaryToplevel.title || "";
               if (!toplevelTitle || toplevelTitle === "Loading..." || toplevelTitle.trim() === "") {
-                return dockRoot.getAppNameFromDesktopEntry(modelData.appId) || modelData.appId;
+                return dockRoot.getAppNameFromDesktopEntry(entry.appId) || entry.appId;
               }
               return toplevelTitle;
             }
-            return modelData.title || modelData.appId || "";
+            return entry.title || entry.appId || "";
           }
           property bool isRunning: toplevels.length > 0
 
@@ -548,7 +553,7 @@ Item {
 
           // Listen for the toplevel being closed
           Connections {
-            target: modelData?.toplevel
+            target: entry?.toplevel
             function onClosed() {
               Qt.callLater(dockRoot.updateDockApps);
             }
@@ -643,7 +648,7 @@ Item {
               anchors.fill: parent
               source: {
                 dockRoot.iconRevision; // Force re-evaluation when revision changes
-                return dock.getAppIcon(modelData);
+                return dock.getAppIcon(entry);
               }
               visible: source.toString() !== ""
               smooth: true
@@ -791,7 +796,7 @@ Item {
                            }
                            dockRoot.closeAllContextMenus();
                            TooltipService.hideImmediately();
-                           contextMenu.show(appButton, modelData, targetScreen);
+                           contextMenu.show(appButton, entry, targetScreen);
                            return;
                          }
 
@@ -800,8 +805,8 @@ Item {
                          }
                          dockRoot.closeAllContextMenus();
 
-                         const runningToplevels = dock.getValidToplevels(modelData);
-                         const primaryToplevel = dock.getPrimaryToplevel(modelData);
+                         const runningToplevels = dock.getValidToplevels(entry);
+                         const primaryToplevel = dock.getPrimaryToplevel(entry);
 
                          if (mouse.button === Qt.MiddleButton) {
                            if (primaryToplevel && primaryToplevel.close) {
@@ -810,7 +815,7 @@ Item {
                            }
                          } else if (mouse.button === Qt.LeftButton) {
                            if (runningToplevels.length === 0) {
-                             dock.launchAppById(modelData?.appId);
+                             dock.launchAppById(entry?.appId);
                              return;
                            }
 
@@ -824,9 +829,9 @@ Item {
                            const clickAction = Settings.data.dock.groupClickAction || "cycle";
                            if (clickAction === "list") {
                              TooltipService.hideImmediately();
-                             contextMenu.show(appButton, modelData, targetScreen, "list");
+                             contextMenu.show(appButton, entry, targetScreen, "list");
                            } else {
-                             const appKey = modelData?.appId || "";
+                             const appKey = entry?.appId || "";
                              const state = dockRoot.groupCycleIndices || {};
                              const nextIndex = (state[appKey] || 0) % runningToplevels.length;
                              const nextToplevel = runningToplevels[nextIndex];
