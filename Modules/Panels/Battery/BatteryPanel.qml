@@ -67,84 +67,6 @@ SmartPanel {
       }
     }
 
-    component BatteryRow: ColumnLayout {
-      id: batteryRow
-
-      property var device: null
-
-      spacing: Style.marginXXS
-      Layout.fillWidth: true
-
-      Item {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 36
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.leftMargin: Style.marginM
-          anchors.rightMargin: Style.marginM
-          spacing: Style.marginS
-
-          NIcon {
-            icon: BatteryService.getIcon(BatteryService.getPercentage(batteryRow.device), BatteryService.isCharging(batteryRow.device), BatteryService.isPluggedIn(batteryRow.device), BatteryService.isDeviceReady(batteryRow.device))
-            color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Color.accent : (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Color.mError : Color.onShell
-            pointSize: Style.fontSizeXL
-          }
-
-          NText {
-            Layout.fillWidth: true
-            text: BatteryService.getDeviceName(batteryRow.device) || I18n.tr("common.battery")
-            pointSize: Style.fontSizeM
-            elide: Text.ElideRight
-
-            MouseArea {
-              anchors.fill: parent
-              hoverEnabled: true
-              onEntered: {
-                if (batteryRow.device && batteryRow.device.healthSupported) {
-                  TooltipService.show(parent, `${I18n.tr("battery.battery-health")}: ${Math.round(batteryRow.device.healthPercentage)}%`);
-                }
-              }
-              onExited: TooltipService.hide()
-            }
-          }
-
-          NText {
-            text: `${BatteryService.getPercentage(batteryRow.device)}%`
-            pointSize: Style.fontSizeS
-            font.weight: Font.DemiBold
-            color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Color.accent : Color.onShellSecondary
-          }
-        }
-      }
-
-      Item {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 22
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.leftMargin: Style.marginM
-          anchors.rightMargin: Style.marginM
-          spacing: Style.marginM
-
-          NLinearGauge {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 2
-            orientation: Qt.Horizontal
-            ratio: Math.max(0, Math.min(1, BatteryService.getPercentage(batteryRow.device) / 100))
-            fillColor: (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Color.mError : Color.accent
-          }
-
-          NText {
-            text: BatteryService.getTimeRemainingText(batteryRow.device)
-            pointSize: Style.fontSizeXS
-            color: Color.onShellTertiary
-          }
-        }
-      }
-    }
-
     NScrollView {
       id: scrollView
       anchors.fill: parent
@@ -188,7 +110,7 @@ SmartPanel {
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginM
           Layout.rightMargin: Style.marginM
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           visible: BatteryService.laptopBatteries.length === 0 && BatteryService.bluetoothBatteries.length === 0
           text: I18n.tr("battery.no-battery-detected")
           pointSize: Style.fontSizeM
@@ -266,7 +188,7 @@ SmartPanel {
         // Performance mode toggle (opt-in)
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           Layout.topMargin: Style.marginS
           visible: panelContent.showPerformanceMode
 
@@ -299,6 +221,84 @@ SmartPanel {
 
         Item {
           Layout.preferredHeight: Style.marginS
+        }
+      }
+    }
+  }
+
+  component BatteryRow: ColumnLayout {
+    id: batteryRow
+
+    property var device: null
+
+    spacing: Style.marginXXS
+    Layout.fillWidth: true
+
+    Item {
+      Layout.fillWidth: true
+      Layout.preferredHeight: Style.quickPanelRowHeight
+
+      RowLayout {
+        anchors.fill: parent
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        spacing: Style.marginS
+
+        NIcon {
+          icon: BatteryService.getIcon(BatteryService.getPercentage(batteryRow.device), BatteryService.isCharging(batteryRow.device), BatteryService.isPluggedIn(batteryRow.device), BatteryService.isDeviceReady(batteryRow.device))
+          color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Color.accent : (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Color.mError : Color.onShell
+          pointSize: Style.fontSizeXL
+        }
+
+        NText {
+          Layout.fillWidth: true
+          text: BatteryService.getDeviceName(batteryRow.device) || I18n.tr("common.battery")
+          pointSize: Style.fontSizeM
+          elide: Text.ElideRight
+
+          MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: {
+              if (batteryRow.device && batteryRow.device.healthSupported) {
+                TooltipService.show(parent, `${I18n.tr("battery.battery-health")}: ${Math.round(batteryRow.device.healthPercentage)}%`);
+              }
+            }
+            onExited: TooltipService.hide()
+          }
+        }
+
+        NText {
+          text: `${BatteryService.getPercentage(batteryRow.device)}%`
+          pointSize: Style.fontSizeS
+          font.weight: Font.DemiBold
+          color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Color.accent : Color.onShellSecondary
+        }
+      }
+    }
+
+    Item {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 22
+
+      RowLayout {
+        anchors.fill: parent
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        spacing: Style.marginM
+
+        NLinearGauge {
+          Layout.fillWidth: true
+          Layout.preferredHeight: 2
+          orientation: Qt.Horizontal
+          ratio: Math.max(0, Math.min(1, BatteryService.getPercentage(batteryRow.device) / 100))
+          fillColor: (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Color.mError : Color.accent
+        }
+
+        NText {
+          text: BatteryService.getTimeRemainingText(batteryRow.device)
+          pointSize: Style.fontSizeXS
+          color: Color.onShellTertiary
         }
       }
     }

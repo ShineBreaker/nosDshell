@@ -356,9 +356,9 @@ Item {
         fontSize: Style.fontSizeS
         backgroundColor: Color.accent
         textColor: Color.onAccent
-        hoverColor: Qt.lighter(Color.accent, 1.15)
+        hoverColor: Color.accentHover
         outlined: false
-        implicitHeight: 24
+        implicitHeight: Style.toastActionHeight
 
         onClicked: {
           if (root.actionCallback) {

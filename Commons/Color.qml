@@ -575,6 +575,19 @@ Singleton {
   readonly property color grooveShadow: Qt.rgba(0, 0, 0, 0.1)
   readonly property color grooveLine: Qt.rgba(1, 1, 1, 0.1)
 
+  // Hairline edge on light controls (slider knob): fixed black x 0.1 so
+  // the disc reads on light surfaces. Same veil as grooveShadow, separate
+  // name for the different role.
+  readonly property color knobBorder: Qt.rgba(0, 0, 0, 0.1)
+
+  // Hover of accent-filled controls (toast action button, §3.6): a touch
+  // lighter than accent so press/hover reads on the dark bubble.
+  readonly property color accentHover: Qt.lighter(accent, 1.15)
+
+  // Mini-launcher active category tile (§3.4.2): fixed dark veil — the
+  // mini launcher surface is always dark regardless of scheme.
+  readonly property color launcherMiniActiveTile: Qt.rgba(0.082, 0.082, 0.082, 0.2)
+
   // White overlay ladder on dark surfaces (black on light) — DESIGN §1.3
   readonly property var overlayLevels: ({
                                           "idle": 0.03,

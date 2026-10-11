@@ -169,7 +169,7 @@ Item {
           Layout.alignment: Qt.AlignHCenter
           Layout.bottomMargin: 20
           text: HostService.displayName
-          pointSize: 16
+          pointSize: Style.fontSizeLockLabel
           color: Color.onWallpaper
           horizontalAlignment: Text.AlignHCenter
         }

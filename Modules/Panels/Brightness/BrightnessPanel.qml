@@ -120,7 +120,7 @@ SmartPanel {
 
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           visible: panelContent.globalBrightnessCapableMonitors > 1 && panelContent.resolveWidgetSetting("applyToAllMonitors", false)
 
           RowLayout {
@@ -189,7 +189,7 @@ SmartPanel {
 
             Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: 36
+              Layout.preferredHeight: Style.quickPanelRowHeight
 
               RowLayout {
                 anchors.fill: parent
@@ -214,7 +214,7 @@ SmartPanel {
 
             Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: 36
+              Layout.preferredHeight: Style.quickPanelRowHeight
 
               RowLayout {
                 anchors.fill: parent

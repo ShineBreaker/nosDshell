@@ -77,7 +77,7 @@ SmartPanel {
         // Toggle switch row + auto-connect + settings gear
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           Layout.topMargin: Style.marginS
           visible: BluetoothService.bluetoothAvailable
 
@@ -150,7 +150,7 @@ SmartPanel {
           delegate: Rectangle {
             readonly property var entry: panelContent.connectedDevices[index]
             Layout.fillWidth: true
-            Layout.preferredHeight: 36
+            Layout.preferredHeight: Style.quickPanelRowHeight
             radius: Style.radiusRow
             color: connRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
 
@@ -224,7 +224,7 @@ SmartPanel {
           delegate: Rectangle {
             readonly property var entry: panelContent.pairedDevices[index]
             Layout.fillWidth: true
-            Layout.preferredHeight: 36
+            Layout.preferredHeight: Style.quickPanelRowHeight
             radius: Style.radiusRow
             color: btRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
 
@@ -325,7 +325,7 @@ SmartPanel {
           delegate: Rectangle {
             readonly property var entry: panelContent.availableDevices[index]
             Layout.fillWidth: true
-            Layout.preferredHeight: 36
+            Layout.preferredHeight: Style.quickPanelRowHeight
             radius: Style.radiusRow
             color: availRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
 

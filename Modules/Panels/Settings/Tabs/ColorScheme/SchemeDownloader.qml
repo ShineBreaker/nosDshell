@@ -959,7 +959,7 @@ Popup {
 
       NIcon {
         icon: "package"
-        pointSize: 48
+        pointSize: Style.emptyStateIconSize
         color: Color.onShellSecondary
         Layout.alignment: Qt.AlignHCenter
       }

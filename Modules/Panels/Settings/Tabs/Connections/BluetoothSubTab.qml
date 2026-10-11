@@ -627,7 +627,7 @@ Item {
 
       NIcon {
         icon: "lock"
-        pointSize: 48
+        pointSize: Style.emptyStateIconSize
         color: Color.accent
         Layout.alignment: Qt.AlignHCenter
       }

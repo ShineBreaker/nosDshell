@@ -19,6 +19,7 @@ Singleton {
 
   // Font weight
   readonly property int fontWeightLight: 300
+  readonly property int fontWeightNormal: 400 // Qt Font.Normal; same value as fontWeightRegular
   readonly property int fontWeightRegular: 400
   readonly property int fontWeightMedium: 500
   readonly property int fontWeightSemiBold: 600
@@ -389,6 +390,9 @@ Singleton {
   readonly property real fontSizeSubtitle: 12
   readonly property real fontSizeClockCC: 34.5
   readonly property real fontSizeLockClock: 51
+  // Lock-screen 16 px labels: user name under the avatar and the date under
+  // the clock (§3.9)
+  readonly property real fontSizeLockLabel: 16
 
   // ----------------------------------------------------------------
   // §3.6 notification bubble / toast (gxde-session-ui bubble.h: Padding=20,
@@ -406,6 +410,8 @@ Singleton {
   readonly property int bubbleTextWidthWithActions: 150
   readonly property int bubbleActionsWidth: 70
   readonly property int bubbleMaxBodyLines: 3
+  // Compact action button inside a toast (§3.6)
+  readonly property int toastActionHeight: 24
 
   // ----------------------------------------------------------------
   // §3.7 OSD tile (dde-osd/container.cpp: contentSize 140x140,
@@ -417,6 +423,9 @@ Singleton {
   // common.cpp DrawImage); a 48 pt symbolic glyph inks ≈52 px, keeping the
   // same share of the 140 px tile.
   readonly property int osdIconSize: 48
+  // Panel empty-state glyph (wifi-off, lock, package…): same 48 pt ink as
+  // the bubble/OSD icon family.
+  readonly property int emptyStateIconSize: 48
   readonly property int osdIconOffset: 40 // icon only
   readonly property int osdIconOffsetWithText: 25
   readonly property int osdIconOffsetWithProgress: 30
@@ -493,6 +502,9 @@ Singleton {
   // Detail list rows are 36 px tall (wifilistmodel.cpp:95)
   // Row-family heights ride ui.rowHeightScale (0.9-1.2, DESIGN §3.5.4)
   readonly property int detailRowHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
+  // Quick-panel (dock popup) rows share the 36 px grid of §3.5.2 lists but
+  // are a separate family from the settings detailRowHeight.
+  readonly property int quickPanelRowHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
 
   // Settings pages inside the control center (DESIGN §3.5.3–3.5.4)
   // 56 px icon rail, spacing 20; content 352 (frame mode) / 640 (window mode)

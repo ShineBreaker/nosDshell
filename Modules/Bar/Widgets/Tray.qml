@@ -645,7 +645,7 @@ Item {
     y: root.isVertical ? root.fashionCellPad : Math.round((Style.dockItemThickness - height) / 2)
     width: root.isVertical ? root.fashionPillHeight : Math.round(fashionIconsFlow.implicitWidth + 12)
     height: root.isVertical ? Math.round(fashionIconsFlow.implicitHeight + 12) : root.fashionPillHeight
-    radius: 10
+    radius: Style.radiusLarge
     color: Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")
 
     Flow {
@@ -671,7 +671,7 @@ Item {
     y: root.isVertical ? (root.trayExpanded ? root.fashionCellPad + fashionExpandedPill.height + 6 : Math.round((root.height - height) / 2)) : Math.round((Style.dockItemThickness - height) / 2)
     width: root.isVertical ? root.fashionPillHeight : 20
     height: root.isVertical ? 20 : root.fashionPillHeight
-    radius: 10
+    radius: Style.radiusLarge
     // Same overlay ramp as the plugin tiles in both states — upstream's dark
     // expanded variant made the collapser read as a different element.
     color: collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle"))

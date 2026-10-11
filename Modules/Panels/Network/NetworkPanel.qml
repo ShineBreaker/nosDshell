@@ -97,7 +97,7 @@ SmartPanel {
       // Switch row: mode icon + label + settings gear + wifi toggle
       Item {
         Layout.fillWidth: true
-        Layout.preferredHeight: 36
+        Layout.preferredHeight: Style.quickPanelRowHeight
 
         RowLayout {
           anchors.fill: parent
@@ -263,7 +263,7 @@ SmartPanel {
 
                 NIcon {
                   icon: "wifi-off"
-                  pointSize: 48
+                  pointSize: Style.emptyStateIconSize
                   color: Color.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
@@ -346,7 +346,7 @@ SmartPanel {
 
                 NIcon {
                   icon: "wifi-question"
-                  pointSize: 48
+                  pointSize: Style.emptyStateIconSize
                   color: Color.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
@@ -413,7 +413,7 @@ SmartPanel {
 
                   NIcon {
                     icon: "ethernet-off"
-                    pointSize: 48
+                    pointSize: Style.emptyStateIconSize
                     color: Color.onShellTertiary
                     Layout.alignment: Qt.AlignHCenter
                   }

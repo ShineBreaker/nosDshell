@@ -52,7 +52,7 @@ SmartPanel {
           active: panelContent.cardEnabled("calendar-header-card")
           visible: active
           Layout.fillWidth: true
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           Layout.topMargin: Style.marginM
 
           sourceComponent: Item {
@@ -183,7 +183,7 @@ SmartPanel {
             // Navigation row: flat chevrons + month label
             Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: 36
+              Layout.preferredHeight: Style.quickPanelRowHeight
 
               RowLayout {
                 anchors.fill: parent
@@ -491,7 +491,7 @@ SmartPanel {
 
             Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: 36
+              Layout.preferredHeight: Style.quickPanelRowHeight
 
               RowLayout {
                 anchors.fill: parent

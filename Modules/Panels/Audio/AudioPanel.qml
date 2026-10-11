@@ -107,7 +107,7 @@ SmartPanel {
 
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Style.marginM
@@ -155,7 +155,7 @@ SmartPanel {
 
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 36
+          Layout.preferredHeight: Style.quickPanelRowHeight
           RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Style.marginM
@@ -235,7 +235,7 @@ SmartPanel {
 
             Item {
               Layout.fillWidth: true
-              Layout.preferredHeight: 36
+              Layout.preferredHeight: Style.quickPanelRowHeight
               visible: !appBox.isCaptureStream
               RowLayout {
                 anchors.fill: parent
@@ -320,7 +320,7 @@ SmartPanel {
           delegate: NRadioButton {
             readonly property var entry: panelContent.sinks[index]
             Layout.fillWidth: true
-            implicitHeight: 36
+            implicitHeight: Style.quickPanelRowHeight
             contentHorizontalPadding: Style.marginM
             checked: entry ? entry.id === AudioService.sink?.id : false
             text: entry?.description || entry?.name || ""
@@ -350,7 +350,7 @@ SmartPanel {
           delegate: NRadioButton {
             readonly property var entry: panelContent.sources[index]
             Layout.fillWidth: true
-            implicitHeight: 36
+            implicitHeight: Style.quickPanelRowHeight
             contentHorizontalPadding: Style.marginM
             checked: entry ? entry.id === AudioService.source?.id : false
             text: entry?.description || entry?.name || ""

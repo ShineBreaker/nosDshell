@@ -191,7 +191,7 @@ Slider {
       implicitHeight: knobDiameter
       radius: width / 2
       color: Color.onAccent
-      border.color: Qt.alpha("#000000", 0.1)
+      border.color: Color.knobBorder
       border.width: Style.borderS
       anchors.centerIn: parent
 

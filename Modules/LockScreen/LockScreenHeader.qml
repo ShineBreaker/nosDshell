@@ -50,7 +50,7 @@ Item {
     anchors.top: timeLabel.bottom
     anchors.topMargin: Style.marginXS
     text: I18n.locale.toString(root.currentDate, "yyyy-MM-dd dddd")
-    pointSize: 16
+    pointSize: Style.fontSizeLockLabel
     font.family: "Noto Sans"
     color: Color.onWallpaper
   }

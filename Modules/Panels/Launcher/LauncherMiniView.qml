@@ -253,7 +253,7 @@ Item {
                     // Category rows (§3.4.2): dark tile only when active,
                     // hover otherwise.
                     if (isActiveRow)
-                      return Qt.rgba(0.082, 0.082, 0.082, 0.2);
+                      return Color.launcherMiniActiveTile;
                     return (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent";
                   }
                   return (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent";
