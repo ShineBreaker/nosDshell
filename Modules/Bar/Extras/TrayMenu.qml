@@ -117,9 +117,10 @@ PopupWindow {
         // For bottom bar from the bar itself, position menu above the anchor with margin
         baseY = -(implicitHeight + Style.marginS);
       } else if (barPosition === "top" && !isSubMenu && anchorY >= 0) {
-        // For top bar: position menu below bar with margin
-        const barHeight = Style.getBarHeightForScreen(root.screen?.name);
-        baseY = barHeight + Style.marginS;
+        // For a top host surface: position menu below the occupied strip —
+        // the dock item strip for dock plugins, the bar height for bar
+        // widgets (same distinction the fallback path below already makes).
+        baseY = BarService.edgeStripThickness(root.screen?.name, "top") + Style.marginS;
       }
 
       // Use a robust way to get screen coordinates

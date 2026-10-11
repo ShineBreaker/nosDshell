@@ -55,31 +55,23 @@ PopupWindow {
   // Keyboard highlight index (-1 = none)
   property int highlightIndex: -1
 
-  readonly property string barPosition: Settings.getBarPositionForScreen(screen?.name)
+  // Edge of the shell surface hosting the anchor item — the status bar's
+  // edge for bar widgets, the taskbar edge for dock plugins
+  // (PanelService.surfaceEdgeOf, DESIGN §3.13: 挂件弹层跟随所在的表面).
+  // Anchors outside a marked host surface (screen-point menus) fall back
+  // to the bar position, the previous behavior.
+  readonly property string hostEdge: (anchorItem ? PanelService.surfaceEdgeOf(anchorItem) : "") || Settings.getBarPositionForScreen(screen?.name)
   readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
+  // Thickness of the strip the menu must clear on hostEdge; barHeight is a
+  // sane default when nothing occupies that edge.
+  readonly property real hostStrip: BarService.edgeStripThickness(screen?.name, hostEdge) || barHeight
 
-  // Thickness of the shell strip occupying `edge` on this screen: the bar
-  // surface (efficient taskbar or fashion status bar, barHeight) or the
-  // fashion dock window (dockItemThickness). Context menus must never extend
-  // into that strip — the bar/dock layer paints above popups, so any overlap
+  // Thickness of the shell strip occupying `edge` on this screen — see
+  // BarService.edgeStripThickness. Context menus must never extend into
+  // that strip: the bar/dock layer paints above popups, so any overlap
   // renders the menu partially hidden.
   function _edgeOccupancy(edge) {
-    var screenName = screen?.name;
-    if (!screenName)
-      return 0;
-    if (BarService.hasBarOnScreen(screenName) && barPosition === edge)
-      return barHeight;
-    if (Settings.data.dock.enabled && Settings.getTaskbarPositionForScreen(screenName) === edge) {
-      if (Settings.data.dock.mode === "fashion") {
-        var dockMonitors = Settings.data.dock.monitors || [];
-        if (dockMonitors.length > 0 && !dockMonitors.includes(screenName))
-          return 0;
-        return Style.dockItemThickness;
-      }
-      if (BarService.hasBarOnScreen(screenName))
-        return barHeight;
-    }
-    return 0;
+    return BarService.edgeStripThickness(screen?.name, edge);
   }
 
   signal triggered(string action, var item)
@@ -234,10 +226,10 @@ PopupWindow {
       const targetGlobalX = anchorGlobalPos.x + targetOffsetX;
 
       let baseX;
-      if (root.barPosition === "right") {
+      if (root.hostEdge === "right") {
         // For right bar: position menu to the left of target
         baseX = targetOffsetX - implicitWidth - Style.marginM;
-      } else if (root.barPosition === "left") {
+      } else if (root.hostEdge === "left") {
         // For left bar: position menu to the right of target
         baseX = targetOffsetX + effectiveWidth + Style.marginM;
       } else {
@@ -314,15 +306,15 @@ PopupWindow {
       const effectiveHeight = targetHeight > 0 ? targetHeight : anchorItem.height;
       const effectiveOffsetY = targetOffsetY;
 
-      // Calculate base Y position based on bar orientation
+      // Calculate base Y position based on the host edge
       let baseY;
-      if (root.barPosition === "bottom") {
+      if (root.hostEdge === "bottom") {
         // For bottom bar: position menu above the bar
         baseY = -(implicitHeight + Style.marginS);
-      } else if (root.barPosition === "top") {
+      } else if (root.hostEdge === "top") {
         // For top bar: position menu below bar at consistent height
-        // Compensate for anchor's Y position to ensure menu top is always at (barHeight + margin)
-        baseY = barHeight + Style.marginS - anchorGlobalPos.y;
+        // Compensate for anchor's Y position to ensure menu top is always at (hostStrip + margin)
+        baseY = hostStrip + Style.marginS - anchorGlobalPos.y;
       } else {
         // For left/right bar: vertically center on target item
         const targetCenterY = effectiveOffsetY + (effectiveHeight / 2);
@@ -356,10 +348,10 @@ PopupWindow {
     }
 
     // Fallback if no screen
-    if (root.barPosition === "bottom") {
+    if (root.hostEdge === "bottom") {
       return -implicitHeight - Style.marginS;
     }
-    return barHeight;
+    return hostStrip;
   }
 
   Component.onCompleted: {

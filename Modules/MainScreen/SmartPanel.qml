@@ -177,26 +177,29 @@ Item {
   // Square corners; PanelBackground reads this for both corner states and radius
   readonly property bool squareCorners: edgeSheet
 
-  // Same-edge inset only: the sheet hugs the taskbar's inner edge when they
-  // share a screen edge (§3.5.1). An efficient bar on the bottom must not
-  // push the sheet off the right edge.
+  // Same-edge inset only: the sheet sits inside the bar window's strip —
+  // the efficient taskbar or the fashion status bar (§3.5.1 控制中心排在
+  // 任务栏内侧). The floating dock is a capsule that overlays the sheet,
+  // so it claims no inset.
   readonly property real edgeSheetInset: {
-    if (!edgeSheet || !taskbarPresent)
+    if (!edgeSheet || edgeSheetEdge === "bottom" || !screen)
       return 0;
-    return Settings.getBarPositionForScreen(screen?.name || "") === edgeSheetEdge ? taskbarThickness : 0;
+    return BarService.edgeBarThickness(screen.name, edgeSheetEdge);
   }
 
   // gxde sizes the frame to the primary rect (frame.cpp:471), which already
-  // excludes the efficient bar's exclusive zone — so a horizontal efficient
-  // bar trims the sheet's span on that side. The fashion dock floats over
-  // panels and claims no edge, so it never cuts the sheet.
+  // excludes the bar window's exclusive zone — so a persistent bar on the
+  // top/bottom edge trims the sheet's span on that side (efficient taskbar
+  // or fashion status bar alike). Auto-hidden, non-exclusive and IPC-hidden
+  // bars reserve nothing; the floating dock never reserves (it overlays the
+  // sheet instead).
   readonly property real edgeSheetTopCut: edgeSheetSpanCut("top")
   readonly property real edgeSheetBottomCut: edgeSheetSpanCut("bottom")
 
   function edgeSheetSpanCut(edge) {
-    if (!edgeSheet || edgeSheetEdge === "bottom" || !taskbarPresent || Settings.data.dock.mode !== "efficient")
+    if (!edgeSheet || edgeSheetEdge === "bottom" || !screen)
       return 0;
-    return Settings.getBarPositionForScreen(screen?.name || "") === edge ? taskbarThickness : 0;
+    return BarService.edgeReservedThickness(screen.name, edge);
   }
 
   readonly property bool useArrowPopup: {
@@ -211,27 +214,27 @@ Item {
     return true;
   }
 
-  // Taskbar geometry for arrow popup placement (fashion + efficient modes)
-  readonly property string dockPosition: Settings.data.dock.position
+  // Taskbar edge on this screen (per-screen override aware).
+  readonly property string dockPosition: Settings.getTaskbarPositionForScreen(screen?.name || "")
   readonly property bool taskbarPresent: BarService.hasTaskbarOnScreen(screen?.name || "")
-  readonly property real taskbarThickness: {
-    if (!taskbarPresent)
-      return 0;
-    if (Settings.data.dock.mode === "efficient")
-      return Style.getBarHeightForScreen(screen?.name);
-    return Style.dockItemThickness;
-  }
+  readonly property real taskbarThickness: BarService.edgeStripThickness(screen?.name || "", dockPosition)
 
   // Screen-space rect of the resolved taskbar anchor (set by open())
   property rect anchorRect: Qt.rect(0, 0, 0, 0)
   property bool hasAnchorItem: false
 
-  // Arrow edge = the taskbar side the popup hangs from; "" = no arrow
-  // (popup opened without a resolvable anchor, or no taskbar).
+  // Edge of the shell surface hosting the anchor item — the bar window's
+  // edge for status-bar widgets, the taskbar/dock edge for dock plugins
+  // (DESIGN §3.13: 挂件弹层跟随所在的表面). Falls back to the taskbar
+  // edge when the host surface can't be resolved.
+  readonly property string anchorEdge: hasAnchorItem ? (PanelService.surfaceEdgeOf(root.buttonItem) || dockPosition) : "";
+
+  // Arrow edge = the side of the popup facing the anchor's shell strip;
+  // "" = no arrow (popup opened without a resolvable anchor, or no taskbar).
   readonly property string arrowPopupEdge: {
     if (!useArrowPopup || !hasAnchorItem)
       return "";
-    return dockPosition;
+    return anchorEdge;
   }
   // Arrow tip coordinate along the arrow edge (popup-box coordinates).
   // -1 hides the arrow.
@@ -607,7 +610,7 @@ Item {
         var ay = root.anchorRect.y;
         var aw = root.anchorRect.width;
         var ahh = root.anchorRect.height;
-        switch (root.dockPosition) {
+        switch (root.anchorEdge) {
         case "top":
           bodyY = ay + ahh + Style.popupGap + arrowH;
           bodyX = ax + aw / 2 - panelWidth / 2;
@@ -630,26 +633,31 @@ Item {
         // No resolvable anchor (IPC/keybind, or plugin not on the taskbar):
         // center along the taskbar axis on its inner side, no arrow. The
         // body keeps the same distance from the taskbar as anchored popups.
-        if (!root.taskbarPresent) {
+        // The strip the popup hangs from: the taskbar edge when present,
+        // else the bar window's edge (a screen with only the fashion status
+        // bar still anchors shell popups).
+        var stripEdge = root.taskbarPresent ? root.dockPosition : Settings.getBarPositionForScreen(screen?.name || "");
+        var strip = BarService.edgeStripThickness(screen?.name || "", stripEdge);
+        if (strip <= 0) {
           bodyX = (root.width - panelWidth) / 2;
           bodyY = (root.height - panelHeight) / 2;
         } else {
-          switch (root.dockPosition) {
+          switch (stripEdge) {
           case "top":
             bodyX = (root.width - panelWidth) / 2;
-            bodyY = root.taskbarThickness + Style.popupGap + arrowH;
+            bodyY = strip + Style.popupGap + arrowH;
             break;
           case "bottom":
             bodyX = (root.width - panelWidth) / 2;
-            bodyY = root.height - root.taskbarThickness - Style.popupGap - arrowH - panelHeight;
+            bodyY = root.height - strip - Style.popupGap - arrowH - panelHeight;
             break;
           case "left":
-            bodyX = root.taskbarThickness + Style.popupGap + arrowH;
+            bodyX = strip + Style.popupGap + arrowH;
             bodyY = (root.height - panelHeight) / 2;
             break;
           default:
             // "right"
-            bodyX = root.width - root.taskbarThickness - Style.popupGap - arrowH - panelWidth;
+            bodyX = root.width - strip - Style.popupGap - arrowH - panelWidth;
             bodyY = (root.height - panelHeight) / 2;
             break;
           }
@@ -662,7 +670,7 @@ Item {
 
       // Arrow tip follows the anchor center along the arrow edge
       if (root.hasAnchorItem) {
-        if (root.dockPosition === "top" || root.dockPosition === "bottom") {
+        if (root.anchorEdge === "top" || root.anchorEdge === "bottom") {
           root.arrowTipPosition = ax + aw / 2 - bodyX;
         } else {
           root.arrowTipPosition = ay + ahh / 2 - bodyY;

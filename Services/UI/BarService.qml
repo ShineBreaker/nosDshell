@@ -585,6 +585,62 @@ Singleton {
     }
   }
 
+  // Thickness of the shell strip occupying `edge` on `screenName`: the bar
+  // window (the efficient taskbar, or the fashion status bar — barHeight) or
+  // the floating fashion dock (dockItemThickness). When both share an edge
+  // the strip is the union, so the larger thickness wins. Surfaces drawn
+  // under these windows (context menus, edge sheets) use this to stay clear.
+  function edgeStripThickness(screenName, edge) {
+    if (!screenName)
+      return 0;
+    var t = 0;
+    if (hasBarOnScreen(screenName) && Settings.getBarPositionForScreen(screenName) === edge) {
+      t = Style.getBarHeightForScreen(screenName);
+    }
+    if (Settings.data.dock.mode === "fashion" && hasTaskbarOnScreen(screenName) && Settings.getTaskbarPositionForScreen(screenName) === edge) {
+      t = Math.max(t, Style.dockItemThickness);
+    }
+    return t;
+  }
+
+  // Thickness of the bar window's strip on `edge` — the efficient taskbar
+  // or the fashion status bar. Unlike edgeStripThickness this excludes the
+  // floating dock: the dock is a capsule on the Overlay layer that paints
+  // above panels, so panels stay edge-flush under it rather than insetting
+  // a full-height gap it doesn't fill (DESIGN §3.13).
+  function edgeBarThickness(screenName, edge) {
+    if (!screenName || !hasBarOnScreen(screenName))
+      return 0;
+    return Settings.getBarPositionForScreen(screenName) === edge ? Style.getBarHeightForScreen(screenName) : 0;
+  }
+
+  // Edge space the bar window actually reserves on `screenName` — mirrors
+  // BarExclusionZone's ExclusionMode.Auto: persistent bars only, floating
+  // margin included, framed mode reserves its frameThickness strip on the
+  // three non-bar edges. Auto-hidden, non-exclusive and IPC-hidden bars
+  // reserve nothing; the floating dock never reserves (it overlays
+  // instead). gxde's primaryRect (frame.cpp:471) is this same work-area
+  // semantics.
+  function edgeReservedThickness(screenName, edge) {
+    if (!screenName || !isVisible)
+      return 0;
+    if (!hasBarOnScreen(screenName))
+      return 0;
+    var dm = Settings.getBarDisplayModeForScreen(screenName);
+    if (dm === "auto_hide" || dm === "non_exclusive")
+      return 0;
+    if (Settings.getBarPositionForScreen(screenName) === edge) {
+      var t = Style.getBarHeightForScreen(screenName);
+      if (Settings.getEffectiveBarType() === "floating") {
+        t += Math.ceil((edge === "left" || edge === "right") ? Settings.data.bar.marginHorizontal : Settings.data.bar.marginVertical);
+      }
+      return t;
+    }
+    if (Settings.getEffectiveBarType() === "framed")
+      return Settings.data.bar.frameThickness ?? 12;
+    return 0;
+  }
+
   // Helper to close any existing dialogs in a popup menu window
   function closeExistingDialogs(popupMenuWindow) {
     if (!popupMenuWindow || !popupMenuWindow.dialogParent)

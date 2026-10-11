@@ -205,7 +205,7 @@ settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-icon notification-long notification-resave osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu lockscreen settings-tree" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu lockscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -249,6 +249,25 @@ sys.stdout.write(base.get("dock",{}).get("position","bottom"))
 PYEOF
 )
 export DOCK_POSITION
+# Edge of the bar window, mirroring Settings.getBarPositionForScreen:
+# the fashion status bar's own position when enabled, else the taskbar edge.
+BAR_POSITION=$(python3 - "$USER_SETTINGS" <<'PYEOF'
+import json,os,sys
+base=json.load(open(os.environ["REPO"]+"/Assets/settings-default.json"))
+if sys.argv[1]:
+    def merge(a,b):
+        for k,v in b.items():
+            if isinstance(v,dict) and isinstance(a.get(k),dict): merge(a[k],v)
+            else: a[k]=v
+    merge(base, json.load(open(sys.argv[1])))
+dock=base.get("dock",{}); bar=base.get("bar",{})
+pos=dock.get("position","bottom")
+if dock.get("mode","efficient")=="fashion" and bar.get("enabled",False):
+    pos=bar.get("position","top")
+sys.stdout.write(pos)
+PYEOF
+)
+export BAR_POSITION
 # fashion thickness = iconSize*1.5 (Commons/Style.qml:467); efficient taskbars
 # are ~40 px. 100 px headroom covers both plus the 2 px hidden sliver.
 DOCK_STRIP_PX=100
@@ -860,6 +879,51 @@ PYEOF
                             sleep 0.8
                           else
                             echo "clock widget not found in dock tree"
+                          fi ;;
+    # Widget context menu on a BAR widget — the efficient taskbar or the
+    # fashion status bar (bar-HEADLESS-1). The menu must open inside the
+    # edge that actually hosts the widget (PanelService.surfaceEdgeOf,
+    # DESIGN §3.13): a status-bar widget's menu sits below a top status
+    # bar, not at the taskbar edge.
+    bar-widget-menu)    qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 12 > "$WORK/logs/bar-tree.txt" 2>&1 || true
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # Tree coords are window-local; the bar window is a
+                          # strip flush to BAR_POSITION (see getBarPositionForScreen).
+                          CLOCK_POS=$(BAR_POSITION="$BAR_POSITION" python3 - "$WORK/logs/bar-tree.txt" <<'PYEOF'
+import json,os,re,subprocess,sys
+pos = os.environ.get("BAR_POSITION","bottom")
+out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
+scr = next(o["rect"] for o in out if o.get("active"))
+bar_w = bar_h = 0
+clock = None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if bar_h == 0:
+        bar_w, bar_h = int(w.group(1)), int(w.group(2))  # bar window root
+    if "Clock_QML" in line and clock is None:
+        cx, cy = int(m.group(1)) + int(w.group(1)) // 2, int(m.group(2)) + int(w.group(2)) // 2
+        if pos == "bottom":
+            cy += scr["height"] - bar_h
+        elif pos == "right":
+            cx += scr["width"] - bar_w
+        clock = (cx, cy)
+if clock:
+    print(*clock)
+PYEOF
+)
+                          echo "bar clock at: $CLOCK_POS"
+                          if [ -n "$CLOCK_POS" ]; then
+                            "$VINPUT" vinput rclick $CLOCK_POS 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot bar-widget-menu
+                            "$VINPUT" vinput click 300 300 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.8
+                          else
+                            echo "clock widget not found in bar tree"
                           fi ;;
     # Wheel over the dock battery widget adjusts display brightness; the
     # charging/low state tint rides along in the same shots. Locate the widget

@@ -245,6 +245,22 @@ Singleton {
     return Qt.rect(pos.x + ox, pos.y + oy, item.width, item.height);
   }
 
+  // Edge of the shell surface hosting `item` — the bar window's edge for
+  // status-bar widgets, the taskbar/dock edge for dock plugins (DESIGN
+  // §3.13). Host windows mark their widget parent chain with `hostEdge` —
+  // the same chain screenRectOf walks for `screenOrigin`. Returns "" when
+  // the item is not inside a marked host surface.
+  function surfaceEdgeOf(item) {
+    var p = item;
+    while (p) {
+      if (p.hostEdge !== undefined && p.hostEdge !== "") {
+        return p.hostEdge;
+      }
+      p = p.parent;
+    }
+    return "";
+  }
+
   // Check if panels can be shown on a given screen (has a taskbar or allowPanelsOnScreenWithoutBar)
   function canShowPanelsOnScreen(screen) {
     const name = screen?.name || "";

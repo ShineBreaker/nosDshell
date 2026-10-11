@@ -29,6 +29,10 @@ Item {
   // PanelService.screenRectOf walks the parent chain to find it.
   property point screenOrigin: Qt.point(0, 0)
 
+  // Edge of the dock surface on the same chain — PanelService.surfaceEdgeOf
+  // (always the taskbar edge; the floating dock has no status-bar role).
+  readonly property string hostEdge: dockRoot ? dockRoot.dockPosition : ""
+
   // Dock.qml passes the ShellScreen as modelData. liveScreen wins: the
   // injected modelData can be a stale ShellScreen with frozen dimensions
   // (PanelService.liveScreen).

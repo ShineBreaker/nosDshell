@@ -233,6 +233,9 @@ PanelWindow {
       // Carries the window origin down the widget parent chain so
       // PanelService.screenRectOf can resolve taskbar items to screen coords
       readonly property point screenOrigin: barWindow.screenOrigin
+      // The bar window's edge on the same chain — PanelService.surfaceEdgeOf
+      // (bar edge in every mode; the efficient bar IS the taskbar).
+      readonly property string hostEdge: barWindow.barPosition
 
       // Efficient mode slides along the screen edge (DDE spec: motionPanel,
       // InOutCubic); the legacy path fades out instead
