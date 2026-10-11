@@ -140,21 +140,26 @@ Item {
       }
 
       Repeater {
-        model: BluetoothService.enabled ? root.bluetoothRows : []
+        // Model is index keys, not the entries: boxing the JS-array model
+        // turns the BluetoothDevice refs into raw pointers (CODING_STANDARDS
+        // "QML 规则"). The delegate resolves the live JS entry itself.
+        model: BluetoothService.enabled ? root.bluetoothRows.map((_, i) => i) : []
 
         delegate: DetailRow {
-          required property var modelData
+          readonly property var entry: root.bluetoothRows[index]
           glyph: "bt-device-generic"
-          glyphColor: modelData.connected ? Color.accent : Color.onShellSecondary
-          rowText: modelData.name || modelData.deviceName || I18n.tr("common.devices")
-          secondary: modelData.connected ? I18n.tr("common.connected") : ""
+          glyphColor: entry?.connected ? Color.accent : Color.onShellSecondary
+          rowText: entry?.name || entry?.deviceName || I18n.tr("common.devices")
+          secondary: entry?.connected ? I18n.tr("common.connected") : ""
           secondaryColor: Color.onShellTertiary
-          check: modelData.connected
+          check: entry?.connected ?? false
           onClicked: {
-            if (modelData.connected) {
-              modelData.disconnect();
+            if (!entry)
+              return;
+            if (entry.connected) {
+              entry.disconnect();
             } else {
-              BluetoothService.connectToDevice(modelData);
+              BluetoothService.connectToDevice(entry);
             }
           }
         }
@@ -179,10 +184,12 @@ Item {
       spacing: Style.settingsGroupGap
 
       Repeater {
-        model: root.brightnessMonitor ? [root.brightnessMonitor] : []
+        // Index-key model — see the comment on the bluetooth Repeater
+        // (CODING_STANDARDS "QML 规则").
+        model: root.brightnessMonitor ? [0] : []
 
         delegate: ColumnLayout {
-          required property var modelData
+          readonly property var entry: root.brightnessMonitor
           Layout.fillWidth: true
           spacing: 0
 
@@ -191,7 +198,7 @@ Item {
             Layout.leftMargin: Style.marginS
             Layout.rightMargin: Style.marginS
             Layout.topMargin: Style.marginS
-            text: modelData.name || I18n.tr("common.display")
+            text: entry?.name || I18n.tr("common.display")
             pointSize: Style.fontSizeS
             color: Color.onShellTertiary
             elide: Text.ElideRight
@@ -214,11 +221,11 @@ Item {
               Layout.fillWidth: true
               from: 0
               to: 1
-              value: modelData.brightness ?? 0
+              value: entry?.brightness ?? 0
               stepSize: 0.01
               heightRatio: 0.5
               onMoved: {
-                modelData.setBrightness(value);
+                entry?.setBrightness(value);
               }
               tooltipText: `${Math.round(value * 100)}%`
             }

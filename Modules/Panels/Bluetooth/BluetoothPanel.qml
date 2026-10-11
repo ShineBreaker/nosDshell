@@ -143,8 +143,12 @@ SmartPanel {
         }
 
         Repeater {
-          model: connectedDevices
+          // Model is index keys, not the entries: boxing the JS-array model
+          // turns the BluetoothDevice refs into raw pointers (CODING_STANDARDS
+          // "QML 规则"). The delegate resolves the live JS entry itself.
+          model: panelContent.connectedDevices.map((_, i) => i)
           delegate: Rectangle {
+            readonly property var entry: panelContent.connectedDevices[index]
             Layout.fillWidth: true
             Layout.preferredHeight: 36
             radius: Style.radiusRow
@@ -154,7 +158,10 @@ SmartPanel {
               id: connRowMouse
               anchors.fill: parent
               hoverEnabled: true
-              onClicked: panelContent.disconnectDevice(modelData)
+              onClicked: {
+                if (entry)
+                  panelContent.disconnectDevice(entry);
+              }
             }
 
             RowLayout {
@@ -164,14 +171,14 @@ SmartPanel {
               spacing: Style.marginS
 
               NIcon {
-                icon: BluetoothService.getDeviceIcon(modelData)
+                icon: BluetoothService.getDeviceIcon(entry)
                 pointSize: Style.fontSizeXL
                 color: Color.onShell
               }
 
               NText {
                 Layout.fillWidth: true
-                text: modelData.name || modelData.deviceName
+                text: entry?.name || entry?.deviceName || ""
                 pointSize: Style.fontSizeM
                 elide: Text.ElideRight
               }
@@ -185,13 +192,19 @@ SmartPanel {
               NIconButton {
                 icon: "bluetooth-off"
                 colorFg: Color.onShell
-                onClicked: panelContent.disconnectDevice(modelData)
+                onClicked: {
+                  if (entry)
+                    panelContent.disconnectDevice(entry);
+                }
               }
 
               NIconButton {
                 icon: "trash"
                 colorFg: Color.onShell
-                onClicked: BluetoothService.forgetDevice(modelData)
+                onClicked: {
+                  if (entry)
+                    BluetoothService.forgetDevice(entry);
+                }
               }
             }
           }
@@ -205,8 +218,11 @@ SmartPanel {
         }
 
         Repeater {
-          model: pairedDevices
+          // Index-key model — see the comment on the connected-devices
+          // Repeater above (CODING_STANDARDS "QML 规则").
+          model: panelContent.pairedDevices.map((_, i) => i)
           delegate: Rectangle {
+            readonly property var entry: panelContent.pairedDevices[index]
             Layout.fillWidth: true
             Layout.preferredHeight: 36
             radius: Style.radiusRow
@@ -217,10 +233,12 @@ SmartPanel {
               anchors.fill: parent
               hoverEnabled: true
               onClicked: {
-                if (modelData.connected) {
-                  panelContent.disconnectDevice(modelData);
+                if (!entry)
+                  return;
+                if (entry.connected) {
+                  panelContent.disconnectDevice(entry);
                 } else {
-                  BluetoothService.connectDeviceWithTrust(modelData);
+                  BluetoothService.connectDeviceWithTrust(entry);
                 }
               }
             }
@@ -232,7 +250,7 @@ SmartPanel {
               spacing: Style.marginS
 
               NIcon {
-                icon: BluetoothService.getDeviceIcon(modelData)
+                icon: BluetoothService.getDeviceIcon(entry)
                 pointSize: Style.fontSizeXL
                 color: Color.onShell
                 visible: icon !== ""
@@ -240,13 +258,13 @@ SmartPanel {
 
               NText {
                 Layout.fillWidth: true
-                text: modelData.name || modelData.deviceName
+                text: entry?.name || entry?.deviceName || ""
                 pointSize: Style.fontSizeM
                 elide: Text.ElideRight
               }
 
               NIcon {
-                visible: modelData.connected
+                visible: entry?.connected ?? false
                 icon: "check"
                 pointSize: Style.fontSizeXL
                 color: Color.accent
@@ -255,20 +273,29 @@ SmartPanel {
               NIconButton {
                 icon: "bluetooth-off"
                 colorFg: Color.onShell
-                visible: modelData.connected || modelData.pairing || modelData.state === BluetoothDeviceState.Disconnecting
-                onClicked: panelContent.disconnectDevice(modelData)
+                visible: entry ? (entry.connected || entry.pairing || entry.state === BluetoothDeviceState.Disconnecting) : false
+                onClicked: {
+                  if (entry)
+                    panelContent.disconnectDevice(entry);
+                }
               }
 
               NIconButton {
                 icon: "info-circle"
                 colorFg: Color.onShell
-                onClicked: BluetoothService.toggleDeviceInfo(modelData)
+                onClicked: {
+                  if (entry)
+                    BluetoothService.toggleDeviceInfo(entry);
+                }
               }
 
               NIconButton {
                 icon: "trash"
                 colorFg: Color.onShell
-                onClicked: BluetoothService.forgetDevice(modelData)
+                onClicked: {
+                  if (entry)
+                    BluetoothService.forgetDevice(entry);
+                }
               }
             }
           }
@@ -292,8 +319,11 @@ SmartPanel {
         }
 
         Repeater {
-          model: panelContent.availableDevices
+          // Index-key model — see the comment on the connected-devices
+          // Repeater above (CODING_STANDARDS "QML 规则").
+          model: panelContent.availableDevices.map((_, i) => i)
           delegate: Rectangle {
+            readonly property var entry: panelContent.availableDevices[index]
             Layout.fillWidth: true
             Layout.preferredHeight: 36
             radius: Style.radiusRow
@@ -303,7 +333,10 @@ SmartPanel {
               id: availRowMouse
               anchors.fill: parent
               hoverEnabled: true
-              onClicked: BluetoothService.connectDeviceWithTrust(modelData)
+              onClicked: {
+                if (entry)
+                  BluetoothService.connectDeviceWithTrust(entry);
+              }
             }
 
             RowLayout {
@@ -313,7 +346,7 @@ SmartPanel {
               spacing: Style.marginS
 
               NIcon {
-                icon: BluetoothService.getDeviceIcon(modelData)
+                icon: BluetoothService.getDeviceIcon(entry)
                 pointSize: Style.fontSizeXL
                 color: Color.onShell
                 visible: icon !== ""
@@ -321,18 +354,18 @@ SmartPanel {
 
               NText {
                 Layout.fillWidth: true
-                text: modelData.name || modelData.deviceName
+                text: entry?.name || entry?.deviceName || ""
                 pointSize: Style.fontSizeM
                 elide: Text.ElideRight
               }
 
               NIconButton {
-                icon: BluetoothService.isDeviceBusy(modelData) ? "bluetooth-connecting" : "link"
+                icon: BluetoothService.isDeviceBusy(entry) ? "bluetooth-connecting" : "link"
                 colorFg: Color.onShell
-                tooltipText: BluetoothService.isDeviceBusy(modelData) ? "" : I18n.tr("tooltips.pair")
+                tooltipText: BluetoothService.isDeviceBusy(entry) ? "" : I18n.tr("tooltips.pair")
                 onClicked: {
-                  if (!BluetoothService.isDeviceBusy(modelData)) {
-                    BluetoothService.connectDeviceWithTrust(modelData);
+                  if (entry && !BluetoothService.isDeviceBusy(entry)) {
+                    BluetoothService.connectDeviceWithTrust(entry);
                   }
                 }
               }

@@ -79,6 +79,13 @@ SmartPanel {
       return localInputVolume <= 0.5 ? "microphone-2" : "microphone";
     }
 
+    // Hoisted model sources: the Repeaters below map index keys and their
+    // delegates resolve live JS entries from these arrays (CODING_STANDARDS
+    // "QML 规则").
+    readonly property var appStreams: AudioService.appStreams
+    readonly property var sinks: AudioService.sinks
+    readonly property var sources: AudioService.sources
+
     NScrollView {
       id: scrollView
       anchors.fill: parent
@@ -195,25 +202,29 @@ SmartPanel {
         }
 
         Repeater {
-          model: AudioService.appStreams
+          // Model is index keys, not the entries: boxing the JS-array model
+          // turns the PwNode refs into raw pointers (CODING_STANDARDS
+          // "QML 规则"). The delegate resolves the live JS entry itself.
+          model: panelContent.appStreams.map((_, i) => i)
           delegate: ColumnLayout {
             id: appBox
+            readonly property var entry: panelContent.appStreams[index]
             Layout.fillWidth: true
             spacing: 0
 
             // Track individual node to ensure properties are bound
             PwObjectTracker {
-              objects: modelData ? [modelData] : []
+              objects: appBox.entry ? [appBox.entry] : []
             }
 
-            property PwNodeAudio nodeAudio: (modelData && modelData.audio) ? modelData.audio : null
+            property PwNodeAudio nodeAudio: (entry && entry.audio) ? entry.audio : null
             property real appVolume: (nodeAudio && nodeAudio.volume !== undefined) ? nodeAudio.volume : 0.0
             property bool appMuted: (nodeAudio && nodeAudio.muted !== undefined) ? nodeAudio.muted : false
 
             readonly property bool isCaptureStream: {
-              if (!modelData || !modelData.properties)
+              if (!entry || !entry.properties)
                 return false;
-              const props = modelData.properties;
+              const props = entry.properties;
               if (props["stream.capture.sink"] !== undefined)
                 return true;
               const mediaClass = props["media.class"] || "";
@@ -238,7 +249,7 @@ SmartPanel {
                   detectSymbolic: true
                   color: Color.onShell
                   source: {
-                    let icon = modelData.properties["application.icon-name"];
+                    let icon = appBox.entry && appBox.entry.properties ? appBox.entry.properties["application.icon-name"] : "";
                     return ThemeIcons.iconFromName(icon, "audio-x-generic");
                   }
                 }
@@ -246,11 +257,13 @@ SmartPanel {
                 NText {
                   Layout.fillWidth: true
                   text: {
-                    let appName = modelData.properties["application.name"] || "";
-                    if (modelData.isFirefox) {
-                      appName = modelData.properties["media.name"] || appName;
+                    if (!appBox.entry || !appBox.entry.properties)
+                      return "";
+                    let appName = appBox.entry.properties["application.name"] || "";
+                    if (appBox.entry.isFirefox) {
+                      appName = appBox.entry.properties["media.name"] || appName;
                     }
-                    return appName || modelData.name;
+                    return appName || appBox.entry.name;
                   }
                   pointSize: Style.fontSizeM
                   elide: Text.ElideRight
@@ -259,13 +272,13 @@ SmartPanel {
                 NIconButton {
                   icon: appBox.appMuted ? "volume-off" : "volume-2"
                   colorFg: Color.onShell
-                  enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
+                  enabled: !!(appBox.nodeAudio && appBox.entry && appBox.entry.ready === true)
                   tooltipText: appBox.appMuted ? I18n.tr("tooltips.unmute-stream") : I18n.tr("tooltips.mute-stream")
                   onClicked: {
-                    if (appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true) {
+                    if (appBox.nodeAudio && appBox.entry && appBox.entry.ready === true) {
                       var newMuted = !appBox.appMuted;
                       appBox.nodeAudio.muted = newMuted;
-                      AudioService.setPanelAppStreamMuted(appBox.modelData, newMuted);
+                      AudioService.setPanelAppStreamMuted(appBox.entry, newMuted);
                     }
                   }
                 }
@@ -278,15 +291,15 @@ SmartPanel {
               Layout.rightMargin: Style.marginM
               Layout.preferredHeight: 22
               visible: !appBox.isCaptureStream
-              enabled: !!(appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true)
+              enabled: !!(appBox.nodeAudio && appBox.entry && appBox.entry.ready === true)
               from: 0
               to: 1
               value: appBox.appVolume
               stepSize: panelContent.stepSize
               onMoved: {
-                if (appBox.nodeAudio && appBox.modelData && appBox.modelData.ready === true) {
+                if (appBox.nodeAudio && appBox.entry && appBox.entry.ready === true) {
                   appBox.nodeAudio.volume = value;
-                  AudioService.setPanelAppStreamVolume(appBox.modelData, value);
+                  AudioService.setPanelAppStreamVolume(appBox.entry, value);
                 }
               }
               text: Math.round(appBox.appVolume * 100) + "%"
@@ -301,16 +314,22 @@ SmartPanel {
         }
 
         Repeater {
-          model: AudioService.sinks
+          // Index-key model — see the comment on the appStreams Repeater
+          // (CODING_STANDARDS "QML 规则").
+          model: panelContent.sinks.map((_, i) => i)
           delegate: NRadioButton {
+            readonly property var entry: panelContent.sinks[index]
             Layout.fillWidth: true
             implicitHeight: 36
             contentHorizontalPadding: Style.marginM
-            checked: modelData.id === AudioService.sink?.id
-            text: modelData.description || modelData.name
+            checked: entry ? entry.id === AudioService.sink?.id : false
+            text: entry?.description || entry?.name || ""
             pointSize: Style.fontSizeS
             ButtonGroup.group: sinksRadioGroup
-            onClicked: AudioService.setAudioSink(modelData)
+            onClicked: {
+              if (entry)
+                AudioService.setAudioSink(entry);
+            }
           }
         }
 
@@ -325,16 +344,22 @@ SmartPanel {
         }
 
         Repeater {
-          model: AudioService.sources
+          // Index-key model — see the comment on the appStreams Repeater
+          // (CODING_STANDARDS "QML 规则").
+          model: panelContent.sources.map((_, i) => i)
           delegate: NRadioButton {
+            readonly property var entry: panelContent.sources[index]
             Layout.fillWidth: true
             implicitHeight: 36
             contentHorizontalPadding: Style.marginM
-            checked: modelData.id === AudioService.source?.id
-            text: modelData.description || modelData.name
+            checked: entry ? entry.id === AudioService.source?.id : false
+            text: entry?.description || entry?.name || ""
             pointSize: Style.fontSizeS
             ButtonGroup.group: sourcesRadioGroup
-            onClicked: AudioService.setAudioSource(modelData)
+            onClicked: {
+              if (entry)
+                AudioService.setAudioSource(entry);
+            }
           }
         }
 

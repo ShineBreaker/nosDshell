@@ -166,16 +166,21 @@ SmartPanel {
         }
 
         Repeater {
-          model: BatteryService.laptopBatteries
+          // Model is index keys, not the entries: boxing the JS-array model
+          // turns the UPowerDevice refs into raw pointers (CODING_STANDARDS
+          // "QML 规则"). The delegate resolves the live JS entry itself.
+          model: BatteryService.laptopBatteries.map((_, i) => i)
           delegate: BatteryRow {
-            device: modelData
+            device: BatteryService.laptopBatteries[index]
           }
         }
 
         Repeater {
-          model: BatteryService.bluetoothBatteries
+          // Index-key model — see the comment on the laptopBatteries Repeater
+          // above (CODING_STANDARDS "QML 规则").
+          model: BatteryService.bluetoothBatteries.map((_, i) => i)
           delegate: BatteryRow {
-            device: modelData
+            device: BatteryService.bluetoothBatteries[index]
           }
         }
 

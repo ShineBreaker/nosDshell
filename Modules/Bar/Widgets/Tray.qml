@@ -107,12 +107,16 @@ Item {
   }
   Repeater {
     id: statusConnectionsRepeater
-    model: root._snItems
+    // Model is index keys, not the entries: boxing the JS-array model turns
+    // the SystemTrayItem refs into raw pointers (CODING_STANDARDS
+    // "QML 规则"). The delegate resolves the live JS entry itself.
+    model: root._snItems.map((_, i) => i)
 
     delegate: Item {
+      readonly property var entry: root._snItems[index]
       Connections {
-        target: modelData
-        enabled: modelData !== null && modelData !== undefined
+        target: entry
+        enabled: entry !== null && entry !== undefined
         function onStatusChanged() {
           if (root.hidePassive) {
             root.updateFilteredItems();
@@ -415,7 +419,9 @@ Item {
     // Pinned items
     Repeater {
       id: repeater
-      model: root.filteredItems
+      // Index-key model — see the comment on statusConnectionsRepeater
+      // (CODING_STANDARDS "QML 规则").
+      model: root.filteredItems.map((_, i) => i)
       delegate: trayItemDelegate
     }
 
@@ -426,11 +432,15 @@ Item {
 
       Item {
         id: trayDelegate
-        required property var modelData
         required property int index
+        // Shared by both tray Repeaters, whose models are index keys.
+        // fashionItems is filteredItems followed by dropdownItems, so either
+        // Repeater's index resolves the same live SystemTrayItem entry here
+        // (CODING_STANDARDS "QML 规则").
+        readonly property var entry: root.fashionItems[index]
         width: isVertical ? (root.fashionMode ? root.fashionPillHeight : barHeight) : cellSize
         height: isVertical ? cellSize : (root.fashionMode ? root.fashionPillHeight : barHeight)
-        visible: modelData
+        visible: entry !== undefined && entry !== null
         readonly property bool isHovered: root.hoveredItemIndex === index
 
         // 2 px group splitter before the first unpinned item (fashion pill)
@@ -462,7 +472,7 @@ Item {
           backer.fillMode: Image.PreserveAspectFit
 
           source: {
-            let icon = modelData?.icon || "";
+            let icon = entry?.icon || "";
             if (!icon) {
               return "";
             }
@@ -512,14 +522,14 @@ Item {
                 popupMenuWindow.close();
               }
               root.hoveredItemIndex = trayDelegate.index;
-              TooltipService.show(tooltipAnchor, modelData.tooltipTitle || modelData.name || modelData.id || "Tray Item", BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
+              TooltipService.show(tooltipAnchor, entry?.tooltipTitle || entry?.name || entry?.id || "Tray Item", BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
             } else if (root.hoveredItemIndex === trayDelegate.index) {
               root.hoveredItemIndex = -1;
               TooltipService.hide(tooltipAnchor);
             }
           }
           onClicked: mouse => {
-                       if (!modelData) {
+                       if (!entry) {
                          return;
                        }
 
@@ -529,8 +539,8 @@ Item {
                            popupMenuWindow.close();
                          }
 
-                         if (!modelData.onlyMenu) {
-                           modelData.activate();
+                         if (!entry.onlyMenu) {
+                           entry.activate();
                          }
                        } else if (mouse.button === Qt.MiddleButton) {
                          // Close the menu if it was visible
@@ -538,7 +548,7 @@ Item {
                            popupMenuWindow.close();
                            return;
                          }
-                         modelData.secondaryActivate && modelData.secondaryActivate();
+                         entry.secondaryActivate && entry.secondaryActivate();
                        } else if (mouse.button === Qt.RightButton) {
                          TooltipService.hideImmediately();
 
@@ -553,7 +563,7 @@ Item {
                            PanelService.openedPanel.close();
                          }
 
-                         if (modelData.hasMenu && modelData.menu && trayMenu && trayMenu.item) {
+                         if (entry.hasMenu && entry.menu && trayMenu && trayMenu.item) {
                            // Calculate menu position after ensuring menu is loaded
                            const calculateAndShow = () => {
                              // Position menu based on bar position, using tooltipAnchor for proper positioning
@@ -573,13 +583,13 @@ Item {
                                menuY = tooltipAnchor.height + Style.marginS;
                              }
 
-                             PanelService.showTrayMenu(root.screen, modelData, trayMenu.item, tooltipAnchor, menuX, menuY, root.section, root.sectionWidgetIndex);
+                             PanelService.showTrayMenu(root.screen, entry, trayMenu.item, tooltipAnchor, menuX, menuY, root.section, root.sectionWidgetIndex);
                            };
 
                            // Use Qt.callLater to ensure menu dimensions are calculated
                            Qt.callLater(calculateAndShow);
                          } else {
-                           Logger.d("Tray", "No menu available for", modelData.id, "or trayMenu not set");
+                           Logger.d("Tray", "No menu available for", entry.id, "or trayMenu not set");
                          }
                        }
                      }
@@ -645,7 +655,9 @@ Item {
       flow: root.isVertical ? Flow.TopToBottom : Flow.LeftToRight
 
       Repeater {
-        model: root.fashionItems
+        // Index-key model — see the comment on statusConnectionsRepeater
+        // (CODING_STANDARDS "QML 规则").
+        model: root.fashionItems.map((_, i) => i)
         delegate: trayItemDelegate
       }
     }

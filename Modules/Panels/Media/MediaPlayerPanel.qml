@@ -73,6 +73,8 @@ SmartPanel {
 
     property real contentPreferredHeight: Math.min(mainLayout.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
+    readonly property var players: MediaService.getAvailablePlayers()
+
     property Component visualizerSource: {
       switch (root.visualizerType) {
       case "linear":
@@ -103,7 +105,7 @@ SmartPanel {
           Layout.fillWidth: true
           Layout.preferredHeight: 28
           Layout.topMargin: Style.marginS
-          visible: MediaService.getAvailablePlayers().length > 1
+          visible: playerContent.players.length > 1
 
           RowLayout {
             anchors.fill: parent
@@ -152,8 +154,13 @@ SmartPanel {
             contentItem: ColumnLayout {
               spacing: 0
               Repeater {
-                model: MediaService.getAvailablePlayers()
+                // Model is index keys, not the entries: boxing the JS-array
+                // model turns the entries' service QObject refs into raw
+                // pointers (CODING_STANDARDS "QML 规则"). The delegate
+                // resolves the live JS entry itself.
+                model: playerContent.players.map((_, i) => i)
                 delegate: Rectangle {
+                  readonly property var entry: playerContent.players[index]
                   Layout.fillWidth: true
                   Layout.preferredHeight: 30
                   color: itemMouse.containsMouse ? Color.overlay("hover") : "transparent"
@@ -166,14 +173,14 @@ SmartPanel {
                     spacing: Style.marginS
 
                     NText {
-                      text: modelData.identity
+                      text: entry ? entry.identity : ""
                       pointSize: Style.fontSizeS
                       Layout.fillWidth: true
                       elide: Text.ElideRight
                     }
 
                     NIcon {
-                      visible: MediaService.currentPlayer && MediaService.currentPlayer.identity === modelData.identity
+                      visible: entry && MediaService.currentPlayer && MediaService.currentPlayer.identity === entry.identity
                       icon: "check"
                       color: Color.accent
                       pointSize: Style.fontSizeS
@@ -186,7 +193,9 @@ SmartPanel {
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: {
-                      MediaService.currentPlayer = modelData;
+                      if (entry) {
+                        MediaService.currentPlayer = entry;
+                      }
                       playerContextMenu.close();
                     }
                   }

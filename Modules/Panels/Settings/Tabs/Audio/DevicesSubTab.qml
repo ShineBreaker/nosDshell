@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell.Services.Pipewire
 import qs.Commons
 import qs.Services.Media
 import qs.Widgets
@@ -23,15 +22,21 @@ ColumnLayout {
         }
 
         Repeater {
-            model: AudioService.sinks
+            // Model is index keys, not the entries: boxing the JS-array model
+            // turns the PwNode refs into raw pointers (CODING_STANDARDS
+            // "QML 规则"). The delegate resolves the live JS entry itself.
+            model: AudioService.sinks.map((_, i) => i)
             NDccRow {
-                required property PwNode modelData
+                readonly property var entry: AudioService.sinks[index]
                 Layout.fillWidth: true
                 clickable: true
-                onClicked: AudioService.setAudioSink(modelData)
+                onClicked: {
+                    if (entry)
+                        AudioService.setAudioSink(entry);
+                }
 
                 NText {
-                    text: modelData.description
+                    text: entry?.description || ""
                     pointSize: Style.fontSizeM
                     Layout.fillWidth: true
                 }
@@ -40,7 +45,7 @@ ColumnLayout {
                     icon: "check"
                     pointSize: Style.fontSizeXL
                     color: Color.accent
-                    visible: AudioService.sink?.id === modelData.id
+                    visible: entry ? AudioService.sink?.id === entry.id : false
                 }
             }
         }
@@ -62,15 +67,20 @@ ColumnLayout {
         }
 
         Repeater {
-            model: AudioService.sources
+            // Index-key model — see the comment on the sinks Repeater above
+            // (CODING_STANDARDS "QML 规则").
+            model: AudioService.sources.map((_, i) => i)
             NDccRow {
-                required property PwNode modelData
+                readonly property var entry: AudioService.sources[index]
                 Layout.fillWidth: true
                 clickable: true
-                onClicked: AudioService.setAudioSource(modelData)
+                onClicked: {
+                    if (entry)
+                        AudioService.setAudioSource(entry);
+                }
 
                 NText {
-                    text: modelData.description
+                    text: entry?.description || ""
                     pointSize: Style.fontSizeM
                     Layout.fillWidth: true
                 }
@@ -79,7 +89,7 @@ ColumnLayout {
                     icon: "check"
                     pointSize: Style.fontSizeXL
                     color: Color.accent
-                    visible: AudioService.source?.id === modelData.id
+                    visible: entry ? AudioService.source?.id === entry.id : false
                 }
             }
         }

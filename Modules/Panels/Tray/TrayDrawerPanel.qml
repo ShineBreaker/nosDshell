@@ -200,9 +200,13 @@ SmartPanel {
 
       Repeater {
         id: repeater
-        model: root.trayValues
+        // Model is index keys, not the entries: boxing the JS-array model
+        // turns the SystemTrayItem refs into raw pointers (CODING_STANDARDS
+        // "QML 规则"). The delegate resolves the live JS entry itself.
+        model: root.trayValues.map((_, i) => i)
 
         delegate: Item {
+          readonly property var entry: root.trayValues[index]
           width: root.cellSize
           height: root.cellSize
 
@@ -212,7 +216,7 @@ SmartPanel {
             asynchronous: true
             backer.fillMode: Image.PreserveAspectFit
             source: {
-              let icon = modelData?.icon || "";
+              let icon = entry?.icon || "";
               if (!icon)
                 return "";
               if (icon.includes("?path=")) {
@@ -239,17 +243,17 @@ SmartPanel {
               acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 
               onClicked: mouse => {
-                           if (!modelData)
+                           if (!entry)
                            return;
                            if (mouse.button === Qt.LeftButton) {
-                             if (!modelData.onlyMenu) {
-                               modelData.activate();
+                             if (!entry.onlyMenu) {
+                               entry.activate();
                              }
                              if ((PanelService.openedPanel !== null) && !PanelService.openedPanel.isClosing) {
                                PanelService.openedPanel.close();
                              }
                            } else if (mouse.button === Qt.MiddleButton) {
-                             modelData.secondaryActivate && modelData.secondaryActivate();
+                             entry.secondaryActivate && entry.secondaryActivate();
                              if ((PanelService.openedPanel !== null) && !PanelService.openedPanel.isClosing) {
                                PanelService.openedPanel.close();
                              }
@@ -261,7 +265,7 @@ SmartPanel {
                                return;
                              }
 
-                             if (modelData.hasMenu && modelData.menu && panelContent.trayMenu && panelContent.trayMenu.item) {
+                             if (entry.hasMenu && entry.menu && panelContent.trayMenu && panelContent.trayMenu.item) {
                                const barPosition = Settings.getBarPositionForScreen(root.screen?.name);
                                // Increased spacing for better alignment with other context menus
                                let menuX, menuY;
@@ -283,23 +287,23 @@ SmartPanel {
                                  menuY = trayIcon.height + Style.marginL;
                                }
 
-                               PanelService.showTrayMenu(root.screen, modelData, panelContent.trayMenu.item, trayIcon, menuX, menuY, root.widgetSection, root.widgetIndex);
+                               PanelService.showTrayMenu(root.screen, entry, panelContent.trayMenu.item, trayIcon, menuX, menuY, root.widgetSection, root.widgetIndex);
                              }
                            }
                          }
 
               onWheel: wheel => {
                          if (wheel.angleDelta.y > 0)
-                         modelData?.scrollUp();
+                         entry?.scrollUp();
                          else if (wheel.angleDelta.y < 0)
-                         modelData?.scrollDown();
+                         entry?.scrollDown();
                        }
 
               onEntered: {
                 if (panelContent.popupMenuWindow) {
                   panelContent.popupMenuWindow.close();
                 }
-                TooltipService.show(trayIcon, modelData.tooltipTitle || modelData.name || modelData.id || "Tray Item", BarService.getTooltipDirection(root.screen?.name));
+                TooltipService.show(trayIcon, entry?.tooltipTitle || entry?.name || entry?.id || "Tray Item", BarService.getTooltipDirection(root.screen?.name));
               }
               onExited: TooltipService.hide()
             }

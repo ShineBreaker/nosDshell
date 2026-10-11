@@ -48,6 +48,10 @@ PopupWindow {
 
   readonly property int menuWidth: 220
 
+  // Hoisted menu snapshot so the Repeater maps index keys and delegates
+  // resolve live entries from this same array (CODING_STANDARDS "QML 规则").
+  readonly property var menuEntries: opener.children ? [...opener.children.values] : []
+
   implicitWidth: menuWidth
 
   // Use the content height of the Flickable for implicit height
@@ -274,15 +278,18 @@ PopupWindow {
         spacing: 0
 
         Repeater {
-          model: opener.children ? [...opener.children.values] : []
+          // Model is index keys, not the entries: boxing the JS-array model
+          // turns the DBusMenuItem refs into raw pointers (CODING_STANDARDS
+          // "QML 规则"). The delegate resolves the live JS entry itself.
+          model: root.menuEntries.map((_, i) => i)
 
           delegate: Rectangle {
-            id: entry
-            required property var modelData
+            id: entryRow
+            readonly property var entry: root.menuEntries[index]
 
             Layout.preferredWidth: parent.width
             Layout.preferredHeight: {
-              if (modelData?.isSeparator) {
+              if (entry?.isSeparator) {
                 return Style.marginS;
               } else {
                 // Row height = font height + 8
@@ -296,7 +303,7 @@ PopupWindow {
 
             // Separator: 6px row with the DDE two-line groove (dark over light, inset 4)
             Rectangle {
-              visible: modelData?.isSeparator ?? false
+              visible: entry?.isSeparator ?? false
               anchors.centerIn: parent
               width: parent.width - Style.margin2XS
               height: 2
@@ -320,7 +327,7 @@ PopupWindow {
               anchors.fill: parent
               color: mouseArea.containsMouse ? Color.accent : "transparent"
               radius: Style.radiusRow
-              visible: !(modelData?.isSeparator ?? false)
+              visible: !(entry?.isSeparator ?? false)
 
               RowLayout {
                 anchors.fill: parent
@@ -330,16 +337,16 @@ PopupWindow {
 
                 // Indicator Container
                 Item {
-                  visible: (modelData?.buttonType ?? QsMenuButtonType.None) !== QsMenuButtonType.None
+                  visible: (entry?.buttonType ?? QsMenuButtonType.None) !== QsMenuButtonType.None
 
                   implicitWidth: Math.round(Style.baseWidgetSize * 0.5)
                   implicitHeight: Math.round(Style.baseWidgetSize * 0.5)
                   Layout.alignment: Qt.AlignVCenter
 
                   // Helper properties
-                  readonly property int type: modelData?.buttonType ?? QsMenuButtonType.None
+                  readonly property int type: entry?.buttonType ?? QsMenuButtonType.None
                   readonly property bool isRadio: type === QsMenuButtonType.RadioButton
-                  readonly property bool isChecked: modelData?.checkState === Qt.Checked || (modelData?.checked ?? false)
+                  readonly property bool isChecked: entry?.checkState === Qt.Checked || (entry?.checked ?? false)
 
                   // Color Logic — OptionItem style: accent check, white when the row is hovered
                   readonly property color activeColor: mouseArea.containsMouse ? Color.onAccent : Color.accent
@@ -403,8 +410,8 @@ PopupWindow {
                 NText {
                   id: text
                   Layout.fillWidth: true
-                  color: (modelData?.enabled ?? true) ? (mouseArea.containsMouse ? Color.onAccent : Color.onShell) : Color.textDisabledDark
-                  text: modelData?.text !== "" ? modelData?.text.replace(/[\n\r]+/g, ' ') : "..."
+                  color: (entry?.enabled ?? true) ? (mouseArea.containsMouse ? Color.onAccent : Color.onShell) : Color.textDisabledDark
+                  text: (entry?.text ?? "") !== "" ? entry.text.replace(/[\n\r]+/g, ' ') : "..."
                   pointSize: Style.fontSizeS
                   verticalAlignment: Text.AlignVCenter
                   wrapMode: Text.WordWrap
@@ -413,17 +420,17 @@ PopupWindow {
                 Image {
                   Layout.preferredWidth: Style.marginL
                   Layout.preferredHeight: Style.marginL
-                  source: modelData?.icon ?? ""
-                  visible: (modelData?.icon ?? "") !== ""
+                  source: entry?.icon ?? ""
+                  visible: (entry?.icon ?? "") !== ""
                   fillMode: Image.PreserveAspectFit
                 }
 
                 NIcon {
-                  icon: modelData?.hasChildren ? "chevron-right" : ""
+                  icon: entry?.hasChildren ? "chevron-right" : ""
                   pointSize: Style.fontSizeXL
                   applyUiScale: false
                   verticalAlignment: Text.AlignVCenter
-                  visible: modelData?.hasChildren ?? false
+                  visible: entry?.hasChildren ?? false
                   color: (mouseArea.containsMouse ? Color.onAccent : Color.onShellSecondary)
                 }
               }
@@ -432,23 +439,23 @@ PopupWindow {
                 id: mouseArea
                 anchors.fill: parent
                 hoverEnabled: true
-                enabled: (modelData?.enabled ?? true) && !(modelData?.isSeparator ?? false) && root.visible
+                enabled: (entry?.enabled ?? true) && !(entry?.isSeparator ?? false) && root.visible
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
 
                 onClicked: mouse => {
-                             if (modelData && !modelData.isSeparator) {
-                               if (modelData.hasChildren) {
+                             if (entry && !entry.isSeparator) {
+                               if (entry.hasChildren) {
                                  // Click on items with children toggles submenu
-                                 if (entry.subMenu) {
+                                 if (entryRow.subMenu) {
                                    // Close existing submenu
-                                   entry.subMenu.hideMenu();
-                                   entry.subMenu.destroy();
-                                   entry.subMenu = null;
+                                   entryRow.subMenu.hideMenu();
+                                   entryRow.subMenu.destroy();
+                                   entryRow.subMenu = null;
                                  } else {
                                    // Close any other open submenus first
                                    for (var i = 0; i < columnLayout.children.length; i++) {
                                      const sibling = columnLayout.children[i];
-                                     if (sibling !== entry && sibling.subMenu) {
+                                     if (sibling !== entryRow && sibling.subMenu) {
                                        sibling.subMenu.hideMenu();
                                        sibling.subMenu.destroy();
                                        sibling.subMenu = null;
@@ -458,7 +465,7 @@ PopupWindow {
                                    // Determine submenu opening direction
                                    let openLeft = false;
                                    const barPosition = root.hostEdge;
-                                   const globalPos = entry.mapToItem(null, 0, 0);
+                                   const globalPos = entryRow.mapToItem(null, 0, 0);
 
                                    if (barPosition === "right") {
                                      openLeft = true;
@@ -469,27 +476,27 @@ PopupWindow {
                                    }
 
                                    // Open new submenu
-                                   entry.subMenu = Qt.createComponent("TrayMenu.qml").createObject(root, {
-                                                                                                     "menu": modelData,
-                                                                                                     "isSubMenu": true,
-                                                                                                     "screen": root.screen
-                                                                                                   });
+                                   entryRow.subMenu = Qt.createComponent("TrayMenu.qml").createObject(root, {
+                                                                                                        "menu": entry,
+                                                                                                        "isSubMenu": true,
+                                                                                                        "screen": root.screen
+                                                                                                      });
 
-                                   if (entry.subMenu) {
+                                   if (entryRow.subMenu) {
                                      const overlap = 60;
-                                     entry.subMenu.anchorItem = entry;
-                                     entry.subMenu.anchorX = openLeft ? -overlap : overlap;
-                                     entry.subMenu.anchorY = 0;
-                                     entry.subMenu.visible = true;
+                                     entryRow.subMenu.anchorItem = entryRow;
+                                     entryRow.subMenu.anchorX = openLeft ? -overlap : overlap;
+                                     entryRow.subMenu.anchorY = 0;
+                                     entryRow.subMenu.visible = true;
                                      // Force anchor update with new position
                                      Qt.callLater(() => {
-                                                    entry.subMenu.anchor.updateAnchor();
+                                                    entryRow.subMenu.anchor.updateAnchor();
                                                   });
                                    }
                                  }
                                } else {
                                  // Click on regular items triggers them
-                                 modelData.triggered();
+                                 entry.triggered();
                                  root.hideMenu();
 
                                  // Close the drawer if it's open
