@@ -105,8 +105,12 @@ Item {
       opacityTrigger.start();
     }
 
-    // Start open watchdog timer (skip when animations disabled - everything completes synchronously)
-    if (!root.animationsDisabled) {
+    // Start open watchdog timer (skip when animations disabled - everything
+    // completes synchronously). Arrow popups likewise: their zero-duration
+    // fade finishes before this point, so the Behavior's running change has
+    // no chance to disarm the timer afterwards and every open would log a
+    // false watchdog timeout.
+    if (!root.animationsDisabled && !root.useArrowPopup) {
       root.openWatchdogActive = true;
       openWatchdogTimer.start();
     }
