@@ -1,7 +1,6 @@
 {
   "actions": {
     "clear-history": "Tøm tidefar",
-    "close-app": "Steng {app}",
     "connect-vpn": "Få samband med {name}",
     "cycle-visualizer": "Skift framsyning",
     "disable-bluetooth": "Slå av Blåtann",
@@ -59,7 +58,6 @@
       "hide-if-idle-label": "Løyn når uverksam",
       "hide-if-not-detected-description": "Løyn nøytelen når kjernen ikkje finn eit batteri.",
       "hide-if-not-detected-label": "Løyn når ikkje funne",
-      "low-battery-threshold-label": "Åtvaringstreskald for lågt batteri",
       "show-power-profile-description": "Syn veljaren for straumhått i batterifjøli.",
       "show-power-profile-label": "Syn straumhåttstoli",
       "show-performance-mode-description": "Syn brjotaren for Ytestoda frå nosDshell i batterifjøli.<br>Slær av skuggar og bilætrørslor i nosDshell for å minka emnebruk.",
@@ -83,8 +81,6 @@
       "tooltip-format-label": "Vitringssnid",
       "use-custom-font-description": "Sjå burt frå skriftkyndi elles og nytta ei onnor skriftkynd til klokka.",
       "use-custom-font-label": "Nytta onnor skriftkynd",
-      "use-monospaced-font-description": "Klokka nyttar fastbreiddeskrift når dette er på.",
-      "use-monospaced-font-label": "Nytta fastbreiddeskrift",
       "vertical-bar-description": "Skriv inn eit millomrom for å skifta kvar lut til ei ny lina.",
       "vertical-bar-label": "Loddbein rad"
     },
@@ -101,13 +97,10 @@
     "custom-button": {
       "collapse-condition-description": "Knappen løynest um utskrifti er lik dette.",
       "collapse-condition-label": "Løyningsvilkor",
-      "color-selection-description": "Lita fråmerket og teksti med hamlitene.",
       "default-tooltip": "Sjølvgjord knapp, stjorna i innstillingane",
       "display-command-output-description": "Skriv inn eit styrebod som skal køyra jamlege. Syner fyrste utskriftsradi som tekst.",
       "display-command-output-label": "Syn utskrift frå styrebod",
       "display-command-output-stream-description": "Skriv inn styrebod som skal køyra heile tidi.",
-      "dynamic-text": "Kvikskrift",
-      "enable-colorization-description": "Lita fråmerket og teksti på den sjølvgjorde knappen med hamlitene.",
       "general-tooltip-text-description": "Sjølvvald tekst å syna i hjelpeteksti åt knappen.",
       "general-tooltip-text-label": "Sjølvvald hjelpetekst",
       "hide-mode-always-expanded": "Stødt vidka",
@@ -169,8 +162,6 @@
       "show-scroll-lock-label": "Bladlås"
     },
     "media-mini": {
-      "compact-mode-description": "Få spelnøytelsfjøli til å roma mindre.",
-      "compact-mode-label": "Klemb spelnøytelen",
       "hide-mode-description": "Stjorna framferdi åt nøytelen når ingen ting spelar av.",
       "max-width-description": "Fastset kor mykje nøytelen kan lengjast vassbeint. Nøytelen dreg seg i hop for å røma stuttare innhald.",
       "no-active-player": "Ingi verksame spelarar",
@@ -233,8 +224,5 @@
     "notification-density": {
       "compact": "Klembd"
     }
-  },
-  "system": {
-    "welcome-back": "Velkomen attende,"
   }
 }

@@ -161,7 +161,7 @@ Scope {
 
     onError: {
       Logger.i("LockContext", "PAM error:", error, "message:", message);
-      errorMessage = message || "Authentication error";
+      errorMessage = message || I18n.tr("authentication.error");
       showFailure = true;
       root.unlockInProgress = false;
       root.failed();

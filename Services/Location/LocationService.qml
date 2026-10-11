@@ -350,24 +350,24 @@ Singleton {
   // --------------------------------
   function weatherDescriptionFromCode(code) {
     if (code === 0)
-      return "Clear sky";
+      return I18n.tr("weather.clear-sky");
     if (code === 1)
-      return "Mainly clear";
+      return I18n.tr("weather.mainly-clear");
     if (code === 2)
-      return "Partly cloudy";
+      return I18n.tr("weather.partly-cloudy");
     if (code === 3)
-      return "Overcast";
+      return I18n.tr("weather.overcast");
     if (code === 45 || code === 48)
-      return "Fog";
+      return I18n.tr("weather.fog");
     if (code >= 51 && code <= 67)
-      return "Drizzle";
+      return I18n.tr("weather.drizzle");
     if (code >= 71 && code <= 77)
-      return "Snow";
+      return I18n.tr("weather.snow");
     if (code >= 80 && code <= 82)
-      return "Rain showers";
+      return I18n.tr("weather.rain-showers");
     if (code >= 95 && code <= 99)
-      return "Thunderstorm";
-    return "Unknown";
+      return I18n.tr("weather.thunderstorm");
+    return I18n.tr("common.unknown");
   }
 
   // --------------------------------
