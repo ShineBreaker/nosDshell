@@ -10,6 +10,21 @@
 
 ## [Unreleased]
 
+控制中心重排成 DDE 的样子：默认页是通知列表加卡片，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。
+
+---
+
+### 修复
+
+- keep bubbles, OSD, menus and launchers off the dock strip：[`01dec6e09`](https://github.com/ShineBreaker/nosDshell/commit/01dec6e09ce542af2f7a95af3e100d861049044c)
+- lift the wallpaper selector strip clear of the fashion dock：[`ede8e44f1`](https://github.com/ShineBreaker/nosDshell/commit/ede8e44f12bf26f99002e313f7fe7093a9e80538)
+
+### 变更
+
+- notification-first home, module grid as all-settings page：[`b44b8941a`](https://github.com/ShineBreaker/nosDshell/commit/b44b8941a74fd6c5b0f7bdfb69c4378df319ff8a)
+- rail highlight follows the scroll live：[`95c37fd6d`](https://github.com/ShineBreaker/nosDshell/commit/95c37fd6d2415c530f703c1e49c2892ca19b4ea0)
+- two quick-switch rows, no overflow pages：[`116108cb5`](https://github.com/ShineBreaker/nosDshell/commit/116108cb59fdeff20f220d25d51d9b2e97b09295)
+
 ## [1.1.8] - 2026-10-12
 
 一轮针对上游 issue 清单的核验修复：晚到的蓝牙适配器能恢复供电，应用自己调的音量不再被面板值压回，保持唤醒真正拦得住熄屏与锁屏，多屏 Dock 不再丢固定应用，窗口标题刷屏时任务栏图标也不再闪烁。顺手把三处复制的桌面项启动路径和三处工作区标签写法各收敛成了一处。
