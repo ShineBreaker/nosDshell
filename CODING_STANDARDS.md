@@ -79,6 +79,7 @@
 - `Item.visible` 读出的是有效可见性：自身和所有祖先都可见时才为 true。祖先一隐藏，子项读出的值就一直是 false。要判断某一项本身是否被设为隐藏，另存一个标志属性再读它，例如 `NSubTabsPane` 给页签按钮加的 `tabShown`。
 - JS 对象数组作为 `Repeater` 或 `ListView` 的 model 时会被 QVariant 包装，`modelData` 拿到的是副本，和原数组元素用 `===` 比较永远为 false。选中态和按引用查下标会静默失效（不报错，只是不高亮）。比较一律用稳定字段（`modelData.id === x.id`）；需要保存对象时，先换回原数组里的元素。
 - 同一层包装还会去掉 QObject 的生命周期跟踪。数组元素里嵌着的 QObject（`Toplevel`、`DesktopEntry`、媒体播放器、蓝牙设备这类由服务随时销毁的对象），进了 `modelData` 就变成不受 `QPointer` 保护的裸指针。对象销毁后、model 重建前，只要有绑定再读一次就是释放后使用：可能读到 null，可能读到别的对象，也可能直接段错误。条目里会带这类对象时，view 的 model 只给主键或下标（纯数据），委托里用 `owner.entries[index]` 从持有数组的 `property var` 取原 JS 元素。原数组里的 QObject 引用受跟踪：对象销毁后读到的是失效的包装（属性为 `undefined`），不会再解引用野指针，按存活列表过滤（例如 `ToplevelManager.toplevels.values.includes(t)`）就能剔除。例子见 `Modules/Dock/DockContent.qml` 的应用格。
+- 挂在高频服务信号（如 `windowListChanged`）上的 JS 快照数组，不要直接作 `Repeater` 的 model：重建出的新数组即使等长同序也是新 model，全部委托会被销毁重建，`asynchronous: true` 的图标会闪烁。改用数量作 model（`model: entries.length`），委托里按下标从持有数组的 `property var` 读条目（`entries[index] ?? 共享空条目`）。例子见 `Modules/Bar/Widgets/Taskbar.qml`。
 
 ## 界面文字
 

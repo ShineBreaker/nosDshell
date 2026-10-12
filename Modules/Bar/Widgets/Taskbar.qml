@@ -122,6 +122,14 @@ Item {
   property var hoveredWindowId: ""
   // Combined model of running windows and pinned apps
   property var combinedModel: []
+  // Inert entry for delegates that briefly outlive a shrunken combinedModel array
+  readonly property var emptyEntry: ({
+                                       "id": "",
+                                       "type": "",
+                                       "window": null,
+                                       "appId": "",
+                                       "title": ""
+                                     })
 
   // Wheel scroll handling
   property int wheelAccumulatedDelta: 0
@@ -582,12 +590,14 @@ Item {
       rowSpacing: isVerticalBar ? Style.marginXXS : 0
       columnSpacing: isVerticalBar ? 0 : Style.marginXXS
 
+      // Model is the count, entries are read by index: a rebuilt snapshot
+      // array of equal length would otherwise recreate every delegate
       Repeater {
-        model: root.combinedModel
+        model: root.combinedModel.length
         delegate: Item {
           id: taskbarItem
-          required property var modelData
           required property int index
+          readonly property var modelData: root.combinedModel[index] ?? root.emptyEntry
           property ShellScreen screen: root.screen
 
           readonly property bool isRunning: modelData.window !== null

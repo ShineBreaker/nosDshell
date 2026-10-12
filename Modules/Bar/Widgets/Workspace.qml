@@ -733,6 +733,15 @@ Item {
       property var workspaceModel: model
       // Fetch windows directly from service to avoid Qt 6.9 ListModel nested array issues
       property var liveWindows: []
+      // Inert entry for delegates that briefly outlive a shrunken liveWindows array
+      readonly property var emptyWindowEntry: ({
+                                                 "id": "",
+                                                 "appId": "",
+                                                 "title": "",
+                                                 "isFocused": false,
+                                                 "workspaceId": -1,
+                                                 "address": ""
+                                               })
       property bool hasWindows: liveWindows.length > 0
 
       function updateWindows() {
@@ -810,11 +819,16 @@ Item {
         spacing: 2
         flow: root.isVertical ? Flow.TopToBottom : Flow.LeftToRight
 
+        // Model is the count, entries are read by index: a rebuilt snapshot
+        // array of equal length would otherwise recreate every delegate
         Repeater {
-          model: groupedContainer.liveWindows
+          model: groupedContainer.liveWindows.length
 
           delegate: Item {
             id: groupedTaskbarItem
+
+            required property int index
+            readonly property var modelData: groupedContainer.liveWindows[index] ?? groupedContainer.emptyWindowEntry
 
             readonly property bool isFocused: modelData?.isFocused ?? false
 
