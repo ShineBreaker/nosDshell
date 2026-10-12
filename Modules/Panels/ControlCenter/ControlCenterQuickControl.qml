@@ -409,7 +409,7 @@ Item {
 
       MediaCard {
         Layout.fillWidth: true
-        Layout.preferredHeight: Math.round(200 * Style.uiScaleRatio)
+        Layout.preferredHeight: Style.controlCenterMediaCardRowHeight
       }
 
       SystemMonitorCard {

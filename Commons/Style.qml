@@ -487,12 +487,15 @@ Singleton {
   readonly property int quickSwitchHeight: Math.round(60 * uiScaleRatio)
   // Basic page slider track height (gxde-control-center basicsettingspage.cpp)
   readonly property int sliderBasicHeight: Math.round(35 * uiScaleRatio * Settings.data.ui.rowHeightScale)
-  // Quick-control page slot height: two sliderBasicHeight rows + two switch
-  // rows (5×2 = 10 cells cap per page — no overflow pages, 〔演进〕) + inner
-  // gaps (2×S spacing + 2×S row top margins + S row spacing) + outer
-  // margins (2×M). All quick-control pages share this slot so paging never
-  // resizes the strip.
-  readonly property int quickControlPanelHeight: sliderBasicHeight * 2 + quickSwitchHeight * 2 + marginS * 5 + marginM * 2
+  // Quick-control page slot height: sized by the cards page (page 0), the
+  // tallest content — weather card + media/sysmon row + gaps. Other pages
+  // share this slot so paging never resizes the strip.
+  // controlCenterWeatherCardHeight ≈ WeatherCard's data-loaded implicitHeight
+  // (icon row ~50·s + divider + forecast row ~70·s + margin2XL padding);
+  // the "configure a location" placeholder is ~100·s and leaves slack.
+  readonly property int controlCenterWeatherCardHeight: Math.round(175 * uiScaleRatio)
+  readonly property int controlCenterMediaCardRowHeight: Math.round(200 * uiScaleRatio)
+  readonly property int quickControlPanelHeight: marginM * 3 + controlCenterWeatherCardHeight + controlCenterMediaCardRowHeight
   readonly property int quickSwitchIconBottomMargin: Math.round(20 * uiScaleRatio)
   readonly property int quickSwitchBlockBottomMargin: Math.round(5 * uiScaleRatio)
   // Page indicator: height 40, dot alphas from DESIGN §3.5.2
