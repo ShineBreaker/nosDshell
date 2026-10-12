@@ -546,6 +546,76 @@ Singleton {
     }
   }
 
+  // Split a shell-word-ish string into argv. Unlike trim().split(" "), runs
+  // of spaces produce no empty arguments (app2unit  -- → ["app2unit","--"]).
+  function _splitArgs(str) {
+    return String(str).trim().split(/\s+/).filter(s => s.length > 0);
+  }
+
+  // The one launch path for desktop entries (upstream #2435): honours
+  // customLaunchPrefix / terminalCommand / runInTerminal, shared by the
+  // launcher, the dock and the taskbar.
+  function launchDesktopEntry(app) {
+    if (!app) {
+      Logger.w("CompositorService", "launchDesktopEntry: no app");
+      return;
+    }
+
+    Qt.callLater(() => {
+                   const execString = (app.exec !== undefined && app.exec !== null) ? String(app.exec) : "";
+                   const commandArgs = Array.isArray(app.command) ? app.command : (app.command && app.command.length !== undefined) ? Array.from(app.command) : [];
+                   let hasQuotedArgs = execString.includes("\"") || execString.includes("'");
+                   let hasSpaceArgs = false;
+                   if (!hasQuotedArgs) {
+                     hasQuotedArgs = commandArgs.some(arg => {
+                                                        const text = String(arg);
+                                                        return text.includes("\"") || text.includes("'");
+                                                      });
+                   }
+                   if (!hasSpaceArgs) {
+                     hasSpaceArgs = commandArgs.some(arg => String(arg).includes(" "));
+                   }
+                   if (app.execute && (hasQuotedArgs || hasSpaceArgs)) {
+                     Logger.d("CompositorService", `Detected quoted/space arguments in Exec for ${app.name}, using app.execute()`);
+                     app.execute();
+                     return;
+                   }
+
+                   if (Settings.data.appLauncher.customLaunchPrefixEnabled && Settings.data.appLauncher.customLaunchPrefix.trim() !== "") {
+                     // Use custom launch prefix
+                     const prefix = _splitArgs(Settings.data.appLauncher.customLaunchPrefix);
+                     Logger.d("CompositorService", `Using custom launch prefix: ${Settings.data.appLauncher.customLaunchPrefix.trim()}`);
+
+                     if (app.runInTerminal && Settings.data.appLauncher.terminalCommand.trim() !== "") {
+                       const terminal = _splitArgs(Settings.data.appLauncher.terminalCommand);
+                       const command = prefix.concat(terminal.concat(app.command));
+                       Logger.d("CompositorService", `Executing command (with prefix and terminal): ${command.join(" ")}`);
+                       Quickshell.execDetached(command);
+                     } else {
+                       const command = prefix.concat(app.command);
+                       Logger.d("CompositorService", `Executing command (with prefix): ${command.join(" ")}`);
+                       Quickshell.execDetached(command);
+                     }
+                   } else {
+                     if (app.runInTerminal && Settings.data.appLauncher.terminalCommand.trim() !== "") {
+                       Logger.d("CompositorService", "Executing terminal app manually: " + app.name);
+                       const terminal = _splitArgs(Settings.data.appLauncher.terminalCommand);
+                       const command = terminal.concat(app.command);
+                       Logger.d("CompositorService", "Executing command (manual terminal): " + command.join(" "));
+                       spawn(command);
+                     } else if (app.command && app.command.length > 0) {
+                       Logger.d("CompositorService", "Executing command: " + app.command.join(" "));
+                       spawn(app.command);
+                     } else if (app.execute) {
+                       Logger.d("CompositorService", "Calling app.execute() for: " + app.name);
+                       app.execute();
+                     } else {
+                       Logger.w("CompositorService", `Could not launch: ${app.name}. No valid launch method.`);
+                     }
+                   }
+                 });
+  }
+
   // Session management helper for custom commands
   function getCustomCommand(action) {
     const powerOptions = Settings.data.sessionMenu.powerOptions || [];

@@ -126,31 +126,7 @@ Item {
       return;
     }
 
-    if (Settings.data.appLauncher.customLaunchPrefixEnabled && Settings.data.appLauncher.customLaunchPrefix.trim() !== "") {
-      const prefix = Settings.data.appLauncher.customLaunchPrefix.trim().split(" ");
-
-      if (app.runInTerminal && Settings.data.appLauncher.terminalCommand.trim() !== "") {
-        const terminal = Settings.data.appLauncher.terminalCommand.trim().split(" ");
-        const command = prefix.concat(terminal.concat(app.command));
-        Quickshell.execDetached(command);
-      } else {
-        const command = prefix.concat(app.command);
-        Quickshell.execDetached(command);
-      }
-    } else {
-      if (app.runInTerminal && Settings.data.appLauncher.terminalCommand.trim() !== "") {
-        Logger.d("Dock", "Executing terminal app manually: " + app.name);
-        const terminal = Settings.data.appLauncher.terminalCommand.trim().split(" ");
-        const command = terminal.concat(app.command);
-        CompositorService.spawn(command);
-      } else if (app.command && app.command.length > 0) {
-        CompositorService.spawn(app.command);
-      } else if (app.execute) {
-        app.execute();
-      } else {
-        Logger.w("Dock", `Could not launch: ${app.name}. No valid launch method.`);
-      }
-    }
+    CompositorService.launchDesktopEntry(app);
   }
 
   // Volunteer this scene for DebugService dumps/destruction watches
