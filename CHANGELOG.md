@@ -10,7 +10,7 @@
 
 ## [Unreleased]
 
-控制中心重排成 DDE 的样子：默认页是通知列表，卡片成为底部分页条的第一页，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。
+控制中心重排成 DDE 的样子：默认页是通知列表，卡片成为底部分页条的第一页，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。底部分页槽按卡片页定高，监控卡要显示哪几个表盘可以在设置里挑。
 
 ---
 
@@ -24,6 +24,9 @@
 - notification-first home, module grid as all-settings page：[`b44b8941a`](https://github.com/ShineBreaker/nosDshell/commit/b44b8941a74fd6c5b0f7bdfb69c4378df319ff8a)
 - rail highlight follows the scroll live：[`95c37fd6d`](https://github.com/ShineBreaker/nosDshell/commit/95c37fd6d2415c530f703c1e49c2892ca19b4ea0)
 - two quick-switch rows, no overflow pages：[`116108cb5`](https://github.com/ShineBreaker/nosDshell/commit/116108cb59fdeff20f220d25d51d9b2e97b09295)
+- cards are the quick-control pager's first page：[`dfa3f196b`](https://github.com/ShineBreaker/nosDshell/commit/dfa3f196bfa5e39fa520637d62905444d24e827b)
+- selectable gauges on the system monitor card：[`0de3ffa29`](https://github.com/ShineBreaker/nosDshell/commit/0de3ffa2965783dfe0424ec377e0fa2137c6f652)
+- quick-control slot sized for the cards page：[`c63f115d6`](https://github.com/ShineBreaker/nosDshell/commit/c63f115d6a2d027680495ce3bad272f621ebabe4)
 
 ## [1.1.8] - 2026-10-12
 

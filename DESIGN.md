@@ -447,7 +447,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
      - 删除一条时，它沿宽度方向收起。
    - **所有设置页**：模块网格，是设置的入口页（类似 Windows 控制面板）。网格 3 列，每个格子缩进 5、圆角 5，默认 `idle`、悬停 `hover`；格子里是 24 px 图标加文字。头部齿轮、启动器里的设置入口和 `settings open/toggle` IPC 都落在这里；铃铛切换回通知页。
 4. **快捷控制面板**（底部，`quick_control/*`），只属于通知首页——所有设置页和模块视图打开时隐藏。分页显示，用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余为 × 0.3，所以在深色外框上是白色，在浅色外框上自动变深）。所有页共用同一个页面高度（`quickControlPanelHeight`），翻页时新页沿翻页方向滑入并淡入（`motionPanel`）：
-   - **卡片页**（第一页）：已启用的 Noctalia 卡片（天气、媒体+系统监控），每张底色 `idle`、圆角 5；超出页面槽高度时滚动〔演进：首页默认控件收进分页条〕。
+   - **卡片页**（第一页）：已启用的 Noctalia 卡片（天气、媒体+系统监控），每张底色 `idle`、圆角 5；页面槽高度按本页内容定（天气卡 + 媒体/监控行 + 间距），其余页共用同一槽高〔演进：首页默认控件收进分页条，槽高按卡片页定〕。媒体+系统监控卡里的系统监控表盘显示哪些指标由 `controlCenter.sysmonMetrics` 决定（cpu/temp/mem/disk 的子集，默认前三项），在设置 → 控制中心 → 卡片的卡片开关组下方配置；该卡关闭时整组隐藏，磁盘路径下拉只在磁盘指标开启时出现〔演进〕。
    - **基础页**：音量和亮度两条滑块（两端各有 24 px 图标），下面两排快捷开关。
    - **快捷开关**：每个 70×60，每行 5 个共两行，一页最多显示 10 个——`controlCenter.shortcuts` 的 left++right 合并后截前 10 个，超出的不再放进溢出页〔演进：溢出页删除，要显示哪些开关、什么顺序在设置 → 控制中心里配〕。图标靠下对齐，距底部 20 px。开启时，背后画一块白 × 0.2 的底，圆角 6，下边距 5。
    - **Wi-Fi 页、蓝牙页、显示页、VPN 页**：列表行高 36，样式同 §3.5.4；列表限制在页面槽内，超出时滚动。
@@ -459,7 +459,7 @@ Noctalia 卡片的对应关系：
 | ProfileCard | 头部 |
 | ShortcutsCard | 快捷开关 |
 | AudioCard、BrightnessCard | 快捷控制面板的基础页 |
-| WeatherCard、MediaCard、SystemMonitorCard、CalendarCards | 快捷控制面板的卡片页（第一页，默认页的控件） |
+| WeatherCard、MediaCard、SystemMonitorCard、CalendarCards | 快捷控制面板的卡片页（第一页，默认页的控件）；SystemMonitorCard 显示哪些指标由 `controlCenter.sysmonMetrics` 配置 |
 
 #### 3.5.3 设置页（原 Settings 面板）
 
