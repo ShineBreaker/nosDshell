@@ -184,6 +184,12 @@ DraggableDesktopWidget {
           anchors.left: undefined
           anchors.right: undefined
         }
+        // Without edge anchors the layout takes its implicit width and text
+        // elision never engages — cap it to the widget so long titles elide.
+        PropertyChanges {
+          target: contentLayout
+          width: Math.min(contentLayout.implicitWidth, root.width - 2 * contentLayout.anchors.margins)
+        }
       }
     ]
     anchors.margins: root.showBackground ? Math.round(Style.marginM * widgetScale) : 0
