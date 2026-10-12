@@ -17,14 +17,13 @@ NBox {
   readonly property real contentScale: 0.95 * Style.uiScaleRatio
 
   // Canonical gauge order; Settings.data.controlCenter.sysmonMetrics selects
-  // the subset. An empty or all-invalid selection falls back to the default
-  // three so the card never renders blank.
+  // the subset. An empty or all-invalid selection falls back to the declared
+  // default so the card never renders blank.
   readonly property var _allMetrics: ["cpu", "temp", "mem", "disk"]
-  readonly property var _defaultMetrics: ["cpu", "temp", "mem"]
   readonly property var metrics: {
     const cfg = Settings.data.controlCenter.sysmonMetrics || [];
     const sel = _allMetrics.filter(m => cfg.indexOf(m) !== -1);
-    return sel.length > 0 ? sel : _defaultMetrics;
+    return sel.length > 0 ? sel : (Settings.getDefaultValue("controlCenter.sysmonMetrics") || ["cpu", "temp", "mem"]);
   }
 
   function _ratio(m) {

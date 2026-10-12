@@ -18,9 +18,10 @@ ColumnLayout {
 
   // Canonical gauge order for the media/sysmon card; the settings key stores
   // the enabled subset. At least one gauge stays on — _setMetric refuses to
-  // clear the last one.
+  // clear the last one. The fallback is the declared default, same as the
+  // card itself uses.
   readonly property var _metricOrder: ["cpu", "temp", "mem", "disk"]
-  readonly property var _defaultMetrics: ["cpu", "temp", "mem"]
+  readonly property var _defaultMetrics: Settings.getDefaultValue("controlCenter.sysmonMetrics") || ["cpu", "temp", "mem"]
   readonly property var sysmonMetrics: {
     const cfg = Settings.data.controlCenter.sysmonMetrics || [];
     const sel = _metricOrder.filter(m => cfg.indexOf(m) !== -1);
