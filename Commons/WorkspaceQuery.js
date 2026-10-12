@@ -2,7 +2,8 @@
 
 // WorkspaceQuery.js — "哪些工作区属于这块屏"的单一裁决点，任务栏空白区滚轮
 // 切换（Bar.qml）与工作区挂件显示（Workspace.qml）共用，避免同一筛选谓词
-// 两处独立维护后漂移。
+// 两处独立维护后漂移。工作区标签文案（labelFor）也收敛在这里：
+// Workspace.qml 的宽度估算、WorkspacePill.qml 的文本与分组徽章共用同一推导。
 
 // followFocusedScreen 模式下的匹配目标：聚焦工作区所在输出的名字（小写）。
 // 不提前 break（保持与挂件刷新一致的"取最后一个聚焦项"语义），
@@ -32,4 +33,17 @@ function workspacesForScreen(workspaces, opts) {
       candidates.push(ws);
   }
   return candidates;
+}
+
+// 工作区标签文案的单一来源：无名工作区一律显示序号；"name" 截断到
+// characterCount；"index+name" 在 compact（竖排 pill、分组徽章）下取
+// "序号+名字首字符"，否则 "序号 截断名"；其余模式（"index"/"none"）回序号。
+function labelFor(ws, labelMode, characterCount, compact) {
+  if (!ws.name || ws.name.length === 0)
+    return String(ws.idx);
+  if (labelMode === "name")
+    return ws.name.substring(0, characterCount);
+  if (labelMode === "index+name")
+    return compact ? (String(ws.idx) + ws.name.substring(0, 1)) : (String(ws.idx) + " " + ws.name.substring(0, characterCount));
+  return String(ws.idx);
 }

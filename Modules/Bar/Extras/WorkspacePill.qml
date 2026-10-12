@@ -2,6 +2,7 @@ import QtQuick
 import qs.Commons
 import qs.Services.Compositor
 import qs.Widgets
+import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 
 Item {
   id: pillContainer
@@ -99,22 +100,8 @@ Item {
       anchors.fill: parent
       sourceComponent: Component {
         NText {
-          text: {
-            if (workspace.name && workspace.name.length > 0) {
-              if (labelMode === "name") {
-                return workspace.name.substring(0, characterCount);
-              }
-              if (labelMode === "index+name") {
-                // Vertical mode: compact format (no space, first char only)
-                // Horizontal mode: full format (space, more chars)
-                if (isVertical) {
-                  return workspace.idx.toString() + workspace.name.substring(0, 1);
-                }
-                return workspace.idx.toString() + " " + workspace.name.substring(0, characterCount);
-              }
-            }
-            return workspace.idx.toString();
-          }
+          // compact: vertical pill shows "序号+名字首字符", horizontal "序号 截断名"
+          text: WorkspaceQuery.labelFor(workspace, labelMode, characterCount, isVertical)
           family: Settings.data.ui.fontFixed
           // Size based on the fixed dimension (cross-axis) of the visual pill
           pointSize: (isVertical ? pillContainer.pillWidth : pillContainer.pillHeight) * textRatio

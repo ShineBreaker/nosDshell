@@ -177,15 +177,7 @@ Item {
       return Style.toOdd(d * factor);
     }
 
-    var displayText = ws.idx.toString();
-
-    if (ws.name && ws.name.length > 0) {
-      if (root.labelMode === "name") {
-        displayText = ws.name.substring(0, characterCount);
-      } else if (root.labelMode === "index+name") {
-        displayText = ws.idx.toString() + " " + ws.name.substring(0, characterCount);
-      }
-    }
+    var displayText = WorkspaceQuery.labelFor(ws, labelMode, characterCount, false);
 
     const textWidth = displayText.length * (d * 0.4); // Approximate width per character
     const padding = d * 0.6;
@@ -978,17 +970,7 @@ Item {
 
           anchors.centerIn: parent
 
-          text: {
-            if (groupedContainer.workspaceModel.name && groupedContainer.workspaceModel.name.length > 0) {
-              if (root.labelMode === "name") {
-                return groupedContainer.workspaceModel.name.substring(0, root.characterCount);
-              }
-              if (root.labelMode === "index+name") {
-                return (groupedContainer.workspaceModel.idx.toString() + groupedContainer.workspaceModel.name.substring(0, 1));
-              }
-            }
-            return groupedContainer.workspaceModel.idx.toString();
-          }
+          text: WorkspaceQuery.labelFor(groupedContainer.workspaceModel, root.labelMode, root.characterCount, true)
 
           family: Settings.data.ui.fontFixed
           font {
