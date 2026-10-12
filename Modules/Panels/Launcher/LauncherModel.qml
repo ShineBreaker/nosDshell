@@ -96,7 +96,6 @@ Item {
                    }
                    updateResults();
                  });
-    focusSearchInput();
   }
 
   function onClosed() {
@@ -117,15 +116,6 @@ Item {
 
   function closeImmediately() {
     requestCloseImmediately();
-  }
-
-  // The view assigns its search input item here (needs .inputItem)
-  property var searchInput: null
-
-  function focusSearchInput() {
-    if (searchInput && searchInput.inputItem) {
-      searchInput.inputItem.forceActiveFocus();
-    }
   }
 
   // ---------------------------------------------------------------
