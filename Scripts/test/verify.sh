@@ -21,6 +21,12 @@
 #   calendar-panel, media-panel, system-monitor, notification-history,
 #   wallpaper, wallpaper-panel, dock, lockscreen
 #   taskbar additionally emits a strip crop beside the full shot (below).
+#   idle-inhibit is off the default set (needs its own seed): Keep Awake must
+#   suppress the shell's own screenOff; run e.g.
+#     ./verify.sh <run> --settings <seed>.json --scenes idle-inhibit
+#   with seed {"idle":{"enabled":true,"screenOffTimeout":20,"lockTimeout":0,
+#   "suspendTimeout":0,"fadeDuration":1}} — exits non-zero if screenOff fires
+#   while inhibited, or never fires after the inhibitor is released.
 #   plus settings-tab scenes (open the settings panel on a specific tab,
 #   names follow the openTab alias map in ControlCenterModules.qml):
 #   settings-general, settings-userinterface, settings-audio,
@@ -225,7 +231,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dock-context-menu|dark-mode-system) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dock-context-menu|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -1050,6 +1056,57 @@ PYEOF
                             done
                             grep "color-scheme" "$LOG" || true
                           fi ;;
+    # Keep Awake vs the shell's own idle actions (upstream #2418): while
+    # idleInhibitor is on, "Executing action: screenOff" must never reach the
+    # log; after it is released screenOff must fire (positive control — a
+    # real pointer jiggle re-arms the compositor idle transition in case the
+    # inhibitor was honoured all along). Needs a seed with idle.enabled and a
+    # small screenOffTimeout (see header). NOTE: sway treats inhibitors
+    # without a view (layer-shell) as always active, so here the scene
+    # asserts the user-visible invariant; on compositors that scope
+    # inhibition to visible surfaces it exercises the suppression path.
+    idle-inhibit)        read IDLE_TO IDLE_FADE < <(python3 - "$USER_SETTINGS" <<'PYEOF'
+import json,os,sys
+base=json.load(open(os.environ["REPO"]+"/Assets/settings-default.json"))
+if sys.argv[1]:
+    def merge(a,b):
+        for k,v in b.items():
+            if isinstance(v,dict) and isinstance(a.get(k),dict): merge(a[k],v)
+            else: a[k]=v
+    merge(base, json.load(open(sys.argv[1])))
+idle=base.get("idle",{})
+print(idle.get("screenOffTimeout",600), idle.get("fadeDuration",5))
+PYEOF
+)
+                         echo "idle-inhibit: screenOffTimeout=${IDLE_TO}s fade=${IDLE_FADE}s"
+                         MARK=$(wc -l < "$LOG")
+                         qs -p "$REPO" ipc call idleInhibitor enable || true
+                         # Screenshot now — after phase B the screenOff action has
+                         # powered the outputs off (dpms) and grim gets no formats.
+                         sleep 2; shot idle-inhibit
+                         sleep $(( IDLE_TO + IDLE_FADE + 4 ))
+                         if tail -n +$(( MARK + 1 )) "$LOG" | grep -q "Executing action: screenOff"; then
+                           echo "FAIL idle-inhibit: screenOff fired while Keep Awake is on"
+                           SCENE_FAIL=1
+                         else
+                           echo "idle-inhibit: no screenOff while inhibited (ok)"
+                         fi
+                         qs -p "$REPO" ipc call idleInhibitor disable || true
+                         MARK=$(wc -l < "$LOG")
+                         VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                         [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                         "$VINPUT" vinput move 960 540 2>>"$WORK/logs/vinput.log" || true
+                         "$VINPUT" vinput move 970 545 2>>"$WORK/logs/vinput.log" || true
+                         sleep $(( IDLE_TO + IDLE_FADE + 6 ))
+                         if tail -n +$(( MARK + 1 )) "$LOG" | grep -q "Executing action: screenOff"; then
+                           echo "idle-inhibit: screenOff fired after uninhibit (control ok)"
+                         else
+                           echo "FAIL idle-inhibit: screenOff never fired without inhibitor"
+                           SCENE_FAIL=1
+                         fi
+                         # screenOff ran `swaymsg output * dpms off`; power the outputs
+                         # back so any scene scheduled after this one isn't poisoned.
+                         swaymsg "output * dpms on" >/dev/null 2>&1 || true ;;
     lockscreen)           call lockScreen lock 2.5; shot lockscreen ;;
     # Requires NOSD_PAM_BAD=1 (separate verify run): LockContext then uses a
     # nonexistent PAM service, so pam.start() errors out and LockContext lands
@@ -1067,6 +1124,7 @@ PYEOF
   esac
 }
 for s in $SELECTED; do run_scene "$s"; done
+[ "${SCENE_FAIL:-0}" -ne 0 ] && { echo "=== DONE (scene failures) ==="; exit 1; }
 echo "=== DONE ==="
 DBUSEOF
 INNEREOF

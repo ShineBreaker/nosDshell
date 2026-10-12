@@ -175,6 +175,13 @@ Singleton {
       Logger.d("IdleService", "Ignoring idle stage because it is disabled:", stage);
       return;
     }
+    // The compositor only honours a zwp_idle_inhibit inhibitor while its
+    // surface is visible, so our own Keep Awake can be silently ignored —
+    // consult IdleInhibitorService directly (upstream #2418).
+    if (IdleInhibitorService.isInhibited) {
+      Logger.d("IdleService", "Idle stage suppressed by idle inhibitor:", stage);
+      return;
+    }
 
     if (fadePending !== "") {
       _queueStage(stage);
@@ -220,6 +227,26 @@ Singleton {
     target: Settings
     function onSettingsLoaded() {
       root._applyTimeouts();
+    }
+  }
+
+  // Keep Awake toggles while a fade is pending or while the session is
+  // already past an idle timeout: cancel on inhibit, re-fire due stages on
+  // release (the fade queue serialises them).
+  Connections {
+    target: IdleInhibitorService
+    function onIsInhibitedChanged() {
+      if (IdleInhibitorService.isInhibited) {
+        root.cancelFade();
+        return;
+      }
+      const stages = ["screenOff", "lock", "suspend"];
+      for (var i = 0; i < stages.length; i++) {
+        const monitor = root["_" + stages[i] + "Monitor"];
+        if (monitor && monitor.isIdle) {
+          root._onIdle(stages[i]);
+        }
+      }
     }
   }
 
@@ -293,7 +320,7 @@ Singleton {
         const capturedResumeCmd = resumeCmd;
         monitor.isIdleChanged.connect(function () {
           if (monitor.isIdle) {
-            if (capturedCmd)
+            if (capturedCmd && !IdleInhibitorService.isInhibited)
               root._executeCustomCommand(capturedCmd);
           } else {
             if (capturedResumeCmd)
