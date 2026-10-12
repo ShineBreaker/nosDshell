@@ -10,6 +10,27 @@
 
 ## [Unreleased]
 
+## [1.1.8] - 2026-10-12
+
+一轮针对上游 issue 清单的核验修复：晚到的蓝牙适配器能恢复供电，应用自己调的音量不再被面板值压回，保持唤醒真正拦得住熄屏与锁屏，多屏 Dock 不再丢固定应用，窗口标题刷屏时任务栏图标也不再闪烁。顺手把三处复制的桌面项启动路径和三处工作区标签写法各收敛成了一处。
+
+---
+
+### 修复
+
+- stop taskbar/workspace icons blinking on window title churn：[`e40af9958`](https://github.com/ShineBreaker/nosDshell/commit/e40af9958f29d935ca95b4b8ea8c5c36e3203534)
+- elide long titles in media player without buttons：[`2df2969b5`](https://github.com/ShineBreaker/nosDshell/commit/2df2969b5e894666c998eca33456bf8dd0cf0947)
+- keep pinned apps on other outputs with onlySameOutput：[`cd416d9d7`](https://github.com/ShineBreaker/nosDshell/commit/cd416d9d73e3b62c910a3808571a2ab6b24e80a5)
+- let Keep Awake suppress the shell's own idle actions：[`e51ef83ed`](https://github.com/ShineBreaker/nosDshell/commit/e51ef83edb147961c703fa57780ce80607f260b5)
+- stop sticky per-app volume from overriding the app itself：[`e4a85e34a`](https://github.com/ShineBreaker/nosDshell/commit/e4a85e34ab73225579af414ecd3d03b172794b67)
+- re-sync adapter power when the adapter appears late：[`b20d25a47`](https://github.com/ShineBreaker/nosDshell/commit/b20d25a472f45da1bfc90a26ed1c35417e128796)
+
+### 重构
+
+- drop the dead search-focus hook from LauncherModel：[`04d3a9687`](https://github.com/ShineBreaker/nosDshell/commit/04d3a96877a328bf9d4a55e4d49d0255d7e8eb33)
+- derive workspace label text in one place：[`4b2b2247f`](https://github.com/ShineBreaker/nosDshell/commit/4b2b2247f1bc0111beb00fbadd2a41ac061a8201)
+- one launch path for desktop entries：[`e2dd5f151`](https://github.com/ShineBreaker/nosDshell/commit/e2dd5f15189d5f4b0b4fd72ccf9df9d3c44d3615)
+
 ## [1.1.7] - 2026-10-12
 
 一次设置体系的整体审计与收口：每个声明过的键都有了读者、读者或归宿，设置页补上了缺失的控件，壁纸面板找回了纯色与收藏入口；悬浮从栏形态里独立出来，简约/边框两种形态都能叠加；凹槽线、行高、字号、空态图标这些散落在各处的字面量全部收进了令牌；配套的检查器护栏会让同类退化在 lint 阶段就被拦下。
@@ -270,7 +291,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.7...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.8...HEAD
+[1.1.8]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.7...v1.1.8
 [1.1.7]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.6...v1.1.7
 [1.1.6]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.1...v1.1.5
