@@ -15,9 +15,9 @@ import qs.Widgets
 * ControlCenterQuickControl - the fixed bottom quick-control panel (§3.5.2).
 *
 * Basic page: volume + brightness sliders (24 px glyphs at both ends,
-* brightness hidden when unavailable) and a row of quick switch buttons taken
-* from controlCenter.shortcuts.left ++ .right (5 per row, overflow spills onto
-* extra switch pages). Detail pages: Wi-Fi, Bluetooth, Display, VPN — reusing
+* brightness hidden when unavailable) and two rows of quick switch buttons
+* taken from controlCenter.shortcuts.left ++ .right (5 per row, 10 shown —
+* no overflow pages). Detail pages: Wi-Fi, Bluetooth, Display, VPN — reusing
 * the same services as the existing panels, styled per §3.5.4.
 */
 Item {
@@ -28,10 +28,9 @@ Item {
   readonly property real listWidth: Math.max(1, root.width - Style.margin2M)
 
   // ---------------- pages ----------------
-  readonly property var shortcuts: (Settings.data.controlCenter.shortcuts?.left).concat(Settings.data.controlCenter.shortcuts?.right)
-  // The basic page already shows the first 5; switch pages only carry the
-  // overflow past them (§3.5.2 "overflow spills onto extra switch pages").
-  readonly property int switchPageCount: Math.max(0, Math.ceil((shortcuts.length - 5) / 5))
+  // Up to ten switches on the basic page (5 per row); the rest are simply
+  // not shown — the settings UI lets the user pick which ones matter.
+  readonly property var shortcuts: (Settings.data.controlCenter.shortcuts?.left).concat(Settings.data.controlCenter.shortcuts?.right).slice(0, 10)
 
   readonly property var detailPages: {
     var pages = ["wifi"];
@@ -43,7 +42,7 @@ Item {
     return pages;
   }
 
-  readonly property int pageCount: 1 + switchPageCount + detailPages.length
+  readonly property int pageCount: 1 + detailPages.length
   property int currentPage: 0
 
   // Direction of the last page turn (+1 next / -1 previous); the incoming page
@@ -51,7 +50,7 @@ Item {
   property int navDirection: 1
 
   readonly property string currentDetailPage: {
-    const idx = currentPage - 1 - switchPageCount;
+    const idx = currentPage - 1;
     return (idx >= 0 && idx < detailPages.length) ? detailPages[idx] : "";
   }
 
@@ -63,12 +62,6 @@ Item {
   function previousPage() {
     navDirection = -1;
     currentPage = (currentPage - 1 + pageCount) % pageCount;
-  }
-
-  onSwitchPageCountChanged: {
-    // Keep the current page in range when the shortcut list changes
-    if (currentPage >= pageCount)
-      currentPage = Math.max(0, pageCount - 1);
   }
 
   onPageCountChanged: {
@@ -83,7 +76,7 @@ Item {
   // are unavailable in this environment fall back to the basic page.
   function openPage(name) {
     const idx = detailPages.indexOf(name);
-    const target = idx >= 0 ? 1 + switchPageCount + idx : 0;
+    const target = idx >= 0 ? 1 + idx : 0;
     navDirection = target >= currentPage ? 1 : -1;
     currentPage = target;
   }
@@ -249,40 +242,17 @@ Item {
           }
         }
 
-        // Quick switch row(s): 5 per page, overflow on dedicated switch pages
-        // Cells are 70 px wide (Style.quickSwitchWidth); the row is centred so
-        // a shorter button count still lands in DDE's rhythm.
+        // Quick switch rows: 5 per row, 10 shown — cells are 70 px wide
+        // (Style.quickSwitchWidth); the grid is centred so a shorter button
+        // count still lands in DDE's rhythm.
         SwitchGrid {
-          Layout.preferredHeight: Style.quickSwitchHeight
+          Layout.preferredHeight: switchRows * Style.quickSwitchHeight + Math.max(0, switchRows - 1) * Style.marginS
           Layout.preferredWidth: Math.min(parent.width, naturalWidth)
           Layout.topMargin: Style.marginS
           Layout.alignment: Qt.AlignHCenter
-          items: root.currentPage === 0 ? root.shortcuts.slice(0, Math.min(5, root.shortcuts.length)) : []
+          items: root.currentPage === 0 ? root.shortcuts : []
           baseIndex: 0
         }
-      }
-    }
-
-    // ---------------- switch pages (overflow) ----------------
-    Item {
-      Layout.fillWidth: true
-      Layout.preferredHeight: Style.quickControlPanelHeight
-      visible: root.currentPage >= 1 && root.currentPage <= root.switchPageCount
-
-      // Same cell geometry and width cap as the basic row; the row is centred
-      // in the page slot so a short page reads balanced instead of sparse.
-      SwitchGrid {
-        anchors.centerIn: parent
-        width: Math.min(parent.width - Style.margin2M, naturalWidth)
-        // Switch pages continue past the basic row: page N shows
-        // shortcuts [5 + (N-1)*5, 5 + N*5) so page 1 is never a duplicate
-        // of the basic page.
-        items: {
-          const start = 5 + (root.currentPage - 1) * 5;
-          const end = Math.min(start + 5, root.shortcuts.length);
-          return root.shortcuts.slice(start, end);
-        }
-        baseIndex: 5 + (root.currentPage - 1) * 5
       }
     }
 
@@ -315,19 +285,20 @@ Item {
     }
   }
 
-  // The quick-switch cell row shared by the basic page and overflow switch
-  // pages — identical geometry guarantees the same 70 px pitch on every page.
-  // items is the page-local slice; baseIndex is the absolute offset into
-  // root.shortcuts for widget bookkeeping.
+  // The quick-switch cell grid on the basic page — 5 columns, up to 2 rows.
+  // items is the (already capped) slice; baseIndex is the absolute offset
+  // into root.shortcuts for widget bookkeeping.
   component SwitchGrid: GridLayout {
     id: switchGrid
     property var items: []
     property int baseIndex: 0
-    // Centre short rows: width hugs the actual cell count so a 3-button page
-    // is a centred trio, not a sparse left-aligned spread in a 5-cell box.
-    readonly property real naturalWidth: items.length * Style.quickSwitchWidth + Math.max(0, items.length - 1) * Style.marginXS
+    readonly property int switchRows: Math.ceil(items.length / 5)
+    // Centre short rows: width hugs the last row's cell count so a short
+    // page is centred, not left-aligned in a 5-cell box.
+    readonly property int rowCellCount: Math.min(5, items.length)
+    readonly property real naturalWidth: rowCellCount * Style.quickSwitchWidth + Math.max(0, rowCellCount - 1) * Style.marginXS
 
-    columns: Math.max(1, Math.min(5, items.length))
+    columns: Math.max(1, rowCellCount)
     columnSpacing: Style.marginXS
     rowSpacing: Style.marginS
 
@@ -353,16 +324,16 @@ Item {
                                                   "widgetSettings": widgetData
                                                 } : null
       }
-      }
-      }
+    }
+  }
 
-        PageIndicator {
-          anchors.left: parent.left
-          anchors.right: parent.right
-          anchors.bottom: parent.bottom
-          pageCount: root.pageCount
-          currentPage: root.currentPage
-          onNextRequested: root.nextPage()
-          onPreviousRequested: root.previousPage()
-        }
-      }
+  PageIndicator {
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
+    pageCount: root.pageCount
+    currentPage: root.currentPage
+    onNextRequested: root.nextPage()
+    onPreviousRequested: root.previousPage()
+  }
+}
