@@ -10,7 +10,7 @@
 
 ## [Unreleased]
 
-控制中心重排成 DDE 的样子：默认页是通知列表，卡片成为底部分页条的第一页，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。底部分页槽按卡片页定高，监控卡要显示哪几个表盘可以在设置里挑。
+控制中心重排成 DDE 的样子：默认页是通知列表，卡片成为底部分页条的第一页，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。底部分页槽按当前页内容定高，监控卡要显示哪几个表盘可以在设置里挑，整条还能从顶部的把手收起来翻通知。
 
 ---
 
@@ -27,6 +27,7 @@
 - cards are the quick-control pager's first page：[`dfa3f196b`](https://github.com/ShineBreaker/nosDshell/commit/dfa3f196bfa5e39fa520637d62905444d24e827b)
 - selectable gauges on the system monitor card：[`0de3ffa29`](https://github.com/ShineBreaker/nosDshell/commit/0de3ffa2965783dfe0424ec377e0fa2137c6f652)
 - quick-control slot sized for the cards page：[`c63f115d6`](https://github.com/ShineBreaker/nosDshell/commit/c63f115d6a2d027680495ce3bad272f621ebabe4)
+- compact quick-control strip + collapse handle：[`5aa15985a`](https://github.com/ShineBreaker/nosDshell/commit/5aa15985a6a995d3ca72e9dccc20347ae24b404f)
 
 ## [1.1.8] - 2026-10-12
 
