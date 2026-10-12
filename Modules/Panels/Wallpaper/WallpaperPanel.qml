@@ -74,9 +74,13 @@ SmartPanel {
       root.contentItem = strip;
     }
     readonly property real contentPreferredWidth: root.width
-    // The sheet is pinned to the screen bottom edge; clear the taskbar here so
-    // the thumbnails are never clipped by the floating dock.
-    readonly property real barInset: root.barPosition === "bottom" && !root.barIsVertical ? Style.getBarHeightForScreen(targetScreenName) + root.barMarginV : 0
+    // The sheet is pinned to the screen bottom edge; clear whatever shell
+    // strip occupies that edge — the fashion dock or a bottom status bar with
+    // its floating margin — so the thumbnails are never clipped. The bar term
+    // alone is not enough: in fashion mode getBarPositionForScreen falls back
+    // to the taskbar edge while getBarHeightForScreen returns the status-bar
+    // density height, which is smaller than the dock's thickness.
+    readonly property real barInset: Math.max(BarService.edgeStripThickness(targetScreenName, "bottom"), (root.barPosition === "bottom" && !root.barIsVertical) ? Style.getBarHeightForScreen(targetScreenName) + root.barMarginV : 0)
     readonly property real contentPreferredHeight: Style.wallpaperStripHeight + barInset
     readonly property string targetScreenName: root.screen ? root.screen.name : ""
     readonly property bool isWallhaven: Settings.data.wallpaper.useWallhaven
