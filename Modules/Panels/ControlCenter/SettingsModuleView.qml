@@ -182,18 +182,16 @@ Item {
     snapQuietTimer.stop();
   }
 
-  // User scroll stopped (short debounce) → highlight the first module whose
-  // header top sits at/below the viewport top (settingswidget.cpp:342-380).
-  // The current module is kept while its section still intersects the
-  // viewport (same hysteresis as the C++ early-return). Deviation: past the
-  // last header the C++ falls back to the first activable module; here the
-  // last visible section stays highlighted instead of jumping to the top.
-  Timer {
-    id: scrollSettleTimer
-    interval: 180
-    repeat: false
-    onTriggered: root._syncModuleToScroll()
-  }
+  // User scroll → highlight the first module whose header top sits at/below
+  // the viewport top (settingswidget.cpp:342-380). Runs on every contentY
+  // change so the rail tracks the scroll in real time; the current module is
+  // kept while its section still intersects the viewport (same hysteresis as
+  // the C++ early-return). Deviation: past the last header the C++ falls back
+  // to the first activable module; here the last visible section stays
+  // highlighted instead of jumping to the top.
+  // `_syncModuleToScroll` below is also called from the flickable's
+  // onContentYChanged — no debounce: a delayed sync makes the rail visibly
+  // lag the content the user is dragging.
 
   // Final alignment: fires after a quiet period with no tab loads (covers
   // late shifts like font-driven height changes that arrive after every
@@ -205,6 +203,9 @@ Item {
     onTriggered: {
       root._resnapToTarget();
       root._pendingSnap = null;
+      // Snap is done — reconcile the rail with where content actually
+      // landed so a drag during the snap window can't strand the accent.
+      root._syncModuleToScroll();
     }
   }
 
@@ -787,12 +788,15 @@ Item {
           showGradientMasks: false
           gradientColor: Color.maskShell
 
-          // User scroll cancels programmatic scroll + pending re-snap; scroll
-          // stops (debounced) sync the rail highlight (commit: nav sync).
+          // User scroll cancels programmatic scroll + pending re-snap and
+          // re-syncs the rail highlight on every step so the accent follows
+          // the scroll live (settingswidget.cpp:342-380).
           // NOTE: contentY also changes when Flickable auto-clamps after the
           // content above shrinks (placeholder estimate taller than the real
           // tab). That is NOT user intent, so the snap must survive it — the
-          // pending target is dropped only on explicit drag/flick/wheel.
+          // pending target is dropped only on explicit drag/flick/wheel, and
+          // while a snap is in flight the highlight stays on its target
+          // instead of chasing transient layout noise.
           Connections {
             target: contentScroll.contentItem
             function onDraggingChanged() {
@@ -804,9 +808,9 @@ Item {
                 root._cancelProgrammatic();
             }
             function onContentYChanged() {
-              if (root._programmatic || root._snapping)
+              if (root._programmatic || root._snapping || root._pendingSnap)
                 return;
-              scrollSettleTimer.restart();
+              root._syncModuleToScroll();
             }
             // Any height shift (late font/image/layout polish that arrives with
             // no Loader event) moves the pending target: re-snap while the user
