@@ -27,6 +27,9 @@ Item {
   id: root
 
   property var screen: null
+  // Collapses the strip down to its handle so the notification list above
+  // can use the freed space; in-session only.
+  property bool collapsed: false
 
   readonly property real listWidth: Math.max(1, root.width - Style.margin2M)
 
@@ -76,7 +79,19 @@ Item {
       currentPage = Math.max(0, pageCount - 1);
   }
 
-  implicitHeight: content.implicitHeight + Style.pageIndicatorHeight
+  // The strip follows the current page's own height — the cards page reports
+  // its real content (weather card grows with data, media/sysmon row is
+  // fixed), the basic/detail pages use the quickControlPanelHeight token —
+  // plus the collapse handle and the page indicator.
+  implicitHeight: collapseBar.implicitHeight + (collapsed ? 0 : content.implicitHeight + Style.pageIndicatorHeight)
+
+  Behavior on implicitHeight {
+    NumberAnimation {
+      duration: Style.motionPanel
+      easing.type: Easing.InOutCubic
+    }
+  }
+
   clip: true
 
   // Select a page by id ("cards"/"basic" or wifi/bluetooth/display/vpn);
@@ -128,14 +143,33 @@ Item {
 
   readonly property real pageEnterOffset: Math.round(root.width * 0.12)
 
+  // Collapse handle: slim top bar with a centered chevron; the notification
+  // list above gets the freed space while collapsed.
+  Item {
+    id: collapseBar
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.top: parent.top
+    implicitHeight: Math.round(Style.baseWidgetSize * 0.8)
+
+    NIconButton {
+      anchors.centerIn: parent
+      icon: root.collapsed ? "chevron-up" : "chevron-down"
+      baseSize: collapseBar.implicitHeight
+      tooltipText: root.collapsed ? I18n.tr("panels.control-center.quick-controls-expand") : I18n.tr("panels.control-center.quick-controls-collapse")
+      onClicked: root.collapsed = !root.collapsed
+    }
+  }
+
   ColumnLayout {
     id: content
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.top: parent.top
+    anchors.top: collapseBar.bottom
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Style.pageIndicatorHeight
     spacing: 0
+    visible: !root.collapsed
     opacity: 1
     transform: Translate {
       id: pageSlide
@@ -146,10 +180,13 @@ Item {
     Item {
       id: cardsPage
       Layout.fillWidth: true
-      Layout.preferredHeight: Style.quickControlPanelHeight
+      // The cards page reports its own height: enabled cards' implicit
+      // heights plus top/bottom breathing room — no dead space under
+      // whichever cards are on.
+      Layout.preferredHeight: cardsCol.implicitHeight + Style.margin2M
       visible: root.currentPage === 0
 
-      // The cards can outgrow the shared slot — scroll like detail pages.
+      // If cards ever outgrow the panel the page still scrolls.
       NScrollView {
         id: cardsScroll
         anchors.fill: parent
@@ -163,6 +200,7 @@ Item {
         ScrollBar.horizontal.visible: false
 
         ColumnLayout {
+          id: cardsCol
           width: cardsScroll.availableWidth
           spacing: Style.marginM
 
@@ -391,6 +429,7 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.bottom: parent.bottom
+    visible: !root.collapsed
     pageCount: root.pageCount
     currentPage: root.currentPage
     onNextRequested: root.nextPage()

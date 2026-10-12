@@ -965,6 +965,8 @@
       "card-shortcuts": "Shortcuts",
       "card-weather": "Weather",
       "cards-desc": "Customize which controls appear in the control center and in what order.",
+      "quick-controls-collapse": "Collapse quick controls",
+      "quick-controls-expand": "Expand quick controls",
       "shortcuts-custom-button-enable-on-state-logic-description": "Enable a second icon and 'hot' state based on a check command.",
       "shortcuts-custom-button-enable-on-state-logic-label": "Enable on-state logic",
       "shortcuts-custom-button-icon-description": "Select an icon from the library.",

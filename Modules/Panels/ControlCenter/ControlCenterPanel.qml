@@ -314,7 +314,7 @@ SmartPanel {
       ControlCenterQuickControl {
         id: quickControl
         Layout.fillWidth: true
-        Layout.preferredHeight: Style.quickControlPanelHeight + Style.pageIndicatorHeight
+        Layout.preferredHeight: quickControl.implicitHeight
         visible: root.activeModule === null && !root.allSettingsPage
         screen: root.screen
         Layout.alignment: Qt.AlignBottom

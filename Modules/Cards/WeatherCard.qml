@@ -29,7 +29,7 @@ NBox {
   readonly property bool isClearNight: testEffects === "clear_night" || (testEffects === "" && (currentWeatherCode === 0 && !isDayTime))
 
   visible: Settings.data.location.weatherEnabled
-  implicitHeight: Math.max(100 * Style.uiScaleRatio, content.implicitHeight + Style.margin2XL)
+  implicitHeight: Math.max(80 * Style.uiScaleRatio, content.implicitHeight + Style.margin2M)
 
   // Weather effect layer (rain/snow)
   Loader {
@@ -53,7 +53,7 @@ NBox {
         id: weatherEffect
         anchors.fill: parent
         // Rain matches content margins, everything else fills the box
-        anchors.margins: root.isRaining ? Style.marginXL : root.border.width
+        anchors.margins: root.isRaining ? Style.marginM : root.border.width
 
         property var source: ShaderEffectSource {
           sourceItem: content
@@ -92,7 +92,7 @@ NBox {
   ColumnLayout {
     id: content
     anchors.fill: parent
-    anchors.margins: Style.marginXL
+    anchors.margins: Style.marginM
     spacing: Style.marginM
     clip: true
 
@@ -113,7 +113,7 @@ NBox {
           Layout.preferredWidth: mainWeatherIconSide
           Layout.preferredHeight: mainWeatherIconSide
           Layout.alignment: Qt.AlignVCenter
-          readonly property int mainWeatherIconSide: Math.round(Style.fontSizeXXXL * 1.75 * Style.uiScaleRatio * 1.6)
+          readonly property int mainWeatherIconSide: Math.round(Style.fontSizeXXXL * 1.75 * 1.25 * Style.uiScaleRatio)
 
           NIcon {
             anchors.centerIn: parent
@@ -196,7 +196,7 @@ NBox {
             Layout.preferredWidth: forecastWeatherIconSide
             Layout.preferredHeight: forecastWeatherIconSide
             Layout.alignment: Qt.AlignVCenter | Qt.AlignHCenter
-            readonly property int forecastWeatherIconSide: Math.round(Style.fontSizeXXL * 1.6 * Style.uiScaleRatio * 1.6)
+            readonly property int forecastWeatherIconSide: Math.round(Style.fontSizeXXL * 1.6 * 1.25 * Style.uiScaleRatio)
 
             NIcon {
               anchors.centerIn: parent

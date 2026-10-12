@@ -203,6 +203,7 @@ cd "$WORK"
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
 control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic cc-quick-cards
+cc-collapse
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
@@ -627,6 +628,20 @@ run_scene() {
                           call controlCenter open 1.5
                           call controlCenter quickPage "$p" 1.2
                           shot "$1"
+                          call controlCenter toggle 0.5 ;;
+    # Collapse handle: a real click on the strip's top chevron must shrink the
+    # strip down to the handle, and clicking again expands it back. 1920x1080,
+    # default cards page: handle centered ~(1716,733) expanded, ~(1716,1067)
+    # collapsed (only the ~26px handle remains at the bottom edge).
+    cc-collapse)          call controlCenter open 1.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          qs -p "$REPO" ipc call debug hit opened 1716 733 > "$WORK/logs/cc-collapse-hit.txt" 2>&1 || true
+                          shot cc-collapse-before
+                          "$VINPUT" vinput click 1716 733 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-collapse-collapsed
+                          "$VINPUT" vinput click 1716 1067 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.0; shot cc-collapse-expanded
                           call controlCenter toggle 0.5 ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
     # Forensics: open the all-settings page in the frame, dump the paint-order
