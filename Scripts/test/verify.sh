@@ -202,7 +202,7 @@ cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
 control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
-cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic
+cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic cc-quick-cards
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
