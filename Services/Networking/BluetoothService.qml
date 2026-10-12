@@ -72,10 +72,18 @@ Singleton {
     }
   }
 
-  // Handle potential case where Quickshell doesnt't properly update adapter after system wakeup
+  // Re-sync adapter power state via bluetoothctl when Quickshell may have stale
+  // state: after system wakeup, and when the adapter first appears (shell started
+  // before bluetoothd, upstream issue #2541)
   Connections {
     target: Time
     function onResumed() {
+      ctlPollTimer.restart();
+    }
+  }
+
+  onAdapterChanged: {
+    if (adapter) {
       ctlPollTimer.restart();
     }
   }
