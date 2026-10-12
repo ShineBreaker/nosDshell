@@ -10,10 +10,45 @@
 
 ## [Unreleased]
 
+## [1.1.7] - 2026-10-12
+
+一次设置体系的整体审计与收口：每个声明过的键都有了读者、读者或归宿，设置页补上了缺失的控件，壁纸面板找回了纯色与收藏入口；悬浮从栏形态里独立出来，简约/边框两种形态都能叠加；凹槽线、行高、字号、空态图标这些散落在各处的字面量全部收进了令牌；配套的检查器护栏会让同类退化在 lint 阶段就被拦下。
+
+---
+
 ### 新功能
 
 - `nosdshell --version` 显示 shell 与 quickshell 版本（Guix 构建附带 fork commit）
 - bash/zsh/fish 终端补全（`completions/`），随 Guix/Nix 包安装到标准目录
+- add controls for appLauncher.displayMode and ethernetDetailsViewMode：[`7a595d4e6`](https://github.com/ShineBreaker/nosDshell/commit/7a595d4e65ce4b933660561b99c71873a572efe4)
+
+### 修复
+
+- restore solid-color and favorite entry points：[`577c5ec62`](https://github.com/ShineBreaker/nosDshell/commit/577c5ec62d71dd72a686f7913a6c2f971c98e238)
+- clean up keys removed in d3f2097f2：[`1fedcd52b`](https://github.com/ShineBreaker/nosDshell/commit/1fedcd52bf321debcbaadaf6e5629673b24f8e92)
+- read seed settingsVersion from Settings.qml：[`2b24dd57e`](https://github.com/ShineBreaker/nosDshell/commit/2b24dd57e2481b7cdfa1aab717f652182150ff79)
+- sync settingsVersion and assert it in check-settings-keys：[`65d70c014`](https://github.com/ShineBreaker/nosDshell/commit/65d70c014a71e22eefcb6801e8f0ba2c24bb00a3)
+
+### 观感
+
+- add missing tokens for tray/lock/cc/empty-state：[`11a33415d`](https://github.com/ShineBreaker/nosDshell/commit/11a33415d3c67d0e1dee68bf710e6119c517539c)
+
+### 重构
+
+- add NDivider variant for DDE groove separators：[`e0f5f2ef3`](https://github.com/ShineBreaker/nosDshell/commit/e0f5f2ef320d51fa48bdccff5821bdd92094a613)
+- remove ?? fallbacks on declared settings keys：[`25227fef3`](https://github.com/ShineBreaker/nosDshell/commit/25227fef385d5065e04382026482d97b93593888)
+- make floating an independent bar option (v81)：[`94b17c78d`](https://github.com/ShineBreaker/nosDshell/commit/94b17c78d19c795ef8939b1ce14336f271a7606a)
+
+### 文档
+
+- dedupe provenance rule and fix README scope：[`21aa1d511`](https://github.com/ShineBreaker/nosDshell/commit/21aa1d511f867ba46c370570e5ff9dc34675d5cb)
+- complete §6.1 removal registry：[`4b1303670`](https://github.com/ShineBreaker/nosDshell/commit/4b1303670645253eddd6beaf2edbfccf1e3e1d80)
+- mark compat/unexposed keys at declaration and DESIGN §6：[`d70979951`](https://github.com/ShineBreaker/nosDshell/commit/d70979951e610b44238b3c3151f7062c90016376)
+- regenerate for bar.rightClick*; lint guards the key set：[`388dfb590`](https://github.com/ShineBreaker/nosDshell/commit/388dfb590b3706ff31850615679cd11aedd7ec4e)
+
+### 工程
+
+- guard orphaned entry points and control-to-key refs：[`8d8e3ae64`](https://github.com/ShineBreaker/nosDshell/commit/8d8e3ae64aba498129a7ce34d2edba4536c76c1d)
 
 ## [1.1.6] - 2026-10-12
 
@@ -235,7 +270,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.6...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.7...HEAD
+[1.1.7]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.6...v1.1.7
 [1.1.6]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.5...v1.1.6
 [1.1.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.1...v1.1.5
 [1.1.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.0...v1.1.1
