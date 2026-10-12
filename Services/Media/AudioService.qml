@@ -364,6 +364,13 @@ Singleton {
   property var panelAppVolumeByStreamKey: ({})
   property var panelAppMutedByStreamKey: ({})
   property var _knownAppStreamIds: ({})
+  // Stream id -> Date.now() of first sight. Sticky/override values are only
+  // enforced during this window after a stream appears: apps (re)set their
+  // stream volume right after creating it; past the window the app owns its
+  // volume and PipeWire-side changes are accepted again (upstream #2496).
+  property var _appStreamFirstSeen: ({})
+  property bool _anyStreamInGrace: false
+  readonly property int _streamSeedGraceMs: 3000
   property bool _isApplyingAppOverride: false
 
   PwObjectTracker {
@@ -396,6 +403,7 @@ Singleton {
             if (key) {
               root.setAppStreamVolume(key, modelData.audio.volume);
             }
+            root._syncPanelStickyForNode(modelData);
           }
 
           function onMutedChanged() {
@@ -409,6 +417,7 @@ Singleton {
             if (key) {
               root.setAppStreamMuted(key, modelData.audio.muted);
             }
+            root._syncPanelStickyForNode(modelData);
           }
         }
       }
@@ -609,7 +618,20 @@ Singleton {
     }
   }
 
+  function _nodeInGraceWindow(node): bool {
+    if (!node) {
+      return false;
+    }
+    // Not yet seen by _applyAppOverrides (50 ms debounce): the stream is brand
+    // new, so its startup volume must not clobber the sticky value.
+    var t = _appStreamFirstSeen[node.id];
+    return t === undefined || (Date.now() - t) < _streamSeedGraceMs;
+  }
+
   function _skipPipewireVolumeSyncForNode(node): bool {
+    if (!_nodeInGraceWindow(node)) {
+      return false;
+    }
     var base = getAppBaseKey(node);
     var key = getAppKey(node);
     if (key && panelAppVolumeByStreamKey[key] !== undefined) {
@@ -619,12 +641,47 @@ Singleton {
   }
 
   function _skipPipewireMuteSyncForNode(node): bool {
+    if (!_nodeInGraceWindow(node)) {
+      return false;
+    }
     var base = getAppBaseKey(node);
     var key = getAppKey(node);
     if (key && panelAppMutedByStreamKey[key] !== undefined) {
       return true;
     }
     return !!(base && panelAppMutedByBase[base] !== undefined && _concurrentStreamsForSameBase(base) <= 1);
+  }
+
+  // An accepted PipeWire-side change folds back into the panel sticky entry
+  // (if one exists) so the next re-created stream is seeded with the app's
+  // latest value instead of a stale panel value.
+  function _syncPanelStickyForNode(node): void {
+    if (!node?.audio) {
+      return;
+    }
+    var base = getAppBaseKey(node);
+    var key = getAppKey(node);
+    var single = _concurrentStreamsForSameBase(base) <= 1;
+
+    if (key && panelAppVolumeByStreamKey[key] !== undefined) {
+      var psk = panelAppVolumeByStreamKey;
+      psk[key] = node.audio.volume;
+      panelAppVolumeByStreamKey = psk;
+    } else if (single && base && panelAppVolumeByBase[base] !== undefined) {
+      var pvb = panelAppVolumeByBase;
+      pvb[base] = node.audio.volume;
+      panelAppVolumeByBase = pvb;
+    }
+
+    if (key && panelAppMutedByStreamKey[key] !== undefined) {
+      var msk = panelAppMutedByStreamKey;
+      msk[key] = node.audio.muted;
+      panelAppMutedByStreamKey = msk;
+    } else if (single && base && panelAppMutedByBase[base] !== undefined) {
+      var pmb = panelAppMutedByBase;
+      pmb[base] = node.audio.muted;
+      panelAppMutedByBase = pmb;
+    }
   }
 
   function _migrateBasePanelLocksToPerStreamIfNeeded(): void {
@@ -723,7 +780,11 @@ Singleton {
     root._migrateBasePanelLocksToPerStreamIfNeeded();
 
     var prevKnown = root._knownAppStreamIds;
+    var firstSeen = root._appStreamFirstSeen;
     var currentIds = {};
+    var newFirstSeen = {};
+    var now = Date.now();
+    var anyInGrace = false;
     _isApplyingAppOverride = true;
     for (var i = 0; i < streams.length; i++) {
       var s = streams[i];
@@ -736,13 +797,24 @@ Singleton {
       var base = getAppBaseKey(s);
       var ov = key ? appVolumeOverrides[key] : null;
 
-      if (key && s.audio && !prevKnown[s.id]) {
-        ov = _seedNewStreamOverride(key, base, s.audio);
+      if (!prevKnown[s.id]) {
+        firstSeen[s.id] = now;
+        if (key && s.audio) {
+          ov = _seedNewStreamOverride(key, base, s.audio);
+        }
       }
+      newFirstSeen[s.id] = (firstSeen[s.id] !== undefined) ? firstSeen[s.id] : now;
 
       if (!s.audio) {
         continue;
       }
+
+      // Outside the grace window the app owns its stream volume — only
+      // enforce the sticky/override value on a freshly appeared stream.
+      if ((now - newFirstSeen[s.id]) >= root._streamSeedGraceMs) {
+        continue;
+      }
+      anyInGrace = true;
 
       var panelVol = _panelStickyVolume(key, base);
       var panelMute = _panelStickyMute(key, base);
@@ -756,6 +828,8 @@ Singleton {
       }
     }
     _knownAppStreamIds = currentIds;
+    _appStreamFirstSeen = newFirstSeen;
+    _anyStreamInGrace = anyInGrace;
     _isApplyingAppOverride = false;
   }
 
@@ -772,10 +846,12 @@ Singleton {
     onTriggered: root._applyAppOverrides()
   }
 
+  // Enforcer runs only while a stream is inside its grace window; it stops
+  // itself once the last stream ages out.
   Timer {
     id: _appOverrideEnforcer
     interval: 1000
-    running: Object.keys(root.appVolumeOverrides).length > 0 && root.appStreams.length > 0
+    running: root._anyStreamInGrace
     repeat: true
     onTriggered: root._applyAppOverrides()
   }
