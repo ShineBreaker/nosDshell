@@ -151,41 +151,13 @@ Item {
       readonly property bool isRight: location.endsWith("_right")
       readonly property bool isCentered: location === "top" || location === "bottom"
 
-      readonly property bool hasBar: BarService.hasBarOnScreen(panel.screen?.name)
-      readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness
-
-      readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(panel.screen?.name) : ""
-      readonly property bool isFloating: hasBar && Settings.isBarFloating()
-      readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(panel.screen?.name) : 0
-      readonly property real floatMarginV: isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
-      readonly property real floatMarginH: isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
-
-      // Calculate bar and frame offsets for each edge separately. On a
-      // non-bar edge a framed ring still takes its band + float margin.
-      readonly property int barOffsetTop: {
-        if (barPos !== "top")
-          return isFramed ? frameThickness + floatMarginV : 0;
-        return barHeight + floatMarginV;
-      }
-
-      readonly property int barOffsetBottom: {
-        if (barPos !== "bottom")
-          return isFramed ? frameThickness + floatMarginV : 0;
-        return barHeight + floatMarginV;
-      }
-
-      readonly property int barOffsetLeft: {
-        if (barPos !== "left")
-          return isFramed ? frameThickness + floatMarginH : 0;
-        return barHeight + floatMarginH;
-      }
-
-      readonly property int barOffsetRight: {
-        if (barPos !== "right")
-          return isFramed ? frameThickness + floatMarginH : 0;
-        return barHeight + floatMarginH;
-      }
+      // Space each edge must keep clear so no shell strip clips the
+      // toast — the bar window or the floating fashion dock, the float
+      // margin, and the framed ring band (BarService.edgeClearance).
+      readonly property int barOffsetTop: BarService.edgeClearance(panel.screen?.name, "top")
+      readonly property int barOffsetBottom: BarService.edgeClearance(panel.screen?.name, "bottom")
+      readonly property int barOffsetLeft: BarService.edgeClearance(panel.screen?.name, "left")
+      readonly property int barOffsetRight: BarService.edgeClearance(panel.screen?.name, "right")
 
       readonly property int shadowPadding: Style.shadowBlurMax + Style.marginL
 

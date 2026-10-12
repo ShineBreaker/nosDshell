@@ -101,15 +101,13 @@ Variants {
       readonly property bool isRight: location.endsWith("_right")
       readonly property bool isCentered: location === "top" || location === "bottom"
 
-      readonly property bool hasBar: BarService.hasBarOnScreen(notifWindow.screen?.name)
-      readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(notifWindow.screen?.name) : ""
-      readonly property bool isFloating: hasBar && Settings.isBarFloating()
-      readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(notifWindow.screen?.name) : 0
-
-      readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness
-      readonly property real floatMarginV: isFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0
-      readonly property real floatMarginH: isFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0
+      // Space each edge must keep clear so no shell strip clips the
+      // bubbles — the bar window or the floating fashion dock, the float
+      // margin, and the framed ring band (BarService.edgeClearance).
+      readonly property int barOffsetTop: BarService.edgeClearance(notifWindow.screen?.name, "top")
+      readonly property int barOffsetBottom: BarService.edgeClearance(notifWindow.screen?.name, "bottom")
+      readonly property int barOffsetLeft: BarService.edgeClearance(notifWindow.screen?.name, "left")
+      readonly property int barOffsetRight: BarService.edgeClearance(notifWindow.screen?.name, "right")
 
       // Left of the control center when it is open (DESIGN §3.6,
       // dde-osd/notification/bubblemanager.cpp getX: bubbles sit left of the CC)
@@ -125,32 +123,6 @@ Variants {
       // DDE keeps 20 px from the screen edge (bubblemanager.cpp getX/getY,
       // bubble.h Padding), and stacks bubbles 10 px apart when maxVisible > 1.
       readonly property int edgeOffset: Style.bubbleEdgeOffset
-
-      // Calculate bar and frame offsets for each edge separately. On a
-      // non-bar edge a framed ring still takes its band + float margin.
-      readonly property int barOffsetTop: {
-        if (barPos !== "top")
-          return isFramed ? frameThickness + floatMarginV : 0;
-        return barHeight + floatMarginV;
-      }
-
-      readonly property int barOffsetBottom: {
-        if (barPos !== "bottom")
-          return isFramed ? frameThickness + floatMarginV : 0;
-        return barHeight + floatMarginV;
-      }
-
-      readonly property int barOffsetLeft: {
-        if (barPos !== "left")
-          return isFramed ? frameThickness + floatMarginH : 0;
-        return barHeight + floatMarginH;
-      }
-
-      readonly property int barOffsetRight: {
-        if (barPos !== "right")
-          return isFramed ? frameThickness + floatMarginH : 0;
-        return barHeight + floatMarginH;
-      }
 
       // Anchoring
       anchors.top: isTop

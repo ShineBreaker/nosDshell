@@ -64,14 +64,15 @@ PopupWindow {
   readonly property real barHeight: Style.getBarHeightForScreen(screen?.name)
   // Thickness of the strip the menu must clear on hostEdge; barHeight is a
   // sane default when nothing occupies that edge.
-  readonly property real hostStrip: BarService.edgeStripThickness(screen?.name, hostEdge) || barHeight
+  readonly property real hostStrip: BarService.edgeClearance(screen?.name, hostEdge) || barHeight
 
-  // Thickness of the shell strip occupying `edge` on this screen — see
-  // BarService.edgeStripThickness. Context menus must never extend into
-  // that strip: the bar/dock layer paints above popups, so any overlap
-  // renders the menu partially hidden.
+  // Space the menu must keep clear on `edge` of this screen — see
+  // BarService.edgeClearance. Context menus must never extend into that
+  // strip: the bar/dock layer paints above popups, so any overlap renders
+  // the menu partially hidden. The float margin and the framed ring band
+  // count too — the menu must not sit inside them.
   function _edgeOccupancy(edge) {
-    return BarService.edgeStripThickness(screen?.name, edge);
+    return BarService.edgeClearance(screen?.name, edge);
   }
 
   signal triggered(string action, var item)

@@ -124,7 +124,7 @@ PopupWindow {
         // For a top host surface: position menu below the occupied strip —
         // the dock item strip for dock plugins, the bar height for bar
         // widgets (same distinction the fallback path below already makes).
-        baseY = BarService.edgeStripThickness(root.screen?.name, "top") + Style.marginS;
+        baseY = BarService.edgeClearance(root.screen?.name, "top") + Style.marginS;
       }
 
       // Use a robust way to get screen coordinates
@@ -136,7 +136,7 @@ PopupWindow {
 
       // If window reported 0 but bar is at bottom, assume it's at screen bottom
       if (windowYOnScreen === 0 && barPosition === "bottom" && screen) {
-        windowYOnScreen = screen.height - (parentWindow ? parentWindow.height : Style.getBarHeightForScreen(screen.name));
+        windowYOnScreen = screen.height - (parentWindow ? parentWindow.height : BarService.edgeClearance(screen.name, "bottom"));
       }
 
       // Calculate the screen Y of the menu top
@@ -172,7 +172,7 @@ PopupWindow {
     }
     // The offset below the anchor is the host surface's thickness — the dock
     // item strip for dock plugins, the bar height for bar widgets.
-    return anchorY + (root.hostEdge === "bottom" ? -implicitHeight : (widgetSection === "dock" ? Style.dockItemThickness : Style.getBarHeightForScreen(root.screen?.name)));
+    return anchorY + (root.hostEdge === "bottom" ? -implicitHeight : BarService.edgeStripThickness(root.screen?.name, root.hostEdge));
   }
 
   function showAt(item, x, y) {

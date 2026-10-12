@@ -51,8 +51,6 @@ Variants {
 
     // Insets follow the taskbar/dock edge, not the optional status bar
     readonly property string barPosition: Settings.getTaskbarPositionForScreen(modelData?.name ?? "")
-    readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
-    readonly property bool efficient: Settings.data.dock.mode === "efficient"
 
     // Side paddings: calculateBesidePadding() — 180 px, 130 px on <= 1366 wide
     // screens (gxde-launcher calculate_util.cpp:47-54)
@@ -86,7 +84,7 @@ Variants {
     //   bottom 60 px (VIEWLIST_BOTTOM_MARGIN) plus the thickness when it is at the bottom
     //   left   the taskbar thickness when the taskbar is on the left
     //   right  the taskbar thickness when the taskbar is on the right
-    readonly property real taskbarThickness: hasTaskbar ? (efficient ? Style.barHeight : Style.dockItemThickness) : 0
+    readonly property real taskbarThickness: BarService.edgeClearance(modelData?.name ?? "", barPosition)
     readonly property real bottomGap: barPosition === "bottom" ? Style.launcherGridBottomMargin + taskbarThickness : 0
     readonly property real topInset: barPosition === "top" ? Style.launcherTopBand + taskbarThickness : Style.launcherTopBand
     readonly property real leftGap: barPosition === "left" ? taskbarThickness : 0

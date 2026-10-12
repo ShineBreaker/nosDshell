@@ -648,6 +648,35 @@ Singleton {
     return 0;
   }
 
+  // Space a surface must leave on `edge` of `screenName` so no shell
+  // furniture clips it: the strip occupying the edge — the bar window or
+  // the floating fashion dock (edgeStripThickness), plus the float margin
+  // when a floating bar window is what sits there — or, on the edges the
+  // bar is not on, a framed bar's ring band. 0 when the edge is bare.
+  // edgeStripThickness measures the windows only; bubbles, menus and edge
+  // sheets that must stay visually clear of the margin and the ring use
+  // this instead.
+  function edgeClearance(screenName, edge) {
+    if (!screenName)
+      return 0;
+    const isV = edge === "top" || edge === "bottom";
+    const floatM = Settings.isBarFloating()
+        ? Math.ceil(isV ? Settings.data.bar.marginVertical : Settings.data.bar.marginHorizontal)
+        : 0;
+    const strip = edgeStripThickness(screenName, edge);
+    if (!hasBarOnScreen(screenName))
+      return strip;
+    if (Settings.getBarPositionForScreen(screenName) === edge) {
+      // Occupied by the bar window: floating lifts the strip off the edge.
+      return Math.max(strip, Style.getBarHeightForScreen(screenName) + floatM);
+    }
+    if (Settings.getEffectiveBarType() === "framed") {
+      // The ring band sits on every edge, the float margin lifts it too.
+      return Math.max(strip, Settings.data.bar.frameThickness + floatM);
+    }
+    return strip;
+  }
+
   // Helper to close any existing dialogs in a popup menu window
   function closeExistingDialogs(popupMenuWindow) {
     if (!popupMenuWindow || !popupMenuWindow.dialogParent)

@@ -266,13 +266,14 @@ Singleton {
   function openAtDockCenter(screen) {
     if (!screen)
       return;
-    var dock = Settings.data.dock;
-    // Efficient bar thickness is iconSize*1.2; the fashion dock window is
-    // iconSize*1.5 (DESIGN §3.1)
-    var thickness = dock.mode === "efficient" ? Style.getBarHeightForScreen(screen.name) : Math.round(dock.iconSize * 1.5);
+    // The strip the menu opens from: the efficient bar's height or the
+    // fashion dock's item box, float margin included (BarService.edgeClearance,
+    // DESIGN §3.1).
+    var edge = Settings.getTaskbarPositionForScreen(screen.name);
+    var thickness = BarService.edgeClearance(screen.name, edge);
     var cx = screen.width / 2;
     var cy = screen.height / 2;
-    switch (dock.position) {
+    switch (edge) {
     case "top":
       cy = thickness;
       break;

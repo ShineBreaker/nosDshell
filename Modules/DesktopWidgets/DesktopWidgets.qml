@@ -383,23 +383,11 @@ Variants {
           id: editModeControlsPanel
           visible: DesktopWidgetRegistry.editMode && Settings.data.desktopWidgets.enabled
 
-          readonly property bool hasBar: BarService.hasBarOnScreen(window.screen?.name)
-          readonly property string barPos: hasBar ? Settings.getBarPositionForScreen(window.screen?.name) : ""
-          readonly property bool barFloating: hasBar && Settings.isBarFloating()
-          readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(window.screen?.name) : 0
-
-          readonly property int barOffsetTop: {
-            if (barPos !== "top")
-              return Style.marginM;
-            const floatMarginV = barFloating ? Math.ceil(Settings.data.bar.marginVertical) : 0;
-            return barHeight + floatMarginV + Style.marginM;
-          }
-          readonly property int barOffsetRight: {
-            if (barPos !== "right")
-              return Style.marginM;
-            const floatMarginH = barFloating ? Math.ceil(Settings.data.bar.marginHorizontal) : 0;
-            return barHeight + floatMarginH + Style.marginM;
-          }
+          // Keep clear of whatever shell strip occupies the edge — bar
+          // window or floating fashion dock, float margin and framed ring
+          // band included (BarService.edgeClearance).
+          readonly property int barOffsetTop: Style.marginM + BarService.edgeClearance(window.screen?.name, "top")
+          readonly property int barOffsetRight: Style.marginM + BarService.edgeClearance(window.screen?.name, "right")
 
           // Internal state for drag tracking (session-only, resets on restart)
           QtObject {

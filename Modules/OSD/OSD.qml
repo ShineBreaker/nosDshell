@@ -459,29 +459,14 @@ Variants {
       anchors.left: isLeft
       anchors.right: isRight
 
-      readonly property bool hasBar: BarService.hasBarOnScreen(root.modelData?.name)
-      readonly property string screenBarPosition: hasBar ? Settings.getBarPositionForScreen(root.modelData?.name) : ""
-      readonly property real barHeight: hasBar ? Style.getBarHeightForScreen(root.modelData?.name) : 0
-      readonly property bool isFramed: hasBar && Settings.getEffectiveBarType() === "framed"
-      readonly property real frameThickness: Settings.data.bar.frameThickness
-
       function calculateMargin(isAnchored, position) {
         if (!isAnchored)
           return 0;
 
-        let base = Style.marginM;
-        const isVertical = position === "top" || position === "bottom";
-        const floatExtra = Math.ceil(Settings.isBarFloating() ? (isVertical ? Settings.data.bar.marginVertical : Settings.data.bar.marginHorizontal) : 0);
-        if (screenBarPosition === position) {
-          return barHeight + base + floatExtra;
-        }
-
-        // A framed ring band sits on every edge; floating lifts it too
-        if (isFramed) {
-          return base + frameThickness + floatExtra;
-        }
-
-        return base;
+        // Space each edge must keep clear of the shell strip occupying it
+        // — bar window or floating fashion dock, float margin and framed
+        // ring band included (BarService.edgeClearance).
+        return Style.marginM + BarService.edgeClearance(root.modelData?.name, position);
       }
 
       margins.top: calculateMargin(anchors.top, "top")

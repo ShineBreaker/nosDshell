@@ -682,7 +682,7 @@ Item {
         // else the bar window's edge (a screen with only the fashion status
         // bar still anchors shell popups).
         var stripEdge = root.taskbarPresent ? root.dockPosition : Settings.getBarPositionForScreen(screen?.name || "");
-        var strip = BarService.edgeStripThickness(screen?.name || "", stripEdge);
+        var strip = BarService.edgeClearance(screen?.name || "", stripEdge);
         if (strip <= 0) {
           bodyX = (root.width - panelWidth) / 2;
           bodyY = (root.height - panelHeight) / 2;

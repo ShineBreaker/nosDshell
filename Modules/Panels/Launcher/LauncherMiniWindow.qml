@@ -53,16 +53,17 @@ Variants {
     // The mini launcher hugs the taskbar/dock edge, not the optional status bar
     readonly property string barPosition: Settings.getTaskbarPositionForScreen(modelData?.name ?? "")
     readonly property bool efficient: Settings.data.dock.mode === "efficient"
-    readonly property bool hasTaskbar: BarService.hasTaskbarOnScreen(modelData?.name ?? "")
 
     readonly property real windowWidth: Style.launcherMiniLeftPaneWidth + Style.launcherMiniRightPaneWidth
     readonly property real windowHeight: Style.launcherMiniHeight
     // 1 px off the taskbar (windowedframe.cpp adjustPosition)
     readonly property real gap: Style.launcherMiniDockGap
 
-    // Cross-axis thickness of the taskbar: the efficient bar's height, or the
-    // fashion dock's item box. DDE reads this straight off dockRect.
-    readonly property real barThickness: hasTaskbar ? (efficient ? Style.barHeight : Style.dockItemThickness) : 0
+    // Cross-axis thickness of the taskbar strip: the efficient bar's height,
+    // or the fashion dock's item box (BarService.edgeClearance — the union
+    // also covers a status bar sharing the edge, and the float margin).
+    // DDE reads this straight off dockRect.
+    readonly property real barThickness: BarService.edgeClearance(modelData?.name ?? "", barPosition)
 
     // Long-axis length of the centred fashion dock, published by DockContent.
     // Bound through dockLengthsRevision so the position follows the dock as
