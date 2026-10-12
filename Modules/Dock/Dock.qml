@@ -252,15 +252,15 @@ Loader {
       // matches pins via desktop entry resolution (strong match).
       function normalizeAppId(appId) {
         return AppIdMatcher.normalizeAppId(appId, {
-                 stripDesktopSuffix: true
-               });
+                                             stripDesktopSuffix: true
+                                           });
       }
 
       function isAppIdPinned(appId, pinnedApps) {
         return AppIdMatcher.isAppIdPinned(appId, pinnedApps, {
-                 stripDesktopSuffix: true,
-                 resolveEntry: true
-               });
+                                            stripDesktopSuffix: true,
+                                            resolveEntry: true
+                                          });
       }
 
       function resolveToDesktopEntryId(appId) {
@@ -476,11 +476,17 @@ Loader {
                                                                               return resolved !== app.appId && normalizeAppId(resolved) === normalizedPinned;
                                                                             });
 
-                               if (matchingToplevels.length > 0) {
+                               // onlySameOutput: instances living on other
+                               // outputs don't count as "running" on this
+                               // screen — fall through to the pinned slot so
+                               // the app doesn't vanish from this dock.
+                               const localToplevels = matchingToplevels.filter(toplevel => onLiveScreen(toplevel.screens));
+
+                               if (localToplevels.length > 0) {
                                  // Add all running instances as pinned-running
-                                 matchingToplevels.forEach(toplevel => {
-                                                             pushApp("pinned-running", toplevel, pinnedAppId, toplevel.title);
-                                                           });
+                                 localToplevels.forEach(toplevel => {
+                                                          pushApp("pinned-running", toplevel, pinnedAppId, toplevel.title);
+                                                        });
                                } else {
                                  // App is pinned but not running - add once
                                  pushApp("pinned", null, pinnedAppId, getAppNameFromDesktopEntry(pinnedAppId) || pinnedAppId);
