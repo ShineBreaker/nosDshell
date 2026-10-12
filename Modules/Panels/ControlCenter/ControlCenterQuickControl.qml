@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
+import qs.Modules.Cards
 import qs.Modules.Panels.ControlCenter
 import qs.Services.Hardware
 import qs.Services.Media
@@ -14,11 +15,13 @@ import qs.Widgets
 /**
 * ControlCenterQuickControl - the fixed bottom quick-control panel (§3.5.2).
 *
-* Basic page: volume + brightness sliders (24 px glyphs at both ends,
-* brightness hidden when unavailable) and two rows of quick switch buttons
-* taken from controlCenter.shortcuts.left ++ .right (5 per row, 10 shown —
-* no overflow pages). Detail pages: Wi-Fi, Bluetooth, Display, VPN — reusing
-* the same services as the existing panels, styled per §3.5.4.
+* Cards page (first): the enabled controlCenter.cards — weather, media,
+* system monitor — as the home page's default widgets. Basic page: volume +
+* brightness sliders (24 px glyphs at both ends, brightness hidden when
+* unavailable) and two rows of quick switch buttons taken from
+* controlCenter.shortcuts.left ++ .right (5 per row, 10 shown — no overflow
+* pages). Detail pages: Wi-Fi, Bluetooth, Display, VPN — reusing the same
+* services as the existing panels, styled per §3.5.4.
 */
 Item {
   id: root
@@ -28,6 +31,10 @@ Item {
   readonly property real listWidth: Math.max(1, root.width - Style.margin2M)
 
   // ---------------- pages ----------------
+  // Page 0 is the cards page (the home page's default widgets), page 1 the
+  // basic page; detail pages follow.
+  readonly property var cards: Settings.data.controlCenter.cards
+
   // Up to ten switches on the basic page (5 per row); the rest are simply
   // not shown — the settings UI lets the user pick which ones matter.
   readonly property var shortcuts: (Settings.data.controlCenter.shortcuts?.left).concat(Settings.data.controlCenter.shortcuts?.right).slice(0, 10)
@@ -42,7 +49,7 @@ Item {
     return pages;
   }
 
-  readonly property int pageCount: 1 + detailPages.length
+  readonly property int pageCount: 2 + detailPages.length
   property int currentPage: 0
 
   // Direction of the last page turn (+1 next / -1 previous); the incoming page
@@ -50,7 +57,7 @@ Item {
   property int navDirection: 1
 
   readonly property string currentDetailPage: {
-    const idx = currentPage - 1;
+    const idx = currentPage - 2;
     return (idx >= 0 && idx < detailPages.length) ? detailPages[idx] : "";
   }
 
@@ -72,11 +79,17 @@ Item {
   implicitHeight: content.implicitHeight + Style.pageIndicatorHeight
   clip: true
 
-  // Select a page by id ("basic" or wifi/bluetooth/display/vpn); pages that
-  // are unavailable in this environment fall back to the basic page.
+  // Select a page by id ("cards"/"basic" or wifi/bluetooth/display/vpn);
+  // pages unavailable in this environment fall back to the cards page.
   function openPage(name) {
-    const idx = detailPages.indexOf(name);
-    const target = idx >= 0 ? 1 + idx : 0;
+    var target = 0;
+    if (name === "basic")
+      target = 1;
+    else if (name !== "cards") {
+      const idx = detailPages.indexOf(name);
+      if (idx >= 0)
+        target = 2 + idx;
+    }
     navDirection = target >= currentPage ? 1 : -1;
     currentPage = target;
   }
@@ -129,12 +142,59 @@ Item {
       x: 0
     }
 
+    // ---------------- cards page (first page) ----------------
+    Item {
+      id: cardsPage
+      Layout.fillWidth: true
+      Layout.preferredHeight: Style.quickControlPanelHeight
+      visible: root.currentPage === 0
+
+      // The cards can outgrow the shared slot — scroll like detail pages.
+      NScrollView {
+        id: cardsScroll
+        anchors.fill: parent
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        anchors.topMargin: Style.marginM
+        horizontalPolicy: ScrollBar.AlwaysOff
+        verticalPolicy: ScrollBar.AsNeeded
+        reserveScrollbarSpace: false
+        gradientColor: Color.maskShell
+        ScrollBar.horizontal.visible: false
+
+        ColumnLayout {
+          width: cardsScroll.availableWidth
+          spacing: Style.marginM
+
+          Repeater {
+            model: root.cards
+
+            delegate: Loader {
+              required property var modelData
+              active: modelData.enabled && (modelData.id !== "weather-card" || Settings.data.location.weatherEnabled)
+              visible: active
+              Layout.fillWidth: true
+
+              sourceComponent: {
+                switch (modelData.id) {
+                case "weather-card":
+                  return cardWeather;
+                case "media-sysmon-card":
+                  return cardMediaSysmon;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
     // ---------------- basic page ----------------
     Item {
       id: basicPage
       Layout.fillWidth: true
       Layout.preferredHeight: Style.quickControlPanelHeight
-      visible: root.currentPage === 0
+      visible: root.currentPage === 1
 
       ColumnLayout {
         anchors.fill: parent
@@ -250,7 +310,7 @@ Item {
           Layout.preferredWidth: Math.min(parent.width, naturalWidth)
           Layout.topMargin: Style.marginS
           Layout.alignment: Qt.AlignHCenter
-          items: root.currentPage === 0 ? root.shortcuts : []
+          items: root.currentPage === 1 ? root.shortcuts : []
           baseIndex: 0
         }
       }
@@ -335,5 +395,27 @@ Item {
     currentPage: root.currentPage
     onNextRequested: root.nextPage()
     onPreviousRequested: root.previousPage()
+  }
+
+  Component {
+    id: cardWeather
+    WeatherCard {}
+  }
+
+  Component {
+    id: cardMediaSysmon
+    RowLayout {
+      spacing: Style.marginS
+
+      MediaCard {
+        Layout.fillWidth: true
+        Layout.preferredHeight: Math.round(200 * Style.uiScaleRatio)
+      }
+
+      SystemMonitorCard {
+        Layout.preferredWidth: Math.round(Style.baseWidgetSize * 2.625)
+        Layout.fillHeight: true
+      }
+    }
   }
 }

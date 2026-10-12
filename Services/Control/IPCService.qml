@@ -669,7 +669,7 @@ Singleton {
                                             });
     }
 
-    // Select a quick-control page: wifi | bluetooth | display | vpn | basic
+    // Select a quick-control page: cards | basic | wifi | bluetooth | display | vpn
     function quickPage(page: string) {
       root.screenDetector.withCurrentScreen(screen => {
                                               var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);

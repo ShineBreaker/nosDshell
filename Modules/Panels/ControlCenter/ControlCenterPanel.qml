@@ -38,9 +38,9 @@ SmartPanel {
   panelShadow: Style.shadowControlCenter
 
   // Which middle page shows when no module is open: false = the home page
-  // (notification list with the cards below it, the DDE default), true =
-  // the all-settings module grid (〔演进〕 grid is a settings entry page,
-  // not the landing view).
+  // (the notification list — the DDE default; the cards live in the
+  // quick-control pager below), true = the all-settings module grid
+  // (〔演进〕 grid is a settings entry page, not the landing view).
   property bool allSettingsPage: false
 
   // Scene forensics: the whole frame registers as "cc-<screen>" so
@@ -280,8 +280,8 @@ SmartPanel {
           }
         }
 
-        // Home (default): notification list with the content cards below it
-        // (〔演进〕 the DDE default page is notification-first)
+        // Home (default): the notification list (〔演进〕 notification-first;
+        // the content cards moved into the quick-control pager as page 0)
         ControlCenterNotificationPage {
           id: notificationPageItem
           anchors.fill: parent
