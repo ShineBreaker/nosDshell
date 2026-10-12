@@ -3,22 +3,22 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Commons
-import qs.Modules.Cards
 import qs.Modules.Panels.ControlCenter
 import qs.Services.UI
 import qs.Widgets
 
 /**
-* ControlCenterModulesPage - module page (DESIGN §3.5.2).
+* ControlCenterModulesPage - the all-settings module grid (DESIGN §3.5.2/3.5.3).
 *
-* Enabled content cards from controlCenter.cards first — weather, media,
-* system monitor, calendar — each as a block with overlay("idle") and
-* radiusItem, restyled from the Noctalia card look; then the module grid:
-* 3 columns, cells inset 5, radiusItem, overlay("idle") / overlay("hover"),
-* 24 px glyph plus label below (to the right when the cell is too short).
+* 〔演进〕 The module grid is the all-settings entry page, not the landing
+* view: the home page is notification-first and the content cards moved
+* below the notification list. The grid is reached from the header gear,
+* the bell toggle and settings entries; a cell click opens the module view
+* inside the frame (DESIGN §3.5.3) via `moduleSelected`.
 *
-* Since Phase 5b a click opens the module view inside the frame (DESIGN §3.5.3)
-* via `moduleSelected` instead of leaving the control center.
+* Grid: 3 columns, cells inset 5, radiusItem, overlay("idle") /
+* overlay("hover"), 24 px glyph plus label below (to the right when the
+* cell is too short).
 */
 Item {
   id: root
@@ -29,7 +29,6 @@ Item {
   signal moduleSelected(var module)
 
   readonly property real contentWidth: Math.max(1, root.width - Style.margin2M)
-  readonly property var cards: Settings.data.controlCenter.cards
   readonly property var modules: ControlCenterModules.modules.filter(m => ControlCenterModules.isVisible(m))
   readonly property int gridColumns: 3
 
@@ -54,27 +53,6 @@ Item {
       id: content
       width: scroll.availableWidth
       spacing: Style.marginM
-
-      // ---------------- content cards ----------------
-      Repeater {
-        model: root.cards
-
-        delegate: Loader {
-          required property var modelData
-          active: modelData.enabled && (modelData.id !== "weather-card" || Settings.data.location.weatherEnabled)
-          visible: active
-          Layout.fillWidth: true
-
-          sourceComponent: {
-            switch (modelData.id) {
-            case "weather-card":
-              return cardWeather;
-            case "media-sysmon-card":
-              return cardMediaSysmon;
-            }
-          }
-        }
-      }
 
       // ---------------- module grid ----------------
       GridLayout {
@@ -167,28 +145,6 @@ Item {
             }
           }
         }
-      }
-    }
-  }
-
-  Component {
-    id: cardWeather
-    WeatherCard {}
-  }
-
-  Component {
-    id: cardMediaSysmon
-    RowLayout {
-      spacing: Style.marginS
-
-      MediaCard {
-        Layout.fillWidth: true
-        Layout.preferredHeight: Math.round(200 * Style.uiScaleRatio)
-      }
-
-      SystemMonitorCard {
-        Layout.preferredWidth: Math.round(Style.baseWidgetSize * 2.625)
-        Layout.fillHeight: true
       }
     }
   }

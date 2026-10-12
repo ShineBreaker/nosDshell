@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Modules.Panels.ControlCenter
+import qs.Modules.Panels.Settings
 import qs.Services.UI
 
 Singleton {
@@ -116,6 +117,58 @@ Singleton {
       if (settingsPanel) {
         settingsPanel.openToTab(tabId, subTabId);
       }
+    }
+  }
+
+  // "Open settings" with no target: lands on the control center's
+  // all-settings module grid — the DDE 控制面板 entry page (DESIGN §3.5.3).
+  // Deep links keep going through openToTab/openToEntry; the legacy window
+  // and panel modes fall back to the General tab (they have no grid).
+  function openHome(screen) {
+    if (Settings.data.ui.settingsPanelMode === "controlCenter") {
+      if (!screen) {
+        Logger.w("SettingsPanelService", "Screen parameter required for controlCenter mode");
+        return;
+      }
+      var ccPanel = PanelService.getPanel("controlCenterPanel", screen);
+      if (!ccPanel)
+        return;
+      // Drop a queued deep link so opening lands on the grid.
+      ccPanel.pendingModule = null;
+      ccPanel.showAllSettings();
+      if (!ccPanel.isPanelOpen || ccPanel.isClosing)
+        ccPanel.open();
+    } else if (Settings.data.ui.settingsPanelMode === "window") {
+      openWindow(SettingsPanel.Tab.General);
+    } else {
+      openToTab(SettingsPanel.Tab.General, -1, screen);
+    }
+  }
+
+  // Toggle variant of openHome: closes an already-open frame/window.
+  function toggleHome(screen) {
+    if (Settings.data.ui.settingsPanelMode === "controlCenter") {
+      if (!screen) {
+        Logger.w("SettingsPanelService", "Screen parameter required for controlCenter mode");
+        return;
+      }
+      var ccPanel = PanelService.getPanel("controlCenterPanel", screen);
+      if (ccPanel?.isPanelOpen && !ccPanel.isClosing)
+        ccPanel.close();
+      else
+        openHome(screen);
+    } else if (Settings.data.ui.settingsPanelMode === "window") {
+      toggleWindow(SettingsPanel.Tab.General);
+    } else {
+      if (!screen) {
+        Logger.w("SettingsPanelService", "Screen parameter required for panel mode");
+        return;
+      }
+      var settingsPanel = PanelService.getPanel("settingsPanel", screen);
+      if (settingsPanel?.isPanelOpen)
+        settingsPanel.close();
+      else
+        settingsPanel?.openToTab(SettingsPanel.Tab.General, -1);
     }
   }
 

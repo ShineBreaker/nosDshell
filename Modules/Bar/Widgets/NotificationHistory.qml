@@ -122,11 +122,12 @@ NIconButton {
   }
 
   onClicked: {
-    // DDE: the bell page inside the control center (DESIGN §3.5.2)
+    // DDE: the notifications view is the control center's home page
+    // (DESIGN §3.5.2)
     var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
     if (!controlCenterPanel)
       return;
-    controlCenterPanel.notificationPage = true;
+    controlCenterPanel.showNotifications();
     if (!controlCenterPanel.isPanelOpen)
       controlCenterPanel.open();
   }

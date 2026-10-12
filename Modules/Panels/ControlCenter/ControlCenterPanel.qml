@@ -37,8 +37,11 @@ SmartPanel {
   edgeSheet: true
   panelShadow: Style.shadowControlCenter
 
-  // Which middle page the bell shows
-  property bool notificationPage: false
+  // Which middle page shows when no module is open: false = the home page
+  // (notification list with the cards below it, the DDE default), true =
+  // the all-settings module grid (〔演进〕 grid is a settings entry page,
+  // not the landing view).
+  property bool allSettingsPage: false
 
   // Scene forensics: the whole frame registers as "cc-<screen>" so
   // `qs ipc call debug tree cc-HEADLESS-1` dumps the paint/delivery order.
@@ -75,14 +78,28 @@ SmartPanel {
   // Component scope, so ids inside it are invisible to root functions.
   property var _moduleView: null
 
-  // Open the all-settings page scrolled to a module (DESIGN §3.5.3, from the
-  // home grid, IPC "settings openTab", or the header settings button).
+  // Open the module view scrolled to a module (DESIGN §3.5.3, from the
+  // all-settings grid, IPC "settings openTab", or a deep link).
   // subTab scrolls to the matching tab section inside the module, inner to
   // a stacked sub-group inside that tab.
+  // Home-area page helpers: the two bare-frame pages are the notifications
+  // view and the all-settings grid.
+  function showNotifications() {
+    activeModule = null;
+    allSettingsPage = false;
+  }
+
+  function showAllSettings() {
+    activeModule = null;
+    allSettingsPage = true;
+  }
+
   function openModule(module, subTab, inner) {
     if (!module)
       return;
-    notificationPage = false;
+    // Modules are entered from the all-settings grid; backing out lands
+    // there too.
+    allSettingsPage = true;
     activeModule = module;
     pendingSubTab = (subTab === undefined || subTab === null) ? -1 : subTab;
     pendingInner = (inner === undefined || inner === null) ? -1 : inner;
@@ -95,7 +112,7 @@ SmartPanel {
   // inside the content would already be destroyed.
   onClosed: {
     MediaService.autoSwitchingPaused = false;
-    notificationPage = false;
+    allSettingsPage = false;
     activeModule = null;
     pendingQuickPage = "";
   }
@@ -148,8 +165,8 @@ SmartPanel {
           root.pendingInner = -1;
         }
       }
-      function onNotificationPageChanged() {
-        if (root.notificationPage)
+      function onAllSettingsPageChanged() {
+        if (root.allSettingsPage)
           root.activeModule = null;
       }
     }
@@ -165,19 +182,21 @@ SmartPanel {
       anchors.fill: parent
       spacing: 0
 
-      // 1. Header (140 px); hidden while the all-settings page is open
-      // so the two settings columns take the full frame height (§3.5.3).
+      // 1. Header (140 px); hidden while a module view is open so the
+      // two settings columns take the full frame height (§3.5.3).
       ControlCenterHeader {
         Layout.fillWidth: true
         Layout.preferredHeight: Style.controlCenterHeaderHeight
         visible: root.activeModule === null
         screen: root.screen
-        notificationPage: root.notificationPage
-        onNotificationToggled: root.notificationPage = !root.notificationPage
+        // The bell accents while the notifications view is showing; it
+        // toggles between it and the all-settings grid.
+        notificationPage: !root.allSettingsPage
+        onNotificationToggled: root.allSettingsPage = !root.allSettingsPage
         onAvatarRequested: root.openModule(ControlCenterModules.moduleByName("accounts"))
         onSettingsRequested: {
-          // Open the accounts module inside the frame (DESIGN §3.5.3)
-          openModule(ControlCenterModules.moduleByName("accounts"));
+          // The gear opens the all-settings grid (DESIGN §3.5.3)
+          root.showAllSettings();
         }
         onSessionRequested: {
           PanelService.getPanel("sessionMenuPanel", root.screen)?.open();
@@ -185,7 +204,7 @@ SmartPanel {
         }
       }
 
-      // 2. Middle area: home page / module view / notification page.
+      // 2. Middle area: notifications home / all-settings grid / module view.
       // The home content slides out left while the module view slides in from
       // the right (DESIGN §3.5.3, Style.motionPanel), fading with travel.
       Item {
@@ -200,15 +219,17 @@ SmartPanel {
         // the home page keeps its side margins.
         readonly property real travel: root.width
 
-        // Home: cards + module grid
+        // All-settings page: the module grid (〔演进〕 no longer the landing
+        // view — reached from the gear, the bell or settings entries)
         ControlCenterModulesPage {
           id: modulesPage
           anchors.fill: parent
           anchors.leftMargin: Style.marginS
           anchors.rightMargin: Style.marginS
           screen: root.screen
-          opacity: root.notificationPage || middleArea.moduleShown ? 0 : 1
+          opacity: root.allSettingsPage && !middleArea.moduleShown ? 1 : 0
           visible: opacity > 0
+          enabled: root.allSettingsPage && !middleArea.moduleShown
           x: middleArea.moduleShown ? -middleArea.travel : 0
           onModuleSelected: function (module) {
             root.openModule(module, -1);
@@ -259,30 +280,42 @@ SmartPanel {
           }
         }
 
+        // Home (default): notification list with the content cards below it
+        // (〔演进〕 the DDE default page is notification-first)
         ControlCenterNotificationPage {
           id: notificationPageItem
           anchors.fill: parent
           screen: root.screen
-          opacity: root.notificationPage && !middleArea.moduleShown ? 1 : 0
+          opacity: !root.allSettingsPage && !middleArea.moduleShown ? 1 : 0
           visible: opacity > 0
-          enabled: root.notificationPage && !middleArea.moduleShown
+          enabled: !root.allSettingsPage && !middleArea.moduleShown
           closeOnAction: () => root.close()
+          x: middleArea.moduleShown ? -middleArea.travel : 0
+
+          Behavior on x {
+            NumberAnimation {
+              duration: Style.motionPanel
+              easing.type: Easing.InOutCubic
+            }
+          }
 
           Behavior on opacity {
             NumberAnimation {
-              duration: Style.animationFast
+              duration: Style.motionPanel
+              easing.type: Easing.InOutCubic
             }
           }
         }
       }
 
-      // 4. Quick control panel (bottom, fixed): hidden while the all-settings
-      // page is open so the two settings columns take the full height (§3.5.3).
+      // 4. Quick control panel (bottom, fixed): belongs to the notifications
+      // home page — hidden while a module view or the all-settings grid is
+      // open (§3.5.3; the grid is a settings picker, not a control surface).
       ControlCenterQuickControl {
         id: quickControl
         Layout.fillWidth: true
         Layout.preferredHeight: Style.quickControlPanelHeight + Style.pageIndicatorHeight
-        visible: root.activeModule === null
+        visible: root.activeModule === null && !root.allSettingsPage
         screen: root.screen
         Layout.alignment: Qt.AlignBottom
 

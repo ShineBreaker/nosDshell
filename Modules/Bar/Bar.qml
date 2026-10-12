@@ -8,7 +8,6 @@ import qs.Commons
 import qs.Modules.Bar.Extras
 import qs.Modules.Dock
 import qs.Modules.Notification
-import qs.Modules.Panels.Settings
 import qs.Services.Compositor
 import qs.Services.Debug
 import qs.Services.Media
@@ -386,7 +385,7 @@ Item {
             controlCenterPanel?.toggle();
             mouse.accepted = true;
           } else if (action === "settings") {
-            SettingsPanelService.toggle(SettingsPanel.Tab.General, -1, screen);
+            SettingsPanelService.toggleHome(screen);
             mouse.accepted = true;
           } else if (action === "launcherPanel") {
             PanelService.toggleLauncher(screen);

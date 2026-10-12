@@ -12,11 +12,11 @@ NIconButtonHot {
   hot: Settings.data.notifications.doNotDisturb
   tooltipText: I18n.tr("common.notifications")
   onClicked: {
-    // DDE §3.5.2: notifications live on the control center's notification page
+    // DDE §3.5.2: notifications are the control center's home page
     var cc = PanelService.getPanel("controlCenterPanel", screen);
     if (!cc)
       return;
-    cc.notificationPage = true;
+    cc.showNotifications();
     cc.open?.();
   }
   onRightClicked: Settings.data.notifications.doNotDisturb = !(Settings.data.notifications.doNotDisturb)

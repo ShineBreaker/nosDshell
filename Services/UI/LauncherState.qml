@@ -3,7 +3,6 @@ pragma Singleton
 import QtQuick
 import Quickshell
 import qs.Commons
-import qs.Modules.Panels.Settings
 import qs.Services.UI
 
 // Single owner of the DDE launcher (DESIGN §3.4). Both views — the fullscreen
@@ -194,8 +193,11 @@ Singleton {
       panel.toggle();
   }
 
+  // The launcher's settings entry opens the control center's all-settings
+  // page — the module grid is the settings home (DESIGN §3.5.3), not a
+  // deep link into the launcher module the user is already looking at.
   function showSettings(screen) {
     close(screen);
-    SettingsPanelService.openToTab(SettingsPanel.Tab.Launcher, -1, screen);
+    SettingsPanelService.openHome(screen);
   }
 }

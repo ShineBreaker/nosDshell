@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Controls
 import Quickshell
 import qs.Commons
-import qs.Modules.Panels.Settings
 import qs.Services.UI
 import qs.Widgets
 
@@ -92,7 +91,7 @@ NIconButton {
   onClicked: {
     // Route through the service: "controlCenter" opens the DDE all-settings
     // page inside the control-center frame, not this panel.
-    SettingsPanelService.toggle(SettingsPanel.Tab.General, -1, screen);
+    SettingsPanelService.toggleHome(screen);
   }
   onRightClicked: {
     PanelService.showContextMenu(contextMenu, root, screen);

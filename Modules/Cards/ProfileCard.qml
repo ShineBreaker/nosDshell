@@ -5,7 +5,6 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
 import qs.Commons
-import qs.Modules.Panels.Settings
 import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
@@ -70,7 +69,7 @@ NBox {
           // Better close the control center in case the settings open in a separate window
           PanelService.openedPanel?.close();
 
-          SettingsPanelService.openToTab(SettingsPanel.Tab.General, -1, screen);
+          SettingsPanelService.openHome(screen);
         }
       }
 

@@ -169,7 +169,10 @@ Singleton {
     target: "settings"
 
     function toggle() {
-      root._settingsToggle(SettingsPanel.Tab.General, -1);
+      // Bare "settings" opens the all-settings grid (DESIGN §3.5.3)
+      root.screenDetector.withCurrentScreen(screen => {
+                                              SettingsPanelService.toggleHome(screen);
+                                            });
     }
 
     function toggleTab(tab: string) {
@@ -178,7 +181,9 @@ Singleton {
     }
 
     function open() {
-      root._settingsOpen(SettingsPanel.Tab.General, -1);
+      root.screenDetector.withCurrentScreen(screen => {
+                                              SettingsPanelService.openHome(screen);
+                                            });
     }
 
     function openTab(tab: string) {
@@ -200,15 +205,18 @@ Singleton {
   IpcHandler {
     target: "notifications"
     function toggleHistory() {
-      // DDE: the bell page inside the control center (DESIGN §3.5.2).
+      // DDE: the notifications view is the control center's home page; the
+      // toggle flips between it and the all-settings grid (DESIGN §3.5.2).
       root.screenDetector.withCurrentScreen(screen => {
                                               var cc = PanelService.getPanel("controlCenterPanel", screen);
                                               if (!cc)
                                               return;
                                               if (cc.isPanelOpen && !cc.isClosing) {
-                                                cc.notificationPage = !cc.notificationPage;
+                                                cc.allSettingsPage = !cc.allSettingsPage;
+                                                if (!cc.allSettingsPage)
+                                                  cc.activeModule = null;
                                               } else {
-                                                cc.notificationPage = true;
+                                                cc.showNotifications();
                                                 cc.open();
                                               }
                                             });
@@ -655,7 +663,7 @@ Singleton {
                                               var controlCenterPanel = PanelService.getPanel("controlCenterPanel", screen);
                                               if (!controlCenterPanel)
                                               return;
-                                              controlCenterPanel.notificationPage = true;
+                                              controlCenterPanel.showNotifications();
                                               if (!controlCenterPanel.isPanelOpen || controlCenterPanel.isClosing)
                                               controlCenterPanel.open();
                                             });
