@@ -520,6 +520,13 @@ Singleton {
     // control center
     property JsonObject controlCenter: JsonObject {
       property string diskPath: "/"
+      // Which gauges the system monitor card shows, in canonical order.
+      // Minimum one entry is enforced by the settings UI.
+      property list<var> sysmonMetrics: [
+        "cpu",
+        "temp",
+        "mem"
+      ]
       property JsonObject shortcuts
       shortcuts: JsonObject {
         property list<var> left: [

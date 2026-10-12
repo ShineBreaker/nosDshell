@@ -133,19 +133,14 @@ ColumnLayout {
     currentIndex: tabView.currentIndex
 
     NTabButton {
-      text: I18n.tr("common.appearance")
+      text: I18n.tr("common.cards")
       tabIndex: 0
       checked: subTabBar.currentIndex === 0
     }
     NTabButton {
-      text: I18n.tr("common.cards")
+      text: I18n.tr("common.shortcuts")
       tabIndex: 1
       checked: subTabBar.currentIndex === 1
-    }
-    NTabButton {
-      text: I18n.tr("common.shortcuts")
-      tabIndex: 2
-      checked: subTabBar.currentIndex === 2
     }
   }
 
@@ -159,8 +154,6 @@ ColumnLayout {
     currentIndex: subTabBar.currentIndex
     Layout.fillWidth: true
     Layout.fillHeight: true
-
-    AppearanceSubTab {}
 
     CardsSubTab {
       cardsModel: root.cardsModel

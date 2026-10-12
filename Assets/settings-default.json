@@ -268,6 +268,11 @@
   },
   "controlCenter": {
     "diskPath": "/",
+    "sysmonMetrics": [
+      "cpu",
+      "temp",
+      "mem"
+    ],
     "shortcuts": {
       "left": [
         {

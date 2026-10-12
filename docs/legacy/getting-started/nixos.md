@@ -779,6 +779,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
   };
   controlCenter = {
     diskPath = "/";
+    sysmonMetrics = [ "cpu" "temp" "mem" ];
     shortcuts = {
       left = [ {
           id = "Network";
