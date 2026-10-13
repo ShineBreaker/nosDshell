@@ -279,6 +279,18 @@ class Converter:
                       lambda m: f"]({self.rel_link(m.group(1), out_rel)}", text)
         text = re.sub(r"\]\(/noctalia/([^)\s]*)",
                       r"](https://docs.noctalia.dev/noctalia/\1", text)
+
+        # 11. nosDshell fork patches: the vendored niri page shows upstream's
+        # flat `noctalia-*` namespaces. Ours carry a "-<output>" suffix and a
+        # different stem set, so upstream's anchored regexes match nothing.
+        # Point the page at the canonical rule set (kept in sync with the
+        # emitted WlrLayershell.namespace values by check-layer-namespaces.py).
+        if out_rel == "getting-started/compositor-settings/niri.md":
+            text = text.replace('namespace="^noctalia-', 'namespace="^nosdshell-')
+            rules = (REPO / "Scripts/docs/nosdshell-layer-rules.kdl").read_text().strip()
+            text = re.sub(
+                r"/\* Noctalia: blur[^\n]*\*/\nlayer-rule \{[\s\S]*?\n\}",
+                lambda _m: rules, text, count=1)
         return text
 
     def conv_admonitions(self, text):

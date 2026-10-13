@@ -48,7 +48,7 @@ This minimal configuration allows you to have a blurred and dimmed copy of your 
 ```ini
 // Set the overview wallpaper on the backdrop.
 layer-rule {
-  match namespace="^noctalia-overview*"
+  match namespace="^nosdshell-overview*"
   place-within-backdrop true
 }
 ```
@@ -66,7 +66,7 @@ If you prefer a stationary wallpaper that is visible at all times and does not s
 ```ini
 // Set the regular wallpaper on the backdrop.
 layer-rule {
-  match namespace="^noctalia-wallpaper*"
+  match namespace="^nosdshell-wallpaper*"
   place-within-backdrop true
 }
 
@@ -121,11 +121,35 @@ window-rule {
   }
 }
 
-/* Noctalia: blur everywhere without xray for a better look */
+/*
+  nosDshell layer-shell surfaces that get compositor blur (niri ≥ 26.04).
+  Every nosdshell namespace ends in "-<output>" — patterns must allow the
+  suffix; a "$" right after the stem matches nothing at all.
+
+  nosdshell-background publishes an ext-background-effect region covering
+  the bar and open panels; the dock and the launchers publish their own
+  regions. The rest have no region and get whole-surface blur, which only
+  shows through their translucent pixels.
+*/
 layer-rule {
-  match namespace="^noctalia-(background|launcher-overlay|dock)-.*$"
+  match namespace="^nosdshell-(background|popupmenu|notifications|dock|osd|session-menu|toast|setup-wizard|desktop-widgets)-.*$"
+  match namespace="^nosd-launcher-(full|mini)-.*$"
   background-effect {
+    blur true
     xray false
+  }
+}
+
+/*
+  Surfaces that must not blur: the wallpaper is the blur source; the
+  overview does its own GPU blur; the bar windows reveal the backdrop
+  already blurred by nosdshell-background — a second pass would double
+  it; the rest are invisible helpers.
+*/
+layer-rule {
+  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay)(-.*)?$"
+  background-effect {
+    blur false
   }
 }
 ```
