@@ -29,6 +29,10 @@ Item {
   property var closeOnAction: null
   property real leftMargin: Style.marginM
   property real rightMargin: Style.marginS
+  // true: the list hugs the bottom edge of its slot so a short list keeps a
+  // constant gap to whatever sits below (the quick-control strip); the free
+  // space collects under the header instead.
+  property bool bottomAnchored: false
 
   property int currentRange: 0 // 0 = all
   property int focusIndex: -1
@@ -301,6 +305,10 @@ Item {
 
     // The list itself: virtualized (delegates are O(visible), not
     // O(maxHistory)); the slide-out of a removing row stays inside the clip.
+    // bottomAnchored (control-center home): the view hugs listBox's bottom so
+    // the newest rows sit a fixed margin above the quick-control strip and
+    // the free space collects under the DND row instead of between content
+    // and controls.
     Item {
       id: listBox
       Layout.fillWidth: true
@@ -310,7 +318,11 @@ Item {
 
       NListView {
         id: notificationList
-        anchors.fill: parent
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: root.bottomAnchored ? undefined : parent.top
+        anchors.bottom: parent.bottom
+        height: root.bottomAnchored ? Math.min(contentHeight, listBox.height) : implicitHeight
         spacing: Style.marginS
         reuseItems: true
         gradientColor: "transparent"

@@ -66,6 +66,7 @@ Item {
       Layout.fillHeight: true
       Layout.leftMargin: Style.marginM
       Layout.rightMargin: Style.marginS
+      bottomAnchored: true
       screen: root.screen
       closeOnAction: root.closeOnAction
     }
