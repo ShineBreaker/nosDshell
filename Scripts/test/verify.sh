@@ -203,7 +203,7 @@ cd "$WORK"
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
 control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
-cc-collapse
+cc-collapse cc-geom
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
@@ -643,6 +643,22 @@ run_scene() {
                           call controlCenter open 1.5
                           call controlCenter quickPage "$p" 1.2
                           shot "$1"
+                          call controlCenter toggle 0.5 ;;
+    # Geometry forensics: dump the painted scene tree (global bounds of every
+    # item) on the cards page and on the Wi-Fi page, so notification-to-strip
+    # gaps can be read off element edges rather than guessed from pixels.
+    cc-geom)              notify-send -a nosdshell-verify "Notification one" \
+                            "First test body for the history list." 2>/dev/null
+                          notify-send -a nosdshell-verify "Notification two" \
+                            "Second test body, longer line to check elide." 2>/dev/null
+                          notify-send -a nosdshell-verify "Notification three" \
+                            "Third body with an action" 2>/dev/null
+                          sleep 1
+                          call controlCenter open 1.5
+                          qs -p "$REPO" ipc call debug opened 18 > "$WORK/logs/cc-geom-cards.txt" 2>&1 || true
+                          call controlCenter quickPage wifi 1.2
+                          qs -p "$REPO" ipc call debug opened 18 > "$WORK/logs/cc-geom-wifi.txt" 2>&1 || true
+                          shot cc-geom
                           call controlCenter toggle 0.5 ;;
     # Collapse chevron, bottom-right corner: one constant screen position
     # folds the strip to the indicator band and re-expands it. Probe the
