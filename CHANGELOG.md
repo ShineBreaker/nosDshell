@@ -31,6 +31,7 @@
 - display detail page dropped (all controls duplicated), detail pages hug content：[`3374a18b3`](https://github.com/ShineBreaker/nosDshell/commit/3374a18b3fab14a5a9a1148fce33c025ace2ac75)
 - collapse chevron pinned to the strip's bottom-right corner：[`9e9aef239`](https://github.com/ShineBreaker/nosDshell/commit/9e9aef23967b790ea9563a67d99aa4aae40a5f7a)
 - notification list bottom-anchors to the quick-control strip：[`d108b4193`](https://github.com/ShineBreaker/nosDshell/commit/d108b419336483d54403dd6904b188a77c310b2d)
+- anchor the whole notification column — empty state too — and drop phantom zero-height card loaders that ate layout slots：[`b9f4ff125`](https://github.com/ShineBreaker/nosDshell/commit/b9f4ff1259554e18cd0e68aae438063d925b4110), [`f115af00f`](https://github.com/ShineBreaker/nosDshell/commit/f115af00fa508a9a726c353be385d9810a43f5be)
 
 ## [1.1.8] - 2026-10-12
 
