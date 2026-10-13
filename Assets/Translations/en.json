@@ -8,6 +8,7 @@
     "disable-dnd": "Disable Do Not Disturb",
     "disable-wifi": "Disable Wi-Fi",
     "disconnect-vpn": "Disconnect {name}",
+    "do-not-disturb": "Do Not Disturb",
     "dock-settings": "Dock settings",
     "empty-trash": "Empty trash",
     "enable-bluetooth": "Enable Bluetooth",
@@ -667,7 +668,16 @@
   },
   "notifications": {
     "panel": {
-      "no-notifications": "No notifications"
+      "clear-group": "Clear group",
+      "collapse-group": "Collapse",
+      "more-in-group": "and {count} more",
+      "click-to-expand": "Expand",
+      "click-to-collapse": "Collapse",
+      "no-notifications": "No notifications",
+      "section-earlier": "Earlier",
+      "section-today": "Today",
+      "section-yesterday": "Yesterday",
+      "title": "Notifications"
     },
     "time": {
       "diff-d": "1 day ago",

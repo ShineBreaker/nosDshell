@@ -15,10 +15,13 @@ import qs.Widgets
 * are the first page of the quick-control pager below, not pinned here.
 * `closeOnAction` is invoked after a notification action succeeds so the
 * control center closes like the original panel did.
+*
+* The list header ("通知" + "全部清除") lives inside the list component: it is
+* the first row of the bottom-anchored content (DESIGN §3.5.2), so it must
+* travel with the notifications and hide with an empty history.
 */
 Item {
   id: root
-
   property var screen: null
   property var closeOnAction: null
 
@@ -29,7 +32,9 @@ Item {
     anchors.fill: parent
     spacing: Style.marginS
 
-    // DND switch row (DSwitchButton: 40x22 capsule, DESIGN §3.5.4)
+    // DND switch row (DSwitchButton: 40x22 capsule, DESIGN §3.5.4). The title
+    // is the feature name and never switches verbs (§1.10); the state is
+    // carried by the bell-off icon + accent ink (DESIGN §3.5.2).
     Item {
       Layout.fillWidth: true
       Layout.leftMargin: Style.marginM
@@ -41,14 +46,14 @@ Item {
         spacing: Style.marginS
 
         NIcon {
-          icon: (Settings.data.notifications.doNotDisturb) ? "bell-off" : "bell"
+          icon: Settings.data.notifications.doNotDisturb ? "bell-off" : "bell"
           pointSize: Style.fontSizeXL
-          color: (Settings.data.notifications.doNotDisturb) ? Color.accent : Color.onShellSecondary
+          color: Settings.data.notifications.doNotDisturb ? Color.accent : Color.onShellSecondary
         }
 
         NText {
           Layout.fillWidth: true
-          text: (Settings.data.notifications.doNotDisturb) ? I18n.tr("actions.disable-dnd") : I18n.tr("actions.enable-dnd")
+          text: I18n.tr("actions.do-not-disturb")
           pointSize: Style.fontSizeM
           elide: Text.ElideRight
         }

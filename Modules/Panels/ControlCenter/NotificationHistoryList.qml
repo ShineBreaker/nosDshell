@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQml.Models
 import Quickshell
 import qs.Commons
 import qs.Services.System
@@ -20,23 +19,44 @@ import qs.Widgets
 * (upstream wrapped the same list in an NScrollView; the Flickable moved in
 * here so delegates stay O(visible), not O(maxHistory)). `closeOnAction`
 * closes the owning panel after a successful action invocation.
+*
+* View model (DESIGN §3.5.2): the list header, the day sections and the
+* per-app groups are folded into one flat descriptor array — `header` /
+* `section` / `notif` rows — built from NotificationService.historyModel, so
+* the whole content block travels with the bottom-anchored notifications. A
+* notification row carries only its source index and precomputed group facts;
+* the delegate reads the live entry with historyModel.get(index), so the async
+* image cache (setProperty on cachedImage) keeps reaching the delegates the
+* way Taskbar's index-keyed Repeater does (CODING_STANDARDS modelData rule).
+* Rows hold no QObject references, so nothing here can dangle.
+*
+* The upstream invisible Tab range filter (currentRange / Keys.onTabPressed /
+* isInCurrentRange / rangeForTimestamp) is gone: the day sections are rendered
+* rows now.
+*
+* Expand state: the per-notification text expand is keyed by notification id
+* (upstream expandedId); the per-group expand is keyed by the group, which is
+* scoped to its day section so the same app in two sections expands
+* independently.
 */
 Item {
   id: root
 
   property var screen: null
-  property bool showClearAll: true
   property var closeOnAction: null
   property real leftMargin: Style.marginM
   property real rightMargin: Style.marginS
 
-  property int currentRange: 0 // 0 = all
+  // Expanded state: notification id (truncated text) / group key.
+  property string expandedNotification: ""
+  property string expandedGroup: ""
+
+  // Keyboard focus: index into the descriptor row space (-1 = none), plus
+  // which action button of the focused row is active (-1 = the body).
   property int focusIndex: -1
   property int actionIndex: -1
-  property string expandedId: ""
 
   readonly property var historyModel: NotificationService.historyModel
-  readonly property real layoutWidth: Math.max(1, root.width - root.leftMargin - root.rightMargin)
 
   function parseActions(actions) {
     try {
@@ -50,252 +70,301 @@ Item {
     return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }
 
-  function rangeForTimestamp(ts) {
-    const dt = new Date(ts);
-    const today = dateOnly(new Date());
-    const thatDay = dateOnly(dt);
-    const diffDays = Math.floor((today - thatDay) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0)
+  // 0 = today, 1 = yesterday, 2 = earlier (DESIGN §3.5.2).
+  function dayBucket(ts) {
+    const diffDays = Math.round((dateOnly(new Date()) - dateOnly(new Date(ts))) / 86400000);
+    if (diffDays <= 0)
       return 0;
     if (diffDays === 1)
       return 1;
     return 2;
   }
 
-  // Model-layer range filter: only matching notifications instantiate
-  // delegates (a Repeater over the full history with visible:false would
-  // still create up to maxHistory rich items). Roles stay live, so async
-  // image-cache updates (setProperty) keep reaching the delegates.
-  DelegateModel {
-    id: visualModel
-    model: root.historyModel
-    groups: DelegateModelGroup {
-      id: shownGroup
-      name: "shown"
-      includeByDefault: true
+  function bucketTitle(bucket) {
+    if (bucket === 1)
+      return I18n.tr("notifications.panel.section-yesterday");
+    if (bucket >= 2)
+      return I18n.tr("notifications.panel.section-earlier");
+    return I18n.tr("notifications.panel.section-today");
+  }
+
+  // Group keys are scoped to their day section: the same app can appear in
+  // both "today" and "yesterday", and each occurrence is its own group.
+  function groupKeyFor(bucket, appName) {
+    return bucket + "|" + (appName || "");
+  }
+
+  function groupAppName(key) {
+    const sep = key.indexOf("|");
+    return sep < 0 ? key : key.slice(sep + 1);
+  }
+
+  function groupBucket(key) {
+    const sep = key.indexOf("|");
+    return sep < 0 ? 0 : parseInt(key.slice(0, sep));
+  }
+
+  // Flat row space over the live model: the list header, one section header
+  // per day bucket, then one row per notification. Two passes — group sizes
+  // are only final after the whole model has been walked, and the delegate
+  // reads them off the row instead of re-deriving them.
+  readonly property var descriptors: {
+    const model = NotificationService.historyModel;
+    const rows = [];
+    if (!model || model.count === 0)
+      return rows;
+
+    rows.push({
+                kind: "header"
+              });
+
+    let bucket = -1;
+    let key = null;
+    let groupStart = -1;
+    const groupCounts = {};
+    for (var i = 0; i < model.count; i++) {
+      const entry = model.get(i);
+      const rowBucket = root.dayBucket(entry.timestamp);
+      if (rowBucket !== bucket) {
+        bucket = rowBucket;
+        key = null;
+        rows.push({
+                    kind: "section",
+                    bucket: bucket
+                  });
+      }
+      const rowKey = root.groupKeyFor(bucket, entry.appName);
+      if (rowKey !== key) {
+        key = rowKey;
+        groupStart = rows.length;
+        rows.push({
+                    kind: "group",
+                    groupKey: key,
+                    bucket: bucket
+                  });
+      }
+      groupCounts[groupStart] = (groupCounts[groupStart] || 0) + 1;
+      rows.push({
+                  kind: "notif",
+                  modelIndex: i,
+                  groupKey: key,
+                  bucket: bucket
+                });
     }
-    filterOnGroup: "shown"
-  }
 
-  function applyRangeFilter() {
-    for (var i = 0; i < visualModel.items.count; i++) {
-      const item = visualModel.items.get(i);
-      if (item)
-        item.inShown = root.isInCurrentRange(item.model.timestamp);
+    // Second pass: fill in the final group size and the head flag.
+    let currentGroup = -1;
+    let seen = 0;
+    for (var j = 0; j < rows.length; j++) {
+      if (rows[j].kind === "group") {
+        currentGroup = j;
+        seen = 0;
+        continue;
+      }
+      if (rows[j].kind !== "notif")
+        continue;
+      seen++;
+      rows[j].groupSize = groupCounts[currentGroup];
+      rows[j].isHead = seen === 1;
     }
+    return rows;
   }
 
-  onCurrentRangeChanged: {
-    root.applyRangeFilter();
-    focusIndex = -1;
-    actionIndex = -1;
-  }
-  // Late arrivals (history loaded from disk after startup) default to shown;
-  // filter once they land.
-  Component.onCompleted: Qt.callLater(root.applyRangeFilter)
-
-  Connections {
-    target: root.historyModel
-    function onCountChanged() {
-      // New arrivals default to shown; re-filter in the same frame.
-      root.applyRangeFilter();
-      if (root.focusIndex >= notificationList.count)
-        root.focusIndex = notificationList.count - 1;
+  // Rows the keyboard walks: notifications only, and a collapsed group
+  // contributes its newest row alone.
+  readonly property var visibleRows: {
+    const rows = root.descriptors;
+    const out = [];
+    for (var i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      if (row.kind !== "notif")
+        continue;
+      if (row.groupSize === 1 || row.isHead || root.expandedGroup === row.groupKey)
+        out.push(row);
     }
+    return out;
   }
 
-  function isInCurrentRange(ts) {
-    if (currentRange === 0)
-      return true;
-    return rangeForTimestamp(ts) === (currentRange - 1);
-  }
+  // The list is bottom-anchored: up moves towards newer notifications (the
+  // newest sits closest to the quick-control strip).
+  function moveSelection(dir) {
+    const rows = root.visibleRows;
+    if (rows.length === 0)
+      return;
 
-  function hasNotificationsInCurrentRange() {
-    const m = NotificationService.historyModel;
-    if (!m || m.count === 0)
-      return false;
-    for (var i = 0; i < m.count; ++i) {
-      const item = m.get(i);
-      if (item && isInCurrentRange(item.timestamp))
-        return true;
+    let current = -1;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].modelIndex === root.rowModelIndex(root.focusIndex)) {
+        current = i;
+        break;
+      }
     }
-    return false;
+    let next = current === -1 ? (dir > 0 ? -1 : rows.length) : current;
+    next += dir;
+    if (next < 0 || next >= rows.length)
+      return;
+
+    root.focusIndex = root.rowIndexOf(rows[next]);
+    root.actionIndex = -1;
+    notificationList.positionViewAtIndex(root.focusIndex, ListView.Contain);
   }
 
-  implicitHeight: mainColumn.implicitHeight
+  // focusIndex is a row-space index; the delegates are keyed by it, so the
+  // model-index lookups below only serve the keyboard's bookkeeping.
+  function rowModelIndex(rowIndex) {
+    const rows = root.descriptors;
+    return rowIndex >= 0 && rowIndex < rows.length && rows[rowIndex].kind === "notif" ? rows[rowIndex].modelIndex : -1;
+  }
+
+  function rowIndexOf(row) {
+    const rows = root.descriptors;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].kind === "notif" && rows[i].modelIndex === row.modelIndex)
+        return i;
+    }
+    return -1;
+  }
+
+  function delegateAt(rowIndex) {
+    return notificationList.itemAtIndex(rowIndex);
+  }
+
+  function moveAction(dir) {
+    const delegate = root.delegateAt(root.focusIndex);
+    if (!delegate)
+      return;
+    const count = delegate.actionsList.length;
+    if (count === 0)
+      return;
+    root.actionIndex = Math.max(-1, Math.min(root.actionIndex + dir, count - 1));
+  }
+
+  // Enter (DESIGN §3.5.2): active action, then collapse the open group, then
+  // open a collapsed group, then expand truncated text, then the primary
+  // action.
+  function activateSelection() {
+    const delegate = root.delegateAt(root.focusIndex);
+    if (!delegate)
+      return;
+
+    if (root.actionIndex >= 0 && root.actionIndex < delegate.actionsList.length) {
+      const action = delegate.actionsList[root.actionIndex];
+      if (action.identifier !== "default")
+        root.invokeAndClose(delegate.notificationId, action.identifier);
+      return;
+    }
+    if (delegate.isGroupExpanded) {
+      root.expandedGroup = "";
+      return;
+    }
+    if (delegate.groupSize > 1) {
+      root.expandedGroup = delegate.groupKey;
+      return;
+    }
+    if (delegate.canExpand) {
+      root.expandedNotification = delegate.notificationId;
+      return;
+    }
+    root.invokeDefault(delegate.notificationId, delegate.appName);
+  }
+
+  function removeSelection() {
+    const delegate = root.delegateAt(root.focusIndex);
+    if (delegate)
+      delegate.dismiss(0);
+  }
 
   function invokeAndClose(id, actionId) {
     if (NotificationService.invokeAction(id, actionId) && root.closeOnAction)
       root.closeOnAction();
   }
 
-  // Keyboard model (upstream NotificationHistoryPanel.qml): Tab/Backtab cycles
-  // ranges, up/down moves the selection, left/right walks the focused item's
-  // actions, Enter activates, keyRemove/Delete dismisses. focusIndex is a
-  // *visual* index — delegates only exist for the current range filter, so no
-  // hidden items need skipping the way the upstream full-model scan did.
+  // Body click (DESIGN §3.5.2, upstream NotificationHistoryPanel.qml:795-806):
+  // the default action when there is one, focusing the sender window when
+  // there isn't (or it failed); both close the control centre.
+  function invokeDefault(id, appName) {
+    if (!NotificationService.invokeAction(id, "default") && appName)
+      NotificationService.focusSenderWindow(appName);
+    if (root.closeOnAction)
+      root.closeOnAction();
+  }
+
+  // "清除这组" (DESIGN §3.5.2): every notification of one app group inside
+  // its day section.
+  function clearGroup(key) {
+    const appName = root.groupAppName(key);
+    const bucket = root.groupBucket(key);
+    const model = NotificationService.historyModel;
+    const ids = [];
+    for (var i = 0; i < model.count; i++) {
+      const entry = model.get(i);
+      if ((entry.appName || "") === appName && root.dayBucket(entry.timestamp) === bucket)
+        ids.push(entry.id);
+    }
+    for (var j = 0; j < ids.length; j++)
+      NotificationService.removeFromHistory(ids[j]);
+    if (root.expandedGroup === key)
+      root.expandedGroup = "";
+  }
+
   focus: true
   onVisibleChanged: {
     if (visible)
       root.forceActiveFocus();
   }
 
+  // Keyboard model (DESIGN §3.5.2): up/down walks the visible notifications
+  // (a collapsed group is one stop), left/right walks the focused row's
+  // actions, Enter activates, Delete removes. Tab no longer filters: the day
+  // sections are rows now.
   Keys.onPressed: event => {
-                    if (event.key === Qt.Key_Tab) {
-                      currentRange = (currentRange + 1) % 4;
-                      event.accepted = true;
-                      return;
-                    }
-                    if (event.key === Qt.Key_Backtab) {
-                      currentRange = (currentRange - 1 + 4) % 4;
-                      event.accepted = true;
-                      return;
-                    }
                     if (Keybinds.checkKey(event, 'up', Settings)) {
-                      moveSelection(-1);
+                      root.moveSelection(-1);
                       event.accepted = true;
                       return;
                     }
                     if (Keybinds.checkKey(event, 'down', Settings)) {
-                      moveSelection(1);
+                      root.moveSelection(1);
                       event.accepted = true;
                       return;
                     }
                     if (Keybinds.checkKey(event, 'left', Settings)) {
-                      moveAction(-1);
+                      root.moveAction(-1);
                       event.accepted = true;
                       return;
                     }
                     if (Keybinds.checkKey(event, 'right', Settings)) {
-                      moveAction(1);
+                      root.moveAction(1);
                       event.accepted = true;
                       return;
                     }
                     if (Keybinds.checkKey(event, 'enter', Settings)) {
-                      activateSelection();
+                      root.activateSelection();
                       event.accepted = true;
                       return;
                     }
                     if (Keybinds.checkKey(event, 'remove', Settings) || event.key === Qt.Key_Delete) {
-                      removeSelection();
+                      root.removeSelection();
                       event.accepted = true;
                       return;
                     }
                   }
 
-  // Visible delegate lookup for the keyboard model; the ListView instantiates
-  // only what is on screen, so positionViewAtIndex (moveSelection) keeps the
-  // focused row instantiated before the next key press reads it.
-  function delegateAt(visualIndex) {
-    return notificationList.itemAtIndex(visualIndex);
-  }
-
-  function moveSelection(dir) {
-    var count = notificationList.count;
-    if (count === 0)
-      return;
-
-    var newIndex = focusIndex;
-    if (newIndex === -1)
-      newIndex = dir > 0 ? -1 : count;
-
-    newIndex += dir;
-    if (newIndex < 0 || newIndex >= count)
-      return;
-
-    focusIndex = newIndex;
-    actionIndex = -1;
-    notificationList.positionViewAtIndex(focusIndex, ListView.Contain);
-  }
-
-  function moveAction(dir) {
-    var delegate = delegateAt(focusIndex);
-    if (!delegate)
-      return;
-    var count = delegate.actionsList.length;
-    if (count === 0)
-      return;
-    actionIndex = Math.max(-1, Math.min(actionIndex + dir, count - 1));
-  }
-
-  function activateSelection() {
-    var delegate = delegateAt(focusIndex);
-    if (!delegate)
-      return;
-
-    if (actionIndex >= 0 && actionIndex < delegate.actionsList.length) {
-      var action = delegate.actionsList[actionIndex];
-      if (action.identifier === "default")
-        return;
-      invokeAndClose(delegate.notificationId, action.identifier);
-      return;
-    }
-    if (!(delegate.canExpand || delegate.isExpanded))
-      return;
-    root.expandedId = delegate.isExpanded ? "" : delegate.notificationId;
-  }
-
-  function removeSelection() {
-    var delegate = delegateAt(focusIndex);
-    if (delegate)
-      delegate.remove();
-  }
+  implicitHeight: mainColumn.implicitHeight
 
   ColumnLayout {
     id: mainColumn
     anchors.fill: parent
     spacing: Style.marginS
 
-    // Clear-all row (DESIGN §3.5.2): flat text button, overlay("idle"), padding 4
-    Item {
-      id: clearAllBox
-      Layout.fillWidth: true
-      implicitHeight: clearAll.implicitHeight
-      visible: root.showClearAll && NotificationService.historyModel.count > 0
-
-      Rectangle {
-        id: clearAll
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        implicitWidth: clearAllText.implicitWidth + Style.margin2S
-        implicitHeight: clearAllText.implicitHeight + Style.margin2XS
-        radius: Style.radiusRow
-        color: Color.overlay("idle")
-
-        NText {
-          id: clearAllText
-          anchors.centerIn: parent
-          text: I18n.tr("actions.clear-history")
-          pointSize: Style.fontSizeS
-          color: Color.onShellSecondary
-        }
-
-        MouseArea {
-          anchors.fill: parent
-          cursorShape: Qt.PointingHandCursor
-          hoverEnabled: true
-          onClicked: NotificationService.clearHistory()
-        }
-      }
-    }
-
-    // Slack absorber while the list is empty (the list's own topMargin
-    // bottom-anchors items once they exist): eats the column's leftover
-    // space so the empty-state hint lands flush on the bottom edge, a fixed
-    // margin above the quick-control strip.
+    // Empty state (onShellTertiary). The list bottom-anchors its rows once
+    // they exist (topMargin eats the slack); with nothing to show the hint
+    // takes the whole column so it sits flush on the bottom edge, a fixed
+    // margin above the quick-control strip (DESIGN §3.5.2).
     Item {
       Layout.fillWidth: true
       Layout.fillHeight: true
-      visible: !root.hasNotificationsInCurrentRange()
-    }
-
-    // Empty state (centered, onShellTertiary). Follows the slack absorber so
-    // it sits against the strip instead of leaving the void below it.
-    Item {
-      id: emptyStateBox
-      Layout.fillWidth: true
-      Layout.preferredHeight: Style.marginXL * 6
-      visible: !root.hasNotificationsInCurrentRange()
+      visible: NotificationService.historyModel.count === 0
 
       NText {
         anchors.centerIn: parent
@@ -305,69 +374,90 @@ Item {
       }
     }
 
-    // The list itself: virtualized (delegates are O(visible), not
-    // O(maxHistory)); the slide-out of a removing row stays inside the clip.
-    // Bottom-anchored: the view keeps the box's full height (a zero-height
-    // ListView instantiates no delegates, so sizing from contentHeight would
-    // deadlock) and topMargin absorbs the slack — the last row keeps a fixed
-    // margin to the quick-control strip in every page state.
+    // The list: virtualized (delegates are O(visible), not O(maxHistory));
+    // the slide-out of a removing row stays inside the clip. Bottom-anchored:
+    // the view fills the box and the top margin eats the slack, so the last
+    // row keeps a fixed margin to the quick-control strip.
     Item {
-      id: listBox
       Layout.fillWidth: true
       Layout.fillHeight: true
       clip: true
-      visible: root.hasNotificationsInCurrentRange()
+      visible: NotificationService.historyModel.count > 0
 
       NListView {
         id: notificationList
         anchors.fill: parent
-        // Bottom-anchored: the view fills the box; the top margin eats the
-        // slack so the last row keeps a fixed margin to the quick-control
-        // strip — the free space collects above the first row instead of a
-        // void between content and controls.
-        anchors.topMargin: Math.max(0, listBox.height - contentHeight)
+        anchors.topMargin: Math.max(0, parent.height - contentHeight)
         spacing: Style.marginS
         reuseItems: true
         gradientColor: "transparent"
         reserveScrollbarSpace: false
         boundsBehavior: Flickable.StopAtBounds
-        model: visualModel
+        model: root.descriptors
 
         delegate: Item {
           id: delegateItem
           width: notificationList.width
-          height: contentColumn.implicitHeight + Style.margin2S
+          // Header / section rows are 24 px; a collapsed group's hidden rows
+          // take no space, so a group really is one stop in the view. The
+          // stacked-edge allowance is recomputed from the same predicates the
+          // edges use (reading a child's height/visibility here would make
+          // the row's height depend on its own layout).
+          readonly property bool hasStackedEdges: modelData.kind === "notif" && isHead && (modelData.groupSize || 1) > 1 && !isGroupExpanded
+          height: {
+            if (modelData.kind === "header" || modelData.kind === "section")
+              return 24;
+            return shown ? cardSurface.height + (hasStackedEdges ? Style.marginXXS + 10 : 0) : 0;
+          }
 
-          readonly property string notificationId: model.id
-          readonly property string appName: model.appName || ""
-          readonly property bool isExpanded: root.expandedId === notificationId
-          readonly property bool canExpand: summaryText.truncated || bodyText.truncated
-          readonly property var actionsList: root.parseActions(model.actionsJson)
+          // Live source entry: the row carries only the index, so the image
+          // cache's setProperty(cachedImage) reaches this delegate. Header
+          // and section rows have no source index.
+          readonly property int modelIndex: modelData.modelIndex || 0
+          readonly property var entry: modelData.kind === "notif" ? (NotificationService.historyModel.get(modelIndex) || null) : null
+          readonly property string notificationId: entry ? entry.id : ""
+          readonly property string appName: entry ? (entry.appName || "") : ""
+          readonly property string groupKey: modelData.groupKey || ""
+          readonly property int groupSize: modelData.groupSize || 1
+          readonly property bool isHead: modelData.isHead === true
+          readonly property bool isGroupExpanded: root.expandedGroup === groupKey
+          // A collapsed multi-notification group shows its newest entry only.
+          readonly property bool shown: modelData.kind === "notif" && (groupSize === 1 || isGroupExpanded || isHead)
+
+          readonly property var actionsList: root.parseActions(entry ? entry.actionsJson : "[]")
           readonly property bool isFocused: index === root.focusIndex
           readonly property int removeAnimationDuration: Style.animationNormal
           readonly property int iconSize: Math.round(24 * Style.uiScaleRatio)
           readonly property bool hasActions: actionsList.some(a => a.identifier !== "default")
           readonly property bool markdownEnabled: Settings.data.notifications.enableMarkdown
           readonly property int textFormat: (markdownEnabled && isExpanded) ? Text.MarkdownText : Text.StyledText
-          readonly property string summary: model.summary || I18n.tr("common.no-summary")
-          readonly property string body: model.body || ""
+          readonly property string summary: entry ? (entry.summary || I18n.tr("common.no-summary")) : ""
+          readonly property string body: entry ? (entry.body || "") : ""
+          // Per-notification text expansion (truncated summary/body).
+          readonly property bool isExpanded: root.expandedNotification === notificationId
+          readonly property bool canExpand: shown && (summaryText.truncated || bodyText.truncated)
 
-          function remove() {
+          property bool isRemoving: false
+          // Item recycling (reuseItems) keeps plain properties across
+          // rebinds: reset the slide-out state when this instance is rebound
+          // to another notification.
+          onNotificationIdChanged: isRemoving = false
+
+          // Dismiss (DESIGN §3.5.2, upstream dismissBySwipe): slide out along
+          // the drag direction, then drop the row once the slide finishes.
+          // `dir` picks the side (0 = the hover ×, which slides right).
+          function dismiss(dir) {
             if (isRemoving)
               return;
             isRemoving = true;
+            interactionArea.isSwiping = false;
+            interactionArea.swipeOffset = dir >= 0 ? width + Style.marginL : -width - Style.marginL;
             if (Settings.data.general.animationDisabled) {
               NotificationService.removeFromHistory(notificationId);
               return;
             }
             removeTimer.restart();
           }
-
-          property bool isRemoving: false
-          // Item recycling (reuseItems) keeps plain properties across
-          // rebinds: reset the remove-slide state when this instance is
-          // rebind to another notification.
-          onNotificationIdChanged: isRemoving = false
 
           Timer {
             id: removeTimer
@@ -376,140 +466,267 @@ Item {
             onTriggered: NotificationService.removeFromHistory(delegateItem.notificationId)
           }
 
-          // Deleting slides the row out along the width axis
-          // (gxde-control-center notifymodel.cpp: timerEvent, 20 px/10 ms);
-          // the reflow after removal is instant, no height collapse.
-          x: isRemoving ? width : 0
+          opacity: isRemoving ? 0 : 1
 
-          Behavior on x {
+          Behavior on opacity {
             enabled: !Settings.data.general.animationDisabled && delegateItem.isRemoving
             NumberAnimation {
-              duration: delegateItem.removeAnimationDuration
+              duration: Style.motionPanel
               easing.type: Easing.OutCubic
             }
           }
 
-          // Item surface: white text, overlay("strong"), radiusItem (DESIGN §3.5.2)
-          Rectangle {
+          // The swipe lives in a Translate so it composes with the dismiss
+          // fade above (upstream used the same pair).
+          transform: Translate {
+            x: interactionArea.swipeOffset
+          }
+
+          // ---- list header row (DESIGN §3.5.2) ----
+          RowLayout {
             anchors.fill: parent
+            visible: modelData.kind === "header"
+            spacing: Style.marginS
+
+            NText {
+              Layout.fillWidth: true
+              text: I18n.tr("notifications.panel.title")
+              pointSize: Style.fontSizeS
+              color: Qt.alpha(Color.onShell, 0.6)
+              font.weight: Style.fontWeightMedium
+              elide: Text.ElideRight
+            }
+
+            // "全部清除" is a button-class control: hover/press fade over
+            // motionPointer (DESIGN §1.7), idle fill and radiusRow.
+            Rectangle {
+              id: clearAll
+              implicitWidth: clearAllText.implicitWidth + Style.margin2XS
+              implicitHeight: clearAllText.implicitHeight + Style.margin2XS
+              radius: Style.radiusRow
+              color: clearAllMouse.containsMouse ? Color.overlay("hover") : Color.overlay("idle")
+
+              Behavior on color {
+                enabled: !Color.isTransitioning
+                ColorAnimation {
+                  duration: Style.motionPointer
+                  easing.type: Easing.OutCubic
+                }
+              }
+
+              NText {
+                id: clearAllText
+                anchors.centerIn: parent
+                text: I18n.tr("actions.clear-history")
+                pointSize: Style.fontSizeS
+                color: Color.onShellSecondary
+              }
+
+              MouseArea {
+                id: clearAllMouse
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                onClicked: NotificationService.clearHistory()
+              }
+            }
+          }
+
+          // ---- day section header (DESIGN §3.5.2) ----
+          NText {
+            anchors.verticalCenter: parent.verticalCenter
+            visible: modelData.kind === "section"
+            text: root.bucketTitle(modelData.bucket)
+            pointSize: Style.fontSizeXS
+            color: Qt.alpha(Color.onShell, 0.6)
+            font.weight: Style.fontWeightMedium
+            elide: Text.ElideRight
+          }
+
+          // ---- notification card (DESIGN §3.5.2) ----
+          Rectangle {
+            id: cardSurface
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: shown ? cardColumn.implicitHeight + Style.margin2S : 0
             radius: Style.radiusItem
             color: Color.overlay("strong")
             border.color: delegateItem.isFocused ? Color.accent : "transparent"
             border.width: Style.borderS
-          }
+            visible: shown
 
-          MouseArea {
-            anchors.fill: parent
-            hoverEnabled: true
-            onClicked: {
-              root.focusIndex = index;
-              root.actionIndex = -1;
-              root.expandedId = (delegateItem.canExpand || delegateItem.isExpanded) ? (delegateItem.isExpanded ? "" : notificationId) : "";
-            }
-          }
-
-          HoverHandler {
-            id: hoverHandler
-            target: parent
-          }
-
-          RowLayout {
-            id: contentColumn
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.margins: Style.marginS
-            spacing: Style.marginS
-
-            NImageRounded {
-              Layout.preferredWidth: delegateItem.iconSize
-              Layout.preferredHeight: delegateItem.iconSize
-              Layout.alignment: Qt.AlignTop
-              radius: Math.min(Style.radiusRow, width / 2)
-              imagePath: model.cachedImage || model.originalImage || ""
-              symbolicColor: Color.onShell
-              borderColor: "transparent"
-              borderWidth: 0
-              fallbackIcon: "bell"
-              fallbackIconSize: 24
+            // Expand/collapse is a data-driven size change.
+            Behavior on height {
+              enabled: !Settings.data.general.animationDisabled
+              NumberAnimation {
+                duration: Style.motionPanel
+                easing.type: Easing.OutCubic
+              }
             }
 
             ColumnLayout {
-              Layout.fillWidth: true
+              id: cardColumn
+              anchors.left: parent.left
+              anchors.right: parent.right
+              anchors.top: parent.top
+              anchors.margins: Style.marginS
               spacing: Style.marginXXS
 
+              // Expanded group header (DESIGN §3.5.2): app name, "收起" and
+              // the per-group clear ×, at the top of the group.
               RowLayout {
                 Layout.fillWidth: true
                 spacing: Style.marginS
+                visible: delegateItem.isGroupExpanded && delegateItem.isHead
 
                 NText {
+                  Layout.fillWidth: true
                   text: delegateItem.appName || I18n.tr("system.unknown-app")
                   pointSize: Style.fontSizeXS
                   font.weight: Style.fontWeightMedium
                   color: Color.onShell
                   elide: Text.ElideRight
-                  Layout.fillWidth: true
                 }
 
                 NText {
-                  textFormat: Text.PlainText
-                  text: Time.formatRelativeTime(model.timestamp)
-                  pointSize: Style.fontSizeXXS
-                  color: Color.onShellTertiary
+                  text: I18n.tr("notifications.panel.collapse-group")
+                  pointSize: Style.fontSizeXS
+                  color: Color.accentAlt
+                  MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.expandedGroup = ""
+                  }
+                }
+
+                NIconButton {
+                  baseSize: Style.baseWidgetSize * 0.7
+                  applyUiScale: false
+                  icon: "x"
+                  colorFg: Color.onShellTertiary
+                  colorBg: "transparent"
+                  colorBgHover: Color.overlay("hover")
+                  colorFgHover: Color.onShell
+                  tooltipText: I18n.tr("notifications.panel.clear-group")
+                  onClicked: root.clearGroup(delegateItem.groupKey)
                 }
               }
 
-              NText {
-                id: summaryText
+              RowLayout {
                 Layout.fillWidth: true
-                text: (delegateItem.markdownEnabled && delegateItem.isExpanded) ? (model.summaryMarkdown || I18n.tr("common.no-summary")) : delegateItem.summary
-                pointSize: Style.fontSizeM
-                color: Color.onShell
-                textFormat: delegateItem.textFormat
-                wrapMode: Text.Wrap
-                maximumLineCount: delegateItem.isExpanded ? 999 : 2
-                elide: Text.ElideRight
-              }
-
-              NText {
-                id: bodyText
-                Layout.fillWidth: true
-                text: (delegateItem.markdownEnabled && delegateItem.isExpanded) ? (model.bodyMarkdown || "") : delegateItem.body
-                pointSize: Style.fontSizeS
-                color: Color.onShellSecondary
-                textFormat: delegateItem.textFormat
-                wrapMode: Text.Wrap
-                maximumLineCount: delegateItem.isExpanded ? 999 : 3
-                elide: Text.ElideRight
-                visible: text.length > 0
-              }
-
-              // Actions as flat text buttons in accentAlt (DESIGN §3.5.2)
-              Flow {
-                Layout.fillWidth: true
-                visible: delegateItem.hasActions
                 spacing: Style.marginS
 
-                Repeater {
-                  model: delegateItem.actionsList
+                NImageRounded {
+                  Layout.preferredWidth: delegateItem.iconSize
+                  Layout.preferredHeight: delegateItem.iconSize
+                  Layout.alignment: Qt.AlignTop
+                  radius: Math.min(Style.radiusRow, width / 2)
+                  imagePath: entry ? (entry.cachedImage || entry.originalImage || "") : ""
+                  symbolicColor: Color.onShell
+                  borderColor: "transparent"
+                  borderWidth: 0
+                  fallbackIcon: "bell"
+                  fallbackIconSize: 24
+                }
 
-                  delegate: NText {
-                    readonly property bool isDefault: modelData.identifier === "default"
-                    text: modelData.text
+                ColumnLayout {
+                  Layout.fillWidth: true
+                  spacing: Style.marginXXS
+
+                  // Meta row: app name + relative time (DESIGN §3.5.2).
+                  RowLayout {
+                    Layout.fillWidth: true
+                    spacing: Style.marginS
+
+                    NText {
+                      Layout.fillWidth: true
+                      text: delegateItem.appName || I18n.tr("system.unknown-app")
+                      pointSize: Style.fontSizeXS
+                      font.weight: Style.fontWeightMedium
+                      color: Color.onShell
+                      elide: Text.ElideRight
+                    }
+
+                    NText {
+                      textFormat: Text.PlainText
+                      text: Time.formatRelativeTime(entry ? entry.timestamp : 0)
+                      pointSize: Style.fontSizeXXS
+                      color: Color.onShellTertiary
+                    }
+                  }
+
+                  NText {
+                    id: summaryText
+                    Layout.fillWidth: true
+                    text: (delegateItem.markdownEnabled && delegateItem.isExpanded) ? (entry.summaryMarkdown || I18n.tr("common.no-summary")) : delegateItem.summary
+                    pointSize: Style.fontSizeM
+                    color: Color.onShell
+                    textFormat: delegateItem.textFormat
+                    wrapMode: Text.Wrap
+                    maximumLineCount: delegateItem.isExpanded ? 999 : 2
+                    elide: Text.ElideRight
+                    onLinkActivated: link => Qt.openUrlExternally(link)
+                  }
+
+                  NText {
+                    id: bodyText
+                    Layout.fillWidth: true
+                    text: (delegateItem.markdownEnabled && delegateItem.isExpanded) ? (entry.bodyMarkdown || "") : delegateItem.body
                     pointSize: Style.fontSizeS
-                    color: (delegateItem.isFocused && root.actionIndex === index) ? Color.accent : Color.accentAlt
-                    font.weight: (delegateItem.isFocused && root.actionIndex === index) ? Style.fontWeightSemiBold : Style.fontWeightNormal
-                    visible: !isDefault
+                    color: Color.onShellSecondary
+                    textFormat: delegateItem.textFormat
+                    wrapMode: Text.Wrap
+                    maximumLineCount: delegateItem.isExpanded ? 999 : 3
+                    elide: Text.ElideRight
+                    visible: text.length > 0
+                    onLinkActivated: link => Qt.openUrlExternally(link)
+                  }
 
+                  // Actions: accentAlt text buttons (DESIGN §3.5.2).
+                  Flow {
+                    Layout.fillWidth: true
+                    visible: delegateItem.hasActions
+                    spacing: Style.marginS
+
+                    Repeater {
+                      model: delegateItem.actionsList
+
+                      delegate: NText {
+                        readonly property bool isDefault: modelData.identifier === "default"
+                        text: modelData.text
+                        pointSize: Style.fontSizeS
+                        color: (delegateItem.isFocused && root.actionIndex === index) ? Color.accent : Color.accentAlt
+                        font.weight: (delegateItem.isFocused && root.actionIndex === index) ? Style.fontWeightSemiBold : Style.fontWeightNormal
+                        visible: !isDefault
+
+                        MouseArea {
+                          anchors.fill: parent
+                          cursorShape: Qt.PointingHandCursor
+                          onClicked: {
+                            root.focusIndex = delegateItem.index;
+                            root.actionIndex = index;
+                            root.invokeAndClose(delegateItem.notificationId, modelData.identifier);
+                          }
+                        }
+                      }
+                    }
+                  }
+
+                  // "还有 N 条" (DESIGN §3.5.2): opens the group. Only the
+                  // newest card of a collapsed multi-entry group carries it.
+                  NText {
+                    Layout.fillWidth: true
+                    visible: delegateItem.isHead && delegateItem.groupSize > 1 && !delegateItem.isGroupExpanded
+                    text: I18n.tr("notifications.panel.more-in-group", {
+                                    count: delegateItem.groupSize - 1
+                                  })
+                    pointSize: Style.fontSizeXXS
+                    color: Color.onShellTertiary
                     MouseArea {
                       anchors.fill: parent
                       cursorShape: Qt.PointingHandCursor
-                      hoverEnabled: true
-                      onClicked: {
-                        root.focusIndex = delegateItem.index;
-                        root.actionIndex = index;
-                        root.invokeAndClose(delegateItem.notificationId, modelData.identifier);
-                      }
+                      onClicked: root.expandedGroup = delegateItem.groupKey
                     }
                   }
                 }
@@ -517,13 +734,66 @@ Item {
             }
           }
 
-          // Close × revealed on hover, overlaid on the card top-right so the
-          // timestamp can use the full row width (gxde notifydelegate.cpp:
-          // the button floats over the item instead of reserving a slot).
+          // Stacked edges (DESIGN §3.5.2): two staggered bottom edges under
+          // the newest card of a collapsed multi-entry group — each 8 px
+          // further in, 4 px tall, overlay("hover"), radiusItem.
+          Item {
+            id: stackedEdges
+            anchors.top: cardSurface.bottom
+            anchors.topMargin: Style.marginXXS
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: cardSurface.width
+            height: Style.marginXXS + 8
+            visible: delegateItem.shown && delegateItem.isHead && delegateItem.groupSize > 1 && !delegateItem.isGroupExpanded
+
+            Rectangle {
+              y: 0
+              x: 8
+              width: cardSurface.width - 16
+              height: 4
+              radius: Style.radiusItem
+              color: Color.overlay("hover")
+            }
+
+            Rectangle {
+              y: Style.marginXXS + 4
+              x: 16
+              width: cardSurface.width - 32
+              height: 4
+              radius: Style.radiusItem
+              color: Color.overlay("hover")
+            }
+          }
+
+          // Chevron for a truncated summary/body (DESIGN §3.5.2): expands
+          // the full text in place. Top-right of the card, left of the
+          // hover ×.
+          NIconButton {
+            id: expandButton
+            anchors.top: cardSurface.top
+            anchors.right: cardSurface.right
+            anchors.margins: Style.marginXS
+            anchors.rightMargin: closeButton.width + Style.marginXS
+            z: 1
+            baseSize: Style.baseWidgetSize * 0.7
+            applyUiScale: false
+            icon: delegateItem.isExpanded ? "chevron-up" : "chevron-down"
+            colorFg: Color.onShellTertiary
+            colorBg: "transparent"
+            colorBgHover: Color.overlay("hover")
+            colorFgHover: Color.onShell
+            tooltipText: delegateItem.isExpanded ? I18n.tr("notifications.panel.click-to-collapse") : I18n.tr("notifications.panel.click-to-expand")
+            visible: delegateItem.canExpand || delegateItem.isExpanded
+            onClicked: root.expandedNotification = delegateItem.isExpanded ? "" : delegateItem.notificationId
+          }
+
+          // Hover-revealed × (DESIGN §3.5.2): deletes this notification.
+          // Floats over the card's top-right corner (gxde
+          // notifydelegate.cpp: the button floats over the item).
           NIconButton {
             id: closeButton
-            anchors.right: delegateItem.right
-            anchors.top: delegateItem.top
+            anchors.right: cardSurface.right
+            anchors.top: cardSurface.top
             anchors.margins: Style.marginXS
             z: 1
             baseSize: Style.baseWidgetSize * 0.7
@@ -536,10 +806,148 @@ Item {
             colorBgHover: Color.overlay("hover")
             colorFgHover: Color.onShell
             tooltipText: I18n.tr("tooltips.dismiss-notification")
-            onClicked: delegateItem.remove()
+            onClicked: delegateItem.dismiss(0)
+          }
+
+          // Card interaction (upstream NotificationHistoryPanel.qml:795-806):
+          // click runs the default action or focuses the sender, a drag past
+          // the upstream thresholds dismisses, a shorter drag springs back,
+          // and a link inside an expanded body wins over the primary action.
+          MouseArea {
+            id: interactionArea
+            anchors.fill: parent
+            acceptedButtons: Qt.LeftButton
+            hoverEnabled: true
+            enabled: delegateItem.shown && !delegateItem.isRemoving
+
+            property real pressGlobalX: 0
+            property real pressGlobalY: 0
+            property real swipeOffset: 0
+            property bool isSwiping: false
+            property string pendingLink: ""
+            readonly property real swipeStartThreshold: Math.round(16 * Style.uiScaleRatio)
+            readonly property real swipeDismissThreshold: Math.max(110, width * 0.3)
+
+            // Spring back (motionPanel) unless the swipe dismissed the row.
+            Behavior on swipeOffset {
+              enabled: !Settings.data.general.animationDisabled && !interactionArea.isSwiping
+              NumberAnimation {
+                duration: Style.motionPanel
+                easing.type: Easing.OutCubic
+              }
+            }
+
+            function isSafeLink(link) {
+              if (!link)
+                return false;
+              const lower = link.toLowerCase();
+              return ["http://", "https://", "mailto:"].some(scheme => lower.startsWith(scheme));
+            }
+
+            function linkAtPoint(x, y) {
+              if (!Settings.data.notifications.enableMarkdown || !delegateItem.isExpanded)
+                return "";
+              for (const textItem of [summaryText, bodyText]) {
+                if (!textItem || !textItem.visible)
+                  continue;
+                const p = textItem.mapFromItem(interactionArea, x, y);
+                if (p.x >= 0 && p.y >= 0 && p.x <= textItem.width && p.y <= textItem.height) {
+                  const link = textItem.linkAt ? textItem.linkAt(p.x, p.y) : "";
+                  if (isSafeLink(link))
+                    return link;
+                }
+              }
+              return "";
+            }
+
+            onPressed: mouse => {
+                         root.focusIndex = delegateItem.index;
+                         root.actionIndex = -1;
+                         if (delegateItem.isExpanded)
+                         interactionArea.pendingLink = interactionArea.linkAtPoint(mouse.x, mouse.y);
+                         if (mouse.button !== Qt.LeftButton)
+                         return;
+                         const globalPoint = interactionArea.mapToGlobal(mouse.x, mouse.y);
+                         interactionArea.pressGlobalX = globalPoint.x;
+                         interactionArea.pressGlobalY = globalPoint.y;
+                         interactionArea.isSwiping = false;
+                       }
+            onPositionChanged: mouse => {
+                                 if (!(mouse.buttons & Qt.LeftButton) || delegateItem.isRemoving)
+                                 return;
+                                 const globalPoint = interactionArea.mapToGlobal(mouse.x, mouse.y);
+                                 const deltaX = globalPoint.x - interactionArea.pressGlobalX;
+                                 const deltaY = globalPoint.y - interactionArea.pressGlobalY;
+
+                                 if (!interactionArea.isSwiping) {
+                                   if (Math.abs(deltaX) < interactionArea.swipeStartThreshold)
+                                   return;
+                                   // Only horizontal-dominant movement starts a swipe.
+                                   if (Math.abs(deltaX) <= Math.abs(deltaY) * 1.15)
+                                   return;
+                                   interactionArea.isSwiping = true;
+                                 }
+                                 if (interactionArea.pendingLink && Math.abs(deltaX) >= interactionArea.swipeStartThreshold)
+                                 interactionArea.pendingLink = "";
+                                 interactionArea.swipeOffset = deltaX;
+                               }
+            onReleased: mouse => {
+                          if (mouse.button !== Qt.LeftButton)
+                          return;
+
+                          if (interactionArea.isSwiping) {
+                            // Past the threshold the row flies out and goes;
+                            // short of it the spring-back Behavior applies.
+                            if (Math.abs(interactionArea.swipeOffset) >= interactionArea.swipeDismissThreshold)
+                            delegateItem.dismiss(interactionArea.swipeOffset >= 0 ? 1 : -1);
+                            else
+                            interactionArea.swipeOffset = 0;
+                            interactionArea.isSwiping = false;
+                            interactionArea.pendingLink = "";
+                            return;
+                          }
+
+                          if (interactionArea.pendingLink) {
+                            Qt.openUrlExternally(interactionArea.pendingLink);
+                            interactionArea.pendingLink = "";
+                            return;
+                          }
+
+                          // Collapsed group → expand; truncated text → expand
+                          // in place; otherwise the primary action.
+                          if (delegateItem.groupSize > 1 && !delegateItem.isGroupExpanded) {
+                            root.expandedGroup = delegateItem.groupKey;
+                            return;
+                          }
+                          if (delegateItem.canExpand) {
+                            root.expandedNotification = delegateItem.notificationId;
+                            return;
+                          }
+                          root.invokeDefault(delegateItem.notificationId, delegateItem.appName);
+                        }
+            onCanceled: {
+              interactionArea.isSwiping = false;
+              interactionArea.swipeOffset = 0;
+              interactionArea.pendingLink = "";
+            }
+
+            HoverHandler {
+              id: hoverHandler
+              target: parent
+            }
           }
         }
       }
+    }
+  }
+
+  // Removals from the hover ×, the group clear or the service itself can
+  // leave the keyboard focus past the end of the row space.
+  Connections {
+    target: NotificationService.historyModel
+    function onCountChanged() {
+      if (root.focusIndex >= root.descriptors.length)
+        root.focusIndex = root.descriptors.length - 1;
     }
   }
 }

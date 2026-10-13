@@ -8,7 +8,8 @@
     "disable-dnd": "关闭勿扰模式",
     "disable-wifi": "关闭 Wi-Fi",
     "disconnect-vpn": "断开与 {name} 的连接",
-    "dock-settings": "Dock 栏设置",
+    "do-not-disturb": "勿扰模式",
+    "dock-settings": "任务栏设置",
     "empty-trash": "清空回收站",
     "enable-bluetooth": "启用蓝牙",
     "enable-dnd": "启用勿扰模式",
@@ -662,9 +663,21 @@
   "lock-screen": {
     "password": "请输入密码..."
   },
+  "media": {
+    "card-no-media": "没有正在播放的媒体"
+  },
   "notifications": {
     "panel": {
-      "no-notifications": "无通知"
+      "clear-group": "清除这组",
+      "collapse-group": "收起",
+      "more-in-group": "还有 {count} 条",
+      "click-to-expand": "展开",
+      "click-to-collapse": "收起",
+      "no-notifications": "无通知",
+      "section-earlier": "更早",
+      "section-today": "今天",
+      "section-yesterday": "昨天",
+      "title": "通知"
     },
     "time": {
       "diff-d": "1 天前",
