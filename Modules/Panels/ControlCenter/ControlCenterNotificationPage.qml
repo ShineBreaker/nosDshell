@@ -17,7 +17,7 @@ import qs.Widgets
 * control center closes like the original panel did.
 *
 * The list header ("通知" + "全部清除") lives inside the list component: it is
-* the first row of the bottom-anchored content (DESIGN §3.5.2), so it must
+* the first row of the top-anchored content (DESIGN §3.5.2), so it must
 * travel with the notifications and hide with an empty history.
 */
 Item {

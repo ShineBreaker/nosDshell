@@ -23,7 +23,7 @@ import qs.Widgets
 * View model (DESIGN §3.5.2): the list header, the day sections and the
 * per-app groups are folded into one flat descriptor array — `header` /
 * `section` / `notif` rows — built from NotificationService.historyModel, so
-* the whole content block travels with the bottom-anchored notifications. A
+* the whole content block travels with the top-anchored notifications. A
 * notification row carries only its source index and precomputed group facts;
 * the delegate reads the live entry with historyModel.get(index), so the async
 * image cache (setProperty on cachedImage) keeps reaching the delegates the
@@ -202,8 +202,7 @@ Item {
     return out;
   }
 
-  // The list is bottom-anchored: up moves towards newer notifications (the
-  // newest sits closest to the quick-control strip).
+  // The list is top-anchored: down moves towards older notifications.
   function moveSelection(dir) {
     const rows = root.visibleRows;
     if (rows.length === 0)
@@ -374,10 +373,8 @@ Item {
     anchors.fill: parent
     spacing: Style.marginS
 
-    // Empty state (onShellTertiary). The list bottom-anchors its rows once
-    // they exist (topMargin eats the slack); with nothing to show the hint
-    // takes the whole column so it sits flush on the bottom edge, a fixed
-    // margin above the quick-control strip (DESIGN §3.5.2).
+    // Empty state (onShellTertiary). The list top-anchors its rows once they
+    // exist; with nothing to show the hint takes the whole column.
     Item {
       Layout.fillWidth: true
       Layout.fillHeight: true
@@ -392,9 +389,9 @@ Item {
     }
 
     // The list: virtualized (delegates are O(visible), not O(maxHistory));
-    // the slide-out of a removing row stays inside the clip. Bottom-anchored:
-    // the view fills the box and the top margin eats the slack, so the last
-    // row keeps a fixed margin to the quick-control strip.
+    // the slide-out of a removing row stays inside the clip. Top-anchored:
+    // notifications pin to the section top and slack sits at the bottom —
+    // the block must not shift when the quick-control strip changes height.
     Item {
       Layout.fillWidth: true
       Layout.fillHeight: true
@@ -404,7 +401,6 @@ Item {
       NListView {
         id: notificationList
         anchors.fill: parent
-        anchors.topMargin: Math.max(0, parent.height - contentHeight)
         spacing: Style.marginS
         reuseItems: true
         gradientColor: "transparent"
