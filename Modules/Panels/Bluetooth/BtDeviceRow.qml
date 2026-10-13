@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell.Bluetooth
 import qs.Commons
+import qs.Services.Networking
 import qs.Widgets
 
 // One device row for all three Bluetooth lists in the panel — connected, paired
