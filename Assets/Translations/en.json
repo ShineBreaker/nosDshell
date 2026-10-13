@@ -1728,6 +1728,9 @@
     "rx": "Download",
     "tx": "Upload"
   },
+  "time": {
+    "month-year-format": "MMMM yyyy"
+  },
   "toast": {
     "airplane-mode": {
       "description": "Disable all wireless communications.",

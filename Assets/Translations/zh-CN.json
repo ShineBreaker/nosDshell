@@ -1728,6 +1728,9 @@
     "rx": "下载",
     "tx": "上传"
   },
+  "time": {
+    "month-year-format": "yyyy年M月"
+  },
   "toast": {
     "airplane-mode": {
       "description": "禁用所有无线通信。",

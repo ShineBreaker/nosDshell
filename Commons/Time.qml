@@ -162,11 +162,13 @@ Singleton {
 
   // DESIGN.md §1.5：界面长日期一律经此函数输出（I18n.locale 跟随界面语言）。
   // 不用 Qt.formatDate / toLocaleDateString(Qt.locale())，它们跟系统区域走。
+  // 经 dateFormat() 取纯日期格式串：直接传 Locale.LongFormat 会把时间
+  // 和“中国标准时间”尾巴一起渲染出来（Qt 按 QDateTime 处理 JS Date）。
   function formatLongDate(date) {
     if (!date) {
       date = new Date();
     }
-    return I18n.locale.toString(date, Locale.LongFormat);
+    return I18n.locale.toString(date, I18n.locale.dateFormat(Locale.LongFormat));
   }
 
   // DESIGN.md §1.5：“月份 + 年份”标题经此函数输出，格式串取 time.month-year-format 翻译键。
