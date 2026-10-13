@@ -203,7 +203,7 @@ cd "$WORK"
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
 control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
 cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
-cc-collapse cc-geom
+cc-collapse cc-geom settings-cc-pages
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
@@ -655,9 +655,12 @@ run_scene() {
                             "Third body with an action" 2>/dev/null
                           sleep 1
                           call controlCenter open 1.5
-                          qs -p "$REPO" ipc call debug opened 18 > "$WORK/logs/cc-geom-cards.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug opened 40 > "$WORK/logs/cc-geom-cards.txt" 2>&1 || true
                           call controlCenter quickPage wifi 1.2
-                          qs -p "$REPO" ipc call debug opened 18 > "$WORK/logs/cc-geom-wifi.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug opened 40 > "$WORK/logs/cc-geom-wifi.txt" 2>&1 || true
+                          call controlCenter quickPage basic 1.2
+                          call controlCenter quickPage cards 1.2
+                          qs -p "$REPO" ipc call debug opened 40 > "$WORK/logs/cc-geom-back2cards.txt" 2>&1 || true
                           shot cc-geom
                           call controlCenter toggle 0.5 ;;
     # Collapse chevron, bottom-right corner: one constant screen position
@@ -828,6 +831,18 @@ PYEOF
                           fi
                           swaymsg fullscreen disable 2>/dev/null
                           swaymsg floating enable 2>/dev/null ;;
+    # Pages group (control-center settings): the module view stacks the
+    # sub-tabs vertically (NTabView.stacked — no inner tab strip to click),
+    # so scroll the module column until the 页面 group comes into view.
+    settings-cc-pages)    call settings openTab controlcenter 5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          for i in 1 2 3 4; do
+                            "$VINPUT" vinput scroll 1700 540 60 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.6
+                            shot "settings-cc-pages-$i"
+                          done
+                          call settings toggle 2 ;;
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;

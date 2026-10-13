@@ -34,7 +34,7 @@ ColumnLayout {
     {
       "id": "brightness-card",
       "text": I18n.tr("panels.control-center.card-brightness"),
-      "enabled": false,
+      "enabled": true,
       "required": false
     },
     {
@@ -142,6 +142,11 @@ ColumnLayout {
       tabIndex: 1
       checked: subTabBar.currentIndex === 1
     }
+    NTabButton {
+      text: I18n.tr("panels.control-center.pages-tab")
+      tabIndex: 2
+      checked: subTabBar.currentIndex === 2
+    }
   }
 
   Item {
@@ -168,6 +173,9 @@ ColumnLayout {
       onUpdateWidgetSettingsInSection: (section, index, settings) => _updateWidgetSettingsInSection(section, index, settings)
       onMoveWidgetBetweenSections: (fromSection, index, toSection) => _moveWidgetBetweenSections(fromSection, index, toSection)
       onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+    }
+
+    PagesSubTab {
     }
   }
 

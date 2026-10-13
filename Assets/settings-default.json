@@ -1,5 +1,5 @@
 {
-  "settingsVersion": 81,
+  "settingsVersion": 82,
   "bar": {
     "enabled": false,
     "barType": "simple",
@@ -273,6 +273,13 @@
       "temp",
       "mem"
     ],
+    "quickPageOrder": [
+      "cards",
+      "basic",
+      "wifi",
+      "bluetooth",
+      "vpn"
+    ],
     "shortcuts": {
       "left": [
         {
@@ -317,7 +324,7 @@
         "id": "audio-card"
       },
       {
-        "enabled": false,
+        "enabled": true,
         "id": "brightness-card"
       },
       {

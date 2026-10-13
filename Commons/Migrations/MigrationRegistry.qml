@@ -104,4 +104,5 @@ QtObject {
   property Component migration79Component: Migration79 {}
   property Component migration80Component: Migration80 {}
   property Component migration81Component: Migration81 {}
+  property Component migration82Component: Migration82 {}
 }

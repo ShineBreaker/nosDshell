@@ -25,7 +25,7 @@ Singleton {
   - Default cache directory: ~/.cache/nosdshell
   */
   readonly property alias data: adapter  // Used to access via Settings.data.xxx.yyy
-  readonly property int settingsVersion: 81
+  readonly property int settingsVersion: 82
   // Effective debug flag: NOSD_DEBUG=1 forces it on before the settings file
   // is readable (boot forensics); the persisted toggle is the runtime switch.
   readonly property bool envDebug: Quickshell.env("NOSD_DEBUG") === "1"
@@ -527,6 +527,16 @@ Singleton {
         "temp",
         "mem"
       ]
+      // Quick-control strip page order (DESIGN §3.5.2). Pages whose content
+      // is fully toggled off or whose service is unavailable drop out of the
+      // strip regardless of their position here; unknown ids are ignored.
+      property list<var> quickPageOrder: [
+        "cards",
+        "basic",
+        "wifi",
+        "bluetooth",
+        "vpn"
+      ]
       property JsonObject shortcuts
       shortcuts: JsonObject {
         property list<var> left: [
@@ -573,7 +583,7 @@ Singleton {
         },
         {
           "id": "brightness-card",
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "weather-card",

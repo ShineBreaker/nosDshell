@@ -553,7 +553,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
 
 ```nix
 {
-  settingsVersion = 81;
+  settingsVersion = 82;
   bar = {
     enabled = false;
     barType = "simple";
@@ -780,6 +780,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
   controlCenter = {
     diskPath = "/";
     sysmonMetrics = [ "cpu" "temp" "mem" ];
+    quickPageOrder = [ "cards" "basic" "wifi" "bluetooth" "vpn" ];
     shortcuts = {
       left = [ {
           id = "Network";
@@ -810,7 +811,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
         enabled = true;
         id = "audio-card";
       } {
-        enabled = false;
+        enabled = true;
         id = "brightness-card";
       } {
         enabled = true;

@@ -965,6 +965,8 @@
       "card-shortcuts": "快捷开关",
       "card-weather": "天气",
       "cards-desc": "自定义在控制中心显示的控制项及其顺序。",
+      "pages-desc": "拖动调整快捷控制条的页面顺序。某页内容在“卡片”页全部关闭、或服务不可用时，该页会从分页条中消失。",
+      "pages-tab": "页面",
       "quick-controls-collapse": "收起快捷控制",
       "quick-controls-expand": "展开快捷控制",
       "shortcuts-custom-button-enable-on-state-logic-description": "根据检查命令启用第二个图标和“高亮”状态。",

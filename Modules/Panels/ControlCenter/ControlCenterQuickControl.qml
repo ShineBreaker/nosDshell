@@ -15,13 +15,15 @@ import qs.Widgets
 /**
 * ControlCenterQuickControl - the fixed bottom quick-control panel (§3.5.2).
 *
-* Cards page (first): the enabled controlCenter.cards — weather, media,
-* system monitor — as the home page's default widgets. Basic page: volume +
-* brightness sliders (24 px glyphs at both ends, brightness hidden when
-* unavailable) and two rows of quick switch buttons taken from
-* controlCenter.shortcuts.left ++ .right (5 per row, 10 shown — no overflow
-* pages). Detail pages: Wi-Fi, Bluetooth, VPN — reusing the same
-* services as the existing panels, styled per §3.5.4.
+* Page order comes from controlCenter.quickPageOrder; a page drops out when
+* its content is all toggled off or its service is unavailable. Cards page:
+* the enabled controlCenter.cards — weather, media, system monitor. Basic
+* page: volume + brightness sliders (24 px glyphs at both ends) and two rows
+* of quick switch buttons taken from controlCenter.shortcuts.left ++ .right
+* (5 per row, 10 shown — no overflow pages); each region obeys its card
+* toggle (audio-card/brightness-card/shortcuts-card). Detail pages: Wi-Fi,
+* Bluetooth, VPN — reusing the same services as the existing panels, styled
+* per §3.5.4.
 */
 Item {
   id: root
@@ -34,53 +36,100 @@ Item {
   readonly property real listWidth: Math.max(1, root.width - Style.margin2M)
 
   // ---------------- pages ----------------
-  // Page 0 is the cards page (the home page's default widgets), page 1 the
-  // basic page; detail pages follow.
+  // The strip's pages live in controlCenter.quickPageOrder (§3.5.2):
+  // "cards" = the enabled controlCenter.cards, "basic" = sliders + switch
+  // grid, then the detail pages. A page drops out of the strip when its
+  // content is all toggled off or its service is unavailable; ids missing
+  // from the stored order append at the end in canonical order.
+  readonly property var _knownPages: ["cards", "basic", "wifi", "bluetooth", "vpn"]
+
   // Only ids this page actually renders — profile/shortcuts/audio/brightness
   // cards were redistributed to the header, switch grid and basic page per
   // DESIGN §3.5.2, so their (still enabled) settings entries must not reach
   // the Repeater: an unmapped id loads a zero-height Loader that still eats
   // a layout slot + column spacing and opens a dead band above the cards.
   readonly property var cards: (Settings.data.controlCenter.cards || []).filter(c => ["weather-card", "media-sysmon-card"].indexOf(c.id) >= 0)
+  readonly property var enabledCards: cards.filter(c => c.enabled && (c.id !== "weather-card" || Settings.data.location.weatherEnabled))
 
   // Up to ten switches on the basic page (5 per row); the rest are simply
   // not shown — the settings UI lets the user pick which ones matter.
   readonly property var shortcuts: (Settings.data.controlCenter.shortcuts?.left).concat(Settings.data.controlCenter.shortcuts?.right).slice(0, 10)
 
-  readonly property var detailPages: {
-    var pages = ["wifi"];
-    if (BluetoothService.bluetoothAvailable)
-      pages.push("bluetooth");
-    if (VPNService.connections && Object.keys(VPNService.connections).length > 0)
-      pages.push("vpn");
-    return pages;
+  function cardEnabled(id) {
+    const arr = Settings.data.controlCenter.cards || [];
+    for (var i = 0; i < arr.length; i++)
+      if (arr[i] && arr[i].id === id)
+        return !!arr[i].enabled;
+    return false;
   }
 
-  readonly property int pageCount: 2 + detailPages.length
-  property int currentPage: 0
+  // Hoisted so both the row and the page-availability check see the same
+  // monitor lookup.
+  readonly property var brightnessMonitor: BrightnessService.getMonitorForScreen(root.screen ?? (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)) ?? null
+  readonly property bool brightnessUsable: root.cardEnabled("brightness-card") && root.brightnessMonitor !== null && root.brightnessMonitor.brightnessControlAvailable
+
+  function pageAvailable(id) {
+    switch (id) {
+    case "cards":
+      return enabledCards.length > 0;
+    case "basic":
+      return cardEnabled("audio-card") || cardEnabled("shortcuts-card") || brightnessUsable;
+    case "wifi":
+      return true;
+    case "bluetooth":
+      return BluetoothService.bluetoothAvailable;
+    case "vpn":
+      return VPNService.connections && Object.keys(VPNService.connections).length > 0;
+    }
+    return false;
+  }
+
+  readonly property var orderedPages: {
+    const declared = Settings.data.controlCenter.quickPageOrder || [];
+    var seq = [];
+    declared.forEach(id => {
+                       if (_knownPages.indexOf(id) !== -1 && seq.indexOf(id) === -1)
+                         seq.push(id);
+                     });
+    _knownPages.forEach(id => {
+                          if (seq.indexOf(id) === -1)
+                            seq.push(id);
+                        });
+    return seq.filter(id => pageAvailable(id));
+  }
+
+  readonly property int pageCount: orderedPages.length
+
+  // The shown page is stored BY ID, not index — a reorder or availability
+  // flip re-seats the derived index on the same page automatically instead
+  // of silently switching content. A page that drops out of orderedPages
+  // snaps to the first ordered page (onOrderedPagesChanged below).
+  property string currentPageId: ""
+  readonly property int currentPage: {
+    const idx = orderedPages.indexOf(currentPageId);
+    return idx >= 0 ? idx : 0;
+  }
+  readonly property string currentDetailPage: ["wifi", "bluetooth", "vpn"].indexOf(currentPageId) >= 0 ? currentPageId : ""
 
   // Direction of the last page turn (+1 next / -1 previous); the incoming page
   // slides in from that side.
   property int navDirection: 1
 
-  readonly property string currentDetailPage: {
-    const idx = currentPage - 2;
-    return (idx >= 0 && idx < detailPages.length) ? detailPages[idx] : "";
-  }
-
   function nextPage() {
     navDirection = 1;
-    currentPage = (currentPage + 1) % pageCount;
+    if (pageCount > 0)
+      currentPageId = orderedPages[(currentPage + 1) % pageCount];
   }
 
   function previousPage() {
     navDirection = -1;
-    currentPage = (currentPage - 1 + pageCount) % pageCount;
+    if (pageCount > 0)
+      currentPageId = orderedPages[(currentPage - 1 + pageCount) % pageCount];
   }
 
-  onPageCountChanged: {
-    if (currentPage >= pageCount)
-      currentPage = Math.max(0, pageCount - 1);
+  onOrderedPagesChanged: {
+    if (orderedPages.indexOf(currentPageId) === -1)
+      currentPageId = orderedPages.length > 0 ? orderedPages[0] : "";
   }
 
   // The strip follows the current page's own height — the cards page reports
@@ -99,22 +148,18 @@ Item {
 
   clip: true
 
-  // Select a page by id ("cards"/"basic" or wifi/bluetooth/vpn);
-  // pages unavailable in this environment fall back to the cards page.
+  // Select a page by id (any entry of _knownPages); unknown or currently
+  // unavailable pages fall back to the first ordered page.
   function openPage(name) {
-    var target = 0;
-    if (name === "basic")
-      target = 1;
-    else if (name !== "cards") {
-      const idx = detailPages.indexOf(name);
-      if (idx >= 0)
-        target = 2 + idx;
-    }
+    const idx = orderedPages.indexOf(name);
+    const target = idx >= 0 ? idx : 0;
     navDirection = target >= currentPage ? 1 : -1;
-    currentPage = target;
+    currentPageId = orderedPages.length > 0 ? orderedPages[target] : "";
   }
 
   Component.onCompleted: {
+    if (!currentPageId)
+      currentPageId = orderedPages.length > 0 ? orderedPages[0] : "";
     if (NetworkService.wifiEnabled && !NetworkService.scanningActive)
       NetworkService.scan();
     VPNService.refresh();
@@ -123,7 +168,7 @@ Item {
   // Slide-in transition for the incoming page: a directional settle matching
   // the module-view slide language (Style.motionPanel). Transform-based so the
   // anchored layout never fights the animation.
-  onCurrentPageChanged: pageSettle.restart()
+  onCurrentPageIdChanged: pageSettle.restart()
 
   ParallelAnimation {
     id: pageSettle
@@ -163,7 +208,7 @@ Item {
       x: 0
     }
 
-    // ---------------- cards page (first page) ----------------
+    // ---------------- cards page ----------------
     Item {
       id: cardsPage
       Layout.fillWidth: true
@@ -171,7 +216,7 @@ Item {
       // heights plus top/bottom breathing room — no dead space under
       // whichever cards are on.
       Layout.preferredHeight: cardsCol.implicitHeight + Style.margin2M
-      visible: root.currentPage === 0
+      visible: root.currentPageId === "cards"
 
       // If cards ever outgrow the panel the page still scrolls.
       NScrollView {
@@ -192,12 +237,12 @@ Item {
           spacing: Style.marginM
 
           Repeater {
-            model: root.cards
+            // enabledCards already filters disabled/weather-gated entries so
+            // a toggled-off card never instantiates a Loader slot at all.
+            model: root.enabledCards
 
             delegate: Loader {
               required property var modelData
-              active: modelData.enabled && (modelData.id !== "weather-card" || Settings.data.location.weatherEnabled)
-              visible: active
               Layout.fillWidth: true
 
               sourceComponent: {
@@ -221,7 +266,7 @@ Item {
       // Content-driven like the cards page — a short switch list hugs its
       // rows instead of padding out to the list-page slot height.
       Layout.preferredHeight: basicCol.implicitHeight + Style.margin2M
-      visible: root.currentPage === 1
+      visible: root.currentPageId === "basic"
 
       ColumnLayout {
         id: basicCol
@@ -232,12 +277,13 @@ Item {
         anchors.bottomMargin: Style.marginM
         spacing: Style.marginS
 
-        // Volume slider
+        // Volume slider — audio-card toggle
         RowLayout {
           id: volumeRow
           Layout.fillWidth: true
           Layout.preferredHeight: Style.sliderBasicHeight
           spacing: Style.marginS
+          visible: root.cardEnabled("audio-card")
 
           property real localVolume: AudioService.volume
 
@@ -279,28 +325,27 @@ Item {
           }
         }
 
-        // Brightness slider (hidden when brightness control is unavailable)
+        // Brightness slider — brightness-card toggle; also hidden when the
+        // hardware reports no brightness control.
         RowLayout {
           id: brightnessRow
           Layout.fillWidth: true
           Layout.preferredHeight: Style.sliderBasicHeight
           Layout.topMargin: Style.marginS
           spacing: Style.marginS
-          visible: brightnessMonitor !== null && brightnessMonitor.brightnessControlAvailable
-
-          readonly property var brightnessMonitor: BrightnessService.getMonitorForScreen(root.screen ?? (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)) ?? null
+          visible: root.brightnessUsable
 
           Connections {
-            target: brightnessRow.brightnessMonitor
+            target: root.brightnessMonitor
             ignoreUnknownSignals: true
             function onBrightnessUpdated() {
-              const bm = brightnessRow.brightnessMonitor;
+              const bm = root.brightnessMonitor;
               if (bm && !brightnessSlider.pressed)
                 brightnessRow.localBrightness = bm.brightness || 0;
             }
           }
 
-          property real localBrightness: brightnessMonitor ? (brightnessMonitor.brightness || 0) : 0
+          property real localBrightness: root.brightnessMonitor ? (root.brightnessMonitor.brightness || 0) : 0
 
           NIcon {
             icon: "brightness-low"
@@ -318,7 +363,7 @@ Item {
             heightRatio: 0.5
             onMoved: {
               brightnessRow.localBrightness = value;
-              brightnessRow.brightnessMonitor?.setBrightness(value);
+              root.brightnessMonitor?.setBrightness(value);
             }
             tooltipText: `${Math.round(value * 100)}%`
           }
@@ -330,15 +375,16 @@ Item {
           }
         }
 
-        // Quick switch rows: 5 per row, 10 shown — cells are 70 px wide
-        // (Style.quickSwitchWidth); the grid is centred so a shorter button
-        // count still lands in DDE's rhythm.
+        // Quick switch rows — shortcuts-card toggle. 5 per row, 10 shown —
+        // cells are 70 px wide (Style.quickSwitchWidth); the grid is centred
+        // so a shorter button count still lands in DDE's rhythm.
         SwitchGrid {
           Layout.preferredHeight: switchRows * Style.quickSwitchHeight + Math.max(0, switchRows - 1) * Style.marginS
           Layout.preferredWidth: Math.min(parent.width, naturalWidth)
           Layout.topMargin: Style.marginS
           Layout.alignment: Qt.AlignHCenter
-          items: root.currentPage === 1 ? root.shortcuts : []
+          visible: root.cardEnabled("shortcuts-card")
+          items: root.currentPageId === "basic" ? root.shortcuts : []
           baseIndex: 0
         }
       }
