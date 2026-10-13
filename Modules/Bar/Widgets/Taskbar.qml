@@ -481,10 +481,10 @@ Item {
     z: -1
     anchors.fill: parent
     acceptedButtons: Qt.RightButton
-    onClicked: {
-      TooltipService.hideImmediately();
-      DockSettingsMenu.openAtItemPoint(screen, this, mouse.x, mouse.y);
-    }
+    onClicked: mouse => {
+                 TooltipService.hideImmediately();
+                 DockSettingsMenu.openAtItemPoint(screen, this, mouse.x, mouse.y);
+               }
   }
 
   // Visual capsule centered in parent (efficient mode packs items from the
