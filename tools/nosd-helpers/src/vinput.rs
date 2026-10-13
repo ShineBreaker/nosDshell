@@ -13,6 +13,11 @@
 //!
 //! W/H 为绝对坐标的映射区间，默认 1920x1080（verify 的无头输出），
 //! 永远排在各操作自己的坐标参数之后。
+//!
+//! VINPUT_HOLD_MS: 进程退出前先 sleep 这么多毫秒——虚拟指针随进程销毁，
+//! 销毁时合成器会给悬停面发 leave，hover 状态在截图前就复位了。
+//! 需要 hover 可见的场景在 move 上加这个环境变量，并在截图前并行睡同样的
+//! 时长由 shot 侧控制。
 
 use std::thread::sleep;
 use std::time::Duration;
@@ -222,6 +227,11 @@ fn run_op(args: &[String]) -> Result<(), String> {
             vp.motion_absolute(t, arg_f32(p, 0)? as u32, arg_f32(p, 1)? as u32, ew, eh);
             vp.frame();
             t += 30;
+            // Emit a wheel-source axis pair like a real mouse: compositors
+            // that ignore bare continuous axis events still route these, and
+            // Qt turns the discrete component into angleDelta.
+            vp.axis_source(wl_pointer::AxisSource::Wheel);
+            vp.axis_discrete(t, wl_pointer::Axis::VerticalScroll, dy as f64, (dy / 120.0) as i32);
             vp.axis(t, wl_pointer::Axis::VerticalScroll, dy as f64);
             vp.frame();
             flush(&mut queue);
@@ -231,6 +241,12 @@ fn run_op(args: &[String]) -> Result<(), String> {
 
     // Let the compositor deliver the queued events before the pointer dies.
     sleep(Duration::from_millis(150));
+    // VINPUT_HOLD_MS keeps the virtual pointer alive past delivery — the
+    // pointer is destroyed on exit, which sends a leave event that resets
+    // hover state before a screenshot can capture it.
+    if let Ok(ms) = std::env::var("VINPUT_HOLD_MS").map_err(|_| ()).and_then(|v| v.parse::<u64>().map_err(|_| ())) {
+        sleep(Duration::from_millis(ms));
+    }
     queue
         .roundtrip(&mut state)
         .map_err(|e| format!("vinput: final roundtrip failed: {e}"))?;

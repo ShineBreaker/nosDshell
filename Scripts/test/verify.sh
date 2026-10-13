@@ -318,6 +318,19 @@ open(os.environ["NOSD_CACHE_DIR"].rstrip("/")+"/shell-state.json","w").write(
               "notificationsState":{"lastSeenTs":0}}))
 PYEOF
 
+# Seed the wallpaper directory before the shell starts — WallpaperService
+# scans once at startup, so files added mid-run are invisible to the strip.
+# Unique hues per index so a strip scroll is visible as a positional change.
+mkdir -p "$WORK/home/Pictures/Wallpapers"
+python3 - <<PYEOF
+from PIL import Image
+import colorsys
+for i in range(1, 15):
+    r, g, b = (int(c * 255) for c in colorsys.hsv_to_rgb(i / 15.0, 0.55, 0.75))
+    Image.new("RGB", (320, 180), (r, g, b)).save("$WORK/home/Pictures/Wallpapers/wp%02d.png" % i)
+PYEOF
+cp "$REPO/Assets/Wallpaper/deepin15-desktop.jpg" "$WORK/home/Pictures/Wallpapers/deepin15-desktop.jpg" 2>/dev/null || true
+
 dbus-run-session -- bash <<'DBUSEOF'
 set -uo pipefail
 
@@ -1072,6 +1085,8 @@ PYEOF
     # Pages group (control-center settings): the module view stacks the
     # sub-tabs vertically (NTabView.stacked — no inner tab strip to click),
     # so scroll the module column until the 页面 group comes into view.
+    settings-launcher)    call settings openTab launcher 5
+                          shot settings-launcher ;;
     settings-cc-pages)    call settings openTab controlcenter 5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
@@ -1142,7 +1157,44 @@ PYEOF
     notification-history) toggle notifications toggleHistory 1.5 notification-history ;;
     wallpaper)            call wallpaper set "$REPO/Assets/Wallpaper/nosdshell.png" 2
                           shot wallpaper ;;
-    wallpaper-panel)      toggle wallpaper toggle 1.5 wallpaper-panel ;;
+    wallpaper-panel)      call wallpaper toggle 2
+                          shot wallpaper-panel
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # Wheel down on the strip scrolls right — the left
+                          # chevron should appear and thumbs should shift.
+                          # The thumbnail band sits ~y890-970 on 1080p; aim at
+                          # the middle of a thumb, clear of the chevron zone.
+                          # NOTE: in the verify sway, virtual-pointer axis
+                          # events never reach the nosdshell-background layer
+                          # surface (clicks do) — the wheel path is exercised
+                          # here for documentation but only the chevron click
+                          # below is asserted. On real compositors niri/sway
+                          # deliver axis events to layer surfaces normally.
+                          "$VINPUT" vinput scroll 960 930 600 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.9
+                          shot wallpaper-panel-scrolled
+                          # Mechanical check: click the right chevron — the
+                          # strip must page right regardless of wheel delivery.
+                          # Chevron center is ~(1888,945) — the strip band is
+                          # y890-970 and the button hugs the right edge.
+                          "$VINPUT" vinput click 1888 945 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.9
+                          shot wallpaper-panel-paged
+                          # Wheel up scrolls back left.
+                          "$VINPUT" vinput scroll 960 930 -600 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.9
+                          shot wallpaper-panel-scrolled-back
+                          # Hover a thumbnail: the three slot buttons appear
+                          # (浅色 / 深色 / 都用). The virtual pointer dies when
+                          # vinput exits, which sends a leave and resets hover
+                          # before the shot — hold it alive in the background.
+                          VINPUT_HOLD_MS=3000 "$VINPUT" vinput move 400 930 2>>"$WORK/logs/vinput.log" &
+                          VP=$!
+                          sleep 1.0
+                          shot wallpaper-panel-hover
+                          wait $VP
+                          call wallpaper toggle 1 ;;
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
     dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
     dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
