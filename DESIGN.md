@@ -446,9 +446,9 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
      - 列表为空时"没有系统通知"同样贴底显示（收在空余视口下方），与有通知时的底边间距一致。
      - 删除一条时，它沿宽度方向收起。
    - **所有设置页**：模块网格，是设置的入口页（类似 Windows 控制面板）。网格 3 列，每个格子缩进 5、圆角 5，默认 `idle`、悬停 `hover`；格子里是 24 px 图标加文字。头部齿轮、启动器里的设置入口和 `settings open/toggle` IPC 都落在这里；铃铛切换回通知页。
-4. **快捷控制面板**（底部，`quick_control/*`），只属于通知首页——所有设置页和模块视图打开时隐藏。分页显示，用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余为 × 0.3，所以在深色外框上是白色，在浅色外框上自动变深）。分页条右下角有一枚收起 chevron（展开时 ⌄、收起时 ⌃），点击把整条收成一行指示器带高，腾出的高度全部还给通知列表——按钮锚在底边右角，收起和展开是同一个屏幕坐标〔演进：原方案是顶部居中把手，收起后按钮位置会变〕。每页按自己的内容定高——翻页时面板高度用 `motionPanel` 动画过渡，不留统一槽高带来的空白〔演进：原方案所有页共用 `quickControlPanelHeight`〕：
-   - **卡片页**（第一页）：已启用的 Noctalia 卡片（天气、媒体+系统监控），每张底色 `idle`、圆角 5；页高 = 已启用卡片的实际内容高（天气卡按数据收缩、媒体/监控行 `controlCenterMediaCardRowHeight` = 160·s）+ 上下留白〔演进：首页默认控件收进分页条〕。模型在交给 Repeater 前先按本页实际渲染的 id 过滤——`controlCenter.cards` 里 profile/shortcuts/audio/brightness 的条目对应的是已重新分配的功能（见下方对应表，audio/brightness 的 enabled 还被 OSD 抑制逻辑读取），不属于本页，不过滤会产生占布局槽位的空 Loader。媒体+系统监控卡里的系统监控表盘显示哪些指标由 `controlCenter.sysmonMetrics` 决定（cpu/temp/mem/disk 的子集，默认前三项），在设置 → 控制中心 → 卡片的卡片开关组下方配置；该卡关闭时整组隐藏，磁盘路径下拉只在磁盘指标开启时出现〔演进〕。
-   - **基础页**：音量和亮度两条滑块（两端各有 24 px 图标），下面两排快捷开关。
+4. **快捷控制面板**（底部，`quick_control/*`），只属于通知首页——所有设置页和模块视图打开时隐藏。分页显示，用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余为 × 0.3，所以在深色外框上是白色，在浅色外框上自动变深）。分页条右下角有一枚收起 chevron（展开时 ⌄、收起时 ⌃），点击把整条收成一行指示器带高，腾出的高度全部还给通知列表——按钮锚在底边右角，收起和展开是同一个屏幕坐标〔演进：原方案是顶部居中把手，收起后按钮位置会变〕。每页按自己的内容定高——翻页时面板高度用 `motionPanel` 动画过渡，不留统一槽高带来的空白〔演进：原方案所有页共用 `quickControlPanelHeight`〕。**页面顺序由 `controlCenter.quickPageOrder` 决定**（默认 卡片 → 基础 → Wi-Fi → 蓝牙 → VPN），在设置 → 控制中心 → 页面里拖拽调整〔演进〕。分页以页 id 为准——正在看的页被重排时跟随自己的位置而不是悄悄换成同索引的另一页；某页内容被卡片开关全部关掉、或服务不可用时直接从分页条里消失（蓝牙页需 `BluetoothService.bluetoothAvailable`，VPN 页需有连接），重新出现时回到存储的位次：
+   - **卡片页**（默认第一页）：已启用的 Noctalia 卡片（天气、媒体+系统监控），每张底色 `idle`、圆角 5；页高 = 已启用卡片的实际内容高（天气卡按数据收缩、媒体/监控行 `controlCenterMediaCardRowHeight` = 160·s）+ 上下留白〔演进：首页默认控件收进分页条〕。模型在交给 Repeater 前先过滤到本页实际渲染且已启用的条目——`controlCenter.cards` 里 profile/shortcuts/audio/brightness 的条目对应的是已重新分配的功能（见下方对应表，它们的 enabled 各自门控头部之外的区域、并被 OSD 抑制逻辑读取），不属于本页，不过滤会产生占布局槽位的空 Loader；关掉的条目连 Loader 都不建。媒体+系统监控卡里的系统监控表盘显示哪些指标由 `controlCenter.sysmonMetrics` 决定（cpu/temp/mem/disk 的子集，默认前三项），在设置 → 控制中心 → 卡片的卡片开关组下方配置；该卡关闭时整组隐藏，磁盘路径下拉只在磁盘指标开启时出现〔演进〕。
+   - **基础页**：音量和亮度两条滑块（两端各有 24 px 图标），下面两排快捷开关。三段分别由 `audio-card` / `brightness-card` / `shortcuts-card` 开关门控——关掉即从页上消失（不再渲染，不留空槽）；亮度滑条还要求硬件存在。三段全关时整页从分页条消失。
    - **快捷开关**：每个 70×60，每行 5 个共两行，一页最多显示 10 个——`controlCenter.shortcuts` 的 left++right 合并后截前 10 个，超出的不再放进溢出页〔演进：溢出页删除，要显示哪些开关、什么顺序在设置 → 控制中心里配〕。图标靠下对齐，距底部 20 px。开启时，背后画一块白 × 0.2 的底，圆角 6，下边距 5。
    - **Wi-Fi 页、蓝牙页、VPN 页**：列表行高 36，样式同 §3.5.4；页高贴内容、超出 `quickControlPanelHeight` 时滚动，空列表给一行提示〔演进：显示页删除——它的亮度滑块与基础页重复、夜间模式本就是快捷开关，同一组件不在两页出现〕。
 
@@ -456,10 +456,10 @@ Noctalia 卡片的对应关系：
 
 | Noctalia 卡片 | 控制中心位置 |
 |---|---|
-| ProfileCard | 头部 |
-| ShortcutsCard | 快捷开关 |
-| AudioCard、BrightnessCard | 快捷控制面板的基础页 |
-| WeatherCard、MediaCard、SystemMonitorCard、CalendarCards | 快捷控制面板的卡片页（第一页，默认页的控件）；SystemMonitorCard 显示哪些指标由 `controlCenter.sysmonMetrics` 配置 |
+| ProfileCard | 头部（required，恒开） |
+| ShortcutsCard | 快捷开关（`shortcuts-card` 开关控制基础页开关格显隐） |
+| AudioCard、BrightnessCard | 快捷控制面板的基础页（`audio-card`/`brightness-card` 分别门控音量、亮度滑条） |
+| WeatherCard、MediaCard、SystemMonitorCard、CalendarCards | 快捷控制面板的卡片页（默认第一页）；SystemMonitorCard 显示哪些指标由 `controlCenter.sysmonMetrics` 配置 |
 
 #### 3.5.3 设置页（原 Settings 面板）
 
