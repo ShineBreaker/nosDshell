@@ -1319,6 +1319,18 @@
     ]
   },
   {
+    "labelKey": "panels.dock.appearance-launcher-icon-size-label",
+    "descriptionKey": "panels.dock.appearance-launcher-icon-size-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
     "labelKey": "settings.advanced.dock-grouping",
     "descriptionKey": null,
     "widget": "NHeader",
@@ -1378,6 +1390,30 @@
     "visibleWhen": [
       "Settings.data.dock.enabled",
       "Settings.data.dock.groupApps"
+    ]
+  },
+  {
+    "labelKey": "settings.taskbar.menu-group",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
+    ]
+  },
+  {
+    "labelKey": "panels.dock.task-manager-command-label",
+    "descriptionKey": "panels.dock.task-manager-command-description",
+    "widget": "NTextInput",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general",
+    "visibleWhen": [
+      "Settings.data.dock.enabled"
     ]
   },
   {

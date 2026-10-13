@@ -6,6 +6,8 @@ import Quickshell.Wayland
 import Quickshell.Widgets
 import qs.Commons
 import qs.Modules.Panels.Settings
+import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.UI
 import qs.Widgets
 
@@ -25,6 +27,13 @@ PopupWindow {
   property bool hovered: menuHoverHandler.hovered
   property var onAppClosed: null // Callback function for when an app is closed
   property bool canAutoClose: false
+
+  // The fashion dock feeds Quickshell Toplevel objects (activate()/close());
+  // the efficient taskbar feeds CompositorService backend windows, which are
+  // plain data — focus/close route through the service instead and liveness
+  // filtering against ToplevelManager is skipped (the taskbar model already
+  // maintains it).
+  property bool backendWindows: false
 
   // Track which menu item is hovered
   property int hoveredItem: -1 // -1: none, otherwise the index of the item in `items`
@@ -110,9 +119,11 @@ PopupWindow {
   }
 
   function getValidToplevels() {
+    const source = appData?.toplevels && appData.toplevels.length > 0 ? appData.toplevels : (toplevel ? [toplevel] : []);
+    if (backendWindows)
+      return source.filter(window => window);
     if (!ToplevelManager || !ToplevelManager.toplevels)
       return [];
-    const source = appData?.toplevels && appData.toplevels.length > 0 ? appData.toplevels : (toplevel ? [toplevel] : []);
     const allToplevels = ToplevelManager.toplevels.values || [];
     return source.filter(window => window && allToplevels.includes(window));
   }
@@ -121,6 +132,8 @@ PopupWindow {
     const windows = getValidToplevels();
     if (windows.length === 0)
       return null;
+    if (backendWindows)
+      return windows[0];
     if (ToplevelManager && ToplevelManager.activeToplevel && windows.includes(ToplevelManager.activeToplevel))
       return ToplevelManager.activeToplevel;
     return windows[0];
@@ -152,6 +165,14 @@ PopupWindow {
     if (menuMode === "launcher") {
       root.items = [
             {
+              "icon": "cpu",
+              "text": I18n.tr("dock-menu.task-manager"),
+              "action": function () {
+                CompositorService.launchInTerminal(Settings.data.dock.taskManagerCommand);
+                closeAndReset();
+              }
+            },
+            {
               "icon": "adjustments",
               "text": I18n.tr("actions.dock-settings"),
               "action": function () {
@@ -182,6 +203,18 @@ PopupWindow {
     var next = [];
 
     if (!grouped || menuModeForGroup === "single") {
+      // DDE/Windows: "open" launches a new instance — for a pinned app that
+      // is not running it is the only way to start it from the menu.
+      if (appId) {
+        next.push({
+                    "icon": "rocket",
+                    "text": I18n.tr("common.open"),
+                    "action": function () {
+                      handleOpen(appId);
+                    }
+                  });
+      }
+
       if (isRunning) {
         next.push({
                     "icon": "eye",
@@ -212,8 +245,9 @@ PopupWindow {
     } else {
       windows.forEach((window, index) => {
                         const windowTitle = (window.title && window.title.trim() !== "") ? window.title : (appId || ("Window " + (index + 1)));
+                        const windowActive = backendWindows ? window.isFocused === true : window === ToplevelManager?.activeToplevel;
                         next.push({
-                                    "icon": window === ToplevelManager?.activeToplevel ? "circle-filled" : "square-rounded",
+                                    "icon": windowActive ? "circle-filled" : "square-rounded",
                                     "text": windowTitle,
                                     "action": function () {
                                       handleFocus(window);
@@ -225,6 +259,15 @@ PopupWindow {
         next.push({
                     "separator": true
                   });
+        if (appId) {
+          next.push({
+                      "icon": "rocket",
+                      "text": I18n.tr("common.open"),
+                      "action": function () {
+                        handleOpen(appId);
+                      }
+                    });
+        }
         next.push({
                     "icon": "eye",
                     "text": I18n.tr("common.focus"),
@@ -241,7 +284,7 @@ PopupWindow {
                   });
         next.push({
                     "icon": "close",
-                    "text": I18n.tr("common.close") + " All",
+                    "text": I18n.tr("common.close-all"),
                     "action": function () {
                       handleCloseAll(windows);
                     }
@@ -278,10 +321,13 @@ PopupWindow {
   }
 
   // Helper functions forwarded to the shared AppIdMatcher singleton; the dock
-  // menu keeps raw app IDs, checks pins by direct comparison only (weak
-  // match) and pins desktop entry IDs.
+  // menu pins desktop entry IDs and checks pins through desktop-entry
+  // resolution (strong match — the taskbar's identical call; the weak direct
+  // compare missed StartupWMClass != .desktop filename pairs).
   function isAppPinned(appId) {
-    return AppIdMatcher.isAppPinned(appId);
+    return AppIdMatcher.isAppPinned(appId, {
+                                      resolveEntry: true
+                                    });
   }
 
   function toggleAppPin(appId) {
@@ -481,7 +527,10 @@ PopupWindow {
   }
 
   function handleFocus(targetToplevel) {
-    if (targetToplevel?.activate) {
+    if (root.backendWindows) {
+      if (targetToplevel)
+        CompositorService.focusWindow(targetToplevel);
+    } else if (targetToplevel?.activate) {
       targetToplevel.activate();
     }
     closeAndReset();
@@ -494,7 +543,29 @@ PopupWindow {
     Qt.callLater(() => closeAndReset());
   }
 
+  function handleOpen(appId) {
+    if (appId) {
+      const app = ThemeIcons.findAppEntry(appId);
+      if (app) {
+        CompositorService.launchDesktopEntry(app);
+      } else {
+        Logger.w("DockMenu", `Could not find desktop entry for app: ${appId}`);
+      }
+    }
+    closeAndReset();
+  }
+
   function handleClose(targetToplevel) {
+    if (root.backendWindows) {
+      if (targetToplevel) {
+        CompositorService.closeWindow(targetToplevel);
+        if (root.onAppClosed && typeof root.onAppClosed === "function") {
+          Qt.callLater(root.onAppClosed);
+        }
+      }
+      closeAndReset();
+      return;
+    }
     const isValidToplevel = targetToplevel && ToplevelManager && ToplevelManager.toplevels.values.includes(targetToplevel);
 
     if (isValidToplevel && targetToplevel.close) {
@@ -508,7 +579,10 @@ PopupWindow {
 
   function handleCloseAll(windows) {
     windows.forEach(window => {
-                      if (window && ToplevelManager && ToplevelManager.toplevels.values.includes(window) && window.close) {
+                      if (root.backendWindows) {
+                        if (window)
+                        CompositorService.closeWindow(window);
+                      } else if (window && ToplevelManager && ToplevelManager.toplevels.values.includes(window) && window.close) {
                         window.close();
                       }
                     });
@@ -639,6 +713,10 @@ PopupWindow {
             model: root.scrollItems
 
             Rectangle {
+              // objectName exposes the row to `debug tree dockmenu-*`:
+              // label text is readable in the dump and click targets can be
+              // computed from the row rect.
+              objectName: "dockMenuItem:" + (modelData && modelData.text ? modelData.text : "separator")
               readonly property bool isSeparator: modelData && modelData.separator === true
               width: scrollColumn.width
               height: root.rowHeightForItem(modelData)
@@ -740,6 +818,7 @@ PopupWindow {
 
           Rectangle {
             id: fixedItemRect
+            objectName: "dockMenuItem:" + (modelData && modelData.text ? modelData.text : "separator")
             readonly property int globalIndex: root.fixedItemGlobalIndex(index)
             width: fixedColumn.width
             height: root.rowHeightForItem(modelData)
@@ -800,5 +879,19 @@ PopupWindow {
         }
       }
     }
+  }
+
+  // Debug forensics: the menu rows live in their own PopupWindow surface, so
+  // neither the bar nor the dock `debug tree` reaches them. Registering the
+  // menu body exposes the rows as `debug tree/hit dockmenu-…` — coordinates
+  // are popup-window-local.
+  property string _dbgName: ""
+  Component.onCompleted: {
+    root._dbgName = "dockmenu-" + (menuMode !== "" ? menuMode : "app") + "-" + dockPosition;
+    DebugService.registerRoot(root._dbgName, menuBody);
+  }
+  Component.onDestruction: {
+    if (root._dbgName !== "")
+      DebugService.unregisterRoot(root._dbgName);
   }
 }

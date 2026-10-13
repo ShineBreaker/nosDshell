@@ -100,23 +100,17 @@ Item {
   }
   readonly property bool showPinnedApps: (widgetSettings.showPinnedApps !== undefined) ? widgetSettings.showPinnedApps : widgetMetadata.showPinnedApps
 
-  // Context menu state - store ID instead of object reference to avoid stale references
-  property string selectedWindowId: ""
-  property string selectedAppId: ""
-
-  // Helper to get the current window object from ID
-  function getSelectedWindow() {
-    if (!selectedWindowId)
-      return null;
+  // Context menu state — every window belonging to the right-clicked app so
+  // the shared DockMenu can offer grouped actions (DESIGN §3.1.1).
+  function windowsForApp(appId) {
+    var wins = [];
     for (var i = 0; i < combinedModel.length; i++) {
-      // Using loose equality on purpose (==)
-      if (combinedModel[i].id == selectedWindowId && combinedModel[i].window) {
-        return combinedModel[i].window;
-      }
+      var e = combinedModel[i];
+      if (e && e.window && e.appId === appId)
+        wins.push(e.window);
     }
-    return null;
+    return wins;
   }
-  property int modelUpdateTrigger: 0  // Dummy property to force model re-evaluation
 
   // Hover state
   property var hoveredWindowId: ""
@@ -338,83 +332,13 @@ Item {
     }
   }
 
-  NPopupContextMenu {
-    id: contextMenu
-    model: {
-      // Reference modelUpdateTrigger to make binding reactive
-      const _ = root.modelUpdateTrigger;
-
-      var items = [];
-      if (root.selectedWindowId) {
-        // Focus item (for running apps)
-        items.push({
-                     "label": I18n.tr("common.focus"),
-                     "action": "focus",
-                     "icon": "eye"
-                   });
-
-        // Pin/Unpin item (always available when right-clicking an app)
-        const isPinned = root.isAppPinned(root.selectedAppId);
-        items.push({
-                     "label": !isPinned ? I18n.tr("common.pin") : I18n.tr("common.unpin"),
-                     "action": "pin",
-                     "icon": !isPinned ? "pin" : "unpin"
-                   });
-
-        // Close item (for running apps)
-        items.push({
-                     "label": I18n.tr("common.close"),
-                     "action": "close",
-                     "icon": "x"
-                   });
-
-        // Add desktop entry actions (like "New Window", "Private Window", etc.)
-        if (typeof DesktopEntries !== 'undefined' && DesktopEntries.byId && root.selectedAppId) {
-          const entry = (DesktopEntries.heuristicLookup) ? DesktopEntries.heuristicLookup(root.selectedAppId) : DesktopEntries.byId(root.selectedAppId);
-          if (entry != null && entry.actions) {
-            entry.actions.forEach(function (action) {
-              items.push({
-                           "label": action.name,
-                           "action": "desktop-action-" + action.name,
-                           "icon": "chevron-right",
-                           "desktopAction": action
-                         });
-            });
-          }
-        }
-      }
-      items.push({
-                   "label": I18n.tr("actions.widget-settings"),
-                   "action": "widget-settings",
-                   "icon": "settings"
-                 });
-      return items;
-    }
-    onTriggered: (action, item) => {
-                   contextMenu.close();
-                   PanelService.closeContextMenu(root.screen);
-
-                   // Look up the window fresh each time to avoid stale references
-                   const selectedWindow = root.getSelectedWindow();
-
-                   if (action === "focus" && selectedWindow) {
-                     CompositorService.focusWindow(selectedWindow);
-                   } else if (action === "pin" && root.selectedAppId) {
-                     root.toggleAppPin(root.selectedAppId);
-                   } else if (action === "close" && selectedWindow) {
-                     CompositorService.closeWindow(selectedWindow);
-                   } else if (action === "widget-settings") {
-                     BarService.openWidgetSettings(root.screen, root.section, root.sectionWidgetIndex, root.widgetId, root.widgetSettings);
-                   } else if (action.startsWith("desktop-action-") && item && item.desktopAction) {
-                     if (item.desktopAction.command && item.desktopAction.command.length > 0) {
-                       Quickshell.execDetached(item.desktopAction.command);
-                     } else if (item.desktopAction.execute) {
-                       item.desktopAction.execute();
-                     }
-                   }
-                   root.selectedWindowId = "";
-                   root.selectedAppId = "";
-                 }
+  // App-item context menu: the same dark arrowed menu the fashion dock uses
+  // (DESIGN §3.1.1). Entries are CompositorService backend windows, not
+  // Toplevels — backendWindows routes focus/close through the service.
+  DockMenu {
+    id: appMenu
+    dockPosition: root.barPosition
+    backendWindows: true
   }
 
   function updateHasWindow() {
@@ -917,17 +841,18 @@ Item {
                              root.launchPinnedApp(modelData.appId);
                            }
                          } else if (mouse.button === Qt.RightButton) {
-                           TooltipService.hide();
-                           // Only show context menu for running apps
-                           if (isRunning && modelData.window && insideItemContent(mouse.x, mouse.y)) {
-                             root.selectedWindowId = modelData.id;
-                             root.selectedAppId = modelData.appId;
-                             root.openTaskbarContextMenu(taskbarItem);
+                           TooltipService.hideImmediately();
+                           // The icon square gets the dark app menu — running
+                           // or pinned alike (a pinned app that is not running
+                           // still offers open/unpin, DDE/Windows style).
+                           // Outside the icon square -> light settings menu.
+                           if (modelData && insideItemContent(mouse.x, mouse.y) && (modelData.appId || modelData.window)) {
+                             appMenu.show(taskbarItem, {
+                                            "appId": modelData.appId,
+                                            "toplevels": root.windowsForApp(modelData.appId)
+                                          }, root.screen);
                              return;
                            }
-                           // Outside the icon square, or a pinned app that has no
-                           // window menu yet -> light dock settings menu
-                           TooltipService.hideImmediately();
                            DockSettingsMenu.openAtItemPoint(screen, taskbarMouseArea, mouse.x, mouse.y);
                          }
                        }
@@ -943,59 +868,5 @@ Item {
         }
       }
     }
-  }
-
-  function openTaskbarContextMenu(item) {
-    // Build menu model directly
-    var items = [];
-    if (root.selectedWindowId) {
-      // Focus item (for running apps)
-      items.push({
-                   "label": I18n.tr("common.focus"),
-                   "action": "focus",
-                   "icon": "eye"
-                 });
-
-      // Pin/Unpin item
-      const isPinned = root.isAppPinned(root.selectedAppId);
-      items.push({
-                   "label": !isPinned ? I18n.tr("common.pin") : I18n.tr("common.unpin"),
-                   "action": "pin",
-                   "icon": !isPinned ? "pin" : "unpin"
-                 });
-
-      // Close item
-      items.push({
-                   "label": I18n.tr("common.close"),
-                   "action": "close",
-                   "icon": "x"
-                 });
-
-      // Add desktop entry actions (like "New Window", "Private Window", etc.)
-      if (typeof DesktopEntries !== 'undefined' && DesktopEntries.byId && root.selectedAppId) {
-        const entry = (DesktopEntries.heuristicLookup) ? DesktopEntries.heuristicLookup(root.selectedAppId) : DesktopEntries.byId(root.selectedAppId);
-        if (entry != null && entry.actions) {
-          entry.actions.forEach(function (action) {
-            items.push({
-                         "label": action.name,
-                         "action": "desktop-action-" + action.name,
-                         "icon": "chevron-right",
-                         "desktopAction": action
-                       });
-          });
-        }
-      }
-    }
-    items.push({
-                 "label": I18n.tr("actions.widget-settings"),
-                 "action": "widget-settings",
-                 "icon": "settings"
-               });
-
-    // Set the model directly
-    contextMenu.model = items;
-
-    // Anchor to root (stable) but center horizontally on the clicked item
-    PanelService.showContextMenu(contextMenu, root, screen, item);
   }
 }

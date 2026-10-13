@@ -616,6 +616,20 @@ Singleton {
                  });
   }
 
+  // Run a user-configured command line inside the configured terminal
+  // (e.g. the taskbar's Task Manager entry). Kept in this service so
+  // terminalCommand is only read here — Scripts/dev/check-launch-path.py.
+  function launchInTerminal(commandLine) {
+    const line = String(commandLine || "").trim();
+    if (line === "") {
+      Logger.w("CompositorService", "launchInTerminal: empty command");
+      return;
+    }
+    const terminal = Settings.data.appLauncher.terminalCommand.trim();
+    const shell = terminal !== "" ? terminal + " " + line : line;
+    Quickshell.execDetached(["sh", "-lc", shell]);
+  }
+
   // Session management helper for custom commands
   function getCustomCommand(action) {
     const powerOptions = Settings.data.sessionMenu.powerOptions || [];

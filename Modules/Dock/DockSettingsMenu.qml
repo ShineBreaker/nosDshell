@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Modules.Panels.Settings
+import qs.Services.Compositor
 import qs.Services.UI
 
 // DDE dock settings menu (DESIGN §3.3 light menu): shown by right-click on
@@ -143,6 +144,11 @@ Singleton {
             "separator": true
           },
           {
+            "label": I18n.tr("dock-menu.task-manager"),
+            "action": "taskmanager",
+            "icon": "cpu"
+          },
+          {
             "label": I18n.tr("dock-menu.settings"),
             "action": "settings",
             "icon": "settings"
@@ -208,6 +214,10 @@ Singleton {
         _openMenu.model = buildModel();
       return true;
     }
+    if (action === "taskmanager") {
+      CompositorService.launchInTerminal(dock.taskManagerCommand);
+      return false;
+    }
     if (action === "settings") {
       SettingsPanelService.openToTab(SettingsPanel.Tab.Dock, -1, screen);
       return false;
@@ -227,9 +237,9 @@ Singleton {
     _openScreen = screen;
     _openMenu = popupMenuWindow.showDynamicContextMenu(buildModel(), screenX, screenY, function (action) {
       return root.handleAction(action, _openScreen);
-    // "dark" variant follows the shell: popupShell resolves dark/light with
-    // the global mode — DDE's always-white menu was dropped so the menu
-    // tracks the user's theme (DESIGN §3.3).
+      // "dark" variant follows the shell: popupShell resolves dark/light with
+      // the global mode — DDE's always-white menu was dropped so the menu
+      // tracks the user's theme (DESIGN §3.3).
     }, "dark");
   }
 

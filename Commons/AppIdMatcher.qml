@@ -10,8 +10,9 @@ import qs.Commons
 //   stripDesktopSuffix — the fashion dock normalizes pinned keys without the
 //     ".desktop" suffix; bar-side callers keep raw IDs.
 //   resolveEntry — strong match also resolves the appId through the desktop
-//     entry heuristic (StartupWMClass != .desktop filename); the weak match
-//     compares normalized IDs directly.
+//     entry heuristic (StartupWMClass != .desktop filename). Pins are stored
+//     as desktop entry IDs, so callers checking a window's raw appId should
+//     use the strong match.
 //   useDesktopEntryId — toggleAppPin stores the resolved desktop entry ID as
 //     the pinned key (taskbar/dock menu); the workspace widget stores the raw
 //     appId.

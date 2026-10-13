@@ -284,6 +284,21 @@ ColumnLayout {
         defaultValue: Settings.getDefaultValue("dock.launcherIconColor")
         onSelected: key => Settings.data.dock.launcherIconColor = key
       }
+
+      NValueSlider {
+        Layout.fillWidth: true
+        visible: !root.fashionMode
+        label: I18n.tr("panels.dock.appearance-launcher-icon-size-label")
+        description: I18n.tr("panels.dock.appearance-launcher-icon-size-description")
+        from: 12
+        to: 48
+        stepSize: 1
+        showReset: true
+        value: Settings.data.dock.launcherIconSize
+        defaultValue: Settings.getDefaultValue("dock.launcherIconSize")
+        onMoved: value => Settings.data.dock.launcherIconSize = Math.round(value)
+        text: Math.round(Settings.data.dock.launcherIconSize) + " px"
+      }
     }
 
     // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
@@ -353,6 +368,31 @@ ColumnLayout {
         currentKey: Settings.data.dock.groupContextMenuMode
         defaultValue: Settings.getDefaultValue("dock.groupContextMenuMode")
         onSelected: key => Settings.data.dock.groupContextMenuMode = key
+      }
+    }
+
+    // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+    NDccGap {
+      Layout.fillWidth: true
+    }
+
+    // SettingsGroup: right-click menu (task-manager command, nosd extension —
+    // aligns the menu with the Windows taskbar's Task Manager entry)
+    ColumnLayout {
+      Layout.fillWidth: true
+      spacing: Style.settingsGroupGap
+      NHeader {
+        label: I18n.tr("settings.taskbar.menu-group")
+      }
+
+      NTextInput {
+        Layout.fillWidth: true
+        label: I18n.tr("panels.dock.task-manager-command-label")
+        description: I18n.tr("panels.dock.task-manager-command-description")
+        placeholderText: "btop"
+        text: Settings.data.dock.taskManagerCommand
+        defaultValue: Settings.getDefaultValue("dock.taskManagerCommand")
+        onTextChanged: Settings.data.dock.taskManagerCommand = text
       }
     }
   }

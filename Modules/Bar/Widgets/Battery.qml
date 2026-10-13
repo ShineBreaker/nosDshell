@@ -53,10 +53,11 @@ Item {
     }
     return "";
   }
-  // The graphic capsule is a bar presentation; on the fashion dock the plugin
-  // is always the shared icon tile (gxde-dock pluginwidget.cpp draws only the
-  // themed battery icon, no capsule).
-  readonly property bool useGraphicMode: (displayMode === "graphic" || displayMode === "graphic-clean") && !fashionMode
+  // The graphic capsule is a status-bar presentation; on the taskbar (both
+  // dock modes) the plugin is always the standard icon (+percent) pill —
+  // gxde-dock pluginwidget.cpp draws only the themed battery icon, no
+  // capsule, and an opaque capsule among bare plugin icons reads foreign.
+  readonly property bool useGraphicMode: (displayMode === "graphic" || displayMode === "graphic-clean") && !fashionMode && !efficientMode
 
   readonly property bool hideIfNotDetected: widgetSettings.hideIfNotDetected !== undefined ? widgetSettings.hideIfNotDetected : widgetMetadata.hideIfNotDetected
   readonly property bool hideIfIdle: widgetSettings.hideIfIdle !== undefined ? widgetSettings.hideIfIdle : widgetMetadata.hideIfIdle

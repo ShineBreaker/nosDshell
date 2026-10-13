@@ -415,7 +415,9 @@
     "deadOpacity": 0.6,
     "backgroundOpacity": 1.0,
     "pluginSpacing": 4,
-    "fusedPlugins": false
+    "fusedPlugins": false,
+    "launcherIconSize": 16,
+    "taskManagerCommand": "btop"
   },
   "network": {
     "bluetoothRssiPollingEnabled": false,

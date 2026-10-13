@@ -522,21 +522,11 @@ Singleton {
       property string diskPath: "/"
       // Which gauges the system monitor card shows, in canonical order.
       // Minimum one entry is enforced by the settings UI.
-      property list<var> sysmonMetrics: [
-        "cpu",
-        "temp",
-        "mem"
-      ]
+      property list<var> sysmonMetrics: ["cpu", "temp", "mem"]
       // Quick-control strip page order (DESIGN §3.5.2). Pages whose content
       // is fully toggled off or whose service is unavailable drop out of the
       // strip regardless of their position here; unknown ids are ignored.
-      property list<var> quickPageOrder: [
-        "cards",
-        "basic",
-        "wifi",
-        "bluetooth",
-        "vpn"
-      ]
+      property list<var> quickPageOrder: ["cards", "basic", "wifi", "bluetooth", "vpn"]
       property JsonObject shortcuts
       shortcuts: JsonObject {
         property list<var> left: [
@@ -676,6 +666,13 @@ Singleton {
       property bool launcherUseDistroLogo: false
       property string launcherIcon: ""
       property string launcherIconColor: "none"
+      // Efficient-mode launcher glyph size in px (fashion derives its own
+      // from dock.iconSize). 16 matches the other plugin glyphs (§3.1.4).
+      property int launcherIconSize: 16
+      // Command opened by the taskbar menu's task-manager entry. It runs
+      // inside appLauncher.terminalCommand, so a TUI (btop) or a `cmd1 ||
+      // cmd2` fallback chain of GUI monitors both work.
+      property string taskManagerCommand: "btop"
       property bool pinnedStatic: false
       property bool groupApps: true // DDE: one item per application
       property string groupContextMenuMode: "extended" // "list", "extended"

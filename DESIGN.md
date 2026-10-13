@@ -286,7 +286,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - 悬停提示：延迟 500 ms，用暗色带箭头提示框，箭头尖端距项边缘 2 px。
 - 右键：
   - 点在图标区域内（居中、边长为 0.8 × min(w,h) 的正方形），弹出该项的暗色带箭头菜单。
-  - 点在图标区域外，或点在空白处，弹出任务栏设置菜单，包含模式、位置、大小、状态和插件开关（`docksettings.cpp:208-251`）。〔演进：原版固定为浅色菜单，这里改用随全局明暗变化的 `popupShell`。`NPopupContextMenu` 的 `"dark"` 变体就是跟随主题的表面，`"light"` 只留给明确要求 DDE 经典白底的场景。〕
+  - 点在图标区域外，或点在空白处，弹出任务栏设置菜单，包含模式、位置、大小、状态和插件开关（`docksettings.cpp:208-251`），以及一个「任务管理器」入口。〔演进：原版固定为浅色菜单，这里改用随全局明暗变化的 `popupShell`。`NPopupContextMenu` 的 `"dark"` 变体就是跟随主题的表面，`"light"` 只留给明确要求 DDE 经典白底的场景。任务管理器是 nosd 扩展，对齐 Windows 任务栏右键的习惯：执行 `dock.taskManagerCommand`（默认 `btop`），经 `appLauncher.terminalCommand` 套终端运行，命令在设置 → 任务栏里可改。〕
 
 #### 3.1.2 时尚模式（fashion）
 
@@ -316,7 +316,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 
 | Noctalia 挂件 | 高效模式 | 时尚模式 |
 |---|---|---|
-| Launcher | 启动器图标（0.7） | 启动器图标（0.6–0.8） |
+| Launcher | 启动器图标，`dock.launcherIconSize` px（默认 16，与其余插件 glyph 同号） | 启动器图标（0.6–0.8） |
 | Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
 | Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 占满一个应用项大小的槽位，显示"时钟图标"：表盘为槽位的 0.8 倍，上面是大号数字时间。它与应用图标同级，不是小瓦片（`datetimewidget.cpp` 的 sizeHint 返回应用项槽位），不受 `dock.pluginSpacing` 影响 |
 | Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊，可展开、收起；分隔线 2 px，白 × 0.1（`fashiontraycontrolwidget.cpp`）。胶囊底色与其他插件瓦片一致，用 `overlay` 阶梯（`subtle`、`hover`、`checked`）〔演进：上游展开态是暗色 `#282828` × 0.5〕 |

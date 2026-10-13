@@ -307,10 +307,15 @@ Item {
           height: width
           anchors.centerIn: parent
 
+          // Priority (DESIGN §1.9 "用户在设置里指定的自定义图标优先"):
+          // distro logo > user-picked glyph > themed deepin-launcher path.
+          // launcherIconPath() always resolves (bundled fallback), so the
+          // themed image must yield when a glyph is configured — previously
+          // it never did and the icon picker wrote a dead key.
           IconImage {
             anchors.fill: parent
             source: launcherItem.themedLauncherIcon
-            visible: launcherItem.themedLauncherIcon !== "" && !launcherItem.launcherUseDistroLogo
+            visible: launcherItem.themedLauncherIcon !== "" && !launcherItem.launcherUseDistroLogo && launcherItem.launcherIcon === ""
             smooth: true
             asynchronous: true
           }
@@ -320,7 +325,7 @@ Item {
             icon: launcherItem.launcherIcon
             pointSize: launcherItem.appIconContent * 0.7
             color: Color.resolveColorKey(launcherItem.launcherIconColorKey)
-            visible: launcherItem.themedLauncherIcon === "" && !launcherItem.launcherUseDistroLogo
+            visible: !launcherItem.launcherUseDistroLogo && launcherItem.launcherIcon !== ""
           }
 
           IconImage {

@@ -891,6 +891,8 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     backgroundOpacity = 1.0;
     pluginSpacing = 4;
     fusedPlugins = false;
+    launcherIconSize = 16;
+    taskManagerCommand = "btop";
   };
   network = {
     bluetoothRssiPollingEnabled = false;

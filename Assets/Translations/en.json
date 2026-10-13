@@ -538,7 +538,9 @@
     "yes": "Yes",
     "today": "Today",
     "display": "Display",
-    "auto": "Auto"
+    "auto": "Auto",
+    "open": "Open",
+    "close-all": "Close all"
   },
   "control-center": {
     "power-profile": {
@@ -1105,7 +1107,11 @@
       "monitors-only-same-monitor-description": "Show only apps from the monitor where the dock is located.",
       "monitors-only-same-monitor-label": "Only apps from same monitor",
       "monitors-title": "Monitor display",
-      "title": "Dock"
+      "title": "Dock",
+      "appearance-launcher-icon-size-label": "Launcher icon size",
+      "appearance-launcher-icon-size-description": "Launcher glyph size on the taskbar in efficient mode (px). The fashion dock derives its own from the dock size.",
+      "task-manager-command-label": "Task manager command",
+      "task-manager-command-description": "Opened by the Task Manager entry in the taskbar right-click menu. Runs inside the configured terminal — a TUI like btop works, as does a fallback chain (a || b)."
     },
     "general": {
       "copy-settings": "Copy settings",
@@ -2100,7 +2106,8 @@
     "state-keep-hidden": "Keep hidden",
     "state-smart-hide": "Smart hide",
     "plugins": "Plugins",
-    "settings": "Dock settings"
+    "settings": "Dock settings",
+    "task-manager": "Task Manager"
   },
   "settings": {
     "search-placeholder": "Search settings",
@@ -2116,7 +2123,8 @@
       "statusbar-enabled-description": "A separate macOS-style bar with its own widgets and position.",
       "statusbar-position": "Position",
       "statusbar-state": "Display",
-      "statusbar-monitors": "Show status bar on"
+      "statusbar-monitors": "Show status bar on",
+      "menu-group": "Right-click menu"
     },
     "advanced": {
       "dock-appearance": "Dock appearance",

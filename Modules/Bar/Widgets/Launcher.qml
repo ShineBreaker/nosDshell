@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 import qs.Commons
+import qs.Modules.Dock
 import qs.Modules.Panels.Settings
 import qs.Services.System
 import qs.Services.UI
@@ -31,16 +32,25 @@ NIconButton {
     return {};
   }
 
-  readonly property string customIcon: widgetSettings.icon || (widgetMetadata ? widgetMetadata.icon : "rocket")
+  // Efficient (DDE taskbar) mode: icon-only, no capsule, one launcher icon
+  // source shared with the fashion dock tile — the dock.launcher* keys
+  // edited on the Dock settings page (DESIGN §1.9). The per-instance
+  // widgetSettings lookup is dead in this mode: the synthesized taskbar
+  // entry carries no user fields, and writes there land on the unused
+  // bar.widgets store.
+  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
+  readonly property string customIcon: efficientMode ? Settings.data.dock.launcherIcon : (widgetSettings.icon || (widgetMetadata ? widgetMetadata.icon : "rocket"))
   // A user-picked glyph. The registry's default metadata icon ("rocket") is
   // only a Tabler stand-in: with no user choice the widget shows the shared
   // DDE launcher icon instead, the same one the fashion dock tile uses
   // (DESIGN §1.9).
-  readonly property bool hasCustomIcon: widgetSettings.icon !== undefined && widgetSettings.icon !== ""
-  readonly property bool useDistroLogo: widgetSettings.useDistroLogo !== undefined ? widgetSettings.useDistroLogo : widgetMetadata.useDistroLogo
-  readonly property string customIconPath: widgetSettings.customIconPath !== undefined ? widgetSettings.customIconPath : widgetMetadata.customIconPath
-  readonly property bool enableColorization: widgetSettings.enableColorization !== undefined ? widgetSettings.enableColorization : widgetMetadata.enableColorization
-  readonly property string colorizeSystemIcon: widgetSettings.colorizeSystemIcon !== undefined ? widgetSettings.colorizeSystemIcon : widgetMetadata.colorizeSystemIcon
+  readonly property bool hasCustomIcon: efficientMode ? (Settings.data.dock.launcherIcon !== "") : (widgetSettings.icon !== undefined && widgetSettings.icon !== "")
+  readonly property bool useDistroLogo: efficientMode ? Settings.data.dock.launcherUseDistroLogo : (widgetSettings.useDistroLogo !== undefined ? widgetSettings.useDistroLogo : widgetMetadata.useDistroLogo)
+  readonly property string customIconPath: efficientMode ? "" : (widgetSettings.customIconPath !== undefined ? widgetSettings.customIconPath : widgetMetadata.customIconPath)
+  // The dock.launcherIconColor key plays the colorize role on the taskbar:
+  // "none" keeps the flat on-shell glyph, any scheme key tints it.
+  readonly property bool enableColorization: efficientMode ? (Settings.data.dock.launcherIconColor !== "none") : (widgetSettings.enableColorization !== undefined ? widgetSettings.enableColorization : widgetMetadata.enableColorization)
+  readonly property string colorizeSystemIcon: efficientMode ? Settings.data.dock.launcherIconColor : (widgetSettings.colorizeSystemIcon !== undefined ? widgetSettings.colorizeSystemIcon : widgetMetadata.colorizeSystemIcon)
 
   // True when the theme/glyph icon is hidden in favour of the overlay image
   // below (distro logo or an explicit icon path).
@@ -52,9 +62,6 @@ NIconButton {
     return Color.resolveColorKey(colorizeSystemIcon);
   }
 
-  // Efficient (DDE taskbar) mode: icon-only, no capsule, icon at 0.7 x item size
-  readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
-
   // Without a user-picked glyph this bar widget shows the same launcher icon
   // as the fashion dock tile (DESIGN §1.9) rather than a Tabler glyph.
   icon: usesOverlayIcon ? "" : customIcon
@@ -65,15 +72,27 @@ NIconButton {
   tooltipText: I18n.tr("actions.open-launcher")
   tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
   baseSize: efficientMode ? Style.getBarHeightForScreen(screenName) : Style.getCapsuleHeightForScreen(screenName)
-  iconRatio: efficientMode ? 0.7 : 0.48
+  // Efficient: fixed px glyph (dock.launcherIconSize, default 16 like the
+  // other plugin icons). Elsewhere: fraction of the capsule.
+  iconRatio: efficientMode ? Math.max(1, Settings.data.dock.launcherIconSize) / Math.max(1, root.buttonSize) : 0.48
   applyUiScale: false
   customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   colorBg: Style.capsuleColor
-  colorFg: efficientMode ? Color.onShell : iconColor
+  colorFg: efficientMode ? (enableColorization ? iconColor : Color.onShell) : iconColor
   colorBgHover: efficientMode ? Color.overlay("hover") : Color.mHover
-  colorFgHover: efficientMode ? Color.onShell : Color.mOnHover
+  colorFgHover: efficientMode ? (enableColorization ? iconColor : Color.onShell) : Color.mOnHover
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
+
+  // Efficient mode uses the same dark arrowed launcher menu the fashion dock
+  // shows (DESIGN §3.1.1): launcher settings + taskbar settings. The generic
+  // widget-settings dialog is unreachable here — its writes land on the
+  // synthesized taskbar entry, which carries no user fields.
+  DockMenu {
+    id: launcherDockMenu
+    dockPosition: Settings.getTaskbarPositionForScreen(screenName)
+    menuMode: "launcher"
+  }
 
   NPopupContextMenu {
     id: contextMenu
@@ -106,13 +125,18 @@ NIconButton {
   onClicked: PanelService.toggleLauncher(screen)
   onMiddleClicked: PanelService.toggleLauncher(screen)
   onRightClicked: {
-    PanelService.showContextMenu(contextMenu, root, screen);
+    TooltipService.hideImmediately();
+    if (efficientMode) {
+      launcherDockMenu.show(root, null, screen);
+    } else {
+      PanelService.showContextMenu(contextMenu, root, screen);
+    }
   }
 
   IconImage {
     id: customOrDistroLogo
     anchors.centerIn: parent
-    width: root.buttonSize * (root.efficientMode ? 0.7 : 0.8)
+    width: root.efficientMode ? Math.max(8, Settings.data.dock.launcherIconSize) : root.buttonSize * 0.8
     height: width
     source: {
       if (useDistroLogo)

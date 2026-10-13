@@ -232,7 +232,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dock-context-menu|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -276,6 +276,20 @@ sys.stdout.write(pos)
 PYEOF
 )
 export BAR_POSITION
+# dock.mode from the merged view — efficient-taskbar skips itself in fashion.
+DOCK_MODE=$(python3 - "$USER_SETTINGS" <<'PYEOF'
+import json,os,sys
+base=json.load(open(os.environ["REPO"]+"/Assets/settings-default.json"))
+if sys.argv[1]:
+    def merge(a,b):
+        for k,v in b.items():
+            if isinstance(v,dict) and isinstance(a.get(k),dict): merge(a[k],v)
+            else: a[k]=v
+    merge(base, json.load(open(sys.argv[1])))
+sys.stdout.write(base.get("dock",{}).get("mode","efficient"))
+PYEOF
+)
+export DOCK_MODE
 # fashion thickness = iconSize*1.5 (Commons/Style.qml:467); efficient taskbars
 # are ~40 px. 100 px headroom covers both plus the 2 px hidden sliver.
 DOCK_STRIP_PX=100
@@ -1119,6 +1133,186 @@ PYEOF
                             sleep 0.8
                           else
                             echo "clock widget not found in bar tree"
+                          fi ;;
+    # Efficient-mode taskbar polish (DESIGN §3.1.1): the launcher icon right-
+    # click opens the dark launcher DockMenu (task manager / dock settings /
+    # launcher settings), empty-space right-click opens the light taskbar
+    # settings menu, an app icon right-click opens the dark app menu — and
+    # clicking its Pin row must actually write dock.pinnedApps. The taskbar
+    # IS the bar window here (BarService.hasBarOnScreen: efficient => true).
+    # Needs an efficient seed:
+    #   echo '{"dock":{"mode":"efficient"}}' > eff.json
+    #   ./verify.sh <run> --settings eff.json --scenes efficient-taskbar
+    efficient-taskbar)    if [ "$DOCK_MODE" != "efficient" ]; then
+                            echo "efficient-taskbar: skipped (dock.mode=$DOCK_MODE, needs --settings dock.mode=efficient)"
+                            return 0
+                          fi
+                          qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 16 > "$WORK/logs/eff-bar-tree.txt" 2>&1 || true
+                          if grep -q 'unknown root' "$WORK/logs/eff-bar-tree.txt"; then
+                            echo "efficient-taskbar: no bar window"; return 0
+                          fi
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # Window-local tree coords → screen coords: the
+                          # efficient taskbar is a full-width strip on
+                          # DOCK_POSITION (default bottom).
+                          ANCHORS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/eff-bar-tree.txt" <<'PYEOF'
+import json,os,re,subprocess,sys
+pos = os.environ.get("DOCK_POSITION","bottom")
+out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
+scr = next(o["rect"] for o in out if o.get("active"))
+bar_w = bar_h = 0
+launcher = app = None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if bar_h == 0:
+        bar_w, bar_h = int(w.group(1)), int(w.group(2))
+        continue
+    cx, cy = int(m.group(1)) + int(w.group(1)) // 2, int(m.group(2)) + int(w.group(2)) // 2
+    if pos == "bottom":
+        cy += scr["height"] - bar_h
+    elif pos == "top":
+        pass
+    elif pos == "left":
+        pass
+    elif pos == "right":
+        cx += scr["width"] - bar_w
+    if "Launcher_QML" in line and launcher is None:
+        launcher = (cx, cy)
+    if '"taskbarAppItem"' in line and app is None:
+        app = (cx, cy)
+# empty taskbar space: horizontal centreline of the strip, well right of
+# the packed app items and left of the plugin row
+if pos in ("bottom","top"):
+    ey = scr["height"] - bar_h // 2 if pos == "bottom" else bar_h // 2
+    empty = (scr["width"] // 2, ey)
+else:
+    ex = bar_w // 2 if pos == "left" else scr["width"] - bar_w // 2
+    empty = (ex, scr["height"] // 2)
+print(*launcher, *app, *empty) if launcher and app else print("")
+PYEOF
+)
+                          LAUNCHER_POS=$(echo "$ANCHORS" | awk '{print $1, $2}')
+                          APP_POS=$(echo "$ANCHORS" | awk '{print $3, $4}')
+                          EMPTY_POS=$(echo "$ANCHORS" | awk '{print $5, $6}')
+                          echo "eff-taskbar anchors: launcher=$LAUNCHER_POS app=$APP_POS empty=$EMPTY_POS"
+                          [ -n "$LAUNCHER_POS" ] || { echo "launcher/app items not found"; return 0; }
+                          # 1. launcher icon right-click → dark launcher menu
+                          "$VINPUT" vinput rclick $LAUNCHER_POS 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2
+                          shot efficient-launcher-menu
+                          qs -p "$REPO" ipc call debug tree "dockmenu-launcher-$DOCK_POSITION" 10 > "$WORK/logs/eff-launcher-menu.txt" 2>&1 || true
+                          "$VINPUT" vinput click 960 500 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.8
+                          # 2. empty strip right-click → light settings menu
+                          "$VINPUT" vinput rclick $EMPTY_POS 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2
+                          shot efficient-taskbar-menu
+                          "$VINPUT" vinput click 960 500 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.8
+                          # 3. app icon right-click → dark app menu, then
+                          # click the Pin row and assert pinnedApps grew.
+                          PINS_BEFORE=$(python3 -c "import json;print(len(json.load(open('$NOSD_CONFIG_DIR/settings.json')).get('dock',{}).get('pinnedApps',[])))" 2>/dev/null || echo 0)
+                          "$VINPUT" vinput rclick $APP_POS 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.2
+                          shot efficient-app-menu
+                          qs -p "$REPO" ipc call debug tree "dockmenu-app-$DOCK_POSITION" 10 > "$WORK/logs/eff-app-menu.txt" 2>&1 || true
+                          # Popup top-left in screen coords: bottom taskbar →
+                          # menu sits above the item, centred on it.
+                          PIN_POS=$(APP_POS="$APP_POS" DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/eff-app-menu.txt" "$WORK/logs/eff-bar-tree.txt" <<'PYEOF'
+import os,re,sys
+ax,ay = map(int, os.environ["APP_POS"].split(" "))
+pos = os.environ.get("DOCK_POSITION","bottom")
+# item height from the bar tree (taskbarAppItem rect), needed because the
+# popup anchors to the item EDGE, not its centre.
+item_h = 43
+for line in open(sys.argv[2], encoding="utf-8", errors="replace"):
+    if '"taskbarAppItem"' in line:
+        w = re.search(r" (\d+)x(\d+) ", line)
+        if w:
+            item_h = int(w.group(2)) if pos in ("bottom","top") else int(w.group(1))
+        break
+rows = []
+mw = mh = 0
+first = True
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if first:
+        mw, mh = int(w.group(1)), int(w.group(2)); first = False
+        continue
+    if '"dockMenuItem:' in line:
+        label = line.split('"dockMenuItem:')[1].split('"')[0]
+        rows.append((label, int(m.group(1)) + int(w.group(1))//2, int(m.group(2)) + int(w.group(2))//2))
+pin = [r for r in rows if r[0] in ("Pin","固定","Unpin","取消固定","取消")]
+if not pin or mw == 0:
+    print(""); sys.exit()
+_,rx,ry = pin[0]
+# popup sits above the item's top edge on a bottom taskbar
+# (anchor.y = -implicitHeight - Style.popupGap, anchored on the item origin)
+gap = 2
+half = item_h // 2
+if pos == "bottom":
+    top = ay - half - mh - gap; left = ax - mw // 2
+elif pos == "top":
+    top = ay + half + gap; left = ax - mw // 2
+elif pos == "left":
+    top = ay - mh // 2; left = ax + half + gap
+else:
+    top = ay - mh // 2; left = ax - half - mw - gap
+print(left + rx, top + ry)
+PYEOF
+)
+                          echo "pin row at: $PIN_POS"
+                          if [ -n "$PIN_POS" ]; then
+                            "$VINPUT" vinput click $PIN_POS 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.8
+                            python3 - "$NOSD_CONFIG_DIR" "$PINS_BEFORE" <<'PYEOF'
+import json,sys
+p=sys.argv[1].rstrip('/')+"/settings.json"
+d=json.load(open(p))
+n=len(d.get("dock",{}).get("pinnedApps",[]))
+print("pinnedApps count:", n, "(before:", sys.argv[2]+")")
+PYEOF
+                            shot efficient-pinned
+                          fi
+                          "$VINPUT" vinput click 960 500 2>>"$WORK/logs/vinput.log" || true
+                          # 4. battery plugin hover: must paint the same
+                          # overlay("hover") wash as its neighbours — no opaque
+                          # capsule (useGraphicMode is off on the taskbar).
+                          BAT_POS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/eff-bar-tree.txt" <<'PYEOF'
+import json,os,re,subprocess,sys
+pos = os.environ.get("DOCK_POSITION","bottom")
+out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
+scr = next(o["rect"] for o in out if o.get("active"))
+bar_w = bar_h = 0
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if bar_h == 0:
+        bar_w, bar_h = int(w.group(1)), int(w.group(2))
+        continue
+    if "Battery_QML" in line:
+        cx, cy = int(m.group(1)) + int(w.group(1))//2, int(m.group(2)) + int(w.group(2))//2
+        if pos == "bottom": cy += scr["height"] - bar_h
+        elif pos == "right": cx += scr["width"] - bar_w
+        print(cx, cy)
+        break
+PYEOF
+)
+                          if [ -n "$BAT_POS" ]; then
+                            "$VINPUT" vinput move $BAT_POS 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.8
+                            shot efficient-battery-hover
+                          else
+                            echo "battery widget not found in bar tree"
                           fi ;;
     # Wheel over the dock battery widget adjusts display brightness; the
     # charging/low state tint rides along in the same shots. Locate the widget
