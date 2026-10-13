@@ -529,12 +529,6 @@ PopupWindow {
               color: menuItem.active ? Color.accent : "transparent"
               radius: Style.radiusRow
 
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-
               RowLayout {
                 anchors.fill: parent
                 anchors.leftMargin: root.itemPadding
@@ -546,14 +540,8 @@ PopupWindow {
                   icon: modelData.icon || ""
                   pointSize: Style.fontSizeS
                   applyUiScale: false
-                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : Color.accent
                   verticalAlignment: Text.AlignVCenter
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
                 }
 
                 NText {
@@ -562,12 +550,6 @@ PopupWindow {
                   color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
                   verticalAlignment: Text.AlignVCenter
                   Layout.fillWidth: true
-
-                  Behavior on color {
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
                 }
 
                 // Check mark / submenu chevron, 12px on the right
@@ -575,7 +557,7 @@ PopupWindow {
                   visible: modelData.checked === true || menuItem.hasSubmenu || modelData.hasSubmenu === true
                   icon: (menuItem.hasSubmenu || modelData.hasSubmenu === true) ? "chevron-right" : "check"
                   pointSize: Style.fontSizeXL
-                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : Color.accent
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
                 }
               }
 

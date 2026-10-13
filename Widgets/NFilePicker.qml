@@ -490,11 +490,6 @@ Popup {
               radius: parent.radius
               border.color: isSelected ? Color.accent : Color.borderShell
               border.width: Style.borderL
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
             }
 
             Rectangle {
@@ -503,16 +498,6 @@ Popup {
               radius: parent.radius
               border.color: (mouseArea.containsMouse && !isSelected) ? Color.overlay("checked") : "transparent"
               border.width: Style.borderS
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on border.color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
             }
 
             ColumnLayout {
@@ -682,11 +667,6 @@ Popup {
               return "transparent";
             }
             radius: Style.radiusItem
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
 
             RowLayout {
               anchors.fill: parent

@@ -350,12 +350,6 @@ PopupWindow {
                     border.color: "transparent"
                     border.width: Style.borderM
 
-                    Behavior on border.color {
-                      ColorAnimation {
-                        duration: Style.animationFast
-                      }
-                    }
-
                     NIcon {
                       visible: parent.parent.isChecked
                       anchors.centerIn: parent
@@ -384,12 +378,6 @@ PopupWindow {
                       height: Style.toOdd(parent.height * 0.5)
                       radius: width / 2
                       color: parent.parent.activeColor
-
-                      Behavior on color {
-                        ColorAnimation {
-                          duration: Style.animationFast
-                        }
-                      }
                     }
                   }
                 }

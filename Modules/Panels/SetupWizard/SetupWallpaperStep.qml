@@ -81,12 +81,6 @@ ColumnLayout {
         font.weight: Style.fontWeightMedium
       }
     }
-
-    Behavior on border.color {
-      ColorAnimation {
-        duration: Style.animationFast
-      }
-    }
   }
 
   // Wallpaper gallery strip

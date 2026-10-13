@@ -45,7 +45,7 @@ Rectangle {
   Behavior on color {
     enabled: !Settings.data.general.animationDisabled
     ColorAnimation {
-      duration: Style.animationFast
+      duration: Style.motionPointer
       easing.type: Easing.OutCubic
     }
   }

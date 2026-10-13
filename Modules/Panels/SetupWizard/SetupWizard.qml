@@ -284,13 +284,13 @@ PanelWindow {
                   from: 1.0
                   to: 1.05
                   duration: 2000
-                  easing.type: Easing.InOutQuad
+                  easing.type: Easing.InOutCubic
                 }
                 NumberAnimation {
                   from: 1.05
                   to: 1.0
                   duration: 2000
-                  easing.type: Easing.InOutQuad
+                  easing.type: Easing.InOutCubic
                 }
               }
             }
@@ -483,8 +483,10 @@ PanelWindow {
                   color: active ? Qt.alpha(Color.onWallpaper, Style.pageDotCurrent) : Qt.alpha(Color.onWallpaper, Style.pageDotOther)
 
                   Behavior on color {
+                    enabled: !Color.isTransitioning
                     ColorAnimation {
-                      duration: Style.animationNormal
+                      duration: Style.motionPointer
+                      easing.type: Easing.OutCubic
                     }
                   }
                 }

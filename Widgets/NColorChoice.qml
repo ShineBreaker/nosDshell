@@ -89,12 +89,6 @@ NDccRow {
           font.weight: Style.fontWeightMedium
           visible: colorCircle.isSelected
         }
-
-        Behavior on border.color {
-          ColorAnimation {
-            duration: Style.animationFast
-          }
-        }
       }
     }
   }

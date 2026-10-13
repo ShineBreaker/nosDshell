@@ -95,7 +95,7 @@ ScrollView {
         visible: root.showGradientMasks && root.verticalScrollable
         opacity: root.contentItem.contentY <= 1 ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.InOutQuad }
+          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: root.gradientColor }
@@ -116,7 +116,7 @@ ScrollView {
         visible: root.showGradientMasks && root.verticalScrollable
         opacity: (root.contentItem.contentY + root.contentItem.height >= root.contentItem.contentHeight - 1) ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.InOutQuad }
+          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: "transparent" }

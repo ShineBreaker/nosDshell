@@ -379,6 +379,8 @@ Singleton {
   readonly property int motionProgramScroll: _motion(300)
   // gxde-dock appswingeffectbuilder.h:87-118 — attention swing cycle
   readonly property int motionSwing: _motion(1200)
+  // DESIGN §1.7 — hover/press colour fade on standalone button-class controls
+  readonly property int motionPointer: _motion(80)
 
   // Timeouts (ms) — OSD auto-hide lives in Settings.data.osd.autoHideMs and
   // notification duration in Settings.data.notifications.*, both user-facing.

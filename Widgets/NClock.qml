@@ -297,16 +297,20 @@ Item {
         pointSize: hoursFontSize
         font.weight: hoursFontWeight
         color: clockColor
-        family: Settings.data.ui.fontFixed
+        features: {
+          "tnum": 1
+        }
         Layout.alignment: Qt.AlignHCenter
       }
 
       NText {
-        text: Qt.formatTime(now, "mm")
+        text: Qt.formatTime(now, "mm") // locale-exempt 纯数字分钟
         pointSize: minutesFontSize
         font.weight: minutesFontWeight
         color: clockColor
-        family: Settings.data.ui.fontFixed
+        features: {
+          "tnum": 1
+        }
         Layout.alignment: Qt.AlignHCenter
       }
     }
@@ -417,8 +421,10 @@ Item {
         color: isActive ? activeColor : Qt.alpha(activeColor, 0.2)
 
         Behavior on color {
+          enabled: !Color.isTransitioning
           ColorAnimation {
-            duration: Style.animationFast
+            duration: Style.motionSwitch
+            easing.type: Easing.OutCubic
           }
         }
       }

@@ -68,8 +68,10 @@ NDccRow {
     color: root.checked ? Color.accent : Color.overlay("strong")
 
     Behavior on color {
+      enabled: !Color.isTransitioning
       ColorAnimation {
         duration: Style.motionSwitch
+        easing.type: Easing.OutCubic
       }
     }
 

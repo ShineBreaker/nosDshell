@@ -90,12 +90,8 @@ Item {
       NText {
         Layout.fillWidth: true
         Layout.minimumWidth: 0
-        // Long-format DATE only — `toString(Time.now, …)` formats the whole
-        // datetime, which tacks a " 中国标准时间" timezone tail onto zh
-        // locales and overflows even at minimumPointSize; formatDate drops
-        // the time part in every locale. HorizontalFit then shrinks it to
-        // the column width so the weekday never elides mid-word.
-        text: Qt.formatDate(Time.now, Locale.LongFormat)
+        // 长日期经 Time 输出：I18n.locale 跟随界面语言，LongFormat 只含日期、无时区尾巴（DESIGN.md §1.5）。
+        text: Time.formatLongDate(Time.now)
         pointSize: Style.fontSizeM
         horizontalAlignment: Text.AlignHCenter
         fontSizeMode: Text.HorizontalFit

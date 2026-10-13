@@ -81,8 +81,8 @@ Item {
     Behavior on color {
       enabled: !Color.isTransitioning
       ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.InOutQuad
+        duration: Style.motionPointer
+        easing.type: Easing.OutCubic
       }
     }
 
@@ -115,8 +115,8 @@ Item {
       Behavior on color {
         enabled: !Color.isTransitioning
         ColorAnimation {
-          duration: Style.animationFast
-          easing.type: Easing.InOutQuad
+          duration: Style.motionPointer
+          easing.type: Easing.OutCubic
         }
       }
     }

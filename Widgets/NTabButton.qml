@@ -45,7 +45,7 @@ Rectangle {
   Behavior on color {
     enabled: !Color.isTransitioning
     ColorAnimation {
-      duration: Style.animationFast
+      duration: Style.motionPointer
       easing.type: Easing.OutCubic
     }
   }
@@ -63,14 +63,6 @@ Rectangle {
       icon: root.icon
       pointSize: root.pointSize * 1.2
       color: Color.onShell
-
-      Behavior on color {
-        enabled: !Color.isTransitioning
-        ColorAnimation {
-          duration: Style.animationFast
-          easing.type: Easing.OutCubic
-        }
-      }
     }
 
     NText {
@@ -83,14 +75,6 @@ Rectangle {
       color: Color.onShell
       horizontalAlignment: Text.AlignHCenter
       verticalAlignment: Text.AlignVCenter
-
-      Behavior on color {
-        enabled: !Color.isTransitioning
-        ColorAnimation {
-          duration: Style.animationFast
-          easing.type: Easing.OutCubic
-        }
-      }
     }
   }
 

@@ -562,7 +562,7 @@ Item {
             id: dateLabel
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: Time.now.toLocaleDateString(Qt.locale(), Locale.LongFormat)
+            text: Time.formatLongDate(Time.now)
             pointSize: Style.fontSizeBody
             color: Color.onShellTertiary
             applyUiScale: false

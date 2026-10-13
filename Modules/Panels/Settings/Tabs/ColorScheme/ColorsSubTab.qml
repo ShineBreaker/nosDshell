@@ -476,12 +476,6 @@ ColumnLayout {
               anchors.centerIn: parent
             }
           }
-
-          Behavior on border.color {
-            ColorAnimation {
-              duration: Style.animationNormal
-            }
-          }
         }
       }
     }

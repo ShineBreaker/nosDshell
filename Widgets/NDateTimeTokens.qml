@@ -305,12 +305,6 @@ Rectangle {
                 border.color: tokenMouseArea.containsMouse ? Color.accent : Color.borderShell
                 border.width: Style.borderS
 
-                Behavior on border.color {
-                  ColorAnimation {
-                    duration: Style.animationFast
-                  }
-                }
-
                 NText {
                   anchors.centerIn: parent
                   text: I18n.locale.toString(root.sampleDate, modelData.token)

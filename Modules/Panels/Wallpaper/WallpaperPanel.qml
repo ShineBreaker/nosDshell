@@ -583,12 +583,6 @@ SmartPanel {
           }
           opacity: isFavorited || starHover.hovered ? 1.0 : 0.7
 
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
-
           NIcon {
             icon: favStar.isFavorited ? "star-filled" : "star"
             pointSize: Style.fontSizeM
@@ -622,11 +616,6 @@ SmartPanel {
           spacing: Style.marginXS
           visible: thumb.showsActions
           opacity: thumb.showsActions ? 1 : 0
-          Behavior on opacity {
-            NumberAnimation {
-              duration: Style.animationFast
-            }
-          }
 
           NButton {
             text: I18n.tr("wallpaper.strip.current")

@@ -164,7 +164,9 @@ Item {
     opacity: root.showPercentageText && root.ready && (root.charging ? !root.showStateIcon : !root.pluggedIn) ? 1 : 0
     x: batteryBody.x + Style.pixelAlignCenter(bodyBackground.width, width)
     y: batteryBody.y + bodyBackground.y + Style.pixelAlignCenter(bodyBackground.height, height)
-    font.family: Settings.data.ui.fontFixed
+    features: {
+      "tnum": 1
+    }
     font.weight: Style.fontWeightMedium
     text: root.vertical ? String(Math.round(root.animatedPercentage)).split('').join('\n') : Math.round(root.animatedPercentage)
     pointSize: root.baseSize * (root.vertical ? 0.82 : 0.82)
@@ -178,7 +180,7 @@ Item {
       enabled: !Settings.data.general.animationDisabled
       NumberAnimation {
         duration: Style.animationFast
-        easing.type: Easing.InOutQuad
+        easing.type: Easing.OutCubic
       }
     }
   }
@@ -198,7 +200,7 @@ Item {
       enabled: !Settings.data.general.animationDisabled
       NumberAnimation {
         duration: Style.animationFast
-        easing.type: Easing.InOutQuad
+        easing.type: Easing.OutCubic
       }
     }
   }

@@ -774,13 +774,6 @@ Item {
               height: root.capsuleHeight
               color: titleBgColor
               radius: Style.radiusM
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                  easing.type: Easing.InOutQuad
-                }
-              }
             }
 
             Rectangle {
@@ -848,13 +841,6 @@ Item {
                     height: 4
                     color: taskbarItem.isFocused ? Color.mPrimary : (taskbarItem.isHovered ? Color.mHover : "transparent")
                     radius: Math.min(Style.radiusXXS, width / 2)
-
-                    Behavior on color {
-                      ColorAnimation {
-                        duration: Style.animationFast
-                        easing.type: Easing.OutCubic
-                      }
-                    }
                   }
                 }
 

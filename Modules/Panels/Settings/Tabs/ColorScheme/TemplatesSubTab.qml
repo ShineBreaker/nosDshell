@@ -256,14 +256,6 @@ ColumnLayout {
           radius: Style.radiusItem
           color: cellHover.hovered ? Color.overlay("checked") : Color.overlay("strong")
 
-          Behavior on color {
-            enabled: !Color.isTransitioning
-            ColorAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.OutCubic
-            }
-          }
-
           RowLayout {
             anchors.fill: parent
             anchors.leftMargin: Style.settingsRowPaddingH

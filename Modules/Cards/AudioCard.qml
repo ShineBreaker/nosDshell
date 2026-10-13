@@ -178,7 +178,6 @@ NBox {
         to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
         value: localOutputVolume
         stepSize: 0.01
-        heightRatio: 0.5
         onMoved: localOutputVolume = value
         onPressedChanged: localOutputVolumeChanging = pressed
         tooltipText: `${Math.round((outputVolumeGuard ? localOutputVolume : AudioService.volume) * 100)}%`
@@ -246,7 +245,6 @@ NBox {
         to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
         value: localInputVolume
         stepSize: 0.01
-        heightRatio: 0.5
         onMoved: localInputVolume = value
         onPressedChanged: localInputVolumeChanging = pressed
         tooltipText: `${Math.round((inputVolumeGuard ? localInputVolume : AudioService.inputVolume) * 100)}%`

@@ -29,15 +29,6 @@ ColumnLayout {
     border.color: "transparent"
     border.width: Style.borderS
 
-    // Smooth color transitions
-    Behavior on border.color {
-      enabled: root._userInteracted
-      ColorAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutCubic
-      }
-    }
-
     MouseArea {
       id: headerArea
       anchors.fill: parent
@@ -71,13 +62,6 @@ ColumnLayout {
           NumberAnimation {
             duration: Style.animationNormal
             easing.type: Easing.OutCubic
-          }
-        }
-
-        Behavior on color {
-          enabled: root._userInteracted
-          ColorAnimation {
-            duration: Style.animationNormal
           }
         }
       }

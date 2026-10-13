@@ -625,13 +625,6 @@ Item {
                     return "transparent";
                   }
 
-                  Behavior on color {
-                    enabled: !Color.isTransitioning
-                    ColorAnimation {
-                      duration: Style.animationFast
-                    }
-                  }
-
                   NSymbolicImage {
                     id: railArt
                     anchors.centerIn: parent

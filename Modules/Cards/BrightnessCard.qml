@@ -122,7 +122,6 @@ NBox {
         to: 1
         value: localBrightness
         stepSize: 0.01
-        heightRatio: 0.5
         onMoved: {
           localBrightness = value;
           debounceTimer.restart();

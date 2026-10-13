@@ -250,7 +250,7 @@ SmartPanel {
                       anchors.centerIn: parent
                       text: {
                         let dayIndex = (monthRoot.firstDayOfWeek + index) % 7;
-                        return I18n.locale.dayName(dayIndex, Locale.ShortFormat).substring(0, 2).toUpperCase();
+                        return I18n.locale.dayName(dayIndex, Locale.ShortFormat);
                       }
                       color: Color.onShellSecondary
                       pointSize: Style.fontSizeS
@@ -458,12 +458,6 @@ SmartPanel {
 
                         onExited: {
                           TooltipService.hide();
-                        }
-                      }
-
-                      Behavior on color {
-                        ColorAnimation {
-                          duration: Style.animationFast
                         }
                       }
                     }

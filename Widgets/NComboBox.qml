@@ -228,8 +228,10 @@ NDccRow {
       radius: Style.settingsFieldRadius
 
       Behavior on border.color {
+        enabled: !Color.isTransitioning
         ColorAnimation {
-          duration: Style.animationFast
+          duration: Style.motionSwitch
+          easing.type: Easing.OutCubic
         }
       }
 

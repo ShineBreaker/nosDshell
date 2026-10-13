@@ -45,7 +45,7 @@ Item {
           from: Qt.rgba(0, 0, 0, 0)
           to: Qt.rgba(0, 0, 0, 1)
           duration: IdleService.fadeDuration * 1000
-          easing.type: Easing.InQuad
+          easing.type: Easing.InCubic
         }
       }
     }

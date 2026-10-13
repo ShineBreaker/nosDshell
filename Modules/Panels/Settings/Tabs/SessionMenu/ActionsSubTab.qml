@@ -128,8 +128,10 @@ ColumnLayout {
           border.width: Style.borderS
 
           Behavior on color {
+            enabled: !Color.isTransitioning
             ColorAnimation {
-              duration: Style.animationFast
+              duration: Style.motionSwitch
+              easing.type: Easing.OutCubic
             }
           }
 

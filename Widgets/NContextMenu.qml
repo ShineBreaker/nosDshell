@@ -188,12 +188,6 @@ Popup {
           anchors.fill: parent
           color: menuItem.highlighted || (menuItem.hovered && menuItem.enabled) ? Color.accent : "transparent"
           radius: Style.radiusRow
-
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
         }
       }
 
@@ -206,14 +200,8 @@ Popup {
           visible: modelData.icon !== undefined
           icon: modelData.icon || ""
           pointSize: Style.fontSizeM
-          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : root._textColor
+          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : Color.accent
           Layout.leftMargin: root.itemPadding
-
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
         }
 
         NText {
@@ -223,12 +211,6 @@ Popup {
           verticalAlignment: Text.AlignVCenter
           Layout.fillWidth: true
           Layout.leftMargin: modelData.icon === undefined ? root.itemPadding : 0
-
-          Behavior on color {
-            ColorAnimation {
-              duration: Style.animationFast
-            }
-          }
         }
 
         // Check mark / submenu chevron, 12px on the right
@@ -236,7 +218,7 @@ Popup {
           visible: modelData.checked === true || modelData.hasSubmenu === true
           icon: modelData.hasSubmenu === true ? "chevron-right" : "check"
           pointSize: Style.fontSizeXL
-          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : Color.accent
+          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : root._textColor
           Layout.rightMargin: root.itemPadding
         }
       }

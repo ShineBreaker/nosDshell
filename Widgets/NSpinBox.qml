@@ -109,8 +109,10 @@ NDccRow {
     border.width: Style.borderS
 
     Behavior on border.color {
+      enabled: !Color.isTransitioning
       ColorAnimation {
-        duration: Style.animationFast
+        duration: Style.motionPointer
+        easing.type: Easing.OutCubic
       }
     }
 
@@ -240,7 +242,9 @@ NDccRow {
         // Prefix text (non-editable)
         NText {
           text: root.prefix
-          family: Settings.data.ui.fontFixed
+          features: {
+            "tnum": 1
+          }
           pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
           color: Qt.alpha(Color.onShell, root.enabled ? 1.0 : 0.6)
@@ -253,7 +257,9 @@ NDccRow {
         TextInput {
           id: valueInput
           text: valueInput.focus ? valueInput.text : root.value.toString()
-          font.family: Settings.data.ui.fontFixed
+          font.features: {
+            "tnum": 1
+          }
           font.pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
           color: Qt.alpha(Color.onShell, root.enabled ? 1.0 : 0.6)
@@ -299,7 +305,9 @@ NDccRow {
         // Suffix text (non-editable)
         NText {
           text: root.suffix
-          family: Settings.data.ui.fontFixed
+          features: {
+            "tnum": 1
+          }
           pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
           color: Qt.alpha(Color.onShell, root.enabled ? 1.0 : 0.6)

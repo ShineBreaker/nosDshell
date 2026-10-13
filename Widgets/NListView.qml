@@ -217,7 +217,7 @@ Item {
           return 1;
         }
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.InOutQuad }
+          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: root.gradientColor }
@@ -243,7 +243,7 @@ Item {
           return 1;
         }
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.InOutQuad }
+          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: "transparent" }
@@ -287,10 +287,22 @@ Item {
     Rectangle {
       anchors.fill: parent
       gradient: Gradient {
-        GradientStop { position: 0.0; color: fadeMask.topFade ? "transparent" : "white" }
-        GradientStop { position: fadeMask.fadeFrac; color: "white" }
-        GradientStop { position: 1.0 - fadeMask.fadeFrac; color: "white" }
-        GradientStop { position: 1.0; color: fadeMask.bottomFade ? "transparent" : "white" }
+        GradientStop {
+          position: 0.0
+          color: fadeMask.topFade ? "transparent" : "white"
+        }
+        GradientStop {
+          position: fadeMask.fadeFrac
+          color: "white"
+        }
+        GradientStop {
+          position: 1.0 - fadeMask.fadeFrac
+          color: "white"
+        }
+        GradientStop {
+          position: 1.0
+          color: fadeMask.bottomFade ? "transparent" : "white"
+        }
       }
     }
   }

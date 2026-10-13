@@ -276,13 +276,6 @@ Item {
           hoverEnabled: true
           onClicked: NotificationService.clearHistory()
         }
-
-        Behavior on color {
-          enabled: !Color.isTransitioning
-          ColorAnimation {
-            duration: Style.animationFast
-          }
-        }
       }
     }
 

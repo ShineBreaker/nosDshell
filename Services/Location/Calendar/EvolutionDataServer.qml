@@ -32,7 +32,7 @@ Singleton {
     loadEventsProcess.endTime = Math.floor(endDate.getTime() / 1000);
     loadEventsProcess.running = true;
 
-    Logger.d("Calendar", `Loading events (${daysBehind} days behind, ${daysAhead} days ahead): ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`);
+    Logger.d("Calendar", `Loading events (${daysBehind} days behind, ${daysAhead} days ahead): ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`); // locale-exempt 日志非界面文案
   }
 
   // Process to check for evolution-data-server libraries

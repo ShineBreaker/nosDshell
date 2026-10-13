@@ -127,22 +127,6 @@ ColumnLayout {
                   barPositionChanged(modelData.key);
                 }
               }
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on border.color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on opacity {
-                NumberAnimation {
-                  duration: Style.animationFast
-                }
-              }
             }
           }
         }
@@ -248,22 +232,6 @@ ColumnLayout {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   Settings.data.bar.density = modelData.key;
-                }
-              }
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on border.color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on opacity {
-                NumberAnimation {
-                  duration: Style.animationFast
                 }
               }
             }
@@ -427,22 +395,6 @@ ColumnLayout {
                 cursorShape: Qt.PointingHandCursor
                 onClicked: {
                   Settings.data.bar.barType = modelData.key;
-                }
-              }
-
-              Behavior on color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on border.color {
-                ColorAnimation {
-                  duration: Style.animationFast
-                }
-              }
-              Behavior on opacity {
-                NumberAnimation {
-                  duration: Style.animationFast
                 }
               }
             }

@@ -99,7 +99,7 @@ Item {
     // only the first four are digits. Qt.formatDateTime keeps plain 0-9 glyphs,
     // which is why DDE pins QLocale to Chinese (datetimewidget.cpp:106-108).
     readonly property bool use24Hour: /H/.test(formatHorizontal)
-    readonly property string digits: Qt.formatDateTime(root.now, use24Hour ? "HHmm" : "hhmma")
+    readonly property string digits: Qt.formatDateTime(root.now, use24Hour ? "HHmm" : "hhmma") // locale-exempt 纯数字钟面渲染
 
     Image {
       id: face

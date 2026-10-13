@@ -580,6 +580,10 @@ Singleton {
   // name for the different role.
   readonly property color knobBorder: Qt.rgba(0, 0, 0, 0.1)
 
+  // Slider knob fill (§3.5.4): always a white dot — onAccent is dark in dark
+  // Material schemes (mOnPrimary ≈ #0e0e43), so the knob cannot share it.
+  readonly property color knobFill: "#FFFFFF"
+
   // Hover of accent-filled controls (toast action button, §3.6): a touch
   // lighter than accent so press/hover reads on the dark bubble.
   readonly property color accentHover: Qt.lighter(accent, 1.15)

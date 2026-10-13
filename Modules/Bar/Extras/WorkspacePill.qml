@@ -122,14 +122,6 @@ Item {
               return Color.resolveOnColorKey(occupiedColor);
             return Color.resolveOnColorKey(emptyColor);
           }
-
-          Behavior on color {
-            enabled: !Color.isTransitioning
-            ColorAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.InOutQuad
-            }
-          }
         }
       }
     }
@@ -139,13 +131,6 @@ Item {
       NumberAnimation {
         duration: Style.animationNormal
         easing.type: Easing.InOutCubic
-      }
-    }
-    Behavior on color {
-      enabled: !Color.isTransitioning
-      ColorAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.InOutQuad
       }
     }
     Behavior on opacity {

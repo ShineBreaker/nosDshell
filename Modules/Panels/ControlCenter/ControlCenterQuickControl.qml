@@ -89,11 +89,11 @@ Item {
     var seq = [];
     declared.forEach(id => {
                        if (_knownPages.indexOf(id) !== -1 && seq.indexOf(id) === -1)
-                         seq.push(id);
+                       seq.push(id);
                      });
     _knownPages.forEach(id => {
                           if (seq.indexOf(id) === -1)
-                            seq.push(id);
+                          seq.push(id);
                         });
     return seq.filter(id => pageAvailable(id));
   }
@@ -310,7 +310,6 @@ Item {
             to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
             value: volumeRow.localVolume
             stepSize: 0.01
-            heightRatio: 0.5
             onMoved: {
               volumeRow.localVolume = value;
               AudioService.setVolume(value);
@@ -360,7 +359,6 @@ Item {
             to: 1
             value: brightnessRow.localBrightness
             stepSize: 0.01
-            heightRatio: 0.5
             onMoved: {
               brightnessRow.localBrightness = value;
               root.brightnessMonitor?.setBrightness(value);
@@ -461,53 +459,53 @@ Item {
                                                   "widgetSettings": widgetData
                                                 } : null
       }
-    }
-  }
-
-  PageIndicator {
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.bottom: parent.bottom
-    visible: !root.collapsed
-    pageCount: root.pageCount
-    currentPage: root.currentPage
-    onNextRequested: root.nextPage()
-    onPreviousRequested: root.previousPage()
-  }
-
-  // Collapse chevron, bottom-right corner: constant screen position whether
-  // the strip is expanded or folded down to the indicator band — collapse
-  // and re-expand are the same click target.
-  NIconButton {
-    anchors.right: parent.right
-    anchors.rightMargin: Style.marginM
-    anchors.bottom: parent.bottom
-    anchors.bottomMargin: Math.max(0, Math.round((Style.pageIndicatorHeight - implicitHeight) / 2))
-    icon: root.collapsed ? "chevron-up" : "chevron-down"
-    baseSize: Math.round(Style.baseWidgetSize * 0.8)
-    tooltipText: root.collapsed ? I18n.tr("panels.control-center.quick-controls-expand") : I18n.tr("panels.control-center.quick-controls-collapse")
-    onClicked: root.collapsed = !root.collapsed
-  }
-
-  Component {
-    id: cardWeather
-    WeatherCard {}
-  }
-
-  Component {
-    id: cardMediaSysmon
-    RowLayout {
-      spacing: Style.marginS
-
-      MediaCard {
-        Layout.fillWidth: true
-        Layout.preferredHeight: Style.controlCenterMediaCardRowHeight
+      }
       }
 
-      SystemMonitorCard {
-        Layout.preferredWidth: Math.round(Style.baseWidgetSize * 2.625)
-        Layout.fillHeight: true
+        PageIndicator {
+          anchors.left: parent.left
+          anchors.right: parent.right
+          anchors.bottom: parent.bottom
+          visible: !root.collapsed
+          pageCount: root.pageCount
+          currentPage: root.currentPage
+          onNextRequested: root.nextPage()
+          onPreviousRequested: root.previousPage()
+        }
+
+        // Collapse chevron, bottom-right corner: constant screen position whether
+        // the strip is expanded or folded down to the indicator band — collapse
+        // and re-expand are the same click target.
+        NIconButton {
+          anchors.right: parent.right
+          anchors.rightMargin: Style.marginM
+          anchors.bottom: parent.bottom
+          anchors.bottomMargin: Math.max(0, Math.round((Style.pageIndicatorHeight - implicitHeight) / 2))
+          icon: root.collapsed ? "chevron-up" : "chevron-down"
+          baseSize: Math.round(Style.baseWidgetSize * 0.8)
+          tooltipText: root.collapsed ? I18n.tr("panels.control-center.quick-controls-expand") : I18n.tr("panels.control-center.quick-controls-collapse")
+          onClicked: root.collapsed = !root.collapsed
+        }
+
+        Component {
+          id: cardWeather
+          WeatherCard {}
+        }
+
+        Component {
+          id: cardMediaSysmon
+          RowLayout {
+            spacing: Style.marginS
+
+            MediaCard {
+              Layout.fillWidth: true
+              Layout.preferredHeight: Style.controlCenterMediaCardRowHeight
+            }
+
+            SystemMonitorCard {
+              Layout.preferredWidth: Math.round(Style.baseWidgetSize * 2.625)
+              Layout.fillHeight: true
+            }
+          }
+        }
       }
-    }
-  }
-}

@@ -99,7 +99,7 @@ NBox {
       }
 
       NText {
-        text: I18n.locale.monthName(root.calendarMonth, Locale.LongFormat).toUpperCase() + " " + root.calendarYear
+        text: Time.formatMonthYear(new Date(root.calendarYear, root.calendarMonth, 1))
         pointSize: Style.fontSizeM
         font.weight: Style.fontWeightBold
         color: Color.mOnSurface
@@ -156,8 +156,7 @@ NBox {
               anchors.centerIn: parent
               text: {
                 let dayIndex = (root.firstDayOfWeek + index) % 7;
-                const dayName = I18n.locale.dayName(dayIndex, Locale.ShortFormat);
-                return dayName.substring(0, 2).toUpperCase();
+                return I18n.locale.dayName(dayIndex, Locale.ShortFormat);
               }
               color: Color.mPrimary
               pointSize: Style.fontSizeS
@@ -416,8 +415,10 @@ NBox {
               }
 
               Behavior on color {
+                enabled: !Color.isTransitioning
                 ColorAnimation {
-                  duration: Style.animationFast
+                  duration: Style.motionSwitch
+                  easing.type: Easing.OutCubic
                 }
               }
             }

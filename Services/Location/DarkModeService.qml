@@ -143,9 +143,9 @@ Singleton {
       }
     }
     onExited: (exitCode, exitStatus) => {
-                if (exitCode !== 0)
-                  Logger.w("DarkModeService", "color-scheme read failed (code " + exitCode + "); is xdg-desktop-portal running?");
-              }
+      if (exitCode !== 0)
+      Logger.w("DarkModeService", "color-scheme read failed (code " + exitCode + "); is xdg-desktop-portal running?");
+    }
   }
 
   // Live watch: dbus-monitor prints SettingChanged payloads line-buffered;
@@ -157,24 +157,24 @@ Singleton {
     running: false
     stdout: SplitParser {
       onRead: line => {
-                if (!root._pendingSchemeLine) {
-                  if (line.indexOf("\"color-scheme\"") !== -1)
-                    root._pendingSchemeLine = true;
-                  return;
-                }
-                root._pendingSchemeLine = false;
-                const m = line.match(/uint32\s+(\d+)/);
-                if (m) {
-                  root.applySystemScheme(parseInt(m[1]));
-                }
-              }
+        if (!root._pendingSchemeLine) {
+          if (line.indexOf("\"color-scheme\"") !== -1)
+          root._pendingSchemeLine = true;
+          return;
+        }
+        root._pendingSchemeLine = false;
+        const m = line.match(/uint32\s+(\d+)/);
+        if (m) {
+          root.applySystemScheme(parseInt(m[1]));
+        }
+      }
     }
     onExited: (exitCode, exitStatus) => {
-                if (Settings.data.colorSchemes.schedulingMode == "system") {
-                  Logger.w("DarkModeService", "color-scheme monitor exited with code", exitCode, "- retrying");
-                  systemWatchRetry.restart();
-                }
-              }
+      if (Settings.data.colorSchemes.schedulingMode == "system") {
+        Logger.w("DarkModeService", "color-scheme monitor exited with code", exitCode, "- retrying");
+        systemWatchRetry.restart();
+      }
+    }
   }
 
   Timer {
@@ -183,7 +183,7 @@ Singleton {
     repeat: false
     onTriggered: {
       if (Settings.data.colorSchemes.schedulingMode == "system")
-        systemWatchProc.running = true;
+      systemWatchProc.running = true;
     }
   }
 
@@ -256,12 +256,12 @@ Singleton {
 
   function applyCurrentMode(changes) {
     const now = Date.now();
-    Logger.i("DarkModeService", `Applying mode at ${new Date(now).toLocaleString()} (${now})`);
+    Logger.i("DarkModeService", `Applying mode at ${new Date(now).toLocaleString()} (${now})`); // locale-exempt 日志非界面文案
 
     // changes.findLast(change => change.time < now) // not available in QML...
     let lastChange = null;
     for (var i = 0; i < changes.length; i++) {
-      Logger.d("DarkModeService", `Checking change: time=${changes[i].time} (${new Date(changes[i].time).toLocaleString()}), darkMode=${changes[i].darkMode}`);
+      Logger.d("DarkModeService", `Checking change: time=${changes[i].time} (${new Date(changes[i].time).toLocaleString()}), darkMode=${changes[i].darkMode}`); // locale-exempt 日志非界面文案
       if (changes[i].time < now) {
         lastChange = changes[i];
       }

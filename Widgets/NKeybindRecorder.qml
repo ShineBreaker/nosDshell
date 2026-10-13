@@ -152,17 +152,6 @@ NDccRow {
             border.color: root.hasConflict && slotArea.isRecordingThis ? Color.alert : (slotArea.isRecordingThis ? Color.accent : "transparent")
             border.width: Style.borderS
 
-            Behavior on color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
-            Behavior on border.color {
-              ColorAnimation {
-                duration: Style.animationFast
-              }
-            }
-
             // Empty slots are too narrow for the "add keybind"
             // caption — show just a centred glyph instead of a
             // truncated string.

@@ -8,7 +8,6 @@ Slider {
   id: root
 
   property color fillColor: "transparent"
-  property var cutoutColor: Color.mSurface
   property bool snapAlways: true
   property real widthRatio: 0.7
   property var tooltipText
@@ -18,14 +17,15 @@ Slider {
   property color bottomColor: "black"
   property bool rainbowMode: false
 
-  readonly property real knobDiameter: Math.round((Style.baseWidgetSize * widthRatio * Style.uiScaleRatio) / 2) * 2
-  readonly property real trackWidth: Math.round((knobDiameter * 0.4 * Style.uiScaleRatio) / 2) * 2
+  // §3.5.4: the knob is a fixed 12 px dot everywhere; widthRatio still sizes
+  // the gradient groove it rides on.
+  readonly property real knobDiameter: Math.max(4, Math.round(12 * Style.uiScaleRatio / 2) * 2)
+  readonly property real trackWidth: Math.round((Style.baseWidgetSize * widthRatio * 0.4 * Style.uiScaleRatio) / 2) * 2
   readonly property real trackRadius: Math.min(Style.iRadiusL, trackWidth / 2)
-  readonly property real cutoutExtra: Math.round((Style.baseWidgetSize * 0.1 * Style.uiScaleRatio) / 2) * 2
 
   orientation: Qt.Vertical
 
-  padding: cutoutExtra / 2
+  padding: 0
 
   snapMode: snapAlways ? Slider.SnapAlways : Slider.SnapOnRelease
   implicitWidth: Math.max(trackWidth, knobDiameter)
@@ -152,17 +152,6 @@ Slider {
         }
       }
     }
-
-    // Circular cutout
-    Rectangle {
-      id: knobCutout
-      implicitWidth: root.knobDiameter + root.cutoutExtra
-      implicitHeight: root.knobDiameter + root.cutoutExtra
-      radius: Math.min(Style.iRadiusL, width / 2)
-      color: root.cutoutColor !== undefined ? root.cutoutColor : Color.mSurface
-      y: root.visualPosition * (root.availableHeight - root.knobDiameter) - root.cutoutExtra / 2
-      anchors.horizontalCenter: parent.horizontalCenter
-    }
   }
 
   handle: Item {
@@ -194,12 +183,6 @@ Slider {
       border.color: root.pressed ? Color.accent : "#FFFFFF"
       border.width: Style.borderM
       anchors.centerIn: parent
-
-      Behavior on color {
-        ColorAnimation {
-          duration: Style.animationFast
-        }
-      }
     }
 
     MouseArea {

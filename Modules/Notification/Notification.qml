@@ -606,12 +606,6 @@ Variants {
                 opacity: card.isHovered ? 0.6 : 0
                 visible: opacity > 0
 
-                Behavior on opacity {
-                  NumberAnimation {
-                    duration: Style.animationFast
-                  }
-                }
-
                 onClicked: card.runAction("", true)
               }
 

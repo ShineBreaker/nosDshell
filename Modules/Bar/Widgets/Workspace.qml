@@ -944,8 +944,8 @@ Item {
           Behavior on color {
             enabled: !Color.isTransitioning
             ColorAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.InOutCubic
+              duration: Style.motionSwitch
+              easing.type: Easing.OutCubic
             }
           }
         }

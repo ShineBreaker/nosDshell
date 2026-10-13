@@ -66,20 +66,12 @@ Rectangle {
           spacing: Style.marginS
 
           NText {
-            text: I18n.locale.monthName(root.currentMonth, Locale.LongFormat).toUpperCase()
+            text: Time.formatMonthYear(new Date(root.currentYear, root.currentMonth, 1))
             pointSize: Style.fontSizeXL * 1.1
             font.weight: Style.fontWeightBold
             color: Color.mOnPrimary
             Layout.alignment: Qt.AlignBaseline
             elide: Text.ElideRight
-          }
-
-          NText {
-            text: `${root.currentYear}`
-            pointSize: Style.fontSizeM
-            font.weight: Style.fontWeightBold
-            color: Qt.alpha(Color.mOnPrimary, 0.7)
-            Layout.alignment: Qt.AlignBaseline
           }
         }
 

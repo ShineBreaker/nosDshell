@@ -294,7 +294,7 @@ Item {
         visible: root.showGradientMasks && root.contentOverflows
         opacity: (gridView.contentY <= 1 || root.selectionOnFirstVisibleRow) ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.InOutQuad }
+          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: root.gradientColor }
@@ -316,7 +316,7 @@ Item {
         visible: root.showGradientMasks && root.contentOverflows
         opacity: ((gridView.contentY + gridView.height >= gridView.contentHeight - 1) || root.selectionOnLastVisibleRow) ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.InOutQuad }
+          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: "transparent" }
@@ -344,10 +344,22 @@ Item {
     Rectangle {
       anchors.fill: parent
       gradient: Gradient {
-        GradientStop { position: 0.0; color: fadeMask.topFade ? "transparent" : "white" }
-        GradientStop { position: fadeMask.fadeFrac; color: "white" }
-        GradientStop { position: 1.0 - fadeMask.fadeFrac; color: "white" }
-        GradientStop { position: 1.0; color: fadeMask.bottomFade ? "transparent" : "white" }
+        GradientStop {
+          position: 0.0
+          color: fadeMask.topFade ? "transparent" : "white"
+        }
+        GradientStop {
+          position: fadeMask.fadeFrac
+          color: "white"
+        }
+        GradientStop {
+          position: 1.0 - fadeMask.fadeFrac
+          color: "white"
+        }
+        GradientStop {
+          position: 1.0
+          color: fadeMask.bottomFade ? "transparent" : "white"
+        }
       }
     }
   }
@@ -376,7 +388,7 @@ Item {
       NumberAnimation {
         properties: "x,y"
         duration: Style.animationNormal
-        easing.type: Easing.InOutQuad
+        easing.type: Easing.InOutCubic
       }
     }
     Transition {
@@ -384,7 +396,7 @@ Item {
       NumberAnimation {
         properties: "x,y"
         duration: Style.animationNormal
-        easing.type: Easing.InOutQuad
+        easing.type: Easing.InOutCubic
       }
     }
 

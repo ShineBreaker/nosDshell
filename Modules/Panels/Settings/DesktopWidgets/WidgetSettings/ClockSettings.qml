@@ -209,12 +209,6 @@ ColumnLayout {
         border.color: Color.accent
         border.width: Style.borderS
 
-        Behavior on border.color {
-          ColorAnimation {
-            duration: Style.animationFast
-          }
-        }
-
         ColumnLayout {
           spacing: Style.marginM
           anchors.centerIn: parent
@@ -237,8 +231,10 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
                 Behavior on color {
+                  enabled: !Color.isTransitioning
                   ColorAnimation {
-                    duration: Style.animationFast
+                    duration: Style.motionSwitch
+                    easing.type: Easing.OutCubic
                   }
                 }
               }

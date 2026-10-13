@@ -160,6 +160,23 @@ Singleton {
                    });
   }
 
+  // DESIGN.md §1.5：界面长日期一律经此函数输出（I18n.locale 跟随界面语言）。
+  // 不用 Qt.formatDate / toLocaleDateString(Qt.locale())，它们跟系统区域走。
+  function formatLongDate(date) {
+    if (!date) {
+      date = new Date();
+    }
+    return I18n.locale.toString(date, Locale.LongFormat);
+  }
+
+  // DESIGN.md §1.5：“月份 + 年份”标题经此函数输出，格式串取 time.month-year-format 翻译键。
+  function formatMonthYear(date) {
+    if (!date) {
+      date = new Date();
+    }
+    return I18n.locale.toString(date, I18n.tr("time.month-year-format"));
+  }
+
   // Timer functions
   function timerStart() {
     if (root.timerStopwatchMode) {

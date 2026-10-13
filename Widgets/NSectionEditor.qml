@@ -691,12 +691,12 @@ NBox {
           NumberAnimation {
             to: 1
             duration: Style.animationNormal
-            easing.type: Easing.InOutQuad
+            easing.type: Easing.InOutCubic
           }
           NumberAnimation {
             to: 0.6
             duration: Style.animationNormal
-            easing.type: Easing.InOutQuad
+            easing.type: Easing.InOutCubic
           }
         }
 

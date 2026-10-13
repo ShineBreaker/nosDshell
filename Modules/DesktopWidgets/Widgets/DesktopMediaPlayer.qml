@@ -262,7 +262,7 @@ DraggableDesktopWidget {
         Behavior on opacity {
           NumberAnimation {
             duration: Style.animationSlow
-            easing.type: Easing.InOutQuad
+            easing.type: Easing.OutCubic
           }
         }
         baseSize: Math.round(32 * widgetScale)
@@ -298,7 +298,7 @@ DraggableDesktopWidget {
         Behavior on opacity {
           NumberAnimation {
             duration: Style.animationSlow
-            easing.type: Easing.InOutQuad
+            easing.type: Easing.OutCubic
           }
         }
         baseSize: Math.round(32 * widgetScale)

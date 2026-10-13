@@ -368,13 +368,16 @@ Variants {
       // screen bottom (dde-osd/container.cpp moveToCenter / setWaylandAnimationOffset).
       readonly property bool ddeBottomCenter: location === "bottom_center"
 
-      // Hidden text element for measuring lock key text width
+      // Hidden text element for measuring lock key text width; must match
+      // lockKeyLabel's font (§1.5: UI font + tnum), not fontFixed.
       NText {
         id: lockKeyTextMetrics
         visible: false
         text: root.getDisplayPercentage()
         pointSize: Style.fontSizeS
-        family: Settings.data.ui.fontFixed
+        features: {
+          "tnum": 1
+        }
         elide: Text.ElideNone
         wrapMode: Text.NoWrap
       }
@@ -402,7 +405,7 @@ Variants {
         const textWidth = Math.ceil(lockKeyTextMetrics.contentWidth || 0);
         if (textWidth === 0) {
           // Fallback: estimate based on text length if measurement not ready
-          const fontSize = Style.fontSizeS * Settings.data.ui.fontFixedScale * Style.uiScaleRatio;
+          const fontSize = Style.fontSizeS * Settings.data.ui.fontDefaultScale * Style.uiScaleRatio;
           const estimatedWidth = text.length * fontSize * 0.6;
           const iconWidth = Style.fontSizeXL * Style.uiScaleRatio;
           const margins = Style.margin2L;
@@ -431,7 +434,7 @@ Variants {
         }
         // Calculate height: font size * char count + margins + icon space
         // Font size M (11pt) scaled, plus some spacing between chars
-        const fontSize = Style.fontSizeS * Settings.data.ui.fontFixedScale * Style.uiScaleRatio;
+        const fontSize = Style.fontSizeS * Settings.data.ui.fontDefaultScale * Style.uiScaleRatio;
         const charHeight = fontSize * 1.3; // Add 30% for line height (matches Layout.preferredHeight)
         const textHeight = charCount * charHeight;
         // Background margins (Style.marginM * 1.5 * 2 for top and bottom)
@@ -642,6 +645,9 @@ Variants {
             text: root.getDisplayPercentage()
             color: Color.onTransient
             pointSize: Style.fontSizeS
+            features: {
+              "tnum": 1
+            }
             elide: Text.ElideNone
             horizontalAlignment: Text.AlignHCenter
           }

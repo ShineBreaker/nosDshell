@@ -31,55 +31,6 @@ SmartPanel {
       return "/";
     }
 
-    component StatRow: ColumnLayout {
-      id: statRow
-
-      property string label: ""
-      property string value: ""
-      property real gaugeRatio: -1 // < 0 hides the gauge
-      property color gaugeColor: Color.accent
-
-      spacing: Style.marginXXS
-      Layout.fillWidth: true
-
-      Item {
-        Layout.fillWidth: true
-        Layout.preferredHeight: 28
-
-        RowLayout {
-          anchors.fill: parent
-          anchors.leftMargin: Style.marginM
-          anchors.rightMargin: Style.marginM
-          spacing: Style.marginM
-
-          NText {
-            Layout.fillWidth: true
-            text: statRow.label
-            pointSize: Style.fontSizeM
-            elide: Text.ElideRight
-          }
-
-          NText {
-            text: statRow.value
-            pointSize: Style.fontSizeS
-            color: Color.onShellSecondary
-            font.family: Settings.data.ui.fontFixed
-          }
-        }
-      }
-
-      NLinearGauge {
-        visible: statRow.gaugeRatio >= 0
-        Layout.fillWidth: true
-        Layout.leftMargin: Style.marginM
-        Layout.rightMargin: Style.marginM
-        Layout.preferredHeight: 2
-        orientation: Qt.Horizontal
-        ratio: Math.max(0, Math.min(1, statRow.gaugeRatio))
-        fillColor: statRow.gaugeColor
-      }
-    }
-
     NScrollView {
       id: scrollView
       anchors.fill: parent
@@ -168,6 +119,57 @@ SmartPanel {
           Layout.preferredHeight: Style.marginS
         }
       }
+    }
+  }
+
+  component StatRow: ColumnLayout {
+    id: statRow
+
+    property string label: ""
+    property string value: ""
+    property real gaugeRatio: -1 // < 0 hides the gauge
+    property color gaugeColor: Color.accent
+
+    spacing: Style.marginXXS
+    Layout.fillWidth: true
+
+    Item {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 28
+
+      RowLayout {
+        anchors.fill: parent
+        anchors.leftMargin: Style.marginM
+        anchors.rightMargin: Style.marginM
+        spacing: Style.marginM
+
+        NText {
+          Layout.fillWidth: true
+          text: statRow.label
+          pointSize: Style.fontSizeM
+          elide: Text.ElideRight
+        }
+
+        NText {
+          text: statRow.value
+          pointSize: Style.fontSizeS
+          color: Color.onShellSecondary
+          features: {
+            "tnum": 1
+          }
+        }
+      }
+    }
+
+    NLinearGauge {
+      visible: statRow.gaugeRatio >= 0
+      Layout.fillWidth: true
+      Layout.leftMargin: Style.marginM
+      Layout.rightMargin: Style.marginM
+      Layout.preferredHeight: 2
+      orientation: Qt.Horizontal
+      ratio: Math.max(0, Math.min(1, statRow.gaugeRatio))
+      fillColor: statRow.gaugeColor
     }
   }
 }

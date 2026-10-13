@@ -95,14 +95,6 @@ Rectangle {
   bottomLeftRadius: tailRow ? Style.radiusItem : 0
   bottomRightRadius: tailRow ? Style.radiusItem : 0
 
-  Behavior on color {
-    enabled: !Color.isTransitioning
-    ColorAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
-    }
-  }
-
   // Row content, inset by the standard row padding. A RowLayout so simple rows
   // can drop children in directly; controls that stack their title over a
   // control nest a ColumnLayout inside.

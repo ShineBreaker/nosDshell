@@ -9,9 +9,7 @@ Slider {
 
   readonly property bool sliderActive: activeFocus || pressed
   property color fillColor: Color.accent
-  property var cutoutColor: Color.mSurface
   property bool snapAlways: true
-  property real heightRatio: 0.7
   property var tooltipText
   property string tooltipDirection: "auto"
   property bool hovering: false
@@ -19,12 +17,11 @@ Slider {
   readonly property color effectiveFillColor: enabled ? fillColor : Color.onShellTertiary
 
   // DSlider (DESIGN §3.5.4): 2px groove, 12px white knob, whole control >= 22px tall
-  readonly property real knobDiameter: Math.max(4, Math.round(12 * Style.uiScaleRatio * (heightRatio / 0.7) / 2) * 2)
+  readonly property real knobDiameter: Math.max(4, Math.round(12 * Style.uiScaleRatio / 2) * 2)
   readonly property real trackHeight: Math.max(2, Math.round(2 * Style.uiScaleRatio))
   readonly property real trackRadius: trackHeight / 2
-  readonly property real cutoutExtra: Math.round((Style.baseWidgetSize * 0.1 * Style.uiScaleRatio) / 2) * 2
 
-  padding: cutoutExtra / 2
+  padding: 0
 
   snapMode: snapAlways ? Slider.SnapAlways : Slider.SnapOnRelease
   implicitHeight: Math.max(Math.round(22 * Style.uiScaleRatio), Math.max(trackHeight, knobDiameter))
@@ -166,17 +163,6 @@ Slider {
         }
       }
     }
-
-    // Circular cutout
-    Rectangle {
-      id: knobCutout
-      implicitWidth: root.knobDiameter + root.cutoutExtra
-      implicitHeight: root.knobDiameter + root.cutoutExtra
-      radius: Math.min(Style.iRadiusL, width / 2)
-      color: root.cutoutColor !== undefined ? root.cutoutColor : Color.mSurface
-      x: root.visualPosition * (root.availableWidth - root.knobDiameter) - root.cutoutExtra / 2
-      anchors.verticalCenter: parent.verticalCenter
-    }
   }
 
   handle: Item {
@@ -190,16 +176,10 @@ Slider {
       implicitWidth: knobDiameter
       implicitHeight: knobDiameter
       radius: width / 2
-      color: Color.onAccent
+      color: Color.knobFill
       border.color: Color.knobBorder
       border.width: Style.borderS
       anchors.centerIn: parent
-
-      Behavior on color {
-        ColorAnimation {
-          duration: Style.animationFast
-        }
-      }
     }
 
     MouseArea {

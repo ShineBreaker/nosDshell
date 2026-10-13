@@ -341,7 +341,6 @@ SmartPanel {
               stepSize: 0
               snapAlways: false
               enabled: MediaService.trackLength > 0 && MediaService.canSeek
-              heightRatio: 0.4
 
               value: (!MediaService.isSeeking) ? progressWrapper.progressRatio : (progressWrapper.localSeekRatio >= 0 ? progressWrapper.localSeekRatio : 0)
 

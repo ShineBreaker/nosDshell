@@ -565,13 +565,6 @@ Item {
               onClicked: root.doUnlock()
             }
           }
-
-          Behavior on border.color {
-            ColorAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.OutCubic
-            }
-          }
         }
 
         Item {
