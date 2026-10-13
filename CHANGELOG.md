@@ -30,6 +30,7 @@
 - compact quick-control strip + collapse handle：[`5aa15985a`](https://github.com/ShineBreaker/nosDshell/commit/5aa15985a6a995d3ca72e9dccc20347ae24b404f)
 - display detail page dropped (all controls duplicated), detail pages hug content：[`3374a18b3`](https://github.com/ShineBreaker/nosDshell/commit/3374a18b3fab14a5a9a1148fce33c025ace2ac75)
 - collapse chevron pinned to the strip's bottom-right corner：[`9e9aef239`](https://github.com/ShineBreaker/nosDshell/commit/9e9aef23967b790ea9563a67d99aa4aae40a5f7a)
+- notification list bottom-anchors to the quick-control strip：[`d108b4193`](https://github.com/ShineBreaker/nosDshell/commit/d108b419336483d54403dd6904b188a77c310b2d)
 
 ## [1.1.8] - 2026-10-12
 
