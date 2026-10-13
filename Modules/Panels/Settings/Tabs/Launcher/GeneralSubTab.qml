@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
+import "../Shared"
 
 ColumnLayout {
   id: root
@@ -127,6 +128,19 @@ ColumnLayout {
       onToggled: checked => Settings.data.appLauncher.showIconBackground = checked
       defaultValue: Settings.getDefaultValue("appLauncher.showIconBackground")
     }
+  }
+
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  NDccGap {
+    Layout.fillWidth: true
+  }
+
+  // The launcher button's icon — same shared group the Dock tab mounts;
+  // the dock.launcher* keys drive the taskbar launcher (efficient) and the
+  // dock launcher tile (fashion). Right-clicking the launcher button opens
+  // this tab, so its icon controls live here.
+  LauncherIconGroup {
+    Layout.fillWidth: true
   }
 
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
