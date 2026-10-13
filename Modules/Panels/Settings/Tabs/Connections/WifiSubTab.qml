@@ -604,7 +604,10 @@ Item {
       readonly property bool isEnterprise: NetworkService.isEnterprise(modelData.security)
 
       plain: root.flat
-      interactive: !root.flat
+      // Hover drives the row's secondary actions in both surfaces (§3.2), so
+      // it stays interactive even in the flat dock popup — a plain row paints
+      // no hover fill of its own, the popup list draws its own.
+      interactive: true
       clip: true
       Layout.fillWidth: true
 
@@ -752,8 +755,12 @@ Item {
               size: Style.baseWidgetSize * 0.5
             }
 
+            // Secondary actions surface on the hovered row only (§3.2): the
+            // list marks the current network with the accent check and the
+            // status line, so a permanent column of identical buttons — or a
+            // "Connect" pill on every row — would only repeat it.
             NIconButton {
-              visible: modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
+              visible: networkItem.hovered && modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
               icon: "info"
               tooltipText: I18n.tr("common.info")
               baseSize: Style.baseWidgetSize * 0.75
@@ -772,7 +779,7 @@ Item {
             }
 
             NIconButton {
-              visible: !root.showOnlyLists && modelData.existing && !modelData.connected && !networkItem.isBusy
+              visible: networkItem.hovered && !root.showOnlyLists && modelData.existing && !modelData.connected && !networkItem.isBusy
               icon: "trash"
               tooltipText: I18n.tr("tooltips.forget-network")
               baseSize: Style.baseWidgetSize * 0.75
@@ -784,30 +791,30 @@ Item {
             }
 
             NButton {
-              id: button
-              visible: !modelData.connected && NetworkService.connectingTo !== modelData.ssid && root.passwordSsid !== modelData.ssid
-              enabled: !NetworkService.connecting && !networkItem.isBusy
-              fontSize: Style.fontSizeS
-              backgroundColor: Color.accent
-              textColor: Color.onAccent
-              text: I18n.tr("common.connect")
-              onClicked: {
-                if (modelData.existing || !NetworkService.isSecured(modelData.security)) {
-                  NetworkService.connect(modelData.ssid);
-                } else {
-                  root.requestPassword(modelData.ssid);
-                }
-              }
-            }
-
-            NButton {
               id: disconnectButton
-              visible: modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
+              visible: networkItem.hovered && modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
               text: I18n.tr("common.disconnect")
               fontSize: Style.fontSizeS
               backgroundColor: Color.overlay("strong")
               textColor: Color.onShell
               onClicked: NetworkService.disconnect(modelData.ssid)
+            }
+          }
+        }
+
+        // The row is the connect action (DESIGN §3.2 列表页): pressing anywhere
+        // on a saved or open network connects it, secured ones asking for the
+        // password first. A TapHandler rather than a MouseArea so the row-end
+        // buttons above still take their own clicks.
+        TapHandler {
+          enabled: !modelData.connected && !networkItem.isBusy && !NetworkService.connecting && root.passwordSsid !== modelData.ssid
+          acceptedButtons: Qt.LeftButton
+          cursorShape: Qt.PointingHandCursor
+          onTapped: {
+            if (modelData.existing || !NetworkService.isSecured(modelData.security)) {
+              NetworkService.connect(modelData.ssid);
+            } else {
+              root.requestPassword(modelData.ssid);
             }
           }
         }

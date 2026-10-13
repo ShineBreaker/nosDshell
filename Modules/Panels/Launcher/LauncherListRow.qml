@@ -67,12 +67,16 @@ Item {
     y: root.iconY
     width: root.iconSize
     height: root.iconSize
-    pointSize: Style.fontSizeM
-    // Fallback when the themed icon fails: only feed real Tabler glyph names
-    // to the font path, app icon names would warn and render the fallback.
-    icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "search"
+    // The glyph fills the same box the image icon does, so an action row with a
+    // Tabler glyph and an app row with a themed icon share one left edge and one
+    // optical size (DESIGN §3.4.2: 图标 24 px 放在 x=10).
+    pointSize: root.iconSize
+    // Fallback when there is no themed icon, or it failed to load: only feed
+    // real Tabler glyph names to the font path, app icon names would warn and
+    // render the fallback.
+    icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"
     color: Color.onWallpaper
-    visible: rowIcon.status !== Image.Ready
+    visible: modelData.icon === "" || rowIcon.status === Image.Error
   }
 
   NText {

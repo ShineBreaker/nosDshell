@@ -540,7 +540,7 @@ PopupWindow {
                   icon: modelData.icon || ""
                   pointSize: Style.fontSizeS
                   applyUiScale: false
-                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : Color.accent
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
                   verticalAlignment: Text.AlignVCenter
                 }
 

@@ -337,7 +337,7 @@ SmartPanel {
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginM
           Layout.topMargin: Style.marginXS
-          text: I18n.tr("panels.audio.section-input")
+          text: I18n.tr("panels.audio.section-input-devices")
           pointSize: Style.fontSizeS
           color: Color.onShellTertiary
           visible: AudioService.sources.length > 0

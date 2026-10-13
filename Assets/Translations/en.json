@@ -662,6 +662,9 @@
   "lock-screen": {
     "password": "Enter your password..."
   },
+  "media": {
+    "card-no-media": "No media playing"
+  },
   "notifications": {
     "panel": {
       "no-notifications": "No notifications"
@@ -798,7 +801,8 @@
       "section-output": "Output",
       "section-input": "Input",
       "section-applications": "Applications",
-      "section-devices": "Devices"
+      "section-devices": "Output devices",
+      "section-input-devices": "Input devices"
     },
     "bar": {
       "appearance-auto-hide-delay-description": "Time before bar hides after mouse leaves",
@@ -1835,7 +1839,6 @@
     "open-notification-history-enable-dnd": "Notification history",
     "open-settings": "Settings",
     "open-tray-dropdown": "System tray",
-    "pair": "Pair",
     "power-profile": "{profile} power profile",
     "remove-widget": "Remove widget",
     "search-close": "Close search",
@@ -2090,6 +2093,7 @@
     "settings": "Dock settings"
   },
   "settings": {
+    "search-placeholder": "Search settings",
     "taskbar": {
       "general": "General",
       "plugins": "Plugins",

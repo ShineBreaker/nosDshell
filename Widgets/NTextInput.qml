@@ -70,7 +70,12 @@ NDccRow {
     id: frameControl
 
     Layout.fillWidth: true
-    Layout.minimumWidth: root.minimumInputWidth
+    // A settings row pins the control column (DESIGN §3.5.4 控件列宽) so the
+    // fields of neighbouring rows line up; a bare input (the settings search
+    // box, popups, the launcher) still fills the width it is given.
+    Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : root.minimumInputWidth
+    Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : -1
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
     Layout.margins: Style.borderS
     implicitHeight: Style.settingsFieldHeight
 

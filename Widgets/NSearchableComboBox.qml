@@ -193,9 +193,12 @@ NDccRow {
     // In narrow contexts (the 352 px module view, §3.5.3) the row squeezes
     // the box toward the 120 floor instead of starving the label column.
     Layout.fillWidth: true
-    Layout.minimumWidth: Math.round(120 * Style.uiScaleRatio)
-    Layout.preferredWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
-    Layout.maximumWidth: Math.round(root.minimumWidth * Style.uiScaleRatio)
+    // A settings row pins the control column (DESIGN §3.5.4 控件列宽) so the
+    // fields of neighbouring rows line up; a bare combo still follows its own
+    // minimumWidth so popups and the launcher keep sizing to content.
+    Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(120 * Style.uiScaleRatio)
+    Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.preferredHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
     model: root.activeModel
     textRole: "name"

@@ -289,7 +289,9 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: model.listIconSize
                 height: model.listIconSize
-                pointSize: Style.fontSizeM
+                // Same box as the image icon above, so a glyph row and an app
+                // row share one left edge and one optical size (DESIGN §3.4.2).
+                pointSize: model.listIconSize
                 // Themed lookup failed (or no icon at all): fall back to the
                 // Tabler glyph when the name is one, a generic app glyph else.
                 icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"

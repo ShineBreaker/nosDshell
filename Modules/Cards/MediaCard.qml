@@ -268,14 +268,28 @@ NBox {
     anchors.rightMargin: Style.marginM
     anchors.bottomMargin: Style.marginM
 
-    // No media player detected - centered disc icon
-    NIcon {
+    // No media player detected - centred disc placeholder with a line of text
+    // under it, so the empty state says what is missing instead of leaving a
+    // bare grey record (DESIGN §3.5.2, §1.10 empty states).
+    Column {
       anchors.centerIn: parent
+      spacing: Style.marginS
       visible: !root.hasActivePlayer && SpectrumService.isIdle
-      icon: "disc"
-      pointSize: Style.fontSizeXXXL * 3
-      color: Color.mOnSurfaceVariant
-      opacity: 1.0
+
+      NIcon {
+        anchors.horizontalCenter: parent.horizontalCenter
+        icon: "disc"
+        pointSize: Style.fontSizeXXXL * 3
+        color: Color.mOnSurfaceVariant
+        opacity: 1.0
+      }
+
+      NText {
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: I18n.tr("media.card-no-media")
+        pointSize: Style.fontSizeS
+        color: Qt.alpha(Color.onShell, 0.6)
+      }
     }
 
     // MediaPlayer Main Content - use Loader for performance

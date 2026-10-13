@@ -101,7 +101,12 @@ NDccRow {
   Rectangle {
     id: spinBoxContainer
     Layout.margins: Style.borderS
-    implicitWidth: 120
+    // A settings row pins the control column (DESIGN §3.5.4 控件列宽) so the
+    // fields of neighbouring rows line up; a bare spin box keeps its own 120.
+    implicitWidth: root.dccRow ? Style.settingsFieldWidth : 120
+    Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : 0
+    Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : 120
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
     implicitHeight: Math.max(Style.settingsFieldHeight, Math.round((root.baseSize - 4) / 2) * 2)
     radius: Style.settingsFieldRadius
     color: Color.overlay("field")

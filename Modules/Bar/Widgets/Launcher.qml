@@ -32,10 +32,19 @@ NIconButton {
   }
 
   readonly property string customIcon: widgetSettings.icon || (widgetMetadata ? widgetMetadata.icon : "rocket")
+  // A user-picked glyph. The registry's default metadata icon ("rocket") is
+  // only a Tabler stand-in: with no user choice the widget shows the shared
+  // DDE launcher icon instead, the same one the fashion dock tile uses
+  // (DESIGN §1.9).
+  readonly property bool hasCustomIcon: widgetSettings.icon !== undefined && widgetSettings.icon !== ""
   readonly property bool useDistroLogo: widgetSettings.useDistroLogo !== undefined ? widgetSettings.useDistroLogo : widgetMetadata.useDistroLogo
   readonly property string customIconPath: widgetSettings.customIconPath !== undefined ? widgetSettings.customIconPath : widgetMetadata.customIconPath
   readonly property bool enableColorization: widgetSettings.enableColorization !== undefined ? widgetSettings.enableColorization : widgetMetadata.enableColorization
   readonly property string colorizeSystemIcon: widgetSettings.colorizeSystemIcon !== undefined ? widgetSettings.colorizeSystemIcon : widgetMetadata.colorizeSystemIcon
+
+  // True when the theme/glyph icon is hidden in favour of the overlay image
+  // below (distro logo or an explicit icon path).
+  readonly property bool usesOverlayIcon: useDistroLogo || customIconPath !== ""
 
   readonly property color iconColor: {
     if (!enableColorization)
@@ -46,8 +55,13 @@ NIconButton {
   // Efficient (DDE taskbar) mode: icon-only, no capsule, icon at 0.7 x item size
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
 
-  // If we have a custom path or are using distro logo, don't show the theme icon.
-  icon: (customIconPath === "" && !useDistroLogo) ? customIcon : ""
+  // Without a user-picked glyph this bar widget shows the same launcher icon
+  // as the fashion dock tile (DESIGN §1.9) rather than a Tabler glyph.
+  icon: usesOverlayIcon ? "" : customIcon
+  iconSource: (usesOverlayIcon || hasCustomIcon) ? "" : ThemeIcons.launcherIconPath()
+  // Flat silhouette on the shell surface (efficient mode), full-colour on the
+  // capsule — same split the other bar widgets use.
+  recolorIcon: efficientMode
   tooltipText: I18n.tr("actions.open-launcher")
   tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
   baseSize: efficientMode ? Style.getBarHeightForScreen(screenName) : Style.getCapsuleHeightForScreen(screenName)

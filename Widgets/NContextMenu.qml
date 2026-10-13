@@ -200,7 +200,7 @@ Popup {
           visible: modelData.icon !== undefined
           icon: modelData.icon || ""
           pointSize: Style.fontSizeM
-          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : Color.accent
+          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : root._textColor
           Layout.leftMargin: root.itemPadding
         }
 

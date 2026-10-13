@@ -440,6 +440,24 @@
     ]
   },
   {
+    "labelKey": "common.ethernet",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 16,
+    "tabLabel": "panels.connections.title",
+    "subTab": 0,
+    "subTabLabel": "common.wifi"
+  },
+  {
+    "labelKey": "panels.connections.ethernet-details-view-label",
+    "descriptionKey": "panels.connections.ethernet-details-view-description",
+    "widget": "NComboBox",
+    "tab": 16,
+    "tabLabel": "panels.connections.title",
+    "subTab": 0,
+    "subTabLabel": "common.wifi"
+  },
+  {
     "labelKey": "wifi.panel.network-name-ssid",
     "descriptionKey": null,
     "widget": "NTextInput",
@@ -548,13 +566,58 @@
     ]
   },
   {
+    "labelKey": "panels.control-center.card-media-sysmon",
+    "descriptionKey": null,
+    "widget": "NHeader",
+    "tab": 6,
+    "tabLabel": "panels.control-center.title",
+    "subTab": 0,
+    "subTabLabel": "common.cards"
+  },
+  {
+    "labelKey": "system-monitor.cpu-usage",
+    "descriptionKey": null,
+    "widget": "NToggle",
+    "tab": 6,
+    "tabLabel": "panels.control-center.title",
+    "subTab": 0,
+    "subTabLabel": "common.cards"
+  },
+  {
+    "labelKey": "system-monitor.cpu-temp",
+    "descriptionKey": null,
+    "widget": "NToggle",
+    "tab": 6,
+    "tabLabel": "panels.control-center.title",
+    "subTab": 0,
+    "subTabLabel": "common.cards"
+  },
+  {
+    "labelKey": "common.memory",
+    "descriptionKey": null,
+    "widget": "NToggle",
+    "tab": 6,
+    "tabLabel": "panels.control-center.title",
+    "subTab": 0,
+    "subTabLabel": "common.cards"
+  },
+  {
+    "labelKey": "system-monitor.disk",
+    "descriptionKey": null,
+    "widget": "NToggle",
+    "tab": 6,
+    "tabLabel": "panels.control-center.title",
+    "subTab": 0,
+    "subTabLabel": "common.cards"
+  },
+  {
     "labelKey": "panels.control-center.system-monitor-disk-path-label",
     "descriptionKey": "panels.control-center.system-monitor-disk-path-description",
     "widget": "NComboBox",
     "tab": 6,
     "tabLabel": "panels.control-center.title",
     "subTab": 0,
-    "subTabLabel": "common.appearance"
+    "subTabLabel": "common.cards"
   },
   {
     "labelKey": "panels.desktop-widgets.enabled-label",
@@ -1791,6 +1854,15 @@
     "subTabLabel": "common.general"
   },
   {
+    "labelKey": "panels.launcher.settings-display-mode-label",
+    "descriptionKey": "panels.launcher.settings-display-mode-description",
+    "widget": "NComboBox",
+    "tab": 14,
+    "tabLabel": "panels.launcher.title",
+    "subTab": 0,
+    "subTabLabel": "common.general"
+  },
+  {
     "labelKey": "panels.launcher.settings-density-label",
     "descriptionKey": "panels.launcher.settings-density-description",
     "widget": "NComboBox",
@@ -2190,7 +2262,7 @@
     "subTab": 3,
     "subTabLabel": "common.sound",
     "visibleWhen": [
-      "!(Settings.data.notifications?.sounds?.separateSounds ?? false)"
+      "!(Settings.data.notifications?.sounds?.separateSounds)"
     ]
   },
   {
@@ -2202,7 +2274,7 @@
     "subTab": 3,
     "subTabLabel": "common.sound",
     "visibleWhen": [
-      "SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false) && (Settings.data.notifications?.sounds?.separateSounds ?? false)"
+      "SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && (Settings.data.notifications?.sounds?.separateSounds)"
     ]
   },
   {
@@ -2214,7 +2286,7 @@
     "subTab": 3,
     "subTabLabel": "common.sound",
     "visibleWhen": [
-      "SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false) && (Settings.data.notifications?.sounds?.separateSounds ?? false)"
+      "SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && (Settings.data.notifications?.sounds?.separateSounds)"
     ]
   },
   {
@@ -2226,7 +2298,7 @@
     "subTab": 3,
     "subTabLabel": "common.sound",
     "visibleWhen": [
-      "SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled ?? false) && (Settings.data.notifications?.sounds?.separateSounds ?? false)"
+      "SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && (Settings.data.notifications?.sounds?.separateSounds)"
     ]
   },
   {

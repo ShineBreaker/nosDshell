@@ -764,6 +764,21 @@ Item {
                 searchResults.selectFirst();
             }
           }
+
+          // §3.5.4: the placeholder says what is searchable, in white x 0.6.
+          // Hidden as soon as there is text so it never sits behind the query.
+          Text {
+            anchors.left: searchInput.left
+            anchors.leftMargin: searchInput.leftPadding
+            anchors.right: parent.right
+            anchors.rightMargin: Style.marginS
+            anchors.verticalCenter: parent.verticalCenter
+            visible: searchInput.text === ""
+            elide: Text.ElideRight
+            text: I18n.tr("settings.search-placeholder")
+            color: Qt.alpha(Color.onShell, 0.6)
+            font.pointSize: Style.fontSizeS
+          }
         }
 
         // All visible modules stacked in one scroll area (DESIGN §3.5.3): every

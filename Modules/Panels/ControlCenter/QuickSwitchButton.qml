@@ -5,12 +5,19 @@ import qs.Services.UI
 import qs.Widgets
 
 /**
-* QuickSwitchButton - 70x60 quick switch (DESIGN §3.5.2).
+* QuickSwitchButton - 70x72 quick switch (DESIGN §3.5.2).
 *
-* Glyph bottom-aligned 20 px above the bottom (gxde-control-center
-* quickswitchbutton.cpp:41-46), no label — the tooltip carries the name,
-* matching DDE which shows icon + tooltip. On state draws a radiusPopup
-* block with a 5 px bottom margin behind the glyph; hover is overlay("hover").
+* Icon 24 px, bottom-aligned 32 px above the bottom (gxde-control-center
+* quickswitchbutton.cpp:41-46), with a one-line name 12 px above the bottom
+* so an icon-only cell is still recognisable without hovering. The name comes
+* from ControlCenterWidgetRegistry.widgetDisplayName — the same API the
+* settings → control center shortcut list uses, so both surfaces call a
+* switch by the same word (plugin widgets resolve to their manifest name).
+* The tooltip still carries the widget's dynamic description (e.g. the
+* network currently connected to), which the name cannot.
+*
+* On state draws a radiusPopup block with a 5 px bottom margin behind the
+* glyph; hover is overlay("hover").
 *
 * The switch drives the same registry widget as Noctalia's shortcuts card, so
 * all existing shortcut behaviour (left/right/middle click, on-state logic)
@@ -25,9 +32,9 @@ Item {
 
   readonly property var widgetMeta: ControlCenterWidgetRegistry.widgetMetadata[widgetId] ?? {}
 
-  signal clicked()
-  signal rightClicked()
-  signal middleClicked()
+  signal clicked
+  signal rightClicked
+  signal middleClicked
 
   width: Style.quickSwitchWidth
   height: Style.quickSwitchHeight
@@ -68,7 +75,8 @@ Item {
       item[button]();
   }
 
-  // On-state block: radiusPopup, 5 px above the bottom edge
+  // On-state block: radiusPopup, 5 px above the bottom edge. Button-class
+  // colour feedback, so hover <-> on animates (DESIGN §1.7).
   Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
@@ -78,6 +86,14 @@ Item {
     radius: Style.radiusPopup
     color: root.hot ? Color.overlay("strong") : (hoverArea.containsMouse ? Color.overlay("hover") : "transparent")
     visible: root.hot || hoverArea.containsMouse
+
+    Behavior on color {
+      enabled: !Color.isTransitioning
+      ColorAnimation {
+        duration: Style.motionPointer
+        easing.type: Easing.OutCubic
+      }
+    }
   }
 
   NIcon {
@@ -89,9 +105,25 @@ Item {
       const item = widgetLoader.loadedItem;
       return (item && item.icon !== undefined) ? item.icon : (widgetMeta.icon ?? "");
     }
-    pointSize: Style.moduleCellIcon
+    pointSize: Style.quickSwitchIconSize
     applyUiScale: false
     color: root.hot ? Color.onShell : Color.onShellSecondary
+  }
+
+  // Name under the icon — the same word the settings shortcut list shows.
+  Text {
+    anchors.left: parent.left
+    anchors.leftMargin: Style.quickSwitchLabelSideMargin
+    anchors.right: parent.right
+    anchors.rightMargin: Style.quickSwitchLabelSideMargin
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Style.quickSwitchLabelBottomMargin
+    horizontalAlignment: Text.AlignHCenter
+    elide: Text.ElideRight
+    maximumLineCount: 1
+    font.pixelSize: Math.round(Style.fontSizeXS * Style.uiScaleRatio)
+    color: root.hot ? Color.onShell : Color.onShellSecondary
+    text: ControlCenterWidgetRegistry.widgetDisplayName(root.widgetId)
   }
 
   MouseArea {
@@ -109,13 +141,12 @@ Item {
     onPressed: TooltipService.hide()
 
     onClicked: mouse => {
-      if (mouse.button === Qt.LeftButton)
-        root.forward("clicked");
-      else if (mouse.button === Qt.RightButton)
-        root.forward("rightClicked");
-      else if (mouse.button === Qt.MiddleButton)
-        root.forward("middleClicked");
-    }
+                 if (mouse.button === Qt.LeftButton)
+                 root.forward("clicked");
+                 else if (mouse.button === Qt.RightButton)
+                 root.forward("rightClicked");
+                 else if (mouse.button === Qt.MiddleButton)
+                 root.forward("middleClicked");
+               }
   }
 }
-

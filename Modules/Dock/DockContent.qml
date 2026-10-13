@@ -296,13 +296,10 @@ Item {
             return launcherMetadata.useDistroLogo;
           return false;
         }
-        // DDE launcher tile: prefer the deepin-launcher themed icon, fall back
-        // to the bundled DDE artwork when the icon theme lacks it
+        // DDE launcher tile: the one launcher-icon source (DESIGN §1.9), shared
+        // with the efficient taskbar plugin and the status-bar widget
         // (gxde-dock/frame/item/launcheritem.cpp:56-60)
-        readonly property string themedLauncherIcon: {
-          const t = ThemeIcons.fashionForAny(["deepin-launcher", "start-here", "deepin-toggle-desktop"]);
-          return t !== "" ? t : Quickshell.shellDir + "/Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg";
-        }
+        readonly property string themedLauncherIcon: ThemeIcons.launcherIconPath()
 
         Item {
           id: launcherIconContainer

@@ -483,10 +483,17 @@ Singleton {
   // Module grid cell inset (navdelegate.cpp:41-57) and icon 24 px
   readonly property int moduleCellInset: Math.round(5 * uiScaleRatio)
   readonly property int moduleCellIcon: Math.round(24 * uiScaleRatio)
-  // QuickSwitchButton: 70x60, glyph bottom-aligned 20 px above the bottom
-  // (quickswitchbutton.cpp:41-46), on-state block radiusPopup + 5 px bottom margin
+  // QuickSwitchButton: 70x72, glyph 24 px bottom-aligned 32 px above the
+  // bottom, one-line name 12 px above the bottom (DESIGN §3.5.2). The cell
+  // grew from DDE's 70x60 icon-only box (quickswitchbutton.cpp:41-46) so the
+  // name is readable without hovering; on-state block keeps radiusPopup +
+  // 5 px bottom margin.
   readonly property int quickSwitchWidth: Math.round(70 * uiScaleRatio)
-  readonly property int quickSwitchHeight: Math.round(60 * uiScaleRatio)
+  readonly property int quickSwitchHeight: Math.round(72 * uiScaleRatio)
+  readonly property int quickSwitchIconSize: Math.round(24 * uiScaleRatio)
+  readonly property int quickSwitchIconBottomMargin: Math.round(32 * uiScaleRatio)
+  readonly property int quickSwitchLabelBottomMargin: Math.round(12 * uiScaleRatio)
+  readonly property int quickSwitchLabelSideMargin: Math.round(4 * uiScaleRatio)
   // Basic page slider track height (gxde-control-center basicsettingspage.cpp)
   readonly property int sliderBasicHeight: Math.round(35 * uiScaleRatio * Settings.data.ui.rowHeightScale)
   // Quick-control page slot height for the fixed-height pages (basic page:
@@ -498,7 +505,6 @@ Singleton {
   // space (〔演进〕: was a shared fixed slot sized by the tallest page).
   readonly property int controlCenterMediaCardRowHeight: Math.round(160 * uiScaleRatio)
   readonly property int quickControlPanelHeight: sliderBasicHeight * 2 + quickSwitchHeight * 2 + marginS * 5 + marginM * 2
-  readonly property int quickSwitchIconBottomMargin: Math.round(20 * uiScaleRatio)
   readonly property int quickSwitchBlockBottomMargin: Math.round(5 * uiScaleRatio)
   // Page indicator: height 40, dot alphas from DESIGN §3.5.2
   readonly property int pageIndicatorHeight: Math.round(40 * uiScaleRatio)
@@ -557,6 +563,13 @@ Singleton {
   // titles stay readable.
   readonly property int settingsFieldTitleWidth: Math.round(140 * uiScaleRatio)
   readonly property int settingsFieldGap: Math.round(4 * uiScaleRatio)
+  // Control column width (DESIGN §3.5.4 控件列宽): dropdowns, searchable
+  // dropdowns, spin boxes and single-line inputs in a settings row are all
+  // this wide — min, preferred and max alike — so their left and right edges
+  // line up across rows. The four controls read this only when they are a
+  // labelled settings row; bare ones (dock popup, launcher) keep sizing to
+  // their content.
+  readonly property real settingsFieldWidth: Math.round(170 * uiScaleRatio)
   // Hand-rolled brightness row (BrightnessSubTab, no DDE counterpart): label
   // column + percent readout. Local alignment constants, kept separate from
   // the DCC LineEdit title column above; previously unscaled literals.

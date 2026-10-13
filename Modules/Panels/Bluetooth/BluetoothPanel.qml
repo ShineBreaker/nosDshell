@@ -147,66 +147,10 @@ SmartPanel {
           // turns the BluetoothDevice refs into raw pointers (CODING_STANDARDS
           // "QML 规则"). The delegate resolves the live JS entry itself.
           model: panelContent.connectedDevices.map((_, i) => i)
-          delegate: Rectangle {
-            readonly property var entry: panelContent.connectedDevices[index]
-            Layout.fillWidth: true
-            Layout.preferredHeight: Style.quickPanelRowHeight
-            radius: Style.radiusRow
-            color: connRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
-
-            MouseArea {
-              id: connRowMouse
-              anchors.fill: parent
-              hoverEnabled: true
-              onClicked: {
-                if (entry)
-                  panelContent.disconnectDevice(entry);
-              }
-            }
-
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              anchors.rightMargin: Style.marginS
-              spacing: Style.marginS
-
-              NIcon {
-                icon: BluetoothService.getDeviceIcon(entry)
-                pointSize: Style.fontSizeXL
-                color: Color.onShell
-              }
-
-              NText {
-                Layout.fillWidth: true
-                text: entry?.name || entry?.deviceName || ""
-                pointSize: Style.fontSizeM
-                elide: Text.ElideRight
-              }
-
-              NIcon {
-                icon: "check"
-                pointSize: Style.fontSizeXL
-                color: Color.accent
-              }
-
-              NIconButton {
-                icon: "bluetooth-off"
-                colorFg: Color.onShell
-                onClicked: {
-                  if (entry)
-                    panelContent.disconnectDevice(entry);
-                }
-              }
-
-              NIconButton {
-                icon: "trash"
-                colorFg: Color.onShell
-                onClicked: {
-                  if (entry)
-                    BluetoothService.forgetDevice(entry);
-                }
-              }
-            }
+          delegate: BtDeviceRow {
+            devices: panelContent.connectedDevices
+            onDisconnectRequested: device => panelContent.disconnectDevice(device)
+            onDetailsRequested: device => SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 1, screen)
           }
         }
 
@@ -221,83 +165,10 @@ SmartPanel {
           // Index-key model — see the comment on the connected-devices
           // Repeater above (CODING_STANDARDS "QML 规则").
           model: panelContent.pairedDevices.map((_, i) => i)
-          delegate: Rectangle {
-            readonly property var entry: panelContent.pairedDevices[index]
-            Layout.fillWidth: true
-            Layout.preferredHeight: Style.quickPanelRowHeight
-            radius: Style.radiusRow
-            color: btRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
-
-            MouseArea {
-              id: btRowMouse
-              anchors.fill: parent
-              hoverEnabled: true
-              onClicked: {
-                if (!entry)
-                  return;
-                if (entry.connected) {
-                  panelContent.disconnectDevice(entry);
-                } else {
-                  BluetoothService.connectDeviceWithTrust(entry);
-                }
-              }
-            }
-
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              anchors.rightMargin: Style.marginS
-              spacing: Style.marginS
-
-              NIcon {
-                icon: BluetoothService.getDeviceIcon(entry)
-                pointSize: Style.fontSizeXL
-                color: Color.onShell
-                visible: icon !== ""
-              }
-
-              NText {
-                Layout.fillWidth: true
-                text: entry?.name || entry?.deviceName || ""
-                pointSize: Style.fontSizeM
-                elide: Text.ElideRight
-              }
-
-              NIcon {
-                visible: entry?.connected ?? false
-                icon: "check"
-                pointSize: Style.fontSizeXL
-                color: Color.accent
-              }
-
-              NIconButton {
-                icon: "bluetooth-off"
-                colorFg: Color.onShell
-                visible: entry ? (entry.connected || entry.pairing || entry.state === BluetoothDeviceState.Disconnecting) : false
-                onClicked: {
-                  if (entry)
-                    panelContent.disconnectDevice(entry);
-                }
-              }
-
-              NIconButton {
-                icon: "info-circle"
-                colorFg: Color.onShell
-                onClicked: {
-                  if (entry)
-                    BluetoothService.toggleDeviceInfo(entry);
-                }
-              }
-
-              NIconButton {
-                icon: "trash"
-                colorFg: Color.onShell
-                onClicked: {
-                  if (entry)
-                    BluetoothService.forgetDevice(entry);
-                }
-              }
-            }
+          delegate: BtDeviceRow {
+            devices: panelContent.pairedDevices
+            onDisconnectRequested: device => panelContent.disconnectDevice(device)
+            onDetailsRequested: device => SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 1, screen)
           }
         }
 
@@ -322,54 +193,9 @@ SmartPanel {
           // Index-key model — see the comment on the connected-devices
           // Repeater above (CODING_STANDARDS "QML 规则").
           model: panelContent.availableDevices.map((_, i) => i)
-          delegate: Rectangle {
-            readonly property var entry: panelContent.availableDevices[index]
-            Layout.fillWidth: true
-            Layout.preferredHeight: Style.quickPanelRowHeight
-            radius: Style.radiusRow
-            color: availRowMouse.containsMouse ? Color.overlay("hover") : "transparent"
-
-            MouseArea {
-              id: availRowMouse
-              anchors.fill: parent
-              hoverEnabled: true
-              onClicked: {
-                if (entry)
-                  BluetoothService.connectDeviceWithTrust(entry);
-              }
-            }
-
-            RowLayout {
-              anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              anchors.rightMargin: Style.marginS
-              spacing: Style.marginS
-
-              NIcon {
-                icon: BluetoothService.getDeviceIcon(entry)
-                pointSize: Style.fontSizeXL
-                color: Color.onShell
-                visible: icon !== ""
-              }
-
-              NText {
-                Layout.fillWidth: true
-                text: entry?.name || entry?.deviceName || ""
-                pointSize: Style.fontSizeM
-                elide: Text.ElideRight
-              }
-
-              NIconButton {
-                icon: BluetoothService.isDeviceBusy(entry) ? "bluetooth-connecting" : "link"
-                colorFg: Color.onShell
-                tooltipText: BluetoothService.isDeviceBusy(entry) ? "" : I18n.tr("tooltips.pair")
-                onClicked: {
-                  if (entry && !BluetoothService.isDeviceBusy(entry)) {
-                    BluetoothService.connectDeviceWithTrust(entry);
-                  }
-                }
-              }
-            }
+          delegate: BtDeviceRow {
+            devices: panelContent.availableDevices
+            onDisconnectRequested: device => panelContent.disconnectDevice(device)
           }
         }
 

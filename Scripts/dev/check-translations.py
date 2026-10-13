@@ -15,12 +15,18 @@ Checks:
    or when it is the `-plural` form of a used key.
 3. Orphans: no other language file has keys that en.json lacks.
 4. zh-CN.json carries every en.json key (CODING_STANDARDS.md, 界面文字).
+5. zh-CN.json values hold no untranslated interface terms (DESIGN.md
+   §1.10): the BANNED English words below must not appear. ALLOWED
+   originals (abbreviations, product names, command names) are masked
+   before matching, and hook/placeholder/debug keys that quote command
+   originals are exempt. --fix never touches these; translate by hand.
 
 Usage:
   Scripts/dev/check-translations.py          # report, exit 1 on any problem
   Scripts/dev/check-translations.py --fix    # delete unreferenced keys from
                                              # every language file and orphan
                                              # keys from the translations
+                                             # (check 5 is only reported)
 """
 
 import json
@@ -35,6 +41,27 @@ REQUIRED_COMPLETE = ["zh-CN.json"]
 
 EXCLUDED_DIRS = {"references", "docs", ".git", "target", "node_modules", "__pycache__", "Translations"}
 EXCLUDED_FILES = {Path("Scripts/dev/check-translations.py")}
+
+# Check 5 (DESIGN.md §1.10): interface Chinese uses the DDE term, never the
+# English word from the left column of the §1.10 table. OSD is not banned:
+# it is a retainable abbreviation (see ALLOWED_TOKENS). Matching is
+# case-sensitive with ASCII word boundaries, so CJK text next to a term
+# ("Dock栏") still matches while "Widgets" does not.
+BANNED_TERMS = [
+    "Dock", "Workspace", "Launcher", "Bluetooth", "Toast",
+    "Widget", "widget", "Session", "Control Center", "Notification Center",
+]
+BANNED_TERM = re.compile(r"\b(" + "|".join(map(re.escape, BANNED_TERMS)) + r")\b", re.ASCII)
+
+# Retainable originals (DESIGN.md §1.10): masked before matching so they
+# can never flag, e.g. the CPU in "标有 ! 的 Widget 会占用更多 CPU".
+ALLOWED_TOKENS = [
+    "Wi-Fi", "VPN", "CPU", "GPU", "OSD", "IPC", "JSON", "UEFI", "Markdown",
+    "nosDshell", "niri", "Wallhaven", "GitHub", "Material",
+]
+
+# Keys quoting command originals, not interface prose (DESIGN.md §1.10).
+EXEMPT_KEY = re.compile(r"^placeholders\." r"|^panels\.hooks\." r"|-placeholder$" r"|^debug\.")
 
 LITERAL = re.compile(r'"((?:\\.|[^"\\\n])*)"|\'((?:\\.|[^\'\\\n])*)\'|`([^`]*)`')
 CONCAT_PREFIX = re.compile(r'["\']([\w.-]+[.-])["\']\s*\+')
@@ -73,6 +100,31 @@ def delete_key(data, dotted):
         if not chain[depth]:
             del chain[depth - 1][parts[depth - 1]]
     return True
+
+
+def untranslated_terms(data):
+    """Yield (key, value, term) for zh-CN values holding a BANNED term."""
+    found = []
+
+    def walk(obj, prefix=()):
+        for key, value in obj.items():
+            path = prefix + (key,)
+            if isinstance(value, dict):
+                walk(value, path)
+            elif isinstance(value, str):
+                dotted = ".".join(path)
+                if EXEMPT_KEY.search(dotted):
+                    continue
+                # {name} is a format placeholder, not the word itself
+                masked = re.sub(r"\{[^}]*\}", "", value)
+                for token in ALLOWED_TOKENS:
+                    masked = masked.replace(token, "")
+                m = BANNED_TERM.search(masked)
+                if m:
+                    found.append((dotted, value, m.group(1)))
+
+    walk(data)
+    return found
 
 
 def source_files():
@@ -163,10 +215,14 @@ def main():
         for k in keys:
             print(f"missing in {path.name}: {k}")
             problems += 1
+    for k, v, term in untranslated_terms(load(TRANSLATIONS / "zh-CN.json")):
+        print(f"untranslated term in zh-CN.json: {k}: {v}  (matched: {term})")
+        problems += 1
 
     if problems:
         print(f"\n{problems} translation problem(s). Add missing keys to en.json and zh-CN.json; "
-              "run with --fix to delete unreferenced and orphan keys.", file=sys.stderr)
+              "run with --fix to delete unreferenced and orphan keys; "
+              "translate untranslated terms by hand (--fix never touches them).", file=sys.stderr)
         return 1
     print(f"translations ok: {len(ref_set)} keys in en.json, all referenced")
     return 0

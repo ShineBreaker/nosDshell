@@ -165,6 +165,20 @@ Singleton {
     }
   }
 
+  // The single source of the launcher icon (DESIGN §1.9): themed
+  // `deepin-launcher`, then `start-here`, then the bundled DDE artwork. The
+  // fashion dock tile, the efficient taskbar launcher plugin and the
+  // status-bar launcher widget all call this, so the three surfaces cannot
+  // drift apart — previously the dock resolved the chain inline while the bar
+  // widget fell back to the Tabler "rocket" glyph. A user-chosen custom icon
+  // still wins at the call sites (DESIGN §1.9).
+  function launcherIconPath() {
+    const themed = fashionForAny(["deepin-launcher", "start-here"]);
+    if (themed !== "")
+      return themed;
+    return Quickshell.shellDir + "/Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg";
+  }
+
   // --- Lookup Helpers ---
 
   function checkHeuristic(str) {
