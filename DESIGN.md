@@ -704,6 +704,13 @@ Noctalia 卡片的对应关系：
 - 命令行：`nosd-helpers wl-probe`，向 stdout 输出一行 JSON：`{"compositor_blur": true|false, "globals": ["wl_compositor", ...]}`；`compositor_blur` 为真当且仅当存在 `ext_background_effect_manager_v1`。连不上 Wayland 时退出码非 0。
 - 调用方式：shell 启动时调用一次，结果存进 `CompositorService.blurSupported`。设置开启且 `blurSupported` 为真时，`Color.blurActive` 才为真。工具缺失或执行失败时按"支持"处理（与加入探测前的行为一致），并输出一次 `Logger.w`。
 
+### 4.2 合成器侧规则（niri）
+
+- nosdshell 通过 `ext-background-effect` 自己发布模糊区域（bar 与面板在 `nosdshell-background` 上，dock 和两个启动器各自发布），niri ≥ 26.04 无需任何规则即按客户端申请的形状精确模糊。layer-rule 只负责两件事：给浮动在窗口上的发布面关掉 xray（否则默认只采样壁纸），和给"永不模糊"的面钉 `blur false`。
+- **绝不**在 nosdshell 面的 surface 级规则里写 `blur true`：niri 会按整个面（含透明区）施加模糊，而 `nosdshell-background`、`popupmenu`、`notifications`、`toast` 等大多是全屏面——这就是 2026-10 的巨型模糊事故。整面 `blur true` 只许写在 `popups {}` 里（xdg_popup 天然内容尺寸）。
+- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊给浮在窗口上的发布面（`background`、`dock`、`launcher-mini`）；Tier 1 xray 给全屏静态面（`launcher-full`——它要的就是"模糊壁纸"观感）；Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、瞬态卡片按 §1.2 无需模糊即可读、辅助面不可见）。
+- 规则集的仓库内唯一事实源是 `Scripts/docs/nosdshell-layer-rules.kdl`，`check-layer-namespaces.py` 校验全部发射的 namespace 被归类且阻止 surface 级 `blur true` 回归；该文件经 `vendor-legacy-docs.py` 注入 docs 站的 niri 页。
+
 ---
 
 ## 5. 配色方案

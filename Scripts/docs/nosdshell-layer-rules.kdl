@@ -1,30 +1,74 @@
 /*
-  nosDshell layer-shell surfaces that get compositor blur (niri ≥ 26.04).
-  Every nosdshell namespace ends in "-<output>" — patterns must allow the
-  suffix; a "$" right after the stem matches nothing at all.
+  nosDshell layer rules for niri ≥ 26.04.
 
-  nosdshell-background publishes an ext-background-effect region covering
-  the bar and open panels; the dock and the launchers publish their own
-  regions. The rest have no region and get whole-surface blur, which only
-  shows through their translucent pixels.
+  nosdshell publishes its own blur regions via ext-background-effect — niri
+  honors them with NO `blur` flag at all, exactly where the shell asks.
+  NEVER set `blur true` on a nosdshell *surface* rule: in niri that means
+  "blur the surface's whole extent, transparent parts included", and most
+  nosdshell surfaces are fullscreen planes — that is the giant-blur bug.
+  `blur true` is only safe inside `popups {}`, where the surface is always
+  sized to its card.
+
+  Three tiers, cheapest first:
+
+    Tier 0  no blur     — surfaces never translucent over meaningful
+                          content, or drawing their own backdrop already.
+    Tier 1  xray blur   — wallpaper-sampled blur (xray is niri's default
+                          for layer surfaces). Right for static fullscreen
+                          surfaces whose backdrop should look like blurred
+                          wallpaper anyway.
+    Tier 2  real blur   — `xray false` on the region publishers that float
+                          over arbitrary windows; translucency then shows
+                          the actual window stack, not just the wallpaper.
+
+  Canonical copy: nosDshell repo, Scripts/docs/nosdshell-layer-rules.kdl
+  (check-layer-namespaces.py keeps it in sync with emitted namespaces).
 */
+
+// Tier 2 — region publishers floating over windows: the bar strip, every
+// open panel (hosted by nosdshell-background), the fashion dock, the mini
+// launcher. These must blur the real window stack.
 layer-rule {
-  match namespace="^nosdshell-(background|popupmenu|notifications|dock|osd|session-menu|toast|setup-wizard|desktop-widgets)-.*$"
-  match namespace="^nosd-launcher-(full|mini)-.*$"
+  match namespace="^nosdshell-(background|dock)-.*$"
+  match namespace="^nosd-launcher-mini-.*$"
   background-effect {
-    blur true
     xray false
   }
 }
 
-/*
-  Surfaces that must not blur: the wallpaper is the blur source; the
-  overview does its own GPU blur; the bar windows reveal the backdrop
-  already blurred by nosdshell-background — a second pass would double
-  it; the rest are invisible helpers.
-*/
+// Tier 1 — the fullscreen launcher wants the "blurred wallpaper" look;
+// xray samples the backdrop only, which is both the right aesthetic and
+// the cheap path.
 layer-rule {
-  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay)(-.*)?$"
+  match namespace="^nosd-launcher-full-.*$"
+  background-effect {
+    xray true
+  }
+}
+
+// Menus (TrayMenu, NPopupContextMenu, DockMenu) and tooltips are
+// xdg_popups of these layer surfaces — popup surfaces are content-sized,
+// so blur true there means the card's exact shape. Real-content blur for
+// the same reason as tier 2.
+layer-rule {
+  match namespace="^nosdshell-"
+  match namespace="^nosd-launcher-"
+  popups {
+    background-effect {
+      blur true
+      xray false
+    }
+  }
+}
+
+// Tier 0 — never blur. wallpaper IS the blur source; overview, session
+// menu and the setup wizard draw their own pre-blurred backdrop;
+// bar-content reveals background's already-blurred regions (a second pass
+// would double it); popupmenu/notifications/toast/session-menu/setup-
+// wizard/desktop-widgets are fullscreen or transient planes; the rest are
+// invisible helpers.
+layer-rule {
+  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay|popupmenu|notifications|toast|osd|session-menu|setup-wizard|desktop-widgets)(-.*)?$"
   background-effect {
     blur false
   }

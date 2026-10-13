@@ -6,24 +6,34 @@ nosDshell namespaces all look like "nosdshell-<stem>-<output>" (a few have
 no suffix). The niri layer-rules that decide which surfaces get compositor
 blur live outside this repo (the user's niri config), so the canonical copy
 here doubles as the vendored wiki content — vendor-legacy-docs.py injects
-it into the generated niri page. When a new surface lands without updating
-the rules, niri silently applies no blur (enable-list miss) or stale rule
-members linger (disable-list miss); this check turns both into errors.
+it into the generated niri page.
+
+Three tiers (see the kdl header): xray=false (real blur for surfaces that
+publish ext-background-effect regions and float over windows), xray=true
+(cheap wallpaper-sampled blur for static fullscreen surfaces), blur=false
+(never). Under niri ≥ 26.04 client blur regions need no rule at all; the
+rules only choose the mode or pin "never".
 
 Extraction: every `WlrLayershell.namespace:` binding contributes one sample
 name — the first quoted literal, plus a suffix when the expression appends
 runtime parts ("-" + screen/edge/windowType). `windowType` is resolved from
 the `property string windowType:` default in the same file.
 
-Rules parsing: each `layer-rule { ... }` block in the kdl file contributes
-its `match namespace="..."` regexes plus the block's `blur` bool. Matching
-uses `re.search`, same unanchored semantics as niri's regex engine.
+Rules parsing: each `layer-rule { ... }` block contributes its
+`match namespace="..."` regexes plus the surface-level `background-effect`
+flags (`blur`/`xray`). Flags inside a `popups {}` block apply to popup
+surfaces, not the layer surface, and are tracked separately — they do not
+classify a namespace.
 
-Flags:
-1. A sample matched by no rule — unclassified namespace.
-2. A sample matched by both a blur=true and a blur=false rule — conflict;
-   in niri the later rule wins, so the file order is load-bearing.
-3. An alternation member matched by no sample — stale rule entry.
+Checks:
+1. `blur true` at surface level — always wrong for nosdshell: most surfaces
+   are fullscreen planes, so whole-surface blur covers the screen (the
+   2026-10 giant-blur regression). Blur belongs in `popups {}` or comes
+   from the client's ext-background-effect regions.
+2. A sample matched by no surface-level rule — unclassified namespace.
+3. A sample whose rules disagree on the same property — in niri the later
+   rule wins, so file order would be load-bearing.
+4. An alternation member matched by no sample — stale rule entry.
 """
 
 import re
@@ -39,7 +49,11 @@ STRING_RE = re.compile(r'"([^"]*)"')
 WINTYPE_RE = re.compile(r'property\s+string\s+windowType:\s*"([^"]*)"')
 RULE_RE = re.compile(r"layer-rule\s*\{(.*?)\n\}", re.S)
 MATCH_RE = re.compile(r'match\s+namespace="([^"]*)"')
-BLUR_RE = re.compile(r"background-effect\s*\{[^}]*?blur\s+(true|false)", re.S)
+# A `popups { ... }` block is nested — match through the closing pair of
+# braces so the inner background-effect isn't half-stripped.
+POPUPS_RE = re.compile(r"popups\s*\{[\s\S]*?\}\s*\}", re.S)
+EFFECT_RE = re.compile(r"background-effect\s*\{(.*?)\}", re.S)
+FLAG_RE = re.compile(r"(blur|xray)\s+(true|false)")
 ALT_RE = re.compile(r"\(([^()]*)\)")
 
 
@@ -70,51 +84,81 @@ def emitted_samples():
     return samples
 
 
+def effect_flags(effect_body):
+    return {k: v == "true" for k, v in FLAG_RE.findall(effect_body)}
+
+
 def parse_rules():
-    rules = []  # (blur_bool, [regex_str, ...])
+    """Each rule -> (patterns, surface_flags, popups_flags)."""
+    rules = []
     for block in RULE_RE.finditer(RULES_FILE.read_text()):
         body = block.group(1)
-        regexes = MATCH_RE.findall(body)
-        blur = BLUR_RE.search(body)
-        if regexes and blur:
-            rules.append((blur.group(1) == "true", regexes))
+        patterns = MATCH_RE.findall(body)
+        popups_flags = {}
+        for pb in POPUPS_RE.finditer(body):
+            eff = EFFECT_RE.search(pb.group(0))
+            if eff:
+                popups_flags.update(effect_flags(eff.group(1)))
+        surface_body = POPUPS_RE.sub("", body)
+        surface_flags = {}
+        eff = EFFECT_RE.search(surface_body)
+        if eff:
+            surface_flags = effect_flags(eff.group(1))
+        if patterns:
+            rules.append((patterns, surface_flags, popups_flags))
     return rules
 
 
 def main():
     fail = 0
     samples = emitted_samples()
-    rules = [(on, [re.compile(r) for r in rs], rs)
-             for on, rs in parse_rules()]
+    raw_rules = parse_rules()
+    rules = [([re.compile(r) for r in ps], ps, sf, pf)
+             for ps, sf, pf in raw_rules]
 
-    seen = {}  # sample -> want_blur (for the reverse check below)
-    for sample, path, line in samples:
-        hits = [on for on, compiled, _ in rules
-                if any(r.search(sample) for r in compiled)]
-        if len(set(hits)) > 1:
-            print(f"CONFLICT {path}:{line} {sample!r} matches blur=true and blur=false rules")
+    # Guard 1: surface-level `blur true` is never correct here.
+    for _, raw_ps, sf, _ in rules:
+        if sf.get("blur") is True:
+            print(f"SURFACE-BLUR {raw_ps}: `blur true` on a layer surface blurs"
+                  " its whole extent — put it in popups {{}} or publish an"
+                  " ext-background-effect region instead")
             fail = 1
-        elif not hits:
-            print(f"UNCLASSIFIED {path}:{line} {sample!r} matches no layer-rule")
+
+    classified = {}  # sample -> {prop: bool}
+    for sample, path, line in samples:
+        props = {}
+        for compiled, _, sf, _ in rules:
+            if not sf or not any(r.search(sample) for r in compiled):
+                continue
+            for k, v in sf.items():
+                if k in props and props[k] != v:
+                    print(f"CONFLICT {path}:{line} {sample!r}: `{k}` set to"
+                          f" {props[k]} and {v} by different rules")
+                    fail = 1
+                props[k] = v
+        if not props:
+            print(f"UNCLASSIFIED {path}:{line} {sample!r} matches no"
+                  " surface-level rule")
             fail = 1
         else:
-            seen[sample] = hits[0]
+            classified[sample] = props
 
     # Reverse: every alternation member should still correspond to a real
     # emitted namespace, so the file cannot silently rot.
-    for on, _, raw in rules:
-        for rs in raw:
+    for _, raw_ps, _, _ in rules:
+        for rs in raw_ps:
             stem = ALT_RE.search(rs)
             if not stem:
                 continue
             for alt in stem.group(1).split("|"):
                 member_pat = re.compile(rs.replace(f"({stem.group(1)})", re.escape(alt)))
-                if not any(member_pat.search(s) for s in seen):
-                    print(f"STALE {'blur' if on else 'no-blur'} member {alt!r} in {rs!r}: no emitted namespace matches")
+                if not any(member_pat.search(s) for s in classified):
+                    print(f"STALE member {alt!r} in {rs!r}: no emitted namespace matches")
                     fail = 1
 
     if not fail:
-        print(f"ok: {len(samples)} namespace binding(s), {sum(len(r[1]) for r in rules)} rule pattern(s)")
+        print(f"ok: {len(samples)} namespace binding(s),"
+              f" {sum(len(r[1]) for r in rules)} rule pattern(s)")
     sys.exit(fail)
 
 
