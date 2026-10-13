@@ -21,6 +21,13 @@ Item {
     return listView.contentHeight > listView.height;
   }
   readonly property bool contentOverflows: listView.contentHeight > listView.height
+  // Horizontal lists overflow along X; the vertical-only name is kept for the
+  // gradient/scrollbar logic which is a vertical-axis concern.
+  readonly property bool horizontalOverflows: listView.orientation === ListView.Horizontal && listView.contentWidth > listView.width
+  // Wheel should scroll whichever axis the list lays out on; when nothing can
+  // move the event is swallowed below so it never falls through to a parent
+  // scroller.
+  readonly property bool wheelScrollable: horizontalOverflows || contentOverflows
 
   property bool showGradientMasks: true
   property color gradientColor: Color.mSurfaceVariant
@@ -81,12 +88,36 @@ Item {
   property real wheelScrollMultiplier: 2.0
   property int smoothWheelAnimationDuration: Style.animationNormal
   property real _wheelTargetY: 0
+  property real _wheelTargetX: 0
 
   function clampScrollY(value) {
     return Math.max(0, Math.min(value, listView.contentHeight - listView.height));
   }
 
+  function clampScrollX(value) {
+    return Math.max(0, Math.min(value, listView.contentWidth - listView.width));
+  }
+
   function applyWheelScroll(delta) {
+    if (root.horizontalOverflows) {
+      const step = delta * root.wheelScrollMultiplier;
+
+      if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled) {
+        listView.contentX = root.clampScrollX(listView.contentX - step);
+        root._wheelTargetX = listView.contentX;
+        return;
+      }
+
+      if (!wheelScrollAnimationX.running)
+        root._wheelTargetX = listView.contentX;
+
+      root._wheelTargetX = root.clampScrollX(root._wheelTargetX - step);
+      wheelScrollAnimationX.to = root._wheelTargetX;
+      wheelScrollAnimationX.duration = Style.motionScrollWheel;
+      wheelScrollAnimationX.easing.type = Easing.OutQuint;
+      wheelScrollAnimationX.restart();
+      return;
+    }
     if (!root.contentOverflows)
       return;
 
@@ -130,6 +161,23 @@ Item {
     if (!shouldAnimate) {
       listView.positionViewAtIndex(index, mode);
       root._wheelTargetY = listView.contentY;
+      root._wheelTargetX = listView.contentX;
+      return;
+    }
+
+    if (listView.orientation === ListView.Horizontal) {
+      const previousX = listView.contentX;
+      listView.positionViewAtIndex(index, mode);
+      const targetX = root.clampScrollX(listView.contentX);
+
+      if (Math.abs(targetX - previousX) < 0.5) {
+        root._wheelTargetX = targetX;
+        return;
+      }
+
+      listView.contentX = previousX;
+      root._wheelTargetX = previousX;
+      root.animateToContentX(targetX);
       return;
     }
 
@@ -145,6 +193,22 @@ Item {
     listView.contentY = previousY;
     root._wheelTargetY = previousY;
     root.animateToContentY(targetY);
+  }
+
+  function animateToContentX(targetX) {
+    const clampedX = root.clampScrollX(targetX);
+
+    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled || listView.dragging || listView.flicking) {
+      listView.contentX = clampedX;
+      root._wheelTargetX = clampedX;
+      return;
+    }
+
+    root._wheelTargetX = clampedX;
+    wheelScrollAnimationX.to = clampedX;
+    wheelScrollAnimationX.duration = Style.motionProgramScroll;
+    wheelScrollAnimationX.easing.type = Easing.OutQuad;
+    wheelScrollAnimationX.restart();
   }
 
   function positionViewAtBeginning() {
@@ -193,6 +257,7 @@ Item {
 
   Component.onCompleted: {
     _wheelTargetY = listView.contentY;
+    _wheelTargetX = listView.contentX;
     createGradients();
   }
 
@@ -334,36 +399,53 @@ Item {
       easing.type: Easing.OutCubic
     }
 
+    NumberAnimation {
+      id: wheelScrollAnimationX
+      target: listView
+      property: "contentX"
+      duration: root.smoothWheelAnimationDuration
+      easing.type: Easing.OutCubic
+    }
+
     onDraggingChanged: {
       if (dragging) {
         wheelScrollAnimation.stop();
+        wheelScrollAnimationX.stop();
         root._wheelTargetY = contentY;
+        root._wheelTargetX = contentX;
       }
     }
 
     onFlickingChanged: {
       if (flicking) {
         wheelScrollAnimation.stop();
+        wheelScrollAnimationX.stop();
         root._wheelTargetY = contentY;
+        root._wheelTargetX = contentX;
       }
     }
 
     onContentHeightChanged: root._wheelTargetY = root.clampScrollY(root._wheelTargetY)
     onHeightChanged: root._wheelTargetY = root.clampScrollY(root._wheelTargetY)
+    onContentWidthChanged: root._wheelTargetX = root.clampScrollX(root._wheelTargetX)
+    onWidthChanged: root._wheelTargetX = root.clampScrollX(root._wheelTargetX)
 
     WheelHandler {
-      enabled: !root.contentOverflows
+      enabled: !root.wheelScrollable
       acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
       onWheel: event => {
                  event.accepted = true;
                }
     }
 
+    // No acceptedDevices filter: virtual/test pointers report an unknown
+    // device type and would silently drop the event.
     WheelHandler {
-      enabled: root.wheelScrollMultiplier !== 1.0 && root.contentOverflows
-      acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+      enabled: root.wheelScrollMultiplier !== 1.0 && root.wheelScrollable
       onWheel: event => {
-                 const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
+                 // Primary axis first; a horizontal list also accepts a
+                 // vertical wheel since that is what a plain mouse produces.
+                 const delta = listView.orientation === ListView.Horizontal ? (event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.pixelDelta.y !== 0 ? event.pixelDelta.y : (event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y) / 2) : (event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2);
                  root.applyWheelScroll(delta);
                  event.accepted = true;
                }
