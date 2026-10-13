@@ -15,7 +15,7 @@
 #   idle, taskbar, launcher, launcher-search, launcher-category, launcher-mini,
 #   launcher-dismiss,
 #   launcher-modeswap, control-center, cc-notifications, cc-quick-wifi,
-#   cc-quick-bluetooth, cc-quick-display, cc-quick-vpn, cc-quick-basic,
+#   cc-quick-bluetooth, cc-quick-vpn, cc-quick-basic,
 #   settings, session-menu, notification,
 #   osd-volume, audio-panel, network-panel, bluetooth-panel, battery-panel,
 #   calendar-panel, media-panel, system-monitor, notification-history,
@@ -202,7 +202,7 @@ cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
 control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
-cc-quick-bluetooth cc-quick-display cc-quick-vpn cc-quick-basic cc-quick-cards
+cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
 cc-collapse
 settings session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
@@ -586,19 +586,34 @@ run_scene() {
                           shot cc-switch-after
                           qs -p "$REPO" ipc call debug opened 1 > "$WORK/logs/cc-switch-opened.txt" 2>&1 || true
                           call controlCenter toggle 0.5 ;;
-    # Page-indicator chevrons: real clicks on < / > must actually move
-    # currentPage (the wheel debounce helper used to kill the click handler).
-    # 1920x1080 panel: "<" at ~(1673,1058), ">" at ~(1780,1058).
+    # Page-indicator chevron clicks. The dots row (and thus the chevrons'
+    # x) shifts with pageCount — probe the indicator row for the actual
+    # NIconButtonHot positions instead of hardcoding x. On 1920x1080 the
+    # indicator row sits at y≈1058, centred on the panel at x≈1716.
     cc-page)              call controlCenter toggle 1.5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
                           shot cc-page-0
-                          "$VINPUT" vinput click 1780 1058 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.0; shot cc-page-1
-                          "$VINPUT" vinput click 1780 1058 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.0; shot cc-page-2
-                          "$VINPUT" vinput click 1673 1058 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.0; shot cc-page-back
+                          NEXT_X="" PREV_X=""
+                          for x in $(seq 1730 4 1900); do
+                            qs -p "$REPO" ipc call debug hit opened "$x" 1058 2>/dev/null \
+                              | grep -q 'NIconButtonHot' && { NEXT_X=$x; break; }
+                          done
+                          for x in $(seq 1700 -4 1540); do
+                            qs -p "$REPO" ipc call debug hit opened "$x" 1058 2>/dev/null \
+                              | grep -q 'NIconButtonHot' && { PREV_X=$x; break; }
+                          done
+                          echo "cc-page: chevrons at prev=$PREV_X next=$NEXT_X" >> "$WORK/logs/vinput.log"
+                          if [ -n "$NEXT_X" ]; then
+                            "$VINPUT" vinput click "$NEXT_X" 1058 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0; shot cc-page-1
+                            "$VINPUT" vinput click "$NEXT_X" 1058 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0; shot cc-page-2
+                          fi
+                          if [ -n "$PREV_X" ]; then
+                            "$VINPUT" vinput click "$PREV_X" 1058 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0; shot cc-page-back
+                          fi
                           call controlCenter toggle 0.5 ;;
     # Volume + brightness slider drags. 1920x1080: volume groove y≈895 (knob
     # starts ~0.4 → x≈1682), brightness groove y≈942 (knob ~1.0 → x≈1885).

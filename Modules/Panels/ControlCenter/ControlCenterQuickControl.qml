@@ -20,7 +20,7 @@ import qs.Widgets
 * brightness sliders (24 px glyphs at both ends, brightness hidden when
 * unavailable) and two rows of quick switch buttons taken from
 * controlCenter.shortcuts.left ++ .right (5 per row, 10 shown — no overflow
-* pages). Detail pages: Wi-Fi, Bluetooth, Display, VPN — reusing the same
+* pages). Detail pages: Wi-Fi, Bluetooth, VPN — reusing the same
 * services as the existing panels, styled per §3.5.4.
 */
 Item {
@@ -46,7 +46,6 @@ Item {
     var pages = ["wifi"];
     if (BluetoothService.bluetoothAvailable)
       pages.push("bluetooth");
-    pages.push("display");
     if (VPNService.connections && Object.keys(VPNService.connections).length > 0)
       pages.push("vpn");
     return pages;
@@ -94,7 +93,7 @@ Item {
 
   clip: true
 
-  // Select a page by id ("cards"/"basic" or wifi/bluetooth/display/vpn);
+  // Select a page by id ("cards"/"basic" or wifi/bluetooth/vpn);
   // pages unavailable in this environment fall back to the cards page.
   function openPage(name) {
     var target = 0;
@@ -231,10 +230,13 @@ Item {
     Item {
       id: basicPage
       Layout.fillWidth: true
-      Layout.preferredHeight: Style.quickControlPanelHeight
+      // Content-driven like the cards page — a short switch list hugs its
+      // rows instead of padding out to the list-page slot height.
+      Layout.preferredHeight: basicCol.implicitHeight + Style.margin2M
       visible: root.currentPage === 1
 
       ColumnLayout {
+        id: basicCol
         anchors.fill: parent
         anchors.leftMargin: Style.marginM
         anchors.rightMargin: Style.marginM
@@ -357,7 +359,9 @@ Item {
     // ---------------- detail pages ----------------
     Item {
       Layout.fillWidth: true
-      Layout.preferredHeight: Style.quickControlPanelHeight
+      // Hug short lists (margin on top only — rows pad themselves), cap at
+      // the token height and scroll beyond it.
+      Layout.preferredHeight: Math.min(detailContent.implicitHeight + Style.marginM, Style.quickControlPanelHeight)
       visible: root.currentDetailPage !== ""
 
       // Lists are confined to the page slot and scroll when they exceed it —
@@ -375,6 +379,7 @@ Item {
         ScrollBar.horizontal.visible: false
 
         ControlCenterDetailPages {
+          id: detailContent
           width: detailScroll.availableWidth
           screen: root.screen
           page: root.currentDetailPage

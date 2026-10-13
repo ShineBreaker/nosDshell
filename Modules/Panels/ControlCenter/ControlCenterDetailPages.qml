@@ -1,19 +1,16 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Quickshell
 import qs.Commons
-import qs.Modules.Panels.Settings
 import qs.Services.Hardware
 import qs.Services.Networking
-import qs.Services.System
 import qs.Services.UI
 import qs.Widgets
 
 /**
 * ControlCenterDetailPages - quick-control detail pages (DESIGN §3.5.2/§3.5.4).
 *
-* Wi-Fi / Bluetooth / Display / VPN lists: 36 px rows, 1 px overlay("hover")
+* Wi-Fi / Bluetooth / VPN lists: 36 px rows, 1 px overlay("hover")
 * separators, connected row shows an accent ✓ and a signal glyph. Logic comes
 * from the same services as the standalone panels, so the list and the panel
 * can never disagree about state.
@@ -38,8 +35,6 @@ Item {
       return [];
     return BluetoothService.sortDevices(BluetoothService.dedupeDevices(BluetoothService.adapter.devices.values.filter(dev => dev && !dev.blocked)));
   }
-
-  readonly property var brightnessMonitor: BrightnessService.getMonitorForScreen(root.screen ?? (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null)) ?? null
 
   readonly property var vpnRows: Object.values(VPNService.connections ?? {})
 
@@ -123,6 +118,17 @@ Item {
           }
         }
       }
+
+      NText {
+        Layout.fillWidth: true
+        Layout.leftMargin: Style.marginS
+        Layout.rightMargin: Style.marginS
+        Layout.topMargin: Style.marginS
+        visible: NetworkService.wifiEnabled && root.wifiRows.length === 0
+        text: I18n.tr("wifi.panel.no-networks")
+        pointSize: Style.fontSizeS
+        color: Color.onShellTertiary
+      }
     }
 
     // ---- Bluetooth: adapter switch row + device rows ----
@@ -174,80 +180,6 @@ Item {
         text: I18n.tr("bluetooth.panel.no-devices")
         pointSize: Style.fontSizeS
         color: Color.onShellTertiary
-      }
-    }
-
-    // ---- Display: per-monitor brightness + night light ----
-    ColumnLayout {
-      Layout.fillWidth: true
-      visible: root.page === "display"
-      spacing: Style.settingsGroupGap
-
-      Repeater {
-        // Index-key model — see the comment on the bluetooth Repeater
-        // (CODING_STANDARDS "QML 规则").
-        model: root.brightnessMonitor ? [0] : []
-
-        delegate: ColumnLayout {
-          readonly property var entry: root.brightnessMonitor
-          Layout.fillWidth: true
-          spacing: 0
-
-          NText {
-            Layout.fillWidth: true
-            Layout.leftMargin: Style.marginS
-            Layout.rightMargin: Style.marginS
-            Layout.topMargin: Style.marginS
-            text: entry?.name || I18n.tr("common.display")
-            pointSize: Style.fontSizeS
-            color: Color.onShellTertiary
-            elide: Text.ElideRight
-          }
-
-          RowLayout {
-            Layout.fillWidth: true
-            Layout.leftMargin: Style.marginS
-            Layout.rightMargin: Style.marginS
-            Layout.topMargin: Style.marginS
-            spacing: Style.marginS
-
-            NIcon {
-              icon: "brightness-low"
-              pointSize: Style.fontSizeTitle
-              color: Color.onShellSecondary
-            }
-
-            NSlider {
-              Layout.fillWidth: true
-              from: 0
-              to: 1
-              value: entry?.brightness ?? 0
-              stepSize: 0.01
-              heightRatio: 0.5
-              onMoved: {
-                entry?.setBrightness(value);
-              }
-              tooltipText: `${Math.round(value * 100)}%`
-            }
-
-            NIcon {
-              icon: "brightness-high"
-              pointSize: Style.fontSizeTitle
-              color: Color.onShellSecondary
-            }
-          }
-        }
-      }
-
-      NToggle {
-        label: I18n.tr("common.night-light")
-        icon: Settings.data.nightLight.enabled ? "nightlight-on" : "nightlight-off"
-        checked: Settings.data.nightLight.enabled
-        enabled: ProgramCheckerService.wlsunsetAvailable
-        onToggled: checked => {
-          Settings.data.nightLight.enabled = checked;
-          Settings.data.nightLight.forced = false;
-        }
       }
     }
 
