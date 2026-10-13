@@ -28,6 +28,7 @@
 - selectable gauges on the system monitor card：[`0de3ffa29`](https://github.com/ShineBreaker/nosDshell/commit/0de3ffa2965783dfe0424ec377e0fa2137c6f652)
 - quick-control slot sized for the cards page：[`c63f115d6`](https://github.com/ShineBreaker/nosDshell/commit/c63f115d6a2d027680495ce3bad272f621ebabe4)
 - compact quick-control strip + collapse handle：[`5aa15985a`](https://github.com/ShineBreaker/nosDshell/commit/5aa15985a6a995d3ca72e9dccc20347ae24b404f)
+- display detail page dropped (all controls duplicated), detail pages hug content：[`3374a18b3`](https://github.com/ShineBreaker/nosDshell/commit/3374a18b3fab14a5a9a1148fce33c025ace2ac75)
 
 ## [1.1.8] - 2026-10-12
 
