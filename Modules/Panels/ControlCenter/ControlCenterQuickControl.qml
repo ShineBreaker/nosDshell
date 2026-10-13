@@ -27,8 +27,8 @@ Item {
   id: root
 
   property var screen: null
-  // Collapses the strip down to its handle so the notification list above
-  // can use the freed space; in-session only.
+  // Collapses the strip down to the indicator band so the notification
+  // list above can use the freed space; in-session only.
   property bool collapsed: false
 
   readonly property real listWidth: Math.max(1, root.width - Style.margin2M)
@@ -81,8 +81,9 @@ Item {
   // The strip follows the current page's own height — the cards page reports
   // its real content (weather card grows with data, media/sysmon row is
   // fixed), the basic/detail pages use the quickControlPanelHeight token —
-  // plus the collapse handle and the page indicator.
-  implicitHeight: collapseBar.implicitHeight + (collapsed ? 0 : content.implicitHeight + Style.pageIndicatorHeight)
+  // plus the page indicator. Collapsed, it shrinks to the indicator band so
+  // the corner chevron keeps the exact same screen position.
+  implicitHeight: collapsed ? Style.pageIndicatorHeight : content.implicitHeight + Style.pageIndicatorHeight
 
   Behavior on implicitHeight {
     NumberAnimation {
@@ -142,29 +143,11 @@ Item {
 
   readonly property real pageEnterOffset: Math.round(root.width * 0.12)
 
-  // Collapse handle: slim top bar with a centered chevron; the notification
-  // list above gets the freed space while collapsed.
-  Item {
-    id: collapseBar
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: parent.top
-    implicitHeight: Math.round(Style.baseWidgetSize * 0.8)
-
-    NIconButton {
-      anchors.centerIn: parent
-      icon: root.collapsed ? "chevron-up" : "chevron-down"
-      baseSize: collapseBar.implicitHeight
-      tooltipText: root.collapsed ? I18n.tr("panels.control-center.quick-controls-expand") : I18n.tr("panels.control-center.quick-controls-collapse")
-      onClicked: root.collapsed = !root.collapsed
-    }
-  }
-
   ColumnLayout {
     id: content
     anchors.left: parent.left
     anchors.right: parent.right
-    anchors.top: collapseBar.bottom
+    anchors.top: parent.top
     anchors.bottom: parent.bottom
     anchors.bottomMargin: Style.pageIndicatorHeight
     spacing: 0
@@ -439,6 +422,20 @@ Item {
     currentPage: root.currentPage
     onNextRequested: root.nextPage()
     onPreviousRequested: root.previousPage()
+  }
+
+  // Collapse chevron, bottom-right corner: constant screen position whether
+  // the strip is expanded or folded down to the indicator band — collapse
+  // and re-expand are the same click target.
+  NIconButton {
+    anchors.right: parent.right
+    anchors.rightMargin: Style.marginM
+    anchors.bottom: parent.bottom
+    anchors.bottomMargin: Math.max(0, Math.round((Style.pageIndicatorHeight - implicitHeight) / 2))
+    icon: root.collapsed ? "chevron-up" : "chevron-down"
+    baseSize: Math.round(Style.baseWidgetSize * 0.8)
+    tooltipText: root.collapsed ? I18n.tr("panels.control-center.quick-controls-expand") : I18n.tr("panels.control-center.quick-controls-collapse")
+    onClicked: root.collapsed = !root.collapsed
   }
 
   Component {

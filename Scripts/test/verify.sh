@@ -644,19 +644,28 @@ run_scene() {
                           call controlCenter quickPage "$p" 1.2
                           shot "$1"
                           call controlCenter toggle 0.5 ;;
-    # Collapse handle: a real click on the strip's top chevron must shrink the
-    # strip down to the handle, and clicking again expands it back. 1920x1080,
-    # default cards page: handle centered ~(1716,733) expanded, ~(1716,1067)
-    # collapsed (only the ~26px handle remains at the bottom edge).
+    # Collapse chevron, bottom-right corner: one constant screen position
+    # folds the strip to the indicator band and re-expands it. Probe the
+    # corner for the plain NIconButton (the page chevrons are
+    # NIconButtonHot) like cc-page does; on 1920x1080 it lands ~x1900,y1058.
     cc-collapse)          call controlCenter open 1.5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
-                          qs -p "$REPO" ipc call debug hit opened 1716 733 > "$WORK/logs/cc-collapse-hit.txt" 2>&1 || true
+                          COLLAPSE_X=""
+                          for x in $(seq 1900 -4 1840); do
+                            qs -p "$REPO" ipc call debug hit opened "$x" 1058 2>/dev/null \
+                              | grep -q 'NIconButton_' && { COLLAPSE_X=$x; break; }
+                          done
+                          qs -p "$REPO" ipc call debug hit opened "${COLLAPSE_X:-1900}" 1058 > "$WORK/logs/cc-collapse-hit.txt" 2>&1 || true
                           shot cc-collapse-before
-                          "$VINPUT" vinput click 1716 733 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.0; shot cc-collapse-collapsed
-                          "$VINPUT" vinput click 1716 1067 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.0; shot cc-collapse-expanded
+                          if [ -n "$COLLAPSE_X" ]; then
+                            "$VINPUT" vinput click "$COLLAPSE_X" 1058 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0; shot cc-collapse-collapsed
+                            # Same coordinates must expand it again — the button
+                            # does not move between states.
+                            "$VINPUT" vinput click "$COLLAPSE_X" 1058 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0; shot cc-collapse-expanded
+                          fi
                           call controlCenter toggle 0.5 ;;
     settings)             call settings open 2; shot settings; call settings toggle 0.5 ;;
     # Forensics: open the all-settings page in the frame, dump the paint-order
