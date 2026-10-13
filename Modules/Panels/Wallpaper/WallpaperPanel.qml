@@ -86,7 +86,6 @@ SmartPanel {
     readonly property string targetScreenName: root.screen ? root.screen.name : ""
     readonly property bool isWallhaven: Settings.data.wallpaper.useWallhaven
     readonly property string currentSlot: Settings.data.colorSchemes.darkMode ? "dark" : "light"
-    readonly property string otherSlot: currentSlot === "dark" ? "light" : "dark"
     readonly property bool wallhavenBusy: typeof WallhavenService !== "undefined" && WallhavenService.fetching
 
     property string filterText: ""
@@ -116,27 +115,31 @@ SmartPanel {
     // separate lock-screen wallpaper (LockScreenBackground mirrors the
     // desktop one through a blurred cache), so the two appearance slots the
     // service actually supports take that role instead of desktop/lock.
+    // Buttons are labelled by the fixed slot they write ("light"/"dark"/
+    // "both") — "current appearance" labels forced the reader to know which
+    // mode was active before the buttons made sense.
     function applyCurrent(path) {
       applyToScreens(path, currentSlot);
     }
-    function applyOther(path) {
-      applyToScreens(path, otherSlot);
+    function applySlot(path, slot) {
+      if (slot === "both")
+        applyBoth(path);
+      else
+        applyToScreens(path, slot);
     }
     function applyBoth(path) {
       applyToScreens(path, "light");
       applyToScreens(path, "dark");
     }
 
-    function applyWallhaven(wallpaper, mode) {
+    function applyWallhaven(wallpaper, slot) {
       WallhavenService.downloadWallpaper(wallpaper, function (path, success) {
         if (!success || !path) {
           Logger.w("WallpaperPanel", "Wallhaven download failed for", wallpaper.id);
           return;
         }
-        if (mode === "other")
-          applyOther(path);
-        else if (mode === "both")
-          applyBoth(path);
+        if (slot === "light" || slot === "dark" || slot === "both")
+          applySlot(path, slot);
         else
           applyCurrent(path);
       });
@@ -475,6 +478,51 @@ SmartPanel {
         strip.selectItem(model.get(currentIndex));
       }
 
+      // §3.10: wheel and chevron paging share one animation so a drag or a
+      // new scroll request cancels the in-flight one cleanly.
+      NumberAnimation {
+        id: stripScrollAnim
+        target: stripView
+        property: "contentX"
+        duration: Style.animationFast
+        easing.type: Easing.OutCubic
+      }
+
+      function scrollBy(delta) {
+        stripScrollAnim.stop();
+        stripScrollAnim.to = Math.max(0, Math.min(Math.max(0, contentWidth - width), contentX + delta));
+        stripScrollAnim.start();
+      }
+
+      // One page keeps the first/last visible thumb as an anchor for the eye.
+      function scrollPage(dir) {
+        scrollBy(dir * Math.max(Style.wallpaperStripThumbWidth, width - Style.wallpaperStripThumbWidth));
+      }
+
+      onDraggingChanged: {
+        if (dragging)
+          stripScrollAnim.stop();
+      }
+      onFlickingChanged: {
+        if (flicking)
+          stripScrollAnim.stop();
+      }
+
+      // §3.10: a horizontal strip answers the wheel — vertical wheel and
+      // touchpad pans both scroll contentX. Handlers declared inside a
+      // flickable land on its contentItem, so this fires before the
+      // flickable's own wheel handling. No acceptedDevices filter: virtual
+      // test pointers report an unknown device type and would be dropped.
+      WheelHandler {
+        onWheel: event => {
+                   const delta = event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.pixelDelta.y !== 0 ? event.pixelDelta.y : (event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y) / 2;
+                   if (delta === 0)
+                   return;
+                   stripView.scrollBy(-delta);
+                   event.accepted = true;
+                 }
+      }
+
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: sourceRow.bottom
@@ -484,6 +532,10 @@ SmartPanel {
       anchors.rightMargin: Style.marginL
       anchors.bottomMargin: Style.marginS + strip.barInset
       orientation: ListView.Horizontal
+      // Without this the flickable consumes vertical wheel events as a
+      // dead-axis flick attempt before any WheelHandler sees them — the
+      // strip's wheel scrolling appeared to do nothing.
+      flickableDirection: Flickable.HorizontalFlick
       spacing: Style.wallpaperStripSpacing
       clip: true
       model: stripModel
@@ -507,7 +559,7 @@ SmartPanel {
         readonly property bool showsActions: hovered && !isDirectory
 
         width: Style.wallpaperStripThumbWidth
-        height: Style.wallpaperStripThumbHeight + Style.wallpaperStripActionHeight + Style.marginXS
+        height: Style.wallpaperStripThumbHeight
 
         // Local files resolve through ImageCacheService; Wallhaven items
         // already carry a remote thumbnail URL.
@@ -606,33 +658,41 @@ SmartPanel {
           }
         }
 
-        // §3.10: hovering reveals "current / other / both"
+        // §3.10: hovering reveals the three apply buttons — labelled by the
+        // fixed slot they write ("light" / "dark" / both), so the meaning is
+        // the same no matter which appearance is active. They overlay the
+        // thumbnail's bottom edge; reserving strip space for a hover-only row
+        // would clip or waste the band height.
         Row {
           id: actions
 
-          anchors.horizontalCenter: parent.horizontalCenter
-          anchors.top: thumbFrame.bottom
-          anchors.topMargin: Style.marginXS
+          anchors.horizontalCenter: thumbFrame.horizontalCenter
+          anchors.bottom: thumbFrame.bottom
+          anchors.bottomMargin: Style.marginXS
           spacing: Style.marginXS
+          z: 1
           visible: thumb.showsActions
           opacity: thumb.showsActions ? 1 : 0
 
           NButton {
-            text: I18n.tr("wallpaper.strip.current")
+            text: I18n.tr("wallpaper.strip.light")
+            tooltipText: I18n.tr("wallpaper.strip.light-tip")
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
-            onClicked: strip.isWallhaven ? strip.applyWallhaven(thumb.wallhavenById(thumb.wallhavenId), "current") : strip.applyCurrent(thumb.path)
+            onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "light") : strip.applySlot(thumb.path, "light")
           }
           NButton {
-            text: I18n.tr("wallpaper.strip.other")
+            text: I18n.tr("wallpaper.strip.dark")
+            tooltipText: I18n.tr("wallpaper.strip.dark-tip")
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
-            onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "other") : strip.applyOther(thumb.path)
+            onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "dark") : strip.applySlot(thumb.path, "dark")
           }
           NButton {
             text: I18n.tr("wallpaper.strip.both")
+            tooltipText: I18n.tr("wallpaper.strip.both-tip")
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
@@ -667,6 +727,39 @@ SmartPanel {
           }
         }
       }
+    }
+
+    // Edge chevrons (§3.10): paged scrolling for pointer users. They overlay
+    // the thumbnail band at the strip ends and only appear while content can
+    // actually be revealed in that direction.
+    NIconButtonHot {
+      id: stripPrev
+      anchors.left: stripView.left
+      anchors.leftMargin: Style.marginXS
+      y: stripView.y + (Style.wallpaperStripThumbHeight - height) / 2
+      icon: "chevron-left"
+      baseSize: Style.baseWidgetSize
+      applyUiScale: false
+      visible: stripView.contentWidth > stripView.width && stripView.contentX > 0.5
+      colorBg: Color.overlay("field")
+      colorBgHover: Color.overlay("hover")
+      colorBorder: Color.borderShell
+      onClicked: stripView.scrollPage(-1)
+    }
+
+    NIconButtonHot {
+      id: stripNext
+      anchors.right: stripView.right
+      anchors.rightMargin: Style.marginXS
+      y: stripView.y + (Style.wallpaperStripThumbHeight - height) / 2
+      icon: "chevron-right"
+      baseSize: Style.baseWidgetSize
+      applyUiScale: false
+      visible: stripView.contentWidth > stripView.width && stripView.contentX < stripView.contentWidth - stripView.width - 0.5
+      colorBg: Color.overlay("field")
+      colorBgHover: Color.overlay("hover")
+      colorBorder: Color.borderShell
+      onClicked: stripView.scrollPage(1)
     }
 
     // Empty state

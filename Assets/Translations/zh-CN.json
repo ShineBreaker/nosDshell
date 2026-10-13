@@ -1918,9 +1918,12 @@
       "wallhaven-settings-title": "Wallhaven 设置"
     },
     "strip": {
-      "current": "当前外观",
-      "other": "另一外观",
-      "both": "都设置"
+      "light": "浅色",
+      "dark": "深色",
+      "both": "两者",
+      "light-tip": "用作浅色模式壁纸",
+      "dark-tip": "用作深色模式壁纸",
+      "both-tip": "浅色和深色模式都使用这张壁纸"
     },
     "transitions": {
       "disc": "圆盘",

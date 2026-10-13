@@ -1918,9 +1918,12 @@
       "wallhaven-settings-title": "Wallhaven Settings"
     },
     "strip": {
-      "current": "Current",
-      "other": "Other",
-      "both": "Both"
+      "light": "Light",
+      "dark": "Dark",
+      "both": "Both",
+      "light-tip": "Use as the wallpaper in light mode",
+      "dark-tip": "Use as the wallpaper in dark mode",
+      "both-tip": "Use as the wallpaper in both light and dark modes"
     },
     "transitions": {
       "disc": "Disc",
