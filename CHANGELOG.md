@@ -29,6 +29,7 @@
 - quick-control slot sized for the cards page：[`c63f115d6`](https://github.com/ShineBreaker/nosDshell/commit/c63f115d6a2d027680495ce3bad272f621ebabe4)
 - compact quick-control strip + collapse handle：[`5aa15985a`](https://github.com/ShineBreaker/nosDshell/commit/5aa15985a6a995d3ca72e9dccc20347ae24b404f)
 - display detail page dropped (all controls duplicated), detail pages hug content：[`3374a18b3`](https://github.com/ShineBreaker/nosDshell/commit/3374a18b3fab14a5a9a1148fce33c025ace2ac75)
+- collapse chevron pinned to the strip's bottom-right corner：[`9e9aef239`](https://github.com/ShineBreaker/nosDshell/commit/9e9aef23967b790ea9563a67d99aa4aae40a5f7a)
 
 ## [1.1.8] - 2026-10-12
 
