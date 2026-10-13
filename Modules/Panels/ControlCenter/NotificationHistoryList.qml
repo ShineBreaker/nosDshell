@@ -118,39 +118,56 @@ Item {
                 kind: "header"
               });
 
+    // All same-app notifications inside one day bucket share a group, no
+    // matter how they interleave with other apps (DESIGN §3.5.2). A group
+    // renders where its newest member sits — the model runs newest-first —
+    // so groups themselves stay in latest-activity order.
     let bucket = -1;
-    let key = null;
-    let groupStart = -1;
+    let groups = [];
+    let slotOf = {};
     const groupCounts = {};
+    const flushBucket = () => {
+      for (const g of groups) {
+        groupCounts[rows.length] = g.members.length;
+        rows.push({
+                    kind: "group",
+                    groupKey: g.key,
+                    bucket: g.bucket
+                  });
+        for (const mi of g.members)
+        rows.push({
+                    kind: "notif",
+                    modelIndex: mi,
+                    groupKey: g.key,
+                    bucket: g.bucket
+                  });
+      }
+    };
     for (var i = 0; i < model.count; i++) {
       const entry = model.get(i);
       const rowBucket = root.dayBucket(entry.timestamp);
       if (rowBucket !== bucket) {
+        flushBucket();
         bucket = rowBucket;
-        key = null;
+        groups = [];
+        slotOf = {};
         rows.push({
                     kind: "section",
                     bucket: bucket
                   });
       }
       const rowKey = root.groupKeyFor(bucket, entry.appName);
-      if (rowKey !== key) {
-        key = rowKey;
-        groupStart = rows.length;
-        rows.push({
-                    kind: "group",
-                    groupKey: key,
-                    bucket: bucket
-                  });
+      if (!(rowKey in slotOf)) {
+        slotOf[rowKey] = groups.length;
+        groups.push({
+                      key: rowKey,
+                      bucket: bucket,
+                      members: []
+                    });
       }
-      groupCounts[groupStart] = (groupCounts[groupStart] || 0) + 1;
-      rows.push({
-                  kind: "notif",
-                  modelIndex: i,
-                  groupKey: key,
-                  bucket: bucket
-                });
+      groups[slotOf[rowKey]].members.push(i);
     }
+    flushBucket();
 
     // Second pass: fill in the final group size and the head flag.
     let currentGroup = -1;
@@ -420,9 +437,17 @@ Item {
           readonly property string groupKey: modelData.groupKey || ""
           readonly property int groupSize: modelData.groupSize || 1
           readonly property bool isHead: modelData.isHead === true
-          readonly property bool isGroupExpanded: root.expandedGroup === groupKey
+          // Empty-key guard: header/section/group rows carry no id, and the
+          // "" sentinel for "nothing expanded" would otherwise mark every
+          // such row expanded — painting a live expandButton over the header
+          // row's clear-all (it ate clicks: z:1 keeps it on top).
+          readonly property bool isGroupExpanded: groupKey !== "" && root.expandedGroup === groupKey
           // A collapsed multi-notification group shows its newest entry only.
           readonly property bool shown: modelData.kind === "notif" && (groupSize === 1 || isGroupExpanded || isHead)
+          // `index` is the view's delegate context property — reachable bare
+          // inside the delegate, but NOT via delegateItem.index (that looks
+          // for a real property on the Item and binds undefined).
+          readonly property int rowIndex: index
 
           readonly property var actionsList: root.parseActions(entry ? entry.actionsJson : "[]")
           readonly property bool isFocused: index === root.focusIndex
@@ -434,7 +459,7 @@ Item {
           readonly property string summary: entry ? (entry.summary || I18n.tr("common.no-summary")) : ""
           readonly property string body: entry ? (entry.body || "") : ""
           // Per-notification text expansion (truncated summary/body).
-          readonly property bool isExpanded: root.expandedNotification === notificationId
+          readonly property bool isExpanded: notificationId !== "" && root.expandedNotification === notificationId
           readonly property bool canExpand: shown && (summaryText.truncated || bodyText.truncated)
 
           property bool isRemoving: false
@@ -501,6 +526,7 @@ Item {
             // motionPointer (DESIGN §1.7), idle fill and radiusRow.
             Rectangle {
               id: clearAll
+              objectName: "notifClearAll"
               implicitWidth: clearAllText.implicitWidth + Style.margin2XS
               implicitHeight: clearAllText.implicitHeight + Style.margin2XS
               radius: Style.radiusRow
@@ -544,8 +570,15 @@ Item {
           }
 
           // ---- notification card (DESIGN §3.5.2) ----
+          // z: 1 keeps the card above interactionArea (declared last among the
+          // siblings, so it would otherwise shadow every sibling subtree):
+          // the in-card MouseAreas on "还有 N 条", the action buttons and the
+          // expanded-group header must stay clickable while the blanket area
+          // below still catches clicks/drags on the card's blank space.
           Rectangle {
             id: cardSurface
+            objectName: "notifCard"
+            z: 1
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
@@ -704,7 +737,7 @@ Item {
                           anchors.fill: parent
                           cursorShape: Qt.PointingHandCursor
                           onClicked: {
-                            root.focusIndex = delegateItem.index;
+                            root.focusIndex = delegateItem.rowIndex;
                             root.actionIndex = index;
                             root.invokeAndClose(delegateItem.notificationId, modelData.identifier);
                           }
@@ -717,6 +750,7 @@ Item {
                   // newest card of a collapsed multi-entry group carries it.
                   NText {
                     Layout.fillWidth: true
+                    objectName: "notifMore"
                     visible: delegateItem.isHead && delegateItem.groupSize > 1 && !delegateItem.isGroupExpanded
                     text: I18n.tr("notifications.panel.more-in-group", {
                                     count: delegateItem.groupSize - 1
@@ -861,7 +895,7 @@ Item {
             }
 
             onPressed: mouse => {
-                         root.focusIndex = delegateItem.index;
+                         root.focusIndex = delegateItem.rowIndex;
                          root.actionIndex = -1;
                          if (delegateItem.isExpanded)
                          interactionArea.pendingLink = interactionArea.linkAtPoint(mouse.x, mouse.y);

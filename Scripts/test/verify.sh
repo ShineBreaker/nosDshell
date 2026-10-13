@@ -201,7 +201,7 @@ set -uo pipefail
 cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
-control-center cc-switch cc-page cc-slider cc-notifications cc-quick-wifi
+control-center cc-switch cc-page cc-slider cc-notifications cc-notif-groups cc-quick-wifi
 cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
 cc-collapse cc-geom settings-cc-pages
 settings session-menu notification
@@ -367,6 +367,40 @@ if [ -n "${NOSD_FAKE_PORTAL:-}" ]; then
       > "$WORK/logs/fake-portal.log" 2>&1 &
   FPORTAL_PID=$!
   echo "NOSD_FAKE_PORTAL set: initial color-scheme=$NOSD_FAKE_PORTAL"
+fi
+
+# cc-notif-groups: the page's day buckets and per-app grouping need history
+# entries that notify-send can't produce (yesterday/earlier timestamps,
+# several app names). Seed the persistence file the service reads via
+# NOSD_NOTIF_HISTORY_FILE (Services/System/NotificationService.qml) before
+# qs starts, with times relative to launch.
+if [[ " $SELECTED " == *" cc-notif-groups "* ]]; then
+  export NOSD_NOTIF_HISTORY_FILE="$WORK/notification-history.json"
+  python3 - "$NOSD_NOTIF_HISTORY_FILE" <<'PYEOF'
+import json,sys,time
+now=int(time.time()*1000); H=3600000; D=24*H
+def n(i,app,s,b,ts):
+    return {"id":f"seed-{i}","summary":s,"body":b,"appName":app,"urgency":1,
+            "timestamp":ts,"originalImage":"","cachedImage":"",
+            "actionsJson":"[]","originalId":i}
+# Newest-first (loadHistory appends in file order). gamma-cal sits between
+# alpha-mail entries on purpose: same-bucket same-app grouping must merge
+# non-adjacent rows, not just contiguous runs.
+items=[
+  n(1,"beta-chat","Beta ping","Beta body, today.",now-10*60000),
+  n(2,"alpha-mail","Alpha third","Newest alpha body, today.",now-30*60000),
+  n(3,"gamma-cal","Gamma today","Gamma body splitting the alpha run.",now-45*60000),
+  n(4,"alpha-mail","Alpha second","Middle alpha body.",now-1*H),
+  n(5,"alpha-mail","Alpha first","Oldest alpha body, today.",now-2*H),
+  n(6,"alpha-mail","Alpha yesterday 2","Alpha body from yesterday.",now-D-1*H),
+  n(7,"gamma-cal","Gamma yesterday","Meeting moved to 明天.",now-D-3*H),
+  n(8,"alpha-mail","Alpha yesterday 1","Older alpha body, yesterday.",now-D-5*H),
+  n(9,"beta-chat","Beta earlier 2","Beta body from three days ago.",now-3*D),
+  n(10,"beta-chat","Beta earlier 1","Older beta body, three days ago.",now-3*D-2*H),
+]
+json.dump({"notifications":items},open(sys.argv[1],"w"))
+PYEOF
+  echo "cc-notif-groups: seeded $NOSD_NOTIF_HISTORY_FILE"
 fi
 
 qs -p "$REPO" > "$LOG" 2>&1 &
@@ -638,6 +672,79 @@ run_scene() {
                           notify-send -a nosdshell-verify "Notification three" \
                             "Third body with an action" 2>/dev/null
                           sleep 1; toggle controlCenter notifications 1.5 cc-notifications ;;
+    # Multi-app, multi-day grouping exercise. The history file is seeded
+    # before qs launches (see the NOSD_NOTIF_HISTORY_FILE block above), so
+    # this scene only drives the UI: collapsed buckets → expanded group →
+    # swipe-dismiss → clear-all. Anchor items carry objectName markers
+    # (notifCard / notifMore / notifClearAll); debug tree prints global
+    # coords, so their centres are direct click points.
+    cc-notif-groups)      call controlCenter notifications 1.5
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          notif_pos() {
+                            python3 - "$WORK/logs/cc-notif-tree.txt" "$1" <<'PYEOF'
+import re,sys
+name=sys.argv[2]
+for line in open(sys.argv[1],encoding="utf-8",errors="replace"):
+    if "hidden" in line:
+        continue
+    m=re.search(r"@(-?\d+),(-?\d+)",line); w=re.search(r" (\d+)x(\d+) ",line)
+    if m and w and ('"%s"' % name) in line:
+        print(int(m.group(1))+int(w.group(1))//2, int(m.group(2))+int(w.group(2))//2)
+        break
+PYEOF
+                          }
+                          notif_tree() {
+                            # The anchors sit ~19 levels deep; the IPC call
+                            # occasionally drops its socket mid-write, so give
+                            # it a second try before giving up on the marks.
+                            for try in 1 2; do
+                              qs -p "$REPO" ipc call debug tree cc-HEADLESS-1 20 \
+                                > "$WORK/logs/cc-notif-tree.txt" 2>&1 \
+                                && grep -q notifCard "$WORK/logs/cc-notif-tree.txt" && return 0
+                              sleep 0.5
+                            done
+                            return 1
+                          }
+                          notif_tree
+                          shot cc-notif-groups
+                          # Expand the first collapsed group via "还有 N 条".
+                          MORE=$(notif_pos notifMore)
+                          if [ -n "$MORE" ]; then
+                            qs -p "$REPO" ipc call debug hit opened $MORE >> "$WORK/logs/cc-notif-hit.txt" 2>&1 || true
+                            "$VINPUT" vinput click $MORE 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            notif_tree
+                            shot cc-notif-group-open
+                          else
+                            echo "cc-notif-groups: no collapsed group found" >> "$WORK/logs/vinput.log"
+                          fi
+                          # Swipe-dismiss the first visible card: a horizontal
+                          # drag well past max(110, 30% width).
+                          CARD=$(notif_pos notifCard)
+                          if [ -n "$CARD" ]; then
+                            set -- $CARD
+                            "$VINPUT" vinput drag "$1" "$2" "$(( $1 + 320 ))" "$2" \
+                              2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot cc-notif-swiped
+                          else
+                            echo "cc-notif-groups: no notifCard found" >> "$WORK/logs/vinput.log"
+                          fi
+                          # Clear-all empties the list; the header row hides.
+                          # The list is bottom-anchored, so every removal moves
+                          # ALL rows — re-dump the tree for fresh coords.
+                          notif_tree
+                          CLEAR=$(notif_pos notifClearAll)
+                          if [ -n "$CLEAR" ]; then
+                            qs -p "$REPO" ipc call debug hit opened $CLEAR >> "$WORK/logs/cc-notif-hit.txt" 2>&1 || true
+                            "$VINPUT" vinput click $CLEAR 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot cc-notif-cleared
+                          else
+                            echo "cc-notif-groups: no notifClearAll found" >> "$WORK/logs/vinput.log"
+                          fi
+                          call controlCenter toggle 0.5 ;;
     # quick-control pages: open the frame, select the page, shoot, close
     cc-quick-*)           local p="${1#cc-quick-}"
                           call controlCenter open 1.5
@@ -970,6 +1077,10 @@ PYEOF
     # DESIGN §3.13): a status-bar widget's menu sits below a top status
     # bar, not at the taskbar edge.
     bar-widget-menu)    qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 12 > "$WORK/logs/bar-tree.txt" 2>&1 || true
+                          if grep -q 'unknown root' "$WORK/logs/bar-tree.txt"; then
+                            echo "bar-widget-menu: skipped (no bar window in this config)"
+                            return 0
+                          fi
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
                           # Tree coords are window-local; the bar window is a
