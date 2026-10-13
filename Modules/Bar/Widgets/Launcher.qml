@@ -72,9 +72,11 @@ NIconButton {
   tooltipText: I18n.tr("actions.open-launcher")
   tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
   baseSize: efficientMode ? Style.getBarHeightForScreen(screenName) : Style.getCapsuleHeightForScreen(screenName)
-  // Efficient: fixed px glyph (dock.launcherIconSize, default 16 like the
-  // other plugin icons). Elsewhere: fraction of the capsule.
-  iconRatio: efficientMode ? Math.max(1, Settings.data.dock.launcherIconSize) / Math.max(1, root.buttonSize) : 0.48
+  // dock.launcherIconSize is px in both modes; 0 = derive (efficient 16px
+  // glyph like the other plugin icons, fashion keeps the capsule fraction).
+  readonly property int launcherIconPx: Settings.data.dock.launcherIconSize
+  readonly property real launcherGlyphPx: launcherIconPx > 0 ? Math.max(8, launcherIconPx) : (efficientMode ? 16 : root.buttonSize * 0.48)
+  iconRatio: launcherGlyphPx / Math.max(1, root.buttonSize)
   applyUiScale: false
   customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   colorBg: Style.capsuleColor
@@ -136,7 +138,7 @@ NIconButton {
   IconImage {
     id: customOrDistroLogo
     anchors.centerIn: parent
-    width: root.efficientMode ? Math.max(8, Settings.data.dock.launcherIconSize) : root.buttonSize * 0.8
+    width: root.launcherIconPx > 0 ? Math.max(8, root.launcherIconPx) : (root.efficientMode ? 16 : root.buttonSize * 0.8)
     height: width
     source: {
       if (useDistroLogo)

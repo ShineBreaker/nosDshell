@@ -316,7 +316,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 
 | Noctalia 挂件 | 高效模式 | 时尚模式 |
 |---|---|---|
-| Launcher | 启动器图标，`dock.launcherIconSize` px（默认 16，与其余插件 glyph 同号） | 启动器图标（0.6–0.8） |
+| Launcher | 启动器图标，`dock.launcherIconSize` px（0 = 推导为 16，与其余插件 glyph 同号） | 启动器图标（0.6–0.8） |
 | Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
 | Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 占满一个应用项大小的槽位，显示"时钟图标"：表盘为槽位的 0.8 倍，上面是大号数字时间。它与应用图标同级，不是小瓦片（`datetimewidget.cpp` 的 sizeHint 返回应用项槽位），不受 `dock.pluginSpacing` 影响 |
 | Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊，可展开、收起；分隔线 2 px，白 × 0.1（`fashiontraycontrolwidget.cpp`）。胶囊底色与其他插件瓦片一致，用 `overlay` 阶梯（`subtle`、`hover`、`checked`）〔演进：上游展开态是暗色 `#282828` × 0.5〕 |
@@ -445,7 +445,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - `appLauncher.iconMode`：provider 给出 Tabler 字形名时，列表项先查主题图标，找不到再用字形（`apps` 为最后的兜底）。
 - `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
 - `appLauncher.enableClipPreview`：全屏模式剪贴板预览卡片的开关。切换 `enableClipboardHistory` 会立即注册或注销剪贴板 provider。
-- 启动器按钮图标组（与任务栏页共用一份实现 `Tabs/Shared/LauncherIconGroup.qml`）：`dock.launcherUseDistroLogo`、`dock.launcherIcon`、`dock.launcherIconColor` 与 `dock.launcherIconSize`——同一套键驱动高效模式任务栏启动器和时尚模式坞启动器项；高效模式右键启动器按钮走"启动器设置"落在本页，所以按钮图标的控件也在这里。尺寸滑条只在高效模式显示（时尚模式图标随 `dock.iconSize` 推导）。
+- 启动器按钮图标组（与任务栏页共用一份实现 `Tabs/Shared/LauncherIconGroup.qml`）：`dock.launcherUseDistroLogo`、`dock.launcherIcon`、`dock.launcherIconColor` 与 `dock.launcherIconSize`——同一套键驱动高效模式任务栏启动器和时尚模式坞启动器项；高效模式右键启动器按钮走"启动器设置"落在本页，所以按钮图标的控件也在这里。尺寸滑条两种模式都显示：像素值同时作用于高效任务栏 glyph、时尚胶囊与坞启动器块，`0`/重置 = 自动按模式推导（高效 16px，时尚随 `dock.iconSize`）。
 - Noctalia 原有的 `appLauncher.position` 和 `overviewLayer` 属于 SmartPanel/overlay 前端，已随该前端一起移除（登记见 §6.1）。启动器只有本节这一套 DDE 实现。
 
 ### 3.5 控制中心（dde-control-center）

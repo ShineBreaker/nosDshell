@@ -1109,7 +1109,7 @@
       "monitors-title": "显示器显示",
       "title": "任务栏",
       "appearance-launcher-icon-size-label": "启动器图标大小",
-      "appearance-launcher-icon-size-description": "高效模式下任务栏启动器图标的像素大小。时尚模式的大小随任务栏尺寸推导。",
+      "appearance-launcher-icon-size-description": "任务栏与坞上启动器图标的像素大小。重置为自动时按模式推导：高效模式 16 像素，时尚模式随坞图标尺寸。",
       "task-manager-command-label": "任务管理器命令",
       "task-manager-command-description": "任务栏右键菜单中「任务管理器」执行的命令。在已配置的终端中运行：TUI（如 btop）或回退链（a || b）均可。"
     },

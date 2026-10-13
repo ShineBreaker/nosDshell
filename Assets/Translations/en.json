@@ -1109,7 +1109,7 @@
       "monitors-title": "Monitor display",
       "title": "Dock",
       "appearance-launcher-icon-size-label": "Launcher icon size",
-      "appearance-launcher-icon-size-description": "Launcher glyph size on the taskbar in efficient mode (px). The fashion dock derives its own from the dock size.",
+      "appearance-launcher-icon-size-description": "Launcher icon pixel size on the taskbar and dock. Reset to Auto to derive per mode: efficient uses 16 px, fashion follows the dock icon size.",
       "task-manager-command-label": "Task manager command",
       "task-manager-command-description": "Opened by the Task Manager entry in the taskbar right-click menu. Runs inside the configured terminal — a TUI like btop works, as does a fallback chain (a || b)."
     },

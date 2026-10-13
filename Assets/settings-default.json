@@ -416,7 +416,7 @@
     "backgroundOpacity": 1.0,
     "pluginSpacing": 4,
     "fusedPlugins": false,
-    "launcherIconSize": 16,
+    "launcherIconSize": 0,
     "taskManagerCommand": "btop"
   },
   "network": {

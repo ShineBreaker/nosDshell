@@ -10,8 +10,8 @@ import qs.Widgets
 // One DDE SettingsGroup holding the launcher button's icon controls —
 // shared by the Dock and Launcher settings tabs so the dock.launcher* keys
 // have exactly one implementation while staying discoverable from both
-// places users look. The size slider only shows in efficient mode: the
-// fashion dock derives the tile icon from dock.iconSize.
+// places users look. Size 0 = derive per mode (efficient 16px glyph,
+// fashion follows dock.iconSize); the slider's reset returns to auto.
 ColumnLayout {
   id: root
 
@@ -98,7 +98,6 @@ ColumnLayout {
 
   NValueSlider {
     Layout.fillWidth: true
-    visible: !root.fashionMode
     label: I18n.tr("panels.dock.appearance-launcher-icon-size-label")
     description: I18n.tr("panels.dock.appearance-launcher-icon-size-description")
     from: 12
@@ -108,6 +107,6 @@ ColumnLayout {
     value: Settings.data.dock.launcherIconSize
     defaultValue: Settings.getDefaultValue("dock.launcherIconSize")
     onMoved: value => Settings.data.dock.launcherIconSize = Math.round(value)
-    text: Math.round(Settings.data.dock.launcherIconSize) + " px"
+    text: Settings.data.dock.launcherIconSize > 0 ? Math.round(Settings.data.dock.launcherIconSize) + " px" : I18n.tr("common.auto")
   }
 }

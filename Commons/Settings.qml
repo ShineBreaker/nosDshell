@@ -666,9 +666,9 @@ Singleton {
       property bool launcherUseDistroLogo: false
       property string launcherIcon: ""
       property string launcherIconColor: "none"
-      // Efficient-mode launcher glyph size in px (fashion derives its own
-      // from dock.iconSize). 16 matches the other plugin glyphs (§3.1.4).
-      property int launcherIconSize: 16
+      // Launcher icon size in px for both modes; 0 = derive per mode
+      // (efficient: 16px glyph; fashion: dock appIconContent — §3.1.4).
+      property int launcherIconSize: 0
       // Command opened by the taskbar menu's task-manager entry. It runs
       // inside appLauncher.terminalCommand, so a TUI (btop) or a `cmd1 ||
       // cmd2` fallback chain of GUI monitors both work.

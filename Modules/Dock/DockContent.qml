@@ -303,7 +303,8 @@ Item {
 
         Item {
           id: launcherIconContainer
-          width: launcherItem.appIconContent
+          // dock.launcherIconSize is px here too; 0 = follow dock.iconSize.
+          width: Settings.data.dock.launcherIconSize > 0 ? Settings.data.dock.launcherIconSize : launcherItem.appIconContent
           height: width
           anchors.centerIn: parent
 
@@ -323,7 +324,7 @@ Item {
           NIcon {
             anchors.centerIn: parent
             icon: launcherItem.launcherIcon
-            pointSize: launcherItem.appIconContent * 0.7
+            pointSize: launcherIconContainer.width * 0.7
             color: Color.resolveColorKey(launcherItem.launcherIconColorKey)
             visible: !launcherItem.launcherUseDistroLogo && launcherItem.launcherIcon !== ""
           }
