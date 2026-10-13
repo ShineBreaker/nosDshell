@@ -325,6 +325,10 @@ NDccRow {
           model: combo.popup.visible ? root.activeModel : null
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
+          // Same overlay-scrollbar rule as NComboBox's popup: no reserved
+          // gutter, but the thumb stays visible while the list overflows.
+          reserveScrollbarSpace: false
+          showScrollbarWhenScrollable: true
 
           onCurrentIndexChanged: {
             if (currentIndex >= 0)
@@ -429,13 +433,15 @@ NDccRow {
         }
       }
 
-      background: Rectangle {
+      background: NArrowRect {
         // Same as NComboBox: page-surface menus stay opaque — popupShell's
         // translucency would bleed settings page text through the list.
-        color: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
-        border.color: root.onShellSurface ? Color.borderShell : Color.mOutline
-        border.width: Style.borderS
+        arrowEdge: ""
+        fillColor: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
+        borderColor: root.onShellSurface ? Color.borderShell : Color.mOutline
+        borderWidth: Style.borderS
         radius: Style.radiusPopup
+        shadow: Style.shadowPopup
       }
     }
 

@@ -232,7 +232,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -926,6 +926,123 @@ PYEOF
                             "$VINPUT" vinput click 1795 $COMBO_Y 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.0
                             shot settings-combo-popup
+                          fi
+                          call settings toggle 1 ;;
+    # Same as settings-combo but for the LAST combo on the colorscheme page
+    # (调色板生成方法) — a combo near the bottom of a scrolled module view is
+    # where popup placement/width bugs show up.
+    settings-combo-scheme) call settings openTab colorscheme 8
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          # No manual scrolls here: the module view stacks ALL
+                          # modules in one column and openTab already scrolls to
+                          # the colorscheme section — extra scrolls overshoot
+                          # into neighbouring modules. The section lands with
+                          # the gated combos near the fold; enabling 使用壁纸
+                          # 颜色 (the real user's config) brings the scheme
+                          # method combo alive. Field bands: ~30 px runs of
+                          # field fill (~76 lum disabled, ~98 enabled) down the
+                          # caret column; a card's ✓ badge sits on much darker
+                          # card bg (~30) so it can't fake a field. x1860 sits
+                          # left of the caret so the glyph can't split the band.
+                          shot settings-combo-scheme-page
+                          fields() { python3 - "$1" <<'PYEOF'
+from PIL import Image
+import sys
+im = Image.open(sys.argv[1]).convert('RGB')
+runs, start = [], None
+for y in range(180, 900):
+    lum = sum(im.getpixel((1860, y))) / 3
+    infield = 71 < lum < 110
+    if infield and start is None:
+        start = y
+    elif not infield and start is not None:
+        runs.append((start, y - 1)); start = None
+out = []
+for r in runs:
+    if not 15 <= r[1] - r[0] <= 45:
+        continue
+    cy = (r[0] + r[1]) // 2
+    # enabled field: caret or value text is bright; disabled dims to ~140
+    caret = max(max(im.getpixel((x, y))) for x in range(1868, 1892)
+                for y in range(cy - 4, cy + 5))
+    text = max(max(im.getpixel((x, y))) for x in range(1765, 1805)
+               for y in range(cy - 4, cy + 5))
+    out.append((cy, caret > 170 or text > 190))
+print(",".join("%d:%d" % (cy, en) for cy, en in out))
+PYEOF
+                          }
+                          FIELDS=$(fields "$OUT/settings-combo-scheme-page.png")
+                          echo "scheme fields: $FIELDS"
+                          GATED_TOP=$(python3 - "$OUT/settings-combo-scheme-page.png" <<'PYEOF' 2>>"$WORK/logs/caret-scan.log"
+from PIL import Image
+import sys
+im = Image.open(sys.argv[1]).convert('RGB')
+runs, start = [], None
+for y in range(180, 900):
+    lum = sum(im.getpixel((1860, y))) / 3
+    infield = 71 < lum < 110
+    if infield and start is None:
+        start = y
+    elif not infield and start is not None:
+        runs.append((start, y - 1)); start = None
+found = [r for r in runs if 15 <= r[1] - r[0] <= 45]
+# The gated combos are the two DISABLED bands; other enabled fields (e.g.
+# 深色模式计划) may sit above them. The toggle lives one row above the
+# first disabled band.
+dis = [r for r in found if r[0] > 430]
+print(dis[0][0] if dis else "")
+PYEOF
+)
+                          # The toggle persists across runs, so only flip it
+                          # when the gated fields are actually still disabled —
+                          # otherwise the click would turn the feature OFF.
+                          GATED_OFF=$(echo "$FIELDS" | tr ',' '\n' | awk -F: '$1 > 430 && $2 == 0' | head -1)
+                          if [ -n "$GATED_TOP" ] && [ -n "$GATED_OFF" ] && [ -x "$VINPUT" ]; then
+                            # The 使用壁纸颜色 toggle row sits one row (~64 px)
+                            # directly above the FIRST gated combo field; aim at
+                            # the switch itself (row right edge) — the far-left
+                            # label area can sit outside the row's click area.
+                            "$VINPUT" vinput click 1870 $((GATED_TOP - 64)) 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot settings-combo-scheme-enabled
+                            FIELDS=$(fields "$OUT/settings-combo-scheme-enabled.png")
+                            echo "after toggle: $FIELDS"
+                          fi
+                          # Click the LAST enabled field — once the toggle is on
+                          # that is the 调色板生成方法 combo at the bottom of the
+                          # section, the case the user reported. Enabling
+                          # wallpaper colors triggers an async theme regen, so
+                          # the first click can land mid-reflow: check for the
+                          # field's accent focus border (popup open = focused)
+                          # and retry once.
+                          COMBO_Y=$(python3 -c "
+import sys
+last=[p for p in '$FIELDS'.split(',') if p.endswith(':1')]
+print(last[-1].split(':')[0] if last else '')" )
+                          if [ -n "$COMBO_Y" ] && [ -x "$VINPUT" ]; then
+                            popup_open() { python3 - "$1" "$2" <<'PYEOF'
+from PIL import Image
+import sys
+im, cy = Image.open(sys.argv[1]).convert('RGB'), int(sys.argv[2])
+# accent border around the field rect: scan a band around its top/bottom
+# edges (field ~30 px tall, border 1-2 px) for a long run of accent pixels
+# (verify accent ≈ 255,182,135 — R>G>B peach).
+acc = lambda p: p[0] > 180 and 120 < p[1] < 215 and p[2] < 170 and p[0] > p[1] > p[2]
+for dy in range(-22, 23):
+    if sum(1 for x in range(1650, 1900) if acc(im.getpixel((x, cy + dy)))) > 80:
+        print("yes"); sys.exit()
+print("")
+PYEOF
+                            }
+                            "$VINPUT" vinput click 1810 $COMBO_Y 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.0
+                            shot settings-combo-scheme-popup
+                            if [ -z "$(popup_open "$OUT/settings-combo-scheme-popup.png" "$COMBO_Y")" ]; then
+                              "$VINPUT" vinput click 1810 $COMBO_Y 2>>"$WORK/logs/vinput.log" || true
+                              sleep 1.0
+                              shot settings-combo-scheme-popup
+                            fi
                           fi
                           call settings toggle 1 ;;
     # A fullscreen window must fully release the dock strip: the dock slides

@@ -300,7 +300,11 @@ NDccRow {
         gradientColor: "transparent"
         model: combo.popup.visible ? root.model : null
         highlightMoveDuration: 0
-        //showGradientMasks: false
+        // Overlay scrollbar: a permanent empty gutter would offset the
+        // highlight from the frame edge; the thumb shows whenever the list
+        // overflows so hidden rows stay discoverable.
+        reserveScrollbarSpace: false
+        showScrollbarWhenScrollable: true
 
         // Dark menu rows (DESIGN §3.3): accent highlight, radiusRow corners
         // inside the popup padding (DDE hover block pairs with the frame).
@@ -349,14 +353,16 @@ NDccRow {
         }
       }
 
-      background: Rectangle {
+      background: NArrowRect {
         // Page-surface menus stay opaque — popupShell's translucency (built
         // for blurred shell popups) bleeds page text through the list.
         // On a shell surface the glass look is intentional.
-        color: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
-        border.color: root.onShellSurface ? Color.borderShell : Color.mOutline
-        border.width: Style.borderS
+        arrowEdge: ""
+        fillColor: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
+        borderColor: root.onShellSurface ? Color.borderShell : Color.mOutline
+        borderWidth: Style.borderS
         radius: Style.radiusPopup
+        shadow: Style.shadowPopup
       }
     }
 
