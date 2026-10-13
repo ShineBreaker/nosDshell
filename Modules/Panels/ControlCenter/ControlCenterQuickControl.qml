@@ -36,7 +36,12 @@ Item {
   // ---------------- pages ----------------
   // Page 0 is the cards page (the home page's default widgets), page 1 the
   // basic page; detail pages follow.
-  readonly property var cards: Settings.data.controlCenter.cards
+  // Only ids this page actually renders — profile/shortcuts/audio/brightness
+  // cards were redistributed to the header, switch grid and basic page per
+  // DESIGN §3.5.2, so their (still enabled) settings entries must not reach
+  // the Repeater: an unmapped id loads a zero-height Loader that still eats
+  // a layout slot + column spacing and opens a dead band above the cards.
+  readonly property var cards: (Settings.data.controlCenter.cards || []).filter(c => ["weather-card", "media-sysmon-card"].indexOf(c.id) >= 0)
 
   // Up to ten switches on the basic page (5 per row); the rest are simply
   // not shown — the settings UI lets the user pick which ones matter.
