@@ -14,9 +14,15 @@ import qs.Widgets
 * Outer corners are automatic: a row is the group's head when the nearest
 * visible sibling above it is not a dcc row (or there is none), and its tail
 * when the same holds below. That mirrors SettingsGroup::updateHeadTail()
-* (settingsgroup.cpp:172-192), which only walks visible items. The scan is
-* declarative, so a sibling being added, removed or hidden re-runs it and a
-* bulk change costs a single re-evaluation instead of one per row.
+* (settingsgroup.cpp:172-192), which only walks visible items.
+*
+* The scan is imperative and deferred, not a binding: Repeater delegates are
+* incubated asynchronously, so a sibling can be reparented (which re-fires the
+* `_siblings` binding) while its own `isDccRow` binding has not evaluated yet —
+* a declarative scan then records `last = true` on the previous row and never
+* self-heals. Instead `_updateHeadTail()` runs one event-loop turn after each
+* trigger; every row also asks its siblings to rescan when it completes, so
+* the last delegate of a batch settles the whole run.
 *
 * An explicit isFirst/isLast override still wins over the automatic scan.
 *
@@ -131,6 +137,11 @@ Rectangle {
   }
 
   // ---- automatic head/tail detection -------------------------------------
+  // Results are plain properties fed by _updateHeadTail() (see the header
+  // comment): a binding would evaluate mid-incubation and stick.
+  property bool _autoIsFirst: true
+  property bool _autoIsLast: true
+
   readonly property var _siblings: parent ? parent.children : null
   readonly property int _index: {
     const kids = root._siblings;
@@ -143,31 +154,59 @@ Rectangle {
     return -1;
   }
 
-  // Nearest visible dcc row above; anything else (a header, a gap, nothing)
-  // makes this row the head of its group.
-  readonly property bool _autoIsFirst: {
+  // Reads every sibling's visibility so a hidden/shown row refires the scan —
+  // _siblings alone only changes on reparent, not on visible toggles.
+  readonly property int _visTick: {
     const kids = root._siblings;
-    const idx = root._index;
-    if (!kids || idx < 0)
-      return true;
-    for (let i = idx - 1; i >= 0; i--) {
-      const sibling = kids[i];
-      if (sibling && sibling.visible !== false)
-        return sibling.isDccRow !== true;
-    }
-    return true;
+    if (!kids)
+      return 0;
+    let h = 0;
+    for (let i = 0; i < kids.length; i++)
+      h += (kids[i].visible !== false) ? (i + 1) : 0;
+    return h;
   }
 
-  readonly property bool _autoIsLast: {
+  on_SiblingsChanged: Qt.callLater(_updateHeadTail)
+  on_VisTickChanged: Qt.callLater(_updateHeadTail)
+  Component.onCompleted: {
+    Qt.callLater(_updateHeadTail);
+    // A newly completed row means earlier scans may have read this row
+    // half-built; settle the whole run now that everyone can be trusted.
+    const kids = root._siblings;
+    if (kids) {
+      for (let i = 0; i < kids.length; i++) {
+        const s = kids[i];
+        if (s && s !== root && typeof s._updateHeadTail === "function")
+          Qt.callLater(s._updateHeadTail);
+      }
+    }
+  }
+
+  function _updateHeadTail() {
     const kids = root._siblings;
     const idx = root._index;
-    if (!kids || idx < 0)
-      return true;
+    if (!kids || idx < 0) {
+      _autoIsFirst = true;
+      _autoIsLast = true;
+      return;
+    }
+    let first = true;
+    for (let i = idx - 1; i >= 0; i--) {
+      const sibling = kids[i];
+      if (sibling && sibling.visible !== false) {
+        first = sibling.isDccRow !== true;
+        break;
+      }
+    }
+    let last = true;
     for (let i = idx + 1; i < kids.length; i++) {
       const sibling = kids[i];
-      if (sibling && sibling.visible !== false)
-        return sibling.isDccRow !== true;
+      if (sibling && sibling.visible !== false) {
+        last = sibling.isDccRow !== true;
+        break;
+      }
     }
-    return true;
+    _autoIsFirst = first;
+    _autoIsLast = last;
   }
 }
