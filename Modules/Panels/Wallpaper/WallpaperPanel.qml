@@ -684,12 +684,20 @@ SmartPanel {
           visible: thumb.showsActions
           opacity: thumb.showsActions ? 1 : 0
 
+          // On-image chips (DESIGN §1.5): a photo is an arbitrary backdrop,
+          // so the pill gets the fixed dark veil + onWallpaper text — the
+          // theme-following overlay/onShell ladder washes out on bright
+          // wallpapers.
           NButton {
             text: I18n.tr("wallpaper.strip.light")
             tooltipText: I18n.tr("wallpaper.strip.light-tip")
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
+            backgroundColor: Qt.alpha(Color.veilWallpaper, 0.6)
+            textColor: Color.onWallpaper
+            hoverColor: Qt.alpha(Color.veilWallpaper, 0.8)
+            textHoverColor: Color.onWallpaper
             onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "light") : strip.applySlot(thumb.path, "light")
           }
           NButton {
@@ -698,6 +706,10 @@ SmartPanel {
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
+            backgroundColor: Qt.alpha(Color.veilWallpaper, 0.6)
+            textColor: Color.onWallpaper
+            hoverColor: Qt.alpha(Color.veilWallpaper, 0.8)
+            textHoverColor: Color.onWallpaper
             onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "dark") : strip.applySlot(thumb.path, "dark")
           }
           NButton {
@@ -706,6 +718,10 @@ SmartPanel {
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
+            backgroundColor: Qt.alpha(Color.veilWallpaper, 0.6)
+            textColor: Color.onWallpaper
+            hoverColor: Qt.alpha(Color.veilWallpaper, 0.8)
+            textHoverColor: Color.onWallpaper
             onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "both") : strip.applyBoth(thumb.path)
           }
         }
