@@ -293,6 +293,18 @@ Item {
   readonly property real barMarginV: (barFloating && barShouldShow) ? Math.ceil(Settings.data.bar.marginVertical) : 0
   readonly property real attachmentOverlap: 1 // Panel extends into bar area to fix hairline gap with fractional scaling
 
+  // Per-edge shell-strip clearance, always read via BarService's edge
+  // functions (CODING_STANDARDS "QML 规则" bar-clearance 条) — never
+  // hand-assembled from barHeight + float margin + frameThickness here.
+  // edgeClearance already encodes the branches: the bar window plus its
+  // float margin on the bar's own edge, the framed ring band (plus float
+  // margin) on the others. Gated on barShouldShow like barHeight above so a
+  // hidden bar reserves nothing.
+  readonly property real edgeClearanceLeft: barShouldShow ? BarService.edgeClearance(screen?.name || "", "left") : 0
+  readonly property real edgeClearanceRight: barShouldShow ? BarService.edgeClearance(screen?.name || "", "right") : 0
+  readonly property real edgeClearanceTop: barShouldShow ? BarService.edgeClearance(screen?.name || "", "top") : 0
+  readonly property real edgeClearanceBottom: barShouldShow ? BarService.edgeClearance(screen?.name || "", "bottom") : 0
+
   // Check if bar should be visible on this screen
   readonly property bool barShouldShow: {
     if (!BarService.effectivelyVisible)
@@ -602,7 +614,12 @@ Item {
     else {
       h = root.preferredHeight;
     }
-    var panelHeight = Math.min(h, root.height - root.barHeight - effMarginT - effMarginB);
+    // Height clamp reserves only what the top/bottom strips actually occupy
+    // (bar window + float margin on the bar's edge, framed ring band on the
+    // others), via the per-edge clearances above — the old form subtracted
+    // the bar's thickness whichever edge it sat on, over-trimming panels
+    // beside vertical bars.
+    var panelHeight = Math.min(h, root.height - root.edgeClearanceTop - root.edgeClearanceBottom - 2 * Style.marginL);
     // For vertical floating bars, clamp panelHeight to available space accounting for corner insets
     if (root.barFloating && root.barIsVertical) {
       var floatCornerInset = Style.radiusL * 2;
@@ -734,12 +751,13 @@ Item {
 
     // Pre-compute bar edge positions with overlap (used multiple times below)
     // For attached panels, we extend slightly into the bar area to prevent hairline gaps.
-    // barMargin* already carry the float margin on the anchored edge, so the
-    // same expression covers simple, framed and floating forms alike.
-    var leftBarEdgeWithOverlap = root.barMarginH + root.barHeight - root.attachmentOverlap;
-    var rightBarEdgeWithOverlap = root.width - root.barMarginH - root.barHeight + root.attachmentOverlap;
-    var topBarEdgeWithOverlap = root.barMarginV + root.barHeight - root.attachmentOverlap;
-    var bottomBarEdgeWithOverlap = root.height - root.barMarginV - root.barHeight + root.attachmentOverlap;
+    // The inner edge line is the per-edge clearance (bar window + float
+    // margin on the bar's edge, framed ring band otherwise), attachmentOverlap
+    // rides on top of it as this component's own anti-hairline overlap.
+    var leftBarEdgeWithOverlap = root.edgeClearanceLeft - root.attachmentOverlap;
+    var rightBarEdgeWithOverlap = root.width - root.edgeClearanceRight + root.attachmentOverlap;
+    var topBarEdgeWithOverlap = root.edgeClearanceTop - root.attachmentOverlap;
+    var bottomBarEdgeWithOverlap = root.height - root.edgeClearanceBottom + root.attachmentOverlap;
 
     // Calculate position
     var calculatedX;
@@ -764,9 +782,9 @@ Item {
 
           // Account for vertical bar taking up space
           if (root.barPosition === "left") {
-            minX = root.barMarginH + root.barHeight + Style.marginL;
+            minX = root.edgeClearanceLeft + Style.marginL;
           } else if (root.barPosition === "right") {
-            maxX = root.width - root.barMarginH - root.barHeight - panelWidth - Style.marginL;
+            maxX = root.width - root.edgeClearanceRight - panelWidth - Style.marginL;
           }
 
           panelX = Math.max(minX, Math.min(panelX, maxX));
@@ -790,12 +808,12 @@ Item {
       if (root.panelAnchorHorizontalCenter) {
         if (root.barIsVertical) {
           if (root.barPosition === "left") {
-            var availableStart = root.barMarginH + root.barHeight;
-            var availableWidth = root.width - availableStart - (root.isFramed ? root.frameThickness + root.barMarginH : 0);
+            var availableStart = root.edgeClearanceLeft;
+            var availableWidth = root.width - availableStart - root.edgeClearanceRight;
             calculatedX = availableStart + (availableWidth - panelWidth) / 2;
           } else if (root.barPosition === "right") {
-            var availableWidth = root.width - root.barMarginH - root.barHeight - (root.isFramed ? root.frameThickness + root.barMarginH : 0);
-            calculatedX = (root.isFramed ? root.frameThickness + root.barMarginH : 0) + (availableWidth - panelWidth) / 2;
+            var availableWidth = root.width - root.edgeClearanceLeft - root.edgeClearanceRight;
+            calculatedX = root.edgeClearanceLeft + (availableWidth - panelWidth) / 2;
           } else {
             calculatedX = (root.width - panelWidth) / 2;
           }
