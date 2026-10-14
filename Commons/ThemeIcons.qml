@@ -389,10 +389,4 @@ Singleton {
       return "";
     return str.toLowerCase().replace(/\s+/g, "-");
   }
-
-  // Deprecated shim
-  function guessIcon(str) {
-    const entry = findAppEntry(str);
-    return entry ? entry.icon : "image-missing";
-  }
 }

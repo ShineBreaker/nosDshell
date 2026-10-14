@@ -15,7 +15,6 @@ Singleton {
   property bool bluetoothctlAvailable: false
   property bool wlsunsetAvailable: false
   property bool gnomeCalendarAvailable: false
-  property bool pythonAvailable: false
   property bool wtypeAvailable: false
   property bool rfkillAvailable: false
 

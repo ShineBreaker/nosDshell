@@ -23,8 +23,6 @@ ColumnLayout {
 
   // Local state
   property string valueHideMode: settingsHelper.value("hideMode")
-  // Deprecated: hideWhenIdle now folded into hideMode = "idle"
-  property bool valueHideWhenIdle: settingsHelper.value("hideWhenIdle")
   property bool valueShowAlbumArt: settingsHelper.value("showAlbumArt")
   property bool valuePanelShowAlbumArt: settingsHelper.value("panelShowAlbumArt")
   property bool valueShowArtistFirst: settingsHelper.value("showArtistFirst")
@@ -38,7 +36,6 @@ ColumnLayout {
 
   function saveSettings() {
     var settings = settingsHelper.save();
-    // No longer store hideWhenIdle separately; kept for backward compatibility only
     settings.maxWidth = parseInt(widthInput.text) || widgetMetadata.maxWidth;
     settingsChanged(settings);
     return settings;

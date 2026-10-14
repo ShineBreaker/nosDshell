@@ -13,7 +13,6 @@ NDccRow {
   property string label: ""
   property string description: ""
   property bool checked: false
-  property bool hovering: false
   property color activeColor: Color.accent
   property color activeOnColor: Color.onAccent
   property int baseSize: root.defaultSize
@@ -24,8 +23,6 @@ NDccRow {
   readonly property int defaultSize: Style.baseWidgetSize * 0.7
 
   signal toggled(bool checked)
-  signal entered
-  signal exited
 
   clickable: true
   plain: !root.dccRow
@@ -50,13 +47,5 @@ NDccRow {
     Layout.alignment: Qt.AlignVCenter
   }
 
-  onEntered: {
-    hovering = true;
-    root.entered();
-  }
-  onExited: {
-    hovering = false;
-    root.exited();
-  }
   onClicked: root.toggled(!root.checked)
 }
