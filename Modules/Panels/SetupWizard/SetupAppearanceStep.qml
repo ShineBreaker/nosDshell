@@ -68,7 +68,7 @@ ColumnLayout {
           width: 28
           height: 28
           radius: Style.radiusM
-          color: Color.mSurface
+          color: Color.overlay("idle")
 
           NIcon {
             icon: "moon"
@@ -123,7 +123,7 @@ ColumnLayout {
           width: 28
           height: 28
           radius: Style.radiusM
-          color: Color.mSurface
+          color: Color.overlay("idle")
 
           NIcon {
             icon: "color-picker"
@@ -194,7 +194,7 @@ ColumnLayout {
             width: 28
             height: 28
             radius: Style.radiusM
-            color: Color.mSurface
+            color: Color.overlay("idle")
 
             NIcon {
               icon: "palette"

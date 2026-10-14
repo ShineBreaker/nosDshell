@@ -83,7 +83,8 @@ Popup {
     Rectangle {
       id: backgroundRect
       anchors.fill: parent
-      color: Color.mSurface
+      // DDialog plate (DESIGN §3.11): maskDark, not an opaque scheme surface.
+      color: Color.maskDark
       radius: Style.radiusL
       border.color: Color.mOutline
       border.width: Style.borderM

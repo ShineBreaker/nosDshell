@@ -39,7 +39,7 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.fillHeight: true
     Layout.minimumHeight: 180
-    color: Color.mSurfaceVariant
+    color: Color.overlay("idle")
     radius: Style.radiusL
 
     // Image with rounded corners
@@ -138,7 +138,7 @@ ColumnLayout {
             // Loading/error state background
             Rectangle {
               anchors.fill: parent
-              color: Color.mSurfaceVariant
+              color: Color.overlay("idle")
               radius: thumbDelegate.thumbRadius
               visible: thumbImage.status === Image.Loading || thumbImage.status === Image.Error || thumbDelegate.cachedPath === ""
 
@@ -232,7 +232,7 @@ ColumnLayout {
   Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: 80
-    color: Color.mSurfaceVariant
+    color: Color.overlay("idle")
     radius: Style.radiusM
     opacity: 0.4
     visible: filteredWallpapers.length === 0

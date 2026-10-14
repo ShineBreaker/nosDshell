@@ -262,7 +262,7 @@ PanelWindow {
 
               Rectangle {
                 anchors.fill: parent
-                color: Color.mSurfaceVariant
+                color: Color.overlay("idle")
                 radius: width / 2
                 border.color: Color.mOutline
                 border.width: Style.borderM

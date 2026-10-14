@@ -40,7 +40,7 @@ ColumnLayout {
             width: 28
             height: 28
             radius: Style.radiusM
-            color: Color.mSurface
+            color: Color.overlay("idle")
 
             NIcon {
               icon: "layout-2"
@@ -104,9 +104,8 @@ ColumnLayout {
 
               property bool isActive: selectedBarPosition === modelData.key
 
-              color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
+              color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.overlay("idle")
               border.color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
-              opacity: (positionHoverHandler.hovered || isActive) ? 1.0 : 0.8
 
               NText {
                 text: modelData.name
@@ -151,7 +150,7 @@ ColumnLayout {
           width: 32
           height: 32
           radius: Style.radiusM
-          color: Color.mSurface
+          color: Color.overlay("idle")
           NIcon {
             icon: "minimize"
             pointSize: Style.fontSizeL
@@ -211,9 +210,8 @@ ColumnLayout {
 
               property bool isActive: Settings.data.bar.density === modelData.key
 
-              color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
+              color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.overlay("idle")
               border.color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
-              opacity: (densityHoverHandler.hovered || isActive) ? 1.0 : 0.8
 
               NText {
                 id: densityText
@@ -261,7 +259,7 @@ ColumnLayout {
             width: 32
             height: 32
             radius: Style.radiusM
-            color: Color.mSurface
+            color: Color.overlay("idle")
             NIcon {
               icon: "maximize"
               pointSize: Style.fontSizeL
@@ -323,7 +321,7 @@ ColumnLayout {
             width: 28
             height: 28
             radius: Style.radiusM
-            color: Color.mSurface
+            color: Color.overlay("idle")
 
             NIcon {
               icon: "layout-2"
@@ -375,9 +373,8 @@ ColumnLayout {
 
               property bool isActive: Settings.data.bar.barType === modelData.key
 
-              color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mSurfaceVariant
+              color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.overlay("idle")
               border.color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
-              opacity: (typeHoverHandler.hovered || isActive) ? 1.0 : 0.8
 
               NText {
                 text: modelData.name
@@ -430,7 +427,7 @@ ColumnLayout {
           width: 32
           height: 32
           radius: Style.radiusM
-          color: Color.mSurface
+          color: Color.overlay("idle")
           NIcon {
             icon: "screen-share"
             pointSize: Style.fontSizeL
@@ -485,7 +482,7 @@ ColumnLayout {
           width: 32
           height: 32
           radius: Style.radiusM
-          color: Color.mSurface
+          color: Color.overlay("idle")
           NIcon {
             icon: "shadow"
             pointSize: Style.fontSizeL
