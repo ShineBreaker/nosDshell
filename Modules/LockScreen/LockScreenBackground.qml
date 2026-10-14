@@ -15,7 +15,7 @@ Item {
   // Pre-blurred variant produced by nosd-blur (empty until ready/unavailable)
   property string resolvedBlurredPath: ""
   readonly property bool usePreBlurred: resolvedBlurredPath !== "" && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.performanceMode
-  property color tintColor: Settings.data.colorSchemes.darkMode ? Color.mSurface : Color.mOnSurface
+  property color tintColor: Color.veilWallpaper
 
   required property var screen
 

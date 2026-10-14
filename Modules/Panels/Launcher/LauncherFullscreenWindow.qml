@@ -188,7 +188,7 @@ Variants {
       // requires the wallpaper surface to stay dark for onWallpaper ink.
       Rectangle {
         anchors.fill: parent
-        color: Qt.rgba(0, 0, 0, 0.55)
+        color: Qt.alpha(Color.veilWallpaper, 0.55)
         opacity: view.opacity
       }
 
