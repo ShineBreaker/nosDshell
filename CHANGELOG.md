@@ -10,7 +10,11 @@
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-10-14
+
 控制中心重排成 DDE 的样子：默认页是通知列表，卡片成为底部分页条的第一页，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。底部分页槽按当前页内容定高，监控卡要显示哪几个表盘可以在设置里挑，整条还能从顶部的把手收起来翻通知。
+
+niri 的模糊规则改成按面分档——之前那种罩住全屏的巨雾没了，模糊只花在真正垫在窗口上的面上。壁纸选择条支持滚轮和两端翻页钮，悬停按钮按浅色/深色槽位标注；启动器按钮的图标、颜色、大小收进一组控件，Dock 与启动器设置页共用，两种模式都能调。通知历史有了日期分节和应用分组，下拉弹层补回阴影与滚动提示，一批标签、日期和文案也顺手现代化了一遍。
 
 ---
 
@@ -18,6 +22,16 @@
 
 - keep bubbles, OSD, menus and launchers off the dock strip：[`01dec6e09`](https://github.com/ShineBreaker/nosDshell/commit/01dec6e09ce542af2f7a95af3e100d861049044c)
 - lift the wallpaper selector strip clear of the fashion dock：[`ede8e44f1`](https://github.com/ShineBreaker/nosDshell/commit/ede8e44f12bf26f99002e313f7fe7093a9e80538)
+- notification list interaction and grouping bugs：[`582636b06`](https://github.com/ShineBreaker/nosDshell/commit/582636b06ea4615cde7c09d4c62ece92834628cb)
+- import Networking service module in BtDeviceRow：[`57acb5a5b`](https://github.com/ShineBreaker/nosDshell/commit/57acb5a5b984e8bd22f970fa35369dc35436631b)
+- locale-correct long dates：[`31732fe0c`](https://github.com/ShineBreaker/nosDshell/commit/31732fe0ce293a3e84b6984580aa8c1b750a8045)
+- efficient-mode launcher, menus, pinning and battery pill：[`e21ff1dbc`](https://github.com/ShineBreaker/nosDshell/commit/e21ff1dbce40e79a6912a343180d16876d14d9f1)
+- declare mouse param in empty-space click handler：[`f80ac75cb`](https://github.com/ShineBreaker/nosDshell/commit/f80ac75cb06967098ca6c54badf8ea13378a8683)
+- top-anchor notification history：[`04c46bc6b`](https://github.com/ShineBreaker/nosDshell/commit/04c46bc6b1be24c2b59b1aeead99e37ba27eab1a)
+- NDccRow head/tail scan survives async delegate incubation：[`2c32a14f3`](https://github.com/ShineBreaker/nosDshell/commit/2c32a14f31eeccb338b6bee730e03ed4463b5570)
+- combo popups get the shared surface treatment：[`cdb91539f`](https://github.com/ShineBreaker/nosDshell/commit/cdb91539fbd7c27fbd82d84c3f496f0d14b39e32)
+- niri layer rules switch to per-surface blur tiers — fixes the fullscreen blur：[`9bb20ada6`](https://github.com/ShineBreaker/nosDshell/commit/9bb20ada68de3e0026594f7b274b851e6d85c5d9)
+- filmstrip wheel paging and slot-labelled apply buttons：[`60ec61098`](https://github.com/ShineBreaker/nosDshell/commit/60ec61098835b5203539c1b305dcae2df3a197d6)
 
 ### 变更
 
@@ -33,6 +47,12 @@
 - notification list bottom-anchors to the quick-control strip：[`d108b4193`](https://github.com/ShineBreaker/nosDshell/commit/d108b419336483d54403dd6904b188a77c310b2d)
 - anchor the whole notification column — empty state too — and drop phantom zero-height card loaders that ate layout slots：[`b9f4ff125`](https://github.com/ShineBreaker/nosDshell/commit/b9f4ff1259554e18cd0e68aae438063d925b4110), [`f115af00f`](https://github.com/ShineBreaker/nosDshell/commit/f115af00fa508a9a726c353be385d9810a43f5be)
 - card toggles hide their actual regions (sliders, switch grid included); strip page order is user-configurable：[`e6e17df42`](https://github.com/ShineBreaker/nosDshell/commit/e6e17df42d6c1cb9f3d0071c186388410b33da57)
+- modernised surfaces — labels, row actions, copy and zh terms：[`fd8c2ff25`](https://github.com/ShineBreaker/nosDshell/commit/fd8c2ff25e0f1ea02c002b79b4eb8770ce15b4a5)
+- classify pointer/state colour feedback per DESIGN §1.7：[`6267027e2`](https://github.com/ShineBreaker/nosDshell/commit/6267027e20b97fc7b97454aaa85f8d5a45945f9f)
+- launcher icon group shared by Dock and Launcher tabs：[`ec7f3bb38`](https://github.com/ShineBreaker/nosDshell/commit/ec7f3bb385e900976e06d61893ea482b4a7caac9)
+- NListView scrolls the wheel along its layout axis：[`1e12cf11c`](https://github.com/ShineBreaker/nosDshell/commit/1e12cf11cd7a2f69f3f631899023267f4523bfad)
+- launcher icon size slider applies in both dock modes：[`58e511b1d`](https://github.com/ShineBreaker/nosDshell/commit/58e511b1d928d9043e7c41dc286f652a0710287c)
+- notification history day sections and app groups：[`f67595ea2`](https://github.com/ShineBreaker/nosDshell/commit/f67595ea2504372f68184e20c58472fa512a433f)
 
 ## [1.1.8] - 2026-10-12
 
@@ -315,7 +335,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.8...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.8...v1.2.0
 [1.1.8]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.7...v1.1.8
 [1.1.7]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.6...v1.1.7
 [1.1.6]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.5...v1.1.6
