@@ -200,9 +200,11 @@ Item {
           Layout.alignment: Qt.AlignHCenter
           Layout.preferredWidth: 280
           Layout.preferredHeight: 36
-          // DESIGN §3.9: 280x36, field colour, radius 6 (not a pill)
+          // DESIGN §3.9: 280x36, field colour, radius 6 (not a pill).
+          // Wallpaper surface: the field level must come from the constant
+          // white ladder, not the theme-flipping overlay() one.
           radius: Style.lockPasswordFieldRadius
-          color: Color.overlay("field")
+          color: Color.overlayWallpaper("field")
           border.color: lockControl.showFailure ? Color.alert : (passwordInput.activeFocus ? Color.mPrimary : Qt.alpha(Color.mOutline, 0.3))
           border.width: 1
 
