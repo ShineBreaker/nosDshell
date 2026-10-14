@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Material Design 3 color schemes from a source color.
-//! Mirrors Scripts/python/src/theming/lib/material.py (matugen-style schemes).
+//! Ported from the removed Scripts/python/src/theming/lib/material.py (matugen-style schemes).
 //!
 //! Scheme dicts are ordered `Vec`s so serialized output keeps Python's
 //! dict-insertion order.

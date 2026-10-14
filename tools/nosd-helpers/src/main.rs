@@ -1,8 +1,8 @@
 #![forbid(unsafe_code)]
 
 //! nosd-helpers: small nosDshell helper tools in one binary.
-//! Subcommands mirror the Scripts/python helpers; QML callers get a
-//! fallback chain (rust binary -> python script) so rollout is gradual.
+//! Subcommands were ported from the Scripts/python helpers (removed once
+//! the Rust ports reached parity); QML callers invoke the binary directly.
 
 mod apply;
 mod bluetooth;

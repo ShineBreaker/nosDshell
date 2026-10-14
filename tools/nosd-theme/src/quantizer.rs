@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Wu + WSMeans quantization (QuantizerCelebi pipeline) and Score ranking.
-//! Mirrors Scripts/python/src/theming/lib/quantizer.py.
+//! Ported from the removed Scripts/python/src/theming/lib/quantizer.py.
 //!
 //! Parity notes:
 //! - Wu histogram/moment sums are exact integers (`i64`/`u128`); float

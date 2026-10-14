@@ -1,7 +1,8 @@
 #![forbid(unsafe_code)]
 
 //! Interactive bluetooth pairing driver.
-//! Mirrors Scripts/python/src/network/bluetooth-pair.py: run `bluetoothctl`
+//! Ported from the removed Scripts/python/src/network/bluetooth-pair.py: run
+//! `bluetoothctl`
 //! on a PTY, auto-answer pairing/authorization prompts, relay an optional
 //! user PIN from stdin, then trust and connect with retries.
 //!
@@ -65,7 +66,7 @@ fn contains_any(haystack: &str, needles: &[&str]) -> bool {
 
 pub fn run(args: &[String]) -> i32 {
     if args.len() < 4 {
-        log("Usage: bluetooth-pair.py <addr> <pairWaitSeconds> <attempts> <intervalSec>");
+        log("Usage: nosd-helpers bluetooth-pair <addr> <pairWaitSeconds> <attempts> <intervalSec>");
         return 2;
     }
     let addr = args[0].clone();

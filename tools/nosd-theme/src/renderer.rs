@@ -2,7 +2,7 @@
 
 //! Matugen-compatible template renderer: {{colors.name.mode.format}} tags,
 //! pipe filters, <* for *>/<* if *> blocks, TOML configs, custom colors.
-//! Mirrors Scripts/python/src/theming/lib/renderer.py.
+//! Ported from the removed Scripts/python/src/theming/lib/renderer.py.
 //!
 //! Parity notes:
 //! - All regexes from renderer.py are hand-rolled char scans with the same

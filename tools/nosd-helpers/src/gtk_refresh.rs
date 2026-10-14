@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! GTK refresh helper.
-//! Mirrors Scripts/python/src/theming/gtk-refresh.py:
+//! Ported from the removed Scripts/python/src/theming/gtk-refresh.py:
 //! ensure gtk.css imports nosdshell.css (GTK3/4), then push the
 //! light/dark preference via gsettings (dconf fallback).
 

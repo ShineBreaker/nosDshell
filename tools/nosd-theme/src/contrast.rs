@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! WCAG luminance and contrast utilities.
-//! Mirrors Scripts/python/src/theming/lib/contrast.py.
+//! Ported from the removed Scripts/python/src/theming/lib/contrast.py.
 
 use crate::color::Color;
 

@@ -997,7 +997,7 @@ fn apply_labwc() -> i32 {
 pub fn run(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!("Error: No application specified.");
-        eprintln!("Usage: nosd-helpers apply {{kitty|ghostty|foot|alacritty|wezterm|starship|fuzzel|walker|pywalfox|cava|yazi|labwc|niri|hyprland|sway|scroll|mango|btop|zathura}} [dark|light]");
+        eprintln!("Usage: nosd-helpers apply {{kitty|ghostty|foot|alacritty|wezterm|starship|fuzzel|walker|pywalfox|cava|yazi|labwc|niri|hyprland|sway|scroll|mango|btop|zathura|vicinae}} [dark|light]");
         return 1;
     }
     let (app, mode) = (&args[0], args.get(1).map(|s| s.as_str()));

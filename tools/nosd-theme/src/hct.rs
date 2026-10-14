@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! HCT (Hue, Chroma, Tone) color space: CAM16, Hct solver, tonal palettes.
-//! Mirrors Scripts/python/src/theming/lib/hct.py (itself a Material Color
+//! Ported from the removed Scripts/python/src/theming/lib/hct.py (itself a Material Color
 //! Utilities port).
 //!
 //! Parity notes: banker's rounding via `py_round`, CPython float `%` via

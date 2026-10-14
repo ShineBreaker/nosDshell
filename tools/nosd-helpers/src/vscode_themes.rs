@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Find installed Nosd theme extensions for VSCode/VSCodium.
-//! Mirrors Scripts/python/src/theming/vscode-helper.py.
+//! Ported from the removed Scripts/python/src/theming/vscode-helper.py.
 
 use std::env;
 use std::path::{Path, PathBuf};

@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! khal calendar event listing.
-//! Mirrors Scripts/python/src/calendar/khal-events.py: read khal's
+//! Ported from the removed Scripts/python/src/calendar/khal-events.py: read khal's
 //! longdatetimeformat, ask `khal list --json ...` for a date range, and
 //! rewrite the start/end-long-full fields to ISO-8601, one JSON array per
 //! output line.

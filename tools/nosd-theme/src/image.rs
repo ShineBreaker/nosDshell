@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Image reading: native PNG, PPM, JPEG sampling, ImageMagick fallback.
-//! Mirrors Scripts/python/src/theming/lib/image.py.
+//! Ported from the removed Scripts/python/src/theming/lib/image.py.
 //!
 //! Parity notes:
 //! - JPEG dimension scan and byte-triplet sampling mirror the Python logic.

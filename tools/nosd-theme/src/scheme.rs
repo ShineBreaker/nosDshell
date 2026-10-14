@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Predefined 14-color scheme expansion to the full 48-color palette.
-//! Mirrors Scripts/python/src/theming/lib/scheme.py.
+//! Ported from the removed Scripts/python/src/theming/lib/scheme.py.
 //!
 //! The expanded dict keeps Python's insertion order (ordered `Vec`).
 

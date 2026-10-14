@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Color representation and conversion utilities.
-//! Mirrors Scripts/python/src/theming/lib/color.py.
+//! Ported from the removed Scripts/python/src/theming/lib/color.py.
 //!
 //! Parity notes (float semantics differ between the languages):
 //! - Python's `%` on floats always returns a non-negative result; Rust's

@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Apply a named KDE color scheme.
-//! Mirrors Scripts/python/src/theming/kde-apply-scheme.py:
+//! Ported from the removed Scripts/python/src/theming/kde-apply-scheme.py:
 //! merge scheme file into kdeglobals (case-sensitive keys,
 //! `key=value` without spaces), then notify KGlobalSettings.
 

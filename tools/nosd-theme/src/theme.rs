@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Theme generation: Material (M3 schemes) plus wallust-style normal/muted.
-//! Mirrors Scripts/python/src/theming/lib/theme.py.
+//! Ported from the removed Scripts/python/src/theming/lib/theme.py.
 //!
 //! All dicts keep Python's insertion order (ordered `Vec`).
 

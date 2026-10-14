@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Dominant-color extraction: K-means clustering in Lab plus scoring modes.
-//! Mirrors Scripts/python/src/theming/lib/palette.py.
+//! Ported from the removed Scripts/python/src/theming/lib/palette.py.
 //!
 //! Parity notes:
 //! - All sorts are stable, like Python's `list.sort`.

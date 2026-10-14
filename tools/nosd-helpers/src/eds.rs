@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 
 //! Evolution Data Server calendar access over D-Bus.
-//! Mirrors Scripts/python/src/calendar/{check-calendar,list-calendars,
+//! Ported from the removed Scripts/python/src/calendar/{check-calendar,list-calendars,
 //! calendar-events}.py, which use libecal through GObject introspection.
 //!
 //! Protocol (verified by introspecting a live evolution-data-server 3.60
