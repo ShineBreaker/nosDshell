@@ -442,16 +442,6 @@ Item {
                       }
                     }
 
-    WheelHandler {
-      enabled: root.wheelScrollMultiplier !== 1.0
-      acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-      onWheel: event => {
-                 const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
-                 root.applyWheelScroll(delta);
-                 event.accepted = true;
-               }
-    }
-
     ScrollBar.vertical: ScrollBar {
       parent: root
       x: root.mirrored ? 0 : root.width - width
@@ -487,5 +477,22 @@ Item {
         }
       }
     }
+  }
+
+  // Item-level wheelEvent, not WheelHandler: PointerHandler wheel delivery is
+  // dead on the nosdshell-background layer surface under niri (see NListView).
+  // Parented to the root so it covers the viewport even when content is
+  // smaller; declined events propagate so the grid still scrolls natively at
+  // multiplier 1.0.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
+    onWheel: event => {
+               if (root.wheelScrollMultiplier === 1.0)
+               return;
+               const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
+               root.applyWheelScroll(delta);
+               event.accepted = true;
+             }
   }
 }

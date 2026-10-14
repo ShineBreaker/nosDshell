@@ -509,17 +509,27 @@ SmartPanel {
       }
 
       // §3.10: a horizontal strip answers the wheel — vertical wheel and
-      // touchpad pans both scroll contentX. Handlers declared inside a
-      // flickable land on its contentItem, so this fires before the
-      // flickable's own wheel handling. No acceptedDevices filter: virtual
-      // test pointers report an unknown device type and would be dropped.
-      WheelHandler {
-        onWheel: event => {
-                   const delta = event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.pixelDelta.y !== 0 ? event.pixelDelta.y : (event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y) / 2;
+      // touchpad pans both scroll contentX. This deliberately uses an item's
+      // wheelEvent path (MouseArea.onWheel), not a WheelHandler: on niri the
+      // PointerHandler never sees the wheel while item-level delivery works
+      // (verified via qt.quick.pointer tracing — the event enters the window
+      // but the handler's wantsPointerEvent path drops it before onWheel).
+      // Parented to the view itself, not the content item, so it is the
+      // topmost leaf under the cursor even over a delegate; NoButton keeps
+      // clicks, drags and hover flowing through to the delegates below.
+      MouseArea {
+        parent: stripView
+        anchors.fill: parent
+        acceptedButtons: Qt.NoButton
+        onWheel: wheel => {
+                   const delta = wheel.pixelDelta.x !== 0 ? wheel.pixelDelta.x : wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : (wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : wheel.angleDelta.y) / 2;
                    if (delta === 0)
                    return;
-                   stripView.scrollBy(-delta);
-                   event.accepted = true;
+                   // Same 2x wheel multiplier as the N*View widgets (their
+                   // wheelScrollMultiplier default): one mouse notch moves
+                   // about one thumbnail, touchpad pans stay 1:1-ish.
+                   stripView.scrollBy(-delta * 2.0);
+                   wheel.accepted = true;
                  }
       }
 

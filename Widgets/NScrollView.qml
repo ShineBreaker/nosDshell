@@ -185,10 +185,16 @@ ScrollView {
     }
   }
 
-  WheelHandler {
-    enabled: root.wheelScrollMultiplier !== 1.0 && root._internalFlickable !== null
-    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+  // Item-level wheelEvent, not WheelHandler: PointerHandler wheel delivery is
+  // dead on the nosdshell-background layer surface under niri (see NListView).
+  // Declined events propagate to the content, so the flickable still handles
+  // the wheel natively whenever this area lets it through.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
     onWheel: event => {
+               if (root.wheelScrollMultiplier === 1.0 || !root._internalFlickable)
+               return;
                const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
                root.applyWheelScroll(delta);
                event.accepted = true;

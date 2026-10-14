@@ -563,7 +563,8 @@ Item {
         ScrollBar.vertical.visible: false
         // The flickable must never grab presses: a real mouse jitters a few
         // pixels during a click, the flickable interprets it as a drag start
-        // and eats the click. Wheel scrolling still works via WheelHandler.
+        // and eats the click. Wheel scrolling still works: NScrollView's
+        // overlay MouseArea scrolls imperatively.
         flickableInteractive: false
 
         Column {
@@ -831,14 +832,6 @@ Item {
             }
           }
 
-          // Wheel takeover: NScrollView consumes the event for smooth scrolling;
-          // this sibling handler only cancels our programmatic state (it never
-          // accepts, so default processing continues untouched).
-          WheelHandler {
-            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-            onWheel: root._cancelProgrammatic()
-          }
-
           Column {
             id: sectionsColumn
             width: parent.width
@@ -1001,6 +994,19 @@ Item {
                 }
               }
             }
+          }
+
+          // Wheel takeover: NScrollView consumes the event for smooth
+          // scrolling; this overlay only cancels our programmatic state —
+          // it never accepts, so the event keeps propagating untouched.
+          // Item-level wheelEvent, not WheelHandler: PointerHandler wheel
+          // delivery is dead on the nosdshell-background layer surface under
+          // niri (see NListView). Declared after the content column so it is
+          // consulted first.
+          MouseArea {
+            anchors.fill: parent
+            acceptedButtons: Qt.NoButton
+            onWheel: root._cancelProgrammatic()
           }
         }
       }

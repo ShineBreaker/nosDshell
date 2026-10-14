@@ -65,24 +65,6 @@ NBox {
     CalendarService.loadEvents(daysAhead + 30, daysBehind + 30);
   }
 
-  // Wheel handler for month navigation
-  WheelHandler {
-    id: wheelHandler
-    target: root
-    acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-    onWheel: function (event) {
-      if (event.angleDelta.y > 0) {
-        // Scroll up - go to previous month
-        root.navigateToPreviousMonth();
-        event.accepted = true;
-      } else if (event.angleDelta.y < 0) {
-        // Scroll down - go to next month
-        root.navigateToNextMonth();
-        event.accepted = true;
-      }
-    }
-  }
-
   ColumnLayout {
     id: calendarContent
     anchors.fill: parent
@@ -424,6 +406,26 @@ NBox {
             }
           }
         }
+      }
+    }
+  }
+
+  // Wheel navigates months. Item-level wheelEvent, not WheelHandler:
+  // PointerHandler wheel delivery is dead on the nosdshell-background layer
+  // surface under niri (see NListView). Declared last so it sits on top of the
+  // delivery chain; NoButton keeps day/chevron clicks flowing through.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
+    onWheel: function (event) {
+      if (event.angleDelta.y > 0) {
+        // Scroll up - go to previous month
+        root.navigateToPreviousMonth();
+        event.accepted = true;
+      } else if (event.angleDelta.y < 0) {
+        // Scroll down - go to next month
+        root.navigateToNextMonth();
+        event.accepted = true;
       }
     }
   }

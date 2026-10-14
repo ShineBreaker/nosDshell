@@ -103,8 +103,11 @@ fn run_op(args: &[String]) -> Result<(), String> {
     let seat: wl_seat::WlSeat = globals
         .bind(&queue.handle(), 1..=7, ())
         .map_err(|_| "vinput: no wl_seat global".to_string())?;
+    // v2 adds axis_discrete — binding v1 and sending it anyway is a protocol
+    // error: the compositor drops the rest of the scroll sequence (the
+    // "wheel never arrives" symptom) or disconnects the virtual pointer.
     let mgr: ZwlrVirtualPointerManagerV1 = globals
-        .bind(&queue.handle(), 1..=1, ())
+        .bind(&queue.handle(), 1..=2, ())
         .map_err(|_| {
             "vinput: zwlr_virtual_pointer_manager_v1 not available in this compositor".to_string()
         })?;

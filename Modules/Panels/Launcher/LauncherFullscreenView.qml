@@ -278,18 +278,6 @@ Item {
     Settings.data.appLauncher.iconRatio = value;
   }
 
-  // Ctrl + wheel adjusts iconRatio (DESIGN §3.4.1)
-  WheelHandler {
-    acceptedModifiers: Qt.ControlModifier
-    enabled: !root.ignoreMouse
-    onWheel: event => {
-               if (event.angleDelta.y > 0)
-               root.adjustIconRatio(0.1);
-               else
-               root.adjustIconRatio(-0.1);
-             }
-  }
-
   // ---------------------------------------------------------------
   // Layout
   // ---------------------------------------------------------------
@@ -588,5 +576,26 @@ Item {
     id: mainContainer
     anchors.fill: parent
     focus: true
+  }
+
+  // Ctrl + wheel adjusts iconRatio (DESIGN §3.4.1). Item-level wheelEvent,
+  // not WheelHandler: PointerHandler wheel delivery is dead on the
+  // nosdshell-background layer surface under niri (see NListView). Declared
+  // last so it is the topmost leaf in the delivery chain; only accepts the
+  // event while Ctrl is held so plain wheel still reaches the results
+  // grid's own scrolling, and NoButton keeps clicks flowing through.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
+    enabled: !root.ignoreMouse
+    onWheel: event => {
+               if (!(event.modifiers & Qt.ControlModifier))
+               return;
+               if (event.angleDelta.y > 0)
+               root.adjustIconRatio(0.1);
+               else
+               root.adjustIconRatio(-0.1);
+               event.accepted = true;
+             }
   }
 }

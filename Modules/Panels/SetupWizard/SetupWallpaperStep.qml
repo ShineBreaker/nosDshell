@@ -97,28 +97,6 @@ ColumnLayout {
       showGradientMasks: false
       reserveScrollbarSpace: false
 
-      // Enable vertical mouse wheel to scroll the horizontal strip by moving contentX
-      WheelHandler {
-        target: galleryScroll.contentItem
-        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-        onWheel: event => {
-                   const flick = galleryScroll.contentItem;
-                   if (!flick)
-                   return;
-                   const delta = event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0 ? (event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.pixelDelta.x) : (event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x);
-                   // Move opposite of wheel to scroll content to the right for wheel down
-                   const step = -delta;
-                   const maxX = Math.max(0, flick.contentWidth - flick.width);
-                   let newX = flick.contentX + step;
-                   if (newX < 0)
-                   newX = 0;
-                   if (newX > maxX)
-                   newX = maxX;
-                   flick.contentX = newX;
-                   event.accepted = true;
-                 }
-      }
-
       RowLayout {
         spacing: Style.marginM
         height: parent.height
@@ -219,6 +197,32 @@ ColumnLayout {
           }
         }
       }
+    }
+
+    // Vertical mouse wheel scrolls the horizontal strip via contentX.
+    // Item-level wheelEvent, not WheelHandler: PointerHandler wheel delivery
+    // is dead on the nosdshell-background layer surface under niri (see
+    // NListView). Declared after the scroll view so it is the topmost leaf;
+    // NoButton keeps thumbnail clicks flowing through.
+    MouseArea {
+      anchors.fill: parent
+      acceptedButtons: Qt.NoButton
+      onWheel: event => {
+                 const flick = galleryScroll.contentItem;
+                 if (!flick)
+                 return;
+                 const delta = event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0 ? (event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.pixelDelta.x) : (event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x);
+                 // Move opposite of wheel to scroll content to the right for wheel down
+                 const step = -delta;
+                 const maxX = Math.max(0, flick.contentWidth - flick.width);
+                 let newX = flick.contentX + step;
+                 if (newX < 0)
+                 newX = 0;
+                 if (newX > maxX)
+                 newX = maxX;
+                 flick.contentX = newX;
+                 event.accepted = true;
+               }
     }
   }
 

@@ -430,27 +430,6 @@ Item {
     onContentWidthChanged: root._wheelTargetX = root.clampScrollX(root._wheelTargetX)
     onWidthChanged: root._wheelTargetX = root.clampScrollX(root._wheelTargetX)
 
-    WheelHandler {
-      enabled: !root.wheelScrollable
-      acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
-      onWheel: event => {
-                 event.accepted = true;
-               }
-    }
-
-    // No acceptedDevices filter: virtual/test pointers report an unknown
-    // device type and would silently drop the event.
-    WheelHandler {
-      enabled: root.wheelScrollMultiplier !== 1.0 && root.wheelScrollable
-      onWheel: event => {
-                 // Primary axis first; a horizontal list also accepts a
-                 // vertical wheel since that is what a plain mouse produces.
-                 const delta = listView.orientation === ListView.Horizontal ? (event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.pixelDelta.y !== 0 ? event.pixelDelta.y : (event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y) / 2) : (event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2);
-                 root.applyWheelScroll(delta);
-                 event.accepted = true;
-               }
-    }
-
     ScrollBar.vertical: ScrollBar {
       parent: root
       x: root.mirrored ? 0 : root.width - width
@@ -487,5 +466,31 @@ Item {
         }
       }
     }
+  }
+
+  // Wheel scrolling goes through an item wheelEvent (MouseArea.onWheel), not
+  // WheelHandler: PointerHandler wheel delivery never reaches handlers hosted
+  // on the nosdshell-background layer surface under niri — the event enters
+  // the window but wantsPointerEvent drops it before onWheel (verified via
+  // qt.quick.pointer tracing). MouseArea.onWheel rides the same delivery path
+  // as QQuickFlickable's own wheel handling, which works on every surface.
+  // Parented to the root (not the content item) so it covers the viewport even
+  // when content is smaller; NoButton keeps clicks/drags/hover flowing through
+  // to the delegates. When nothing can scroll the event is swallowed so it
+  // never falls through to a parent scroller.
+  MouseArea {
+    anchors.fill: parent
+    acceptedButtons: Qt.NoButton
+    onWheel: event => {
+               if (!root.wheelScrollable) {
+                 event.accepted = true;
+                 return;
+               }
+               // Primary axis first; a horizontal list also accepts a vertical
+               // wheel since that is what a plain mouse produces.
+               const delta = listView.orientation === ListView.Horizontal ? (event.pixelDelta.x !== 0 ? event.pixelDelta.x : event.pixelDelta.y !== 0 ? event.pixelDelta.y : (event.angleDelta.x !== 0 ? event.angleDelta.x : event.angleDelta.y) / 2) : (event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2);
+               root.applyWheelScroll(delta);
+               event.accepted = true;
+             }
   }
 }
