@@ -69,6 +69,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - 组件实际读的是下列语义令牌：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
   - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原为固定白色 × 0.9〕。
+  - `Color.popupPage`：不透明页面表面上的弹出菜单（设置页等内容页里的下拉）。RGB 同 `popupShell`（暗色 `mSurfaceVariant`、浅色 `mSurface`），恒不透明、不受 `ui.popupOpacity` 缩放——底下的表面是页面不是壁纸，半透明会透出文字〔演进：原先组件直用不透明的方案表面色实填〕。
   - `Color.borderShell` 和 `Color.borderTransient`：分别对应 `borderDark` 和 `borderLight`，浅色外壳使用 `borderLight`。描边透明度整体乘以 `ui.borderEmphasis`（0–2，默认 1，0 表示无描边）〔演进〕。
   - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司），按上面的 `ui.transientSurface` 规则取值〔演进：原版恒为不透明 `#F8F8F8`〕。
 - 配套的前景色：

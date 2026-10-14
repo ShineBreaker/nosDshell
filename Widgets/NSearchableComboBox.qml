@@ -434,10 +434,11 @@ NDccRow {
       }
 
       background: NArrowRect {
-        // Same as NComboBox: page-surface menus stay opaque — popupShell's
-        // translucency would bleed settings page text through the list.
+        // Same as NComboBox: page-surface menus stay opaque (Color.popupPage)
+        // — popupShell's translucency would bleed settings page text
+        // through the list.
         arrowEdge: ""
-        fillColor: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
+        fillColor: root.onShellSurface ? Color.popupShell : Color.popupPage
         borderColor: root.onShellSurface ? Color.borderShell : Color.mOutline
         borderWidth: Style.borderS
         radius: Style.radiusPopup

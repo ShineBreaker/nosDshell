@@ -354,11 +354,11 @@ NDccRow {
       }
 
       background: NArrowRect {
-        // Page-surface menus stay opaque — popupShell's translucency (built
-        // for blurred shell popups) bleeds page text through the list.
-        // On a shell surface the glass look is intentional.
+        // Page-surface menus stay opaque (Color.popupPage) — popupShell's
+        // translucency (built for blurred shell popups) bleeds page text
+        // through the list. On a shell surface the glass look is intentional.
         arrowEdge: ""
-        fillColor: root.onShellSurface ? Color.popupShell : Color.mSurfaceVariant
+        fillColor: root.onShellSurface ? Color.popupShell : Color.popupPage
         borderColor: root.onShellSurface ? Color.borderShell : Color.mOutline
         borderWidth: Style.borderS
         radius: Style.radiusPopup

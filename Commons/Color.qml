@@ -488,6 +488,13 @@ Singleton {
   readonly property color _popupBase: shellIsDark ? popupDark : Qt.alpha(mSurface, 0.9)
   readonly property color popupShell: Qt.rgba(_popupBase.r, _popupBase.g, _popupBase.b, _popupBase.a * Settings.data.ui.popupOpacity)
 
+  // Opaque popup plate for menus that open on opaque page surfaces
+  // (settings content, dialogs) — DESIGN §1.2. Same RGB role as
+  // popupShell, constant alpha 1, never scaled by ui.popupOpacity: the
+  // surface underneath is a page, not the wallpaper, so translucency
+  // would bleed the page text through the list.
+  readonly property color popupPage: shellIsDark ? mSurfaceVariant : mSurface
+
   // Forced-light popup variant (DESIGN §3.3): the DDE "light" menu keeps the
   // classic light palette regardless of shell mode — a fixed signature, not a
   // scheme-tinted surface (the scheme's light variant isn't readable when the
