@@ -195,7 +195,9 @@ Loader {
                   anchors.bottom: parent.bottom
                   anchors.bottomMargin: 360 * Style.uiScaleRatio
                   radius: Style.radiusL
-                  color: Color.mSurface
+                  // Wallpaper surface: constant-white ladder, same family as
+                  // the onWallpaper ink and the field-level password box.
+                  color: Color.overlayWallpaper("strong")
                   visible: panelComponent.timerActive
                   opacity: visible ? 1.0 : 0.0
 

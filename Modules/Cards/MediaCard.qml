@@ -118,10 +118,12 @@ NBox {
       }
     }
 
-    // Dark overlay for readability
+    // Readability veil over the blurred cover: constant black so the white
+    // ink stays readable in the light theme too (a theme-flipping surface
+    // color washed the cover out to white-on-white there).
     Rectangle {
       anchors.fill: parent
-      color: Color.mSurface
+      color: Color.veilWallpaper
       opacity: 0.65
       radius: Style.radiusM
     }
