@@ -445,7 +445,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - `appLauncher.iconMode`：provider 给出 Tabler 字形名时，列表项先查主题图标，找不到再用字形（`apps` 为最后的兜底）。
 - `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
 - `appLauncher.enableClipPreview`：全屏模式剪贴板预览卡片的开关。切换 `enableClipboardHistory` 会立即注册或注销剪贴板 provider。
-- 启动器按钮图标组（与任务栏页共用一份实现 `Tabs/Shared/LauncherIconGroup.qml`）：`dock.launcherUseDistroLogo`、`dock.launcherIcon`、`dock.launcherIconColor` 与 `dock.launcherIconSize`——同一套键驱动高效模式任务栏启动器和时尚模式坞启动器项；高效模式右键启动器按钮走"启动器设置"落在本页，所以按钮图标的控件也在这里。尺寸滑条两种模式都显示：像素值同时作用于高效任务栏 glyph、时尚胶囊与坞启动器块，`0`/重置 = 自动按模式推导（高效 16px，时尚随 `dock.iconSize`）。
+- 启动器按钮图标组（与任务栏页共用一份实现 `Tabs/Shared/LauncherIconGroup.qml`）：`dock.launcherUseDistroLogo`、`dock.launcherIcon`、`dock.launcherIconColor` 与 `dock.launcherIconSize`——同一套键驱动高效模式任务栏启动器和时尚模式坞启动器项；高效模式右键启动器按钮走"启动器设置"落在本页，所以按钮图标的控件也在这里。尺寸滑条两种模式都显示：像素值作用于启动器*项*——高效任务栏 glyph 与时尚坞启动器块，`0`/重置 = 自动按模式推导（高效 16px，时尚随 `dock.iconSize`）；时尚顶栏胶囊不读该键，其图标始终按固定胶囊高度的比例推导（坞级像素值会撑破胶囊）。
 - Noctalia 原有的 `appLauncher.position` 和 `overviewLayer` 属于 SmartPanel/overlay 前端，已随该前端一起移除（登记见 §6.1）。启动器只有本节这一套 DDE 实现。
 
 ### 3.5 控制中心（dde-control-center）

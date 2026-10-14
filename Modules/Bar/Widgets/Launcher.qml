@@ -72,9 +72,11 @@ NIconButton {
   tooltipText: I18n.tr("actions.open-launcher")
   tooltipDirection: BarService.getTooltipDirection(screenName, root.section === "dock")
   baseSize: efficientMode ? Style.getBarHeightForScreen(screenName) : Style.getCapsuleHeightForScreen(screenName)
-  // dock.launcherIconSize is px in both modes; 0 = derive (efficient 16px
-  // glyph like the other plugin icons, fashion keeps the capsule fraction).
-  readonly property int launcherIconPx: Settings.data.dock.launcherIconSize
+  // dock.launcherIconSize sizes the launcher *item*: the efficient taskbar
+  // glyph here and the fashion dock tile in DockContent. The fashion
+  // status-bar capsule never reads it — its icon derives from the fixed
+  // capsule height and a dock-sized px value would burst the capsule.
+  readonly property int launcherIconPx: efficientMode ? Settings.data.dock.launcherIconSize : 0
   readonly property real launcherGlyphPx: launcherIconPx > 0 ? Math.max(8, launcherIconPx) : (efficientMode ? 16 : root.buttonSize * 0.48)
   iconRatio: launcherGlyphPx / Math.max(1, root.buttonSize)
   applyUiScale: false
