@@ -430,7 +430,11 @@ Item {
           spacing: 0
           clip: true
           gradientColor: "transparent"
-          model: root.listResults
+          // Model is the count, entries are read by index: the results carry a
+          // provider QObject, and boxing them through a QVariant model turns
+          // those refs into raw pointers that lose QPointer tracking
+          // (CODING_STANDARDS "QML 规则"). The row resolves the live JS entry.
+          model: root.listResults.length
           currentIndex: model.selectedIndex
           interactive: !root.ignoreMouse
           wheelScrollMultiplier: root.ignoreMouse ? 1.0 : 2.0
@@ -438,6 +442,7 @@ Item {
 
           delegate: LauncherListRow {
             listView: resultsList
+            results: root.listResults
             rowHeight: model.listRowHeight
             iconSize: model.listIconSize
             onActivated: {
@@ -476,7 +481,9 @@ Item {
           cellWidth: root.cellWidth
           cellHeight: root.cellHeight
           spacing: root.cellSpacing
-          model: root.appResults
+          // Model is the count, entries are read by index — see the results
+          // list above (CODING_STANDARDS "QML 规则").
+          model: root.appResults.length
           currentIndex: model.selectedIndex
           // Only grab the pointer while the grid actually scrolls — otherwise an
           // interactive Flickable eats every press on empty canvas and the
@@ -510,6 +517,7 @@ Item {
           delegate: LauncherGridCell {
             width: resultsGrid.effectiveCellWidth
             height: resultsGrid.effectiveCellHeight
+            results: root.appResults
             iconSize: Math.round(resultsGrid.effectiveCellWidth * Settings.data.appLauncher.iconRatio)
             // `index` is the position inside appResults (apps only, filtered)
             // — map back to the real result object before activating.

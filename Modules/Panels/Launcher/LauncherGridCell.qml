@@ -11,8 +11,16 @@ import QtQuick.Layouts
 Item {
   id: root
 
-  required property var modelData
   required property int index
+  // Owning grid's result array, injected by the delegate site. The grid view's
+  // model carries only a count (CODING_STANDARDS "QML 规则"): boxing the
+  // entries through a QVariant model would turn each result's provider
+  // QObject into a raw pointer that loses QPointer tracking. The cell
+  // resolves the live JS entry itself; a transient miss reads null.
+  property var results: []
+
+  readonly property var modelData: results[index] ?? null
+
   // Owning grid, injected by NGridView; may be null during early evaluation.
   property var gridView: GridView.view
 
@@ -23,7 +31,7 @@ Item {
   property int iconSize: 85
 
   // New until first launch (tracked in ShellState by ApplicationsProvider)
-  readonly property bool isNew: modelData.isNew === true
+  readonly property bool isNew: modelData?.isNew === true
 
   readonly property bool selected: root.gridView !== null && index === root.gridView.currentIndex
 
@@ -78,7 +86,7 @@ Item {
         anchors.centerIn: parent
         width: root.iconSize
         height: root.iconSize
-        source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
+        source: modelData?.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
         detectSymbolic: true
         color: Color.onWallpaper
         visible: source !== "" && status === Image.Ready
@@ -91,9 +99,9 @@ Item {
         pointSize: root.iconSize * 0.9
         // Tabler glyph fallback: also covers the themed lookup failing (e.g.
         // iconMode "tabler" emits glyph names that iconFromName cannot map).
-        icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"
+        icon: (Icons.icons[modelData?.icon] !== undefined || Icons.aliases[modelData?.icon] !== undefined) ? modelData.icon : "apps"
         color: Color.onWallpaper
-        visible: !modelData.icon || modelData.icon === "" || cellIcon.status === Image.Error
+        visible: !modelData?.icon || modelData.icon === "" || cellIcon.status === Image.Error
       }
     }
 
@@ -102,7 +110,7 @@ Item {
       id: appLabel
       Layout.fillWidth: true
       Layout.topMargin: Math.max(1, root.iconSize * 0.06)
-      text: modelData.name || ""
+      text: modelData?.name || ""
       pointSize: Style.fontSizeBody
       color: Color.onWallpaper
       style: Text.Sunken
@@ -158,7 +166,7 @@ Item {
       arrowEdge: "" // no arrow in the fullscreen launcher
 
       readonly property var itemActions: {
-        const provider = root.modelData.provider;
+        const provider = root.modelData?.provider;
         if (provider && provider.getItemActions) {
           return provider.getItemActions(root.modelData) || [];
         }

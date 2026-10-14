@@ -11,8 +11,16 @@ import QtQuick.Layouts
 Item {
   id: root
 
-  required property var modelData
   required property int index
+  // Owning view's result array, injected by the delegate site. The list view's
+  // model carries only a count (CODING_STANDARDS "QML 规则"): boxing the
+  // entries through a QVariant model would turn each result's provider
+  // QObject into a raw pointer that loses QPointer tracking. The row resolves
+  // the live JS entry itself; a transient miss reads null.
+  property var results: []
+
+  readonly property var modelData: results[index] ?? null
+
   property var listView: null
   // Driven by appLauncher.density via the owning view's LauncherModel.
   property int rowHeight: 36
@@ -45,7 +53,7 @@ Item {
     height: root.iconSize + Style.marginS * 2
     radius: Style.radiusRow
     color: Color.overlayWallpaper("hover")
-    visible: Settings.data.appLauncher.showIconBackground && !modelData.isImage
+    visible: Settings.data.appLauncher.showIconBackground && !modelData?.isImage
   }
 
   // Icon — darkened wallpaper surface: symbolic glyphs stay in onWallpaper ink
@@ -55,7 +63,7 @@ Item {
     width: root.iconSize
     height: root.iconSize
     y: root.iconY
-    source: modelData.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
+    source: modelData?.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
     detectSymbolic: true
     color: Color.onWallpaper
     visible: status === Image.Ready
@@ -74,9 +82,9 @@ Item {
     // Fallback when there is no themed icon, or it failed to load: only feed
     // real Tabler glyph names to the font path, app icon names would warn and
     // render the fallback.
-    icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"
+    icon: (Icons.icons[modelData?.icon] !== undefined || Icons.aliases[modelData?.icon] !== undefined) ? modelData.icon : "apps"
     color: Color.onWallpaper
-    visible: modelData.icon === "" || rowIcon.status === Image.Error
+    visible: modelData?.icon === "" || rowIcon.status === Image.Error
   }
 
   NText {
@@ -84,7 +92,7 @@ Item {
     width: parent.width - (x + 10)
     height: root.rowHeight
     verticalAlignment: Text.AlignVCenter
-    text: modelData.name || ""
+    text: modelData?.name || ""
     pointSize: Style.fontSizeBody
     color: Color.onWallpaper
     elide: Text.ElideRight

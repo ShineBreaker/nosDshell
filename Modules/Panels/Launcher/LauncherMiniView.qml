@@ -53,6 +53,19 @@ Item {
   // (minicategorywidget.cpp:46-56).
   readonly property var categoryRows: ["all"].concat(appsProvider ? (appsProvider.ddeCategories || []) : [])
 
+  // What the left list is showing right now: the result entries (whose
+  // provider field is a QObject) or, on the category page, the bucket names
+  // as plain strings. Held in one property var so the list can model itself
+  // on the count and the rows can resolve the live entries by index
+  // (CODING_STANDARDS "QML 规则").
+  readonly property var displayRows: {
+    if (model.searchText.trim() !== "")
+      return model.results;
+    if (root.showingCategoryRows)
+      return root.categoryRows;
+    return model.results;
+  }
+
   readonly property bool hasApps: model.results.length > 0
 
   // Category-row activation: "all" leaves the category views entirely, a
@@ -217,14 +230,11 @@ Item {
             // The category list reuses this view: rows are the 12 DDE buckets
             // as bare strings while the apps keep their result-entry shape.
             // The bucket filter rides on the provider, so in-category browsing
-            // shows exactly model.results.
-            model: {
-              if (model.searchText.trim() !== "")
-                return model.results;
-              if (root.showingCategoryRows)
-                return root.categoryRows;
-              return model.results;
-            }
+            // shows exactly model.results. The model is the count; rows read
+            // the live entry from root.displayRows by index so the result's
+            // provider QObject never rides through a QVariant model copy
+            // (CODING_STANDARDS "QML 规则").
+            model: root.displayRows.length
             currentIndex: root.showingCategoryRows ? root.catIndex : model.selectedIndex
             spacing: 0
             interactive: !Settings.data.appLauncher.ignoreMouseInput
@@ -232,8 +242,8 @@ Item {
             reserveScrollbarSpace: false
 
             delegate: Item {
-              required property var modelData
               required property int index
+              readonly property var modelData: root.displayRows[index] ?? null
 
               readonly property bool isCategoryRow: typeof modelData === "string"
               // In the category list the checked row mirrors the view state:
@@ -268,7 +278,7 @@ Item {
                 height: model.listIconSize + Style.marginS * 2
                 radius: Style.radiusRow
                 color: Color.overlay("hover")
-                visible: Settings.data.appLauncher.showIconBackground && !isCategoryRow && !modelData.isImage
+                visible: Settings.data.appLauncher.showIconBackground && !isCategoryRow && !modelData?.isImage
               }
 
               NSymbolicImage {
@@ -277,7 +287,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 width: model.listIconSize
                 height: model.listIconSize
-                source: (!isCategoryRow && modelData.icon) ? ThemeIcons.iconFromName(modelData.icon) : ""
+                source: (!isCategoryRow && modelData?.icon) ? ThemeIcons.iconFromName(modelData.icon) : ""
                 detectSymbolic: true
                 color: Color.onShell
                 visible: status === Image.Ready
@@ -294,9 +304,9 @@ Item {
                 pointSize: model.listIconSize
                 // Themed lookup failed (or no icon at all): fall back to the
                 // Tabler glyph when the name is one, a generic app glyph else.
-                icon: (Icons.icons[modelData.icon] !== undefined || Icons.aliases[modelData.icon] !== undefined) ? modelData.icon : "apps"
+                icon: (Icons.icons[modelData?.icon] !== undefined || Icons.aliases[modelData?.icon] !== undefined) ? modelData.icon : "apps"
                 color: Color.onShell
-                visible: !isCategoryRow && (modelData.icon === "" || rowIcon.status === Image.Error)
+                visible: !isCategoryRow && (modelData?.icon === "" || rowIcon.status === Image.Error)
               }
 
               // App row label
@@ -305,7 +315,7 @@ Item {
                 width: parent.width - (x + 10)
                 height: model.listRowHeight
                 verticalAlignment: Text.AlignVCenter
-                text: isCategoryRow ? "" : (modelData.name || "")
+                text: isCategoryRow ? "" : (modelData?.name || "")
                 pointSize: Style.fontSizeBody
                 color: Color.onShell
                 elide: Text.ElideRight
