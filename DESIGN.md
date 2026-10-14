@@ -634,6 +634,7 @@ Noctalia 卡片的对应关系：
     - 键盘布局
     - 切换用户
     - 电源。电源按钮会在锁屏内打开 §3.8 的按钮行；此时密码区隐藏。
+    - 按钮底色走壁纸面恒白叠加阶梯：常态 `overlayWallpaper("field")`，悬停 `strong`，按下 `checked`；图标前景 `onWallpaper`〔演进：原为白色字面量 0.12/0.2/0.3，0.12 一档在 §1.3 阶梯中无对应级别，归档到 field（`gxde-session-ui/widgets/skin/layoutbutton.qss:7` 的 hover 即 0.15）〕。
 - 中央，从上到下：
   - 头像：100 px 圆形，无描边。
   - 用户名：16 px 白字，在头像下方 25 px。
