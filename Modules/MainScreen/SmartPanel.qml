@@ -29,11 +29,14 @@ Item {
   property bool dimsBackground: true
   property real preferredWidthRatio
   property real preferredHeightRatio
-  property color panelBackgroundColor: Color.mSurface
-  // When true the panel background renders outside the Style.effectivePanelOpacity
-  // layer: the color's own alpha is final (like the bar in efficient mode).
-  property bool ownBackgroundAlpha: false
-  property color panelBorderColor: Color.mOutline
+  // Default background is the maskShell semantic token (DESIGN §1.2: 常驻
+  // 外壳蒙版 — the alpha is computed by the token itself, blur-off falls
+  // back to 0.8). Because the token already carries the final alpha, the
+  // default panel renders outside the Style.effectivePanelOpacity layer;
+  // only a panel supplying an opaque color opts back into that layer with
+  // ownBackgroundAlpha: false.
+  property color panelBackgroundColor: Color.maskShell
+  property bool ownBackgroundAlpha: true
   property var buttonItem: null
   property bool forceAttachToBar: false
 

@@ -23,7 +23,10 @@ Item {
   // Reference to MainScreen (for panel access)
   required property var windowRoot
 
-  readonly property color panelBackgroundColor: Color.mSurface
+  // Panel slots default to the maskShell semantic token (DESIGN §1.2): its
+  // alpha is the final alpha, so those panels render via ownBackgroundAlpha
+  // outside the effectivePanelOpacity layer. The bar keeps the opaque scheme
+  // surface + opacity-layer treatment (efficient mode alone uses maskShell).
   // Efficient (taskbar) mode: the bar gets its own layer so the maskShell
   // alpha isn't double-multiplied by the panel opacity layer
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
@@ -66,7 +69,7 @@ Item {
           bar: root.bar
           shapeContainer: unifiedBackgroundsShape
           windowRoot: root.windowRoot
-          backgroundColor: panelBackgroundColor
+          backgroundColor: Color.mSurface
         }
 
         /**
@@ -83,7 +86,7 @@ Item {
             return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
           }
           shapeContainer: unifiedBackgroundsShape
-          defaultBackgroundColor: panelBackgroundColor
+          defaultBackgroundColor: Color.maskShell
         }
 
         // Slot 1: Closing panel (during transitions)
@@ -95,7 +98,7 @@ Item {
             return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
           }
           shapeContainer: unifiedBackgroundsShape
-          defaultBackgroundColor: panelBackgroundColor
+          defaultBackgroundColor: Color.maskShell
         }
       }
 
@@ -154,7 +157,7 @@ Item {
               return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
             }
             shapeContainer: panelBackgroundsShape
-            defaultBackgroundColor: panelBackgroundColor
+            defaultBackgroundColor: Color.maskShell
           }
 
           // Slot 1: Closing panel (during transitions)
@@ -166,7 +169,7 @@ Item {
               return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
             }
             shapeContainer: panelBackgroundsShape
-            defaultBackgroundColor: panelBackgroundColor
+            defaultBackgroundColor: Color.maskShell
           }
         }
 
@@ -207,7 +210,7 @@ Item {
             bar: root.bar
             shapeContainer: barBackgroundShape
             windowRoot: root.windowRoot
-            backgroundColor: root.efficientMode ? Color.maskShell : panelBackgroundColor
+            backgroundColor: root.efficientMode ? Color.maskShell : Color.mSurface
           }
         }
 
@@ -243,7 +246,7 @@ Item {
             return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
           }
           shapeContainer: ownAlphaPanelShape
-          defaultBackgroundColor: panelBackgroundColor
+          defaultBackgroundColor: Color.maskShell
         }
 
         // Slot 1: Closing panel (during transitions)
@@ -254,7 +257,7 @@ Item {
             return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
           }
           shapeContainer: ownAlphaPanelShape
-          defaultBackgroundColor: panelBackgroundColor
+          defaultBackgroundColor: Color.maskShell
         }
       }
 

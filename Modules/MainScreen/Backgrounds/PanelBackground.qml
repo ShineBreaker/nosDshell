@@ -25,8 +25,9 @@ ShapePath {
   // Required reference to AllBackgrounds shapeContainer
   required property var shapeContainer
 
-  // Default background color (used if panel doesn't specify one)
-  property color defaultBackgroundColor: Color.mSurface
+  // Default background color (used if panel doesn't specify one): the
+  // maskShell semantic token, matching the SmartPanel default (DESIGN §1.2).
+  property color defaultBackgroundColor: Color.maskShell
 
   // Corner radius (from Style)
   // Corner radius; the panel may force square corners (edge sheets, §3.5.1)
