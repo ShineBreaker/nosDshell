@@ -384,10 +384,18 @@ Singleton {
     visible: false
 
     Repeater {
-      model: root.appStreams
+      // Model is the count, entries are read by index: the appStreams
+      // snapshot is rebuilt on every sink/link change, and a rebuilt array
+      // model would recreate every delegate — worse, boxing the PwNode
+      // entries through a QVariant model turns them into raw pointers that
+      // lose QPointer tracking (CODING_STANDARDS "QML 规则"). The delegate
+      // resolves the live JS entry itself; a transient miss reads null and
+      // the Connections target stays null.
+      model: root.appStreams.length
 
       delegate: Item {
-        required property var modelData
+        required property int index
+        readonly property var modelData: root.appStreams[index] ?? null
 
         Connections {
           target: modelData?.audio ?? null
