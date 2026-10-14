@@ -837,10 +837,57 @@ PYEOF
                             for y in 105 159 213 267 321; do
                               qs -p "$REPO" ipc call debug hit opened 1540 "$y" >> "$WORK/logs/cc-hit.txt" 2>&1 || true
                             done
-                            "$VINPUT" vinput click 1540 267 2>>"$WORK/logs/vinput.log" || true
+                            # The rail delegates are 56x34 cells on a ~54 px
+                            # stride — the old fixed row (105/159/…) lands in
+                            # the 20 px gaps between cells and never reaches a
+                            # delegate. Probe down the column, collect every
+                            # delegate-centre hit, and click a mid-list module
+                            # (idx 8, sound): idx 0 would be a no-op — it is
+                            # already the selected module at scroll top.
+                            RAIL_HITS=()
+                            for y in $(seq 64 2 1040); do
+                              HIT_OUT=$(qs -p "$REPO" ipc call debug hit opened 1540 "$y" 2>/dev/null || true)
+                              echo "$HIT_OUT" >> "$WORK/logs/cc-hit.txt"
+                              echo "$HIT_OUT" | tail -1 | grep -q 'QQuickMouseArea.*56x34' && RAIL_HITS+=("$y")
+                            done
+                            # One centre per cell: hits repeat along a cell's
+                            # height, so dedupe by stepping across each run.
+                            RAIL_CENTERS=()
+                            prev=-99
+                            for y in "${RAIL_HITS[@]}"; do
+                              [ $((y - prev)) -gt 10 ] && RAIL_CENTERS+=("$((y + 14))")
+                              prev=$y
+                            done
+                            RAIL_Y="${RAIL_CENTERS[8]:-${RAIL_CENTERS[-1]:-267}}"
+                            echo "rail delegate hit at y: $RAIL_Y (centers: ${RAIL_CENTERS[*]})" >> "$WORK/logs/cc-hit.txt"
+                            "$VINPUT" vinput click 1540 "$RAIL_Y" 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.2
                             shot settings-click
-                            "$VINPUT" vinput jclick 1540 105 2 2 2>>"$WORK/logs/vinput.log" || true
+                            # Guard against select-but-never-scroll: the rail
+                            # must move the module content, not only the
+                            # highlight. Assert both the flickable's real
+                            # contentY (describe prints it) and content-region
+                            # pixels — the rail column is outside the region.
+                            qs -p "$REPO" ipc call debug opened 16 > "$WORK/logs/cc-tree-after-click.txt" 2>&1 || true
+                            if ! { grep -v hidden "$WORK/logs/cc-tree-after-click.txt" | grep -Eq "interactive:true contentY:[1-9][0-9]{2,}/"; }; then
+                              echo "FAIL settings-tree: rail click did not scroll content (contentY ~0)"
+                              SCENE_FAIL=1
+                            fi
+                            python3 - "$OUT/settings-tree.png" "$OUT/settings-click.png" >> "$WORK/logs/cc-hit.txt" 2>&1 <<'PYEOF' || SCENE_FAIL=1
+from PIL import Image, ImageChops
+import sys
+# Region = module content only (below the banner zone, right of the rail).
+a = Image.open(sys.argv[1]).convert('RGB')
+b = Image.open(sys.argv[2]).convert('RGB')
+box = (1600, 300, min(a.size[0], b.size[0], 1900), min(a.size[1], b.size[1], 1000))
+d = ImageChops.difference(a.crop(box), b.crop(box))
+n = sum(1 for p in d.getdata() if p != (0, 0, 0))
+print("rail-click content-region diff pixels:", n)
+if n < 5000:
+    print("FAIL settings-tree: content identical after rail click")
+    sys.exit(1)
+PYEOF
+                            "$VINPUT" vinput jclick 1540 "${RAIL_CENTERS[2]:-105}" 2 2 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.2
                             shot settings-jclick
                             # Branch test: click outside the panel. If the

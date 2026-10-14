@@ -174,9 +174,18 @@ ScrollView {
         child.interactive = root.flickableInteractive;
         root._internalFlickable = child;
 
+        // ScrollView keeps the internal flickable in automatic content-size
+        // mode: contentWidth/contentHeight stay -1 while its native bounds
+        // are derived from the content item's children, so every JS reader
+        // (clampScrollY, the scrollable checks, the masks) saw an empty view.
+        // Bind both to that same extent.
+        child.contentHeight = Qt.binding(() => child.contentItem.childrenRect.height);
+
         if (root.preventHorizontalScroll) {
           child.flickableDirection = Flickable.VerticalFlick;
           child.contentWidth = Qt.binding(() => child.width);
+        } else {
+          child.contentWidth = Qt.binding(() => child.contentItem.childrenRect.width);
         }
 
         root._wheelTargetY = child.contentY;
@@ -188,9 +197,16 @@ ScrollView {
   // Item-level wheelEvent, not WheelHandler: PointerHandler wheel delivery is
   // dead on the nosdshell-background layer surface under niri (see NListView).
   // Declined events propagate to the content, so the flickable still handles
-  // the wheel natively whenever this area lets it through.
+  // the wheel natively whenever this area lets it through. Declared children
+  // land inside the flickable's content item, which scrolls with the content —
+  // track the viewport rect so the overlay keeps covering it at any offset.
+  // Stays below the declared content, so interactive rows keep first dibs on
+  // the wheel and only dead areas route through applyWheelScroll.
   MouseArea {
-    anchors.fill: parent
+    x: root._internalFlickable ? root._internalFlickable.contentX : 0
+    y: root._internalFlickable ? root._internalFlickable.contentY : 0
+    width: root._internalFlickable ? root._internalFlickable.width : parent.width
+    height: root._internalFlickable ? root._internalFlickable.height : parent.height
     acceptedButtons: Qt.NoButton
     onWheel: event => {
                if (root.wheelScrollMultiplier === 1.0 || !root._internalFlickable)

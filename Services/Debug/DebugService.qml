@@ -84,6 +84,11 @@ Singleton {
       if (item.interactive !== undefined) {
         s += " interactive:" + item.interactive;
       }
+      // Flickable scroll state: a stuck view shows contentY:0 and an
+      // auto-mode content size shows contentHeight:-1.
+      if (item.contentY !== undefined) {
+        s += " contentY:" + Math.round(item.contentY) + "/" + Math.round(item.contentHeight);
+      }
       if (item.containsMouse !== undefined) {
         s += " containsMouse:" + item.containsMouse;
       }
