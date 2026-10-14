@@ -245,7 +245,10 @@ Item {
                    toggleBatteryPanel();
                  }
                }
-    onWheel: wheel => root.adjustBrightness(wheel.angleDelta.y)
+    onWheel: wheel => {
+               root.adjustBrightness(wheel.angleDelta.y);
+               wheel.accepted = true;
+             }
   }
 
   Timer {

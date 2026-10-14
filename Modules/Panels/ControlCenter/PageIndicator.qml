@@ -61,6 +61,7 @@ Item {
                  return;
                }
                root.switchPage(delta > 0 ? 1 : -1);
+               wheel.accepted = true;
              }
   }
 

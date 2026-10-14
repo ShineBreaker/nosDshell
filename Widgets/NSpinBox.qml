@@ -140,9 +140,15 @@ NDccRow {
                  if (wheel.angleDelta.y > 0 && root.value < root.to) {
                    let newValue = Math.min(root.to, root.value + root.stepSize);
                    root.value = newValue;
+                   wheel.accepted = true;
                  } else if (wheel.angleDelta.y < 0 && root.value > root.from) {
                    let newValue = Math.max(root.from, root.value - root.stepSize);
                    root.value = newValue;
+                   wheel.accepted = true;
+                 } else {
+                   // Already at the range boundary: let the wheel scroll the
+                   // page underneath instead of swallowing it.
+                   wheel.accepted = false;
                  }
                }
     }

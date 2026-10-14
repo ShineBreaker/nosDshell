@@ -29,7 +29,7 @@ mkdir -p "$WORK/logs"
 
 # --- repo consistency checks ---------------------------------------------
 FAIL=0
-for check in check-settings-keys check-translations check-popup-motion check-color-motion check-locale-format check-docs-sync check-groove-separators check-launch-path check-layer-namespaces; do
+for check in check-settings-keys check-translations check-popup-motion check-color-motion check-locale-format check-docs-sync check-groove-separators check-launch-path check-layer-namespaces check-wheel-accepted; do
   if ! python3 "$SCRIPT_DIR/$check.py"; then
     FAIL=1
   fi

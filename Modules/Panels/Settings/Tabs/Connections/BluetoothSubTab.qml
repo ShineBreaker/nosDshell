@@ -378,7 +378,7 @@ Item {
             }
 
             RowLayout {
-              visible: entry?.batteryAvailable
+              visible: entry?.batteryAvailable ?? false
               spacing: Style.marginS
               NIcon {
                 icon: {
@@ -404,7 +404,7 @@ Item {
           }
 
           NIcon {
-            visible: entry?.connected && entry?.state !== BluetoothDeviceState.Disconnecting
+            visible: (entry?.connected ?? false) && entry?.state !== BluetoothDeviceState.Disconnecting
             icon: "check"
             pointSize: Style.fontSizeXL
             color: Color.accent
@@ -422,7 +422,7 @@ Item {
             }
 
             NIconButton {
-              visible: entry?.connected && entry?.state !== BluetoothDeviceState.Disconnecting
+              visible: (entry?.connected ?? false) && entry?.state !== BluetoothDeviceState.Disconnecting
               icon: "info"
               tooltipText: I18n.tr("common.info")
               baseSize: Style.baseWidgetSize * 0.75
@@ -437,7 +437,7 @@ Item {
             }
 
             NIconButton {
-              visible: !root.showOnlyLists && (entry?.paired || entry?.trusted) && !entry?.connected && !isBusy && !entry?.blocked
+              visible: !root.showOnlyLists && ((entry?.paired ?? false) || (entry?.trusted ?? false)) && !(entry?.connected ?? false) && !isBusy && !(entry?.blocked ?? false)
               icon: "trash"
               tooltipText: I18n.tr("common.unpair")
               baseSize: Style.baseWidgetSize * 0.75

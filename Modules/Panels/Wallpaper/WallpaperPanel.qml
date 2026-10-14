@@ -523,8 +523,10 @@ SmartPanel {
         acceptedButtons: Qt.NoButton
         onWheel: wheel => {
                    const delta = wheel.pixelDelta.x !== 0 ? wheel.pixelDelta.x : wheel.pixelDelta.y !== 0 ? wheel.pixelDelta.y : (wheel.angleDelta.x !== 0 ? wheel.angleDelta.x : wheel.angleDelta.y) / 2;
-                   if (delta === 0)
-                   return;
+                   if (delta === 0) {
+                     wheel.accepted = false;
+                     return;
+                   }
                    // Same 2x wheel multiplier as the N*View widgets (their
                    // wheelScrollMultiplier default): one mouse notch moves
                    // about one thumbnail, touchpad pans stay 1:1-ish.

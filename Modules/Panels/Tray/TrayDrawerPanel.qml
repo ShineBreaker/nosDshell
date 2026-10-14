@@ -293,10 +293,15 @@ SmartPanel {
                          }
 
               onWheel: wheel => {
+                         if (wheel.angleDelta.y === 0) {
+                           wheel.accepted = false;
+                           return;
+                         }
                          if (wheel.angleDelta.y > 0)
                          entry?.scrollUp();
-                         else if (wheel.angleDelta.y < 0)
+                         else
                          entry?.scrollDown();
+                         wheel.accepted = true;
                        }
 
               onEntered: {

@@ -138,14 +138,17 @@ NBox {
           propagateComposedEvents: true
 
           onWheel: wheel => {
-                     if (brightnessSlider.enabled && brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                       const delta = wheel.angleDelta.y || wheel.angleDelta.x;
-                       const step = Settings.data.brightness.brightnessStep / 100.0; // Convert percentage to 0-1 range
-                       const increment = delta > 0 ? step : -step;
-                       const newValue = Math.max(0, Math.min(1, localBrightness + increment));
-                       localBrightness = newValue;
-                       debounceTimer.restart();
+                     if (!brightnessSlider.enabled || !brightnessMonitor || !brightnessMonitor.brightnessControlAvailable) {
+                       wheel.accepted = false;
+                       return;
                      }
+                     const delta = wheel.angleDelta.y || wheel.angleDelta.x;
+                     const step = Settings.data.brightness.brightnessStep / 100.0; // Convert percentage to 0-1 range
+                     const increment = delta > 0 ? step : -step;
+                     const newValue = Math.max(0, Math.min(1, localBrightness + increment));
+                     localBrightness = newValue;
+                     debounceTimer.restart();
+                     wheel.accepted = true;
                    }
         }
       }

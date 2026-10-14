@@ -370,7 +370,10 @@ Item {
                    root.middleClicked();
                  }
                }
-    onWheel: wheel => root.wheel(wheel.angleDelta.y)
+    onWheel: wheel => {
+               root.wheel(wheel.angleDelta.y);
+               wheel.accepted = true;
+             }
   }
 
   function show() {
