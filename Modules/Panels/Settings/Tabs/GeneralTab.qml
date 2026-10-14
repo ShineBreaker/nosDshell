@@ -23,15 +23,14 @@ ColumnLayout {
     groupMode: true
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("panels.general.tab-basics")
-      tabIndex: 0
-      checked: subTabBar.currentIndex === 0
-    }
-    NTabButton {
-      text: I18n.tr("panels.general.tab-keybinds")
-      tabIndex: 1
-      checked: subTabBar.currentIndex === 1
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("panels.general.tab-basics")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("panels.general.tab-keybinds")
+      }
     }
   }
 

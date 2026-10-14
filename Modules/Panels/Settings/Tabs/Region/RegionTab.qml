@@ -15,20 +15,17 @@ ColumnLayout {
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("common.location")
-      tabIndex: 0
-      checked: subTabBar.currentIndex === 0
-    }
-    NTabButton {
-      text: I18n.tr("common.date")
-      tabIndex: 1
-      checked: subTabBar.currentIndex === 1
-    }
-    NTabButton {
-      text: I18n.tr("common.calendar-panel")
-      tabIndex: 2
-      checked: subTabBar.currentIndex === 2
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("common.location")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.date")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.calendar-panel")
+      }
     }
   }
 

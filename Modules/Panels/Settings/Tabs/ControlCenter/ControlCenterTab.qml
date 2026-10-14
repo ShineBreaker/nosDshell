@@ -132,20 +132,17 @@ ColumnLayout {
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
-    NTabButton {
-      text: I18n.tr("common.cards")
-      tabIndex: 0
-      checked: subTabBar.currentIndex === 0
-    }
-    NTabButton {
-      text: I18n.tr("common.shortcuts")
-      tabIndex: 1
-      checked: subTabBar.currentIndex === 1
-    }
-    NTabButton {
-      text: I18n.tr("panels.control-center.pages-tab")
-      tabIndex: 2
-      checked: subTabBar.currentIndex === 2
+    NSubTabsPane {
+      bar: subTabBar
+      NSubTabsPane.Title {
+        text: I18n.tr("common.cards")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("common.shortcuts")
+      }
+      NSubTabsPane.Title {
+        text: I18n.tr("panels.control-center.pages-tab")
+      }
     }
   }
 
@@ -175,8 +172,7 @@ ColumnLayout {
       onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
     }
 
-    PagesSubTab {
-    }
+    PagesSubTab {}
   }
 
   // ---------------------------------
