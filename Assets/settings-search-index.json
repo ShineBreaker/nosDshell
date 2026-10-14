@@ -1283,54 +1283,6 @@
     ]
   },
   {
-    "labelKey": "panels.dock.appearance-launcher-use-distro-logo-label",
-    "descriptionKey": "panels.dock.appearance-launcher-use-distro-logo-description",
-    "widget": "NToggle",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 0,
-    "subTabLabel": "settings.taskbar.general",
-    "visibleWhen": [
-      "Settings.data.dock.enabled"
-    ]
-  },
-  {
-    "labelKey": "panels.dock.appearance-launcher-icon-label",
-    "descriptionKey": "panels.dock.appearance-launcher-icon-description",
-    "widget": "NLabel",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 0,
-    "subTabLabel": "settings.taskbar.general",
-    "visibleWhen": [
-      "Settings.data.dock.enabled"
-    ]
-  },
-  {
-    "labelKey": "common.select-icon-color",
-    "descriptionKey": null,
-    "widget": "NColorChoice",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 0,
-    "subTabLabel": "settings.taskbar.general",
-    "visibleWhen": [
-      "Settings.data.dock.enabled"
-    ]
-  },
-  {
-    "labelKey": "panels.dock.appearance-launcher-icon-size-label",
-    "descriptionKey": "panels.dock.appearance-launcher-icon-size-description",
-    "widget": "NValueSlider",
-    "tab": 10,
-    "tabLabel": "panels.dock.title",
-    "subTab": 0,
-    "subTabLabel": "settings.taskbar.general",
-    "visibleWhen": [
-      "Settings.data.dock.enabled"
-    ]
-  },
-  {
     "labelKey": "settings.advanced.dock-grouping",
     "descriptionKey": null,
     "widget": "NHeader",
@@ -2624,6 +2576,42 @@
     "tab": 19,
     "tabLabel": "session-menu.title",
     "subTab": null
+  },
+  {
+    "labelKey": "panels.dock.appearance-launcher-use-distro-logo-label",
+    "descriptionKey": "panels.dock.appearance-launcher-use-distro-logo-description",
+    "widget": "NToggle",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "panels.dock.appearance-launcher-icon-label",
+    "descriptionKey": "panels.dock.appearance-launcher-icon-description",
+    "widget": "NLabel",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "common.select-icon-color",
+    "descriptionKey": null,
+    "widget": "NColorChoice",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
+  },
+  {
+    "labelKey": "panels.dock.appearance-launcher-icon-size-label",
+    "descriptionKey": "panels.dock.appearance-launcher-icon-size-description",
+    "widget": "NValueSlider",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 0,
+    "subTabLabel": "settings.taskbar.general"
   },
   {
     "labelKey": "panels.system-monitor.enable-dgpu-monitoring-label",

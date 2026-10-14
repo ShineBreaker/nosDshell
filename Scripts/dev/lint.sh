@@ -35,6 +35,12 @@ for check in check-settings-keys check-translations check-popup-motion check-col
   fi
 done
 [ "$FAIL" -gt 0 ] && exit 1
+# The settings search index must match what the current sources generate
+# (lefthook's pre-commit rebuild is not available on this machine).
+if ! python3 "$REPO/Scripts/test/build-settings-search-index.py" --check; then
+  FAIL=1
+fi
+[ "$FAIL" -gt 0 ] && exit 1
 
 QMLLINT="${QMLLINT:-$HOME/.guix-home/profile/bin/qmllint}"
 [ -x "$QMLLINT" ] || QMLLINT=$(command -v qmllint) || { echo "qmllint not found" >&2; exit 2; }

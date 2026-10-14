@@ -403,6 +403,21 @@ def main():
             if tab_name is None:
                 return None
             return (tab_name, None, None)
+        if parent.name == "Shared":
+            # Cross-tab shared blocks (e.g. LauncherIconGroup) carry their own
+            # widgets but no page of their own: attribute them to the first
+            # Tabs/ file that instantiates them. The seen-label dedup in the
+            # scan loop keeps one entry per label even when several pages
+            # share the block. Without this the shared widgets silently drop
+            # out of the search index (ec7f3bb38 shipped exactly that).
+            for f in sorted(TABS_DIR.rglob("*.qml")):
+                if f.parent.name == "Shared" or f == qml_file:
+                    continue
+                if re.search(rf"^\s*{stem}\s*\{{", f.read_text(), re.M):
+                    return tabs_attribution(f)
+            print(f"Warning: shared component {qml_file} is never instantiated under Tabs/",
+                  file=sys.stderr)
+            return None
         dir_tab_type = f"{parent.name}Tab"
         tab_name = type_to_tab.get(dir_tab_type)
         if tab_name is None:
@@ -449,9 +464,23 @@ def main():
                 seen_labels.add(entry["labelKey"])
                 all_entries.append(entry)
 
+    generated = json.dumps(all_entries, indent=2)
+    if "--check" in sys.argv:
+        # Guardrail for lint.sh: the committed index must equal what the
+        # current sources generate, so a settings change that skips the
+        # rebuild fails instead of silently drifting (and shared-block
+        # widgets dropping out of search).
+        committed = OUTPUT.read_text(encoding="utf-8") if OUTPUT.is_file() else ""
+        if committed != generated:
+            print("FAIL: Assets/settings-search-index.json is stale — rerun "
+                  "Scripts/test/build-settings-search-index.py and commit it",
+                  file=sys.stderr)
+            sys.exit(1)
+        print(f"search index ok: {len(all_entries)} entries match the sources")
+        return
+
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT, "w") as f:
-        json.dump(all_entries, f, indent=2)
+    OUTPUT.write_text(generated, encoding="utf-8")
 
     print(f"Generated {len(all_entries)} entries -> {OUTPUT.relative_to(ROOT)}")
 
