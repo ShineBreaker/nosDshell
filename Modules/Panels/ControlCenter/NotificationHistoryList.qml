@@ -401,7 +401,11 @@ Item {
       NListView {
         id: notificationList
         anchors.fill: parent
-        spacing: Style.marginS
+        // The inter-row gap lives inside the delegate cell (bottom pad),
+        // not in `spacing`: ListView bills spacing for EVERY delegate —
+        // a collapsed group's 0-height hidden rows would still each pay
+        // marginS and blow a hole between the day sections.
+        spacing: 0
         reuseItems: true
         gradientColor: "transparent"
         reserveScrollbarSpace: false
@@ -415,12 +419,13 @@ Item {
           // take no space, so a group really is one stop in the view. The
           // stacked-edge allowance is recomputed from the same predicates the
           // edges use (reading a child's height/visibility here would make
-          // the row's height depend on its own layout).
+          // the row's height depend on its own layout). The trailing
+          // marginS is this row's own bottom pad — see `spacing: 0` above.
           readonly property bool hasStackedEdges: modelData.kind === "notif" && isHead && (modelData.groupSize || 1) > 1 && !isGroupExpanded
           height: {
             if (modelData.kind === "header" || modelData.kind === "section")
-              return 24;
-            return shown ? cardSurface.height + (hasStackedEdges ? Style.marginXXS + 10 : 0) : 0;
+              return 24 + Style.marginS;
+            return shown ? cardSurface.height + (hasStackedEdges ? Style.marginXXS + 10 : 0) + Style.marginS : 0;
           }
 
           // Live source entry: the row carries only the index, so the image
@@ -505,7 +510,10 @@ Item {
 
           // ---- list header row (DESIGN §3.5.2) ----
           RowLayout {
-            anchors.fill: parent
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 24
             visible: modelData.kind === "header"
             spacing: Style.marginS
 
@@ -556,7 +564,11 @@ Item {
 
           // ---- day section header (DESIGN §3.5.2) ----
           NText {
-            anchors.verticalCenter: parent.verticalCenter
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: 24
+            verticalAlignment: Text.AlignVCenter
             visible: modelData.kind === "section"
             text: root.bucketTitle(modelData.bucket)
             pointSize: Style.fontSizeXS
@@ -846,6 +858,10 @@ Item {
           MouseArea {
             id: interactionArea
             anchors.fill: parent
+            // Leave the row's trailing pad to the flickable — it is the
+            // inter-row gap, not card surface: clicks/drags there must not
+            // act on this notification.
+            anchors.bottomMargin: Style.marginS
             acceptedButtons: Qt.LeftButton
             hoverEnabled: true
             enabled: delegateItem.shown && !delegateItem.isRemoving
