@@ -25,7 +25,8 @@ NDccRow {
 
   // implicitHeight comes from NDccRow (row minimum + padding).
 
-  // -1 = not recording, >= 0 = re-recording at index, -2 = adding new
+  // -1 = not recording, >= 0 = re-recording at that slot index (an empty
+  // slot records like any other).
   property int recordingIndex: -1
   property bool hasConflict: false
 

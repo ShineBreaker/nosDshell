@@ -657,15 +657,11 @@ Item {
               if (dragging) {
                 root.dragSourceIndex = index;
               } else {
-                // Don't reset immediately on release to allow drop to handle it,
-                // or use a timer if needed, but drop handler usually fires.
-                // However, if dropped outside, we need to reset.
-                // Let's reset if not handled by drop area quickly?
-                // Actually, drag.active becomes false on release.
-                // We might want to clear it if no drop happened.
+                // Don't reset synchronously here: the drop handler fires on
+                // release and resets on success. If the release lands on no
+                // drop target at all, the deferred check clears the drag
+                // state once drag.active is observably false.
                 if (root.dragSourceIndex === index) {
-                  // Slight delay/check? For now, let DropArea handle reset on success.
-                  // If cancelled (dropped nowhere), we should reset.
                   Qt.callLater(() => {
                                  if (!taskbarMouseArea.drag.active && root.dragSourceIndex === index) {
                                    root.dragSourceIndex = -1;

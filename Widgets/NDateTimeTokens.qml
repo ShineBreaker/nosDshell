@@ -6,7 +6,8 @@ import qs.Commons
 Rectangle {
   id: root
 
-  property date sampleDate: new Date() // Dec 25, 2023, 2:30:45.123 PM
+  // Live "now": the example column renders against the current time.
+  property date sampleDate: new Date()
 
   signal tokenClicked(string token)
 

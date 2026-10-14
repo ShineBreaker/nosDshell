@@ -40,11 +40,6 @@ DraggableDesktopWidget {
       width: height
       hoursFontSize: fontSize * 0.6
       minutesFontSize: fontSize * 0.4
-      // NClock defaults both digit weights to Bold (Widgets/NClock.qml:58-59),
-      // which §1.5 does not allow. Set from here rather than editing the shared
-      // widget, which is outside this module.
-      hoursFontWeight: Style.fontWeightSemiBold
-      minutesFontWeight: Style.fontWeightSemiBold
       scaleRatio: root.widgetScale
     }
   }
@@ -65,7 +60,7 @@ DraggableDesktopWidget {
             // §3.12: the clock widget wears the control centre clock -- 46 px
             // Light for the time, which is Style.fontSizeClockCC (34.5 pt at
             // the repo's 96 dpi convention) at fontWeightLight, the same two
-            // values ControlCenterHeader.qml:100-101 uses.
+            // values ControlCenterHeader.qml uses.
             if (model.length == 1) {
               return Math.round(Style.fontSizeClockCC * Style.uiScaleRatio * root.widgetScale);
             } else {

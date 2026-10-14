@@ -22,6 +22,9 @@ Item {
   property color baseColor: Color.onShell
   property color lowColor: Color.alert
   property color chargingColor: Color.accent
+  // Ink on the baseColor-filled battery shape: mSurface is the deliberate
+  // inverse pair of the onShell fill (same pairing Battery.qml overrides
+  // with), not a background-plate use of the surface token.
   property color textColor: Color.mSurface
 
   // Display options

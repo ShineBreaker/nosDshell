@@ -3,7 +3,7 @@ import qs.Widgets
 
 // Shared displayMode picker for bar pill widget settings. KeyboardLayout is
 // the one variant: it offers forceOpen instead of alwaysShow (consumed
-// together with showIcon in Modules/Bar/Widgets/KeyboardLayout.qml:85).
+// together with showIcon in Modules/Bar/Widgets/KeyboardLayout.qml).
 NComboBox {
   id: root
 

@@ -77,8 +77,8 @@ Popup {
         id: commandInput
         Layout.fillWidth: true
         placeholderText: root.hookPlaceholder
-        // Allow multiline? Hooks are usually oneline commands but can be scripts.
-        // NTextInput is likely single line. Let's assume single line for now as per previous implementation.
+        // NTextInput wraps a single-line TextField, so hook commands are
+        // entered on one line; multi-line scripts stay a known gap.
       }
     }
 

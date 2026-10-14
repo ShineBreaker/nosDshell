@@ -27,6 +27,8 @@
 #   with seed {"idle":{"enabled":true,"screenOffTimeout":20,"lockTimeout":0,
 #   "suspendTimeout":0,"fadeDuration":1}} — exits non-zero if screenOff fires
 #   while inhibited, or never fires after the inhibitor is released.
+#   dark-mode-system is off the default set too: it needs NOSD_FAKE_PORTAL=1
+#   to fake the xdg desktop portal's colour-scheme response.
 #   plus settings-tab scenes (open the settings panel on a specific tab,
 #   names follow the openTab alias map in ControlCenterModules.qml):
 #   settings-general, settings-userinterface, settings-audio,
@@ -62,6 +64,9 @@
 #                            strip. Set 0 to disable. PIDs are killed on exit.
 #   NOSD_PAM_BAD=1           separate run: lockscreen-error scene only
 #   NOSD_AUTOSTART_AUTH=1    seed general.autoStartAuth=true
+#   NOSD_FAKE_PORTAL=1       dark-mode-system scene: fake the xdg desktop
+#                            portal response so the colour-scheme setting can
+#                            flip without a real portal
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

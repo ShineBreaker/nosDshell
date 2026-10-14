@@ -10,7 +10,7 @@ Item {
 
   property var now: Time.now
 
-  // Style: "analog" or "digital"
+  // Style: "analog", "digital" or "binary"
   property string clockStyle: "analog"
 
   // Show seconds progress ring (digital only)

@@ -12,7 +12,7 @@ import qs.Services.Compositor
 // and the two copies had already drifted apart on "lock": the launcher bypassed
 // the custom lock command. Routing every entry point through
 // CompositorService.lock() (custom command first, lockScreen fallback —
-// CompositorService.qml:650-658) makes all three surfaces behave identically.
+// CompositorService.qml, lock()) makes all three surfaces behave identically.
 //
 // Being an engine-wide singleton, this object outlives panel unloading, so it
 // is safe to call from Qt.callLater closures fired after launcher.close()

@@ -6,7 +6,7 @@ import qs.Commons
 import qs.Services.Location
 import qs.Widgets
 
-// Weather overview card (placeholder data)
+// Weather overview card (live data from LocationService)
 NBox {
   id: root
 

@@ -37,8 +37,9 @@ Singleton {
 
   // Names of outputs currently covered by a fullscreen window. Two sources
   // merged: window objects carrying a real `fullscreen` flag plus `output`
-  // (mango), and the backend's own rollup (niri infers it from geometry —
-  // its IPC windows expose no fullscreen state).
+  // (mango), and the niri backend's rollup, joined in from
+  // ext-foreign-toplevel fullscreen state (NiriService.qml:33-54 — the niri
+  // IPC windows themselves expose no fullscreen state).
   readonly property var fullscreenOutputs: _fullscreenOutputs
   property var _fullscreenOutputs: []
 

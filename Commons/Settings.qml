@@ -1151,8 +1151,9 @@ Singleton {
   }
 
   // -----------------------------------------------------
-  // The bar only exists in efficient mode, where it is always "simple"
-  // (framed/floating are fashion status-bar options — see DESIGN.md §6).
+  // The taskbar is always "simple" in efficient mode; in fashion mode the
+  // optional status bar exists and follows its own barType (framed/floating,
+  // DESIGN.md §6).
   function getEffectiveBarType() {
     if (data.dock.mode === "efficient")
       return "simple";

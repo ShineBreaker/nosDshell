@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check that every settings key is declared consistently and has a reader.
 
-Two checks, both over the full key paths (e.g. `dock.pluginSpacing`,
+Three checks, all over the full key paths (e.g. `dock.pluginSpacing`,
 `general.keybinds.keyUp`):
 
 1. Declaration sync: Assets/settings-default.json and the JsonAdapter in
