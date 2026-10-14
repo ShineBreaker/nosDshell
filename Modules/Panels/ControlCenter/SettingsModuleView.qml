@@ -999,6 +999,8 @@ Item {
           // Wheel takeover: NScrollView consumes the event for smooth
           // scrolling; this overlay only cancels our programmatic state —
           // it never accepts, so the event keeps propagating untouched.
+          // accepted=false is required, not default: an onWheel that leaves
+          // accepted alone stops delivery to the items below under niri.
           // Item-level wheelEvent, not WheelHandler: PointerHandler wheel
           // delivery is dead on the nosdshell-background layer surface under
           // niri (see NListView). Declared after the content column so it is
@@ -1006,7 +1008,10 @@ Item {
           MouseArea {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
-            onWheel: root._cancelProgrammatic()
+            onWheel: wheel => {
+                       root._cancelProgrammatic();
+                       wheel.accepted = false;
+                     }
           }
         }
       }

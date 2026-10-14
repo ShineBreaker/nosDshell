@@ -589,8 +589,10 @@ Item {
     acceptedButtons: Qt.NoButton
     enabled: !root.ignoreMouse
     onWheel: event => {
-               if (!(event.modifiers & Qt.ControlModifier))
-               return;
+               if (!(event.modifiers & Qt.ControlModifier)) {
+                 event.accepted = false;
+                 return;
+               }
                if (event.angleDelta.y > 0)
                root.adjustIconRatio(0.1);
                else

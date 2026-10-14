@@ -209,8 +209,10 @@ ColumnLayout {
       acceptedButtons: Qt.NoButton
       onWheel: event => {
                  const flick = galleryScroll.contentItem;
-                 if (!flick)
-                 return;
+                 if (!flick) {
+                   event.accepted = false;
+                   return;
+                 }
                  const delta = event.pixelDelta.x !== 0 || event.pixelDelta.y !== 0 ? (event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.pixelDelta.x) : (event.angleDelta.y !== 0 ? event.angleDelta.y : event.angleDelta.x);
                  // Move opposite of wheel to scroll content to the right for wheel down
                  const step = -delta;

@@ -209,8 +209,10 @@ ScrollView {
     height: root._internalFlickable ? root._internalFlickable.height : parent.height
     acceptedButtons: Qt.NoButton
     onWheel: event => {
-               if (root.wheelScrollMultiplier === 1.0 || !root._internalFlickable)
-               return;
+               if (root.wheelScrollMultiplier === 1.0 || !root._internalFlickable) {
+                 event.accepted = false;
+                 return;
+               }
                const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
                root.applyWheelScroll(delta);
                event.accepted = true;

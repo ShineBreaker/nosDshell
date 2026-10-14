@@ -488,8 +488,10 @@ Item {
     anchors.fill: parent
     acceptedButtons: Qt.NoButton
     onWheel: event => {
-               if (root.wheelScrollMultiplier === 1.0)
-               return;
+               if (root.wheelScrollMultiplier === 1.0) {
+                 event.accepted = false;
+                 return;
+               }
                const delta = event.pixelDelta.y !== 0 ? event.pixelDelta.y : event.angleDelta.y / 2;
                root.applyWheelScroll(delta);
                event.accepted = true;

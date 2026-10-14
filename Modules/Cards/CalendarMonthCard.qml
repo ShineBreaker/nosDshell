@@ -426,6 +426,8 @@ NBox {
         // Scroll down - go to next month
         root.navigateToNextMonth();
         event.accepted = true;
+      } else {
+        event.accepted = false;
       }
     }
   }

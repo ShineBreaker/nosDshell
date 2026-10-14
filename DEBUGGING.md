@@ -27,7 +27,7 @@
 
 ## 真指针注入
 
-`tools/nosd-helpers/target/release/nosd-helpers vinput click|jclick <x> <y> [dx dy]` 通过 `zwlr_virtual_pointer_v1` 注入点击，进程存活期间虚拟指针一直有效。只在 `verify.sh` 的隔离 sway 里使用。niri 没有这个协议，嵌套 niri 环境的替代办法见 `Scripts/test/niri/README.md`。`verify.sh` 的 `settings-tree` 场景是一个完整示例：先做命中探测，再注入点击，最后点外部关闭面板。
+`tools/nosd-helpers/target/release/nosd-helpers vinput click|jclick|scroll <x> <y> [...]` 通过 `zwlr_virtual_pointer_v1` 注入指针事件，进程存活期间虚拟指针一直有效。`verify.sh` 的隔离 sway 和 `Scripts/test/niri/` 的嵌套 niri 都支持该协议（把 `WAYLAND_DISPLAY` 指向对应 socket 即可）；用户的真实会话不要注入。`verify.sh` 的 `settings-tree` 场景是一个完整示例：先做命中探测，再注入点击，最后点外部关闭面板。
 
 ## 输入区域问题
 

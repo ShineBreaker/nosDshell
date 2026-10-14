@@ -56,7 +56,10 @@ Item {
     acceptedButtons: Qt.NoButton
     onWheel: wheel => {
                const delta = wheel.angleDelta.y || wheel.angleDelta.x;
-               if (delta !== 0)
+               if (delta === 0) {
+                 wheel.accepted = false;
+                 return;
+               }
                root.switchPage(delta > 0 ? 1 : -1);
              }
   }

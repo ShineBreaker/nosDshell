@@ -527,14 +527,18 @@ SmartPanel {
             anchors.fill: parent
             acceptedButtons: Qt.NoButton
             onWheel: function (event) {
-              if (!monthSection.item)
+              if (!monthSection.item) {
+                event.accepted = false;
                 return;
+              }
               if (event.angleDelta.y > 0) {
                 monthSection.item.navigateToPreviousMonth();
                 event.accepted = true;
               } else if (event.angleDelta.y < 0) {
                 monthSection.item.navigateToNextMonth();
                 event.accepted = true;
+              } else {
+                event.accepted = false;
               }
             }
           }
