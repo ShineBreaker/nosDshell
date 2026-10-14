@@ -871,12 +871,12 @@ Item {
           } else {
             // Not attached: center in available space
             if (root.barPosition === "left") {
-              var availableStart = root.barMarginH + root.barHeight;
-              var availableWidth = root.width - availableStart - effMarginR;
+              var availableStart = root.edgeClearanceLeft;
+              var availableWidth = root.width - availableStart - root.edgeClearanceRight - Style.marginL;
               calculatedX = availableStart + (availableWidth - panelWidth) / 2;
             } else {
-              var availableWidth = root.width - root.barMarginH - root.barHeight - effMarginL;
-              calculatedX = effMarginL + (availableWidth - panelWidth) / 2;
+              var availableWidth = root.width - root.edgeClearanceLeft - root.edgeClearanceRight - Style.marginL;
+              calculatedX = root.edgeClearanceLeft + Style.marginL + (availableWidth - panelWidth) / 2;
             }
           }
         } else {
@@ -916,13 +916,13 @@ Item {
         if (panelContent.allowAttach) {
           calculatedY = topBarEdgeWithOverlap;
         } else {
-          calculatedY = root.barMarginV + root.barHeight + Style.marginM;
+          calculatedY = root.edgeClearanceTop + Style.marginM;
         }
       } else if (root.barPosition === "bottom") {
         if (panelContent.allowAttach) {
           calculatedY = bottomBarEdgeWithOverlap - panelHeight;
         } else {
-          calculatedY = root.height - root.barMarginV - root.barHeight - panelHeight - Style.marginM;
+          calculatedY = root.height - root.edgeClearanceBottom - panelHeight - Style.marginM;
         }
       } else if (root.barIsVertical) {
         var panelY = root.buttonPosition.y + root.buttonHeight / 2 - panelHeight / 2;
@@ -939,7 +939,10 @@ Item {
       }
     } else {
       // Standard anchor positioning
-      var barOffset = !panelContent.allowAttach && (root.barPosition === "top" || root.barPosition === "bottom") ? root.barMarginV + root.barHeight + Style.marginM : 0;
+      // Clearance of whichever horizontal edge the bar sits on (top or
+      // bottom) plus the breathing margin — same recipe as the detached
+      // button-anchored branches above.
+      var barOffset = !panelContent.allowAttach && (root.barPosition === "top" || root.barPosition === "bottom") ? (root.barPosition === "top" ? root.edgeClearanceTop : root.edgeClearanceBottom) + Style.marginM : 0;
 
       if (panelContent.allowAttach && !root.barIsVertical) {
         // Attached to horizontal bar: position with overlap
@@ -954,12 +957,12 @@ Item {
         if (root.panelAnchorVerticalCenter) {
           if (!root.barIsVertical) {
             if (root.barPosition === "top") {
-              var availableStart = root.barMarginV + root.barHeight;
-              var availableHeight = root.height - availableStart - (root.isFramed ? root.frameThickness + root.barMarginV : 0);
+              var availableStart = root.edgeClearanceTop;
+              var availableHeight = root.height - availableStart - root.edgeClearanceBottom;
               calculatedY = availableStart + (availableHeight - panelHeight) / 2;
             } else if (root.barPosition === "bottom") {
-              var availableHeight = root.height - root.barMarginV - root.barHeight - (root.isFramed ? root.frameThickness + root.barMarginV : 0);
-              calculatedY = (root.isFramed ? root.frameThickness + root.barMarginV : 0) + (availableHeight - panelHeight) / 2;
+              var availableHeight = root.height - root.edgeClearanceTop - root.edgeClearanceBottom;
+              calculatedY = root.edgeClearanceTop + (availableHeight - panelHeight) / 2;
             } else {
               calculatedY = (root.height - panelHeight) / 2;
             }
