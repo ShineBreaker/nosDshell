@@ -1201,7 +1201,8 @@ Singleton {
           var line = lines[i].trim();
           if (line !== '') {
             var parts = line.split('|');
-            if (parts.length >= 2) { // Handle potential extra pipes in filename by joining rest
+            if (parts.length >= 2) {
+              // Handle potential extra pipes in filename by joining rest
               var timestamp = parseFloat(parts[0]);
               var path = parts.slice(1).join('|');
 
@@ -1242,13 +1243,16 @@ Singleton {
           }
         } else {
           parsedFiles.sort(function (a, b) {
-            if (sortOrder === "date_desc") { // Newest first
+            if (sortOrder === "date_desc") {
+              // Newest first
               return b.time - a.time;
-            } else if (sortOrder === "date_asc") { // Oldest first
+            } else if (sortOrder === "date_asc") {
+              // Oldest first
               return a.time - b.time;
             } else if (sortOrder === "name_desc") {
               return b.name.localeCompare(a.name);
-            } else { // name (asc)
+            } else {
+              // name (asc)
               return a.name.localeCompare(b.name);
             }
           });
@@ -1307,19 +1311,14 @@ Singleton {
   // -------------------------------------------------------------------
   // Favorites
   // -------------------------------------------------------------------
-  // TODO (~few weeks): Remove per-favorite `darkMode` (the boolean on each
-  // Settings.data.wallpaper.favorites[] entry). It duplicates `appearance` and is
-  // unrelated to Settings.data.colorSchemes.darkMode (global shell light/dark).
-  // Plan: one-time migration, then drop writes and the fallback in _favoriteAppearanceSlot.
+  // Each entry carries an appearance slot ("light"|"dark"); the legacy
+  // per-favorite darkMode boolean was converted and dropped by Migration84.
   // -------------------------------------------------------------------
   readonly property int _favoriteNotFound: -1
 
   // -------------------------------------------------------------------
   function _favoriteAppearanceSlot(f) {
-    if (f.appearance === "light" || f.appearance === "dark") {
-      return f.appearance;
-    }
-    return f.darkMode ? "dark" : "light";
+    return _normalizeAppearanceSlot(f.appearance);
   }
 
   function _findFavoriteIndex(path, appearanceSlot) {
@@ -1376,8 +1375,6 @@ Singleton {
       "path": path,
       "appearance": app,
       "colorScheme": Settings.data.colorSchemes.predefinedScheme,
-      "darkMode": app === "dark" // TODO: remove per-favorite field (see Favorites section note)
-                  ,
       "useWallpaperColors": Settings.data.colorSchemes.useWallpaperColors,
       "generationMethod": Settings.data.colorSchemes.generationMethod,
       "paletteColors": [Color.mPrimary.toString(), Color.mSecondary.toString(), Color.mTertiary.toString(), Color.mError.toString()]
