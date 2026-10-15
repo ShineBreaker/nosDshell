@@ -10,6 +10,56 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-10-15
+
+一轮以手感与一致性为主题的收敛：niri 下滚轮穿透、遮罩层滚动与面板避让全部修好，滚轮翻页不再丢事件；壁纸、锁屏、卡片与面板的表面全部收进共享令牌，深浅主题切换不再有杂色。
+
+顺手把重复器模型、设置子页条带与搜索索引收敛到一处实现，迁移 82 兜底已盖章的旧配置，删掉失效的壁纸 darkMode 与死垫片。
+
+---
+
+### 修复
+
+- attribute shared settings blocks in the search index：[`a3d4da9a8`](https://github.com/ShineBreaker/nosDshell/commit/a3d4da9a8290fd532d5f1a64579446ca8870ffd0)
+- register migration 82 and recover the stamped configs：[`58f0be44c`](https://github.com/ShineBreaker/nosDshell/commit/58f0be44ce7c8e67659329a9fa61a833217c8d37)
+- password field reads the wallpaper overlay ladder：[`b3a4925af`](https://github.com/ShineBreaker/nosDshell/commit/b3a4925af6f3720513d4d4b4d954a9af5793b6c0)
+- finish edgeClearance migration for remaining setPosition assemblies：[`7bfda79d5`](https://github.com/ShineBreaker/nosDshell/commit/7bfda79d5282cb7ba286dc6d221342021b6383c0)
+- compute smart-panel clearance via BarService edge functions：[`a72d8a2d8`](https://github.com/ShineBreaker/nosDshell/commit/a72d8a2d8f5933f5ed4b5feee5822173eba15099)
+- set wheel.accepted explicitly at remaining onWheel sites：[`4916daccc`](https://github.com/ShineBreaker/nosDshell/commit/4916dacccf0fad61b5f3ee02001b62abbac81aea)
+- use index-based result models in fullscreen and mini views：[`2a2a545af`](https://github.com/ShineBreaker/nosDshell/commit/2a2a545afb6341d1c4b5d1552ab99eb328e1ff95)
+- use index-based repeater model for app streams：[`b52939552`](https://github.com/ShineBreaker/nosDshell/commit/b529395526af247d3f4b27325758cc71170bf5d0)
+- use index-based repeater models in bluetooth sub-tab：[`3f3e41a1b`](https://github.com/ShineBreaker/nosDshell/commit/3f3e41a1be96792dda0cf81694bf69c72a266fe4)
+- decline wheel events explicitly so they propagate under niri：[`7f99675cf`](https://github.com/ShineBreaker/nosDshell/commit/7f99675cff1dd28affe7c1a10210b82b4fb11d39)
+- bind real content extent on ScrollView's internal flickable：[`5337c8000`](https://github.com/ShineBreaker/nosDshell/commit/5337c8000372eb553448774f2a11863f357de7b6)
+- fold the row gap into the delegate cell：[`49057e4d1`](https://github.com/ShineBreaker/nosDshell/commit/49057e4d1e480253dbc4559030bdeadb3d9f0838)
+- wheel scrolling via MouseArea on masked layer surfaces：[`bbff135bb`](https://github.com/ShineBreaker/nosDshell/commit/bbff135bb836c2a51b7c9012b309bdf97a1f0a92)
+- dock.launcherIconSize no longer inflates the top-bar capsule：[`ccdf266d1`](https://github.com/ShineBreaker/nosDshell/commit/ccdf266d1ee745fce36e388632215ca9fd10d3f6)
+
+### 观感
+
+- page-surface dropdown plates get a popupPage token：[`a7b3e7dc8`](https://github.com/ShineBreaker/nosDshell/commit/a7b3e7dc81d039ba1597cfe88b5f4b4d17f5140a)
+- surfaces on the maskDark glass read overlay levels：[`785baea96`](https://github.com/ShineBreaker/nosDshell/commit/785baea96d244b0267b8e4257290dd27887441c7)
+- theme-flipping card plates read constant surface tokens：[`af4e53831`](https://github.com/ShineBreaker/nosDshell/commit/af4e53831590f4ce920ee6c5de54f65a1a2826af)
+- scroll fade bands match the maskShell popup glass：[`f7d19a201`](https://github.com/ShineBreaker/nosDshell/commit/f7d19a201cde5febd986d5f4e6119cdf0389a14f)
+- band buttons read the wallpaper overlay ladder：[`4df288016`](https://github.com/ShineBreaker/nosDshell/commit/4df28801682eb664c2d3641da17af7ec1156bfc9)
+- dim veils read the veilWallpaper token：[`03660d43c`](https://github.com/ShineBreaker/nosDshell/commit/03660d43cfbf04dcb7337822e1b24de65e120a48)
+- route default panel background through maskShell：[`d81784348`](https://github.com/ShineBreaker/nosDshell/commit/d81784348ddf962cc38b5612914bdc70602fb3b9)
+- on-image veil chips for the strip action buttons：[`052b8662a`](https://github.com/ShineBreaker/nosDshell/commit/052b8662acaf87728ab103553ec48edc2ba64c6a)
+
+### 重构
+
+- migrate remaining sub-tab strips to NSubTabsPane：[`ba4a02ff8`](https://github.com/ShineBreaker/nosDshell/commit/ba4a02ff82e487e4410f2a57d36939eb3a85f0f9)
+- drop per-favorite darkMode via migration：[`55460f93d`](https://github.com/ShineBreaker/nosDshell/commit/55460f93de8cf4a7aa3ee77b51ff6310a6ddccba)
+
+### 文档
+
+- usage strings and provenance notes match the binary：[`3b61ead66`](https://github.com/ShineBreaker/nosDshell/commit/3b61ead66ffdb004dde4b4957ccc99724e15dc33)
+- align stale comments with the code they describe：[`97d911279`](https://github.com/ShineBreaker/nosDshell/commit/97d9112796357be2e1a978fd3776b00fb1061d37)
+
+### 工程
+
+- drop dead shims and NCheckbox's self-recursive hover signals：[`dfb99c740`](https://github.com/ShineBreaker/nosDshell/commit/dfb99c740766fc9c74d707bdcb1bd37fcde626b8)
+
 ## [1.2.0] - 2026-10-14
 
 控制中心重排成 DDE 的样子：默认页是通知列表，卡片成为底部分页条的第一页，模块网格成了"所有设置"的入口页，启动器和各处的设置入口统一落在网格上；快捷开关一页两行十个封顶，溢出页取消。顺手把全 shell 的贴边避让收敛到一个函数——通知、气泡、OSD、菜单和启动器在时尚 dock 上方都不会再被压住。底部分页槽按当前页内容定高，监控卡要显示哪几个表盘可以在设置里挑，整条还能从顶部的把手收起来翻通知。
@@ -335,7 +385,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.1...HEAD
+[1.2.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.8...v1.2.0
 [1.1.8]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.7...v1.1.8
 [1.1.7]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.6...v1.1.7
