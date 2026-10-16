@@ -105,7 +105,35 @@ menu) can skip a live blur pass and just draw the cached image.")
                         #:select? (git-predicate
                                    (string-append %repo-root "/tools/nosd-helpers"))))
     (build-system cargo-build-system)
-    (arguments (list #:install-source? #f))
+    (arguments
+     (list #:install-source? #f
+           #:phases
+           #~(modify-phases %standard-phases
+               ;; `portal run` is a darkman-compatible portal Settings
+               ;; backend; shipping the activatable name plus the portal
+               ;; descriptor makes `Settings=nosdshell` work out of the box
+               ;; for any consumer that installs this package.
+               (add-after 'install 'install-portal-files
+                 (lambda _
+                   (let ((services (in-vicinity #$output "share/dbus-1/services"))
+                         (portals (in-vicinity #$output "share/xdg-desktop-portal/portals")))
+                     (mkdir-p services)
+                     (call-with-output-file
+                         (in-vicinity services
+                                      "org.freedesktop.impl.portal.desktop.nosdshell.service")
+                       (lambda (p)
+                         (format p "[D-BUS Service]~%\
+Name=org.freedesktop.impl.portal.desktop.nosdshell~%\
+Exec=~a/bin/nosd-helpers portal run~%"
+                                 #$output)))
+                     (mkdir-p portals)
+                     (call-with-output-file
+                         (in-vicinity portals "nosdshell.portal")
+                       (lambda (p)
+                         (format p "[portal]~%\
+DBusName=org.freedesktop.impl.portal.desktop.nosdshell~%\
+Interfaces=org.freedesktop.impl.portal.Settings~%\
+UseIn=niri;sway;Hyprland;labwc;scroll;mangowc;~%")))))))))
     (inputs nosd-helpers-cargo-inputs)
     (home-page "https://github.com/ShineBreaker/nosDshell")
     (synopsis "Small helper tools for nosDshell")
@@ -113,8 +141,10 @@ menu) can skip a live blur pass and just draw the cached image.")
      "nosd-helpers is the single Rust binary behind nosDshell's helper
 subcommands (vscode-themes, kde-apply-scheme, gtk-refresh, khal-events,
 bluetooth-pair, eds-check, eds-calendars,
-eds-events, apply, wl-probe).  QML callers require it; the Scripts/python and
-Scripts/bash helpers were removed after the ports reached parity.")
+eds-events, apply, wl-probe, vinput, portal).  QML callers require it; the
+Scripts/python and Scripts/bash helpers were removed after the ports reached
+parity.  The portal subcommand additionally ships a darkman-compatible
+xdg-desktop-portal Settings backend.")
     (license license:gpl3+)))
 
 (define-public nosd-theme

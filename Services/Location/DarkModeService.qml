@@ -4,12 +4,57 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import qs.Commons
+import qs.Services.Theming
 
 Singleton {
   id: root
 
   property bool initComplete: false
   property bool nextDarkModeState: false
+
+  // nosd-helpers portal daemon is the external authority surface for the
+  // color scheme (org.freedesktop.impl.portal.Settings + the darkman
+  // nl.whynothugo.darkman compat API). Every darkMode flip — scheduling,
+  // IPC, settings UI — is pushed down so portal subscribers and compat
+  // consumers always observe the same state. The daemon dedupes identical
+  // writes, so a portal-driven flip echoed back here cannot loop.
+  Connections {
+    target: Settings.data.colorSchemes
+    function onDarkModeChanged() {
+      root.pushPortal();
+    }
+  }
+
+  // Start the daemon once the helpers binary resolves; the lockfile inside
+  // `portal run` makes this idempotent when it is already running (e.g.
+  // dbus-activated or autostarted earlier). Without it, Settings=… queries
+  // would silently go unanswered.
+  property bool _portalStarted: false
+  Connections {
+    target: TemplateRegistry
+    function onHelpersBinChanged() {
+      if (root._portalStarted || TemplateRegistry.helpersBin === "") {
+        return;
+      }
+      root._portalStarted = true;
+      Quickshell.execDetached([TemplateRegistry.helpersBin, "portal", "run"]);
+      root.pushPortal();
+    }
+  }
+
+  function pushPortal() {
+    const mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
+    const cmd = TemplateRegistry.helperCmd("portal", ["set", mode]);
+    if (cmd === null) {
+      if (!root._portalWarned) {
+        root._portalWarned = true;
+        Logger.w("DarkModeService", "nosd-helpers unavailable; portal clients will not see darkMode changes");
+      }
+      return;
+    }
+    Quickshell.execDetached(cmd);
+  }
+  property bool _portalWarned: false
 
   Connections {
     target: LocationService.data

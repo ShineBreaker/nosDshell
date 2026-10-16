@@ -270,23 +270,29 @@ fn apply_foot() -> i32 {
             let _ = fs::create_dir_all(parent);
         }
         write(&f, "[main]\ninclude=~/.config/foot/themes/nosdshell\n");
-        return 0;
-    }
-    let content = read(&f).unwrap_or_default();
-    let has = content.split('\n').any(|l| l.contains("include") && l.contains("nosdshell"));
-    if has {
-        return 0;
-    }
-    let mut ls: Vec<String> = lines_of(&content);
-    ls.retain(|l| !(l.contains("include=") && l.contains("themes")));
-    let new = ls.join("\n");
-    let new = if new.split('\n').any(|l| l == "[main]") {
-        insert_after_all(&new, |l| l == "[main]", "include=~/.config/foot/themes/nosdshell")
     } else {
-        // sed '1i [main]\ninclude=...\n' (trailing \n inserts a blank line)
-        format!("[main]\ninclude=~/.config/foot/themes/nosdshell\n\n{new}")
-    };
-    write_in_place(&f, &new);
+        let content = read(&f).unwrap_or_default();
+        let has = content
+            .split('\n')
+            .any(|l| l.contains("include") && l.contains("nosdshell"));
+        if !has {
+            let mut ls: Vec<String> = lines_of(&content);
+            ls.retain(|l| !(l.contains("include=") && l.contains("themes")));
+            let new = ls.join("\n");
+            let new = if new.split('\n').any(|l| l == "[main]") {
+                insert_after_all(&new, |l| l == "[main]", "include=~/.config/foot/themes/nosdshell")
+            } else {
+                // sed '1i [main]\ninclude=...\n' (trailing \n inserts a blank line)
+                format!("[main]\ninclude=~/.config/foot/themes/nosdshell\n\n{new}")
+            };
+            write_in_place(&f, &new);
+        }
+    }
+    // The generated theme file writes the *current* palette into
+    // [colors-dark] only. foot auto-reloads the include; SIGUSR1 pins
+    // running instances to the dark variant so the palette is actually
+    // applied (SIGUSR2 would select a light variant that does not exist).
+    pkill(&["-USR1", "foot"]);
     0
 }
 

@@ -715,6 +715,13 @@ Noctalia 卡片的对应关系：
 - 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊给浮在窗口上的发布面（`background`、`dock`、`launcher-mini`）；Tier 1 xray 给全屏静态面（`launcher-full`——它要的就是"模糊壁纸"观感）；Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、瞬态卡片按 §1.2 无需模糊即可读、辅助面不可见）。
 - 规则集的仓库内唯一事实源是 `Scripts/docs/nosdshell-layer-rules.kdl`，`check-layer-namespaces.py` 校验全部发射的 namespace 被归类且阻止 surface 级 `blur true` 回归；该文件经 `vendor-legacy-docs.py` 注入 docs 站的 niri 页。
 
+### 4.3 `nosd-helpers portal`
+
+- 作用：深色/浅色模式的对外权威面。单进程、单连接同时持有 `org.freedesktop.impl.portal.desktop.nosdshell`（portal Settings 后端：`Read`/`ReadAll`/`Version=1`/`SettingChanged`）、`nl.whynothugo.darkman`（darkman 兼容 API：可写 `Mode` 属性 + `ModeChanged` 信号）与 `org.freedesktop.impl.portal.desktop.darkman`（存量 `darkman.portal` 描述符的零配置别名）。`darkman get|set|toggle`、Emacs `self-theme` 等既有消费者无需改动；`~/.local/share/{dark,light}-mode.d/` 钩子目录语义与 darkman 一致。
+- 命令行：`nosd-helpers portal <run|get|set|toggle>`；状态持久化于 `~/.local/state/nosdshell/color-scheme`；`~/.config/darkman/config.yaml` 的 `lat`/`lng` 启用 NOAA 日出日落调度（`usegeoclue` 不支持，`dbusserver`/`portal` 可分别关掉对应总线名）。
+- 调用方式：`DarkModeService` 在每次 `darkMode` 变化时执行 `portal set`，并在 helpers 就绪时幂等拉起 `portal run`（进程内 flock + 总线名占有检查保证单实例）。portal 反方向（外部 `set`/`toggle`、太阳计时器）经 `SettingChanged` 广播——`schedulingMode: "system"` 的既有跟随逻辑天然接住，其他模式下由 daemon 侧 `nosdshell ipc call darkMode` 兜底写入。
+- 工具缺失时 `pushPortal` 输出一次 `Logger.w` 并跳过；shell 自身主题切换不受影响，仅 portal 订阅者（GTK4/Electron 等）收不到通知。
+
 ---
 
 ## 5. 配色方案
