@@ -185,7 +185,13 @@ fn load_config() -> DaemonConfig {
 // Solar position: NOAA sunrise equation with the official 90.833° zenith
 // (accounts for refraction + solar disc radius, matching darkman's source).
 
-fn solar_time_local(date: NaiveDate, lat: f64, lng: f64, sunrise: bool) -> Option<DateTime<Local>> {
+fn solar_time<Tz: TimeZone>(
+    date: NaiveDate,
+    lat: f64,
+    lng: f64,
+    sunrise: bool,
+    tz: &Tz,
+) -> Option<DateTime<Tz>> {
     let day = date.ordinal() as f64;
     let lng_hour = lng / 15.0;
     let t = if sunrise {
@@ -223,7 +229,7 @@ fn solar_time_local(date: NaiveDate, lat: f64, lng: f64, sunrise: bool) -> Optio
     let day_start = chrono::Utc
         .with_ymd_and_hms(date.year(), date.month(), date.day(), 0, 0, 0)
         .single()?;
-    let approx_local = Local
+    let approx_local = tz
         .from_local_datetime(&date.and_hms_opt(if sunrise { 6 } else { 18 }, 0, 0)?)
         .earliest()?;
     let approx_utc = approx_local.with_timezone(&chrono::Utc);
@@ -235,14 +241,15 @@ fn solar_time_local(date: NaiveDate, lat: f64, lng: f64, sunrise: bool) -> Optio
     ]
     .into_iter()
     .min_by_key(|cand| (*cand - approx_utc).num_seconds().abs())
-    .map(|cand| cand.with_timezone(&Local))
+    .map(|cand| cand.with_timezone(tz))
 }
 
-fn expected_mode(lat: f64, lng: f64, now: DateTime<Local>) -> Mode {
+fn expected_mode<Tz: TimeZone>(lat: f64, lng: f64, now: DateTime<Tz>) -> Mode {
+    let tz = now.timezone();
     let today = now.date_naive();
     match (
-        solar_time_local(today, lat, lng, true),
-        solar_time_local(today, lat, lng, false),
+        solar_time(today, lat, lng, true, &tz),
+        solar_time(today, lat, lng, false, &tz),
     ) {
         (Some(rise), Some(set)) => {
             if now >= rise && now < set {
@@ -257,12 +264,13 @@ fn expected_mode(lat: f64, lng: f64, now: DateTime<Local>) -> Mode {
     }
 }
 
-fn next_boundary(lat: f64, lng: f64, now: DateTime<Local>) -> Option<DateTime<Local>> {
+fn next_boundary<Tz: TimeZone>(lat: f64, lng: f64, now: DateTime<Tz>) -> Option<DateTime<Tz>> {
+    let tz = now.timezone();
     let mut events = Vec::new();
     for offset in 0..2 {
         let date = now.date_naive() + Duration::days(offset);
         for sunrise in [true, false] {
-            if let Some(local) = solar_time_local(date, lat, lng, sunrise) {
+            if let Some(local) = solar_time(date, lat, lng, sunrise, &tz) {
                 if local > now {
                     events.push(local);
                 }
@@ -581,6 +589,7 @@ async fn client_toggle() -> Result<(), String> {
 mod tests {
     use super::*;
     use chrono::{NaiveDate, Timelike};
+    use chrono_tz::Asia::Shanghai;
 
     // Shanghai, summer solstice: NOAA tables give sunrise ~04:51 and
     // sunset ~19:02 local time. Assert the equation lands inside a
@@ -588,8 +597,8 @@ mod tests {
     #[test]
     fn solar_events_shanghai_solstice() {
         let date = NaiveDate::from_ymd_opt(2026, 6, 21).unwrap();
-        let rise = solar_time_local(date, 31.2304, 121.4737, true).expect("sunrise exists");
-        let set = solar_time_local(date, 31.2304, 121.4737, false).expect("sunset exists");
+        let rise = solar_time(date, 31.2304, 121.4737, true, &Shanghai).expect("sunrise exists");
+        let set = solar_time(date, 31.2304, 121.4737, false, &Shanghai).expect("sunset exists");
         assert!(rise < set);
         assert!((4..=6).contains(&rise.hour()), "sunrise {}", rise);
         assert!((18..=20).contains(&set.hour()), "sunset {}", set);
@@ -598,8 +607,8 @@ mod tests {
     #[test]
     fn expected_mode_noon_and_midnight() {
         let (lat, lng) = (31.2304, 121.4737);
-        let noon = Local.with_ymd_and_hms(2026, 6, 21, 12, 0, 0).unwrap();
-        let midnight = Local.with_ymd_and_hms(2026, 6, 21, 0, 0, 0).unwrap();
+        let noon = Shanghai.with_ymd_and_hms(2026, 6, 21, 12, 0, 0).unwrap();
+        let midnight = Shanghai.with_ymd_and_hms(2026, 6, 21, 0, 0, 0).unwrap();
         assert_eq!(expected_mode(lat, lng, noon), Mode::Light);
         assert_eq!(expected_mode(lat, lng, midnight), Mode::Dark);
     }
@@ -607,7 +616,7 @@ mod tests {
     #[test]
     fn next_boundary_is_in_the_future() {
         let (lat, lng) = (31.2304, 121.4737);
-        let now = Local.with_ymd_and_hms(2026, 6, 21, 12, 0, 0).unwrap();
+        let now = Shanghai.with_ymd_and_hms(2026, 6, 21, 12, 0, 0).unwrap();
         let next = next_boundary(lat, lng, now).expect("a boundary exists");
         assert!(next > now);
         // Solstice has both events within ~14h of each other.
