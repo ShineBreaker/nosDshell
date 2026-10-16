@@ -10,6 +10,21 @@
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-10-16
+
+深色模式的对外权威面收口了：nosDshell 自带 darkman 兼容的 portal 后端，`darkman get|set|toggle`、GTK4/Electron 的 SettingChanged 订阅和 `~/.local/share/{dark,light}-mode.d/` 钩子目录全部收敛到单个守护进程，根治 darkman 双 daemon 互不同步导致主题跟随时灵时不灵的老毛病。配合颜色方案的「跟随系统」调度与按经纬度的日出日落计时，shell 与桌面应用的明暗从此共用一份权威状态。
+
+---
+
+### 新功能
+
+- add `portal` — single-process darkman-compatible backend：[`49add1552`](https://github.com/ShineBreaker/nosDshell/commit/49add1552c60d4d3fc969038b5d919073bd85633)
+
+### 修复
+
+- parameterize solar timezone so tests are TZ-hermetic：[`b9dadf380`](https://github.com/ShineBreaker/nosDshell/commit/b9dadf380d230ea38d38286e70f99b248f94fe35)
+- start portal daemon when helpers resolve before service init：[`f618b71b8`](https://github.com/ShineBreaker/nosDshell/commit/f618b71b8b0ee5d0e9ef3573b336d409de52bff9)
+
 ## [1.2.1] - 2026-10-15
 
 一轮以手感与一致性为主题的收敛：niri 下滚轮穿透、遮罩层滚动与面板避让全部修好，滚轮翻页不再丢事件；壁纸、锁屏、卡片与面板的表面全部收进共享令牌，深浅主题切换不再有杂色。
@@ -385,7 +400,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.1...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.8...v1.2.0
 [1.1.8]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.7...v1.1.8
