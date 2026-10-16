@@ -30,17 +30,23 @@ Singleton {
   // dbus-activated or autostarted earlier). Without it, Settings=… queries
   // would silently go unanswered.
   property bool _portalStarted: false
+  function startPortal() {
+    if (root._portalStarted || TemplateRegistry.helpersBin === "") {
+      return;
+    }
+    root._portalStarted = true;
+    Quickshell.execDetached([TemplateRegistry.helpersBin, "portal", "run"]);
+    root.pushPortal();
+  }
   Connections {
     target: TemplateRegistry
     function onHelpersBinChanged() {
-      if (root._portalStarted || TemplateRegistry.helpersBin === "") {
-        return;
-      }
-      root._portalStarted = true;
-      Quickshell.execDetached([TemplateRegistry.helpersBin, "portal", "run"]);
-      root.pushPortal();
+      root.startPortal();
     }
   }
+  // TemplateRegistry may resolve helpers before this singleton is
+  // instantiated, in which case no change signal fires.
+  Component.onCompleted: root.startPortal()
 
   function pushPortal() {
     const mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
