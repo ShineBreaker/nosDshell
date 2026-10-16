@@ -75,6 +75,20 @@ PopupWindow {
   color: "transparent"
   visible: false
 
+  // Blur only the opaque body — without a client region niri's popups rule
+  // blurs the whole surface rect and the arrow's transparent margins render
+  // as a stray blurred band beside the card (NSurfaceRegion, NArrowRect).
+  BackgroundEffect.blurRegion: menuBlurRegion.region
+  NSurfaceRegion {
+    id: menuBlurRegion
+    trackedItem: menuBody.bodyItem
+    radius: menuBody.radius
+    activeWhen: Color.blurActive
+    // The reveal slides the card inside the surface — feed the sentinel the
+    // animated distance so the region follows each frame.
+    watch: reveal.revealDistance
+  }
+
   // Hidden text element for measuring text width
   NText {
     id: textMeasure

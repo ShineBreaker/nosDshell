@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
@@ -68,6 +69,21 @@ PopupWindow {
 
   visible: false
   color: "transparent"
+
+  // Blur only the opaque body — without a client region niri's popups rule
+  // blurs the whole surface rect and any transparent margin inside it shows
+  // the blurred backdrop as a stray band (NSurfaceRegion, NArrowRect).
+  BackgroundEffect.blurRegion: menuBlurRegion.region
+  NSurfaceRegion {
+    id: menuBlurRegion
+    trackedItem: menuBody.bodyItem
+    radius: menuBody.radius
+    activeWhen: Color.blurActive
+    // The reveal slides the card inside the surface — feed the sentinel the
+    // animated distance so the region follows each frame.
+    watch: reveal.revealDistance
+  }
+
   anchor.item: anchorItem
   anchor.rect.x: {
     if (anchorItem && screen) {

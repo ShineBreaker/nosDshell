@@ -1111,6 +1111,18 @@ Singleton {
       return DebugService.hitTest(root, x, y, 24);
     }
 
+    // Show the shared tooltip anchored on a debug-visible item ("" = the
+    // root itself). Hover can't be injected where no virtual-pointer
+    // protocol exists — e.g. nested niri — so this is the scripted way to
+    // open a tooltip for compositor-level checks (popup blur regions).
+    function tip(root: string, objectName: string, text: string): string {
+      var it = objectName === "" ? DebugService.rootItem(root) : DebugService.findItem(root, objectName);
+      if (!it)
+        return "no item '" + objectName + "' under " + root;
+      TooltipService.show(it, text, "auto", 0);
+      return "shown";
+    }
+
     function set(root: string, objectName: string, prop: string, value: string): string {
       return DebugService.setProperty(root, objectName, prop, value);
     }

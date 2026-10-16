@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Wayland
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
@@ -100,6 +101,17 @@ PopupWindow {
 
   visible: false
   color: "transparent"
+
+  // Blur only the opaque body — without a client region niri's popups rule
+  // blurs the whole surface rect and the arrow's transparent margins render
+  // as a stray blurred band beside the card (NSurfaceRegion, NArrowRect).
+  BackgroundEffect.blurRegion: tipBlurRegion.region
+  NSurfaceRegion {
+    id: tipBlurRegion
+    trackedItem: arrowRect.bodyItem
+    radius: arrowRect.radius
+    activeWhen: Color.blurActive
+  }
 
   anchor.item: targetItem
   anchor.rect.x: anchorX

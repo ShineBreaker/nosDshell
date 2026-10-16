@@ -35,6 +35,8 @@
 
 Wayland 的输入归属只由 `wl_surface.set_input_region` 决定。QML 的 `transform` 只移动画面，不会更新输入区域，所以画面移走了，输入区域可能还停在原处。输入区域（`mask`）或模糊区域（`BackgroundEffect.blurRegion`）只要跟随某个 item 的几何、会随动画移动或需要在隐藏时摘除，就通过 `Commons/NSurfaceRegion.qml` 注册。它的头部注释列出了已知的平台陷阱和对应处理。排查时先看出问题的表面是否用了它、参数是否绑对（例如滑动动画要绑定动画中的实时值，而不是目标值）；还在手写 `Region { item: ... }` 跟踪几何的表面属于同一影响面，一并检查。查到新的陷阱，就把处理收进 `NSurfaceRegion`，并补进它的头部注释。
 
+popup 表面（`PopupWindow`）同理：niri 的 `popups { blur true }` 规则会把整个 surface 矩形都模糊，透明像素也包含在内。形状带箭头（`NArrowRect`）或其他内部透明区的 popup 必须自己通过 `NSurfaceRegion` 发布只覆盖不透明本体的模糊区域（跟踪 `NArrowRect.bodyItem`），否则箭头两侧的透明余量会透出模糊背景，看起来像 popup 下方多出一条模糊带。
+
 取证步骤：
 
 1. 用 `WAYLAND_DEBUG=1` 跑 `verify.sh`，协议日志写进 `$NOSD_VERIFY_DIR/logs/<名字>.log`（默认目录是 `/tmp/nosd-verify`）。

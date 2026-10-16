@@ -47,9 +47,14 @@ layer-rule {
 }
 
 // Menus (TrayMenu, NPopupContextMenu, DockMenu) and tooltips are
-// xdg_popups of these layer surfaces — popup surfaces are content-sized,
-// so blur true there means the card's exact shape. Real-content blur for
-// the same reason as tier 2.
+// xdg_popups of these layer surfaces. Arrow-shaped popups have transparent
+// pixels inside the surface rect (the margins beside the arrow), where a
+// whole-surface blur would show through as a stray band — so each
+// PopupWindow publishes its opaque body as an ext-background-effect blur
+// region (NArrowRect.bodyItem + NSurfaceRegion), and niri follows the
+// client region exactly. `blur true` here keeps whole-surface blur as the
+// fallback for popups that don't publish a region; `blur false` would
+// force-disable even client regions.
 layer-rule {
   match namespace="^nosdshell-"
   match namespace="^nosd-launcher-"

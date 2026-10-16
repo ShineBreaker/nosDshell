@@ -38,6 +38,10 @@ Singleton {
     return Object.keys(roots).join(", ");
   }
 
+  function rootItem(name) {
+    return roots[name] || null;
+  }
+
   // One-line descriptor: QML type + pointer + objectName + geometry + flags.
   // The pointer is what lets a log line be matched against a gdb/core frame.
   function describe(item) {

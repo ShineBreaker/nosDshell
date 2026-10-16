@@ -27,6 +27,21 @@ Item {
     return Qt.rect(r.x, r.y, r.width, r.height);
   }
 
+  // The opaque body as a trackable item — PopupWindow consumers publish it
+  // as their ext-background-effect blur region (via NSurfaceRegion). niri's
+  // `popups { blur true }` rule blurs the whole surface rect otherwise, and
+  // the arrow's transparent margins then show the blurred backdrop as a
+  // stray band beside/below the card.
+  readonly property Item bodyItem: bodyArea
+
+  Item {
+    id: bodyArea
+    x: root.bodyRect.x
+    y: root.bodyRect.y
+    width: root.bodyRect.width
+    height: root.bodyRect.height
+  }
+
   NDropShadow {
     anchors.fill: parent
     z: -1
