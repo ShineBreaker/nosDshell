@@ -24,6 +24,12 @@ Item {
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
 
+  // Fashion dock presentation (DESIGN §3.1.4): the workspace strip has no
+  // fashion equivalent, so the widget collapses to a FashionTile carrying
+  // the overview/switch action — same as the other self-drawn widgets.
+  property string dockPresentation: ""
+  readonly property bool fashionMode: dockPresentation === "fashion"
+
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
   readonly property string screenName: screen ? screen.name : ""
@@ -161,8 +167,8 @@ Item {
 
   readonly property bool appVisible: showApplications && (!showApplicationsHover || root.isHovered)
 
-  implicitWidth: appVisible ? (isVertical ? groupedGrid.implicitWidth : Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel)) : (isVertical ? barHeight : computeWidth())
-  implicitHeight: appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight)
+  implicitWidth: fashionMode ? Style.dockPluginCellSize : (appVisible ? (isVertical ? groupedGrid.implicitWidth : Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel)) : (isVertical ? barHeight : computeWidth()))
+  implicitHeight: fashionMode ? Style.dockPluginCellSize : (appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight))
 
   function getWorkspaceWidth(ws, activeOverride) {
     // DDE efficient workspaces: fixed 14 px squares (derived value)
@@ -504,7 +510,7 @@ Item {
 
   Rectangle {
     id: workspaceBackground
-    visible: !appVisible
+    visible: !appVisible && !root.fashionMode
     width: isVertical ? capsuleHeight : parent.width
     height: isVertical ? parent.height : capsuleHeight
     radius: Style.radiusM
@@ -624,7 +630,7 @@ Item {
     spacing: effectiveSpacing
     x: horizontalPadding
     y: 0
-    visible: !isVertical && !appVisible
+    visible: !isVertical && !appVisible && !root.fashionMode
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
       NumberAnimation {
@@ -671,7 +677,7 @@ Item {
     spacing: effectiveSpacing
     x: 0
     y: horizontalPadding
-    visible: isVertical && !appVisible
+    visible: isVertical && !appVisible && !root.fashionMode
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
       NumberAnimation {
@@ -1011,7 +1017,7 @@ Item {
 
   Flow {
     id: groupedGrid
-    visible: appVisible
+    visible: appVisible && !root.fashionMode
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
       NumberAnimation {
@@ -1035,5 +1041,25 @@ Item {
   function openGroupedContextMenu(item) {
     // Anchor to root (stable) but center horizontally on the clicked item
     PanelService.showContextMenu(contextMenu, root, screen, item);
+  }
+
+  // Fashion dock: the workspace strip collapses to a tile. Click opens the
+  // compositor overview (niri); backends without one cycle to the next
+  // workspace instead, so the tile is never dead.
+  FashionTile {
+    anchors.centerIn: parent
+    visible: root.fashionMode
+    icon: "layout-grid"
+    tooltipText: I18n.tr("widgets.label-workspace")
+    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
+    onClicked: {
+      TooltipService.hide();
+      if (!CompositorService.toggleOverview())
+        root.switchByOffset(1);
+    }
+    onRightClicked: {
+      TooltipService.hide();
+      PanelService.showContextMenu(contextMenu, root, root.screen);
+    }
   }
 }

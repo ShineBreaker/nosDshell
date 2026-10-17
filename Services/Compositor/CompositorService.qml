@@ -509,6 +509,22 @@ Singleton {
     }
   }
 
+  // Toggle the compositor's workspace overview when the backend has one
+  // (niri overview). Returns false when unsupported — callers should offer
+  // a local fallback (e.g. cycling workspaces).
+  function toggleOverview() {
+    try {
+      if (backend && backend.toggleOverview) {
+        backend.toggleOverview();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      Logger.e("CompositorService", "Failed to toggle overview:", e);
+      return false;
+    }
+  }
+
   // DDE ShowDesktop strip: show desktop if the backend supports it,
   // otherwise fall back to toggling the compositor overview (e.g. niri).
   // Returns false when the backend has no equivalent action.

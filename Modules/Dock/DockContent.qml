@@ -49,9 +49,11 @@ Item {
       var p = plugins[i];
       if (!p || !p.id)
         continue;
-      // Taskbar/ShowDesktop/Spacer are structural; Launcher is built in;
-      // Workspace is hidden in fashion mode (DESIGN §3.1.1)
-      if (p.id === "Taskbar" || p.id === "ShowDesktop" || p.id === "Spacer" || p.id === "Launcher" || p.id === "Workspace")
+      // Taskbar/ShowDesktop/Spacer are structural; Launcher is built in.
+      // This skip list must stay disjoint from DockSettingsMenu
+      // .pluginCandidates — a candidate that renders nowhere is how the
+      // "Workspace added but invisible" bug happened.
+      if (p.id === "Taskbar" || p.id === "ShowDesktop" || p.id === "Spacer" || p.id === "Launcher")
         continue;
       if (!BarWidgetRegistry.hasWidget(p.id))
         continue;
