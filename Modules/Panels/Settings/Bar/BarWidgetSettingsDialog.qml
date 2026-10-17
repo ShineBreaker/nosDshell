@@ -143,6 +143,38 @@ Popup {
           }
         }
       }
+
+      // Button bar separator (DDialog shape, same as NPluginSettingsPopup)
+      Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 1
+        color: Color.overlay("hover")
+      }
+
+      RowLayout {
+        Layout.fillWidth: true
+        Layout.topMargin: Style.marginM
+        spacing: Style.marginM
+
+        NButton {
+          objectName: "widgetSettingsReset"
+          text: I18n.tr("common.reset-to-default")
+          icon: "restore"
+          outlined: true
+          onClicked: root.resetToDefaults()
+        }
+
+        Item {
+          Layout.fillWidth: true
+        }
+
+        NButton {
+          objectName: "widgetSettingsClose"
+          text: I18n.tr("common.close")
+          outlined: true
+          onClicked: root.saveAndClose()
+        }
+      }
     }
   }
 
@@ -176,7 +208,33 @@ Popup {
     root.close();
   }
 
+  // Back to registry defaults: the entry becomes exactly what a fresh add
+  // writes ({id} + widgetMetadata). The write replaces the entry, so stale
+  // saved keys drop out; then reload the page — settings pages capture
+  // values into local state on load.
+  function resetToDefaults() {
+    if (!widgetId || widgetIndex < 0)
+      return;
+    var metadata = BarWidgetRegistry.widgetMetadata[widgetId] || {};
+    var entry = {
+      "id": widgetId
+    };
+    Object.keys(metadata).forEach(function (key) {
+      entry[key] = metadata[key];
+    });
+    saveTimer.stop();
+    root.settingsCache = ({});
+    root.updateWidgetSettings(root.sectionId, root.widgetIndex, entry);
+    loadWidgetSettings();
+    ToastService.showNotice(I18n.tr("system.widget-settings-title", {
+                                    "widget": root.widgetId
+                                  }), I18n.tr("common.settings-reset"));
+  }
+
   function loadWidgetSettings() {
+    // Blank first: setSource() on the same URL only re-instantiates reliably
+    // after the previous item is dropped.
+    settingsLoader.source = "";
     const source = BarWidgetRegistry.widgetSettingsMap[widgetId];
     if (source) {
       var currentWidgetData = widgetData;

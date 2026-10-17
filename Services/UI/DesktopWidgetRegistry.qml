@@ -255,6 +255,46 @@ Singleton {
     return true;
   }
 
+  // Reset one desktop widget's settings to registry defaults, keeping its
+  // structural keys (id + geometry x/y/scale). The entry is rebuilt as
+  // {id, x, y, scale} + widgetMetadata — the same shape a fresh add writes —
+  // so stale saved keys drop out. Unlike updateWidgetData this REPLACES the
+  // entry rather than merging into it.
+  function resetWidgetSettings(monitorName, widgetIndex) {
+    if (widgetIndex < 0 || !monitorName) {
+      return;
+    }
+
+    var monitorWidgets = Settings.data.desktopWidgets.monitorWidgets || [];
+    var newMonitorWidgets = monitorWidgets.slice();
+
+    for (var i = 0; i < newMonitorWidgets.length; i++) {
+      if (newMonitorWidgets[i].name === monitorName) {
+        var widgets = (newMonitorWidgets[i].widgets || []).slice();
+        if (widgetIndex >= widgets.length) {
+          return;
+        }
+        var old = widgets[widgetIndex] || {};
+        var entry = {
+          "id": old.id,
+          "x": old.x,
+          "y": old.y,
+          "scale": old.scale
+        };
+        var metadata = widgetMetadata[old.id] || {};
+        Object.keys(metadata).forEach(function (key) {
+          entry[key] = metadata[key];
+        });
+        widgets[widgetIndex] = entry;
+        newMonitorWidgets[i] = Object.assign({}, newMonitorWidgets[i], {
+                                               "widgets": widgets
+                                             });
+        Settings.data.desktopWidgets.monitorWidgets = newMonitorWidgets;
+        return;
+      }
+    }
+  }
+
   function updateWidgetData(monitorName, widgetIndex, properties) {
     if (widgetIndex < 0 || !monitorName) {
       return;

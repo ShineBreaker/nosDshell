@@ -41,6 +41,8 @@
 #   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
 #   settings-subpage is off the default set (needs its own seed — see the
 #   scene comment): drives the §3.5.3 二级页 rows on the dock tab.
+#   settings-reset is off the default set too (own seed): clicks a widget
+#   gear, asserts the 重置为默认值 button rebuilds the entry as defaults.
 #
 # IPC targets available (Services/Control/IPCService.qml):
 #   bar, settings, calendar, notifications, toast, idleInhibitor, launcher,
@@ -239,7 +241,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -337,6 +339,39 @@ for i in range(1, 15):
     Image.new("RGB", (320, 180), (r, g, b)).save("$WORK/home/Pictures/Wallpapers/wp%02d.png" % i)
 PYEOF
 cp "$REPO/Assets/Wallpaper/deepin15-desktop.jpg" "$WORK/home/Pictures/Wallpapers/deepin15-desktop.jpg" 2>/dev/null || true
+
+# Plugin fixture for the settings-reset scene. PluginRegistry scans the plugin
+# dir once at startup, so the manifest/settings must exist before qs launches.
+# The seeded settings.json carries non-default values plus a stale key — the
+# reset must restore manifest.metadata.defaultSettings and drop the stale key.
+case " $SELECTED " in
+  *" settings-reset "*)
+    PDIR="$NOSD_CONFIG_DIR/plugins/testreset"
+    mkdir -p "$PDIR"
+    cat > "$PDIR/manifest.json" <<'PLUGINEOF'
+{"id":"testreset","name":"TestReset","version":"1.0.0","author":"verify","description":"reset fixture","entryPoints":{"settings":"Settings.qml"},"metadata":{"defaultSettings":{"accent":"red","level":1,"notes":"default-note"}}}
+PLUGINEOF
+    cat > "$PDIR/Settings.qml" <<'PLUGINEOF'
+import QtQuick
+Item {
+  property var pluginApi
+  implicitWidth: 420
+  implicitHeight: 40
+  function saveSettings() { pluginApi.saveSettings() }
+  Text {
+    color: "white"
+    text: "accent=" + (pluginApi.pluginSettings.accent || "?") + " level=" + pluginApi.pluginSettings.level
+  }
+}
+PLUGINEOF
+    cat > "$PDIR/settings.json" <<'PLUGINEOF'
+{"accent":"blue","level":9,"notes":"user-changed","staleKey":"x"}
+PLUGINEOF
+    cat > "$NOSD_CONFIG_DIR/plugins.json" <<'PLUGINEOF'
+{"version":2,"states":{"testreset":{"enabled":true,"sourceUrl":""}},"sources":[]}
+PLUGINEOF
+    ;;
+esac
 
 dbus-run-session -- bash <<'DBUSEOF'
 set -uo pipefail
@@ -1220,6 +1255,160 @@ PYEOF
                              echo "settings-subpage: no monitor row (screenOverrides seeded?) — skipped"
                            fi
                          fi
+                         call settings toggle 0.5 ;;
+    # settings-reset — the "重置为默认值" button every settings dialog now
+    # carries (common.reset-to-default), driven over four storage paths:
+    #   1. dock plugin instance   dock/3 gear → BarWidgetSettingsDialog
+    #      (setDockPluginSettings replace — the seed value must not survive)
+    #   2. bar widget instance    dock/1 → nextPage → left-section gear
+    #      (same dialog, section write path)
+    #   3. plugin-owned settings  plugins/0 gear → NPluginSettingsPopup →
+    #      plugins/testreset/settings.json must equal manifest defaults
+    #      exactly (stale seeded keys dropped, not merged)
+    #   4. desktop widget         desktopwidgets gear →
+    #      DesktopWidgetSettingsDialog → monitorWidgets entry rebuilt as
+    #      {id,x,y,scale} + metadata defaults (geometry preserved)
+    # Off the default set — needs a seed putting non-default Clock values on
+    # the three settings.json paths; the testreset plugin fixture is written
+    # by this script before qs starts (PluginRegistry scans plugins once):
+    #   {"bar":{"enabled":true,
+    #           "widgets":{"left":[{"id":"Launcher"},
+    #                      {"id":"Clock","clockColor":"primary","lineSpacing":9}]}},
+    #    "dock":{"plugins":[{"id":"Clock","clockColor":"primary","lineSpacing":9}]},
+    #    "desktopWidgets":{"enabled":true,"monitorWidgets":[{"name":"HEADLESS-1",
+    #      "widgets":[{"id":"Clock","x":123,"y":45,"scale":1.5,
+    #                  "clockStyle":"analog","clockColor":"primary",
+    #                  "staleKey":"x"}]}]}}
+    #   ./verify.sh <run> --settings <seed>.json --scenes settings-reset
+    settings-reset)      VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                         [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                         SROOT=cc-HEADLESS-1
+                         SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
+                         fxy() { # <objectName> → "cx cy" screen centre, or ""
+                           local d w h x y
+                           d=$(qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null)
+                           echo "$1 → $d" >> "$WORK/logs/reset-find.txt"
+                           case "$d" in *hidden*|*"no item"*|"") return;; esac
+                           read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+                           [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+                         }
+                         # Assert the on-disk Clock entry is back to defaults:
+                         # seeded clockColor/lineSpacing must be gone. FileView
+                         # flushes late — poll the file for a few seconds.
+                         reset_assert() { # <dock|bar>
+                           local i
+                           for i in 1 2 3 4 5 6; do
+                             python3 - "$SF" "$1" <<'PYEOF' && return 0
+import json,sys
+d=json.load(open(sys.argv[1]))
+where=sys.argv[2]
+if where=="dock":
+    cand=[w for w in d.get("dock",{}).get("plugins",[]) if w.get("id")=="Clock"]
+elif where=="cc":
+    cand=[w for w in d.get("controlCenter",{}).get("shortcuts",{}).get("left",[]) if w.get("id")=="CustomButton"]
+elif where=="desktop":
+    mw=d.get("desktopWidgets",{}).get("monitorWidgets",[])
+    cand=[]
+    for m in mw:
+        cand += [w for w in m.get("widgets",[]) if w.get("id")=="Clock"]
+else:
+    cand=[w for w in d.get("bar",{}).get("widgets",{}).get("left",[]) if w.get("id")=="Clock"]
+if not cand:
+    sys.exit(1)
+e=cand[0]
+bad=[k for k,v in e.items() if k=="clockColor" and v!="none"]
+if where=="cc":
+    # CustomButton default icon is "heart"; the seeded stale key must be gone.
+    if e.get("icon")!="heart" or "staleKey" in e:
+        bad.append("cc")
+elif where=="desktop":
+    # Desktop Clock defaults: digital style; geometry must survive the reset.
+    if e.get("clockStyle")!="digital" or e.get("x")!=123 or e.get("y")!=45 or e.get("scale")!=1.5 or "staleKey" in e:
+        bad.append("desktop")
+else:
+    if e.get("lineSpacing")!=2:
+        bad.append("lineSpacing")
+print("settings-reset %s entry: %s" % (where, json.dumps(e)))
+sys.exit(1 if bad else 0)
+PYEOF
+                             sleep 1
+                           done
+                           echo "FAIL settings-reset: Clock entry not reset on disk ($1)"
+                           SCENE_FAIL=1
+                         }
+                         # Plugin-owned settings live in their own file — assert
+                         # it ends up exactly equal to the manifest defaults
+                         # (stale keys dropped, not merged).
+                         plugin_assert() {
+                           local i pf="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/plugins/testreset/settings.json"
+                           for i in 1 2 3 4 5 6; do
+                             python3 - "$pf" <<'PYEOF' && return 0
+import json,sys
+e=json.load(open(sys.argv[1]))
+want={"accent":"red","level":1,"notes":"default-note"}
+print("settings-reset plugin entry: %s" % json.dumps(e))
+sys.exit(0 if e==want else 1)
+PYEOF
+                             sleep 1
+                           done
+                           echo "FAIL settings-reset: plugin settings not reset on disk"
+                           SCENE_FAIL=1
+                         }
+                         dialog_reset() { # <gearName> <resetName> <closeName> <label>
+                           local gname="$1" rname="$2" cname="$3" tag="$4" gx gy bx by cx cy i
+                           # Delegates incubate lazily — retry the find.
+                           for i in 1 2 3 4; do
+                             read gx gy < <(fxy "$gname")
+                             [ -n "${gx:-}" ] && break
+                             sleep 1
+                           done
+                           if [ -z "${gx:-}" ]; then
+                             echo "FAIL settings-reset: gear not found: $gname ($tag)"
+                             SCENE_FAIL=1; return
+                           fi
+                           "$VINPUT" vinput click "$gx" "$gy" 2>>"$WORK/logs/vinput.log" || true
+                           sleep 1.2
+                           shot "settings-reset-$tag-dialog"
+                           read bx by < <(fxy "$rname")
+                           if [ -z "${bx:-}" ]; then
+                             echo "FAIL settings-reset: reset button not found ($tag)"
+                             SCENE_FAIL=1; return
+                           fi
+                           "$VINPUT" vinput click "$bx" "$by" 2>>"$WORK/logs/vinput.log" || true
+                           sleep 1.2
+                           shot "settings-reset-$tag-done"
+                           # Modal blocks the next navigation — close it.
+                           read cx cy < <(fxy "$cname")
+                           [ -n "${cx:-}" ] && "$VINPUT" vinput click "$cx" "$cy" 2>>"$WORK/logs/vinput.log" || true
+                           sleep 0.6
+                         }
+                         # Path 1: dock plugin instance (PluginsSubTab gear →
+                         # BarWidgetSettingsDialog sectionId "dock").
+                         call settings openTab dock/3 5
+                         dialog_reset widgetGear-dock-Clock widgetSettingsReset widgetSettingsClose dock
+                         reset_assert dock || SCENE_FAIL=1
+                         # Path 2: bar widget instance on the pushed 二级页.
+                         call settings openTab dock/1 4
+                         read px py < <(fxy nextPage-barWidgets)
+                         [ -n "${px:-}" ] && "$VINPUT" vinput click "$px" "$py" 2>>"$WORK/logs/vinput.log" || true
+                         sleep 1.2
+                         dialog_reset widgetGear-left-Clock widgetSettingsReset widgetSettingsClose bar
+                         reset_assert bar || SCENE_FAIL=1
+                         # Path 3: plugin-owned settings (installed-plugin gear →
+                         # NPluginSettingsPopup → plugins/<id>/settings.json).
+                         call settings openTab plugins/0 5
+                         dialog_reset pluginSettingsGear-testreset pluginSettingsReset pluginSettingsClose plugin
+                         plugin_assert || SCENE_FAIL=1
+                         # Path 4: desktop widget instance — settings fields go
+                         # back to metadata defaults while x/y/scale survive.
+                         call settings openTab desktopwidgets 5
+                         dialog_reset widgetGear-HEADLESS-1-Clock widgetSettingsReset widgetSettingsClose desktop
+                         reset_assert desktop || SCENE_FAIL=1
+                         # Path 5: control-center shortcut widget (CustomButton)
+                         # → controlCenter.shortcuts.left entry.
+                         call settings openTab controlcenter/1 5
+                         dialog_reset widgetGear-left-CustomButton widgetSettingsReset widgetSettingsClose cc
+                         reset_assert cc || SCENE_FAIL=1
                          call settings toggle 0.5 ;;
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.

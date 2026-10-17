@@ -498,6 +498,7 @@
     "select-text-color": "选择文本颜色",
     "switchUser": "切换用户",
     "settings": "设置",
+    "settings-reset": "设置已重置为默认值",
     "shortcuts": "快捷方式",
     "shutdown": "关机",
     "signal": "信号",

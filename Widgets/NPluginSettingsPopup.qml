@@ -24,6 +24,9 @@ Popup {
   property var currentPlugin: null
   property var currentPluginApi: null
   property bool showToastOnSave: false
+  // The URL handed to settingsLoader — kept so reset can reload the page and
+  // controls re-read the restored defaults (pages cache values at load).
+  property string _settingsSource: ""
 
   background: Rectangle {
     color: Color.maskShell
@@ -90,17 +93,26 @@ Popup {
         color: Color.overlay("hover")
       }
 
-      // Action buttons
+      // Action buttons: destructive-ish actions left, safe actions right.
       RowLayout {
         Layout.fillWidth: true
         Layout.topMargin: Style.marginM
         spacing: Style.marginM
+
+        NButton {
+          objectName: "pluginSettingsReset"
+          text: I18n.tr("common.reset-to-default")
+          icon: "restore"
+          outlined: true
+          onClicked: root.resetToDefaults()
+        }
 
         Item {
           Layout.fillWidth: true
         }
 
         NButton {
+          objectName: "pluginSettingsClose"
           text: I18n.tr("common.close")
           outlined: true
           onClicked: root.close()
@@ -129,6 +141,29 @@ Popup {
     settingsLoader.source = "";
     currentPlugin = null;
     currentPluginApi = null;
+    _settingsSource = "";
+  }
+
+  // Restore manifest.metadata.defaultSettings: persist the defaults to the
+  // plugin's settings.json, then reload the page so its controls re-read
+  // them (settings pages capture pluginSettings into local state on load).
+  function resetToDefaults() {
+    if (!currentPluginApi)
+      return;
+    var defaults = currentPluginApi.manifest?.metadata?.defaultSettings || {};
+    currentPluginApi.pluginSettings = JSON.parse(JSON.stringify(defaults));
+    currentPluginApi.saveSettings();
+    if (_settingsSource !== "") {
+      settingsLoader.source = "";
+      settingsLoader.setSource(_settingsSource, {
+                                 "pluginApi": currentPluginApi
+                               });
+    }
+    if (showToastOnSave) {
+      ToastService.showNotice(I18n.tr("panels.plugins.plugin-settings-title", {
+                                      "plugin": currentPlugin?.name || ""
+                                    }), I18n.tr("common.settings-reset"));
+    }
   }
 
   function openPluginSettings(pluginManifest, settingsEntryPoint) {
@@ -151,7 +186,8 @@ Popup {
     var settingsEntry = settingsEntryPoint ? pluginManifest.entryPoints[settingsEntryPoint] : pluginManifest.entryPoints.settings;
     var settingsPath = pluginDir + "/" + settingsEntry;
 
-    settingsLoader.setSource("file://" + settingsPath, {
+    _settingsSource = "file://" + settingsPath;
+    settingsLoader.setSource(_settingsSource, {
                                "pluginApi": currentPluginApi
                              });
 

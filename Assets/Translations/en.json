@@ -498,6 +498,7 @@
     "select-text-color": "Select text color",
     "switchUser": "Switch user",
     "settings": "Settings",
+    "settings-reset": "Settings reset to defaults",
     "shortcuts": "Shortcuts",
     "shutdown": "Shutdown",
     "signal": "Signal",

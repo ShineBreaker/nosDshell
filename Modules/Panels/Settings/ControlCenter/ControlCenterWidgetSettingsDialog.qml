@@ -114,6 +114,38 @@ Popup {
         }
       }
     }
+
+    // Button bar separator (DDialog shape, same as NPluginSettingsPopup)
+    Rectangle {
+      Layout.fillWidth: true
+      Layout.preferredHeight: 1
+      color: Color.overlay("hover")
+    }
+
+    RowLayout {
+      Layout.fillWidth: true
+      Layout.topMargin: Style.marginM
+      spacing: Style.marginM
+
+      NButton {
+        objectName: "widgetSettingsReset"
+        text: I18n.tr("common.reset-to-default")
+        icon: "restore"
+        outlined: true
+        onClicked: root.resetToDefaults()
+      }
+
+      Item {
+        Layout.fillWidth: true
+      }
+
+      NButton {
+        objectName: "widgetSettingsClose"
+        text: I18n.tr("common.close")
+        outlined: true
+        onClicked: root.saveAndClose()
+      }
+    }
   }
 
   Timer {
@@ -146,7 +178,42 @@ Popup {
     root.close();
   }
 
+  // Back to registry defaults: the entry becomes exactly what a fresh add
+  // writes ({id} + widgetMetadata). _updateWidgetSettingsInSection replaces
+  // the entry, so stale saved keys drop out; then reload the page — settings
+  // pages capture values into local state on load.
+  function resetToDefaults() {
+    if (!widgetId || widgetIndex < 0)
+      return;
+    var metadata = ControlCenterWidgetRegistry.widgetMetadata[widgetId] || {};
+    var entry = {
+      "id": widgetId
+    };
+    Object.keys(metadata).forEach(function (key) {
+      entry[key] = metadata[key];
+    });
+    saveTimer.stop();
+    root.settingsCache = ({});
+    root.updateWidgetSettings(root.sectionId, root.widgetIndex, entry);
+    loadWidgetSettings();
+    ToastService.showNotice(I18n.tr("system.widget-settings-title", {
+                                    "widget": root.widgetId
+                                  }), I18n.tr("common.settings-reset"));
+  }
+
   function loadWidgetSettings() {
+    // Blank first: setSource() on the same URL only re-instantiates reliably
+    // after the previous item is dropped.
+    settingsLoader.source = "";
+    // Re-read the stored entry so a reload after reset shows defaults, not
+    // the widgetData snapshot this dialog was created with.
+    var currentWidgetData = widgetData;
+    if (sectionId && widgetIndex >= 0) {
+      var stored = Settings.data.controlCenter.shortcuts[sectionId] || [];
+      if (widgetIndex < stored.length) {
+        currentWidgetData = stored[widgetIndex];
+      }
+    }
     const widgetSettingsMap = {
       "CustomButton": "WidgetSettings/CustomButtonSettings.qml"
     };
@@ -154,7 +221,7 @@ Popup {
     const source = widgetSettingsMap[widgetId];
     if (source) {
       settingsLoader.setSource(source, {
-                                 "widgetData": widgetData,
+                                 "widgetData": currentWidgetData,
                                  "widgetMetadata": ControlCenterWidgetRegistry.widgetMetadata[widgetId]
                                });
     }

@@ -635,6 +635,10 @@ NBox {
                 Loader {
                   active: root.widgetHasSettings(modelData.id) && root.enabled
                   sourceComponent: NIconButton {
+                    // objectName lets `debug find` locate a widget's gear in
+                    // verify scenes (hit-testing can't reach 25-deep rows);
+                    // sectionId disambiguates the same widget across editors.
+                    objectName: "widgetGear-" + root.sectionId + "-" + (modelData.id || "")
                     icon: "settings"
                     tooltipText: I18n.tr("actions.widget-settings")
                     baseSize: miniButtonSize

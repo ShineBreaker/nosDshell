@@ -239,6 +239,7 @@ ColumnLayout {
               NIconButton {
                 icon: "settings"
                 tooltipText: I18n.tr("panels.plugins.settings-tooltip")
+                objectName: "pluginSettingsGear-" + (modelData.compositeKey || "")
                 baseSize: Style.baseWidgetSize * 0.7
                 visible: (modelData.entryPoints?.settings !== undefined)
                 enabled: modelData.enabled

@@ -17,7 +17,7 @@
 
 - `debug list` 列出已注册的场景根，命名为 `dock-<屏>`、`bar-<屏>`、`cc-<屏>`、`main-<屏>`。bar 只在高效模式下加载；cc 是控制中心面板；main 是整个 shell 表面。根名带屏幕名，先 `list` 确认再传参。
 - `debug tree <根> [深度]` 按绘制顺序输出 `children[]`，与 Qt 投递 hover 时用的是同一份列表。layer 的 effectSource、effect 这类不可见子项也会列出，地址可以拿到 gdb 里对照。树很大时（>socket 上限）会返回 socket 错误，改用 `find`/`hit`。
-- `debug find <根> <objectName>` 全子树按 objectName 找 item（无深度上限），返回 `describe()`：类型、`宽x高` 与 `@x,y`（场景坐标，单屏时即屏幕坐标）。定位深层元素（如设置页里 ~25 层的行）用它而不是 `tree`/`hit` 扫描。
+- `debug find <根> <objectName>` 全子树按 objectName 找 item（无深度上限），返回 `describe()`：类型、`宽x高` 与 `@x,y`（场景坐标，单屏时即屏幕坐标）。定位深层元素（如设置页里 ~25 层的行）用它而不是 `tree`/`hit` 扫描。注册根下找不到时回退到该窗口的 `contentItem` 整树，因此 `Popup`/对话框（挂在窗口 Overlay 下、注册根的子树之外）也能命中。
 - `debug hit <根> <x> <y>` 沿 `childAt` 做命中测试直到最深节点（上限 40 层），并列出每一层所有覆盖该点的子项。用它回答"这个坐标的按下事件会交给谁"。坐标是 item 的场景坐标——根 Item 不随窗口屏幕偏移平移时即窗口坐标。
 - `debug opened [深度]` 输出 `PanelService.openedPanel`。多屏下面板注册名不对时，用它拿到当前真正打开的面板。
 - `debug watch <名字>` 给整棵子树挂上 `Component.destruction` 探针。事件投递途中有对象被销毁时，`DbgWatch` 日志会报出它的名字。

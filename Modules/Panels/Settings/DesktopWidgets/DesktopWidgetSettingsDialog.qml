@@ -136,6 +136,38 @@ Popup {
           }
         }
       }
+
+      // Button bar separator (DDialog shape, same as NPluginSettingsPopup)
+      Rectangle {
+        Layout.fillWidth: true
+        Layout.preferredHeight: 1
+        color: Color.overlay("hover")
+      }
+
+      RowLayout {
+        Layout.fillWidth: true
+        Layout.topMargin: Style.marginM
+        spacing: Style.marginM
+
+        NButton {
+          objectName: "widgetSettingsReset"
+          text: I18n.tr("common.reset-to-default")
+          icon: "restore"
+          outlined: true
+          onClicked: root.resetToDefaults()
+        }
+
+        Item {
+          Layout.fillWidth: true
+        }
+
+        NButton {
+          objectName: "widgetSettingsClose"
+          text: I18n.tr("common.close")
+          outlined: true
+          onClicked: root.saveAndClose()
+        }
+      }
     }
   }
 
@@ -209,7 +241,39 @@ Popup {
     root.close();
   }
 
+  // Back to registry defaults: the registry rebuilds the entry as
+  // {id, x, y, scale} + widgetMetadata (fresh-add shape, geometry kept), then
+  // the page reloads — settings pages capture values into local state.
+  function resetToDefaults() {
+    if (!widgetId || widgetIndex < 0)
+      return;
+    saveTimer.stop();
+    root.settingsCache = ({});
+    DesktopWidgetRegistry.resetWidgetSettings(root.sectionId, root.widgetIndex);
+    loadWidgetSettings();
+    ToastService.showNotice(I18n.tr("system.widget-settings-title", {
+                                    "widget": DesktopWidgetRegistry.getWidgetDisplayName(root.widgetId)
+                                  }), I18n.tr("common.settings-reset"));
+  }
+
   function loadWidgetSettings() {
+    // Blank first: setSource() on the same URL only re-instantiates reliably
+    // after the previous item is dropped.
+    settingsLoader.source = "";
+    // Re-read the saved entry so a reload after reset shows defaults, not
+    // the widgetData snapshot this dialog was created with.
+    var currentWidgetData = widgetData;
+    var monitorWidgets = Settings.data.desktopWidgets.monitorWidgets || [];
+    for (var i = 0; i < monitorWidgets.length; i++) {
+      if (monitorWidgets[i].name === sectionId) {
+        var stored = monitorWidgets[i].widgets || [];
+        if (widgetIndex >= 0 && widgetIndex < stored.length) {
+          currentWidgetData = stored[widgetIndex];
+        }
+        break;
+      }
+    }
+
     // Handle plugin widgets
     if (DesktopWidgetRegistry.isPluginWidget(widgetId)) {
       var pluginId = widgetId.replace("plugin:", "");
@@ -224,7 +288,7 @@ Popup {
         settingsPath = "file://" + pluginDir + "/" + manifest.entryPoints.desktopWidgetSettings;
 
         var widgetSettings = {};
-        widgetSettings.data = widgetData || {};
+        widgetSettings.data = currentWidgetData || {};
         widgetSettings.metadata = DesktopWidgetRegistry.widgetMetadata[widgetId] || {};
         widgetSettings.save = function () {
           var newSettings = Object.assign({}, widgetSettings.data);
@@ -257,17 +321,6 @@ Popup {
     // Handle core widgets
     const source = DesktopWidgetRegistry.widgetSettingsMap[widgetId];
     if (source) {
-      var currentWidgetData = widgetData;
-      var monitorWidgets = Settings.data.desktopWidgets.monitorWidgets || [];
-      for (var i = 0; i < monitorWidgets.length; i++) {
-        if (monitorWidgets[i].name === sectionId) {
-          var widgets = monitorWidgets[i].widgets || [];
-          if (widgetIndex >= 0 && widgetIndex < widgets.length) {
-            currentWidgetData = widgets[widgetIndex];
-          }
-          break;
-        }
-      }
       var fullPath = Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/DesktopWidgets/" + source);
       settingsLoader.setSource(fullPath, {
                                  "widgetData": currentWidgetData,

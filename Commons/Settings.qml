@@ -1170,11 +1170,14 @@ Singleton {
 
   // -----------------------------------------------------
   // Write per-widget settings for a dock.plugins entry (efficient mode).
+  // Replace, not merge: callers always hand complete entries, and a merge
+  // would resurrect keys the writer intentionally dropped — reset-to-default
+  // writes {id} + registry defaults and must not keep stale saved keys.
   function setDockPluginSettings(index, settings) {
     var plugins = JSON.parse(JSON.stringify(data.dock.plugins || []));
     if (index < 0 || index >= plugins.length)
       return;
-    plugins[index] = Object.assign({}, plugins[index], settings);
+    plugins[index] = settings;
     data.dock.plugins = plugins;
     saveImmediate();
   }

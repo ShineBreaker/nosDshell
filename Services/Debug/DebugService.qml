@@ -214,6 +214,9 @@ Singleton {
   // Find the first item with a matching objectName under a registered root
   // ("" / "opened" = PanelService.openedPanel). Pairs with setProperty to poke
   // state mid-repro — e.g. filling a search field the pointer can't reach.
+  // Popups/dialogs parent to the window's Overlay, a sibling subtree of the
+  // registered root — when the root walk misses, retry over the whole window
+  // content item so dialogs are reachable too.
   function findItem(rootName, objectName) {
     var item = null;
     try {
@@ -222,14 +225,22 @@ Singleton {
     if (!item)
       return null;
     var found = null;
-    _walkItems(item, 0, function (it) {
+    var match = function (it) {
       if (found)
         return;
       try {
         if (it.objectName === objectName)
           found = it;
       } catch (e) {}
-    });
+    };
+    _walkItems(item, 0, match);
+    if (!found) {
+      try {
+        var top = item.Window ? item.Window.contentItem : null;
+        if (top && top !== item)
+          _walkItems(top, 0, match);
+      } catch (e) {}
+    }
     return found;
   }
 
