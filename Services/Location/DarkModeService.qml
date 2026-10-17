@@ -42,11 +42,38 @@ Singleton {
     target: TemplateRegistry
     function onHelpersBinChanged() {
       root.startPortal();
+      root.pushHooksFlag();
     }
   }
   // TemplateRegistry may resolve helpers before this singleton is
   // instantiated, in which case no change signal fires.
-  Component.onCompleted: root.startPortal()
+  Component.onCompleted: {
+    root.startPortal();
+    root.pushHooksFlag();
+  }
+
+  // The settings toggle reaches the daemon as a flag file — `portal hooks`
+  // writes it locally, so it lands even before the daemon starts; the daemon
+  // re-reads it per transition (portal.rs hooks_flag_file).
+  function pushHooksFlag() {
+    const cmd = TemplateRegistry.helperCmd("portal", ["hooks", Settings.data.colorSchemes.runDarkmanHooks ? "on" : "off"]);
+    if (cmd === null) {
+      if (!root._hooksWarned) {
+        root._hooksWarned = true;
+        Logger.w("DarkModeService", "nosd-helpers unavailable; darkman hook flag not written");
+      }
+      return;
+    }
+    Quickshell.execDetached(cmd);
+  }
+  property bool _hooksWarned: false
+
+  Connections {
+    target: Settings.data.colorSchemes
+    function onRunDarkmanHooksChanged() {
+      root.pushHooksFlag();
+    }
+  }
 
   function pushPortal() {
     const mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";

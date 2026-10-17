@@ -176,57 +176,43 @@ ColumnLayout {
                   }
     }
 
-    NDccRow {
-      interactive: false
-      Layout.fillWidth: true
+    // Same section shape as NightLightSubTab's manual schedule — group head
+    // + one field-column row per time. Keys are color-scheme-scoped: the two
+    // features are different settings (colorSchemes vs nightLight) and must
+    // not share labelKeys or the search index dedup merges them.
+    NHeader {
+      label: I18n.tr("panels.color-scheme.manual-schedule-label")
+      description: I18n.tr("panels.color-scheme.manual-schedule-description")
       visible: Settings.data.colorSchemes.schedulingMode === "manual"
+    }
 
-      ColumnLayout {
-        Layout.fillWidth: true
-        spacing: Style.marginS
+    NComboBox {
+      label: I18n.tr("panels.color-scheme.manual-schedule-sunrise")
+      model: root.timeOptions
+      currentKey: Settings.data.colorSchemes.manualSunrise
+      placeholder: I18n.tr("panels.color-scheme.manual-schedule-select-start")
+      onSelected: key => Settings.data.colorSchemes.manualSunrise = key
+      visible: Settings.data.colorSchemes.schedulingMode === "manual"
+    }
 
-        NLabel {
-          label: I18n.tr("panels.display.night-light-manual-schedule-label")
-          description: I18n.tr("panels.display.night-light-manual-schedule-description")
-        }
+    NComboBox {
+      label: I18n.tr("panels.color-scheme.manual-schedule-sunset")
+      model: root.timeOptions
+      currentKey: Settings.data.colorSchemes.manualSunset
+      placeholder: I18n.tr("panels.color-scheme.manual-schedule-select-stop")
+      onSelected: key => Settings.data.colorSchemes.manualSunset = key
+      visible: Settings.data.colorSchemes.schedulingMode === "manual"
+    }
 
-        RowLayout {
-          Layout.fillWidth: false
-          spacing: Style.marginS
-
-          NText {
-            text: I18n.tr("panels.display.night-light-manual-schedule-sunrise")
-            pointSize: Style.fontSizeM
-            color: Color.onShellTertiary
-          }
-
-          NComboBox {
-            model: root.timeOptions
-            currentKey: Settings.data.colorSchemes.manualSunrise
-            placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-start")
-            onSelected: key => Settings.data.colorSchemes.manualSunrise = key
-            minimumWidth: 120
-          }
-
-          Item {
-            Layout.preferredWidth: Style.settingsTimeGroupGap
-          }
-
-          NText {
-            text: I18n.tr("panels.display.night-light-manual-schedule-sunset")
-            pointSize: Style.fontSizeM
-            color: Color.onShellTertiary
-          }
-
-          NComboBox {
-            model: root.timeOptions
-            currentKey: Settings.data.colorSchemes.manualSunset
-            placeholder: I18n.tr("panels.display.night-light-manual-schedule-select-stop")
-            onSelected: key => Settings.data.colorSchemes.manualSunset = key
-            minimumWidth: 120
-          }
-        }
-      }
+    // darkman-compat hook dirs (~/.local/share/{dark,light}-mode.d/) run in
+    // the portal daemon on every mode flip — manual toggles included — so
+    // this switch is not scoped to the scheduling mode.
+    NToggle {
+      label: I18n.tr("panels.color-scheme.darkman-hooks-label")
+      description: I18n.tr("panels.color-scheme.darkman-hooks-description")
+      checked: Settings.data.colorSchemes.runDarkmanHooks
+      defaultValue: Settings.getDefaultValue("colorSchemes.runDarkmanHooks")
+      onToggled: checked => Settings.data.colorSchemes.runDarkmanHooks = checked
     }
   }
 

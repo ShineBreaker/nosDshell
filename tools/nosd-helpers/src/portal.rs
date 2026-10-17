@@ -27,7 +27,9 @@
 //! run sorted by path, and `nosdshell ipc call darkMode` is pushed
 //! best-effort so the shell's own theme pipeline follows even when its
 //! schedulingMode is not "system". The loop back is bounded: the shell
-//! writes the same value, which is a no-op on its side.
+//! writes the same value, which is a no-op on its side. The .d hooks can
+//! be disabled from the shell settings: `portal hooks off` writes
+//! $XDG_STATE_HOME/nosdshell/darkman-hooks=0, re-read per transition.
 //!
 //! Scheduling is a config.yaml subset: `lat`/`lng` enable the solar timer
 //! (NOAA sunrise equation, zenith 90.833°); `usegeoclue` is honoured as
@@ -101,6 +103,28 @@ fn state_dir() -> PathBuf {
 
 fn state_file() -> PathBuf {
     state_dir().join("color-scheme")
+}
+
+// Shell-side kill switch for the .d hooks: the settings toggle writes this
+// flag via `portal hooks on|off` so a flip lands without restarting the
+// daemon. Absent file = hooks on, matching darkman's default behaviour.
+fn hooks_flag_file() -> PathBuf {
+    state_dir().join("darkman-hooks")
+}
+
+fn hooks_flag_enabled() -> bool {
+    match fs::read_to_string(hooks_flag_file()) {
+        Ok(s) => !matches!(s.trim(), "0" | "off" | "false"),
+        Err(_) => true,
+    }
+}
+
+fn write_hooks_flag(enabled: bool) -> Result<(), String> {
+    if let Some(parent) = hooks_flag_file().parent() {
+        let _ = fs::create_dir_all(parent);
+    }
+    fs::write(hooks_flag_file(), if enabled { "1" } else { "0" })
+        .map_err(|e| format!("write {}: {e}", hooks_flag_file().display()))
 }
 
 fn home() -> PathBuf {
@@ -308,8 +332,9 @@ impl Daemon {
         self.emit_all(target).await;
         // Hooks and the shell forward run on plain threads: interface
         // methods execute on zbus's own executor, where tokio::spawn_*
-        // has no reactor.
-        if self.hooks {
+        // has no reactor. The flag file is re-read per transition so the
+        // settings toggle takes effect on the next flip, not at restart.
+        if self.hooks && hooks_flag_enabled() {
             std::thread::spawn(move || run_hooks(target));
         }
         if self.forward {
@@ -515,6 +540,7 @@ async fn scheduler(d: Arc<Daemon>, lat: f64, lng: f64) {
 
 fn print_usage() -> ! {
     eprintln!("Usage: nosd-helpers portal <run|get|set|toggle> [dark|light]");
+    eprintln!("       nosd-helpers portal hooks <on|off>");
     std::process::exit(2);
 }
 
@@ -534,6 +560,13 @@ pub fn run(args: &[String]) -> i32 {
             _ => print_usage(),
         },
         Some("toggle") => rt().block_on(client_toggle()),
+        // Local flag write, not a bus call: the flag must land even when the
+        // daemon is not running yet so the next transition honours it.
+        Some("hooks") => match args.get(1).map(String::as_str) {
+            Some("on") => write_hooks_flag(true),
+            Some("off") => write_hooks_flag(false),
+            _ => print_usage(),
+        },
         _ => print_usage(),
     };
     match code {

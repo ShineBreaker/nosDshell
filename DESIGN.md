@@ -718,8 +718,9 @@ Noctalia 卡片的对应关系：
 ### 4.3 `nosd-helpers portal`
 
 - 作用：深色/浅色模式的对外权威面。单进程、单连接同时持有 `org.freedesktop.impl.portal.desktop.nosdshell`（portal Settings 后端：`Read`/`ReadAll`/`Version=1`/`SettingChanged`）、`nl.whynothugo.darkman`（darkman 兼容 API：可写 `Mode` 属性 + `ModeChanged` 信号）与 `org.freedesktop.impl.portal.desktop.darkman`（存量 `darkman.portal` 描述符的零配置别名）。`darkman get|set|toggle`、Emacs `self-theme` 等既有消费者无需改动；`~/.local/share/{dark,light}-mode.d/` 钩子目录语义与 darkman 一致。
-- 命令行：`nosd-helpers portal <run|get|set|toggle>`；状态持久化于 `~/.local/state/nosdshell/color-scheme`；`~/.config/darkman/config.yaml` 的 `lat`/`lng` 启用 NOAA 日出日落调度（`usegeoclue` 不支持，`dbusserver`/`portal` 可分别关掉对应总线名）。
+- 命令行：`nosd-helpers portal <run|get|set|toggle|hooks>`；状态持久化于 `~/.local/state/nosdshell/color-scheme`；`~/.config/darkman/config.yaml` 的 `lat`/`lng` 启用 NOAA 日出日落调度（`usegeoclue` 不支持，`dbusserver`/`portal` 可分别关掉对应总线名）。
 - 调用方式：`DarkModeService` 在每次 `darkMode` 变化时执行 `portal set`，并在 helpers 就绪时幂等拉起 `portal run`（进程内 flock + 总线名占有检查保证单实例）。portal 反方向（外部 `set`/`toggle`、太阳计时器）经 `SettingChanged` 广播——`schedulingMode: "system"` 的既有跟随逻辑天然接住，其他模式下由 daemon 侧 `nosdshell ipc call darkMode` 兜底写入。
+- `.d` 钩子开关：设置里的 `colorSchemes.runDarkmanHooks` 由 `DarkModeService` 经 `portal hooks on|off` 写成 `~/.local/state/nosdshell/darkman-hooks` 标志文件（本地写，不等守护进程在线）；daemon 在每次 transition 时重读，0/off/false 即跳过钩子目录（其余状态/信号/转发不受影响）。文件缺失等于开，保持 darkman 默认行为。
 - 工具缺失时 `pushPortal` 输出一次 `Logger.w` 并跳过；shell 自身主题切换不受影响，仅 portal 订阅者（GTK4/Electron 等）收不到通知。
 
 ---
@@ -762,6 +763,7 @@ Noctalia 卡片的对应关系：
 | `general.lockScreenBlur` | 启用 |
 | `colorSchemes.predefinedScheme` | `Deepin` |
 | `colorSchemes.schedulingMode` | `"off"`（`off`/`manual`/`location`/`system`；`system` 跟随 xdg-desktop-portal 的 `org.freedesktop.appearance/color-scheme`）〔演进〕 |
+| `colorSchemes.runDarkmanHooks` | `true`（每次明暗切换时执行 `~/.local/share/{dark,light}-mode.d/` 钩子，§4.3）〔演进〕 |
 | `bar.enabled` | `false`（可选状态栏，§3.13） |
 | `ui.transientSurface` | `"auto"`（`light`/`dark`/`auto`，§1.2）〔演进〕 |
 | `ui.transientOpacity` | `1.0`（0.3–1.0，瞬时面不透明度，§1.2）〔演进〕 |

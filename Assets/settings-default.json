@@ -541,7 +541,8 @@
     "manualSunset": "18:30",
     "generationMethod": "tonal-spot",
     "monitorForColors": "",
-    "syncGsettings": true
+    "syncGsettings": true,
+    "runDarkmanHooks": true
   },
   "templates": {
     "activeTemplates": [],

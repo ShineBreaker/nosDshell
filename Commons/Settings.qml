@@ -818,6 +818,7 @@ Singleton {
       property string generationMethod: "tonal-spot"
       property string monitorForColors: ""
       property bool syncGsettings: true
+      property bool runDarkmanHooks: true
     }
 
     // templates toggles

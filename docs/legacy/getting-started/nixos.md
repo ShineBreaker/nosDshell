@@ -1005,6 +1005,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     generationMethod = "tonal-spot";
     monitorForColors = "";
     syncGsettings = true;
+    runDarkmanHooks = true;
   };
   templates = {
     activeTemplates = [ ];
