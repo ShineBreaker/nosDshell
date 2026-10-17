@@ -39,6 +39,8 @@
 #   settings-lockscreen, settings-plugins, settings-sessionmenu,
 #   settings-system, settings-systemmonitor
 #   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
+#   settings-subpage is off the default set (needs its own seed — see the
+#   scene comment): drives the §3.5.3 二级页 rows on the dock tab.
 #
 # IPC targets available (Services/Control/IPCService.qml):
 #   bar, settings, calendar, notifications, toast, idleInhibitor, launcher,
@@ -237,7 +239,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|dock-fullscreen|dock-battery-wheel|dock-context-menu|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -1148,6 +1150,77 @@ PYEOF
                             shot "settings-cc-pages-$i"
                           done
                           call settings toggle 2 ;;
+    # settings-subpage — §3.5.3 guardrail: the 配置插件 rows must push the
+    # widgets editor as a 二级页 (slide in from the right, header retitles,
+    # back pops) instead of toggling an inline collapsible block. Off the
+    # default set — needs its own seed because the 状态栏 group renders only
+    # when the status bar is on, and the per-monitor row needs an enabled
+    # screen override:
+    #   {"bar":{"enabled":true,
+    #           "screenOverrides":[{"name":"HEADLESS-1","enabled":true}]}}
+    #   ./verify.sh <run> --settings <seed>.json --scenes settings-subpage
+    settings-subpage)    call settings openTab dock/1 5
+                         shot settings-subpage-row
+                         VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                         [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                         SROOT=cc-HEADLESS-1
+                         # `debug find` walks the whole subtree by objectName
+                         # (no depth cap, no coordinate probing) and returns
+                         # describe(): "<type> WxH @x,y" in scene coords — on
+                         # the single 1920 output that equals screen coords.
+                         fxy() { # <objectName> → "cx cy" screen centre, or ""
+                           local d w h x y
+                           d=$(qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null)
+                           echo "$1 → $d" >> "$WORK/logs/subpage-find.txt"
+                           case "$d" in *hidden*|*"no item"*) return;; esac
+                           read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+                           [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+                         }
+                         read RX RY < <(fxy nextPage-barWidgets)
+                         if [ -z "${RX:-}" ]; then
+                           echo "FAIL settings-subpage: next-page row not found (bar.enabled seeded?)"
+                           SCENE_FAIL=1
+                         else
+                           "$VINPUT" vinput click "$RX" "$RY" 2>>"$WORK/logs/vinput.log" || true
+                           sleep 1.2
+                           shot settings-subpage-page
+                           PG=$(qs -p "$REPO" ipc call debug find "$SROOT" widgetsEditorPage 2>/dev/null)
+                           echo "widgetsEditorPage → $PG" >> "$WORK/logs/subpage-find.txt"
+                           case "$PG" in *@*) : ;; *)
+                             echo "FAIL settings-subpage: click did not push the widgets editor"
+                             SCENE_FAIL=1 ;; esac
+                           # §3.5.3: back pops the page instead of closing.
+                           read BX BY < <(fxy settingsBack)
+                           if [ -n "${BX:-}" ]; then
+                             "$VINPUT" vinput click "$BX" "$BY" 2>>"$WORK/logs/vinput.log" || true
+                             sleep 1.0
+                             shot settings-subpage-back
+                             GONE=$(qs -p "$REPO" ipc call debug find "$SROOT" settingsSubpage 2>/dev/null)
+                             echo "settingsSubpage after back → $GONE" >> "$WORK/logs/subpage-find.txt"
+                             case "$GONE" in *"no item"*) : ;; *)
+                               echo "FAIL settings-subpage: back did not pop the page"
+                               SCENE_FAIL=1 ;; esac
+                           else
+                             echo "FAIL settings-subpage: header back button not found"
+                             SCENE_FAIL=1
+                           fi
+                           # Per-monitor row on dock/2 (seeded override → visible).
+                           call settings openTab dock/2 4
+                           read MX MY < <(fxy nextPage-monitorWidgets-HEADLESS-1)
+                           if [ -n "${MX:-}" ]; then
+                             "$VINPUT" vinput click "$MX" "$MY" 2>>"$WORK/logs/vinput.log" || true
+                             sleep 1.2
+                             shot settings-subpage-monitor
+                             qs -p "$REPO" ipc call debug find "$SROOT" widgetsEditorPage 2>/dev/null \
+                               | grep -q "@" \
+                               || { echo "FAIL settings-subpage: monitor row did not push its editor"; SCENE_FAIL=1; }
+                             [ -n "${BX:-}" ] && "$VINPUT" vinput click "$BX" "$BY" 2>>"$WORK/logs/vinput.log" || true
+                             sleep 0.6
+                           else
+                             echo "settings-subpage: no monitor row (screenOverrides seeded?) — skipped"
+                           fi
+                         fi
+                         call settings toggle 0.5 ;;
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;

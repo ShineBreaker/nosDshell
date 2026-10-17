@@ -4,15 +4,17 @@ import QtQuick.Layouts
 import qs.Commons
 import qs.Widgets
 
-NCollapsible {
+// Tag filter chips: optional header (label + description) over a Flow of
+// toggle chips. Always flat — settings surfaces never fold group content
+// behind a chevron row (DESIGN §3.5.4).
+ColumnLayout {
   id: root
 
   // Public API
   property var tags: []  // Array of tag strings
   property string selectedTag: ""
-  property alias label: root.label
-  property alias description: root.description
-  property alias expanded: root.expanded
+  property string label: ""
+  property string description: ""
 
   // Formatting function for tag display (optional override)
   property var formatTag: function (tag) {
@@ -23,7 +25,32 @@ NCollapsible {
   }
 
   Layout.fillWidth: true
-  contentSpacing: Style.marginXS
+  spacing: Style.marginXS
+
+  RowLayout {
+    Layout.fillWidth: true
+    Layout.bottomMargin: Style.marginXS
+    spacing: Style.marginL
+    visible: root.label !== "" || root.description !== ""
+
+    NText {
+      text: root.label
+      pointSize: Style.fontSizeL
+      font.weight: Style.fontWeightSemiBold
+      color: Color.onShell
+      wrapMode: Text.WordWrap
+    }
+
+    NText {
+      text: root.description
+      pointSize: Style.fontSizeS
+      font.weight: Style.fontWeightRegular
+      color: Color.onShellTertiary
+      Layout.fillWidth: true
+      wrapMode: Text.WordWrap
+      visible: root.description !== ""
+    }
+  }
 
   Flow {
     Layout.fillWidth: true

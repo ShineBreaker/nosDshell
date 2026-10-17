@@ -122,7 +122,7 @@ NBox {
 
   color: Color.overlay("idle")
   Layout.fillWidth: true
-  z: flowDragArea.dragStarted ? 5000 : 0
+  z: flowDragArea?.dragStarted ? 5000 : 0
 
   // Calculate width to fit gridColumns widgets with spacing
   function calculateWidgetWidth(gridWidth) {
@@ -428,7 +428,7 @@ NBox {
         return calculatedHeight;
       }
       Layout.minimumHeight: widgetModel.length === 0 ? (65 * Style.uiScaleRatio) : (Style.margin2S + root.widgetItemHeight)
-      clip: !flowDragArea.dragStarted
+      clip: !flowDragArea?.dragStarted
 
       Rectangle {
         anchors.fill: parent
@@ -463,7 +463,10 @@ NBox {
             required property int index
             required property var modelData
 
-            width: root.calculateWidgetWidth(parent.width)
+            // id/parent refs dangle while the editor subtree is being
+            // destroyed (二级页 pop) — bindings re-evaluate against torn-down
+            // objects, so stay null-tolerant.
+            width: root ? root.calculateWidgetWidth(parent ? parent.width : 0) : 0
             height: root.widgetItemHeight
             radius: Style.radiusItem
             // Field-level chip, same ladder step as NComboBox/NTextInput
@@ -483,9 +486,9 @@ NBox {
 
             // Visual feedback during drag; dim the whole tile when the
             // editor subtree is disabled (same 0.6 as NToggle/NComboBox).
-            opacity: flowDragArea.draggedIndex === index ? 0.5 : (enabled ? 1.0 : 0.6)
-            scale: flowDragArea.draggedIndex === index ? 0.95 : 1.0
-            z: flowDragArea.draggedIndex === index ? 1000 : 0
+            opacity: flowDragArea?.draggedIndex === index ? 0.5 : (enabled ? 1.0 : 0.6)
+            scale: flowDragArea?.draggedIndex === index ? 0.95 : 1.0
+            z: flowDragArea?.draggedIndex === index ? 1000 : 0
 
             Behavior on opacity {
               NumberAnimation {
@@ -561,7 +564,7 @@ NBox {
               acceptedButtons: Qt.RightButton
               cursorShape: Qt.PointingHandCursor
               z: -1 // Below the buttons but above background
-              enabled: !flowDragArea.dragStarted && !flowDragArea.potentialDrag
+              enabled: !(flowDragArea?.dragStarted || flowDragArea?.potentialDrag)
 
               onPressed: mouse => {
                            mouse.accepted = true;
@@ -661,7 +664,7 @@ NBox {
         border.color: Color.borderShell
         border.width: Style.borderS
         opacity: 0.7
-        visible: flowDragArea.dragStarted
+        visible: flowDragArea?.dragStarted === true
         z: 2000
         clip: false // Ensure ghost isn't clipped
 

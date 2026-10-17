@@ -876,6 +876,18 @@
     ]
   },
   {
+    "labelKey": "panels.bar.monitor-configure-widgets",
+    "descriptionKey": null,
+    "widget": "NNextPageRow",
+    "tab": 10,
+    "tabLabel": "panels.dock.title",
+    "subTab": 1,
+    "subTabLabel": "panels.bar.title",
+    "visibleWhen": [
+      "Settings.data.bar.enabled"
+    ]
+  },
+  {
     "labelKey": "settings.advanced.bar-appearance",
     "descriptionKey": null,
     "widget": "NHeader",

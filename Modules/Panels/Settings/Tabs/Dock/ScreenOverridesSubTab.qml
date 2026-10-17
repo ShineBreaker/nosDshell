@@ -20,7 +20,16 @@ ColumnLayout {
   }
 
   // §3.5.4 — one SettingsGroup per monitor: an identity row, the override
-  // switch, the override rows and an expandable widgets editor.
+  // switch, the override rows and a "下一页" row pushing the widgets editor
+  // as a 二级页 (DESIGN §3.5.3).
+
+  Component {
+    id: widgetsPage
+    BarSettings.MonitorWidgetsConfig {
+      objectName: "widgetsEditorPage"
+    }
+  }
+
   Repeater {
     model: Quickshell.screens || []
     delegate: ColumnLayout {
@@ -147,33 +156,16 @@ ColumnLayout {
         onSelected: key => Settings.setScreenOverride(monitorGroup.screenName, "displayMode", key)
       }
 
-      NDccRow {
-        id: widgetsRow
+      NNextPageRow {
+        objectName: "nextPage-monitorWidgets-" + monitorGroup.screenName
         Layout.fillWidth: true
         visible: monitorGroup.overrideEnabled
-        clickable: true
-        onClicked: widgetsEditor.visible = !widgetsEditor.visible
-
-        NText {
-          text: I18n.tr("panels.bar.monitor-configure-widgets")
-          pointSize: Style.fontSizeS
-          color: Color.onShell
-          Layout.fillWidth: true
-        }
-
-        NIcon {
-          icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
-          pointSize: Style.fontSizeL
-          color: Color.onShellTertiary
-        }
-      }
-
-      BarSettings.MonitorWidgetsConfig {
-        id: widgetsEditor
-        visible: false
-        screen: PanelService.liveScreen(monitorGroup.modelData)
-        Layout.fillWidth: true
-        Layout.topMargin: Style.marginM
+        label: I18n.tr("panels.bar.monitor-configure-widgets")
+        pageTitle: label + " — " + monitorGroup.screenName
+        page: widgetsPage
+        pageProperties: ({
+                           "screen": PanelService.liveScreen(monitorGroup.modelData)
+                         })
       }
 
       NDccRow {

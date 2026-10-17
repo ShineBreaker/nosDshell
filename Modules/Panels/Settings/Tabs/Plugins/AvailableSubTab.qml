@@ -42,14 +42,13 @@ ColumnLayout {
     return author;
   }
 
-  // Tag filter chips in collapsible
+  // Tag filter chips
   NTagFilter {
     tags: root.pseudoTags.concat(root.availableTags)
     selectedTag: root.selectedTag
     onSelectedTagChanged: root.selectedTag = selectedTag
     label: I18n.tr("panels.plugins.filter-tags-label")
     description: I18n.tr("panels.plugins.filter-tags-description")
-    expanded: true
 
     formatTag: function (tag) {
       if (tag === "")

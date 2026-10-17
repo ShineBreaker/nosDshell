@@ -200,7 +200,6 @@ ColumnLayout {
     onSelectedTagChanged: root.selectedCategory = selectedTag
     label: I18n.tr("panels.color-scheme.templates-filter-label")
     description: I18n.tr("panels.color-scheme.templates-filter-description")
-    expanded: true
   }
 
   ColumnLayout {

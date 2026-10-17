@@ -45,6 +45,7 @@ import qs.Widgets
 */
 Item {
   id: root
+  objectName: "SettingsModuleView"
 
   // The highlighted module: rail selection and scroll target. Owners push via
   // openModuleAt; the view never writes an outside binding (see panel/window).
@@ -55,11 +56,77 @@ Item {
   signal backRequested
 
   readonly property var modules: ControlCenterModules.modules.filter(m => ControlCenterModules.isVisible(m))
-  readonly property string title: I18n.tr("control-center.all-settings")
+
+  // ---- 二级页 (DESIGN §3.5.3): NNextPageRow entries push a Component here;
+  // the current content slides left while the page slides in from the right
+  // (motionPanel, opacity follows travel). Header title shows the top page.
+  property var _pageStack: []
+  readonly property bool subPageOpen: _pageStack.length > 0
+  readonly property string title: subPageOpen ? _pageStack[_pageStack.length - 1].title : I18n.tr("control-center.all-settings")
+
+  function _topHost() {
+    return subPageOpen ? _pageStack[_pageStack.length - 1].host : contentScroll;
+  }
+
+  function pushPage(title, component, properties) {
+    if (!component) {
+      Logger.w("SettingsModule", "pushPage: no component for", title);
+      return;
+    }
+    var host = _subPageHost.createObject(pageLayer, {
+                                           "pageComponent": component,
+                                           "pageProperties": properties || ({})
+                                         });
+    if (!host) {
+      Logger.e("SettingsModule", "pushPage: failed to create page", title);
+      return;
+    }
+    var prev = _topHost();
+    // Park off the right edge instantly, then arm the Behavior so the
+    // slide to 0 animates (a second write would otherwise merge into the
+    // first and the page would never travel).
+    host.x = pageLayer.width;
+    host._animateX = true;
+    _pageStack = _pageStack.concat([{
+                                     "title": title,
+                                     "host": host
+                                   }]);
+    if (prev !== contentScroll) {
+      prev.enabled = false;
+      prev.x = -prev.width;
+    }
+    host.x = 0;
+  }
+
+  function popPage() {
+    if (!subPageOpen)
+      return;
+    var top = _pageStack[_pageStack.length - 1];
+    _pageStack = _pageStack.slice(0, _pageStack.length - 1);
+    var below = _topHost();
+    if (below !== contentScroll) {
+      below.enabled = true;
+      below.x = 0;
+    }
+    top.host.closing = true;
+    top.host.x = top.host.width;
+    top.host.destroy(Style.motionPanel + 80);
+  }
+
+  // Instant unwind for navigation (rail click, deep link, module reload).
+  function _popAllPages() {
+    var stack = _pageStack;
+    _pageStack = [];
+    for (var i = 0; i < stack.length; i++) {
+      stack[i].host.closing = true;
+      stack[i].host.destroy();
+    }
+  }
 
   // Module visibility can change live (bluetooth adapter); indices shift, so
   // drop lazy state and reload around the current module.
   onModulesChanged: {
+    _popAllPages();
     root._loadedMap = ({});
     root._pendingSnap = null;
     snapQuietTimer.stop();
@@ -380,6 +447,8 @@ Item {
   function openModuleAt(mod, subTab, inner, animated) {
     if (!mod)
       return;
+    // Any navigation abandons a pushed 二级页 — the target is in the base page.
+    _popAllPages();
     const idx = moduleIndex(mod);
     if (idx < 0)
       return;
@@ -687,6 +756,7 @@ Item {
 
           NIconButton {
             id: backButton
+            objectName: "settingsBack"
             anchors.left: parent.left
             anchors.leftMargin: Style.marginS
             anchors.verticalCenter: parent.verticalCenter
@@ -696,7 +766,7 @@ Item {
             customRadius: Style.radiusRow
             colorBg: Color.overlay("strong")
             tooltipText: I18n.tr("common.back")
-            onClicked: root.backRequested()
+            onClicked: root.subPageOpen ? root.popPage() : root.backRequested()
           }
 
           NText {
@@ -732,6 +802,8 @@ Item {
           Layout.rightMargin: Style.marginS
           Layout.bottomMargin: Style.marginS
           Layout.preferredHeight: Style.settingsFieldHeight
+          // The search index only covers the base page — hide it on 二级页.
+          visible: !root.subPageOpen
           radius: Style.radiusItem
           color: Color.overlay("field")
           border.width: searchInput.activeFocus ? Style.borderS : 0
@@ -783,235 +855,265 @@ Item {
         }
 
         // All visible modules stacked in one scroll area (DESIGN §3.5.3): every
-        // module opens with its header, then its tabs as groups.
-        NScrollView {
-          id: contentScroll
+        // module opens with its header, then its tabs as groups. The scroll
+        // shares its cell with pageLayer so a pushed 二级页 slides in over the
+        // same rect while the base page slides out left (motionPanel).
+        Item {
+          id: pageArea
           Layout.fillWidth: true
           Layout.fillHeight: true
           Layout.leftMargin: Style.marginS
           Layout.rightMargin: Style.marginS
           Layout.bottomMargin: Style.marginM
-          horizontalPolicy: ScrollBar.AlwaysOff
-          verticalPolicy: ScrollBar.AsNeeded
-          reserveScrollbarSpace: false
-          showGradientMasks: false
-          gradientColor: Color.maskShell
+          clip: true
 
-          // User scroll cancels programmatic scroll + pending re-snap and
-          // re-syncs the rail highlight on every step so the accent follows
-          // the scroll live (settingswidget.cpp:342-380).
-          // NOTE: contentY also changes when Flickable auto-clamps after the
-          // content above shrinks (placeholder estimate taller than the real
-          // tab). That is NOT user intent, so the snap must survive it — the
-          // pending target is dropped only on explicit drag/flick/wheel, and
-          // while a snap is in flight the highlight stays on its target
-          // instead of chasing transient layout noise.
-          Connections {
-            target: contentScroll.contentItem
-            function onDraggingChanged() {
-              if (contentScroll.contentItem.dragging)
-                root._cancelProgrammatic();
+          NScrollView {
+            id: contentScroll
+            // Not anchored: x carries the slide-out (anchors would own it).
+            width: pageArea.width
+            height: pageArea.height
+            x: root.subPageOpen ? -width : 0
+            opacity: 1 - Math.abs(x) / Math.max(1, width)
+            visible: opacity > 0
+            enabled: !root.subPageOpen
+
+            Behavior on x {
+              NumberAnimation {
+                duration: Style.motionPanel
+                easing.type: Easing.InOutCubic
+              }
             }
-            function onFlickingChanged() {
-              if (contentScroll.contentItem.flicking)
-                root._cancelProgrammatic();
+
+            horizontalPolicy: ScrollBar.AlwaysOff
+            verticalPolicy: ScrollBar.AsNeeded
+            reserveScrollbarSpace: false
+            showGradientMasks: false
+            gradientColor: Color.maskShell
+
+            // User scroll cancels programmatic scroll + pending re-snap and
+            // re-syncs the rail highlight on every step so the accent follows
+            // the scroll live (settingswidget.cpp:342-380).
+            // NOTE: contentY also changes when Flickable auto-clamps after the
+            // content above shrinks (placeholder estimate taller than the real
+            // tab). That is NOT user intent, so the snap must survive it — the
+            // pending target is dropped only on explicit drag/flick/wheel, and
+            // while a snap is in flight the highlight stays on its target
+            // instead of chasing transient layout noise.
+            Connections {
+              target: contentScroll.contentItem
+              function onDraggingChanged() {
+                if (contentScroll.contentItem.dragging)
+                  root._cancelProgrammatic();
+              }
+              function onFlickingChanged() {
+                if (contentScroll.contentItem.flicking)
+                  root._cancelProgrammatic();
+              }
+              function onContentYChanged() {
+                if (root._programmatic || root._snapping || root._pendingSnap)
+                  return;
+                root._syncModuleToScroll();
+              }
+              // Any height shift (late font/image/layout polish that arrives with
+              // no Loader event) moves the pending target: re-snap while the user
+              // is not dragging. This is what finally closes shrink-clamp drift.
+              function onContentHeightChanged() {
+                const f = contentScroll.contentItem;
+                if (!root._pendingSnap || !f || f.dragging || f.flicking)
+                  return;
+                root._resnapToTarget();
+              }
             }
-            function onContentYChanged() {
-              if (root._programmatic || root._snapping || root._pendingSnap)
-                return;
-              root._syncModuleToScroll();
-            }
-            // Any height shift (late font/image/layout polish that arrives with
-            // no Loader event) moves the pending target: re-snap while the user
-            // is not dragging. This is what finally closes shrink-clamp drift.
-            function onContentHeightChanged() {
-              const f = contentScroll.contentItem;
-              if (!root._pendingSnap || !f || f.dragging || f.flicking)
-                return;
-              root._resnapToTarget();
-            }
-          }
 
-          Column {
-            id: sectionsColumn
-            width: parent.width
-            spacing: Style.settingsGroupSpacing
+            Column {
+              id: sectionsColumn
+              width: parent.width
+              spacing: Style.settingsGroupSpacing
 
-            Repeater {
-              id: sectionsRepeater
-              model: root.modules
+              Repeater {
+                id: sectionsRepeater
+                model: root.modules
 
-              delegate: Column {
-                required property var modelData
-                required property int index
-                readonly property var sectionModule: modelData
-                readonly property int sectionIndex: index
-                // Original nav art for the header (selected variant); "" → Tabler.
-                readonly property string headArt: ControlCenterModules.navIconUrl(sectionModule, true)
-                width: sectionsColumn.width
-                spacing: Style.marginS
+                delegate: Column {
+                  required property var modelData
+                  required property int index
+                  readonly property var sectionModule: modelData
+                  readonly property int sectionIndex: index
+                  // Original nav art for the header (selected variant); "" → Tabler.
+                  readonly property string headArt: ControlCenterModules.navIconUrl(sectionModule, true)
+                  width: sectionsColumn.width
+                  spacing: Style.marginS
 
-                // Y of a tab slot for subTab scrolling.
-                function tabSlotY(j) {
-                  const t = tabsRepeater.itemAt(j);
-                  return t ? t.y : 0;
-                }
-                // Y of stacked sub-group `inner` inside tab slot `j`, relative
-                // to the slot top (0 when the tab has no stacked view).
-                function innerSlotY(j, inner) {
-                  const t = tabsRepeater.itemAt(j);
-                  const view = t ? t.stackedView() : null;
-                  if (!view)
-                    return 0;
-                  // A slot filtered to a single group IS the module's whole
-                  // content: land on the module header, not one head below it.
-                  if (view.onlyGroup >= 0)
-                    return -tabSlotY(j);
-                  return view.groupOffset(inner);
-                }
-                // Every tab slot loaded?
-                function tabsReady() {
-                  for (var k = 0; k < tabsRepeater.count; k++) {
-                    const t = tabsRepeater.itemAt(k);
-                    if (!t || !t.tabReady())
-                      return false;
+                  // Y of a tab slot for subTab scrolling.
+                  function tabSlotY(j) {
+                    const t = tabsRepeater.itemAt(j);
+                    return t ? t.y : 0;
                   }
-                  return true;
-                }
-
-                // Module header: left 11, 24 icon, large white title,
-                // 5 px vertical padding (modulewidget.cpp).
-                Item {
-                  width: parent.width
-                  height: Style.settingsModuleHeadIcon + 2 * Style.settingsModuleHeadPadV
-                  Row {
-                    anchors.left: parent.left
-                    anchors.leftMargin: Style.settingsModuleHeadLeft
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: Style.marginS
-                    NSymbolicImage {
-                      id: headArtImage
-                      anchors.verticalCenter: parent.verticalCenter
-                      width: Style.settingsModuleHeadIcon
-                      height: Style.settingsModuleHeadIcon
-                      sourceSize.width: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
-                      sourceSize.height: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
-                      source: headArt
-                      visible: headArt !== "" && status !== Image.Error
-                      smooth: true
-                      color: Color.onShell
-                    }
-                    NIcon {
-                      anchors.verticalCenter: parent.verticalCenter
-                      icon: sectionModule.icon
-                      pointSize: Style.settingsModuleHeadIcon
-                      applyUiScale: false
-                      visible: !headArtImage.visible
-                      color: Color.onShell
-                    }
-                    NText {
-                      anchors.verticalCenter: parent.verticalCenter
-                      text: ControlCenterModules.tr(sectionModule.label)
-                      pointSize: Style.fontSizeXL
-                      color: Color.onShell
-                    }
+                  // Y of stacked sub-group `inner` inside tab slot `j`, relative
+                  // to the slot top (0 when the tab has no stacked view).
+                  function innerSlotY(j, inner) {
+                    const t = tabsRepeater.itemAt(j);
+                    const view = t ? t.stackedView() : null;
+                    if (!view)
+                      return 0;
+                    // A slot filtered to a single group IS the module's whole
+                    // content: land on the module header, not one head below it.
+                    if (view.onlyGroup >= 0)
+                      return -tabSlotY(j);
+                    return view.groupOffset(inner);
                   }
-                }
-
-                Repeater {
-                  id: tabsRepeater
-                  model: sectionModule.tabs ?? [sectionModule]
-
-                  delegate: Item {
-                    id: tabSlot
-                    required property var modelData
-                    required property int index
-                    width: sectionsColumn.width
-                    // The loaded item only reports its real height once the
-                    // tab's stacked NTabView has collected its pages (its
-                    // _initializeItems runs one turn after incubation); before
-                    // that the item reads a collapsed mid-layout height. Keep
-                    // the estimate and hide the content until then so the
-                    // column swaps estimate->real in a single step.
-                    property bool _contentReady: false
-                    implicitHeight: (_contentReady && tabLoader.item) ? tabLoader.item.implicitHeight : Style.settingsTabEstimateHeight
-
-                    function tabReady() {
-                      return _contentReady;
+                  // Every tab slot loaded?
+                  function tabsReady() {
+                    for (var k = 0; k < tabsRepeater.count; k++) {
+                      const t = tabsRepeater.itemAt(k);
+                      if (!t || !t.tabReady())
+                        return false;
                     }
-                    // The tab's internal NTabView once loaded (null before /
-                    // when the component has none). Used for inner sub-group
-                    // scroll targets.
-                    function stackedView() {
-                      return tabLoader.item ? root._findByObjectName(tabLoader.item, "NTabView") : null;
-                    }
+                    return true;
+                  }
 
-                    Connections {
-                      id: readyConn
-                      enabled: false
-                      function onInitializedChanged() {
-                        if (readyConn.target && readyConn.target.initialized) {
-                          tabSlot._contentReady = true;
-                          readyConn.enabled = false;
-                        }
+                  // Module header: left 11, 24 icon, large white title,
+                  // 5 px vertical padding (modulewidget.cpp).
+                  Item {
+                    width: parent.width
+                    height: Style.settingsModuleHeadIcon + 2 * Style.settingsModuleHeadPadV
+                    Row {
+                      anchors.left: parent.left
+                      anchors.leftMargin: Style.settingsModuleHeadLeft
+                      anchors.verticalCenter: parent.verticalCenter
+                      spacing: Style.marginS
+                      NSymbolicImage {
+                        id: headArtImage
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Style.settingsModuleHeadIcon
+                        height: Style.settingsModuleHeadIcon
+                        sourceSize.width: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
+                        sourceSize.height: Math.round(Style.settingsModuleHeadIcon * Style.uiScaleRatio)
+                        source: headArt
+                        visible: headArt !== "" && status !== Image.Error
+                        smooth: true
+                        color: Color.onShell
+                      }
+                      NIcon {
+                        anchors.verticalCenter: parent.verticalCenter
+                        icon: sectionModule.icon
+                        pointSize: Style.settingsModuleHeadIcon
+                        applyUiScale: false
+                        visible: !headArtImage.visible
+                        color: Color.onShell
+                      }
+                      NText {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: ControlCenterModules.tr(sectionModule.label)
+                        pointSize: Style.fontSizeXL
+                        color: Color.onShell
                       }
                     }
+                  }
 
-                    Loader {
-                      id: tabLoader
-                      width: parent.width
-                      asynchronous: true
-                      active: root._tabActive(sectionIndex)
-                      sourceComponent: root._tabComponent(modelData.tab)
-                      visible: tabSlot._contentReady
+                  Repeater {
+                    id: tabsRepeater
+                    model: sectionModule.tabs ?? [sectionModule]
 
-                      onActiveChanged: {
-                        if (!active) {
-                          tabSlot._contentReady = false;
-                          readyConn.enabled = false;
-                          readyConn.target = null;
+                    delegate: Item {
+                      id: tabSlot
+                      required property var modelData
+                      required property int index
+                      width: sectionsColumn.width
+                      // The loaded item only reports its real height once the
+                      // tab's stacked NTabView has collected its pages (its
+                      // _initializeItems runs one turn after incubation); before
+                      // that the item reads a collapsed mid-layout height. Keep
+                      // the estimate and hide the content until then so the
+                      // column swaps estimate->real in a single step.
+                      property bool _contentReady: false
+                      implicitHeight: (_contentReady && tabLoader.item) ? tabLoader.item.implicitHeight : Style.settingsTabEstimateHeight
+
+                      function tabReady() {
+                        return _contentReady;
+                      }
+                      // The tab's internal NTabView once loaded (null before /
+                      // when the component has none). Used for inner sub-group
+                      // scroll targets.
+                      function stackedView() {
+                        return tabLoader.item ? root._findByObjectName(tabLoader.item, "NTabView") : null;
+                      }
+
+                      Connections {
+                        id: readyConn
+                        enabled: false
+                        function onInitializedChanged() {
+                          if (readyConn.target && readyConn.target.initialized) {
+                            tabSlot._contentReady = true;
+                            readyConn.enabled = false;
+                          }
                         }
                       }
 
-                      onLoaded: {
-                        if (item === null)
-                          return;
-                        root._applyGroupMode(item, modelData.subTab ?? -1);
-                        const view = root._findByObjectName(item, "NTabView");
-                        if (!view || view.initialized) {
-                          tabSlot._contentReady = true;
-                        } else {
-                          readyConn.target = view;
-                          readyConn.enabled = true;
+                      Loader {
+                        id: tabLoader
+                        width: parent.width
+                        asynchronous: true
+                        active: root._tabActive(sectionIndex)
+                        sourceComponent: root._tabComponent(modelData.tab)
+                        visible: tabSlot._contentReady
+
+                        onActiveChanged: {
+                          if (!active) {
+                            tabSlot._contentReady = false;
+                            readyConn.enabled = false;
+                            readyConn.target = null;
+                          }
                         }
-                        // NOTE: no currentSubTabIndex preselect — tab files have no
-                        // such property (the old line only ever errored); subTab
-                        // routing scrolls to the tab section instead.
-                        root._onTabLoaded(sectionIndex);
+
+                        onLoaded: {
+                          if (item === null)
+                            return;
+                          root._applyGroupMode(item, modelData.subTab ?? -1);
+                          const view = root._findByObjectName(item, "NTabView");
+                          if (!view || view.initialized) {
+                            tabSlot._contentReady = true;
+                          } else {
+                            readyConn.target = view;
+                            readyConn.enabled = true;
+                          }
+                          // NOTE: no currentSubTabIndex preselect — tab files have no
+                          // such property (the old line only ever errored); subTab
+                          // routing scrolls to the tab section instead.
+                          root._onTabLoaded(sectionIndex);
+                        }
                       }
                     }
                   }
                 }
               }
             }
+
+            // Wheel takeover: NScrollView consumes the event for smooth
+            // scrolling; this overlay only cancels our programmatic state —
+            // it never accepts, so the event keeps propagating untouched.
+            // accepted=false is required, not default: an onWheel that leaves
+            // accepted alone stops delivery to the items below under niri.
+            // Item-level wheelEvent, not WheelHandler: PointerHandler wheel
+            // delivery is dead on the nosdshell-background layer surface under
+            // niri (see NListView). Declared after the content column so it is
+            // consulted first.
+            MouseArea {
+              anchors.fill: parent
+              acceptedButtons: Qt.NoButton
+              onWheel: wheel => {
+                         root._cancelProgrammatic();
+                         wheel.accepted = false;
+                       }
+            }
           }
 
-          // Wheel takeover: NScrollView consumes the event for smooth
-          // scrolling; this overlay only cancels our programmatic state —
-          // it never accepts, so the event keeps propagating untouched.
-          // accepted=false is required, not default: an onWheel that leaves
-          // accepted alone stops delivery to the items below under niri.
-          // Item-level wheelEvent, not WheelHandler: PointerHandler wheel
-          // delivery is dead on the nosdshell-background layer surface under
-          // niri (see NListView). Declared after the content column so it is
-          // consulted first.
-          MouseArea {
+          // Pushed 二级页 hosts land here (pushPage); same rect as the
+          // base scroll so the slide pair shares the cell.
+          Item {
+            id: pageLayer
             anchors.fill: parent
-            acceptedButtons: Qt.NoButton
-            onWheel: wheel => {
-                       root._cancelProgrammatic();
-                       wheel.accepted = false;
-                     }
+            clip: true
           }
         }
       }
@@ -1029,7 +1131,7 @@ Item {
         y: searchField.y + searchField.height + Style.marginXS
         width: searchField.width
         height: Math.min(searchResults.contentHeight, Style.controlCenterWidth)
-        visible: searchResults.count > 0 && searchInput.text.trim() !== ""
+        visible: searchResults.count > 0 && searchInput.text.trim() !== "" && !root.subPageOpen
         radius: Style.radiusPopup
         color: Color.popupShell
         border.color: Color.borderShell
@@ -1173,6 +1275,63 @@ Item {
   Component {
     id: wallpaperTab
     WallpaperTab {}
+  }
+
+  // Host for a pushed 二级页: a scroll view holding the caller's Component.
+  // x is driven imperatively by pushPage/popPage (no binding); opacity
+  // follows travel per DESIGN §3.5.3.
+  Component {
+    id: _subPageHost
+
+    Item {
+      id: pageHost
+
+      property Component pageComponent: null
+      property var pageProperties: ({})
+      property bool closing: false
+
+      width: pageLayer.width
+      height: pageLayer.height
+      clip: true
+      enabled: !closing
+      opacity: 1 - Math.abs(x) / Math.max(1, width)
+      visible: opacity > 0
+
+      objectName: "settingsSubpage"
+      // Placement writes before _animateX flips are instant (the push parks
+      // the page off the right edge first, then animates it to 0).
+      property bool _animateX: false
+      Behavior on x {
+        enabled: pageHost._animateX
+        NumberAnimation {
+          duration: Style.motionPanel
+          easing.type: Easing.InOutCubic
+        }
+      }
+
+      NScrollView {
+        id: pageScroll
+        anchors.fill: parent
+        horizontalPolicy: ScrollBar.AlwaysOff
+        verticalPolicy: ScrollBar.AsNeeded
+        reserveScrollbarSpace: false
+        showGradientMasks: false
+        gradientColor: Color.maskShell
+      }
+
+      Component.onCompleted: {
+        if (!pageHost.pageComponent)
+          return;
+        // contentItem is the internal Flickable: parenting the page to it (it
+        // auto-reparents into its own content item) is what makes it scroll.
+        var content = pageHost.pageComponent.createObject(pageScroll.contentItem, pageHost.pageProperties);
+        if (content === null) {
+          Logger.e("SettingsModule", "sub-page failed to instantiate");
+          return;
+        }
+        content.width = Qt.binding(() => pageScroll.width);
+      }
+    }
   }
 
   // Keep-alive panels preload this view while hidden (SmartPanel

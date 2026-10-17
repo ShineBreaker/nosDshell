@@ -1107,8 +1107,20 @@ Singleton {
       return DebugService.dumpOpenedPanel(depth);
     }
 
+    // ObjectName lookup: walks the full subtree (no depth cap) and returns
+    // describe() — type, WxH and the window-local scene position — so verify
+    // scenes can locate items without probing coordinates.
+    function find(root: string, objectName: string): string {
+      var it = DebugService.findItem(root, objectName);
+      if (!it)
+        return "no item '" + objectName + "' under " + root + " (roots: " + DebugService.rootNames() + ")";
+      return DebugService.describe(it);
+    }
+
     function hit(root: string, x: real, y: real): string {
-      return DebugService.hitTest(root, x, y, 24);
+      // 40: settings rows sit ~25 levels under the cc-frame root (panel →
+      // module view → scroll → tab stack → group), past the old 24-level cap.
+      return DebugService.hitTest(root, x, y, 40);
     }
 
     // Show the shared tooltip anchored on a debug-visible item ("" = the

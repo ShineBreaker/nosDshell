@@ -25,6 +25,15 @@ ColumnLayout {
   readonly property string effectiveMiddleClickAction: Settings.data.bar.middleClickAction || "none"
   readonly property string effectiveRightClickAction: Settings.data.bar.rightClickAction || "controlCenter"
 
+  // 二级页 content: the global widget-layout editor (screen: null edits
+  // Settings.data.bar.widgets directly).
+  Component {
+    id: widgetsPage
+    BarSettings.MonitorWidgetsConfig {
+      objectName: "widgetsEditorPage"
+    }
+  }
+
   // ---- Status bar feature (DESIGN §3.13): switch, then its settings ----
   ColumnLayout {
     Layout.fillWidth: true
@@ -213,33 +222,13 @@ ColumnLayout {
         }
       }
 
-      // Widget layout — expands the global bar.widgets editor inline.
-      NDccRow {
-        id: widgetsRow
+      // Widget layout — the global bar.widgets editor gets its own 二级页
+      // (DESIGN §3.5.3): a "下一页" row pushes it instead of folding it inline.
+      NNextPageRow {
+        objectName: "nextPage-barWidgets"
         Layout.fillWidth: true
-        clickable: true
-        onClicked: widgetsEditor.visible = !widgetsEditor.visible
-
-        NText {
-          text: I18n.tr("panels.bar.monitor-configure-widgets")
-          pointSize: Style.fontSizeS
-          color: Color.onShell
-          Layout.fillWidth: true
-        }
-
-        NIcon {
-          icon: widgetsEditor.visible ? "chevron-up" : "chevron-down"
-          pointSize: Style.fontSizeL
-          color: Color.onShellTertiary
-        }
-      }
-
-      BarSettings.MonitorWidgetsConfig {
-        id: widgetsEditor
-        visible: false
-        screen: null
-        Layout.fillWidth: true
-        Layout.topMargin: Style.marginM
+        label: I18n.tr("panels.bar.monitor-configure-widgets")
+        page: widgetsPage
       }
     }
 
