@@ -24,11 +24,12 @@ Item {
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
 
-  // Fashion dock presentation (DESIGN §3.1.4): the workspace strip has no
-  // fashion equivalent, so the widget collapses to a FashionTile carrying
-  // the overview/switch action — same as the other self-drawn widgets.
+  // Fashion dock presentation (DESIGN §3.1.4): the widget renders the same
+  // mini squares as efficient mode — one variable-width cell, every square
+  // clickable — so current + all workspaces stay visible and switchable.
   property string dockPresentation: ""
   readonly property bool fashionMode: dockPresentation === "fashion"
+  readonly property bool _squaresMode: efficientMode || fashionMode
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -79,7 +80,7 @@ Item {
   readonly property real baseDimensionRatio: pillSize
 
   // Grouped mode (show applications) settings — disabled in DDE efficient mode
-  readonly property bool showApplications: !efficientMode && ((widgetSettings.showApplications !== undefined) ? widgetSettings.showApplications : widgetMetadata.showApplications)
+  readonly property bool showApplications: !efficientMode && !fashionMode && ((widgetSettings.showApplications !== undefined) ? widgetSettings.showApplications : widgetMetadata.showApplications)
   readonly property bool showApplicationsHover: (widgetSettings.showApplicationsHover !== undefined) ? widgetSettings.showApplicationsHover : widgetMetadata.showApplicationsHover
   readonly property bool showLabelsOnlyWhenOccupied: (widgetSettings.showLabelsOnlyWhenOccupied !== undefined) ? widgetSettings.showLabelsOnlyWhenOccupied : widgetMetadata.showLabelsOnlyWhenOccupied
   readonly property bool colorizeIcons: (widgetSettings.colorizeIcons !== undefined) ? widgetSettings.colorizeIcons : widgetMetadata.colorizeIcons
@@ -133,7 +134,7 @@ Item {
   property int horizontalPadding: Style.marginS
   property int spacingBetweenPills: Style.marginXS
   // DDE efficient: 4 px gap between workspace squares (derived value)
-  readonly property int effectiveSpacing: efficientMode ? 4 : spacingBetweenPills
+  readonly property int effectiveSpacing: _squaresMode ? 4 : spacingBetweenPills
 
   // Wheel scroll handling
   property int wheelAccumulatedDelta: 0
@@ -167,12 +168,13 @@ Item {
 
   readonly property bool appVisible: showApplications && (!showApplicationsHover || root.isHovered)
 
-  implicitWidth: fashionMode ? Style.dockPluginCellSize : (appVisible ? (isVertical ? groupedGrid.implicitWidth : Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel)) : (isVertical ? barHeight : computeWidth()))
-  implicitHeight: fashionMode ? Style.dockPluginCellSize : (appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight))
+  implicitWidth: fashionMode ? (isVertical ? Style.dockPluginCellSize : computeWidth()) : (appVisible ? (isVertical ? groupedGrid.implicitWidth : Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel)) : (isVertical ? barHeight : computeWidth()))
+  implicitHeight: fashionMode ? (isVertical ? computeHeight() : Style.dockPluginCellSize) : (appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight))
 
   function getWorkspaceWidth(ws, activeOverride) {
-    // DDE efficient workspaces: fixed 14 px squares (derived value)
-    if (root.efficientMode)
+    // DDE workspace squares: fixed 14 px (derived value) — same in the
+    // efficient bar and on the fashion dock.
+    if (root._squaresMode)
       return 14;
     const d = Math.round(capsuleHeight * root.baseDimensionRatio);
     const isActive = activeOverride !== undefined ? activeOverride : ws.isActive;
@@ -191,7 +193,7 @@ Item {
   }
 
   function getWorkspaceHeight(ws, activeOverride) {
-    if (root.efficientMode)
+    if (root._squaresMode)
       return 14;
     const d = Math.round(capsuleHeight * root.baseDimensionRatio);
     const isActive = activeOverride !== undefined ? activeOverride : ws.isActive;
@@ -510,7 +512,7 @@ Item {
 
   Rectangle {
     id: workspaceBackground
-    visible: !appVisible && !root.fashionMode
+    visible: !appVisible
     width: isVertical ? capsuleHeight : parent.width
     height: isVertical ? parent.height : capsuleHeight
     radius: Style.radiusM
@@ -629,8 +631,8 @@ Item {
     id: pillRow
     spacing: effectiveSpacing
     x: horizontalPadding
-    y: 0
-    visible: !isVertical && !appVisible && !root.fashionMode
+    y: root.fashionMode ? Style.pixelAlignCenter(parent.height, 14) : 0
+    visible: !isVertical && !appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
       NumberAnimation {
@@ -641,7 +643,7 @@ Item {
 
     Repeater {
       id: workspaceRepeaterHorizontal
-      model: efficientMode ? null : localWorkspaces
+      model: _squaresMode ? null : localWorkspaces
       delegate: WorkspacePill {
         required property var model
         workspace: model
@@ -666,7 +668,7 @@ Item {
     }
 
     Repeater {
-      model: efficientMode ? localWorkspaces : null
+      model: _squaresMode ? localWorkspaces : null
       delegate: ddeSquareDelegate
     }
   }
@@ -675,9 +677,9 @@ Item {
   Column {
     id: pillColumn
     spacing: effectiveSpacing
-    x: 0
+    x: root.fashionMode ? Style.pixelAlignCenter(parent.width, 14) : 0
     y: horizontalPadding
-    visible: isVertical && !appVisible && !root.fashionMode
+    visible: isVertical && !appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
       NumberAnimation {
@@ -688,7 +690,7 @@ Item {
 
     Repeater {
       id: workspaceRepeaterVertical
-      model: efficientMode ? null : localWorkspaces
+      model: _squaresMode ? null : localWorkspaces
       delegate: WorkspacePill {
         required property var model
         workspace: model
@@ -713,7 +715,7 @@ Item {
     }
 
     Repeater {
-      model: efficientMode ? localWorkspaces : null
+      model: _squaresMode ? localWorkspaces : null
       delegate: ddeSquareDelegate
     }
   }
@@ -1043,23 +1045,4 @@ Item {
     PanelService.showContextMenu(contextMenu, root, screen, item);
   }
 
-  // Fashion dock: the workspace strip collapses to a tile. Click opens the
-  // compositor overview (niri); backends without one cycle to the next
-  // workspace instead, so the tile is never dead.
-  FashionTile {
-    anchors.centerIn: parent
-    visible: root.fashionMode
-    icon: "layout-grid"
-    tooltipText: I18n.tr("widgets.label-workspace")
-    tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
-    onClicked: {
-      TooltipService.hide();
-      if (!CompositorService.toggleOverview())
-        root.switchByOffset(1);
-    }
-    onRightClicked: {
-      TooltipService.hide();
-      PanelService.showContextMenu(contextMenu, root, root.screen);
-    }
-  }
 }

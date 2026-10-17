@@ -553,6 +553,10 @@ print(ns[0]['id'] if ns else '')
     [ -n "$C" ] || continue
     swaymsg "[con_id=$C] move position 1500 $((60 + moved * 220))" 2>/dev/null
     swaymsg "[con_id=$C] resize set 360 170" 2>/dev/null
+    # Keep a second workspace alive (occupied but unfocused) so the Workspace
+    # widget has more than one square to draw — a bare `swaymsg workspace 2`
+    # round-trip would let sway destroy the empty workspace again.
+    [ "$A" = "org.gnome.Nautilus" ] && swaymsg "[con_id=$C] move to workspace number 2" 2>/dev/null
     moved=$((moved + 1))
   done
   sleep 0.5

@@ -325,7 +325,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 | SessionMenu | `system-shutdown` symbolic | `system-shutdown` 彩色图标 |
 | NotificationHistory | 铃铛 symbolic（有未读时显示角标） | 铃铛图标；点击打开控制中心的通知页 |
 | ControlCenter / Settings | 控制中心图标 | 同左 |
-| Workspace | 小方格，当前工作区为 `accent` 实色 〔派生〕 | `layout-grid` 瓦片，点击打开合成器概览（niri）；后端不支持时循环切到下一工作区，右键仍是挂件菜单 〔演进〕 |
+| Workspace | 小方格，当前工作区为 `accent` 实色 〔派生〕 | 同高效：14px 小方格行（当前 `accent`、占用/空态分色），每格可点直接切换，右键仍是挂件菜单 〔演进〕 |
 | ActiveWindow / MediaMini / SystemMonitor / AudioVisualizer / KeyboardLayout / LockKeys / CustomButton / DarkMode / NightLight / KeepAwake / PowerProfile / NoctaliaPerformance / WallpaperSelector | 16 px 图标，或单行白字（可选） | 0.8 倍的图标，不显示文字 |
 | Spacer | 伸缩空白 | 忽略 |
 | （新增）Trash | `user-trash[-full]` | 同左；点击打开回收站，弹出层里可清空 |
