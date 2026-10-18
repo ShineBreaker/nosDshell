@@ -170,6 +170,15 @@ Item {
     }
   }
 
+  // Plugin widgets register after the first sync — filterValidWidgets would
+  // otherwise drop them from the models until the next settings change.
+  Connections {
+    target: BarWidgetRegistry
+    function onPluginWidgetRegistryUpdated() {
+      Qt.callLater(root._syncFromRevision);
+    }
+  }
+
   // Initialize models — deferred to next event-loop tick via Qt.callLater to avoid
   // re-entrant incubation: Component.onCompleted fires during QQmlObjectCreator::finalize,
   // and ListModel.append synchronously creates Repeater delegates whose own finalization

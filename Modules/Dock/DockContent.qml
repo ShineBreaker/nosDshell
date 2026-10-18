@@ -43,6 +43,9 @@ Item {
 
   // Plugin entries that are structural or meaningless in fashion mode
   readonly property var pluginList: {
+    // Depend on the registry generation: plugin widgets register after this
+    // binding first evaluates, and hasWidget() alone is not a dependency.
+    var _gen = BarWidgetRegistry.generation;
     var out = [];
     var plugins = Settings.data.dock.plugins || [];
     for (var i = 0; i < plugins.length; i++) {

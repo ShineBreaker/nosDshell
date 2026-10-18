@@ -11,6 +11,11 @@ Singleton {
 
   signal pluginWidgetRegistryUpdated
 
+  // Bump on every register/unregister so property bindings that filter
+  // through hasWidget() (untrackable inside JS) re-evaluate — e.g.
+  // DockContent.pluginList drops a plugin that registers after first eval.
+  property int generation: 0
+
   // Widget registry object mapping widget names to components
   property var widgets: ({
                            "ActiveWindow": activeWindowComponent,
@@ -492,6 +497,7 @@ Singleton {
     widgetMetadata[widgetId] = metadata || {};
 
     Logger.i("BarWidgetRegistry", "Registered plugin widget:", widgetId);
+    root.generation++;
     root.pluginWidgetRegistryUpdated();
     return true;
   }
@@ -511,6 +517,7 @@ Singleton {
     delete widgetMetadata[widgetId];
 
     Logger.i("BarWidgetRegistry", "Unregistered plugin widget:", widgetId);
+    root.generation++;
     root.pluginWidgetRegistryUpdated();
     return true;
   }
