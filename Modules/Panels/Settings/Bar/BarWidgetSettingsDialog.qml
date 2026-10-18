@@ -67,7 +67,7 @@ Popup {
 
         NText {
           text: I18n.tr("system.widget-settings-title", {
-                          "widget": root.widgetId
+                          "widget": BarWidgetRegistry.widgetDisplayName(root.widgetId)
                         })
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
@@ -227,8 +227,8 @@ Popup {
     root.updateWidgetSettings(root.sectionId, root.widgetIndex, entry);
     loadWidgetSettings();
     ToastService.showNotice(I18n.tr("system.widget-settings-title", {
-                                    "widget": root.widgetId
-                                  }), I18n.tr("common.settings-reset"));
+                                      "widget": BarWidgetRegistry.widgetDisplayName(root.widgetId)
+                                    }), I18n.tr("common.settings-reset"));
   }
 
   function loadWidgetSettings() {

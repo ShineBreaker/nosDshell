@@ -404,6 +404,39 @@ Singleton {
     });
   }
 
+  // Localized display name for a plugin (manifest object or composite/plain ID).
+  // Checks `widgets.label-<kebab-id>` in I18n first so built-in plugins follow
+  // the shell language, then falls back to `manifest.name` or the bare ID.
+  function pluginDisplayName(manifestOrId) {
+    if (!manifestOrId)
+      return "";
+    var rawId = typeof manifestOrId === "string" ? manifestOrId.replace(/^plugin:/, "") : (manifestOrId.id || manifestOrId.compositeKey || "");
+    var parsed = parseCompositeKey(rawId);
+    var plainId = parsed.pluginId || rawId;
+    var key = "widgets.label-" + plainId.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+    var trName = I18n.tr(key);
+    if (trName && trName !== key && trName !== "!!" + key + "!!")
+      return trName;
+    var manifest = typeof manifestOrId === "object" ? manifestOrId : getPluginManifest(rawId);
+    return (manifest && manifest.name) ? manifest.name : plainId;
+  }
+
+  // Localized description for a plugin manifest: checks
+  // `widgets.description-<kebab-id>` in I18n before falling back to the
+  // manifest's description field.
+  function pluginDescription(manifest) {
+    if (!manifest)
+      return "";
+    var plainId = (manifest.id || "").replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+    if (plainId) {
+      var key = "widgets.description-" + plainId;
+      var trDesc = I18n.tr(key);
+      if (trDesc && trDesc !== key && trDesc !== "!!" + key + "!!")
+        return trDesc;
+    }
+    return manifest.description || "";
+  }
+
   // Register a plugin (add to installed plugins after download)
   // sourceUrl is required for new plugins to generate composite key
   function registerPlugin(manifest, sourceUrl) {

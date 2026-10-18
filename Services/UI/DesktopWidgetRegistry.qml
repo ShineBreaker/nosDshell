@@ -151,11 +151,8 @@ Singleton {
   function widgetDisplayName(id) {
     if (!id)
       return id;
-    if (isPluginWidget(id)) {
-      const pluginId = id.replace("plugin:", "");
-      const manifest = PluginRegistry.getPluginManifest(pluginId);
-      return (manifest && manifest.name) ? manifest.name : pluginId;
-    }
+    if (isPluginWidget(id))
+      return PluginRegistry.pluginDisplayName(id);
     const key = "widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
     const name = I18n.tr(key);
     if (!name || name === key || name === "!!" + key + "!!")
@@ -177,17 +174,6 @@ Singleton {
   // Get list of plugin widget IDs
   function getPluginWidgets() {
     return Object.keys(pluginWidgets);
-  }
-
-  // Get display name for a widget ID
-  function getWidgetDisplayName(widgetId) {
-    if (widgetId.startsWith("plugin:")) {
-      var pluginId = widgetId.replace("plugin:", "");
-      var manifest = PluginRegistry.getPluginManifest(pluginId);
-      return manifest ? manifest.name : pluginId;
-    }
-    // Core widgets - return as-is (Clock, MediaPlayer, Weather, SystemStat)
-    return widgetId;
   }
 
   // Register a plugin desktop widget
@@ -376,7 +362,7 @@ Singleton {
         popupMenuWindow.dialogItem = dialog;
         dialog.closed.connect(() => {
                                 if (popupMenuWindow.dialogItem === dialog)
-                                  popupMenuWindow.dialogItem = null;
+                                popupMenuWindow.dialogItem = null;
                                 popupMenuWindow.close();
                                 if (root.currentSettingsDialog === dialog) {
                                   root.currentSettingsDialog = null;

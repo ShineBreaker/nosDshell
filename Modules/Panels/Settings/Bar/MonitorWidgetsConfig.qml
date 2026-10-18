@@ -183,14 +183,12 @@ ColumnLayout {
   // strip and its toggle menu.
   function updatePluginCandidatesModel() {
     pluginCandidatesModel.clear();
-    var ids = DockSettingsMenu.pluginCandidates || [];
+    var ids = DockSettingsMenu.availablePlugins() || [];
     for (var i = 0; i < ids.length; i++) {
-      if (BarWidgetRegistry.hasWidget(ids[i])) {
-        pluginCandidatesModel.append({
-                                       "key": ids[i],
-                                       "name": BarWidgetRegistry.widgetDisplayName(ids[i])
-                                     });
-      }
+      pluginCandidatesModel.append({
+                                     "key": ids[i],
+                                     "name": BarWidgetRegistry.widgetDisplayName(ids[i])
+                                   });
     }
   }
 

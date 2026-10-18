@@ -496,7 +496,7 @@ Variants {
                     for (var id in widgets) {
                       items.push({
                                    action: id,
-                                   text: DesktopWidgetRegistry.getWidgetDisplayName(id),
+                                   text: DesktopWidgetRegistry.widgetDisplayName(id),
                                    icon: "layout-grid-add"
                                  });
                     }

@@ -107,11 +107,8 @@ Singleton {
   function widgetDisplayName(id) {
     if (!id)
       return id;
-    if (isPluginWidget(id)) {
-      const pluginId = id.replace("plugin:", "");
-      const manifest = PluginRegistry.getPluginManifest(pluginId);
-      return (manifest && manifest.name) ? manifest.name : pluginId;
-    }
+    if (isPluginWidget(id))
+      return PluginRegistry.pluginDisplayName(id);
     const key = "widgets.label-" + id.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
     const name = I18n.tr(key);
     if (!name || name === key || name === "!!" + key + "!!")

@@ -1,34 +1,34 @@
 {
   "bar": {
-    "tooltip-empty": "No USB devices",
-    "tooltip-count": "%1 device(s) mounted"
+    "tooltip-empty": "No USB drives",
+    "tooltip-count": "%1 drive(s) mounted"
   },
   "panel": {
     "title": "USB Manager",
     "mounted": "mounted",
     "refresh": "Refresh",
-    "empty": "No USB devices detected",
-    "empty-hint": "Plug in a USB drive to get started",
-    "unmount-all": "Unmount All",
-    "eject-all": "Eject All"
+    "empty": "No USB drives detected",
+    "empty-hint": "Plug in a USB drive or external disk to manage it here",
+    "unmount-all": "Unmount all",
+    "eject-all": "Eject all"
   },
   "device": {
     "mounted": "Mounted",
-    "loading": "Loading...",
+    "loading": "Reading...",
     "used": "{size} used",
     "free": "{size} free",
     "action-open": "Open",
     "action-mount": "Mount",
     "action-unmount": "Unmount",
     "action-eject": "Safely eject",
-    "action-copy-path": "Copy path"
+    "action-copy-path": "Copy mount path"
   },
   "context": {
     "open": "Open USB Manager",
-    "refresh": "Refresh Devices",
-    "unmount-all": "Unmount All",
-    "eject-all": "Eject All",
-    "settings": "Settings"
+    "refresh": "Refresh drives",
+    "unmount-all": "Unmount all",
+    "eject-all": "Safely eject all",
+    "settings": "Plugin settings"
   },
   "notifications": {
     "mounted": "Mounted",
@@ -37,27 +37,27 @@
     "mount-failed": "Mount failed",
     "unmount-failed": "Unmount failed",
     "eject-failed": "Eject failed",
-    "unmount-all": "All devices unmounted",
-    "eject-all": "All devices ejected",
-    "path-copied": "Path copied"
+    "unmount-all": "Unmounted all drives",
+    "eject-all": "Safely ejected all drives",
+    "path-copied": "Mount path copied"
   },
   "settings": {
-    "section-bar": "Bar Widget",
-    "hide-when-empty": "Hide when no devices",
-    "hide-when-empty-desc": "Hide the bar icon when no USB devices are connected",
-    "show-badge": "Show count badge",
-    "show-badge-desc": "Show the number of mounted devices as a badge on the bar icon",
+    "section-bar": "Taskbar icon",
+    "hide-when-empty": "Hide when empty",
+    "hide-when-empty-desc": "Hide the taskbar icon when no USB drives are connected.",
+    "show-badge": "Mounted count badge",
+    "show-badge-desc": "Show the number of mounted drives on the taskbar icon.",
     "icon-color": "Icon color",
-    "icon-color-desc": "Custom icon color (leave as 'none' for default)",
+    "icon-color-desc": "Custom icon tint. Choose None for the default color.",
     "section-behavior": "Behavior",
     "auto-mount": "Auto-mount",
-    "auto-mount-desc": "Automatically mount USB drives when plugged in",
+    "auto-mount-desc": "Mount USB partitions automatically when plugged in.",
     "notifications": "Notifications",
-    "notifications-desc": "Show toast notifications for mount/unmount/eject events",
-    "section-browser": "File Browser",
-    "file-browser": "File browser",
-    "file-browser-desc": "Command used to open the file browser (e.g. yazi, ranger, xdg-open, dolphin)",
+    "notifications-desc": "Show a toast when drives are mounted, unmounted, or ejected.",
+    "section-browser": "File manager",
+    "file-browser": "File manager",
+    "file-browser-desc": "Command used to open mounted drives (e.g. xdg-open, dolphin, thunar, nautilus, yazi).",
     "terminal": "Terminal emulator",
-    "terminal-desc": "Terminal used to open terminal-based file managers (yazi, ranger, etc.)"
+    "terminal-desc": "Terminal used when the file manager runs in a terminal (yazi, ranger, etc.)."
   }
 }

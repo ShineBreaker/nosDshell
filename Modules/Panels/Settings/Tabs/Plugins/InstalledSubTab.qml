@@ -187,7 +187,7 @@ ColumnLayout {
               }
 
               NText {
-                text: modelData.name
+                text: PluginRegistry.pluginDisplayName(modelData)
                 font.weight: Style.fontWeightMedium
                 color: Color.onShell
                 elide: Text.ElideRight
@@ -350,8 +350,9 @@ ColumnLayout {
 
             // Description
             NText {
-              visible: modelData.description
-              text: modelData.description || ""
+              readonly property string resolvedDesc: PluginRegistry.pluginDescription(modelData)
+              visible: resolvedDesc !== ""
+              text: resolvedDesc
               font.pointSize: Style.fontSizeXS
               color: Color.onShellTertiary
               wrapMode: Text.WordWrap

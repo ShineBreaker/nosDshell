@@ -66,7 +66,7 @@ Popup {
 
         NText {
           text: I18n.tr("system.widget-settings-title", {
-                          "widget": DesktopWidgetRegistry.getWidgetDisplayName(root.widgetId)
+                          "widget": DesktopWidgetRegistry.widgetDisplayName(root.widgetId)
                         })
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
@@ -252,8 +252,8 @@ Popup {
     DesktopWidgetRegistry.resetWidgetSettings(root.sectionId, root.widgetIndex);
     loadWidgetSettings();
     ToastService.showNotice(I18n.tr("system.widget-settings-title", {
-                                    "widget": DesktopWidgetRegistry.getWidgetDisplayName(root.widgetId)
-                                  }), I18n.tr("common.settings-reset"));
+                                      "widget": DesktopWidgetRegistry.widgetDisplayName(root.widgetId)
+                                    }), I18n.tr("common.settings-reset"));
   }
 
   function loadWidgetSettings() {

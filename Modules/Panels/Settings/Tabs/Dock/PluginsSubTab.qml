@@ -85,13 +85,12 @@ ColumnLayout {
 
     function updateAvailablePlugins() {
       availablePlugins.clear();
-      var ids = DockSettingsMenu.pluginCandidates || [];
+      var ids = DockSettingsMenu.availablePlugins() || [];
       for (var i = 0; i < ids.length; i++) {
-        if (BarWidgetRegistry.hasWidget(ids[i]))
-          availablePlugins.append({
-            "key": ids[i],
-            "name": BarWidgetRegistry.widgetDisplayName(ids[i])
-          });
+        availablePlugins.append({
+                                  "key": ids[i],
+                                  "name": BarWidgetRegistry.widgetDisplayName(ids[i])
+                                });
       }
     }
 

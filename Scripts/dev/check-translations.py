@@ -48,8 +48,9 @@ EXCLUDED_FILES = {Path("Scripts/dev/check-translations.py")}
 # case-sensitive with ASCII word boundaries, so CJK text next to a term
 # ("Dock栏") still matches while "Widgets" does not.
 BANNED_TERMS = [
-    "Dock", "Workspace", "Launcher", "Bluetooth", "Toast",
+    "Dock", "Bar", "Workspace", "Launcher", "Bluetooth", "Toast",
     "Widget", "widget", "Session", "Control Center", "Notification Center",
+    "Compositor", "Tooltip", "Faithful",
 ]
 BANNED_TERM = re.compile(r"\b(" + "|".join(map(re.escape, BANNED_TERMS)) + r")\b", re.ASCII)
 

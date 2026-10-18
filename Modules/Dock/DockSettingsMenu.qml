@@ -28,6 +28,11 @@ Singleton {
       if (BarWidgetRegistry.hasWidget(id))
         out.push(id);
     }
+    var pluginIds = BarWidgetRegistry.getPluginWidgets() || [];
+    for (var j = 0; j < pluginIds.length; j++) {
+      if (out.indexOf(pluginIds[j]) < 0)
+        out.push(pluginIds[j]);
+    }
     return out;
   }
 
@@ -44,7 +49,7 @@ Singleton {
     var ids = availablePlugins();
     for (i = 0; i < ids.length; i++) {
       pluginItems.push({
-                         "label": ids[i],
+                         "label": BarWidgetRegistry.widgetDisplayName(ids[i]),
                          "action": "plugin:" + ids[i],
                          "checked": enabled[ids[i]] === true
                        });

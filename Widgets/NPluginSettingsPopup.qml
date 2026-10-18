@@ -49,7 +49,7 @@ Popup {
 
         NText {
           text: I18n.tr("panels.plugins.plugin-settings-title", {
-                          "plugin": root.currentPlugin?.name || ""
+                          "plugin": PluginRegistry.pluginDisplayName(root.currentPlugin)
                         })
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
@@ -161,8 +161,8 @@ Popup {
     }
     if (showToastOnSave) {
       ToastService.showNotice(I18n.tr("panels.plugins.plugin-settings-title", {
-                                      "plugin": currentPlugin?.name || ""
-                                    }), I18n.tr("common.settings-reset"));
+                                        "plugin": currentPlugin?.name || ""
+                                      }), I18n.tr("common.settings-reset"));
     }
   }
 

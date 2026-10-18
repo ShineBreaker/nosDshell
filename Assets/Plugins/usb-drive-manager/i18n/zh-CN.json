@@ -1,14 +1,14 @@
 {
   "bar": {
     "tooltip-empty": "无 USB 设备",
-    "tooltip-count": "%1 个设备已挂载"
+    "tooltip-count": "已挂载 %1 个设备"
   },
   "panel": {
     "title": "USB 管理器",
     "mounted": "已挂载",
     "refresh": "刷新",
     "empty": "未检测到 USB 设备",
-    "empty-hint": "插入 USB 设备以开始使用",
+    "empty-hint": "插入 U 盘或移动硬盘后将在此显示",
     "unmount-all": "全部卸载",
     "eject-all": "全部弹出"
   },
@@ -21,14 +21,14 @@
     "action-unmount": "卸载",
     "action-eject": "安全弹出",
     "action-copy-path": "复制路径",
-    "loading": "读取中…"
+    "loading": "正在读取..."
   },
   "context": {
     "open": "打开 USB 管理器",
-    "refresh": "刷新设备",
+    "refresh": "刷新设备列表",
     "unmount-all": "全部卸载",
-    "settings": "设置",
-    "eject-all": "全部弹出"
+    "settings": "插件设置",
+    "eject-all": "全部安全弹出"
   },
   "notifications": {
     "mounted": "已挂载",
@@ -37,27 +37,27 @@
     "mount-failed": "挂载失败",
     "unmount-failed": "卸载失败",
     "eject-failed": "弹出失败",
-    "unmount-all": "所有设备已卸载",
-    "eject-all": "所有设备已弹出",
-    "path-copied": "路径已复制"
+    "unmount-all": "已卸载全部设备",
+    "eject-all": "已安全弹出全部设备",
+    "path-copied": "已复制挂载路径"
   },
   "settings": {
-    "section-bar": "任务栏组件",
+    "section-bar": "任务栏图标",
     "hide-when-empty": "无设备时隐藏",
-    "hide-when-empty-desc": "没有 USB 设备连接时隐藏任务栏图标",
-    "show-badge": "显示数量徽标",
-    "show-badge-desc": "在任务栏图标上显示已挂载设备的数量",
+    "hide-when-empty-desc": "未连接 USB 设备时隐藏任务栏图标。",
+    "show-badge": "挂载数量角标",
+    "show-badge-desc": "在任务栏图标右上角显示已挂载设备的数量。",
     "icon-color": "图标颜色",
-    "icon-color-desc": "自定义图标颜色（保留为“无”以使用默认颜色）",
+    "icon-color-desc": "自定义图标颜色，选“无”则使用默认颜色。",
     "section-behavior": "行为",
     "auto-mount": "自动挂载",
-    "auto-mount-desc": "插入 USB 设备时自动挂载",
-    "notifications": "通知",
-    "notifications-desc": "在挂载/卸载/弹出事件时显示通知",
-    "section-browser": "文件浏览器",
-    "file-browser": "文件浏览器",
-    "file-browser-desc": "用于打开文件浏览器的命令（例如 yazi、ranger、xdg-open、dolphin）",
+    "auto-mount-desc": "插入 USB 设备时自动挂载分区。",
+    "notifications": "操作提示",
+    "notifications-desc": "挂载、卸载或安全弹出时显示提示条。",
+    "section-browser": "打开方式",
+    "file-browser": "文件管理器",
+    "file-browser-desc": "打开已挂载分区的程序（如 xdg-open、dolphin、thunar、nautilus、yazi）。",
     "terminal": "终端模拟器",
-    "terminal-desc": "用于打开基于终端的文件管理器的终端（yazi、ranger 等）"
+    "terminal-desc": "运行终端文件管理器（如 yazi、ranger）时使用的终端。"
   }
 }
