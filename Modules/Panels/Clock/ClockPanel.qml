@@ -460,64 +460,6 @@ SmartPanel {
             }
           }
 
-          // ---- Weather ----
-          Loader {
-            active: panelContent.cardEnabled("weather-card") && Settings.data.location.weatherEnabled && LocationService.data.weather !== null
-            visible: active
-            Layout.fillWidth: true
-
-            sourceComponent: ColumnLayout {
-              Layout.fillWidth: true
-              spacing: 0
-
-              NPanelSection {
-                Layout.fillWidth: true
-                text: I18n.tr("common.weather")
-              }
-
-              Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: Style.quickPanelRowHeight
-
-                RowLayout {
-                  anchors.fill: parent
-                  anchors.leftMargin: Style.marginM
-                  anchors.rightMargin: Style.marginM
-                  spacing: Style.marginS
-
-                  NIcon {
-                    icon: LocationService.weatherSymbolFromCode(LocationService.data.weather.current_weather.weathercode)
-                    pointSize: Style.fontSizeXL
-                    color: Color.accent
-                  }
-
-                  NText {
-                    text: {
-                      var temp = LocationService.data.weather.current_weather.temperature;
-                      var suffix = "C";
-                      if (Settings.data.location.useFahrenheit) {
-                        temp = LocationService.celsiusToFahrenheit(temp);
-                        suffix = "F";
-                      }
-                      return `${Math.round(temp)}°${suffix}`;
-                    }
-                    pointSize: Style.fontSizeL
-                    font.weight: Style.fontWeightBold
-                  }
-
-                  NText {
-                    Layout.fillWidth: true
-                    visible: !Settings.data.location.hideWeatherCityName
-                    text: Settings.data.location.name.split(",")[0]
-                    pointSize: Style.fontSizeS
-                    color: Color.onShellSecondary
-                    elide: Text.ElideRight
-                  }
-                }
-              }
-            }
-          }
-
           // Wheel navigates months. Item-level wheelEvent, not WheelHandler:
           // PointerHandler wheel delivery is dead on the nosdshell-background
           // layer surface under niri (see NListView). Declared after the
@@ -539,6 +481,64 @@ SmartPanel {
                 event.accepted = true;
               } else {
                 event.accepted = false;
+              }
+            }
+          }
+        }
+
+        // ---- Weather ----
+        Loader {
+          active: panelContent.cardEnabled("weather-card") && Settings.data.location.weatherEnabled && LocationService.data.weather !== null
+          visible: active
+          Layout.fillWidth: true
+
+          sourceComponent: ColumnLayout {
+            Layout.fillWidth: true
+            spacing: 0
+
+            NPanelSection {
+              Layout.fillWidth: true
+              text: I18n.tr("common.weather")
+            }
+
+            Item {
+              Layout.fillWidth: true
+              Layout.preferredHeight: Style.quickPanelRowHeight
+
+              RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: Style.marginM
+                anchors.rightMargin: Style.marginM
+                spacing: Style.marginS
+
+                NIcon {
+                  icon: LocationService.weatherSymbolFromCode(LocationService.data.weather.current_weather.weathercode)
+                  pointSize: Style.fontSizeXL
+                  color: Color.accent
+                }
+
+                NText {
+                  text: {
+                    var temp = LocationService.data.weather.current_weather.temperature;
+                    var suffix = "C";
+                    if (Settings.data.location.useFahrenheit) {
+                      temp = LocationService.celsiusToFahrenheit(temp);
+                      suffix = "F";
+                    }
+                    return `${Math.round(temp)}°${suffix}`;
+                  }
+                  pointSize: Style.fontSizeL
+                  font.weight: Style.fontWeightBold
+                }
+
+                NText {
+                  Layout.fillWidth: true
+                  visible: !Settings.data.location.hideWeatherCityName
+                  text: Settings.data.location.name.split(",")[0]
+                  pointSize: Style.fontSizeS
+                  color: Color.onShellSecondary
+                  elide: Text.ElideRight
+                }
               }
             }
           }
