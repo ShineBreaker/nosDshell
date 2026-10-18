@@ -12,13 +12,10 @@ ColumnLayout {
   property var screen: null
   property var widgetData: null
   property var widgetMetadata: null
-  // Injected post-load by BarWidgetSettingsDialog ("" when opened elsewhere).
-  property string sectionId: ""
-
   // Same formula as Workspace.qml's _squaresMode: the widget draws fixed
-  // workspace squares in efficient mode and in the fashion dock. Pill/label
-  // and grouped-app settings have no consumer there — hide the dead rows.
-  readonly property bool squaresMode: Settings.data.dock.mode === "efficient" || (sectionId === "dock" && Settings.data.dock.mode === "fashion")
+  // workspace squares in efficient mode only. Pill/label and grouped-app
+  // settings have no consumer there — hide the dead rows.
+  readonly property bool squaresMode: Settings.data.dock.mode === "efficient"
 
   signal settingsChanged(var settings)
 

@@ -1896,7 +1896,7 @@ PYEOF
                           else
                             echo "notification bell not found or vinput missing: $BELL_POS"
                           fi ;;
-    # Right-click a dock Workspace square → its context menu (single
+    # Right-click the dock Workspace widget → its context menu (single
     # "widget-settings" item) → open the settings dialog. This is the
     # PopupMenuWindow path (dialogItem + blurRegion), distinct from the
     # settings-panel gear dialogs: the scene asserts the dialog's reset
@@ -1907,75 +1907,50 @@ PYEOF
                           if [ ! -x "$VINPUT" ]; then echo "dock-widget-settings: nosd-helpers missing"; SCENE_FAIL=1
                           else
                           # Fashion mode puts Workspace under dock-*; in
-                          # efficient mode the taskbar is the bar root.
-                          qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 30 > "$WORK/logs/dw-dock-tree.txt" 2>&1 || true
-                          if ! grep -q "Workspace_QML" "$WORK/logs/dw-dock-tree.txt"; then
-                            qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 30 > "$WORK/logs/dw-dock-tree.txt" 2>&1 || true
+                          # efficient mode the taskbar is the bar root. Layer
+                          # windows report Qt position (0,0) and anchored
+                          # popups report positions relative to their parent
+                          # surface, so `debug find` coordinates are resolved
+                          # against the host window's screen offset — the
+                          # ctxmenu popup is parented to the same surface the
+                          # widget lives on, so one offset serves both. The
+                          # offset is derived from the host window's own size:
+                          # an edge strip sits flush against DOCK_POSITION's
+                          # edge, a fullscreen window needs no offset at all.
+                          WS_ROOT=dock-HEADLESS-1
+                          WS_IT=$(qs -p "$REPO" ipc call debug find dock-HEADLESS-1 workspaceWidget 2>&1 || true)
+                          case "$WS_IT" in *"no item"*|"") WS_ROOT=bar-HEADLESS-1; WS_IT=$(qs -p "$REPO" ipc call debug find bar-HEADLESS-1 workspaceWidget 2>&1 || true);; esac
+                          read -r SQX SQY SQW SQH < <(echo "$WS_IT" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\3 \4 \1 \2/p')
+                          SURF_OX=0; SURF_OY=0
+                          if [ -n "${SQX:-}" ]; then
+                            SURF_WH=$(qs -p "$REPO" ipc call debug tree "$WS_ROOT" 1 2>/dev/null | sed -n '1s/.* \([0-9][0-9]*\)x\([0-9][0-9]*\).*/\1 \2/p')
+                            read -r SURF_W SURF_H <<< "${SURF_WH:-0 0}"
+                            case "${DOCK_POSITION:-bottom}" in
+                              top)    ;;
+                              left)   ;;
+                              right)  [ "$SURF_W" -lt 1920 ] && SURF_OX=$((1920 - SURF_W)) ;;
+                              *)      [ "$SURF_H" -lt 1080 ] && SURF_OY=$((1080 - SURF_H)) ;;
+                            esac
                           fi
-                          # The first workspace SQUARE becomes the context menu's
-                          # anchor item: for a bottom dock the menu sits
-                          # anchorTop - menuHeight - Style.marginS above it and
-                          # centred on its x — so squareTop - menuH - 8 + ~halfRow
-                          # lands on the menu's first row.
-                          WS_SQ=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/dw-dock-tree.txt" <<'PYEOF'
-import json,os,re,subprocess,sys
-pos = os.environ.get("DOCK_POSITION","bottom")
-out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
-scr = next(o["rect"] for o in out if o.get("active"))
-dock_h = 0
-in_ws = False
-sq = None
-for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
-    m = re.search(r"@(-?\d+),(-?\d+)", line)
-    w = re.search(r" (\d+)x(\d+) ", line)
-    if not (m and w):
-        continue
-    if dock_h == 0:
-        dock_h = int(w.group(2))
-        continue
-    if "Workspace_QML" in line:
-        in_ws = True
-        continue
-    # First small Item delegate inside the Workspace cell = a square.
-    if in_ws and sq is None and "Item_QML" in line and int(w.group(1)) <= 30:
-        x, y = int(m.group(1)), int(m.group(2))
-        if pos == "bottom":
-            y += scr["height"] - dock_h
-        sq = (x, y, int(w.group(1)), int(w.group(2)))
-if sq:
-    print(*sq)
-PYEOF
-)
-                          echo "workspace square at: $WS_SQ"
-                          if [ -z "$WS_SQ" ]; then echo "FAIL dock-widget-settings: no Workspace square in dock tree"; SCENE_FAIL=1
+                          [ -n "${SQX:-}" ] && { SQX=$((SQX + SURF_OX)); SQY=$((SQY + SURF_OY)); }
+                          echo "workspace widget at: ${SQX:-none},${SQY:-none} ${SQW:-}x${SQH:-} (root $WS_ROOT)"
+                          if [ -z "${SQX:-}" ]; then echo "FAIL dock-widget-settings: workspaceWidget not found: $WS_IT"; SCENE_FAIL=1
                           else
-                          read -r SQX SQY SQW SQH <<< "$WS_SQ"
                           "$VINPUT" vinput rclick $((SQX + SQW / 2)) $((SQY + SQH / 2)) 2>>"$WORK/logs/vinput.log" || true
                           sleep 1.0
                           shot dock-widget-menu
                           # The menu is its own anchored PopupWindow — registered
-                          # as the "ctxmenu" debug root while open; its tree line
-                          # carries the menu size needed for the anchor math.
-                          qs -p "$REPO" ipc call debug tree ctxmenu 20 > "$WORK/logs/dw-menu-tree.txt" 2>&1 || true
-                          MENU_H=$(python3 - "$WORK/logs/dw-menu-tree.txt" <<'PYEOF'
-import re,sys
-# The registered root is the menu's NPopupReveal — the first content line
-# carries the menu rect (window-local @0,0).
-for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
-    if line.startswith("window @"):
-        continue
-    w = re.search(r" (\d+)x(\d+)", line)
-    if w:
-        print(w.group(2))
-        break
-PYEOF
-)
-                          if [ -z "$MENU_H" ]; then echo "FAIL dock-widget-settings: ctxmenu not found"; SCENE_FAIL=1
+                          # as the "ctxmenu" root while open; its rows carry
+                          # ctxmenuItem-<action> objectNames for `debug find`.
+                          MENU_IT=$(qs -p "$REPO" ipc call debug find ctxmenu ctxmenuItem-widget-settings 2>&1 || true)
+                          # G@ is the popup's position relative to its parent
+                          # (dock strip); add the same surface offset.
+                          read -r MENU_W MENU_H MENU_X MENU_Y < <(echo "$MENU_IT" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\).* G@\(-\?[0-9][0-9]*\),\(-\?[0-9][0-9]*\).*/\1 \2 \3 \4/p')
+                          if [ -z "${MENU_X:-}" ]; then echo "FAIL dock-widget-settings: ctxmenuItem-widget-settings not found: $MENU_IT"; SCENE_FAIL=1
                           else
-                          ITEM_X=$((SQX + SQW / 2))
-                          ITEM_Y=$((SQY - MENU_H - 8 + 14))
-                          echo "menu item at: $ITEM_X,$ITEM_Y (menuH=$MENU_H)"
-                          "$VINPUT" vinput click $ITEM_X $ITEM_Y 2>>"$WORK/logs/vinput.log" || true
+                          MENU_X=$((MENU_X + SURF_OX)); MENU_Y=$((MENU_Y + SURF_OY))
+                          echo "menu item at: $((MENU_X + MENU_W / 2)),$((MENU_Y + MENU_H / 2))"
+                          "$VINPUT" vinput click $((MENU_X + MENU_W / 2)) $((MENU_Y + MENU_H / 2)) 2>>"$WORK/logs/vinput.log" || true
                           sleep 1.2
                           shot dock-widget-settings
                           qs -p "$REPO" ipc call debug tree popupMenuWindow-HEADLESS-1 40 > "$WORK/logs/dw-dlg-tree.txt" 2>&1 || true
@@ -1987,7 +1962,7 @@ PYEOF
                           fi
                           # Close the dialog for any following scene.
                           FOUNDC=$(qs -p "$REPO" ipc call debug find popupMenuWindow-HEADLESS-1 widgetSettingsClose 2>&1 || true)
-                          read -r CW CH CX CY < <(echo "$FOUNDC" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+                          read -r CW CH CX CY < <(echo "$FOUNDC" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\).* G@\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
                           [ -n "${CX:-}" ] && "$VINPUT" vinput click $((CX + CW / 2)) $((CY + CH / 2)) 2>>"$WORK/logs/vinput.log" || true
                           sleep 0.8
                           fi

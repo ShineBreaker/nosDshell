@@ -16,6 +16,10 @@ import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 Item {
   id: root
 
+  // Lets `debug find <dock|bar>-<screen> workspaceWidget` locate the cell —
+  // the dock-plugin context-menu scene right-clicks it to reach settings.
+  objectName: "workspaceWidget"
+
   property ShellScreen screen
 
   // Widget properties passed from Bar.qml for per-instance settings
@@ -24,12 +28,15 @@ Item {
   property int sectionWidgetIndex: -1
   property int sectionWidgetsCount: 0
 
-  // Fashion dock presentation (DESIGN §3.1.4): the widget renders the same
-  // mini squares as efficient mode — one variable-width cell, every square
-  // clickable — so current + all workspaces stay visible and switchable.
+  // Fashion dock presentation (DESIGN §3.1.4): the widget reuses the bar's
+  // pill delegates in a variable-width cell — index/name labels, the grouped
+  // app view and direct switching all work there too.
   property string dockPresentation: ""
   readonly property bool fashionMode: dockPresentation === "fashion"
-  readonly property bool _squaresMode: efficientMode || fashionMode
+  // Fixed 14 px squares are the DDE efficient-mode presentation only; the
+  // fashion dock reuses the bar's pill delegates (index/name labels and the
+  // optional grouped-app view stay available there).
+  readonly property bool _squaresMode: efficientMode
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -45,10 +52,18 @@ Item {
   }
 
   readonly property string barPosition: Settings.getBarPositionForScreen(screenName)
-  readonly property bool isVertical: barPosition === "left" || barPosition === "right"
+  // Orientation follows the host surface: dock plugins use the taskbar edge
+  // (dock.position + screen override), bar widgets the status bar edge.
+  readonly property bool isVertical: {
+    const pos = (section === "dock") ? Settings.getTaskbarPositionForScreen(screenName) : barPosition;
+    return pos === "left" || pos === "right";
+  }
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   readonly property real barHeight: Style.getBarHeightForScreen(screenName)
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
+  // Pill cross-axis base: the bar capsule in bar/efficient, the plugin tile
+  // height on the fashion dock so pills sit at the same height as tiles.
+  readonly property real _capsule: fashionMode ? Style.dockPluginTileSize : capsuleHeight
   readonly property real barFontSize: Style.getBarFontSizeForScreen(screenName)
 
   readonly property string labelMode: (widgetSettings.labelMode !== undefined) ? widgetSettings.labelMode : widgetMetadata.labelMode
@@ -80,7 +95,7 @@ Item {
   readonly property real baseDimensionRatio: pillSize
 
   // Grouped mode (show applications) settings — disabled in DDE efficient mode
-  readonly property bool showApplications: !efficientMode && !fashionMode && ((widgetSettings.showApplications !== undefined) ? widgetSettings.showApplications : widgetMetadata.showApplications)
+  readonly property bool showApplications: !efficientMode && ((widgetSettings.showApplications !== undefined) ? widgetSettings.showApplications : widgetMetadata.showApplications)
   readonly property bool showApplicationsHover: (widgetSettings.showApplicationsHover !== undefined) ? widgetSettings.showApplicationsHover : widgetMetadata.showApplicationsHover
   readonly property bool showLabelsOnlyWhenOccupied: (widgetSettings.showLabelsOnlyWhenOccupied !== undefined) ? widgetSettings.showLabelsOnlyWhenOccupied : widgetMetadata.showLabelsOnlyWhenOccupied
   readonly property bool colorizeIcons: (widgetSettings.colorizeIcons !== undefined) ? widgetSettings.colorizeIcons : widgetMetadata.colorizeIcons
@@ -95,7 +110,7 @@ Item {
   readonly property bool showBadge: (widgetSettings.showBadge !== undefined) ? widgetSettings.showBadge : widgetMetadata.showBadge
 
   // Only for grouped mode / show apps
-  readonly property int baseItemSize: Style.toOdd(capsuleHeight * 0.8)
+  readonly property int baseItemSize: Style.toOdd(_capsule * 0.8)
   readonly property int iconSize: Style.toOdd(baseItemSize * iconScale)
   readonly property real textRatio: 0.50
 
@@ -168,15 +183,14 @@ Item {
 
   readonly property bool appVisible: showApplications && (!showApplicationsHover || root.isHovered)
 
-  implicitWidth: fashionMode ? (isVertical ? Style.dockPluginCellSize : computeWidth()) : (appVisible ? (isVertical ? groupedGrid.implicitWidth : Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel)) : (isVertical ? barHeight : computeWidth()))
-  implicitHeight: fashionMode ? (isVertical ? computeHeight() : Style.dockPluginCellSize) : (appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight))
+  implicitWidth: fashionMode ? (isVertical ? Style.dockPluginCellSize : (appVisible ? Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel) : computeWidth())) : (appVisible ? (isVertical ? groupedGrid.implicitWidth : Math.round(groupedGrid.implicitWidth + horizontalPadding * hasLabel)) : (isVertical ? barHeight : computeWidth()))
+  implicitHeight: fashionMode ? (isVertical ? (appVisible ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : computeHeight()) : Style.dockPluginCellSize) : (appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight))
 
   function getWorkspaceWidth(ws, activeOverride) {
-    // DDE workspace squares: fixed 14 px (derived value) — same in the
-    // efficient bar and on the fashion dock.
+    // DDE efficient-mode workspace squares: fixed 14 px (derived value).
     if (root._squaresMode)
       return 14;
-    const d = Math.round(capsuleHeight * root.baseDimensionRatio);
+    const d = Math.round(_capsule * root.baseDimensionRatio);
     const isActive = activeOverride !== undefined ? activeOverride : ws.isActive;
     const factor = isActive ? 2.2 : 1;
 
@@ -195,7 +209,7 @@ Item {
   function getWorkspaceHeight(ws, activeOverride) {
     if (root._squaresMode)
       return 14;
-    const d = Math.round(capsuleHeight * root.baseDimensionRatio);
+    const d = Math.round(_capsule * root.baseDimensionRatio);
     const isActive = activeOverride !== undefined ? activeOverride : ws.isActive;
     const factor = isActive ? 2.2 : 1;
     return Style.toOdd(d * factor);
@@ -513,8 +527,8 @@ Item {
   Rectangle {
     id: workspaceBackground
     visible: !appVisible
-    width: isVertical ? capsuleHeight : parent.width
-    height: isVertical ? parent.height : capsuleHeight
+    width: isVertical ? _capsule : parent.width
+    height: isVertical ? parent.height : _capsule
     radius: Style.radiusM
     color: Style.capsuleColor
     border.color: Style.capsuleBorderColor
@@ -631,7 +645,7 @@ Item {
     id: pillRow
     spacing: effectiveSpacing
     x: horizontalPadding
-    y: root.fashionMode ? Style.pixelAlignCenter(parent.height, 14) : 0
+    y: root.fashionMode ? Style.pixelAlignCenter(parent.height, height) : 0
     visible: !isVertical && !appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
@@ -649,8 +663,8 @@ Item {
         workspace: model
         isVertical: false
         baseDimensionRatio: root.baseDimensionRatio
-        capsuleHeight: root.capsuleHeight
-        barHeight: root.barHeight
+        capsuleHeight: root._capsule
+        barHeight: root.fashionMode ? Style.dockPluginCellSize : root.barHeight
         labelMode: root.labelMode
         fontWeight: root.fontWeight
         characterCount: root.characterCount
@@ -677,7 +691,7 @@ Item {
   Column {
     id: pillColumn
     spacing: effectiveSpacing
-    x: root.fashionMode ? Style.pixelAlignCenter(parent.width, 14) : 0
+    x: root.fashionMode ? Style.pixelAlignCenter(parent.width, width) : 0
     y: horizontalPadding
     visible: isVertical && !appVisible
     scale: visible ? 1.0 : 0.8
@@ -696,8 +710,8 @@ Item {
         workspace: model
         isVertical: true
         baseDimensionRatio: root.baseDimensionRatio
-        capsuleHeight: root.capsuleHeight
-        barHeight: root.barHeight
+        capsuleHeight: root._capsule
+        barHeight: root.fashionMode ? Style.dockPluginCellSize : root.barHeight
         labelMode: root.labelMode
         fontWeight: root.fontWeight
         characterCount: root.characterCount
@@ -1019,7 +1033,7 @@ Item {
 
   Flow {
     id: groupedGrid
-    visible: appVisible && !root.fashionMode
+    visible: appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
       NumberAnimation {

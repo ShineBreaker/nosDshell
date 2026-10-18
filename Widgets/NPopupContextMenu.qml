@@ -476,6 +476,11 @@ PopupWindow {
             required property var modelData
             required property int index
 
+            // Lets `debug find ctxmenu ctxmenuItem-<action>` locate a row —
+            // needed because the menu window sits at an anchor-computed
+            // position that nothing else can predict.
+            objectName: "ctxmenuItem-" + (modelData.action ?? "")
+
             readonly property bool isSeparator: root._isSeparator(modelData)
             readonly property bool rowEnabled: modelData.enabled !== false
             readonly property bool hasSubmenu: root._hasSubmenu(modelData)

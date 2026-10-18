@@ -108,11 +108,6 @@ Popup {
             id: settingsLoader
             Layout.fillWidth: true
             onLoaded: {
-              // Settings pages that declare a `sectionId` property get the
-              // dialog's context (e.g. Workspace hides pill-only controls in
-              // the dock where the widget renders squares, not pills).
-              if (item && item.sectionId !== undefined)
-                item.sectionId = root.sectionId;
               // Try to focus the first focusable item in the loaded settings
               if (item) {
                 Qt.callLater(() => {

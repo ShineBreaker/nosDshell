@@ -326,7 +326,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 | SessionMenu | `system-shutdown` symbolic | `system-shutdown` 彩色图标 |
 | NotificationHistory | 铃铛 symbolic（有未读时显示角标） | 铃铛图标；点击打开控制中心的通知页 |
 | ControlCenter / Settings | 控制中心图标 | 同左 |
-| Workspace | 小方格，当前工作区为 `accent` 实色 〔派生〕 | 同高效：14px 小方格行（当前 `accent`、占用/空态分色），每格可点直接切换，右键仍是挂件菜单 〔演进〕 |
+| Workspace | 小方格，当前工作区为 `accent` 实色 〔派生〕 | 同 bar 的胶囊行（`WorkspacePill`，可变宽格）：默认显示工作区索引，当前项 `accent` 底且加宽，`labelMode`/`pillSize`/字号等控件在坞里同样生效；可选的按应用分组视图也可用。每格可点直接切换，右键仍是挂件菜单 〔演进〕 |
 | ActiveWindow / MediaMini / SystemMonitor / AudioVisualizer / KeyboardLayout / LockKeys / CustomButton / DarkMode / NightLight / KeepAwake / PowerProfile / NoctaliaPerformance / WallpaperSelector | 16 px 图标，或单行白字（可选） | 0.8 倍的图标，不显示文字 |
 | Spacer | 伸缩空白 | 忽略 |
 | （新增）Trash | `user-trash[-full]` | 同左；点击打开回收站，弹出层里可清空 |
@@ -572,7 +572,7 @@ Noctalia 卡片的对应关系：
 - **列表页**（Wi-Fi 网络、蓝牙设备、插件、配色模板这类可选多项的清单）：每一项是一个 SettingsItem 行。选中或已连接用右侧的 `accent` ✓ 和状态文字表示，整行底色不变。进行中的操作用行内转圈表示。行内展开区（密码、详情）用 `overlay("field")` 加 `radiusItem` 的嵌板。列表末尾接一个可点击的"添加"或"新建"行。
 - **堆叠子页**：`NTabView.stacked` 时，每个子页是一个 NHeader 加一个 SettingsGroup。组头与它的组之间只有 1 px 缝，组与组之间 15 px。间距全部放在上一组末行与下一组头之间，组头与组之间不再额外留白。
 - **成块的内容不折叠进行内**：设置页不用"点行展开/收起"的形式藏内容——行内不出现控制整段内容显隐的 chevron 行。内容较多时按 §3.5.3 用"下一页"行（`NNextPageRow`）推入二级页；其余情况直接常显。唯一的例外是 §3.5.4 列表页的行内展开区（密码、详情），那是列表项自身的展开行为，不折叠整组内容。
-- **控件必须对齐当前呈现形态**：挂件/插件的设置页只显示当前呈现形态实际消费的控件；形态下没有消费方的控件隐藏而非置灰，键值保留（切回该形态或旧配置上它仍生效）。例：`Workspace` 在方格形态（高效模式、时尚坞插件位）下隐藏标签模式、字号、胶囊尺寸和分组应用相关控件——设置页经 `BarWidgetSettingsDialog` 注入的 `sectionId` 得知自己配置的是哪个区段。
+- **控件必须对齐当前呈现形态**：挂件/插件的设置页只显示当前呈现形态实际消费的控件；形态下没有消费方的控件隐藏而非置灰，键值保留（切回该形态或旧配置上它仍生效）。例：`Workspace` 只在高效模式的方格形态下隐藏标签模式、字号、胶囊尺寸和分组应用相关控件（`WorkspaceSettings.qml` 的 `squaresMode` 与 `Workspace.qml` 的 `_squaresMode` 同一公式）。
 
 ### 3.6 通知气泡（dde-osd notification）
 

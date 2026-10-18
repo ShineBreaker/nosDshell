@@ -1109,12 +1109,22 @@ Singleton {
 
     // ObjectName lookup: walks the full subtree (no depth cap) and returns
     // describe() — type, WxH and the window-local scene position — so verify
-    // scenes can locate items without probing coordinates.
+    // scenes can locate items without probing coordinates. A trailing
+    // " G@x,y" adds mapToGlobal(): identical to the local position on layer
+    // surfaces (Qt reports them at 0,0) and parent-surface-relative inside
+    // anchored PopupWindows — callers add the host window's screen offset
+    // (see DEBUGGING.md).
     function find(root: string, objectName: string): string {
       var it = DebugService.findItem(root, objectName);
       if (!it)
         return "no item '" + objectName + "' under " + root + " (roots: " + DebugService.rootNames() + ")";
-      return DebugService.describe(it);
+      var out = DebugService.describe(it);
+      try {
+        var g = it.mapToGlobal(Qt.point(0, 0));
+        if (g)
+          out += " G@" + Math.round(g.x) + "," + Math.round(g.y);
+      } catch (e) {}
+      return out;
     }
 
     function hit(root: string, x: real, y: real): string {
