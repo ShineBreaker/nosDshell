@@ -673,7 +673,14 @@ Item {
                             "widgetId": model.id,
                             "section": "center",
                             "sectionWidgetIndex": index,
-                            "sectionWidgetsCount": root.centerWidgetsModel.count
+                            "sectionWidgetsCount": root.centerWidgetsModel.count,
+                            // Same bound as the horizontal center zone, on the
+                            // long axis: symmetric clearance around the bar
+                            // midpoint (see Taskbar.zoneAvailable).
+                            "zoneAvailable": Qt.binding(function () {
+                              var mid = leftSection.parent.height / 2;
+                              return Math.max(0, 2 * Math.min(mid - (leftSection.y + leftSection.height), rightSection.y - mid) - 2 * Settings.data.bar.widgetSpacing);
+                            })
                           })
             Layout.alignment: Qt.AlignHCenter
           }
@@ -701,7 +708,12 @@ Item {
                             "widgetId": model.id,
                             "section": "right",
                             "sectionWidgetIndex": index,
-                            "sectionWidgetsCount": root.rightWidgetsModel.count
+                            "sectionWidgetsCount": root.rightWidgetsModel.count,
+                            // Filling delegates here grow upwards from the
+                            // bottom edge until the packed top cluster.
+                            "zoneAvailable": Qt.binding(function () {
+                              return Math.max(0, leftSection.parent.height - (verticalBarMargin + Settings.data.bar.contentPadding) - (leftSection.y + leftSection.height) - Settings.data.bar.widgetSpacing);
+                            })
                           })
             Layout.alignment: Qt.AlignHCenter
           }
@@ -805,7 +817,17 @@ Item {
                             "widgetId": model.id,
                             "section": "center",
                             "sectionWidgetIndex": index,
-                            "sectionWidgetsCount": root.centerWidgetsModel.count
+                            "sectionWidgetsCount": root.centerWidgetsModel.count,
+                            // The centered zone grows symmetrically around the
+                            // bar midpoint until it meets the packed left/right
+                            // clusters; filling delegates (Taskbar) get this as
+                            // their overflow bound — their own width is implicit
+                            // here and would feed a shrink-only loop (see
+                            // Taskbar.zoneAvailable).
+                            "zoneAvailable": Qt.binding(function () {
+                              var mid = leftSection.parent.width / 2;
+                              return Math.max(0, 2 * Math.min(mid - (leftSection.x + leftSection.width), rightSection.x - mid) - 2 * Settings.data.bar.widgetSpacing);
+                            })
                           })
             Layout.alignment: Qt.AlignVCenter
           }
@@ -833,7 +855,12 @@ Item {
                             "widgetId": model.id,
                             "section": "right",
                             "sectionWidgetIndex": index,
-                            "sectionWidgetsCount": root.rightWidgetsModel.count
+                            "sectionWidgetsCount": root.rightWidgetsModel.count,
+                            // Filling delegates here grow leftwards from the
+                            // right edge until the packed left cluster.
+                            "zoneAvailable": Qt.binding(function () {
+                              return Math.max(0, leftSection.parent.width - (horizontalBarMargin + Settings.data.bar.contentPadding) - (leftSection.x + leftSection.width) - Settings.data.bar.widgetSpacing);
+                            })
                           })
             Layout.alignment: Qt.AlignVCenter
           }

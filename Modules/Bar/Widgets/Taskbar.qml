@@ -59,9 +59,16 @@ Item {
   readonly property int itemLongLength: efficientMode ? Math.round(barHeight * 1.4) : itemSize
   readonly property int itemIconSize: efficientMode ? Math.round(Math.min(barHeight, itemLongLength) * 0.7) : itemSize
 
+  // Free length the zone can offer this taskbar before items must shrink.
+  // Bar.qml feeds it through widgetProps for zones that do not stretch the
+  // delegate (the centered zone): reading root.width there is self-referential
+  // — the delegate width comes from implicitWidth, which contentWidth derives
+  // from this value, so the taskbar could only ever shrink, never grow.
+  property real zoneAvailable: -1
+
   // Proportional shrink when items overflow the available length
   // (gxde-dock mainpanel.cpp:623-698 approach)
-  readonly property real availableLength: isVerticalBar ? root.height : root.width
+  readonly property real availableLength: (zoneAvailable >= 0) ? zoneAvailable : (isVerticalBar ? root.height : root.width)
   readonly property int effectiveItemLongLength: {
     var count = combinedModel.length;
     if (count <= 0 || !efficientMode)

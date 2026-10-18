@@ -1790,6 +1790,42 @@ if bad:
     print(f"FAIL efficient-taskbar: left-zone delegates not packed (spacing={gap}): {bad} in {xs}")
     sys.exit(1)
 print(f"efficient-taskbar: left-zone packing OK {xs} (spacing={gap})")
+
+# Guardrail (Taskbar.zoneAvailable): taskbar items in the centered zone must
+# sit at itemLongLength unless the zone's real free span — the symmetric
+# clearance between the packed clusters, same formula as Bar.qml — forces a
+# proportional shrink. A self-referential bound (items sizing off their own
+# allocated width) once froze the zone's width so every new window shrank
+# the items a little more.
+wm=re.search(r'window \S+ (\d+)x(\d+)',tree[0])
+cIdx=next((i for i,(d,l) in enumerate(lines) if '"centerSection"' in l and 'Layout' in l),None)
+rIdx=next((i for i,(d,l) in enumerate(lines) if '"rightSection"' in l and 'Layout' in l),None)
+items=[]
+if cIdx is not None:
+    cInd=lines[cIdx][0]
+    for d,l in lines[cIdx+1:]:
+        if d<=cInd: break
+        m=re.search(r'"taskbarAppItem"\s+(\d+)x(\d+)',l)
+        if m: items.append((int(m.group(1)),int(m.group(2))))
+if items and wm and rIdx is not None:
+    rm=re.search(r'(\d+)x(\d+) @(-?\d+),(-?\d+)',lines[rIdx][1])
+    lm=re.search(r'(\d+)x(\d+) @(-?\d+),(-?\d+)',lines[start][1])
+    rX,rY=int(rm.group(3)),int(rm.group(4))
+    lX,lY,lW,lH=int(lm.group(3)),int(lm.group(4)),int(lm.group(1)),int(lm.group(2))
+    if vert:
+        barLen,leftEnd,rightStart,barH=int(wm.group(2)),lY+lH,rY,int(wm.group(1))
+    else:
+        barLen,leftEnd,rightStart,barH=int(wm.group(1)),lX+lW,rX,int(wm.group(2))
+    mid=barLen/2
+    bound=max(0,2*min(mid-leftEnd,rightStart-mid)-2*gap)
+    itemLen=round(barH*1.4)
+    expect=min(itemLen,bound//len(items)) if bound>0 else itemLen
+    got=[i[0] if not vert else i[1] for i in items]
+    off=[w for w in got if abs(w-expect)>1]
+    if off:
+        print(f"FAIL efficient-taskbar: taskbar items {got} not at expected long length {expect} (itemLong={itemLen}, bound={bound}, n={len(items)})")
+        sys.exit(1)
+    print(f"efficient-taskbar: taskbar item long length OK {got} (expect={expect})")
 PYEOF
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
