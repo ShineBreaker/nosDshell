@@ -10,6 +10,27 @@
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-10-18
+
+设置体验做了一次「可读性 + 有用性」的整体大修：重型编辑器搬进二级页、标签筛选常显，每个设置对话框都有「重置为默认值」，右键菜单弹出的设置补上了背景模糊、不再透出底下的窗口内容，当前形态下不生效的控件也不再摆在那里骗人。时尚坞的工作区插件长成了与状态栏一致的胶囊行——索引、占用分色、分组应用视图和逐格切换全部在线；状态栏默认布局则对齐了 macOS 菜单栏的左右分区。
+
+---
+
+### 新功能
+
+- align default status-bar layout with the macOS menu bar：[`698e0ecfe`](https://github.com/ShineBreaker/nosDshell/commit/698e0ecfe38cbe46310f6c4651afe61e47f6dda7)
+- reuse bar pill presentation for the fashion Workspace widget：[`3b2ca27c4`](https://github.com/ShineBreaker/nosDshell/commit/3b2ca27c4e6bd1dd26ca6827edccc4824a965743)
+- render Workspace fashion cell as clickable mini squares：[`3e1ab34a6`](https://github.com/ShineBreaker/nosDshell/commit/3e1ab34a6d027eaae908ec17d9a8b50acab7152b)
+- render Workspace plugin as a fashion tile：[`54e713ef9`](https://github.com/ShineBreaker/nosDshell/commit/54e713ef935fde002335700cdef15fdaaaa4c81e)
+- reset-to-default buttons in all settings dialogs：[`081b6088e`](https://github.com/ShineBreaker/nosDshell/commit/081b6088eda3eec747201541e5893eb2522a7a0c)
+
+### 修复
+
+- blur region behind popup dialogs, hide dead workspace controls：[`ba9360e32`](https://github.com/ShineBreaker/nosDshell/commit/ba9360e320097f33367c99093dbffee015b20ffa)
+- push heavy editors onto §3.5.3 sub-pages, flatten tag filters：[`ca64c03f7`](https://github.com/ShineBreaker/nosDshell/commit/ca64c03f7c0c46553ad675e6341496035b95e7da)
+- manual-schedule row layout + darkman hooks toggle：[`5f72a164e`](https://github.com/ShineBreaker/nosDshell/commit/5f72a164edb0fd4caff40ee7b72fb550360e7cc6)
+- publish opaque-body blur region for arrowed popups：[`15dcb4740`](https://github.com/ShineBreaker/nosDshell/commit/15dcb4740b9d002f9d1dbc5b58c0df094dd85b32)
+
 ## [1.3.0] - 2026-10-16
 
 深色模式的对外权威面收口了：nosDshell 自带 darkman 兼容的 portal 后端，`darkman get|set|toggle`、GTK4/Electron 的 SettingChanged 订阅和 `~/.local/share/{dark,light}-mode.d/` 钩子目录全部收敛到单个守护进程，根治 darkman 双 daemon 互不同步导致主题跟随时灵时不灵的老毛病。配合颜色方案的「跟随系统」调度与按经纬度的日出日落计时，shell 与桌面应用的明暗从此共用一份权威状态。
@@ -400,7 +421,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.3.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.4.0...HEAD
+[1.4.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.0...v1.2.1
 [1.2.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.1.8...v1.2.0
