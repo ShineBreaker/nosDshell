@@ -419,7 +419,18 @@
     "pluginSpacing": 4,
     "fusedPlugins": false,
     "launcherIconSize": 0,
-    "taskManagerCommand": "btop"
+    "taskManagerCommand": "btop",
+    "taskbarWidgets": {
+      "left": [
+        {
+          "id": "Launcher"
+        },
+        {
+          "id": "Taskbar"
+        }
+      ],
+      "center": []
+    }
   },
   "network": {
     "bluetoothRssiPollingEnabled": false,

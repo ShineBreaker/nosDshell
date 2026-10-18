@@ -740,9 +740,22 @@ Singleton {
                                                   overrideWidgets[sec][idx] = Object.assign({}, overrideWidgets[sec][idx], settings);
                                                   Settings.setScreenOverride(screenName, "widgets", overrideWidgets);
                                                 }
-                                              } else if (Settings.data.dock.mode === "efficient" && sec === "right") {
-                                                // Efficient mode: right section entries map 1:1 onto dock.plugins
-                                                Settings.setDockPluginSettings(idx, settings);
+                                              } else if (Settings.data.dock.mode === "efficient") {
+                                                if (sec === "right") {
+                                                  // Right section entries map 1:1 onto dock.plugins
+                                                  Settings.setDockPluginSettings(idx, settings);
+                                                } else {
+                                                  // Left/center zone entries live verbatim in
+                                                  // dock.taskbarWidgets — previously these writes
+                                                  // fell through to bar.widgets and silently
+                                                  // corrupted the status-bar layout.
+                                                  var zone = Settings.data.dock.taskbarWidgets[sec];
+                                                  if (zone && idx < zone.length) {
+                                                    zone[idx] = Object.assign({}, zone[idx], settings);
+                                                    Settings.data.dock.taskbarWidgets[sec] = zone;
+                                                    Settings.saveImmediate();
+                                                  }
+                                                }
                                               } else {
                                                 var widgets = Settings.data.bar.widgets[sec];
                                                 if (widgets && idx < widgets.length) {

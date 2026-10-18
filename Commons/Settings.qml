@@ -661,6 +661,22 @@ Singleton {
           "id": "Trash"
         }
       ]
+      // Efficient-mode taskbar layout: the left and center widget zones,
+      // stored verbatim including the structural Launcher/Taskbar entries so
+      // their settings have a real home. The right zone stays dock.plugins
+      // (shared with the fashion dock); ShowDesktop is appended at render.
+      // Edited by the taskbar widget editor (PluginsSubTab, §3.5.3).
+      property JsonObject taskbarWidgets: JsonObject {
+        property list<var> left: [
+          {
+            "id": "Launcher"
+          },
+          {
+            "id": "Taskbar"
+          }
+        ]
+        property list<var> center: []
+      }
       property string position: "bottom" // "top", "bottom", "left", "right"
       property bool onlySameOutput: true
       property list<string> monitors: [] // holds dock visibility per monitor
@@ -1047,8 +1063,9 @@ Singleton {
   // -----------------------------------------------------
   // Get effective bar widgets for a screen (with inheritance)
   // If the screen has widget overrides and overrides are enabled, use them.
-  // In efficient (taskbar) mode the sections are synthesized: Launcher + Taskbar
-  // on the left, the ordered dock.plugins list plus ShowDesktop on the right.
+  // In efficient (taskbar) mode left/center come from dock.taskbarWidgets
+  // (Launcher + Taskbar are stored entries); the right zone stays the
+  // ordered dock.plugins list plus a synthesized ShowDesktop terminator.
   function getBarWidgetsForScreen(screenName) {
     var override = _findScreenOverride(screenName);
     if (override && override.enabled !== false && override.widgets !== undefined) {
@@ -1065,16 +1082,10 @@ Singleton {
       right.push({
                    "id": "ShowDesktop"
                  });
+      var zones = data.dock.taskbarWidgets;
       return {
-        "left": [
-          {
-            "id": "Launcher"
-          },
-          {
-            "id": "Taskbar"
-          }
-        ],
-        "center": [],
+        "left": (zones && zones.left) || [],
+        "center": (zones && zones.center) || [],
         "right": right,
         "dock": plugins
       };

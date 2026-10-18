@@ -553,7 +553,7 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
 
 ```nix
 {
-  settingsVersion = 82;
+  settingsVersion = 85;
   bar = {
     enabled = false;
     barType = "simple";
@@ -585,19 +585,17 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
       left = [ {
           id = "Launcher";
         } {
-          id = "Clock";
+          id = "ActiveWindow";
+        } ];
+      center = [ ];
+      right = [ {
+          id = "Tray";
+        } {
+          id = "MediaMini";
         } {
           id = "SystemMonitor";
         } {
-          id = "ActiveWindow";
-        } {
-          id = "MediaMini";
-        } ];
-      center = [ {
           id = "Workspace";
-        } ];
-      right = [ {
-          id = "Tray";
         } {
           id = "NotificationHistory";
         } {
@@ -608,6 +606,8 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
           id = "Brightness";
         } {
           id = "ControlCenter";
+        } {
+          id = "Clock";
         } ];
     };
     mouseWheelAction = "none";
@@ -873,6 +873,8 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
       } {
         id = "SessionMenu";
       } {
+        id = "plugin:usb-drive-manager";
+      } {
         id = "Trash";
       } ];
     position = "bottom";
@@ -891,8 +893,16 @@ The complete settings reference, generated from nosDshell's `Assets/settings-def
     backgroundOpacity = 1.0;
     pluginSpacing = 4;
     fusedPlugins = false;
-    launcherIconSize = 16;
+    launcherIconSize = 0;
     taskManagerCommand = "btop";
+    taskbarWidgets = {
+      left = [ {
+          id = "Launcher";
+        } {
+          id = "Taskbar";
+        } ];
+      center = [ ];
+    };
   };
   network = {
     bluetoothRssiPollingEnabled = false;
