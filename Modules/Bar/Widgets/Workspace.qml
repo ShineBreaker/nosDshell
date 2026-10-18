@@ -33,10 +33,6 @@ Item {
   // app view and direct switching all work there too.
   property string dockPresentation: ""
   readonly property bool fashionMode: dockPresentation === "fashion"
-  // Fixed 14 px squares are the DDE efficient-mode presentation only; the
-  // fashion dock reuses the bar's pill delegates (index/name labels and the
-  // optional grouped-app view stay available there).
-  readonly property bool _squaresMode: efficientMode
 
   property var widgetMetadata: BarWidgetRegistry.widgetMetadata[widgetId] ?? {}
   // Explicit screenName property ensures reactive binding when screen changes
@@ -148,8 +144,6 @@ Item {
 
   property int horizontalPadding: Style.marginS
   property int spacingBetweenPills: Style.marginXS
-  // DDE efficient: 4 px gap between workspace squares (derived value)
-  readonly property int effectiveSpacing: _squaresMode ? 4 : spacingBetweenPills
 
   // Wheel scroll handling
   property int wheelAccumulatedDelta: 0
@@ -187,9 +181,6 @@ Item {
   implicitHeight: fashionMode ? (isVertical ? (appVisible ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : computeHeight()) : Style.dockPluginCellSize) : (appVisible ? (isVertical ? Math.round(groupedGrid.implicitHeight + horizontalPadding * 0.6 * hasLabel) : barHeight) : (isVertical ? computeHeight() : barHeight))
 
   function getWorkspaceWidth(ws, activeOverride) {
-    // DDE efficient-mode workspace squares: fixed 14 px (derived value).
-    if (root._squaresMode)
-      return 14;
     const d = Math.round(_capsule * root.baseDimensionRatio);
     const isActive = activeOverride !== undefined ? activeOverride : ws.isActive;
     const factor = isActive ? 2.2 : 1;
@@ -207,8 +198,6 @@ Item {
   }
 
   function getWorkspaceHeight(ws, activeOverride) {
-    if (root._squaresMode)
-      return 14;
     const d = Math.round(_capsule * root.baseDimensionRatio);
     const isActive = activeOverride !== undefined ? activeOverride : ws.isActive;
     const factor = isActive ? 2.2 : 1;
@@ -221,7 +210,7 @@ Item {
       const ws = localWorkspaces.get(i);
       total += getWorkspaceWidth(ws);
     }
-    total += Math.max(localWorkspaces.count - 1, 0) * effectiveSpacing;
+    total += Math.max(localWorkspaces.count - 1, 0) * spacingBetweenPills;
     total += horizontalPadding * 2;
     return Style.toOdd(total);
   }
@@ -232,7 +221,7 @@ Item {
       const ws = localWorkspaces.get(i);
       total += getWorkspaceHeight(ws);
     }
-    total += Math.max(localWorkspaces.count - 1, 0) * effectiveSpacing;
+    total += Math.max(localWorkspaces.count - 1, 0) * spacingBetweenPills;
     total += horizontalPadding * 2;
     return Style.toOdd(total);
   }
@@ -591,59 +580,10 @@ Item {
     }
   }
 
-  // DDE efficient workspaces: 14 px squares, radius 2 (derived values)
-  Component {
-    id: ddeSquareDelegate
-
-    Item {
-      id: squareDelegate
-
-      required property var model
-      required property int index
-
-      width: 14
-      height: 14
-
-      Rectangle {
-        anchors.fill: parent
-        radius: 2
-        color: {
-          if (squareDelegate.model.isUrgent)
-            return Color.mError;
-          if (squareDelegate.model.isFocused)
-            return Color.accent;
-          return squareDelegate.model.isOccupied ? Color.overlay("checked") : Color.overlay("strong");
-        }
-      }
-
-      MouseArea {
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
-        onPressed: mouse => {
-                     if (mouse.button === Qt.LeftButton)
-                     CompositorService.switchToWorkspace(squareDelegate.model);
-                   }
-        onReleased: mouse => {
-                      if (mouse.button === Qt.RightButton) {
-                        mouse.accepted = true;
-                        TooltipService.hide();
-                        root.selectedWindowId = "";
-                        root.selectedAppId = "";
-                        PanelService.showContextMenu(contextMenu, squareDelegate, screen);
-                      }
-                    }
-        onEntered: TooltipService.show(squareDelegate, squareDelegate.model.name || squareDelegate.model.idx.toString(), BarService.getTooltipDirection(root.screenName, root.section === "dock"))
-        onExited: TooltipService.hide()
-      }
-    }
-  }
-
   // Horizontal layout for top/bottom bars
   Row {
     id: pillRow
-    spacing: effectiveSpacing
+    spacing: spacingBetweenPills
     x: horizontalPadding
     y: root.fashionMode ? Style.pixelAlignCenter(parent.height, height) : 0
     visible: !isVertical && !appVisible
@@ -657,7 +597,7 @@ Item {
 
     Repeater {
       id: workspaceRepeaterHorizontal
-      model: _squaresMode ? null : localWorkspaces
+      model: localWorkspaces
       delegate: WorkspacePill {
         required property var model
         workspace: model
@@ -680,17 +620,12 @@ Item {
         getWorkspaceHeight: root.getWorkspaceHeight
       }
     }
-
-    Repeater {
-      model: _squaresMode ? localWorkspaces : null
-      delegate: ddeSquareDelegate
-    }
   }
 
   // Vertical layout for left/right bars
   Column {
     id: pillColumn
-    spacing: effectiveSpacing
+    spacing: spacingBetweenPills
     x: root.fashionMode ? Style.pixelAlignCenter(parent.width, width) : 0
     y: horizontalPadding
     visible: isVertical && !appVisible
@@ -704,7 +639,7 @@ Item {
 
     Repeater {
       id: workspaceRepeaterVertical
-      model: _squaresMode ? null : localWorkspaces
+      model: localWorkspaces
       delegate: WorkspacePill {
         required property var model
         workspace: model
@@ -726,11 +661,6 @@ Item {
         getWorkspaceWidth: root.getWorkspaceWidth
         getWorkspaceHeight: root.getWorkspaceHeight
       }
-    }
-
-    Repeater {
-      model: _squaresMode ? localWorkspaces : null
-      delegate: ddeSquareDelegate
     }
   }
 
