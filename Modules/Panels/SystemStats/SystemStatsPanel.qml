@@ -36,7 +36,7 @@ SmartPanel {
       anchors.fill: parent
       horizontalPolicy: ScrollBar.AlwaysOff
       verticalPolicy: ScrollBar.AsNeeded
-      contentWidth: availableWidth
+      reserveScrollbarSpace: false
 
       ColumnLayout {
         id: mainColumn

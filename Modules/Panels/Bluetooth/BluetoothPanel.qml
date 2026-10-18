@@ -20,7 +20,7 @@ SmartPanel {
   panelContent: Item {
     id: panelContent
 
-    property real contentPreferredHeight: Math.min(mainLayout.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
+    property real contentPreferredHeight: Math.min(Math.min(mainLayout.implicitHeight, Style.popupListMaxHeight) + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
     function disconnectDevice(device) {
       if (device.blocked) {
@@ -67,7 +67,7 @@ SmartPanel {
       anchors.fill: parent
       horizontalPolicy: ScrollBar.AlwaysOff
       verticalPolicy: ScrollBar.AsNeeded
-      contentWidth: availableWidth
+      reserveScrollbarSpace: false
 
       ColumnLayout {
         id: mainLayout

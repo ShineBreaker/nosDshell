@@ -283,6 +283,11 @@ Singleton {
   readonly property int popupArrowHeight: 10
   readonly property int popupGap: 2
 
+  // Scrollable content inside an applet popup caps at a fixed viewport and
+  // scrolls internally — the popup never grows per row
+  // (gxde-dock/plugins/network/item/applet/wirelesslist.cpp:39,289 MAX_HEIGHT=300).
+  readonly property int popupListMaxHeight: Math.round(300 * uiScaleRatio)
+
   // DDE menu row metrics: rows are font-height + 8, padded 20px on each side
   readonly property int menuItemPadding: Math.round(20 * uiScaleRatio)
 

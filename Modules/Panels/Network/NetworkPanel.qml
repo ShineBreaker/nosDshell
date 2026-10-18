@@ -234,6 +234,12 @@ SmartPanel {
           id: contentScroll
           Layout.fillWidth: true
           Layout.fillHeight: true
+          // Size the viewport from the content column's implicit height, not
+          // the flickable's contentHeight: that property stays -1 (auto mode)
+          // through the first layout pass, so reading it collapses the panel
+          // on first open. Capped like the DDE applet — the list scrolls
+          // inside instead of extending the popup.
+          Layout.preferredHeight: Math.min(contentColumn.implicitHeight, Style.popupListMaxHeight)
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
           reserveScrollbarSpace: false

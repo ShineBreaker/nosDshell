@@ -1466,7 +1466,54 @@ PYEOF
     toast)                call toast send '{"title":"Toast 标题","body":"这是 toast 正文","type":"notice"}' 1.5
                           shot toast ;;
     audio-panel)          toggle volume togglePanel 1.5 audio-panel ;;
-    network-panel)        toggle network togglePanel 1.5 network-panel ;;
+    # Bounded-list guardrail: the Wi‑Fi list viewport must size from the
+    # content column's implicit height and stay capped at
+    # Style.popupListMaxHeight — never equal to the full content extent and
+    # never the ~12 px sliver the flickable's -1 auto-mode produced on first
+    # open. The first `debug opened` poll lands inside the first layout
+    # passes, so a regression surfaces in network-panel-early.txt; the settled
+    # dump additionally shows the capped viewport vs taller content.
+    network-panel)        cat > "$WORK/netgeom.py" <<'PYEOF'
+import re, sys
+lines = open(sys.argv[1], encoding='utf-8', errors='replace').read().splitlines()
+sv_h = fl_h = content_h = None
+for i, l in enumerate(lines):
+    if 'NScrollView' in l and sv_h is None:
+        # Geometry prints after the pointer: "TYPE(0x…) WxH @x,y" — matching
+        # WxH anywhere would catch the hex address itself (0x7f → "0x7").
+        m = re.search(r'\)\s+(\d+)x(\d+)', l)
+        if m: sv_h = int(m.group(2))
+        for j in range(i + 1, min(i + 8, len(lines))):
+            if 'QQuickFlickable' in lines[j]:
+                m = re.search(r'\)\s+(\d+)x(\d+)', lines[j])
+                if m: fl_h = int(m.group(2))
+                c = re.search(r'contentY:[-\d]+/([-\d]+)', lines[j])
+                if c: content_h = int(c.group(1))
+                break
+if sv_h is None:
+    print("FAIL network-panel: NScrollView not in opened panel tree"); sys.exit(1)
+if sv_h <= 40:
+    print(f"FAIL network-panel: list viewport collapsed to {sv_h}px"); sys.exit(1)
+# Preferred height is capped at Style.popupListMaxHeight (300); fillHeight may
+# add a little column slack on top, so bound at cap + one row, never content.
+if sv_h > 320:
+    print(f"FAIL network-panel: list viewport {sv_h}px exceeds cap 300 (+slack)"); sys.exit(1)
+if content_h is not None and content_h > 320 and sv_h >= content_h:
+    print(f"FAIL network-panel: viewport {sv_h}px grew with content {content_h}px"); sys.exit(1)
+print(f"network-panel geometry ok: viewport {sv_h}px (flickable {fl_h}, content {content_h})")
+PYEOF
+                          call network togglePanel 0.3
+                          for _ in $(seq 1 15); do
+                            qs -p "$REPO" ipc call debug opened 24 > "$WORK/logs/network-panel-early.txt" 2>/dev/null || true
+                            grep -q "NScrollView" "$WORK/logs/network-panel-early.txt" && break
+                            sleep 0.4
+                          done
+                          python3 "$WORK/netgeom.py" "$WORK/logs/network-panel-early.txt" || SCENE_FAIL=1
+                          sleep 1.2
+                          shot network-panel
+                          qs -p "$REPO" ipc call debug opened 24 > "$WORK/logs/network-panel-settled.txt" 2>&1 || true
+                          python3 "$WORK/netgeom.py" "$WORK/logs/network-panel-settled.txt" || SCENE_FAIL=1
+                          call network togglePanel 0.5 ;;
     bluetooth-panel)      toggle bluetooth togglePanel 1.5 bluetooth-panel ;;
     battery-panel)        toggle battery togglePanel 1.5 battery-panel ;;
     calendar-panel)       toggle calendar toggle 1.5 calendar-panel ;;
