@@ -410,7 +410,23 @@ Item {
   }
 
   // Function to update the combined model
+  // Notify-driven rebuilds run one event-loop turn later: mutating itemRows
+  // inside a notify emitted while Repeater delegates are incubating re-enters
+  // the incubator and corrupts the V4 heap (QV4::Object::insertMember SIGSEGV
+  // — same guard as Bar._initModels and Dock.updateDockApps).
+  property bool _destroyed: false
+  property bool _combinedUpdateQueued: false
   function updateCombinedModel() {
+    if (_combinedUpdateQueued)
+      return;
+    _combinedUpdateQueued = true;
+    Qt.callLater(_updateCombinedModelNow);
+  }
+
+  function _updateCombinedModelNow() {
+    _combinedUpdateQueued = false;
+    if (_destroyed)
+      return;
     const runningWindows = [];
     const pinnedApps = Settings.data.dock.pinnedApps || [];
     const processedAppIds = new Set();
@@ -528,6 +544,7 @@ Item {
   Component.onCompleted: {
     updateCombinedModel();
   }
+  Component.onDestruction: _destroyed = true
   onScreenChanged: updateCombinedModel()
 
   // Debounce timer for wheel interactions

@@ -521,7 +521,7 @@ Singleton {
 
   // Check if a widget is a plugin widget
   function isPluginWidget(id) {
-    return id.startsWith("plugin:");
+    return typeof id === "string" && id.startsWith("plugin:");
   }
 
   property var cpuIntensiveWidgets: ["AudioVisualizer"]

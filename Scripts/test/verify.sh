@@ -241,7 +241,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|taskbar-settings-write|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|taskbar-settings-write|taskbar-add-widgets|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -2428,6 +2428,58 @@ PYEOF
                           call settings toggle 0.5
                           fi
                           fi ;;
+    # taskbar-add-widgets — incubation-crash repro: widgets are added to the
+    # taskbar strip (center zone) and the plugin zone (dock.plugins) one at a
+    # time by rewriting settings.json; the FileView watcher reloads → every
+    # segment Repeater re-models → delegates re-incubate while the previous
+    # ones may still be in flight. A SIGSEGV during incubation kills qs —
+    # detected by the debug-tree probe going silent. Removing the entry right
+    # after exercises the model-mutation-during-incubation window from the
+    # other direction.
+    taskbar-add-widgets)
+                          SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
+                          probe() {
+                            qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 1 >/dev/null 2>&1 \
+                              || qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 1 >/dev/null 2>&1
+                          }
+                          for ZONE in center plugins; do
+                          for WID in ActiveWindow Workspace SystemMonitor MediaMini SessionMenu KeepAwake ShowDesktop Trash Taskbar Spacer plugin:usb-drive-manager plugin:niri-overview-launcher; do
+                            python3 - "$SF" "$ZONE" "$WID" <<'PYEOF'
+import json,sys
+p,zone,wid=sys.argv[1],sys.argv[2],sys.argv[3]
+d=json.load(open(p))
+if zone=="plugins":
+    arr=d.setdefault("dock",{}).setdefault("plugins",[])
+else:
+    tw=d.setdefault("dock",{}).setdefault("taskbarWidgets",{"left":[{"id":"Launcher"},{"id":"Taskbar"}],"center":[]})
+    arr=tw.setdefault(zone,[])
+arr[:]=[e for e in arr if not (isinstance(e,dict) and e.get("id")==wid)]
+arr.append({"id":wid})
+json.dump(d,open(p,"w"))
+PYEOF
+                            sleep 1.0
+                            if ! probe; then
+                              echo "FAIL taskbar-add-widgets: qs died after adding $WID to $ZONE (mode=$DOCK_MODE)"
+                              SCENE_FAIL=1; return 0
+                            fi
+                            # remove again — exercises deletion mid-incubation
+                            python3 - "$SF" "$ZONE" "$WID" <<'PYEOF'
+import json,sys
+p,zone,wid=sys.argv[1],sys.argv[2],sys.argv[3]
+d=json.load(open(p))
+arr=(d.get("dock",{}).get("plugins") if zone=="plugins" else (d.get("dock",{}).get("taskbarWidgets") or {}).get(zone)) or []
+arr[:]=[e for e in arr if not (isinstance(e,dict) and e.get("id")==wid)]
+json.dump(d,open(p,"w"))
+PYEOF
+                            sleep 0.8
+                            if ! probe; then
+                              echo "FAIL taskbar-add-widgets: qs died after removing $WID from $ZONE (mode=$DOCK_MODE)"
+                              SCENE_FAIL=1; return 0
+                            fi
+                            echo "taskbar-add-widgets: $WID → $ZONE add/remove ok"
+                          done
+                          done
+                          shot taskbar-add-widgets ;;
     # Needs NOSD_FAKE_PORTAL=<0|1|2> (spawns Scripts/test/fake-portal.py owning
     # org.freedesktop.portal.Desktop on the private bus) plus a settings seed
     # with colorSchemes.schedulingMode=system:

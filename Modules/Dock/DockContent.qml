@@ -47,19 +47,38 @@ Item {
   // same arrangement carries across modes. Launcher/Taskbar/Spacer render as
   // their own item segments; every other registered id joins a capsule-tile
   // plugin run — one tile per contiguous run, same look as before.
+  // Every entry carries a stable slot key ("L0"/"C1"/"P2" = source list +
+  // index). Rows resolve their live settings object through it — ListModel
+  // roles pin their value type at first write and stale QObject/variant
+  // payloads UAF delegates mid-teardown (QQmlListModel::data crash), so rows
+  // carry only primitive keys (same recipe as Taskbar.itemRows/dockRows).
   readonly property var contentList: {
     var zones = Settings.data.dock.taskbarWidgets;
-    var lists = [zones ? zones.left : null, zones ? zones.center : null, Settings.data.dock.plugins];
+    var lists = [[zones ? zones.left : null, "L"], [zones ? zones.center : null, "C"], [Settings.data.dock.plugins, "P"]];
     var out = [];
     for (var li = 0; li < lists.length; li++) {
-      var list = lists[li] || [];
+      var list = lists[li][0] || [];
+      var prefix = lists[li][1];
       for (var i = 0; i < list.length; i++) {
         var e = list[i];
         if (e && e.id)
-          out.push(e);
+          out.push({
+                     "id": e.id,
+                     "ekey": prefix + i
+                   });
       }
     }
     return out;
+  }
+
+  // Resolve a slot key to the live settings entry object.
+  function _entryForKey(k) {
+    if (!k || k.length < 2)
+      return null;
+    var zones = Settings.data.dock.taskbarWidgets;
+    var list = k[0] === "L" ? (zones ? zones.left : null) : (k[0] === "C" ? (zones ? zones.center : null) : Settings.data.dock.plugins);
+    var i = parseInt(k.substring(1));
+    return (list && i >= 0 && i < list.length) ? list[i] : null;
   }
 
   readonly property var contentSegments: {
@@ -75,30 +94,136 @@ Item {
       }
     }
     for (var i = 0; i < contentList.length; i++) {
-      var entry = contentList[i];
-      var id = entry.id;
+      var slot = contentList[i];
+      var id = slot.id;
       if (id === "Launcher" || id === "Taskbar" || id === "Spacer") {
         flush();
         segs.push({
                     "kind": "item",
-                    "_tag": "s" + segs.length,
-                    "entry": entry
+                    "_tag": "i:" + slot.ekey,
+                    "ekey": slot.ekey,
+                    "id": id
                   });
       } else if (BarWidgetRegistry.hasWidget(id)) {
         if (!run)
           run = {
             "kind": "plugins",
-            "_tag": "s" + segs.length,
-            "entries": []
+            "ekeys": []
           };
-        run.entries.push(entry);
+        run.ekeys.push(slot.ekey);
       }
       // Unregistered ids drop entirely — the old pluginList skipped them the
       // same way (a candidate that renders nowhere was the "Workspace added
       // but invisible" bug class).
     }
     flush();
+    for (var i = 0; i < segs.length; i++) {
+      if (segs[i].kind === "plugins")
+        segs[i]._tag = "r:" + segs[i].ekeys.join(",");
+    }
     return segs;
+  }
+
+  // Render model — the computed JS array is only the desired state. Assigning
+  // it to Repeater.model wholesale is QQuickRepeater::setModel → incubate, and
+  // a notify re-entering model mutation during that incubation corrupts the
+  // V4 heap (QV4::Object::insertMember SIGSEGV — same guard as Bar._initModels
+  // and Dock.updateDockApps). The strip renders segmentRows, a stable
+  // ListModel mutated incrementally one event-loop turn after the desired
+  // state changes.
+  ListModel {
+    id: segmentRows
+  }
+  Component {
+    id: _runModelComp
+    ListModel {
+    }
+  }
+  // tag → per-run member ListModel. JS-owned (createObject(null)) so a retired
+  // run's model is collected only after its delegate drops the reference —
+  // never destroy() a model a still-dying delegate may hold.
+  property var _runModels: ({})
+  property bool _destroyed: false
+  property bool _segSyncQueued: false
+  function _queueSegSync() {
+    if (_segSyncQueued)
+      return;
+    _segSyncQueued = true;
+    Qt.callLater(_syncSegmentsNow);
+  }
+  onContentSegmentsChanged: _queueSegSync()
+  Component.onCompleted: _queueSegSync()
+
+  function _syncRunEntries(lm, ekeys) {
+    var n = ekeys.length;
+    for (var i = 0; i < n; i++) {
+      if (i >= lm.count) {
+        lm.append({
+                    "ekey": ekeys[i]
+                  });
+      } else if (lm.get(i).ekey !== ekeys[i]) {
+        lm.setProperty(i, "ekey", ekeys[i]);
+      }
+    }
+    while (lm.count > n)
+      lm.remove(lm.count - 1);
+  }
+
+  function _syncSegmentsNow() {
+    _segSyncQueued = false;
+    if (_destroyed)
+      return;
+    var segs = contentSegments;
+    var runModels = {};
+    for (var i = 0; i < segs.length; i++) {
+      var seg = segs[i];
+      if (seg.kind === "plugins") {
+        var lm = _runModels[seg._tag] || _runModelComp.createObject(null);
+        _syncRunEntries(lm, seg.ekeys);
+        runModels[seg._tag] = lm;
+      }
+    }
+    _runModels = runModels;
+    for (var j = 0; j < segs.length; j++) {
+      var seg2 = segs[j];
+      if (j >= segmentRows.count) {
+        segmentRows.append({
+                             "segKind": seg2.kind,
+                             "segTag": seg2._tag,
+                             "ekey": seg2.ekey || ""
+                           });
+        continue;
+      }
+      var row = segmentRows.get(j);
+      if (row.segKind !== seg2.kind || row.segTag !== seg2._tag) {
+        segmentRows.remove(j);
+        segmentRows.insert(j, {
+                             "segKind": seg2.kind,
+                             "segTag": seg2._tag,
+                             "ekey": seg2.ekey || ""
+                           });
+      }
+    }
+    while (segmentRows.count > segs.length)
+      segmentRows.remove(segmentRows.count - 1);
+    // Tags are content-derived — prune stale measured lengths with the rows.
+    var pruned = {};
+    var lensChanged = false;
+    for (var k in segLens) {
+      var alive = false;
+      for (var s = 0; s < segs.length; s++) {
+        if (segs[s]._tag === k) {
+          alive = true;
+          break;
+        }
+      }
+      if (alive)
+        pruned[k] = segLens[k];
+      else
+        lensChanged = true;
+    }
+    if (lensChanged)
+      segLens = pruned;
   }
 
   // Measured long-axis length of each segment's rendered item, keyed by the
@@ -120,7 +245,7 @@ Item {
     if (m !== undefined)
       return m;
     if (seg.kind === "plugins") {
-      var n = seg.entries.length;
+      var n = seg.ekeys.length;
       var fusedPad = Settings.data.dock.fusedPlugins ? Style.marginXS * 2 : 0;
       return n * (Style.dockPluginTileSize + itemSpacing) + fusedPad + Style.marginS + itemSpacing;
     }
@@ -138,7 +263,7 @@ Item {
       var s = segs[i];
       if (s.kind === "plugins") {
         fixedLen += _segLen(s);
-      } else if (s.entry.id === "Taskbar") {
+      } else if (s.id === "Taskbar") {
         shrinkUnits += dockRoot.dockApps.length;
       } else {
         shrinkUnits += 1; // Launcher, Spacer — app-item-sized slots
@@ -209,6 +334,7 @@ Item {
     }
   }
   Component.onDestruction: {
+    _destroyed = true;
     if (_dbgName !== "") {
       DebugService.unregisterRoot(_dbgName);
     }
@@ -319,24 +445,27 @@ Item {
       // lists the taskbar-mode editor writes, so every item (launcher, app
       // strip, indicators) is repositionable across both modes (§3.5.3).
       Repeater {
-        model: dock.contentSegments
+        model: segmentRows
         delegate: Loader {
-          required property var modelData
+          required property var model
           required property int index
-          readonly property string segKind: modelData.kind
+          readonly property string segKind: model.segKind
+          readonly property var segEntry: dock._entryForKey(model.ekey)
           Layout.alignment: Qt.AlignCenter
-          Layout.fillWidth: !isVertical && segKind === "item" && modelData.entry.id === "Spacer"
-          Layout.fillHeight: isVertical && segKind === "item" && modelData.entry.id === "Spacer"
+          Layout.fillWidth: !isVertical && segKind === "item" && segEntry && segEntry.id === "Spacer"
+          Layout.fillHeight: isVertical && segKind === "item" && segEntry && segEntry.id === "Spacer"
           Layout.preferredWidth: implicitWidth
           Layout.preferredHeight: implicitHeight
-          sourceComponent: segKind === "plugins" ? pluginRunComp : (modelData.entry.id === "Launcher" ? launcherComp : (modelData.entry.id === "Taskbar" ? taskbarComp : spacerComp))
+          sourceComponent: segKind === "plugins" ? pluginRunComp : (segEntry && segEntry.id === "Launcher" ? launcherComp : (segEntry && segEntry.id === "Taskbar" ? taskbarComp : spacerComp))
+          // Bound, not assigned: the row's payload mutates in place
+          // (setProperty) while the delegate lives.
           onLoaded: {
             if (item.segTag !== undefined)
-              item.segTag = modelData._tag;
+              item.segTag = Qt.binding(() => model.segTag);
             if (item.segEntry !== undefined)
-              item.segEntry = modelData.entry;
+              item.segEntry = Qt.binding(() => segEntry);
             if (item.segEntries !== undefined)
-              item.segEntries = modelData.entries;
+              item.segEntries = Qt.binding(() => dock._runModels[model.segTag] || null);
           }
         }
       }
@@ -1066,7 +1195,11 @@ Item {
     // are possible once entries interleave with Launcher/Taskbar segments.
     Item {
       id: pluginRun
-      property var segEntries: []
+      // A per-run member ListModel from dock._runModels — synced
+      // incrementally, never a recomputed array, or the inner Repeater hits
+      // the same setModel-during-incubation crash.
+      property var segEntries: null
+      readonly property int segEntryCount: segEntries ? segEntries.count : 0
       property string segTag: ""
       implicitWidth: isVertical ? dockRoot.itemThickness : Style.marginS + pluginArea.implicitWidth
       implicitHeight: isVertical ? Style.marginS + pluginArea.implicitHeight : dockRoot.itemThickness
@@ -1089,7 +1222,7 @@ Item {
   Item {
           id: pluginArea
 
-          visible: pluginRun.segEntries.length > 0
+          visible: pluginRun.segEntryCount > 0
           // implicit size = real item size in the layout cell (a bare Item
           // reports 0 and the fused pill below would collapse with it)
           implicitWidth: isVertical ? dockRoot.itemThickness : pluginGrid.implicitWidth + fusedPad
@@ -1111,16 +1244,19 @@ Item {
           GridLayout {
             id: pluginGrid
             anchors.centerIn: parent
-            rows: isVertical ? pluginRun.segEntries.length : 1
-            columns: isVertical ? 1 : pluginRun.segEntries.length
+            rows: isVertical ? pluginRun.segEntryCount : 1
+            columns: isVertical ? 1 : pluginRun.segEntryCount
             rowSpacing: itemSpacing
             columnSpacing: itemSpacing
 
             Repeater {
               model: pluginRun.segEntries
               delegate: BarWidgetLoader {
-                required property var modelData
+                required property var model
                 required property int index
+                readonly property var modelData: dock._entryForKey(model.ekey) || ({
+                                                                                    "id": ""
+                                                                                  })
 
                 widgetId: modelData.id || ""
                 widgetScreen: dock.screen
@@ -1132,7 +1268,7 @@ Item {
                                 // entry (Launcher/Taskbar/Spacer) splits plugins into
                                 // separate runs and run-local indices restart at 0.
                                 "sectionWidgetIndex": (Settings.data.dock.plugins || []).indexOf(modelData),
-                                "sectionWidgetsCount": pluginRun.segEntries.length,
+                                "sectionWidgetsCount": pluginRun.segEntryCount,
                                 "dockPresentation": "fashion",
                                 // The widget's own per-instance settings object lives
                                 // in its dock.plugins entry (there is no bar section

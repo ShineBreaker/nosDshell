@@ -47,6 +47,40 @@ NBox {
   property var _activeDialog: null
   property bool crossDropHoverActive: false
 
+  // Render model — widgetModel is a freshly-computed JS array; assigning it to
+  // the Repeater wholesale is QQuickRepeater::setModel → incubate, and a notify
+  // re-entering during that incubation corrupts the V4 heap (the
+  // QV4::Object::insertMember SIGSEGV class — same guard as Bar._initModels).
+  // The Repeater renders widgetRows, a stable ListModel synced incrementally
+  // one event-loop turn after widgetModel changes. Rows carry no payload —
+  // delegates resolve their entry live from widgetModel[index] (QObject
+  // payloads in ListModel roles can dangle into teardown — QQmlListModel::data
+  // crash class).
+  ListModel {
+    id: widgetRows
+  }
+  property bool _destroyed: false
+  property bool _widgetSyncQueued: false
+  function _queueWidgetSync() {
+    if (_widgetSyncQueued)
+      return;
+    _widgetSyncQueued = true;
+    Qt.callLater(_syncWidgetRowsNow);
+  }
+  onWidgetModelChanged: _queueWidgetSync()
+  function _syncWidgetRowsNow() {
+    _widgetSyncQueued = false;
+    if (_destroyed)
+      return;
+    var list = widgetModel || [];
+    while (widgetRows.count < list.length)
+      widgetRows.append({
+                          "row": 1
+                        });
+    while (widgetRows.count > list.length)
+      widgetRows.remove(widgetRows.count - 1);
+  }
+
   function clearCrossSectionHover() {
     crossDropHoverActive = false;
 
@@ -98,7 +132,9 @@ NBox {
 
   readonly property bool showCrossSectionDropHint: crossDropHoverActive
 
+  Component.onCompleted: _queueWidgetSync()
   Component.onDestruction: {
+    _destroyed = true;
     if (_activeDialog && _activeDialog.close) {
       var dialog = _activeDialog;
       _activeDialog = null;
@@ -467,12 +503,14 @@ NBox {
 
         Repeater {
           id: widgetRepeater
-          model: widgetModel
+          model: widgetRows
 
           delegate: Rectangle {
             id: widgetItem
             required property int index
-            required property var modelData
+            readonly property var modelData: (root.widgetModel && index >= 0 && index < root.widgetModel.length) ? root.widgetModel[index] : ({
+                                                                                                                                                        "id": ""
+                                                                                                                                                      })
 
             // id/parent refs dangle while the editor subtree is being
             // destroyed (二级页 pop) — bindings re-evaluate against torn-down

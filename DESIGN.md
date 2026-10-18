@@ -178,6 +178,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - **合并语义。** 运行中的动画再次被触发时，只改目标值，不打断。QML 的 `Behavior` 本来就这样；手写 `start()` 时先以当前值为起点。
 - **延时不是动画。** tooltip 的 500 ms、预览的 200/300 ms、自动隐藏的 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换前的防抖等待，不换算成缓动。
 - **应用条增删项动画（两模式同一套配方）〔演进〕。** DDE 的应用条增删项瞬变（`Repeater` 直接重建），本实现为数据/生命周期驱动的进出补动效：应用条用带字符串行键的 `ListModel` + 延迟移除——条目消失时行转为 dying、沿长轴塌缩到 0（`animationFast` + `InCubic` 退场曲线）后再从模型里删；新条目在 0 长处长出到正常尺寸（`animationNormal` 300 ms + `InOutCubic`），进出都带 `animationFast` 淡入淡出；兄弟项的滑动由塌缩本身驱动，不用 positioner transition（Layout 容器不支持）。高效 `Taskbar.qml` 的 `itemRows` 与时尚 `Dock.qml` 的 `dockRows` 是同一配方的两份实现。
+- **动态列表的模型安全（崩溃教训）。** 会反复重建的 JS 数组永远不直接喂 `Repeater.model`——整体赋值即 `QQuickRepeater::setModel` → 孵化，孵化期间的 notify 重入模型变更会踩坏 V4 堆（`QV4::Object::insertMember` SIGSEGV）。收敛做法：渲染模型是常驻 `ListModel`，数据侧变化经 `Qt.callLater` 合并后增量同步（`insert`/`remove`/`setProperty`），行只放原始值键（id/序号/tag），payload 由委托侧按键实时解析；ListModel 行角色在首次写入时钉死类型，存对象/数组/`null` 混合值既触发角色类型冲突警告、又会在委托销毁中途返回已失效的 `QObject*`（`QQmlListModel::data` 崩溃类）。落点：`Bar._initModels`/`Dock.updateDockApps`/`Taskbar.updateCombinedModel`/`DockContent.segmentRows`/`NSectionEditor.widgetRows`。
 - 有意的偏离：DDE 的启动器开合和关机界面都是零动画瞬显，本实现为这两类全屏毛玻璃面保留 `motionEnter` 短淡入。layer-shell 全屏面瞬间出现时合成器上会闪一下，而且要等模糊壁纸的第一帧。
 - 关闭模糊时，panel/enter 类动画时长改为 150 ms（`framewidget.cpp:172`）。`animationDisabled` 为真时一律为 0。
 - 已有的 `Style.animationFast/Normal/...` 继续留给通用场景（如拖拽跟手、装饰性循环）。上表列出的场景一律用表中的令牌。
