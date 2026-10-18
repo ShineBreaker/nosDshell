@@ -677,6 +677,18 @@ Singleton {
     return strip;
   }
 
+  // Merge a settings payload onto a stored widget entry, preserving the
+  // entry's id — the id is structural (it names which widget the slot is), so
+  // a payload must never rename the slot even if it carries a foreign one.
+  function _mergedWidgetEntry(existing, settings) {
+    var merged = Object.assign({}, existing, settings);
+    if (existing && existing.id && merged.id !== existing.id) {
+      Logger.w("BarService", "settings payload id '" + merged.id + "' does not match slot id '" + existing.id + "' — keeping entry identity");
+      merged.id = existing.id;
+    }
+    return merged;
+  }
+
   // Helper to close any existing dialogs in a popup menu window
   function closeExistingDialogs(popupMenuWindow) {
     if (!popupMenuWindow || !popupMenuWindow.dialogParent)
@@ -737,7 +749,7 @@ Singleton {
                                               } else if (Settings.hasScreenOverride(screenName, "widgets")) {
                                                 var overrideWidgets = Settings.getBarWidgetsForScreen(screenName);
                                                 if (overrideWidgets && overrideWidgets[sec] && idx < overrideWidgets[sec].length) {
-                                                  overrideWidgets[sec][idx] = Object.assign({}, overrideWidgets[sec][idx], settings);
+                                                  overrideWidgets[sec][idx] = _mergedWidgetEntry(overrideWidgets[sec][idx], settings);
                                                   Settings.setScreenOverride(screenName, "widgets", overrideWidgets);
                                                 }
                                               } else if (Settings.data.dock.mode === "efficient") {
@@ -751,7 +763,7 @@ Singleton {
                                                   // corrupted the status-bar layout.
                                                   var zone = Settings.data.dock.taskbarWidgets[sec];
                                                   if (zone && idx < zone.length) {
-                                                    zone[idx] = Object.assign({}, zone[idx], settings);
+                                                    zone[idx] = _mergedWidgetEntry(zone[idx], settings);
                                                     Settings.data.dock.taskbarWidgets[sec] = zone;
                                                     Settings.saveImmediate();
                                                   }
@@ -759,23 +771,18 @@ Singleton {
                                               } else {
                                                 var widgets = Settings.data.bar.widgets[sec];
                                                 if (widgets && idx < widgets.length) {
-                                                  widgets[idx] = Object.assign({}, widgets[idx], settings);
+                                                  widgets[idx] = _mergedWidgetEntry(widgets[idx], settings);
                                                   Settings.data.bar.widgets[sec] = widgets;
                                                   Settings.saveImmediate();
                                                 }
                                               }
                                             });
-        // Enable keyboard focus + blur region while a dialog is open
-        popupMenuWindow.dialogItem = dialog;
-        // Close the popup menu window when dialog closes
+        // Keyboard focus + blur region + window close wiring come with the
+        // host; the caller side only destroys the object it created.
+        popupMenuWindow.hostDialog(dialog);
         dialog.closed.connect(() => {
-                                if (popupMenuWindow.dialogItem === dialog)
-                                  popupMenuWindow.dialogItem = null;
-                                popupMenuWindow.close();
                                 dialog.destroy();
                               });
-        // Show the popup menu window and open the dialog
-        popupMenuWindow.open();
         dialog.open();
       } else {
         Logger.e("BarService", "Failed to create widget settings dialog");
@@ -826,17 +833,12 @@ Singleton {
                                           });
 
       if (dialog) {
-        // Enable keyboard focus + blur region while a dialog is open
-        popupMenuWindow.dialogItem = dialog;
-        // Close the popup menu window when dialog closes
+        // Keyboard focus + blur region + window close wiring come with the
+        // host; the caller side only destroys the object it created.
+        popupMenuWindow.hostDialog(dialog);
         dialog.closed.connect(() => {
-                                if (popupMenuWindow.dialogItem === dialog)
-                                  popupMenuWindow.dialogItem = null;
-                                popupMenuWindow.close();
                                 dialog.destroy();
                               });
-        // Show the popup menu window and open the dialog
-        popupMenuWindow.open();
         dialog.openPluginSettings(pluginManifest);
       } else {
         Logger.e("BarService", "Failed to create plugin settings dialog");

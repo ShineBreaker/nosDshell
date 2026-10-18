@@ -1195,9 +1195,19 @@ Singleton {
   // writes {id} + registry defaults and must not keep stale saved keys.
   function setDockPluginSettings(index, settings) {
     var plugins = JSON.parse(JSON.stringify(data.dock.plugins || []));
-    if (index < 0 || index >= plugins.length)
+    if (index < 0 || index >= plugins.length || !settings)
       return;
-    plugins[index] = settings;
+    var entry = Object.assign({}, settings);
+    var slotId = plugins[index] && plugins[index].id;
+    // The entry id is structural — a settings payload must never rename the
+    // slot it lands in (a foreign-id payload once overwrote the Taskbar entry
+    // elsewhere and the app strip vanished).
+    if (slotId && entry.id !== slotId) {
+      if (entry.id !== undefined)
+        Logger.w("Settings", "dock.plugins settings payload id '" + entry.id + "' does not match slot id '" + slotId + "' — keeping entry identity");
+      entry.id = slotId;
+    }
+    plugins[index] = entry;
     data.dock.plugins = plugins;
     saveImmediate();
   }

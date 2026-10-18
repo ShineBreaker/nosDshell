@@ -169,7 +169,10 @@ ColumnLayout {
       onReorderWidgetInSection: (section, fromIndex, toIndex) => _reorderWidgetInSection(section, fromIndex, toIndex)
       onUpdateWidgetSettingsInSection: (section, index, settings) => _updateWidgetSettingsInSection(section, index, settings)
       onMoveWidgetBetweenSections: (fromSection, index, toSection) => _moveWidgetBetweenSections(fromSection, index, toSection)
-      onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+      onOpenPluginSettingsRequested: manifest => {
+                                       PanelService.hostSettingsPopup(pluginSettingsDialog, null);
+                                       pluginSettingsDialog.openPluginSettings(manifest);
+                                     }
     }
 
     PagesSubTab {}

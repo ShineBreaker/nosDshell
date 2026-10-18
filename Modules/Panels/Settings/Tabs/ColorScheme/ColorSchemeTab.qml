@@ -53,6 +53,7 @@ ColumnLayout {
       pendingOpen = true;
       active = true;
       if (item) {
+        PanelService.hostSettingsPopup(item, root.screen);
         item.open();
         pendingOpen = false;
       }
@@ -60,6 +61,7 @@ ColumnLayout {
 
     onItemChanged: {
       if (item && pendingOpen) {
+        PanelService.hostSettingsPopup(item, root.screen);
         item.open();
         pendingOpen = false;
       }

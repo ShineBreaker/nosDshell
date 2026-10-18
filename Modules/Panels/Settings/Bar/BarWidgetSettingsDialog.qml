@@ -183,6 +183,9 @@ Popup {
     running: false
     interval: 150
     onTriggered: {
+      // The emitted payload is the stored entry now — keep widgetData current
+      // so a later reset/reload builds on it instead of the open-time snapshot.
+      root.widgetData = root.settingsCache;
       root.updateWidgetSettings(root.sectionId, root.widgetIndex, root.settingsCache);
     }
   }
@@ -202,6 +205,7 @@ Popup {
     if (settingsLoader.item && typeof settingsLoader.item.saveSettings === 'function') {
       var newSettings = settingsLoader.item.saveSettings();
       if (newSettings) {
+        root.widgetData = newSettings;
         root.updateWidgetSettings(root.sectionId, root.widgetIndex, newSettings);
       }
     }
@@ -224,6 +228,7 @@ Popup {
     });
     saveTimer.stop();
     root.settingsCache = ({});
+    root.widgetData = entry;
     root.updateWidgetSettings(root.sectionId, root.widgetIndex, entry);
     loadWidgetSettings();
     ToastService.showNotice(I18n.tr("system.widget-settings-title", {
@@ -237,16 +242,16 @@ Popup {
     settingsLoader.source = "";
     const source = BarWidgetRegistry.widgetSettingsMap[widgetId];
     if (source) {
-      var currentWidgetData = widgetData;
-      if (sectionId && widgetIndex >= 0) {
-        var widgets = Settings.getBarWidgetsForScreen(screen?.name || "")[sectionId];
-        if (widgets && widgetIndex < widgets.length) {
-          currentWidgetData = widgets[widgetIndex];
-        }
-      }
+      // Never re-read the entry through getBarWidgetsForScreen: the section a
+      // caller edits is storage-scoped (dock.taskbarWidgets zones, dock.plugins,
+      // bar.widgets or a screen override) and that function only returns some
+      // of those lists per mode — a fashion-mode read of (left, 1) once loaded
+      // the *bar's* second widget, whose id then overwrote the taskbar slot and
+      // deleted the app strip. widgetData tracks the freshest emitted payload
+      // on every write path, so it is always the entry this dialog edits.
       settingsLoader.setSource(source, {
                                  "screen": screen,
-                                 "widgetData": currentWidgetData,
+                                 "widgetData": widgetData,
                                  "widgetMetadata": BarWidgetRegistry.widgetMetadata[widgetId]
                                });
     }

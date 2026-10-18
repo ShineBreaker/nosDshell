@@ -44,6 +44,7 @@ ColumnLayout {
     editPopup.saved.connect(editPopup._savedSlot);
     editPopup.test.connect(editPopup._testSlot);
 
+    PanelService.hostSettingsPopup(editPopup, null);
     editPopup.open();
   }
 

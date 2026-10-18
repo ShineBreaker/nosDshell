@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import qs.Commons
 import qs.Services.System
+import qs.Services.UI
 import qs.Widgets
 
 ColumnLayout {
@@ -60,6 +61,7 @@ ColumnLayout {
       };
 
       editPopup.saved.connect(editPopup._savedSlot);
+      PanelService.hostSettingsPopup(editPopup, null);
       editPopup.open();
     }
 

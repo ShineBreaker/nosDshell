@@ -265,6 +265,7 @@ ColumnLayout {
                 visible: (modelData.entryPoints?.settings !== undefined)
                 enabled: modelData.enabled
                 onClicked: {
+                  PanelService.hostSettingsPopup(pluginSettingsDialog, null);
                   pluginSettingsDialog.openPluginSettings(modelData);
                 }
               }
@@ -289,6 +290,7 @@ ColumnLayout {
                 visible: modelData.builtin !== true
                 onClicked: {
                   uninstallDialog.pluginToUninstall = modelData;
+                  PanelService.hostSettingsPopup(uninstallDialog, null);
                   uninstallDialog.open();
                 }
               }

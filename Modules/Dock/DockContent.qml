@@ -1128,7 +1128,10 @@ Item {
                 widgetProps: ({
                                 "widgetId": modelData.id,
                                 "section": "dock",
-                                "sectionWidgetIndex": index,
+                                // Index into dock.plugins, not the run: a structural
+                                // entry (Launcher/Taskbar/Spacer) splits plugins into
+                                // separate runs and run-local indices restart at 0.
+                                "sectionWidgetIndex": (Settings.data.dock.plugins || []).indexOf(modelData),
                                 "sectionWidgetsCount": pluginRun.segEntries.length,
                                 "dockPresentation": "fashion",
                                 // The widget's own per-instance settings object lives

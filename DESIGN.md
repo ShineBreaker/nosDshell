@@ -66,7 +66,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
   - `ui.transientOpacity`（默认 1.0，范围 0.3–1.0）作用于两种形态。有模糊时直接乘在各自的基准 alpha 上（light 为 1.0，dark 为 0.86）；无模糊时最终 alpha 一律不低于 0.9，因为没有模糊的半透明面会发浑，宁可平坦。`notifications.backgroundOpacity` 是通知专属的系数，在此基础上再相乘。
 - 全屏界面（全屏启动器、关机界面、锁屏）不用蒙版，背景是预先模糊好的壁纸（§1.8）。
 - "有模糊"指 `Settings.data.general.enableBlurBehind` 为真，并且合成器确实提供 `ext-background-effect-v1`（启动时探测，见 §4.1）。合成器不支持时一律按无模糊处理，取 0.8 蒙版；否则半透明蒙版下面是清晰的壁纸，文字无法阅读。透明度只由令牌计算，组件直接读 `Color.maskDark` 这类令牌。
-- 半透明蒙版是为"底下有合成器模糊"设计的：任何用 `maskShell`/`maskDark` 这类蒙版填充可视内容的表面（面板、菜单、对话框宿主），都必须把这块区域注册为 `BackgroundEffect.blurRegion`（用 `NSurfaceRegion` 跟踪可视项），漏注册时蒙版下透出的是清晰内容。例：`PopupMenuWindow` 承载右键菜单打开的挂件设置对话框，只在对话框存在且 `Color.blurActive` 时把对话框矩形注册为模糊区域。
+- 半透明蒙版是为"底下有合成器模糊"设计的：任何用 `maskShell`/`maskDark` 这类蒙版填充可视内容的表面（面板、菜单、对话框宿主），都必须把这块区域注册为 `BackgroundEffect.blurRegion`（用 `NSurfaceRegion` 跟踪可视项），漏注册时蒙版下透出的是清晰内容。例：`PopupMenuWindow` 承载右键菜单打开的挂件设置对话框，只在对话框存在且 `Color.blurActive` 时把对话框矩形注册为模糊区域。因此设置页里的模态 `Popup`（挂件/插件/规则编辑等）一律经 `PanelService.hostSettingsPopup`（一次性对象则用 `PopupMenuWindow.hostDialog`）寄宿到该表面，不要直接挂在 `Overlay.overlay` 上——设置窗口自己的表面没有为对话框注册模糊区。
 - 组件实际读的是下列语义令牌：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
   - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原为固定白色 × 0.9〕。

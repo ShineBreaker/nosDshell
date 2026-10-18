@@ -118,7 +118,10 @@ ColumnLayout {
         onMoveWidget: (fromSection, index, toSection) => _moveWidgetToMonitor(fromSection, index, toSection)
         onUpdateWidgetSettings: (section, index, settings) => _updateWidgetSettingsForMonitor(modelData.name, index, settings)
         pluginSettingsEntryPoints: ["desktopWidgetSettings", "settings"]
-        onOpenPluginSettingsRequested: (manifest, entryPoint) => pluginSettingsDialog.openPluginSettings(manifest, entryPoint)
+        onOpenPluginSettingsRequested: (manifest, entryPoint) => {
+                                         PanelService.hostSettingsPopup(pluginSettingsDialog, null);
+                                         pluginSettingsDialog.openPluginSettings(manifest, entryPoint);
+                                       }
       }
     }
   }

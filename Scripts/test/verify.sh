@@ -241,7 +241,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|taskbar-settings-write|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -1299,8 +1299,14 @@ PYEOF
                          SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
                          fxy() { # <objectName> → "cx cy" screen centre, or ""
                            local d w h x y
-                           d=$(qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null)
-                           echo "$1 → $d" >> "$WORK/logs/reset-find.txt"
+                           # Dialog buttons live on the popupMenuWindow surface
+                           # (dialogs are hosted there for the blur region);
+                           # editor tiles live under the cc panel root.
+                           for r in "$SROOT" popupMenuWindow-HEADLESS-1; do
+                             d=$(qs -p "$REPO" ipc call debug find "$r" "$1" 2>/dev/null)
+                             echo "$r $1 → $d" >> "$WORK/logs/reset-find.txt"
+                             case "$d" in *hidden*|*"no item"*|"") ;; *) break;; esac
+                           done
                            case "$d" in *hidden*|*"no item"*|"") return;; esac
                            read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
                            [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
@@ -1396,13 +1402,11 @@ PYEOF
                            sleep 0.6
                          }
                          # Path 1: dock plugin instance (PluginsSubTab gear →
-                         # BarWidgetSettingsDialog sectionId "dock"; in
-                         # efficient mode the plugins zone is section "right",
-                         # the write still lands on dock.plugins).
+                         # BarWidgetSettingsDialog; both modes now use the
+                         # sectioned editor whose plugins zone is "right", the
+                         # write still lands on dock.plugins).
                          call settings openTab dock/3 5
-                         DOCK_GEAR=widgetGear-dock-Clock
-                         [ "$DOCK_MODE" = "efficient" ] && DOCK_GEAR=widgetGear-right-Clock
-                         dialog_reset "$DOCK_GEAR" widgetSettingsReset widgetSettingsClose dock
+                         dialog_reset widgetGear-right-Clock widgetSettingsReset widgetSettingsClose dock
                          reset_assert dock || SCENE_FAIL=1
                          # Path 2: bar widget instance on the pushed 二级页.
                          call settings openTab dock/1 4
@@ -2277,6 +2281,8 @@ PYEOF
     # PopupMenuWindow path (dialogItem + blurRegion), distinct from the
     # settings-panel gear dialogs: the scene asserts the dialog's reset
     # button is findable inside popupMenuWindow-HEADLESS-1.
+    # Needs a seed with a Workspace entry in dock.plugins (defaults carry
+    # none): {"dock":{"plugins":[{"id":"Tray"},{"id":"Workspace"},{"id":"Clock"}]}}
     dock-widget-settings)
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
@@ -2342,6 +2348,84 @@ PYEOF
                           [ -n "${CX:-}" ] && "$VINPUT" vinput click $((CX + CW / 2)) $((CY + CH / 2)) 2>>"$WORK/logs/vinput.log" || true
                           sleep 0.8
                           fi
+                          fi
+                          fi ;;
+    # Regression: a settings write from the sectioned editor must never
+    # overwrite a slot's entry id — BarWidgetSettingsDialog once re-read the
+    # entry through getBarWidgetsForScreen, which in fashion mode returns
+    # bar.widgets (left[1] = Clock on the default bar), so closing the
+    # Taskbar dialog wrote {id:"Clock",…} into dock.taskbarWidgets.left[1]
+    # and the app strip vanished. Seed fashion mode, open the editor gear,
+    # close the dialog, assert the Taskbar id survives on disk. The dialog
+    # must also render on the popupMenuWindow surface — the one carrying the
+    # dialog blur region (Overlay-hosted dialogs have none).
+    #   ./verify.sh <run> --settings '{"dock":{"mode":"fashion"}}' --scenes taskbar-settings-write
+    taskbar-settings-write)
+                          if [ "$DOCK_MODE" != "fashion" ]; then
+                            echo "taskbar-settings-write: skipped (dock.mode=$DOCK_MODE, needs --settings dock.mode=fashion)"
+                            return 0
+                          fi
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          if [ ! -x "$VINPUT" ]; then echo "taskbar-settings-write: nosd-helpers missing"; SCENE_FAIL=1
+                          else
+                          SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
+                          call settings openTab dock/3 5
+                          # Gear of the Taskbar entry in the left zone
+                          # (taskbarWidgets.left[1] on the default layout).
+                          TSR() { # <objectName> → "cx cy", searched under the cc panel root
+                            local r d w h x y
+                            for r in cc-HEADLESS-1 popupMenuWindow-HEADLESS-1; do
+                              d=$(qs -p "$REPO" ipc call debug find "$r" "$1" 2>/dev/null)
+                              case "$d" in *hidden*|*"no item"*|"") ;; *)
+                                read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+                                [ -n "${x:-}" ] && { echo $((x + w / 2)) $((y + h / 2)); return; };;
+                              esac
+                            done
+                          }
+                          GX=""; GY=""
+                          for i in 1 2 3 4 5; do
+                            read GX GY < <(TSR widgetGear-left-Taskbar)
+                            [ -n "${GX:-}" ] && break
+                            sleep 1
+                          done
+                          if [ -z "${GX:-}" ]; then echo "FAIL taskbar-settings-write: widgetGear-left-Taskbar not found"; SCENE_FAIL=1
+                          else
+                          "$VINPUT" vinput click "$GX" "$GY" 2>>"$WORK/logs/vinput.log" || true
+                          sleep 1.4
+                          shot taskbar-settings-dlg
+                          # Hosting assertion: the dialog renders inside
+                          # popupMenuWindow (blur-region surface), not the
+                          # cc panel's own Overlay.
+                          DFOUND=$(qs -p "$REPO" ipc call debug find popupMenuWindow-HEADLESS-1 widgetSettingsReset 2>&1 || true)
+                          case "$DFOUND" in *"@"*) echo "taskbar-settings-write: dialog hosted on popupMenuWindow (ok)";;
+                            *) echo "FAIL taskbar-settings-write: dialog not on popupMenuWindow: $DFOUND"; SCENE_FAIL=1;; esac
+                          read CX CY < <(TSR widgetSettingsClose)
+                          [ -n "${CX:-}" ] && "$VINPUT" vinput click "$CX" "$CY" 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.8
+                          # FileView flushes asynchronously — poll the file.
+                          for i in 1 2 3 4 5 6; do
+                            python3 - "$SF" <<'PYEOF' && break
+import json,sys
+d=json.load(open(sys.argv[1]))
+left=(d.get("dock",{}).get("taskbarWidgets") or {}).get("left",[])
+ids=[e.get("id") for e in left if e]
+print("taskbarWidgets.left ids:", ids)
+sys.exit(0 if len(ids)>=2 and ids[1]=="Taskbar" else 1)
+PYEOF
+                            sleep 1
+                          done
+                          python3 - "$SF" <<'PYEOF' || SCENE_FAIL=1
+import json,sys
+d=json.load(open(sys.argv[1]))
+tw=d.get("dock",{}).get("taskbarWidgets") or {}
+ids=[e.get("id") for e in tw.get("left",[]) if e]
+if len(ids)<2 or ids[1]!="Taskbar":
+    print(f"FAIL taskbar-settings-write: dock.taskbarWidgets.left={ids} — Taskbar slot overwritten by a foreign entry")
+    sys.exit(1)
+print(f"taskbar-settings-write: entry id preserved after settings write (left={ids})")
+PYEOF
+                          call settings toggle 0.5
                           fi
                           fi ;;
     # Needs NOSD_FAKE_PORTAL=<0|1|2> (spawns Scripts/test/fake-portal.py owning

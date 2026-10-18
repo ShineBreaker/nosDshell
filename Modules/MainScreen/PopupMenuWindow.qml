@@ -141,6 +141,22 @@ PanelWindow {
     BarService.popupOpen = true;
   }
 
+  // Host a dialog Popup on this surface: installs it as dialogItem (which
+  // switches on the dialog blur region and keyboard focus) and opens the
+  // window. The caller keeps object ownership — wire its own `closed` for
+  // destroy/state cleanup; this handler only unwinds the window side. Connect
+  // it before the caller's own `closed` handlers so dialogItem clears before
+  // the object is destroyed.
+  function hostDialog(dialog) {
+    dialogItem = dialog;
+    open();
+    dialog.closed.connect(function () {
+      if (dialogItem === dialog)
+        dialogItem = null;
+      close();
+    });
+  }
+
   // Show a context menu (temporarily replaces TrayMenu as content)
   function showContextMenu(menu) {
     if (menu) {
@@ -181,10 +197,20 @@ PanelWindow {
     dynamicMenu.visible = false;
   }
 
+  property bool _closing: false
+
   function close() {
-    if (closeTimer.running)
+    if (!visible || _closing || closeTimer.running)
       return;
+    _closing = true;
     BarService.popupOpen = false;
+    // A hosted dialog must be closed with the window — a Popup object survives
+    // the surface unmapping and would otherwise leak and reappear on the next
+    // open(). Keep dialogItem until its `closed` fires so the blur region rides
+    // the exit fade; the re-entrant close() that fires is absorbed by _closing.
+    if (dialogItem && typeof dialogItem.close === "function") {
+      dialogItem.close();
+    }
     // Call close/hide method on current content — it fades out, then the
     // timer unmaps this window once the animation has played.
     if (contentItem) {
@@ -195,9 +221,20 @@ PanelWindow {
       }
     }
     closeTimer.restart();
+    _closing = false;
   }
 
   function _finishClose() {
+    // A dialog whose exit transition outlived the surface: force it closed so
+    // its `closed` handlers run and callers destroy it — a Popup cannot outlive
+    // the hidden window it renders on.
+    if (dialogItem) {
+      var d = dialogItem;
+      dialogItem = null;
+      try {
+        d.visible = false;
+      } catch (e) {}
+    }
     // Hide dynamic menu
     dynamicMenu.visible = false;
     dynamicMenu.variant = "dark";

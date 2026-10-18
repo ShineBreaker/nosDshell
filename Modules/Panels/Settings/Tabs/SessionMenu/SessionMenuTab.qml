@@ -151,6 +151,7 @@ ColumnLayout {
                                           });
 
       if (dialog) {
+        PanelService.hostSettingsPopup(dialog, null);
         root._activeDialog = dialog;
         dialog.updateEntryProperties.connect((idx, properties) => {
                                                root.updateEntry(idx, properties);

@@ -4,6 +4,7 @@ import QtQuick.Effects
 import QtQuick.Layouts
 import qs.Commons
 import qs.Services.Plugins
+import qs.Services.UI
 import qs.Widgets
 
 NBox {
@@ -263,18 +264,28 @@ NBox {
           root._activeDialog = null;
         }
 
-        var dialog = component.createObject(Overlay.overlay, {
+        // Host the dialog on the per-screen popup window when one exists:
+        // that surface owns the dialog blur region (PopupMenuWindow's
+        // dialogBlurRegion) and the click-outside close — a Popup on this
+        // window's Overlay.overlay renders on the settings surface itself,
+        // which has no blur region for the dialog rect.
+        var dlgScreen = root.screen || PanelService.findFallbackScreen();
+        var popupWin = dlgScreen ? PanelService.getPopupMenuWindow(dlgScreen) : null;
+        var dialogParent = popupWin ? popupWin.dialogParent : Overlay.overlay;
+        var dialog = component.createObject(dialogParent, {
                                               "widgetIndex": index,
                                               "widgetData": widgetData,
                                               "widgetId": widgetData.id,
                                               "sectionId": root.sectionId,
-                                              "screen": root.screen,
+                                              "screen": dlgScreen,
                                               "barIsVertical": root.barIsVertical
                                             });
 
         if (dialog) {
           root._activeDialog = dialog;
           dialog.updateWidgetSettings.connect(root.updateWidgetSettings);
+          if (popupWin)
+            popupWin.hostDialog(dialog);
           dialog.closed.connect(() => {
                                   if (root._activeDialog === dialog) {
                                     root._activeDialog = null;

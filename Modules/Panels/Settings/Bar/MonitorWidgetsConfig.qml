@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Quickshell
 import "../../../../Helpers/QtObj2JS.js" as QtObj2JS
 import qs.Commons
-import qs.Modules.Dock
 import qs.Services.UI
 import qs.Widgets
 
@@ -129,7 +128,20 @@ ColumnLayout {
   // because it only changes settings, not widget structure
   function _updateWidgetSettingsInSection(section, index, settings) {
     var widgets = _getWidgetsContainer();
-    widgets[section][index] = settings;
+    var existing = widgets[section] && widgets[section][index];
+    if (!existing || !settings)
+      return;
+    // The entry id is structural, not a setting — a payload must never rename
+    // the slot (a stale/misdirected payload once overwrote the Taskbar entry
+    // with another widget's id and the app strip vanished). Inject the id when
+    // the payload lacks it and keep the slot's id when they disagree.
+    var entry = Object.assign({}, settings);
+    if (existing.id && entry.id !== existing.id) {
+      if (entry.id !== undefined)
+        Logger.w("MonitorWidgetsConfig", "settings payload id '" + entry.id + "' does not match slot id '" + existing.id + "' — keeping entry identity");
+      entry.id = existing.id;
+    }
+    widgets[section][index] = entry;
     _saveWidgets(widgets);
   }
 
@@ -179,23 +191,8 @@ ColumnLayout {
     }
   }
 
-  // Taskbar right zone = dock.plugins: candidates stay the shared plugin
-  // list (DockSettingsMenu.pluginCandidates), matching the fashion dock's
-  // strip and its toggle menu.
-  function updatePluginCandidatesModel() {
-    pluginCandidatesModel.clear();
-    var ids = DockSettingsMenu.availablePlugins() || [];
-    for (var i = 0; i < ids.length; i++) {
-      pluginCandidatesModel.append({
-                                     "key": ids[i],
-                                     "name": BarWidgetRegistry.widgetDisplayName(ids[i])
-                                   });
-    }
-  }
-
   Component.onCompleted: Qt.callLater(function () {
     updateAvailableWidgetsModel();
-    updatePluginCandidatesModel();
   })
 
   // Model entries bake I18n.tr results at append time; rebuild on language
@@ -204,16 +201,20 @@ ColumnLayout {
     target: I18n
     function onTranslationsLoaded() {
       updateAvailableWidgetsModel();
-      updatePluginCandidatesModel();
+    }
+  }
+
+  // Plugin widgets register asynchronously — entries that arrive after the
+  // first model build would be un-addable until the next language change.
+  Connections {
+    target: BarWidgetRegistry
+    function onPluginWidgetRegistryUpdated() {
+      updateAvailableWidgetsModel();
     }
   }
 
   ListModel {
     id: availableWidgetsModel
-  }
-
-  ListModel {
-    id: pluginCandidatesModel
   }
 
   // Get effective widgets: global default when unbound, per-screen otherwise;
@@ -252,7 +253,7 @@ ColumnLayout {
     onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
     onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
     onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-    onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+    onOpenPluginSettingsRequested: (manifest, entryPoint) => root._openPluginSettings(manifest, entryPoint)
   }
 
   // Center Section
@@ -271,10 +272,12 @@ ColumnLayout {
     onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
     onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
     onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-    onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+    onOpenPluginSettingsRequested: (manifest, entryPoint) => root._openPluginSettings(manifest, entryPoint)
   }
 
-  // Right Section — the plugin strip in taskbar mode (dock.plugins)
+  // Right Section — the plugin strip in taskbar mode (dock.plugins).
+  // Candidates are the same full registry list as the other zones: the fashion
+  // dock flattens all three zones into one strip, so any widget is legal there.
   NSectionEditor {
     sectionName: root.taskbarMode ? I18n.tr("settings.taskbar.plugins") : (root.barIsVertical ? I18n.tr("positions.bottom") : I18n.tr("positions.right"))
     sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-plugins-subtitle") : ""
@@ -284,13 +287,21 @@ ColumnLayout {
     settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
     widgetRegistry: BarWidgetRegistry
     widgetModel: root.effectiveWidgets.right
-    availableWidgets: root.taskbarMode ? pluginCandidatesModel : availableWidgetsModel
+    availableWidgets: availableWidgetsModel
     onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
     onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
     onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)
     onUpdateWidgetSettings: (section, index, settings) => root._updateWidgetSettingsInSection(section, index, settings)
     onMoveWidget: (fromSection, index, toSection) => root._moveWidgetBetweenSections(fromSection, index, toSection)
-    onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
+    onOpenPluginSettingsRequested: (manifest, entryPoint) => root._openPluginSettings(manifest, entryPoint)
+  }
+
+  // Host plugin settings on the popup window surface like BarWidgetSettingsDialog
+  // (NSectionEditor): that surface owns the dialog blur region + click-outside
+  // close; Overlay.overlay on the settings panel surface has neither.
+  function _openPluginSettings(manifest, entryPoint) {
+    PanelService.hostSettingsPopup(pluginSettingsDialog, root.screen);
+    pluginSettingsDialog.openPluginSettings(manifest, entryPoint);
   }
 
   // Plugin settings dialog

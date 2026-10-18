@@ -359,11 +359,8 @@ Singleton {
         dialog.updateWidgetSettings.connect((sec, idx, settings) => {
                                               root.updateWidgetData(sec, idx, settings);
                                             });
-        popupMenuWindow.dialogItem = dialog;
+        popupMenuWindow.hostDialog(dialog);
         dialog.closed.connect(() => {
-                                if (popupMenuWindow.dialogItem === dialog)
-                                popupMenuWindow.dialogItem = null;
-                                popupMenuWindow.close();
                                 if (root.currentSettingsDialog === dialog) {
                                   root.currentSettingsDialog = null;
                                 }

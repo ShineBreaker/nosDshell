@@ -84,6 +84,7 @@ ColumnLayout {
     text: I18n.tr("panels.plugins.sources-add-custom")
     icon: "plus"
     onClicked: {
+      PanelService.hostSettingsPopup(addSourceDialog, null);
       addSourceDialog.open();
     }
     Layout.fillWidth: true

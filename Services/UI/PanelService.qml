@@ -151,6 +151,40 @@ Singleton {
     return primaryCandidate || firstScreen || null;
   }
 
+  // Host a reusable settings Popup on the screen's popup-menu window: that
+  // surface owns the dialog blur region (PopupMenuWindow.dialogBlurRegion)
+  // and click-outside close — Overlay.overlay on the settings surface has
+  // neither. Reparents the popup while hosted and restores its parent on
+  // `closed` (hostDialog unwinds the window side). The caller still opens the
+  // popup afterwards; returns false when no popup window exists so the
+  // caller's Overlay.overlay default still works.
+  // popup → original parent, and popups that already carry the restore
+  // handler. WeakMaps so destroyed popups can't pin entries.
+  property var _hostedPopupParents: new WeakMap()
+  property var _hostedPopupRestore: new WeakMap()
+
+  function hostSettingsPopup(popup, screen) {
+    var scr = screen || findFallbackScreen();
+    var win = scr ? getPopupMenuWindow(scr) : null;
+    if (!win || !popup)
+      return false;
+    if (!_hostedPopupParents.has(popup))
+      _hostedPopupParents.set(popup, popup.parent);
+    popup.parent = win.dialogParent;
+    win.hostDialog(popup);
+    if (!_hostedPopupRestore.has(popup)) {
+      _hostedPopupRestore.set(popup, true);
+      popup.closed.connect(function () {
+        var prev = _hostedPopupParents.get(popup);
+        if (prev) {
+          popup.parent = prev;
+          _hostedPopupParents.delete(popup);
+        }
+      });
+    }
+    return true;
+  }
+
   // Returns a panel (loads it on-demand if not yet loaded)
   // By default, if panel not found on screen, tries other screens (favoring 0x0)
   // Pass fallback=false to disable this behavior
