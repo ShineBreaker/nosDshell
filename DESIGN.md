@@ -177,6 +177,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - **不对称退场。** 退出比进入短，并使用 ease-in 曲线。OSD 的 160/120 ms、`OutCubic` 进入配 `InCubic` 退出是范例。
 - **合并语义。** 运行中的动画再次被触发时，只改目标值，不打断。QML 的 `Behavior` 本来就这样；手写 `start()` 时先以当前值为起点。
 - **延时不是动画。** tooltip 的 500 ms、预览的 200/300 ms、自动隐藏的 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换前的防抖等待，不换算成缓动。
+- **应用条增删项动画（两模式同一套配方）〔演进〕。** DDE 的应用条增删项瞬变（`Repeater` 直接重建），本实现为数据/生命周期驱动的进出补动效：应用条用带字符串行键的 `ListModel` + 延迟移除——条目消失时行转为 dying、沿长轴塌缩到 0（`animationFast` + `InCubic` 退场曲线）后再从模型里删；新条目在 0 长处长出到正常尺寸（`animationNormal` 300 ms + `InOutCubic`），进出都带 `animationFast` 淡入淡出；兄弟项的滑动由塌缩本身驱动，不用 positioner transition（Layout 容器不支持）。高效 `Taskbar.qml` 的 `itemRows` 与时尚 `Dock.qml` 的 `dockRows` 是同一配方的两份实现。
 - 有意的偏离：DDE 的启动器开合和关机界面都是零动画瞬显，本实现为这两类全屏毛玻璃面保留 `motionEnter` 短淡入。layer-shell 全屏面瞬间出现时合成器上会闪一下，而且要等模糊壁纸的第一帧。
 - 关闭模糊时，panel/enter 类动画时长改为 150 ms（`framewidget.cpp:172`）。`animationDisabled` 为真时一律为 0。
 - 已有的 `Style.animationFast/Normal/...` 继续留给通用场景（如拖拽跟手、装饰性循环）。上表列出的场景一律用表中的令牌。
@@ -293,7 +294,8 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 #### 3.1.2 时尚模式（fashion）
 
 - 居中。最大长度 = 屏幕边长 − 60 px（`FASHION_MODE_PADDING=30`）。
-- 从左到右（竖放时从上到下）依次是启动器图标、驻留和运行中的应用、插件区。插件区紧接在应用后面，中间留一道细缝。
+- 条内容 = 有序序列，不做硬编码分区：`dock.taskbarWidgets.left` ++ `dock.taskbarWidgets.center` ++ `dock.plugins` 打平成一条（`DockContent.contentList`）。Launcher / Taskbar / Spacer 是结构化条目（各自的形态件渲染）；其余已注册挂件 id 每段连续区间并成一个插件瓦片区，瓦片前留一道细缝。每个条目都可增删、排序、改实例设置——入口与高效模式共用同一个编辑器（§3.5.3），一份布置跨模式生效。
+- 应用条的工作区过滤沿用 Taskbar 条目的 `onlyActiveWorkspaces`（默认开）：开=只显示活动工作区的应用，关=显示全部工作区。设在任务栏插件页 Taskbar 条目的齿轮里，两模式同键同语义。
 - 运行指示：
   - 运行中：在贴屏幕边的一侧画一条 20×2 px 的横条（竖放时 2×20），距项边缘 1–3 px，颜色白 × 0.25。
   - 活动窗口：同一位置，颜色为 `accent`，两端渐隐（`appitem.cpp:320-358`）。
@@ -320,7 +322,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 | Noctalia 挂件 | 高效模式 | 时尚模式 |
 |---|---|---|
 | Launcher | 启动器图标，`dock.launcherIconSize` px（0 = 推导为 16，与其余插件 glyph 同号） | 启动器图标（0.6–0.8） |
-| Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
+| Taskbar | 应用项（§3.1.3） | 应用条段——DockContent 的 taskbarComp，条目可移动/删除/配置（`onlyActiveWorkspaces` 等实例设置在齿轮里生效） |
 | Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 占满一个应用项大小的槽位，显示"时钟图标"：表盘为槽位的 0.8 倍，上面是大号数字时间。它与应用图标同级，不是小瓦片（`datetimewidget.cpp` 的 sizeHint 返回应用项槽位），不受 `dock.pluginSpacing` 影响 |
 | Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊，可展开、收起；分隔线 2 px，白 × 0.1（`fashiontraycontrolwidget.cpp`）。胶囊底色与其他插件瓦片一致，用 `overlay` 阶梯（`subtle`、`hover`、`checked`）〔演进：上游展开态是暗色 `#282828` × 0.5〕。图标默认彩色；挂件的"图标着色"（`colorizeIcons`）开关对任务栏内联图标、时尚胶囊和收纳弹层同键生效，开启后统一按 `onShell` 单色化 |
 | Volume / Microphone / Network / Bluetooth / VPN / Brightness / Battery | 16 px symbolic 图标，sizeHint 26×26；Battery 在图标右侧加百分比文字 | 0.8 倍的图标 |

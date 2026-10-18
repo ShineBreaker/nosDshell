@@ -133,6 +133,155 @@ Item {
                                        "title": ""
                                      })
 
+  // Render model: one row per combinedModel key plus "dying" rows that stay
+  // alive while their collapse animation runs (Layouts don't support
+  // positioner transitions, so removal is delayed until the row reaches zero
+  // long-axis size — the same recipe the fashion dock uses for its app list,
+  // DESIGN §1.7 "位移和尺寸 InOutCubic / 退场更快并用 ease-in").
+  property ListModel itemRows: ListModel {}
+  // rkey -> entry snapshot: combinedModel is rebuilt wholesale on every
+  // change, so delegates resolve their data through this map; vanished keys
+  // fall back to _limbo while their row collapses.
+  property var _entryByKey: ({})
+  property var _limbo: ({})
+
+  // Window-object serials: same delayed-removal model needs a STRING key, so
+  // stable object identities (Toplevel handles) get synthetic ids. WeakMap so
+  // a closed window's object isn't kept alive by its key entry.
+  property var _winSerials: new WeakMap()
+  property int _serialSeq: 0
+  function _serialFor(obj) {
+    var s = _winSerials.get(obj);
+    if (s === undefined) {
+      s = "s" + (++_serialSeq);
+      _winSerials.set(obj, s);
+    }
+    return s;
+  }
+
+  // Stable row key: pinned-only apps key by appId (pin/unpin keeps the slot);
+  // running entries key per window — niri rows carry `id`, sway rows carry
+  // the Toplevel `handle`; either beats appId, which would collapse a
+  // multi-window app into one row.
+  function _rowKeyFor(entry) {
+    if (entry.type === "pinned")
+      return "p:" + normalizeAppId(entry.appId);
+    var w = entry.window;
+    if (w) {
+      if (w.id !== undefined)
+        return "w:" + w.id;
+      if (w.handle)
+        return "wh:" + _serialFor(w.handle);
+    }
+    return "w:" + normalizeAppId(entry.appId);
+  }
+
+  function _entryForRow(rkey) {
+    var e = _entryByKey[rkey];
+    if (e !== undefined)
+      return e;
+    e = _limbo[rkey];
+    return e !== undefined ? e : emptyEntry;
+  }
+
+  // combinedModel index of a row key — drag callbacks reason about the live
+  // list, not the row index (dying rows hold extra slots). Reads the _rkey
+  // stamped in _syncItemRows: recomputing _rowKeyFor here would allocate
+  // serials from inside a binding (modelIndex) — a binding loop.
+  function _liveIndexOf(rkey) {
+    for (var i = 0; i < combinedModel.length; i++) {
+      if (combinedModel[i] && combinedModel[i]._rkey === rkey)
+        return i;
+    }
+    return -1;
+  }
+
+  function _rowIndexOf(rkey) {
+    for (var i = 0; i < itemRows.count; i++) {
+      if (itemRows.get(i).rkey === rkey)
+        return i;
+    }
+    return -1;
+  }
+
+  // Row index of the n-th non-dying row (-1 when there are fewer).
+  function _liveRowPos(n) {
+    var seen = 0;
+    for (var i = 0; i < itemRows.count; i++) {
+      if (!itemRows.get(i).dying) {
+        if (seen === n)
+          return i;
+        seen++;
+      }
+    }
+    return -1;
+  }
+
+  // Diff itemRows against combinedModel: survivors keep their delegates so
+  // Behaviors animate size/color changes, vanished keys flip to dying and
+  // collapse in place, newcomers grow in at their live-order slot.
+  function _syncItemRows() {
+    var i, k;
+    var live = {};
+    var oldByKey = _entryByKey;
+    var newByKey = {};
+    for (i = 0; i < combinedModel.length; i++) {
+      var e = combinedModel[i];
+      if (!e)
+        continue;
+      k = _rowKeyFor(e);
+      e._rkey = k;
+      newByKey[k] = e;
+      live[k] = true;
+    }
+    var limbo = {};
+    for (i = 0; i < itemRows.count; i++) {
+      var rk = itemRows.get(i).rkey;
+      if (!live[rk]) {
+        var stale = oldByKey[rk] !== undefined ? oldByKey[rk] : _limbo[rk];
+        if (stale !== undefined)
+          limbo[rk] = stale;
+      }
+    }
+    _entryByKey = newByKey;
+    _limbo = limbo;
+    for (i = 0; i < itemRows.count; i++)
+      itemRows.setProperty(i, "dying", !live[itemRows.get(i).rkey]);
+    var livePos = 0;
+    for (i = 0; i < combinedModel.length; i++) {
+      var e2 = combinedModel[i];
+      if (!e2)
+        continue;
+      var key = _rowKeyFor(e2);
+      var idx = _rowIndexOf(key);
+      if (idx < 0) {
+        var at = _liveRowPos(livePos);
+        itemRows.insert(at === -1 ? itemRows.count : at, {
+                          "rkey": key,
+                          "dying": false
+                        });
+      } else {
+        var cur = _liveRowPos(livePos);
+        if (cur !== -1 && cur !== idx)
+          itemRows.move(idx, cur, 1);
+      }
+      livePos++;
+    }
+  }
+
+  // Called by a dying delegate once its long axis reached zero.
+  function _dropRow(rkey) {
+    for (var i = 0; i < itemRows.count; i++) {
+      if (itemRows.get(i).rkey === rkey && itemRows.get(i).dying) {
+        itemRows.remove(i);
+        var l = _limbo;
+        delete l[rkey];
+        _limbo = l;
+        return;
+      }
+    }
+  }
+
   // Wheel scroll handling
   property int wheelAccumulatedDelta: 0
   property bool wheelCooldown: false
@@ -188,6 +337,7 @@ Item {
     list.splice(toIndex, 0, item);
 
     combinedModel = list;
+    _syncItemRows();
     sessionAppOrder = combinedModel.map(getAppKey);
     savePinnedOrder();
   }
@@ -319,6 +469,7 @@ Item {
     }
 
     combinedModel = sortApps(runningWindows);
+    _syncItemRows();
 
     // Sync session order if needed (e.g. first run or new apps added)
     if (!sessionAppOrder || sessionAppOrder.length === 0 || sessionAppOrder.length !== combinedModel.length) {
@@ -522,21 +673,25 @@ Item {
       rowSpacing: isVerticalBar ? Style.marginXXS : 0
       columnSpacing: isVerticalBar ? 0 : Style.marginXXS
 
-      // Model is the count, entries are read by index: a rebuilt snapshot
-      // array of equal length would otherwise recreate every delegate
+      // Model is the keyed row list (root.itemRows): delegates survive data
+      // rebuilds so add/remove changes animate, and dying rows collapse in
+      // place before _dropRow removes them.
       Repeater {
-        model: root.combinedModel.length
+        model: root.itemRows
         delegate: Item {
           id: taskbarItem
           required property int index
-          readonly property var modelData: root.combinedModel[index] ?? root.emptyEntry
+          readonly property var modelData: root._entryForRow(model.rkey)
+          // Hover/drag identity is the row key — sway window rows carry no
+          // `id` field, so entry.id collapses every window to undefined.
+          readonly property string rowKey: model.rkey || ""
           property ShellScreen screen: root.screen
 
           readonly property bool isRunning: modelData.window !== null
           readonly property bool isPinned: modelData.type === "pinned" || modelData.type === "pinned-running"
           readonly property bool isFocused: isRunning && modelData.window && modelData.window.isFocused
           readonly property bool isPinnedRunning: isPinned && isRunning && !isFocused
-          readonly property bool isHovered: root.hoveredWindowId === modelData.id
+          readonly property bool isHovered: root.hoveredWindowId === taskbarItem.rowKey
           readonly property bool isUrgent: isRunning && modelData.window && modelData.window.isUrgent === true
 
           readonly property bool shouldShowTitle: root.showTitle && modelData.type !== "pinned"
@@ -547,14 +702,47 @@ Item {
           readonly property color titleBgColor: (isHovered || isFocused) ? Color.mHover : Style.capsuleColor
           readonly property color titleFgColor: (isHovered || isFocused) ? Color.mOnHover : Color.mOnSurface
 
-          Layout.preferredWidth: root.efficientMode ? (root.isVerticalBar ? root.barHeight : root.effectiveItemLongLength) : (root.isVerticalBar ? root.barHeight : (root.showTitle ? Math.round(contentWidth + Style.margin2M) : Math.round(contentWidth))) // Add margins for both pinned and running apps
-          Layout.preferredHeight: root.efficientMode ? (root.isVerticalBar ? root.effectiveItemLongLength : root.barHeight) : (root.isVerticalBar ? root.itemSize : root.barHeight)
+          // Collapse/grow lifecycle: rows enter at 0 and dying rows collapse
+          // back to 0 on the long axis before the model drops them.
+          readonly property bool collapsing: model.dying === true
+          property bool _entered: false
+          Component.onCompleted: _entered = true
+          readonly property bool _shrunk: collapsing || !_entered
+          readonly property real longLen_: root.isVerticalBar ? Layout.preferredHeight : Layout.preferredWidth
+          onLongLen_Changed: {
+            if (collapsing && longLen_ <= 0)
+              root._dropRow(model.rkey);
+          }
+
+          opacity: _shrunk ? 0 : 1
+          Behavior on opacity {
+            NumberAnimation {
+              duration: Style.animationFast
+              easing.type: Easing.OutCubic
+            }
+          }
+
+          Layout.preferredWidth: root.efficientMode ? (root.isVerticalBar ? root.barHeight : (taskbarItem._shrunk ? 0 : root.effectiveItemLongLength)) : (root.isVerticalBar ? root.barHeight : (taskbarItem._shrunk ? 0 : (root.showTitle ? Math.round(contentWidth + Style.margin2M) : Math.round(contentWidth)))) // Add margins for both pinned and running apps
+          Layout.preferredHeight: root.efficientMode ? (root.isVerticalBar ? (taskbarItem._shrunk ? 0 : root.effectiveItemLongLength) : root.barHeight) : (root.isVerticalBar ? (taskbarItem._shrunk ? 0 : root.itemSize) : root.barHeight)
           Layout.alignment: Qt.AlignCenter
 
-          // Ensure dragged item is on top
-          z: (root.dragSourceIndex === index) ? 1000 : 1
+          Behavior on Layout.preferredWidth {
+            NumberAnimation {
+              duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+              easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+            }
+          }
+          Behavior on Layout.preferredHeight {
+            NumberAnimation {
+              duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+              easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+            }
+          }
 
-          property int modelIndex: index
+          // Ensure dragged item is on top
+          z: (root.dragSourceIndex === modelIndex) ? 1000 : 1
+
+          property int modelIndex: root._liveIndexOf(model.rkey)
           objectName: "taskbarAppItem"
 
           // DDE efficient-mode state fill on the item rect inset by 1 px
@@ -618,22 +806,23 @@ Item {
             anchors.centerIn: dragging ? undefined : parent
 
             // Visual shifting logic
-            readonly property bool isDragged: root.dragSourceIndex === index
+            readonly property bool isDragged: root.dragSourceIndex === taskbarItem.modelIndex
             property real shiftOffset: 0
 
             // Calculate shift based on drag state
             // If I am NOT the dragged item, but I am in the path of the drag
+            // (modelIndex = position in the live list; dying rows don't count)
             Binding on shiftOffset {
               value: {
                 if (root.dragSourceIndex !== -1 && root.dragTargetIndex !== -1 && !draggableContent.isDragged) {
                   if (root.dragSourceIndex < root.dragTargetIndex) {
                     // Dragging Right: Items between source and target shift Left
-                    if (index > root.dragSourceIndex && index <= root.dragTargetIndex) {
+                    if (taskbarItem.modelIndex > root.dragSourceIndex && taskbarItem.modelIndex <= root.dragTargetIndex) {
                       return -1 * (root.isVerticalBar ? root.itemSize : draggableContent.width); // Simple approximation, could be refined
                     }
                   } else if (root.dragSourceIndex > root.dragTargetIndex) {
                     // Dragging Left: Items between target and source shift Right
-                    if (index >= root.dragTargetIndex && index < root.dragSourceIndex) {
+                    if (taskbarItem.modelIndex >= root.dragTargetIndex && taskbarItem.modelIndex < root.dragSourceIndex) {
                       return (root.isVerticalBar ? root.itemSize : draggableContent.width);
                     }
                   }
@@ -663,15 +852,15 @@ Item {
             property bool dragging: taskbarMouseArea.drag.active
             onDraggingChanged: {
               if (dragging) {
-                root.dragSourceIndex = index;
+                root.dragSourceIndex = taskbarItem.modelIndex;
               } else {
                 // Don't reset synchronously here: the drop handler fires on
                 // release and resets on success. If the release lands on no
                 // drop target at all, the deferred check clears the drag
                 // state once drag.active is observably false.
-                if (root.dragSourceIndex === index) {
+                if (root.dragSourceIndex === taskbarItem.modelIndex) {
                   Qt.callLater(() => {
-                                 if (!taskbarMouseArea.drag.active && root.dragSourceIndex === index) {
+                                 if (!taskbarMouseArea.drag.active && root.dragSourceIndex === taskbarItem.modelIndex) {
                                    root.dragSourceIndex = -1;
                                    root.dragTargetIndex = -1;
                                  }
@@ -861,7 +1050,7 @@ Item {
                          }
                        }
             onEntered: {
-              root.hoveredWindowId = taskbarItem.modelData.id;
+              root.hoveredWindowId = taskbarItem.rowKey;
               TooltipService.show(taskbarItem, taskbarItem.title, BarService.getTooltipDirection(root.screen?.name, root.section === "dock"));
             }
             onExited: {

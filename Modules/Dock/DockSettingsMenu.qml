@@ -13,9 +13,10 @@ import qs.Services.UI
 Singleton {
   id: root
 
-  // Widget ids that make sense as dock/taskbar plugin entries. Taskbar,
-  // Launcher, Spacer and ShowDesktop are structural (taskbar built-ins or
-  // ignored in fashion mode) and are intentionally not offered here.
+  // Quick-toggle ids offered here are the indicator plugins. Taskbar,
+  // Launcher and Spacer are structural strip items — they render wherever
+  // their dock.taskbarWidgets/dock.plugins entry sits and are adjusted from
+  // the sectioned plugins editor (PluginsSubTab), not quick-toggled.
   readonly property var pluginCandidates: ["Tray", "NotificationHistory", "Network", "Volume", "Microphone", "Brightness", "Bluetooth", "Battery", "Clock", "DarkMode", "NightLight", "KeepAwake", "KeyboardLayout", "LockKeys", "PowerProfile", "VPN", "SessionMenu", "Settings", "Trash", "Workspace", "SystemMonitor"]
 
   property var _openMenu: null

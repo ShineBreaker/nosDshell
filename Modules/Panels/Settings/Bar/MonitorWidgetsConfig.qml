@@ -11,10 +11,11 @@ import qs.Widgets
 // Sectioned widget-layout editor (left / center / right).
 // `editMode: "bar"` (default) edits a status-bar layout: `screen: null` writes
 // Settings.data.bar.widgets, a bound screen writes that monitor's override.
-// `editMode: "taskbar"` edits the efficient-mode taskbar: left/center zones
-// live in dock.taskbarWidgets (Launcher/Taskbar are stored entries), the right
-// zone is dock.plugins — the same list the fashion dock renders, so its
-// candidates stay limited to DockSettingsMenu.pluginCandidates.
+// `editMode: "taskbar"` edits the taskbar layout both dock modes read:
+// left/center zones live in dock.taskbarWidgets (Launcher/Taskbar are stored
+// entries) and the right zone is dock.plugins. Efficient mode renders the
+// three zones as its bar sections; fashion flattens them into a single strip
+// (DockContent.contentList) — so one arrangement carries across modes.
 ColumnLayout {
   id: root
 

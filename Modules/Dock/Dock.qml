@@ -92,6 +92,170 @@ Loader {
       property var groupCycleIndices: ({})
       property var sessionAppOrder: []
 
+      // Render model: one row per dockApps key plus "dying" rows that stay
+      // alive while their collapse animation runs (Layouts don't support
+      // positioner transitions — same delayed-removal recipe as the
+      // efficient Taskbar widget, DESIGN §1.7).
+      property ListModel dockRows: ListModel {}
+      // rkey -> entry; dockApps is rebuilt wholesale, so delegates resolve
+      // data through these maps. Vanished keys fall back to _limbo while
+      // their row collapses.
+      property var _entryByKey: ({})
+      property var _limbo: ({})
+      // Toplevel -> synthetic string row key (ListModel rows can't hold the
+      // object identity upstream getAppKey uses). WeakMap so a closed
+      // window's Toplevel isn't kept alive by its serial entry.
+      property var _toplevelSerials: new WeakMap()
+      property int _serialSeq: 0
+
+      function _serialFor(toplevel) {
+        var s = _toplevelSerials.get(toplevel);
+        if (s === undefined) {
+          s = "t" + (++_serialSeq);
+          _toplevelSerials.set(toplevel, s);
+        }
+        return s;
+      }
+
+      // String row key mirroring getAppKey's cases. Grouped apps and
+      // not-running pinned entries key by appId; entries bound to a toplevel
+      // (running and pinned-running) additionally key per instance so a
+      // pinned app with several windows doesn't collide.
+      function _rowKeyFor(entry) {
+        if (Settings.data.dock.groupApps)
+          return "g:" + entry.appId;
+        if (entry.toplevel)
+          return (entry.type === "pinned-running" ? "p:" + entry.appId + ":" : "t:") + _serialFor(entry.toplevel);
+        return "a:" + entry.appId;
+      }
+
+      function _entryForRow(rkey) {
+        var e = _entryByKey[rkey];
+        if (e !== undefined)
+          return e;
+        e = _limbo[rkey];
+        return e !== undefined ? e : null;
+      }
+
+      function _liveIndexOf(rkey) {
+        for (var i = 0; i < dockApps.length; i++) {
+          if (dockApps[i] && dockApps[i]._rkey === rkey)
+            return i;
+        }
+        return -1;
+      }
+
+      function _rowIndexOf(rkey) {
+        for (var i = 0; i < dockRows.count; i++) {
+          if (dockRows.get(i).rkey === rkey)
+            return i;
+        }
+        return -1;
+      }
+
+      function _liveRowPos(n) {
+        var seen = 0;
+        for (var i = 0; i < dockRows.count; i++) {
+          if (!dockRows.get(i).dying) {
+            if (seen === n)
+              return i;
+            seen++;
+          }
+        }
+        return -1;
+      }
+
+      // Diff dockRows against dockApps: survivors keep their delegates so
+      // Behaviors animate size changes, vanished keys flip to dying and
+      // collapse in place, newcomers grow in at their live-order slot.
+      function _syncDockRows() {
+        var i, k;
+        var live = {};
+        var oldByKey = _entryByKey;
+        var newByKey = {};
+        for (i = 0; i < dockApps.length; i++) {
+          var e = dockApps[i];
+          if (!e)
+            continue;
+          e._rkey = _rowKeyFor(e);
+          newByKey[e._rkey] = e;
+          live[e._rkey] = true;
+        }
+        var limbo = {};
+        for (i = 0; i < dockRows.count; i++) {
+          var rk = dockRows.get(i).rkey;
+          if (!live[rk]) {
+            var stale = oldByKey[rk] !== undefined ? oldByKey[rk] : _limbo[rk];
+            if (stale !== undefined)
+              limbo[rk] = stale;
+          }
+        }
+        _entryByKey = newByKey;
+        _limbo = limbo;
+        for (i = 0; i < dockRows.count; i++)
+          dockRows.setProperty(i, "dying", !live[dockRows.get(i).rkey]);
+        var livePos = 0;
+        for (i = 0; i < dockApps.length; i++) {
+          var e2 = dockApps[i];
+          if (!e2)
+            continue;
+          var idx = _rowIndexOf(e2._rkey);
+          if (idx < 0) {
+            var at = _liveRowPos(livePos);
+            dockRows.insert(at === -1 ? dockRows.count : at, {
+                              "rkey": e2._rkey,
+                              "dying": false
+                            });
+          } else {
+            var cur = _liveRowPos(livePos);
+            if (cur !== -1 && cur !== idx)
+              dockRows.move(idx, cur, 1);
+          }
+          livePos++;
+        }
+      }
+
+      // Called by a dying delegate once its long axis reached zero.
+      function _dropDockRow(rkey) {
+        for (var i = 0; i < dockRows.count; i++) {
+          if (dockRows.get(i).rkey === rkey && dockRows.get(i).dying) {
+            dockRows.remove(i);
+            var l = _limbo;
+            delete l[rkey];
+            _limbo = l;
+            return;
+          }
+        }
+      }
+
+      // The fashion app strip honors the Taskbar widget entry's
+      // onlyActiveWorkspaces setting (same key the efficient taskbar uses).
+      // The entry lives in dock.taskbarWidgets or dock.plugins — whichever
+      // list the user keeps it in.
+      function _taskbarWidgetEntry() {
+        var zones = Settings.data.dock.taskbarWidgets;
+        var lists = [zones ? zones.left : null, zones ? zones.center : null, Settings.data.dock.plugins];
+        for (var li = 0; li < lists.length; li++) {
+          var list = lists[li] || [];
+          for (var i = 0; i < list.length; i++) {
+            if (list[i] && list[i].id === "Taskbar")
+              return list[i];
+          }
+        }
+        return null;
+      }
+
+      readonly property bool onlyActiveWorkspaces: {
+        var entry = _taskbarWidgetEntry();
+        if (entry && entry.onlyActiveWorkspaces !== undefined)
+          return entry.onlyActiveWorkspaces;
+        var meta = BarWidgetRegistry.widgetMetadata["Taskbar"];
+        if (meta && meta.onlyActiveWorkspaces !== undefined)
+          return meta.onlyActiveWorkspaces;
+        return true;
+      }
+      onOnlyActiveWorkspacesChanged: updateDockApps()
+
       // Drag and Drop state for visual feedback
       property int dragSourceIndex: -1
       property int dragTargetIndex: -1
@@ -103,6 +267,10 @@ Loader {
       Connections {
         target: CompositorService
         function onWindowListChanged() {
+          updateDockApps();
+        }
+        // onlyActiveWorkspaces re-gates the strip on workspace switches.
+        function onWorkspaceChanged() {
           updateDockApps();
         }
       }
@@ -213,6 +381,7 @@ Loader {
         list.splice(toIndex, 0, item);
 
         dockApps = list;
+        _syncDockRows();
         sessionAppOrder = dockApps.map(getAppKey);
         savePinnedOrder();
       }
@@ -411,6 +580,23 @@ Loader {
         const processedToplevels = new Set();
         const processedPinnedAppIds = new Set();
 
+        // Workspace gate — same rule the efficient Taskbar applies: unknown
+        // workspace passes, known non-active is dropped. Toplevels carry no
+        // workspaceId, so map them through CompositorService.windows.handle.
+        const wsByToplevel = new Map();
+        const activeWsIds = [];
+        if (onlyActiveWorkspaces) {
+          const wcount = CompositorService.windows ? CompositorService.windows.count : 0;
+          for (var wi = 0; wi < wcount; wi++) {
+            var wr = CompositorService.windows.get(wi);
+            if (wr && wr.handle)
+              wsByToplevel.set(wr.handle, wr.workspaceId);
+          }
+          CompositorService.getActiveWorkspaces().forEach(function (ws) {
+            activeWsIds.push(ws.id);
+          });
+        }
+
         //push an app onto combined with the given appType
         function pushApp(appType, toplevel, appId, title) {
           // Use canonical ID for pinned apps to ensure key stability
@@ -423,6 +609,12 @@ Loader {
             }
             if (!onLiveScreen(toplevel.screens)) {
               return; // Filtered out by onlySameOutput setting
+            }
+            if (onlyActiveWorkspaces && wsByToplevel.has(toplevel)) {
+              const wsId = wsByToplevel.get(toplevel);
+              if (!(wsId === undefined || wsId < 0) && activeWsIds.indexOf(wsId) < 0) {
+                return; // Filtered out by onlyActiveWorkspaces (same gate as Taskbar.qml)
+              }
             }
             combined.push({
                             "type": appType,
@@ -507,8 +699,10 @@ Loader {
 
         const sortedApps = sortDockApps(combined);
         const nextDockApps = buildGroupedDockApps(sortedApps);
-        if (!_sameDockApps(nextDockApps, dockApps))
+        if (!_sameDockApps(nextDockApps, dockApps)) {
           dockApps = nextDockApps;
+          _syncDockRows();
+        }
         const cycleState = root.groupCycleIndices || {};
         const nextCycleState = {};
         dockApps.forEach(app => {

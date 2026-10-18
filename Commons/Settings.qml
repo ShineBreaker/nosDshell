@@ -663,9 +663,11 @@ Singleton {
       ]
       // Efficient-mode taskbar layout: the left and center widget zones,
       // stored verbatim including the structural Launcher/Taskbar entries so
-      // their settings have a real home. The right zone stays dock.plugins
-      // (shared with the fashion dock); ShowDesktop is appended at render.
-      // Edited by the taskbar widget editor (PluginsSubTab, §3.5.3).
+      // their settings have a real home. The right zone stays dock.plugins.
+      // Efficient mode renders the zones as bar sections; the fashion dock
+      // flattens left ++ center ++ dock.plugins into one strip
+      // (DockContent.contentList). Edited by the plugins editor
+      // (PluginsSubTab, §3.5.3).
       property JsonObject taskbarWidgets: JsonObject {
         property list<var> left: [
           {
@@ -1092,6 +1094,10 @@ Singleton {
     }
     // "dock" mirrors dock.plugins in every mode so dock-loaded widgets can
     // resolve their per-instance settings via the usual section/index lookup.
+    // The fashion dock's own strip content is not this bar.widgets list: it
+    // flattens dock.taskbarWidgets.left ++ center ++ dock.plugins into one
+    // sequence (DockContent.contentList), the same lists the taskbar-mode
+    // editor writes — Launcher/Taskbar are stored entries there.
     var base = data.bar.widgets;
     return {
       "left": base.left || [],

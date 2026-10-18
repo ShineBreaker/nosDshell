@@ -241,7 +241,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|efficient-taskbar|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -2038,6 +2038,145 @@ PYEOF
                           else
                             echo "battery widget not found in bar tree"
                           fi ;;
+    #   ./verify.sh <run> --settings <fashion-seed>.json --scenes fashion-dock
+    # Fashion dock application-strip checks: the Taskbar entry's
+    # onlyActiveWorkspaces gate (windows on other workspaces leave the strip)
+    # and the shared enter/leave animation (Dock.qml dockRows — dying rows
+    # collapse while newcomers grow, same recipe as the efficient Taskbar).
+    # Fixture: foot+Calculator sit on ws1, Nautilus was moved to ws2 — a ws
+    # switch must both change the row set and visibly animate it.
+    fashion-dock)         if [ "$DOCK_MODE" != "fashion" ]; then
+                            echo "fashion-dock: skipped (dock.mode=$DOCK_MODE, needs --settings dock.mode=fashion)"
+                            return 0
+                          fi
+                          swaymsg "workspace 1" >/dev/null 2>&1 || true
+                          sleep 0.8
+                          qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 16 > "$WORK/logs/fash-dock-tree.txt" 2>&1 || true
+                          swaymsg -t get_tree > "$WORK/logs/fash-sway-tree.json" 2>&1 || true
+                          swaymsg -t get_workspaces > "$WORK/logs/fash-sway-ws.json" 2>&1 || true
+                          if grep -q 'unknown root' "$WORK/logs/fash-dock-tree.txt"; then
+                            echo "fashion-dock: no dock window"; return 0
+                          fi
+                          # expected app count = windows on the active sway
+                          # workspace (+0 pinned; seed keeps dock.pinnedApps
+                          # empty). onlyActiveWorkspaces resolves like
+                          # Dock.qml._taskbarWidgetEntry: the Taskbar entry in
+                          # taskbarWidgets/dock.plugins, else registry default.
+                          EXPECTED=$(python3 - "$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json" <<'PYEOF'
+import json,re,subprocess,sys
+try:
+    cfg=json.load(open(sys.argv[1]))
+except Exception:
+    cfg={}
+dock=cfg.get("dock",{})
+tw=dock.get("taskbarWidgets") or {}
+entry=None
+for lst in (tw.get("left"),tw.get("center"),dock.get("plugins")) or []:
+    for e in lst or []:
+        if e and e.get("id")=="Taskbar":
+            entry=e
+onlyws = entry.get("onlyActiveWorkspaces") if (entry and "onlyActiveWorkspaces" in entry) else True
+# Dock rows = window count, or distinct appIds when dock.groupApps folds
+# same-app windows into one button (sway floating_con noise: foot spawns
+# several cons per process).
+focused=json.loads(subprocess.run(["swaymsg","-t","get_workspaces"],capture_output=True,text=True).stdout)
+cur=next((w["num"] for w in focused if w.get("focused")),1)
+per={}
+def wids(n):
+    if n.get("app_id"): return [n["app_id"]]
+    out=[]
+    for c in n.get("nodes",[])+n.get("floating_nodes",[]): out+=wids(c)
+    return out
+def wwalk(n):
+    if n.get("type")=="workspace":
+        a=wids(n)
+        per[str(n.get("num"))]={"ids":sorted(set(a)),"wins":len(a)}
+        return
+    for ch in n.get("nodes",[])+n.get("floating_nodes",[]): wwalk(ch)
+wwalk(json.loads(subprocess.run(["swaymsg","-t","get_tree"],capture_output=True,text=True).stdout))
+GA=dock.get("groupApps",True)
+def btnc(wsnum):
+    p=per.get(str(wsnum))
+    return (len(p["ids"]) if GA else p["wins"]) if p else 0
+allids=[]
+for p in per.values(): allids+=p["ids"]
+print(json.dumps({"cur":btnc(cur),"all":(len(set(allids)) if GA else sum(p["wins"] for p in per.values())),"onlyws":bool(onlyws),"GA":bool(GA),"perWs":per}))
+PYEOF
+)
+                          # ws1 settle: row count must equal the gate result.
+                          python3 - "$WORK/logs/fash-dock-tree.txt" "$EXPECTED" <<'PYEOF' || SCENE_FAIL=1
+import json,re,sys
+tree=open(sys.argv[1],encoding="utf-8",errors="replace").read().splitlines()
+btns=[l for l in tree if '"dockAppButton"' in l and 'hidden' not in l]
+e=json.loads(sys.argv[2])
+exp=e["cur"] if e["onlyws"] else e["all"]
+if len(btns)!=exp:
+    print(f"FAIL fashion-dock: {len(btns)} app buttons on ws1, expected {exp}")
+    sys.exit(1)
+print(f"fashion-dock: ws1 app filter OK ({exp} buttons, onlyws={e['onlyws']})")
+PYEOF
+                          # Switch to ws2: rows must travel — a collapsing or
+                          # growing row shows a long-axis length strictly
+                          # between 0 and the settled item length.
+                          swaymsg "workspace 2" >/dev/null 2>&1 || true
+                          python3 - "$REPO" "$DOCK_POSITION" "$EXPECTED" <<'PYEOF' || SCENE_FAIL=1
+import json,re,subprocess,sys,time
+VERT=sys.argv[2] in ("left","right")
+def rows():
+    t=subprocess.run(["qs","-p",sys.argv[1],"ipc","call","debug","tree","dock-HEADLESS-1","16"],capture_output=True,text=True).stdout.splitlines()
+    out=[]
+    for l in t:
+        m=re.search(r'dockAppButton.{0,60}?(\d+)x(\d+) @',l)
+        if m and 'hidden' not in l:
+            out.append((int(m.group(1)),int(m.group(2))))
+    return out
+e=json.loads(sys.argv[3])
+# identical visible sets across the switch => nothing should move
+idset=lambda w:set((e["perWs"].get(str(w)) or {"ids":[]})["ids"]) if e["onlyws"] else None
+if (not e["onlyws"]) or idset(1)==idset(2):
+    print("fashion-dock: ws sets identical (or filter off), anim check skipped")
+    sys.exit(0)
+base=rows()
+if not base:
+    print("fashion-dock: no app buttons at baseline, anim check skipped")
+    sys.exit(0)
+axi=1 if VERT else 0          # long axis: height on left/right docks, else width
+L=max(b[axi] for b in base)
+deadline=time.time()+1.4
+last=[]
+midshot=None
+while time.time()<deadline:
+    s=rows(); last=s
+    # in-flight: a row collapsing/growing between 0 and the settled length,
+    # or dying rows still holding extra slots
+    if any(2<v[axi]<L-2 for v in s) or len(s)>len(base):
+        midshot=s; break
+    time.sleep(0.06)
+if midshot is None:
+    print(f"FAIL fashion-dock: workspace switch snapped — no in-flight row sizes; base={base} final={last}")
+    sys.exit(1)
+print(f"fashion-dock: app-strip switch animation OK mid={midshot}")
+PYEOF
+                          # Settle on ws2: the gate result must hold — the ws1
+                          # apps' dying rows are gone, Nautilus grew in.
+                          sleep 1.2
+                          qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 16 > "$WORK/logs/fash-dock-tree2.txt" 2>&1 || true
+                          python3 - "$WORK/logs/fash-dock-tree2.txt" "$EXPECTED" <<'PYEOF' || SCENE_FAIL=1
+import json,re,subprocess,sys
+btns=[l for l in open(sys.argv[1],encoding="utf-8",errors="replace") if '"dockAppButton"' in l and 'hidden' not in l]
+e=json.loads(sys.argv[2])
+GA=e.get("GA",True)
+p2=e["perWs"].get("2") or {"ids":[],"wins":0}
+n=(len(p2["ids"]) if GA else p2["wins"]) if e["onlyws"] else e["all"]
+if len(btns)!=n:
+    print(f"FAIL fashion-dock: {len(btns)} buttons settled on ws2, expected {n}")
+    sys.exit(1)
+print(f"fashion-dock: ws2 settle OK ({n} buttons)")
+PYEOF
+                          swaymsg "workspace 1" >/dev/null 2>&1 || true
+                          sleep 0.8
+                          shot fashion-dock
+                          ;;
     # Wheel over the dock battery widget adjusts display brightness; the
     # charging/low state tint rides along in the same shots. Locate the widget
     # in the dock scene tree, inject real wheel scrolls, shot the resulting
