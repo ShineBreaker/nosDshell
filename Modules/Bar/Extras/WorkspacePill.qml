@@ -31,48 +31,17 @@ Item {
   // Fixed dimension (cross-axis) for visual pill
   readonly property real fixedDimension: Style.toOdd(capsuleHeight * baseDimensionRatio)
 
-  // Animated pill dimensions (for visual pill, not container)
-  property real pillWidth: isVertical ? fixedDimension : getWorkspaceWidth(workspace, false)
-  property real pillHeight: isVertical ? getWorkspaceHeight(workspace, false) : fixedDimension
+  // Animated pill dimensions (for visual pill, not container). The active
+  // widening is a plain binding on ws.isActive — a State+Transition pair
+  // once carried it, but the transitions named a never-declared "inactive"
+  // state so they never matched and the width snapped. Behaviors below
+  // animate every change (switch, occupancy, label) uniformly.
+  property real pillWidth: isVertical ? fixedDimension : getWorkspaceWidth(workspace)
+  property real pillHeight: isVertical ? getWorkspaceHeight(workspace) : fixedDimension
 
   // Container uses full barHeight on cross-axis for larger click area
-  width: isVertical ? barHeight : getWorkspaceWidth(workspace, false)
-  height: isVertical ? getWorkspaceHeight(workspace, false) : barHeight
-
-  states: [
-    State {
-      name: "active"
-      when: workspace.isActive
-      PropertyChanges {
-        target: pillContainer
-        width: isVertical ? barHeight : getWorkspaceWidth(workspace, true)
-        height: isVertical ? getWorkspaceHeight(workspace, true) : barHeight
-        pillWidth: isVertical ? fixedDimension : getWorkspaceWidth(workspace, true)
-        pillHeight: isVertical ? getWorkspaceHeight(workspace, true) : fixedDimension
-      }
-    }
-  ]
-
-  transitions: [
-    Transition {
-      from: "inactive"
-      to: "active"
-      NumberAnimation {
-        properties: isVertical ? "height,pillHeight" : "width,pillWidth"
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
-      }
-    },
-    Transition {
-      from: "active"
-      to: "inactive"
-      NumberAnimation {
-        properties: isVertical ? "height,pillHeight" : "width,pillWidth"
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
-      }
-    }
-  ]
+  width: isVertical ? barHeight : getWorkspaceWidth(workspace)
+  height: isVertical ? getWorkspaceHeight(workspace) : barHeight
 
   Rectangle {
     id: pill
@@ -93,6 +62,14 @@ Item {
       if (workspace.isOccupied)
         return Color.resolveColorKey(occupiedColor);
       return Qt.alpha(Color.resolveColorKey(emptyColor), 0.3);
+    }
+
+    Behavior on color {
+      enabled: !Color.isTransitioning
+      ColorAnimation {
+        duration: Style.motionSwitch
+        easing.type: Easing.OutCubic
+      }
     }
 
     Loader {
@@ -121,6 +98,14 @@ Item {
             if (workspace.isOccupied)
               return Color.resolveOnColorKey(occupiedColor);
             return Color.resolveOnColorKey(emptyColor);
+          }
+
+          Behavior on color {
+            enabled: !Color.isTransitioning
+            ColorAnimation {
+              duration: Style.motionSwitch
+              easing.type: Easing.OutCubic
+            }
           }
         }
       }

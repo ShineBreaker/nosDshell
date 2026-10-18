@@ -1827,6 +1827,54 @@ if items and wm and rIdx is not None:
         sys.exit(1)
     print(f"efficient-taskbar: taskbar item long length OK {got} (expect={expect})")
 PYEOF
+                          # Workspace-switch animation: the active WorkspacePill
+                          # widens ~2.2x; after `swaymsg workspace 2` its width
+                          # must still be travelling. A State/Transition pair
+                          # once named a never-declared "inactive" state, so the
+                          # switch snapped instead of animating — sample widths
+                          # for ~1.2s and require at least one in-flight frame
+                          # strictly between the narrow and wide finals.
+                          swaymsg "workspace 1" >/dev/null 2>&1 || true
+                          sleep 0.4
+                          swaymsg "workspace 2" >/dev/null 2>&1 || true
+                          python3 - "$REPO" <<'PYEOF' || SCENE_FAIL=1
+import re,subprocess,sys,time
+def sizes():
+    t=subprocess.run(["qs","-p",sys.argv[1],"ipc","call","debug","tree","bar-HEADLESS-1","16"],capture_output=True,text=True).stdout.splitlines()
+    out=[]
+    for l in t:
+        m=re.search(r'WorkspacePill\S*\)\s+(\d+)x(\d+) @(-?\d+),(-?\d+)',l)
+        if m and 'hidden' not in l:
+            out.append((int(m.group(3)),int(m.group(1)),int(m.group(2))))
+    return sorted(out)
+base=sizes()
+if len(base)<2:
+    print("efficient-taskbar: <2 workspace pills, switch-anim check skipped")
+    sys.exit(0)
+# Animated axis: horizontal bar widens width, vertical dock widens height.
+ws=[w for x,w,h in base]; hs=[h for x,w,h in base]
+axi=1 if max(ws)-min(ws)>=max(hs)-min(hs) else 2
+vals=lambda s:[p[axi] for p in s]
+narrow=min(vals(base)); wide=max(vals(base))
+if wide-narrow<8:
+    print(f"efficient-taskbar: active pill not widened (sizes {base}), switch-anim check skipped")
+    sys.exit(0)
+deadline=time.time()+1.2
+last=[]
+while time.time()<deadline:
+    s=sizes()
+    if s: last=s
+    if any(narrow+2<v<wide-2 for v in vals(s)):
+        print(f"efficient-taskbar: workspace-switch animation OK mid={s} (narrow={narrow} wide={wide} axis={'wh'[axi-1]})")
+        sys.exit(0)
+    time.sleep(0.08)
+if not last:
+    print("efficient-taskbar: workspace pills vanished, switch-anim check skipped")
+    sys.exit(0)
+print(f"FAIL efficient-taskbar: workspace switch snapped — no in-flight size in {(narrow,wide)}: {last}")
+sys.exit(1)
+PYEOF
+                          swaymsg "workspace 1" >/dev/null 2>&1 || true
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
                           # Window-local tree coords → screen coords: the
