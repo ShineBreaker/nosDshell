@@ -10,6 +10,30 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-10-18
+
+这一版补上了两块 DDE 形态下一直缺着的能力：shell 终于自带 polkit 认证代理——需要提权的操作不再静默失败，而是弹出 DDE 风格的认证对话框；插件机制多了一层「内置插件」，随包分发、默认启用、不可卸载——首发成员是停靠栏里的 USB 设备管理器和「概览里直接打字搜索」两个真实痛点。顺带修掉了日历被天气卡片盖住、Wi-Fi 面板首开塌陷又会无界拉长、设置行标签贴着控件三处观感问题。
+
+---
+
+### 新功能
+
+- always-on auth agent with DDE dialog (DESIGN 3.11)：[`f2b839957`](https://github.com/ShineBreaker/nosDshell/commit/f2b83995795238568bec8a911de5f07ef7217756)
+- bundle niri-overview-launcher for overview typing：[`1f4b259b2`](https://github.com/ShineBreaker/nosDshell/commit/1f4b259b2452b5694663a4dc8369e2d5258c27b0)
+- bundle usb-drive-manager for disk mount management：[`2bc1d9f77`](https://github.com/ShineBreaker/nosDshell/commit/2bc1d9f77ccdfbcc6a46f5c08b962fc964197a9e)
+- scan bundled Assets/Plugins as read-only builtin plugins：[`9ec7fbaa6`](https://github.com/ShineBreaker/nosDshell/commit/9ec7fbaa69e20530a28fbe0f0de60a8e6e99f1b2)
+
+### 修复
+
+- re-derive widget lists when plugin widgets register：[`092841235`](https://github.com/ShineBreaker/nosDshell/commit/092841235d3b35d405ec18487c840f1d5031af5b)
+- bound popup list viewports, converge scroll sizing：[`bf48f2c78`](https://github.com/ShineBreaker/nosDshell/commit/bf48f2c7834404e1cb557ed916164111556f6ec0)
+- one label-to-control gap on field-style rows：[`b94d0e76c`](https://github.com/ShineBreaker/nosDshell/commit/b94d0e76c80853f4811a3f0b3ec8956d8367b08a)
+- weather card painted over the month grid：[`c553839e5`](https://github.com/ShineBreaker/nosDshell/commit/c553839e5716baf6766ba994c440bc8f248f0ecc)
+
+### 验证
+
+- pass NIRI_SOCKET to the nested shell：[`ea9ca3399`](https://github.com/ShineBreaker/nosDshell/commit/ea9ca339943e86495d41bc2ba215458aa673a9d0)
+
 ## [1.4.0] - 2026-10-18
 
 设置体验做了一次「可读性 + 有用性」的整体大修：重型编辑器搬进二级页、标签筛选常显，每个设置对话框都有「重置为默认值」，右键菜单弹出的设置补上了背景模糊、不再透出底下的窗口内容，当前形态下不生效的控件也不再摆在那里骗人。时尚坞的工作区插件长成了与状态栏一致的胶囊行——索引、占用分色、分组应用视图和逐格切换全部在线；状态栏默认布局则对齐了 macOS 菜单栏的左右分区。
@@ -421,7 +445,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.1...v1.3.0
 [1.2.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.0...v1.2.1
