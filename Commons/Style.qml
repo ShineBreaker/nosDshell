@@ -558,11 +558,12 @@ Singleton {
   // Text fields (LineEditWidget / ComboBoxWidget / spin box): 30 high, radiusItem
   readonly property int settingsFieldHeight: Math.round(30 * uiScaleRatio * Settings.data.ui.rowHeightScale)
   readonly property int settingsFieldRadius: radiusItem
-  // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83); the
-  // gap between the title and the field is 0 there, we use marginXS so long
-  // titles stay readable.
+  // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83) and
+  // leaves the spacing at 0 — the visible gap comes from the column, which only
+  // holds a short title in DDE. Our label column also wraps the description, so
+  // it is always full and the label→control gap must be marginM like every
+  // other dcc row (NDccRow).
   readonly property int settingsFieldTitleWidth: Math.round(140 * uiScaleRatio)
-  readonly property int settingsFieldGap: Math.round(4 * uiScaleRatio)
   // Control column width (DESIGN §3.5.4 控件列宽): dropdowns, searchable
   // dropdowns, spin boxes and single-line inputs in a settings row are all
   // this wide — min, preferred and max alike — so their left and right edges

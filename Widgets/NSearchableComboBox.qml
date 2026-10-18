@@ -33,7 +33,7 @@ NDccRow {
   signal selected(string key)
 
   plain: !root.dccRow
-  spacing: root.dccRow ? Style.settingsFieldGap : Style.marginL
+  spacing: root.dccRow ? Style.marginM : Style.marginL
   Layout.fillWidth: true
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (currentKey !== defaultValue)

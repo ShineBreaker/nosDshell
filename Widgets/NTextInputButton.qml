@@ -32,7 +32,7 @@ NDccRow {
   signal inputEditingFinished
 
   plain: !root.dccRow
-  spacing: root.dccRow ? Style.settingsFieldGap : Style.marginS
+  spacing: root.dccRow ? Style.marginM : Style.marginS
 
   // Label and description
   NLabel {
