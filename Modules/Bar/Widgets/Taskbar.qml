@@ -44,6 +44,7 @@ Item {
 
   property bool hasWindow: false
   readonly property string hideMode: (widgetSettings.hideMode !== undefined) ? widgetSettings.hideMode : widgetMetadata.hideMode
+  readonly property bool colorizeIcons: (widgetSettings.colorizeIcons !== undefined) ? widgetSettings.colorizeIcons : widgetMetadata.colorizeIcons
   readonly property bool onlySameOutput: (widgetSettings.onlySameOutput !== undefined) ? widgetSettings.onlySameOutput : widgetMetadata.onlySameOutput
   readonly property bool onlyActiveWorkspaces: (widgetSettings.onlyActiveWorkspaces !== undefined) ? widgetSettings.onlyActiveWorkspaces : widgetMetadata.onlyActiveWorkspaces
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
@@ -742,7 +743,7 @@ Item {
                     }
 
                     // Apply dock shader to all taskbar icons
-                    layer.enabled: widgetSettings.colorizeIcons !== false
+                    layer.enabled: root.colorizeIcons
                     layer.effect: ShaderEffect {
                       property color targetColor: Settings.data.colorSchemes.darkMode ? Color.mOnSurface : Color.mSurfaceVariant
                       property real colorizeMode: 0.0 // Dock mode (grayscale)

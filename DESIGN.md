@@ -304,7 +304,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 #### 3.1.3 高效模式（efficient）
 
 - 占满整条屏幕边。从左到右依次是启动器、任务列表、伸缩空白、托盘与插件区、显示桌面条。
-- 部件布局可编辑〔演进〕：`dock.taskbarWidgets.{left,center}` 存任务栏左侧与中间区的部件（含启动器、任务列表条目本身，可增删排序）；右侧插件区仍是 `dock.plugins`，与时尚模式共用同一份有序列表；显示桌面条固定收尾，不进列表。编辑入口在设置 → 任务栏 → 插件子页（§3.5.3），形态同状态栏的左/中/右三区编辑器；状态栏自己的布局仍是 `bar.widgets`，两者互不影响。
+- 部件布局可编辑〔演进〕：`dock.taskbarWidgets.{left,center}` 存任务栏左侧与中间区的部件（含启动器、任务列表条目本身，可增删排序）；右侧插件区仍是 `dock.plugins`，与时尚模式共用同一份有序列表；显示桌面条固定收尾，不进列表。编辑入口在设置 → 任务栏 → 插件子页（§3.5.3），形态同状态栏的左/中/右三区编辑器；状态栏自己的布局仍是 `bar.widgets`，两者互不影响。左区只有含填充部件（任务列表、伸缩空白）时才伸展到插件区，否则按 `bar.widgetSpacing` 紧凑排布；中区部件的中轴始终对齐屏幕中线。
 - 应用项（`appitem.cpp:291-317`），各状态都在项的矩形内、四周缩进 1 px：
   - 活动：填充 `accent` × 0.3，并在贴屏幕边的一侧画一条 `accent` 线，项高 > 50 时线宽 4 px，否则 2 px。
   - 运行中：填充白 × 0.2。
@@ -322,7 +322,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 | Launcher | 启动器图标，`dock.launcherIconSize` px（0 = 推导为 16，与其余插件 glyph 同号） | 启动器图标（0.6–0.8） |
 | Taskbar | 应用项（§3.1.3） | 由任务栏本体负责，不作为插件出现 |
 | Clock | 白字两行居中 `hh:mm` / `yyyy/MM/dd`；竖放时三行；宽 = 字宽 + 20 | 占满一个应用项大小的槽位，显示"时钟图标"：表盘为槽位的 0.8 倍，上面是大号数字时间。它与应用图标同级，不是小瓦片（`datetimewidget.cpp` 的 sizeHint 返回应用项槽位），不受 `dock.pluginSpacing` 影响 |
-| Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊，可展开、收起；分隔线 2 px，白 × 0.1（`fashiontraycontrolwidget.cpp`）。胶囊底色与其他插件瓦片一致，用 `overlay` 阶梯（`subtle`、`hover`、`checked`）〔演进：上游展开态是暗色 `#282828` × 0.5〕 |
+| Tray | 16 px 图标排成一行，间距 10 | 时尚托盘：圆角 10 的胶囊，可展开、收起；分隔线 2 px，白 × 0.1（`fashiontraycontrolwidget.cpp`）。胶囊底色与其他插件瓦片一致，用 `overlay` 阶梯（`subtle`、`hover`、`checked`）〔演进：上游展开态是暗色 `#282828` × 0.5〕。图标默认彩色；挂件的"图标着色"（`colorizeIcons`）开关对任务栏内联图标、时尚胶囊和收纳弹层同键生效，开启后统一按 `onShell` 单色化 |
 | Volume / Microphone / Network / Bluetooth / VPN / Brightness / Battery | 16 px symbolic 图标，sizeHint 26×26；Battery 在图标右侧加百分比文字 | 0.8 倍的图标 |
 | SessionMenu | `system-shutdown` symbolic | `system-shutdown` 彩色图标 |
 | NotificationHistory | 铃铛 symbolic（有未读时显示角标） | 铃铛图标；点击打开控制中心的通知页 |

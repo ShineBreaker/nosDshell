@@ -103,6 +103,28 @@ Item {
     }
   }
 
+  // Widgets that absorb a zone's leftover space via Layout.fillWidth/fillHeight
+  // (the DDE task list). The section stretch below exists only for these: a
+  // stretched RowLayout/ColumnLayout with no filling delegate makes Qt
+  // distribute the surplus across every delegate proportional to its implicit
+  // size — which pushed e.g. Launcher and Workspace hundreds of px apart.
+  function widgetFillsZone(widgetId: string): bool {
+    // Taskbar: the task list occupies the zone's remainder (DESIGN §3.1.3);
+    // Spacer: the documented 伸缩空白 (§3.1.4).
+    return widgetId === "Taskbar" || widgetId === "Spacer";
+  }
+
+  function zoneHasFill(model): bool {
+    // widgetsRevision is the models' rebuild signal: syncWidgetModel mutates
+    // the ListModels outside the binding system.
+    void BarService.widgetsRevision;
+    for (var i = 0; i < model.count; i++) {
+      if (widgetFillsZone(model.get(i).id))
+        return true;
+    }
+    return false;
+  }
+
   // Sync a ListModel with widget data, preserving delegates when only settings change
   function syncWidgetModel(model, newWidgets) {
     var validWidgets = filterValidWidgets(newWidgets);
@@ -601,13 +623,16 @@ Item {
       // Top section (left widgets)
       ColumnLayout {
         id: leftSection
+        objectName: "leftSection"
         x: Style.pixelAlignCenter(parent.width, width)
         anchors.top: parent.top
         anchors.topMargin: verticalBarMargin + Settings.data.bar.contentPadding
         spacing: Settings.data.bar.widgetSpacing
         // Efficient mode: the section stretches to fill space up to the right
-        // (bottom) section so the Taskbar widget can occupy the remainder
-        height: root.efficientMode ? Math.max(0, parent.height - rightSection.height - (verticalBarMargin + Settings.data.bar.contentPadding) * 2) : implicitHeight
+        // (bottom) section so the Taskbar widget can occupy the remainder.
+        // Without a filling delegate the stretch must stay off (see
+        // widgetFillsZone).
+        height: (root.efficientMode && root.zoneHasFill(root.leftWidgetsModel)) ? Math.max(0, parent.height - rightSection.height - (verticalBarMargin + Settings.data.bar.contentPadding) * 2) : implicitHeight
 
         Repeater {
           model: root.leftWidgetsModel
@@ -624,13 +649,14 @@ Item {
                             "sectionWidgetsCount": root.leftWidgetsModel.count
                           })
             Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: root.efficientMode && model.id === "Taskbar"
+            Layout.fillHeight: root.efficientMode && root.widgetFillsZone(model.id)
           }
         }
       }
 
       // Center section (center widgets)
       ColumnLayout {
+        objectName: "centerSection"
         x: Style.pixelAlignCenter(parent.width, width)
         anchors.verticalCenter: parent.verticalCenter
         spacing: Settings.data.bar.widgetSpacing
@@ -657,6 +683,7 @@ Item {
       // Bottom section (right widgets)
       ColumnLayout {
         id: rightSection
+        objectName: "rightSection"
         x: Style.pixelAlignCenter(parent.width, width)
         anchors.bottom: parent.bottom
         anchors.bottomMargin: verticalBarMargin + Settings.data.bar.contentPadding
@@ -734,8 +761,9 @@ Item {
         y: Style.pixelAlignCenter(parent.height, height)
         spacing: Settings.data.bar.widgetSpacing
         // Efficient mode: the section stretches to fill space up to the right
-        // section so the Taskbar widget can occupy the remainder
-        width: root.efficientMode ? Math.max(0, parent.width - rightSection.width - (horizontalBarMargin + Settings.data.bar.contentPadding) * 2) : implicitWidth
+        // section so the Taskbar widget can occupy the remainder. Without a
+        // filling delegate the stretch must stay off (see widgetFillsZone).
+        width: (root.efficientMode && root.zoneHasFill(root.leftWidgetsModel)) ? Math.max(0, parent.width - rightSection.width - (horizontalBarMargin + Settings.data.bar.contentPadding) * 2) : implicitWidth
 
         Repeater {
           model: root.leftWidgetsModel
@@ -752,7 +780,7 @@ Item {
                             "sectionWidgetsCount": root.leftWidgetsModel.count
                           })
             Layout.alignment: Qt.AlignVCenter
-            Layout.fillWidth: root.efficientMode && model.id === "Taskbar"
+            Layout.fillWidth: root.efficientMode && root.widgetFillsZone(model.id)
           }
         }
       }

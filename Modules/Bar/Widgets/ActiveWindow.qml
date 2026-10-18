@@ -45,6 +45,7 @@ Item {
   readonly property bool showIcon: (widgetSettings.showIcon !== undefined) ? widgetSettings.showIcon : (widgetMetadata.showIcon || false)
   readonly property bool showText: (widgetSettings.showText !== undefined) ? widgetSettings.showText : (widgetMetadata.showText || false)
   readonly property string hideMode: (widgetSettings.hideMode !== undefined) ? widgetSettings.hideMode : (widgetMetadata.hideMode || "hidden")
+  readonly property bool colorizeIcons: (widgetSettings.colorizeIcons !== undefined) ? widgetSettings.colorizeIcons : (widgetMetadata.colorizeIcons || false)
   readonly property string scrollingMode: (widgetSettings.scrollingMode !== undefined) ? widgetSettings.scrollingMode : (widgetMetadata.scrollingMode || "hover")
 
   // Maximum widget width with user settings support
@@ -247,8 +248,8 @@ Item {
             smooth: true
             visible: source !== ""
 
-            // Apply dock shader to active window icon (always themed)
-            layer.enabled: widgetSettings.colorizeIcons !== false
+            // Apply dock shader to active window icon
+            layer.enabled: root.colorizeIcons
             layer.effect: ShaderEffect {
               property color targetColor: Settings.data.colorSchemes.darkMode ? Color.mOnSurface : Color.mSurfaceVariant
               property real colorizeMode: 0.0 // Dock mode (grayscale)
@@ -321,8 +322,8 @@ Item {
             smooth: true
             visible: source !== ""
 
-            // Apply dock shader to active window icon (always themed)
-            layer.enabled: widgetSettings.colorizeIcons !== false
+            // Apply dock shader to active window icon
+            layer.enabled: root.colorizeIcons
             layer.effect: ShaderEffect {
               property color targetColor: Color.mOnSurface
               property real colorizeMode: 0.0 // Dock mode (grayscale)

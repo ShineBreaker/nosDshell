@@ -1759,6 +1759,38 @@ PYEOF
                           if grep -q 'unknown root' "$WORK/logs/eff-bar-tree.txt"; then
                             echo "efficient-taskbar: no bar window"; return 0
                           fi
+                          # Guardrail (Bar.qml widgetFillsZone): delegates in the
+                          # stretched left zone must stay packed — a stretch with
+                          # no filling delegate lets Qt spread items ∝ implicit
+                          # widths, which once pushed Launcher/Workspace apart.
+                          python3 - "$WORK/logs/eff-bar-tree.txt" "$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json" <<'PYEOF' || SCENE_FAIL=1
+import json,re,sys
+tree=open(sys.argv[1],encoding="utf-8",errors="replace").read().splitlines()
+try:
+    gap=json.load(open(sys.argv[2])).get("bar",{}).get("widgetSpacing",6)
+except Exception:
+    gap=6
+lines=[(len(l)-len(l.lstrip()),l) for l in tree]
+start=next((i for i,(d,l) in enumerate(lines) if '"leftSection"' in l and 'Layout' in l),None)
+if start is None:
+    print("efficient-taskbar: no leftSection in tree")
+    sys.exit(1)
+# ColumnLayout => vertical dock: pack along y using height (groups 4,2).
+vert='ColumnLayout' in lines[start][1]
+pos,size=(4,2) if vert else (3,1)
+ind=lines[start][0]
+xs=[]
+for d,l in lines[start+1:]:
+    if d<=ind: break
+    m=re.search(r'BarWidgetLoader\S*.*?(\d+)x(\d+) @(-?\d+),(-?\d+)',l)
+    if d==ind+2 and m and 'hidden' not in l and int(m.group(size))>0:
+        xs.append((int(m.group(pos)),int(m.group(size))))
+bad=[(a,b) for a,b in zip(xs,xs[1:]) if b[0]-(a[0]+a[1])!=gap]
+if bad:
+    print(f"FAIL efficient-taskbar: left-zone delegates not packed (spacing={gap}): {bad} in {xs}")
+    sys.exit(1)
+print(f"efficient-taskbar: left-zone packing OK {xs} (spacing={gap})")
+PYEOF
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
                           # Window-local tree coords → screen coords: the

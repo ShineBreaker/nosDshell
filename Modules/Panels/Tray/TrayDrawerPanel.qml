@@ -76,6 +76,16 @@ SmartPanel {
 
     readonly property var pinnedList: widgetSettings.pinned || []
     readonly property bool hidePassive: widgetSettings.hidePassive !== undefined ? widgetSettings.hidePassive : true
+    // Resolve against the registry default — an unset key means "off"
+    // (coloured icons). The previous `!== false` test rendered unset keys
+    // tinted, contradicting both the default and the settings toggle.
+    readonly property bool colorizeIcons: {
+      void (settingsVersion);
+      if (widgetSettings.colorizeIcons !== undefined)
+        return widgetSettings.colorizeIcons;
+      var meta = BarWidgetRegistry.widgetMetadata["Tray"];
+      return meta ? meta.colorizeIcons === true : false;
+    }
 
     // SNI churn arrives in bursts; funnel every model rewrite through one
     // debounced pass and skip identical results so the Repeater is never
@@ -229,7 +239,7 @@ SmartPanel {
               return icon;
             }
 
-            layer.enabled: panelContent.widgetSettings.colorizeIcons !== false
+            layer.enabled: panelContent.colorizeIcons
             layer.effect: ShaderEffect {
               property color targetColor: Color.onShell
               property real colorizeMode: 1.0
