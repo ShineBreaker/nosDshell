@@ -1805,6 +1805,10 @@
       "description": "The control center widget has been removed from the bar. To access it from the bar again, you will need to re-add the widget. You can open it with right clicking on the bar too",
       "label": "Last control center widget removed"
     },
+    "missing-taskbar-apps": {
+      "description": "The taskbar will no longer show the running-apps list. Re-add the Taskbar widget from the widget list to restore it",
+      "label": "App list widget removed"
+    },
     "night-light": {
       "forced": "Forced activation",
       "normal": "Normal mode",
@@ -2134,6 +2138,10 @@
       "size-description": "Taskbar icon size.",
       "state-description": "Smart hide falls back to Keep hidden when the compositor does not support it.",
       "plugins-description": "Choose which plugins appear on the taskbar. Drag to reorder.",
+      "widgets-description": "Edit the efficient taskbar's widget layout: the leading and center zones hold any widget, the trailing zone holds plugins. Drag to reorder; right-click to move between zones.",
+      "zone-leading-subtitle": "Leading edge of the taskbar, holds the launcher and app list by default",
+      "zone-center-subtitle": "Widgets centered on the taskbar",
+      "zone-plugins-subtitle": "Plugin list shared with fashion mode",
       "statusbar-enabled-label": "Enable status bar",
       "statusbar-enabled-description": "A separate macOS-style bar with its own widgets and position.",
       "statusbar-position": "Position",

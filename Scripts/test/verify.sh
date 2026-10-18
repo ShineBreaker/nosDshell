@@ -1396,9 +1396,13 @@ PYEOF
                            sleep 0.6
                          }
                          # Path 1: dock plugin instance (PluginsSubTab gear →
-                         # BarWidgetSettingsDialog sectionId "dock").
+                         # BarWidgetSettingsDialog sectionId "dock"; in
+                         # efficient mode the plugins zone is section "right",
+                         # the write still lands on dock.plugins).
                          call settings openTab dock/3 5
-                         dialog_reset widgetGear-dock-Clock widgetSettingsReset widgetSettingsClose dock
+                         DOCK_GEAR=widgetGear-dock-Clock
+                         [ "$DOCK_MODE" = "efficient" ] && DOCK_GEAR=widgetGear-right-Clock
+                         dialog_reset "$DOCK_GEAR" widgetSettingsReset widgetSettingsClose dock
                          reset_assert dock || SCENE_FAIL=1
                          # Path 2: bar widget instance on the pushed 二级页.
                          call settings openTab dock/1 4

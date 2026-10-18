@@ -4,19 +4,30 @@ import QtQuick.Layouts
 import Quickshell
 import "../../../../Helpers/QtObj2JS.js" as QtObj2JS
 import qs.Commons
+import qs.Modules.Dock
 import qs.Services.UI
 import qs.Widgets
 
-// Monitor Widgets Configuration (inline). `screen: null` edits the global
-// default layout (Settings.data.bar.widgets); a bound screen edits that
-// monitor's override.
+// Sectioned widget-layout editor (left / center / right).
+// `editMode: "bar"` (default) edits a status-bar layout: `screen: null` writes
+// Settings.data.bar.widgets, a bound screen writes that monitor's override.
+// `editMode: "taskbar"` edits the efficient-mode taskbar: left/center zones
+// live in dock.taskbarWidgets (Launcher/Taskbar are stored entries), the right
+// zone is dock.plugins — the same list the fashion dock renders, so its
+// candidates stay limited to DockSettingsMenu.pluginCandidates.
 ColumnLayout {
   id: root
 
   property var screen: null
+  property string editMode: "bar" // "bar" | "taskbar"
+  readonly property bool taskbarMode: editMode === "taskbar"
   readonly property string screenName: screen?.name || ""
   // determine bar orientation
-  readonly property string barPosition: screenName === "" ? Settings.data.bar.position : Settings.getBarPositionForScreen(screenName)
+  readonly property string barPosition: {
+    if (taskbarMode)
+      return screenName === "" ? Settings.data.dock.position : Settings.getTaskbarPositionForScreen(screenName);
+    return screenName === "" ? Settings.data.bar.position : Settings.getBarPositionForScreen(screenName);
+  }
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
 
   Layout.fillWidth: true
@@ -25,6 +36,16 @@ ColumnLayout {
   // Helper to get widgets for this screen (ensures override exists); the
   // global editor works on Settings.data.bar.widgets directly.
   function _getWidgetsContainer() {
+    if (taskbarMode) {
+      // Sliced copies: _saveWidgets reassigns fresh arrays so the editor's
+      // effectiveWidgets binding re-evaluates on every mutation.
+      var zones = Settings.data.dock.taskbarWidgets;
+      return {
+        "left": (zones && zones.left ? zones.left : []).slice(),
+        "center": (zones && zones.center ? zones.center : []).slice(),
+        "right": (Settings.data.dock.plugins || []).slice()
+      };
+    }
     if (screenName === "")
       return Settings.data.bar.widgets;
     if (!Settings.hasScreenOverride(screenName, "widgets")) {
@@ -38,6 +59,12 @@ ColumnLayout {
 
   // Persist widget changes by reassigning the override (triggers change detection)
   function _saveWidgets(widgets) {
+    if (taskbarMode) {
+      Settings.data.dock.taskbarWidgets.left = widgets.left;
+      Settings.data.dock.taskbarWidgets.center = widgets.center;
+      Settings.data.dock.plugins = widgets.right;
+      return;
+    }
     if (screenName === "") {
       Settings.data.bar.widgets = widgets;
     } else {
@@ -75,6 +102,11 @@ ColumnLayout {
 
       if (removedWidgets[0].id === "ControlCenter" && BarService.lookupWidget("ControlCenter") === undefined) {
         ToastService.showWarning(I18n.tr("toast.missing-control-center.label"), I18n.tr("toast.missing-control-center.description"), 12000);
+      }
+      // The taskbar loses its app list — recoverable by re-adding Taskbar,
+      // but warn the same way the bar does for ControlCenter.
+      if (taskbarMode && removedWidgets[0].id === "Taskbar") {
+        ToastService.showWarning(I18n.tr("toast.missing-taskbar-apps.label"), I18n.tr("toast.missing-taskbar-apps.description"), 12000);
       }
     }
   }
@@ -146,7 +178,26 @@ ColumnLayout {
     }
   }
 
-  Component.onCompleted: Qt.callLater(updateAvailableWidgetsModel)
+  // Taskbar right zone = dock.plugins: candidates stay the shared plugin
+  // list (DockSettingsMenu.pluginCandidates), matching the fashion dock's
+  // strip and its toggle menu.
+  function updatePluginCandidatesModel() {
+    pluginCandidatesModel.clear();
+    var ids = DockSettingsMenu.pluginCandidates || [];
+    for (var i = 0; i < ids.length; i++) {
+      if (BarWidgetRegistry.hasWidget(ids[i])) {
+        pluginCandidatesModel.append({
+                                       "key": ids[i],
+                                       "name": BarWidgetRegistry.widgetDisplayName(ids[i])
+                                     });
+      }
+    }
+  }
+
+  Component.onCompleted: Qt.callLater(function () {
+    updateAvailableWidgetsModel();
+    updatePluginCandidatesModel();
+  })
 
   // Model entries bake I18n.tr results at append time; rebuild on language
   // change or (re)loaded translations.
@@ -154,6 +205,7 @@ ColumnLayout {
     target: I18n
     function onTranslationsLoaded() {
       updateAvailableWidgetsModel();
+      updatePluginCandidatesModel();
     }
   }
 
@@ -161,11 +213,26 @@ ColumnLayout {
     id: availableWidgetsModel
   }
 
-  // Get effective widgets: global default when unbound, per-screen otherwise.
-  readonly property var effectiveWidgets: screenName === "" ? Settings.data.bar.widgets : Settings.getBarWidgetsForScreen(screenName)
+  ListModel {
+    id: pluginCandidatesModel
+  }
+
+  // Get effective widgets: global default when unbound, per-screen otherwise;
+  // in taskbar mode a synthesized view over dock.taskbarWidgets + dock.plugins.
+  readonly property var effectiveWidgets: {
+    if (taskbarMode) {
+      var zones = Settings.data.dock.taskbarWidgets;
+      return {
+        "left": (zones && zones.left) || [],
+        "center": (zones && zones.center) || [],
+        "right": Settings.data.dock.plugins || []
+      };
+    }
+    return screenName === "" ? Settings.data.bar.widgets : Settings.getBarWidgetsForScreen(screenName);
+  }
 
   NText {
-    text: I18n.tr("panels.bar.widgets-desc")
+    text: root.taskbarMode ? I18n.tr("settings.taskbar.widgets-description") : I18n.tr("panels.bar.widgets-desc")
     wrapMode: Text.WordWrap
     Layout.fillWidth: true
   }
@@ -173,6 +240,7 @@ ColumnLayout {
   // Left Section
   NSectionEditor {
     sectionName: root.barIsVertical ? I18n.tr("positions.top") : I18n.tr("positions.left")
+    sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-leading-subtitle") : ""
     sectionId: "left"
     barIsVertical: root.barIsVertical
     screen: root.screen
@@ -191,6 +259,7 @@ ColumnLayout {
   // Center Section
   NSectionEditor {
     sectionName: I18n.tr("positions.center")
+    sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-center-subtitle") : ""
     sectionId: "center"
     barIsVertical: root.barIsVertical
     screen: root.screen
@@ -206,16 +275,17 @@ ColumnLayout {
     onOpenPluginSettingsRequested: manifest => pluginSettingsDialog.openPluginSettings(manifest)
   }
 
-  // Right Section
+  // Right Section — the plugin strip in taskbar mode (dock.plugins)
   NSectionEditor {
-    sectionName: root.barIsVertical ? I18n.tr("positions.bottom") : I18n.tr("positions.right")
+    sectionName: root.taskbarMode ? I18n.tr("settings.taskbar.plugins") : (root.barIsVertical ? I18n.tr("positions.bottom") : I18n.tr("positions.right"))
+    sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-plugins-subtitle") : ""
     sectionId: "right"
     barIsVertical: root.barIsVertical
     screen: root.screen
     settingsDialogComponent: Qt.resolvedUrl(Quickshell.shellDir + "/Modules/Panels/Settings/Bar/BarWidgetSettingsDialog.qml")
     widgetRegistry: BarWidgetRegistry
     widgetModel: root.effectiveWidgets.right
-    availableWidgets: availableWidgetsModel
+    availableWidgets: root.taskbarMode ? pluginCandidatesModel : availableWidgetsModel
     onAddWidget: (widgetId, section) => root._addWidgetToSection(widgetId, section)
     onRemoveWidget: (section, index) => root._removeWidgetFromSection(section, index)
     onReorderWidget: (section, fromIndex, toIndex) => root._reorderWidgetInSection(section, fromIndex, toIndex)

@@ -1805,6 +1805,10 @@
       "description": "控制中心插件已从状态栏中移除。要再次从状态栏访问它，您需要重新添加插件。您也可以通过右键点击状态栏来打开它",
       "label": "最后一个控制中心插件已移除"
     },
+    "missing-taskbar-apps": {
+      "description": "任务栏将不再显示运行中的应用列表。可从部件列表重新添加「任务栏」部件恢复",
+      "label": "应用列表部件已移除"
+    },
     "night-light": {
       "forced": "强制激活",
       "normal": "正常模式",
@@ -2134,6 +2138,10 @@
       "size-description": "任务栏图标大小。",
       "state-description": "合成器不支持时，智能隐藏按一直隐藏处理。",
       "plugins-description": "选择显示在任务栏上的插件，可拖拽排序。",
+      "widgets-description": "编辑高效任务栏的部件布局：起始与中间区可放任意挂件，末端为插件区。拖拽排序，右键菜单可跨区移动。",
+      "zone-leading-subtitle": "任务栏起始端，默认含启动器与应用列表",
+      "zone-center-subtitle": "居中显示的部件",
+      "zone-plugins-subtitle": "与时尚模式共用的插件列表",
       "statusbar-enabled-label": "启用状态栏",
       "statusbar-enabled-description": "独立于任务栏的 macOS 式状态栏，有独立挂件与位置。",
       "statusbar-position": "位置",
