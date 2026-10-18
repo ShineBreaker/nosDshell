@@ -33,26 +33,22 @@
           "id": "Launcher"
         },
         {
-          "id": "Clock"
+          "id": "ActiveWindow"
+        }
+      ],
+      "center": [],
+      "right": [
+        {
+          "id": "Tray"
+        },
+        {
+          "id": "MediaMini"
         },
         {
           "id": "SystemMonitor"
         },
         {
-          "id": "ActiveWindow"
-        },
-        {
-          "id": "MediaMini"
-        }
-      ],
-      "center": [
-        {
           "id": "Workspace"
-        }
-      ],
-      "right": [
-        {
-          "id": "Tray"
         },
         {
           "id": "NotificationHistory"
@@ -68,6 +64,9 @@
         },
         {
           "id": "ControlCenter"
+        },
+        {
+          "id": "Clock"
         }
       ]
     },
