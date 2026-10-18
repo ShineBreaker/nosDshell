@@ -241,7 +241,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|efficient-taskbar|dark-mode-system|idle-inhibit) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|efficient-taskbar|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -369,6 +369,15 @@ PLUGINEOF
 PLUGINEOF
     cat > "$NOSD_CONFIG_DIR/plugins.json" <<'PLUGINEOF'
 {"version":2,"states":{"testreset":{"enabled":true,"sourceUrl":""}},"sources":[]}
+PLUGINEOF
+    ;;
+  # Bundled usb-drive-manager: force its dock widget visible with zero USB
+  # devices so the scene can click it and shoot the empty-state panel. The
+  # plugin ships builtin+enabled; only the widget's hideWhenEmpty must flip.
+  *" usb-panel "*)
+    mkdir -p "$NOSD_CONFIG_DIR/plugins/usb-drive-manager"
+    cat > "$NOSD_CONFIG_DIR/plugins/usb-drive-manager/settings.json" <<'PLUGINEOF'
+{"hideWhenEmpty":false}
 PLUGINEOF
     ;;
 esac
@@ -1618,6 +1627,67 @@ PYEOF
                             sleep 0.8
                           else
                             echo "clock widget not found in dock tree"
+                          fi ;;
+    # Bundled usb-drive-manager: widget is hidden by default with zero
+    # devices (hideWhenEmpty) — the seed above forces it visible. Click it
+    # to open the panel on the empty state, then assert the panel is a
+    # bounded popup (viewport never follows content past popupListMaxHeight).
+    usb-panel)            qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 14 > "$WORK/logs/usb-dock-tree.txt" 2>&1 || true
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          USB_POS=$(DOCK_POSITION="$DOCK_POSITION" python3 - "$WORK/logs/usb-dock-tree.txt" <<'PYEOF'
+import json,os,re,subprocess,sys
+pos = os.environ.get("DOCK_POSITION","bottom")
+out = json.loads(subprocess.run(["swaymsg","-t","get_outputs"],capture_output=True,text=True).stdout)
+scr = next(o["rect"] for o in out if o.get("active"))
+dock_w = dock_h = 0
+widget = None
+for line in open(sys.argv[1], encoding="utf-8", errors="replace"):
+    m = re.search(r"@(-?\d+),(-?\d+)", line)
+    w = re.search(r" (\d+)x(\d+) ", line)
+    if not (m and w):
+        continue
+    if dock_h == 0:
+        dock_w, dock_h = int(w.group(1)), int(w.group(2))  # DockContent root
+    if "BarWidget_QML" in line and widget is None:
+        cx, cy = int(m.group(1)) + int(w.group(1)) // 2, int(m.group(2)) + int(w.group(2)) // 2
+        if pos == "bottom":
+            cy += scr["height"] - dock_h
+        elif pos == "right":
+            cx += scr["width"] - dock_w
+        widget = (cx, cy)
+if widget:
+    print(*widget)
+PYEOF
+)
+                          echo "usb widget at: $USB_POS"
+                          if [ -n "$USB_POS" ]; then
+                            "$VINPUT" vinput click $USB_POS 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.4
+                            shot usb-panel
+                            qs -p "$REPO" ipc call debug opened 12 > "$WORK/logs/usb-opened.txt" 2>&1 || true
+                            python3 - "$WORK/logs/usb-opened.txt" <<'PYEOF' || SCENE_FAIL=1
+import re,sys
+lines = open(sys.argv[1], encoding="utf-8", errors="replace").read().splitlines()
+# The panel card (Panel_QMLTYPE), not the fullscreen PluginPanelSlot host.
+for l in lines:
+    if "Panel_QMLTYPE" not in l:
+        continue
+    g = re.search(r" (-?\d+)x(-?\d+) @", l)
+    if not g:
+        continue
+    w, h = int(g.group(1)), int(g.group(2))
+    # Empty state must be a real card, bounded (0.7*1080 = 756 ceiling).
+    if h <= 40 or h > 756:
+        print(f"FAIL usb-panel: panel {w}x{h} outside bounds"); sys.exit(1)
+    break
+else:
+    print("FAIL usb-panel: no Panel_QMLTYPE card in opened tree"); sys.exit(1)
+PYEOF
+                            "$VINPUT" vinput click 300 300 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.6
+                          else
+                            echo "FAIL usb-panel: widget not found in dock tree"; SCENE_FAIL=1
                           fi ;;
     # Widget context menu on a BAR widget — the efficient taskbar or the
     # fashion status bar (bar-HEADLESS-1). The menu must open inside the

@@ -1,5 +1,5 @@
 {
-  "settingsVersion": 84,
+  "settingsVersion": 85,
   "bar": {
     "enabled": false,
     "barType": "simple",
@@ -394,6 +394,9 @@
       },
       {
         "id": "SessionMenu"
+      },
+      {
+        "id": "plugin:usb-drive-manager"
       },
       {
         "id": "Trash"

@@ -32,6 +32,10 @@ def main():
         rel = path.relative_to(ROOT)
         if rel in ALLOWED or any(part in {"references", ".git"} for part in rel.parts):
             continue
+        # Bundled plugins own their settings schema — e.g. usb-drive-manager's
+        # plugin-level "terminalCommand" is not the shell launch-pipeline key.
+        if rel.parts[0] == "Assets" and rel.parts[1] == "Plugins":
+            continue
         if any(rel.is_relative_to(d) for d in ALLOWED_DIRS):
             continue
         for n, line in enumerate(path.read_text(errors="replace").splitlines(), 1):
