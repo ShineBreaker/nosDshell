@@ -70,10 +70,12 @@ layer-rule {
 // menu and the setup wizard draw their own pre-blurred backdrop;
 // bar-content reveals background's already-blurred regions (a second pass
 // would double it); popupmenu/notifications/toast/session-menu/setup-
-// wizard/desktop-widgets are fullscreen or transient planes; the rest are
-// invisible helpers.
+// wizard/desktop-widgets/polkit are fullscreen or transient planes; the
+// rest are invisible helpers. Plugin-owned overlays (nosdshell:*) are
+// invisible input-capture planes by convention.
 layer-rule {
-  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay|popupmenu|notifications|toast|osd|session-menu|setup-wizard|desktop-widgets)(-.*)?$"
+  match namespace="^nosdshell:"
+  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay|popupmenu|notifications|toast|osd|session-menu|setup-wizard|desktop-widgets|polkit)(-.*)?$"
   background-effect {
     blur false
   }

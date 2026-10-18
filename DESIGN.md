@@ -669,7 +669,7 @@ Noctalia 卡片的对应关系：
 - 左上 48 px 图标，标题 Medium，正文白 × 0.8。
 - 底部按钮行横跨对话框全宽，按钮之间用 1 px 白 × 0.1 的分隔线隔开；推荐操作按钮的文字为 `accent`。
 - 首次设置向导：模糊壁纸背景，中间是上述对话框（宽 640），底部用分页圆点表示步骤，右下角是"下一步"按钮。
-- （可选）Polkit 认证：Quickshell 提供 Polkit 服务时，按 `gxde-polkit-agent/AuthDialog.cpp` 实现。包含 48 px 应用图标、有多个身份时显示身份下拉框、高 24 的密码框；密码错误时输入框显示 `alert` 状态，并在其下方弹出错误提示。
+- Polkit 认证对话框（`Services/Polkit/PolkitService.qml` + `Modules/Polkit/PolkitAuthDialog.qml`）：shell 启动即注册 `PolkitAgent`，认证请求弹出 overlay 对话框。按 `gxde-polkit-agent/AuthDialog.cpp` 实现：48 px 应用图标、有多个身份时显示身份下拉框（`Identity.displayName`）、高 24 的密码框、transient 单元名（`run-PID-*.service`）解析为真实命令；密码错误时输入框显示 `alert` 状态并在其下方给出错误提示（开始输入即消除），服务器未给补充错误时回退到 `authentication.wrong-password`。底部按钮行为全宽条带：取消/确认之间 1 px 分隔线，确认的推荐文字为 `accent`。
 
 ### 3.12 桌面挂件
 

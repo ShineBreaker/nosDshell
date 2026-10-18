@@ -27,6 +27,7 @@ import qs.Modules.OSD
 
 import qs.Modules.Panels.Launcher
 import qs.Modules.Panels.Settings
+import qs.Modules.Polkit
 import qs.Modules.Toast
 import qs.Services.Control
 import qs.Services.Hardware
@@ -34,6 +35,7 @@ import qs.Services.Keyboard
 import qs.Services.Location
 import qs.Services.Networking
 import qs.Services.Plugins
+import qs.Services.Polkit
 import qs.Services.Power
 import qs.Services.System
 import qs.Services.Theming
@@ -107,6 +109,7 @@ ShellRoot {
         Qt.callLater(function () {
           LocationService.init();
           NightLightService.apply();
+          PolkitService.init();
           IdleInhibitorService.init();
           IdleService.init();
           PowerProfileService.init();
@@ -141,6 +144,10 @@ ShellRoot {
 
       LockScreen {}
       FadeOverlay {}
+
+      // Polkit auth dialog (DESIGN §3.11): hidden layer surface, shows when
+      // PolkitService.isActive flips on an auth request.
+      PolkitAuthDialog {}
 
       // Settings window mode (single window across all monitors)
       SettingsPanelWindow {}
