@@ -222,6 +222,27 @@ ColumnLayout {
                 }
               }
 
+              // Built-in badge (shipped with the shell, cannot be uninstalled)
+              Rectangle {
+                visible: modelData.builtin === true
+                color: Color.mSurfaceVariant
+                radius: Style.radiusRow
+                implicitWidth: builtinBadgeRow.implicitWidth + Style.margin2S
+                implicitHeight: builtinBadgeRow.implicitHeight + Style.margin2XS
+
+                RowLayout {
+                  id: builtinBadgeRow
+                  anchors.centerIn: parent
+
+                  NText {
+                    text: I18n.tr("common.builtin")
+                    font.pointSize: Style.fontSizeXXS
+                    font.weight: Style.fontWeightMedium
+                    color: Color.mOnSurfaceVariant
+                  }
+                }
+              }
+
               // Spacer
               Item {
                 Layout.fillWidth: true
@@ -265,6 +286,7 @@ ColumnLayout {
                 icon: "trash"
                 tooltipText: I18n.tr("common.uninstall")
                 baseSize: Style.baseWidgetSize * 0.7
+                visible: modelData.builtin !== true
                 onClicked: {
                   uninstallDialog.pluginToUninstall = modelData;
                   uninstallDialog.open();

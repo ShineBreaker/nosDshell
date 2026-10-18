@@ -11,6 +11,11 @@ Singleton {
 
   readonly property string pluginsDir: Settings.configDir + "plugins"
   readonly property string pluginsFile: Settings.configDir + "plugins.json"
+  // Bundled plugins shipped inside the shell tree (read-only in packaged
+  // installs). They are installed by definition and cannot be uninstalled;
+  // their settings still live under pluginsDir so writes stay on a writable
+  // path.
+  readonly property string bundledPluginsDir: Quickshell.shellDir + "/Assets/Plugins"
 
   readonly property int currentVersion: 2
   // Sentinel URL for "local" plugins (installed from disk, no remote source).
@@ -211,15 +216,18 @@ Singleton {
     checkProcess.running = true;
   }
 
-  // Scan plugin folder to discover installed plugins (single process reads all manifests)
+  // Scan plugin folders to discover installed plugins (single process reads
+  // all manifests). The bundled dir is scanned first so a same-ID plugin in the
+  // user dir overrides the bundled copy. Bundled manifests get builtin=true
+  // and pluginDir stamped so consumers never guess where code lives.
   function scanPluginFolder() {
-    Logger.i("PluginRegistry", "Scanning plugin folder:", root.pluginsDir);
+    Logger.i("PluginRegistry", "Scanning plugin folders:", root.bundledPluginsDir, "and", root.pluginsDir);
 
     var scanProcess = Qt.createQmlObject(`
       import QtQuick
       import Quickshell.Io
       Process {
-        command: ["sh", "-c", "for d in '${root.pluginsDir}'/*/; do [ -d \\"$d\\" ] || continue; [ -f \\"$d/manifest.json\\" ] || continue; echo \\"@@PLUGIN@@$(basename \\"$d\\")\\" ; cat \\"$d/manifest.json\\" ; done"]
+        command: ["sh", "-c", "for base in '${root.bundledPluginsDir}' '${root.pluginsDir}'; do for d in \\"$base\\"/*/; do [ -d \\"$d\\" ] || continue; [ -f \\"$d/manifest.json\\" ] || continue; echo \\"@@PLUGIN@@$(basename \\"$d\\")@@$base\\" ; cat \\"$d/manifest.json\\" ; done; done"]
         stdout: StdioCollector {}
         running: true
       }
@@ -236,8 +244,14 @@ Singleton {
         if (newlineIdx === -1)
           continue;
 
-        var pluginId = section.substring(0, newlineIdx).trim();
+        var header = section.substring(0, newlineIdx).trim();
         var manifestJson = section.substring(newlineIdx + 1).trim();
+
+        var baseIdx = header.lastIndexOf("@@");
+        if (baseIdx === -1)
+          continue;
+        var pluginId = header.substring(0, baseIdx);
+        var baseDir = header.substring(baseIdx + 2);
 
         if (!pluginId || !manifestJson)
           continue;
@@ -248,12 +262,14 @@ Singleton {
 
           if (validation.valid) {
             manifest.compositeKey = pluginId;
+            manifest.builtin = baseDir === root.bundledPluginsDir;
+            manifest.pluginDir = baseDir + "/" + pluginId;
             root.installedPlugins[pluginId] = manifest;
-            Logger.i("PluginRegistry", "Loaded plugin:", pluginId, "-", manifest.name);
+            Logger.i("PluginRegistry", "Loaded plugin:", pluginId, "-", manifest.name, manifest.builtin ? "(builtin)" : "");
 
             if (!root.pluginStates[pluginId]) {
               root.pluginStates[pluginId] = {
-                enabled: false
+                enabled: manifest.builtin && manifest.defaultEnabled !== false
               };
             }
             loadedCount++;
@@ -294,6 +310,8 @@ Singleton {
 
           if (validation.valid) {
             manifest.compositeKey = pluginId;
+            manifest.builtin = false;
+            manifest.pluginDir = root.pluginsDir + "/" + pluginId;
             root.installedPlugins[pluginId] = manifest;
             Logger.i("PluginRegistry", "Loaded plugin:", pluginId, "-", manifest.name);
 
@@ -528,14 +546,16 @@ Singleton {
     return enabledSources;
   }
 
-  // Get plugin directory path
+  // Get plugin directory path (where its code lives: bundled dir for builtin
+  // plugins, user dir otherwise)
   function getPluginDir(pluginId) {
-    return root.pluginsDir + "/" + pluginId;
+    return root.installedPlugins[pluginId]?.pluginDir || (root.pluginsDir + "/" + pluginId);
   }
 
-  // Get plugin settings file path
+  // Get plugin settings file path (always under the writable user dir, even
+  // for bundled plugins whose code dir may be read-only)
   function getPluginSettingsFile(pluginId) {
-    return getPluginDir(pluginId) + "/settings.json";
+    return root.pluginsDir + "/" + pluginId + "/settings.json";
   }
 
   // Validate manifest

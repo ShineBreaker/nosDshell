@@ -486,6 +486,14 @@ Singleton {
 
   // Uninstall a plugin (compositeKey is the full key like "abc123:my-plugin" or plain "my-plugin")
   function uninstallPlugin(compositeKey, callback) {
+    var manifest = PluginRegistry.getPluginManifest(compositeKey);
+    if (manifest && manifest.builtin) {
+      Logger.w("PluginService", "Refusing to uninstall bundled plugin:", compositeKey);
+      if (callback)
+        callback(false, "Bundled plugins cannot be uninstalled");
+      return;
+    }
+
     Logger.i("PluginService", "Uninstalling plugin:", compositeKey);
 
     // Disable and unload first
