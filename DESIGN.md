@@ -70,7 +70,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - 组件实际读的是下列语义令牌：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
   - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原为固定白色 × 0.9〕。
-  - `Color.popupPage`：不透明页面表面上的弹出菜单（设置页等内容页里的下拉）。RGB 同 `popupShell`（暗色 `mSurfaceVariant`、浅色 `mSurface`），恒不透明、不受 `ui.popupOpacity` 缩放——底下的表面是页面不是壁纸，半透明会透出文字〔演进：原先组件直用不透明的方案表面色实填〕。
+  - `Color.popupPage`：不透明页面表面上的弹出菜单（设置页等内容页里的下拉）。RGB 同 `popupShell`（暗色 `mSurfaceVariant`、浅色 `mSurface`），恒不透明、不受 `ui.popupOpacity` 缩放。底下的表面是页面不是壁纸，半透明会透出文字〔演进：原先组件直用不透明的方案表面色实填〕。
   - `Color.borderShell` 和 `Color.borderTransient`：分别对应 `borderDark` 和 `borderLight`，浅色外壳使用 `borderLight`。描边透明度整体乘以 `ui.borderEmphasis`（0–2，默认 1，0 表示无描边）〔演进〕。
   - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司），按上面的 `ui.transientSurface` 规则取值〔演进：原版恒为不透明 `#F8F8F8`〕。
 - 配套的前景色：
@@ -448,7 +448,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - `appLauncher.iconMode`：provider 给出 Tabler 字形名时，列表项先查主题图标，找不到再用字形（`apps` 为最后的兜底）。
 - `appLauncher.ignoreMouseInput`：视图内悬停、点击、滚轮全部关闭，键盘导航不受影响。
 - `appLauncher.enableClipPreview`：全屏模式剪贴板预览卡片的开关。切换 `enableClipboardHistory` 会立即注册或注销剪贴板 provider。
-- 启动器按钮图标组（与任务栏页共用一份实现 `Tabs/Shared/LauncherIconGroup.qml`）：`dock.launcherUseDistroLogo`、`dock.launcherIcon`、`dock.launcherIconColor` 与 `dock.launcherIconSize`——同一套键驱动高效模式任务栏启动器和时尚模式坞启动器项；高效模式右键启动器按钮走"启动器设置"落在本页，所以按钮图标的控件也在这里。尺寸滑条两种模式都显示：像素值作用于启动器*项*——高效任务栏 glyph 与时尚坞启动器块，`0`/重置 = 自动按模式推导（高效 16px，时尚随 `dock.iconSize`）；时尚顶栏胶囊不读该键，其图标始终按固定胶囊高度的比例推导（坞级像素值会撑破胶囊）。
+- 启动器按钮图标组（与任务栏页共用一份实现 `Tabs/Shared/LauncherIconGroup.qml`）：`dock.launcherUseDistroLogo`、`dock.launcherIcon`、`dock.launcherIconColor` 与 `dock.launcherIconSize`。同一套键驱动高效模式任务栏启动器和时尚模式任务栏启动器项；高效模式右键启动器按钮走"启动器设置"落在本页，所以按钮图标的控件也在这里。尺寸滑条两种模式都显示：像素值作用于启动器*项*（高效任务栏 glyph 与时尚任务栏启动器块），`0`/重置 = 自动按模式推导（高效 16px，时尚随 `dock.iconSize`）；时尚状态栏胶囊不读该键，其图标始终按固定胶囊高度的比例推导。
 - Noctalia 原有的 `appLauncher.position` 和 `overviewLayer` 属于 SmartPanel/overlay 前端，已随该前端一起移除（登记见 §6.1）。启动器只有本节这一套 DDE 实现。
 
 ### 3.5 控制中心（dde-control-center）
@@ -475,7 +475,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
    - 右侧：铃铛按钮（32×32，可切换），用于在"通知首页"和"所有设置页（模块网格）"之间切换；旁边的齿轮按钮同样进入所有设置页。
 2. **更新提示条**（有更新时出现）：底色 `idle`，悬停 `hover`。
 3. **中部**，可滚动，有两个页面，由铃铛切换〔演进：默认页改成通知优先〕：
-   - **通知页**（默认页）：勿扰开关行 + 通知历史列表。开关行标题是"勿扰模式"（§1.10），开启时铃铛图标换成 `bell-off` 并着 `accent`。列表视口占满中部剩余高度，**内容顶对齐**：通知从列表头顶端向下堆叠，空余视口收在末尾之后〔演进：一度贴底对齐——通知贴着快捷控制条堆叠，但条高变化（分页、收起）会带动整块通知上下挪动；置顶让通知块的位置与底部控件完全解耦，也与 macOS/Windows 通知从固定锚点生长的惯例一致〕。
+   - **通知页**（默认页）：勿扰开关行 + 通知历史列表。开关行标题是"勿扰模式"（§1.10），开启时铃铛图标换成 `bell-off` 并着 `accent`。列表视口占满中部剩余高度，**内容顶对齐**：通知从列表头顶端向下堆叠，空余视口收在末尾之后〔演进：曾用贴底对齐让通知贴着快捷控制条堆叠，但条高变化（分页、收起）会带动整块通知上下挪动；置顶让通知块的位置与底部控件完全解耦，也与 macOS/Windows 通知从固定锚点生长的惯例一致〕。
      - **列表头**：列表内容的第一行，左侧"通知"（白 × 0.6、字号 S），右侧"清除历史记录"文字按钮（底色 `idle`，悬停 `hover`，内边距 4，`radiusRow`）。它属于列表内容，随内容一起顶对齐，始终紧挨第一条通知。没有通知时隐藏。
      - **日期分段**：按通知时间分成"今天""昨天""更早"三段，每段前一行分段标题（白 × 0.6、字号 XS、行高 24）。只有一段时也显示标题〔演进：取代上游的时间筛选。上游有一排可见的筛选页签；页签在 DDE 化时删掉了，Tab 键却还在切换筛选，界面上看不出当前筛的是哪一段〕。
      - **按应用分组**〔演进：DDE 15 是平铺列表；macOS、Windows 11 和 GNOME 48 都把同一应用的通知叠成一组〕：同一段里同一应用的通知归为一组。组按组内最新一条的时间排序，组内按时间倒序。只有一条的组就是一条普通通知。多条的组默认折叠，只显示最新一条，卡片下方露出两道错开的底边（每道比上一道左右各缩进 8 px、高 4 px、底色 `overlay("hover")`、`radiusItem`），卡片元信息行显示"还有 N 条"。点击底边、"还有 N 条"或用键盘 Enter 展开；展开后组顶部出现组头：应用名、"收起"文字按钮、清除本组的 × 按钮。展开和收起是数据驱动的尺寸变化，用 `motionPanel`。
@@ -487,11 +487,11 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
      - **键盘**：↑ / ↓ 在列表项之间移动（折叠的组算一项），← / → 在动作之间移动，Enter 执行当前动作，没有选中动作时展开折叠组或执行默认动作，Delete 删除当前通知。当前项画 1 px `accent` 描边。
      - 列表为空时"无通知"居中显示在空余视口里。
    - **所有设置页**：模块网格，是设置的入口页（类似 Windows 控制面板）。网格 3 列，每个格子缩进 5、圆角 5，默认 `idle`、悬停 `hover`；格子里是 24 px 图标加文字。头部齿轮、启动器里的设置入口和 `settings open/toggle` IPC 都落在这里；铃铛切换回通知页。
-4. **快捷控制面板**（底部，`quick_control/*`），只属于通知首页——所有设置页和模块视图打开时隐藏。分页显示，用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余为 × 0.3，所以在深色外框上是白色，在浅色外框上自动变深）。分页条右下角有一枚收起 chevron（展开时 ⌄、收起时 ⌃），点击把整条收成一行指示器带高，腾出的高度全部还给通知列表——按钮锚在底边右角，收起和展开是同一个屏幕坐标〔演进：原方案是顶部居中把手，收起后按钮位置会变〕。每页按自己的内容定高——翻页时面板高度用 `motionPanel` 动画过渡，不留统一槽高带来的空白〔演进：原方案所有页共用 `quickControlPanelHeight`〕。**页面顺序由 `controlCenter.quickPageOrder` 决定**（默认 卡片 → 基础 → Wi-Fi → 蓝牙 → VPN），在设置 → 控制中心 → 页面里拖拽调整〔演进〕。分页以页 id 为准——正在看的页被重排时跟随自己的位置而不是悄悄换成同索引的另一页；某页内容被卡片开关全部关掉、或服务不可用时直接从分页条里消失（蓝牙页需 `BluetoothService.bluetoothAvailable`，VPN 页需有连接），重新出现时回到存储的位次：
-   - **卡片页**（默认第一页）：已启用的 Noctalia 卡片（天气、媒体+系统监控），每张底色 `idle`、圆角 5；页高 = 已启用卡片的实际内容高（天气卡按数据收缩、媒体/监控行 `controlCenterMediaCardRowHeight` = 160·s）+ 上下留白〔演进：首页默认控件收进分页条〕。模型在交给 Repeater 前先过滤到本页实际渲染且已启用的条目——`controlCenter.cards` 里 profile/shortcuts/audio/brightness 的条目对应的是已重新分配的功能（见下方对应表，它们的 enabled 各自门控头部之外的区域、并被 OSD 抑制逻辑读取），不属于本页，不过滤会产生占布局槽位的空 Loader；关掉的条目连 Loader 都不建。媒体+系统监控卡里的系统监控表盘显示哪些指标由 `controlCenter.sysmonMetrics` 决定（cpu/temp/mem/disk 的子集，默认前三项），在设置 → 控制中心 → 卡片的卡片开关组下方配置；该卡关闭时整组隐藏，磁盘路径下拉只在磁盘指标开启时出现〔演进〕。没有播放器时媒体卡在占位封面下方写"没有正在播放的媒体"（白 × 0.6、字号 S），不只留一张灰色唱片图（§1.10 空状态）。
-   - **基础页**：音量和亮度两条滑块（两端各有 24 px 图标），下面两排快捷开关。三段分别由 `audio-card` / `brightness-card` / `shortcuts-card` 开关门控——关掉即从页上消失（不再渲染，不留空槽）；亮度滑条还要求硬件存在。三段全关时整页从分页条消失。
-   - **快捷开关**：每个 70×72，每行 5 个共两行，一页最多显示 10 个——`controlCenter.shortcuts` 的 left++right 合并后截前 10 个，超出的不再放进溢出页〔演进：溢出页删除，要显示哪些开关、什么顺序在设置 → 控制中心里配〕。图标在上、名称在下〔演进：DDE 原版 70×60 只有图标，名称靠提示框；GNOME、macOS 和 Windows 11 的快捷设置都直接写出名称，图标含义不明的开关（性能模式、电源模式）不用悬停就能认出〕：图标 24 px，底边距格子底部 32；名称一行，字号 XS，白 × 0.8（开启时白），水平居中，左右各留 4 px，超出用 … 截断，底边距格子底部 12。名称取注册表的显示名，与设置 → 控制中心里快捷开关列表的叫法一致；提示框仍显示挂件给出的动态说明（例如当前连接的网络名）。开启时，背后画一块白 × 0.2 的底，圆角 6，下边距 5。悬停底色和开启底色的切换按按钮类处理（`motionPointer`）。
-   - **Wi-Fi 页、蓝牙页、VPN 页**：列表行高 36，样式同 §3.5.4；页高贴内容、超出 `quickControlPanelHeight` 时滚动，空列表给一行提示〔演进：显示页删除——它的亮度滑块与基础页重复、夜间模式本就是快捷开关，同一组件不在两页出现〕。
+4. **快捷控制面板**（底部，`quick_control/*`），只属于通知首页，所有设置页和模块视图打开时隐藏。分页显示，用分页指示器切换（高 40；当前页的圆点为 `onShell` × 0.8，其余为 × 0.3，所以在深色外框上是白色，在浅色外框上自动变深）。分页条右下角有一枚收起 chevron（展开时 ⌄、收起时 ⌃），点击把整条收成一行指示器带高，腾出的高度全部还给通知列表；按钮锚在底边右角，收起和展开是同一个屏幕坐标〔演进：原方案是顶部居中把手，收起后按钮位置会变〕。每页按自己的内容定高，翻页时面板高度用 `motionPanel` 动画过渡，不留统一槽高带来的空白〔演进：原方案所有页共用 `quickControlPanelHeight`〕。**页面顺序由 `controlCenter.quickPageOrder` 决定**（默认 卡片 → 基础 → Wi-Fi → 蓝牙 → VPN），在设置 → 控制中心 → 页面里拖拽调整〔演进〕。分页以页 id 为准，正在看的页被重排时跟随自己的位置而不是悄悄换成同索引的另一页；某页内容被卡片开关全部关掉、或服务不可用时直接从分页条里消失（蓝牙页需 `BluetoothService.bluetoothAvailable`，VPN 页需有连接），重新出现时回到存储的位次：
+   - **卡片页**（默认第一页）：已启用的 Noctalia 卡片（天气、媒体+系统监控），每张底色 `idle`、圆角 5；页高 = 已启用卡片的实际内容高（天气卡按数据收缩、媒体/监控行 `controlCenterMediaCardRowHeight` = 160·s）+ 上下留白〔演进：首页默认控件收进分页条〕。模型在交给 Repeater 前先过滤到本页实际渲染且已启用的条目：`controlCenter.cards` 里 profile/shortcuts/audio/brightness 的条目对应的是已重新分配的功能（见下方对应表，它们的 enabled 各自门控头部之外的区域、并被 OSD 抑制逻辑读取），不属于本页，不过滤会产生占布局槽位的空 Loader；关掉的条目连 Loader 都不建。媒体+系统监控卡里的系统监控表盘显示哪些指标由 `controlCenter.sysmonMetrics` 决定（cpu/temp/mem/disk 的子集，默认前三项），在设置 → 控制中心 → 卡片的卡片开关组下方配置；该卡关闭时整组隐藏，磁盘路径下拉只在磁盘指标开启时出现〔演进〕。没有播放器时媒体卡在占位封面下方写"没有正在播放的媒体"（白 × 0.6、字号 S），不只留一张灰色唱片图（§1.10 空状态）。
+   - **基础页**：音量和亮度两条滑块（两端各有 24 px 图标），下面两排快捷开关。三段分别由 `audio-card` / `brightness-card` / `shortcuts-card` 开关门控，关掉即从页上消失（不再渲染，不留空槽）；亮度滑条还要求硬件存在。三段全关时整页从分页条消失。
+   - **快捷开关**：每个 70×72，每行 5 个共两行，一页最多显示 10 个，`controlCenter.shortcuts` 的 left++right 合并后截前 10 个，超出的不再放进溢出页〔演进：溢出页删除，要显示哪些开关、什么顺序在设置 → 控制中心里配〕。图标在上、名称在下〔演进：DDE 原版 70×60 只有图标，名称靠提示框；GNOME、macOS 和 Windows 11 的快捷设置都直接写出名称，图标含义不明的开关（性能模式、电源模式）不用悬停就能认出〕：图标 24 px，底边距格子底部 32；名称一行，字号 XS，白 × 0.8（开启时白），水平居中，左右各留 4 px，超出用 … 截断，底边距格子底部 12。名称取注册表的显示名，与设置 → 控制中心里快捷开关列表的叫法一致；提示框仍显示挂件给出的动态说明（例如当前连接的网络名）。开启时，背后画一块白 × 0.2 的底，圆角 6，下边距 5。悬停底色和开启底色的切换按按钮类处理（`motionPointer`）。
+   - **Wi-Fi 页、蓝牙页、VPN 页**：列表行高 36，样式同 §3.5.4；页高贴内容、超出 `quickControlPanelHeight` 时滚动，空列表给一行提示〔演进：显示页删除，它的亮度滑块与基础页重复、夜间模式本就是快捷开关，同一组件不在两页出现〕。
 
 Noctalia 卡片的对应关系：
 
@@ -572,7 +572,7 @@ Noctalia 卡片的对应关系：
 - **表面令牌边界**：设置页里的行、列表和嵌板一律用叠加阶梯（`overlay`）或蒙版（`maskShell`）。配色方案只经由令牌层影响组件。组件不直接用 `mSurface`、`mSurfaceVariant`、`mOutline` 这类 Material 颜色填充行或卡片：方案颜色是不透明的（要供 GTK 和终端模板使用），绕过令牌的透明度处理后会在玻璃面上变成实心色块。`m*` 颜色只在两处直接使用：配色方案预览这类"内容本身就是颜色"的展示，以及徽章、状态点的语义色。
 - **列表页**（Wi-Fi 网络、蓝牙设备、插件、配色模板这类可选多项的清单）：每一项是一个 SettingsItem 行。选中或已连接用右侧的 `accent` ✓ 和状态文字表示，整行底色不变。进行中的操作用行内转圈表示。行内展开区（密码、详情）用 `overlay("field")` 加 `radiusItem` 的嵌板。列表末尾接一个可点击的"添加"或"新建"行。
 - **堆叠子页**：`NTabView.stacked` 时，每个子页是一个 NHeader 加一个 SettingsGroup。组头与它的组之间只有 1 px 缝，组与组之间 15 px。间距全部放在上一组末行与下一组头之间，组头与组之间不再额外留白。
-- **成块的内容不折叠进行内**：设置页不用"点行展开/收起"的形式藏内容——行内不出现控制整段内容显隐的 chevron 行。内容较多时按 §3.5.3 用"下一页"行（`NNextPageRow`）推入二级页；其余情况直接常显。唯一的例外是 §3.5.4 列表页的行内展开区（密码、详情），那是列表项自身的展开行为，不折叠整组内容。
+- **成块的内容不折叠进行内**：设置页不用"点行展开/收起"的形式藏内容，行内不出现控制整段内容显隐的 chevron 行。内容较多时按 §3.5.3 用"下一页"行（`NNextPageRow`）推入二级页；其余情况直接常显。唯一的例外是 §3.5.4 列表页的行内展开区（密码、详情），那是列表项自身的展开行为，不折叠整组内容。
 - **控件必须对齐当前呈现形态**：挂件/插件的设置页只显示当前呈现形态实际消费的控件；形态下没有消费方的控件隐藏而非置灰，键值保留（切回该形态或旧配置上它仍生效）。例：`Workspace` 的分组应用视图在高效模式没有消费方，其相关控件只在高效模式下隐藏（`WorkspaceSettings.qml` 的 `groupedUnsupported` 与 `Workspace.qml` 的 `showApplications` 钳制同一公式）。
 
 ### 3.6 通知气泡（dde-osd notification）
@@ -658,10 +658,10 @@ Noctalia 卡片的对应关系：
 - 缩略图 16:9、宽 160，间距 10，横向滚动。
   - 滚动有三条路：纵向滚轮与触摸板横滚都映射到 `contentX`（`animationFast` 过渡）；条两端各叠一枚圆形翻页按钮（`chevron-left/right`，`overlay("field")` 底 + `borderShell` 描边，悬停 `hover` 洗色），只在对应方向还有内容时出现，点击滚动近一屏宽并留下首尾缩略图作参照；直接拖动仍然可用。
   - 当前壁纸：外圈 2 px `accent` 描边。
-  - 悬停的缩略图：底缘内叠出"浅色""深色""两者"三个按钮（胶囊形与尺寸同 §3.5.4，但配色走 §1.5 的壁纸令牌：`veilWallpaper`×0.6 底（悬停 0.8）+ `onWallpaper` 字——照片是任意底色，随主题的 `overlay`/`onShell` 在亮色壁纸上会洗没），分别写入亮、暗、两个外观槽位——按钮按固定槽位标注而不是"当前/另一外观"，免得读者先回忆当前是哪种模式；悬停才出现的行不占条带高度（放进缩略图下方会被 `clip` 截断）。原版的三个按钮是"仅桌面""仅锁屏""都设置"。本 shell 没有单独的锁屏壁纸：`LockScreenBackground` 复用桌面壁纸的预模糊缓存，`WallpaperService.changeWallpaper` 只区分 `"light"` 和 `"dark"` 两个外观（`WallpaperService.qml:422-424`），所以三个按钮对应亮、暗两个外观，结构与原版一致。以后加入单独的锁屏壁纸时，再改回原版的三个按钮。
+  - 悬停的缩略图：底缘内叠出"浅色""深色""两者"三个按钮（胶囊形与尺寸同 §3.5.4，但配色走 §1.5 的壁纸令牌：`veilWallpaper`×0.6 底（悬停 0.8）+ `onWallpaper` 字，因为照片是任意底色，随主题的 `overlay`/`onShell` 在亮色壁纸上会洗没），分别写入亮、暗、两个外观槽位。按钮按固定槽位标注而不是"当前/另一外观"，免得读者先回忆当前是哪种模式；悬停才出现的行不占条带高度（放进缩略图下方会被 `clip` 截断）。原版的三个按钮是"仅桌面""仅锁屏""都设置"。本 shell 没有单独的锁屏壁纸：`LockScreenBackground` 复用桌面壁纸的预模糊缓存，`WallpaperService.changeWallpaper` 只区分 `"light"` 和 `"dark"` 两个外观（`WallpaperService.qml:422-424`），所以三个按钮对应亮、暗两个外观，结构与原版一致。以后加入单独的锁屏壁纸时，再改回原版的三个按钮。
 - 顶部一行（目录、Wallhaven 来源、搜索）按 §3.5.4 的控件样式绘制。
   - 右侧的调色盘按钮打开取色器，选色后走 `WallpaperService.setSolidColor` 切换到纯色壁纸（`wallpaper.solidColor` + `useSolidColor`）；纯色生效时按钮按选中态着色。
-- 本地缩略图左上角有收藏星标：悬停或已收藏时可见，点击走 `WallpaperService.toggleFavorite`；收藏项排在列表最前（上游 `a08ff3619` 的同名行为）。Wallhaven 项不显示星标——其 path 是远程缩略图 URL，不是本地壁纸。
+- 本地缩略图左上角有收藏星标：悬停或已收藏时可见，点击走 `WallpaperService.toggleFavorite`；收藏项排在列表最前（上游 `a08ff3619` 的同名行为）。Wallhaven 项不显示星标，其 path 是远程缩略图 URL，不是本地壁纸。
 
 ### 3.11 对话框（DDialog）
 
@@ -714,15 +714,15 @@ Noctalia 卡片的对应关系：
 ### 4.2 合成器侧规则（niri）
 
 - nosdshell 通过 `ext-background-effect` 自己发布模糊区域（bar 与面板在 `nosdshell-background` 上，dock 和两个启动器各自发布），niri ≥ 26.04 无需任何规则即按客户端申请的形状精确模糊。layer-rule 只负责两件事：给浮动在窗口上的发布面关掉 xray（否则默认只采样壁纸），和给"永不模糊"的面钉 `blur false`。
-- **绝不**在 nosdshell 面的 surface 级规则里写 `blur true`：niri 会按整个面（含透明区）施加模糊，而 `nosdshell-background`、`popupmenu`、`notifications`、`toast` 等大多是全屏面——这就是 2026-10 的巨型模糊事故。整面 `blur true` 只许写在 `popups {}` 里（xdg_popup 天然内容尺寸）。
-- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊给浮在窗口上的发布面（`background`、`dock`、`launcher-mini`）；Tier 1 xray 给全屏静态面（`launcher-full`——它要的就是"模糊壁纸"观感）；Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、瞬态卡片按 §1.2 无需模糊即可读、辅助面不可见）。
+- **绝不**在 nosdshell 面的 surface 级规则里写 `blur true`：niri 会按整个面（含透明区）施加模糊，而 `nosdshell-background`、`popupmenu`、`notifications`、`toast` 等大多是全屏面，这就是 2026-10 的巨型模糊事故。整面 `blur true` 只许写在 `popups {}` 里（xdg_popup 天然内容尺寸）。
+- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊给浮在窗口上的发布面（`background`、`dock`、`launcher-mini`）；Tier 1 xray 给全屏静态面（`launcher-full`，它要的就是"模糊壁纸"观感）；Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、瞬态卡片按 §1.2 无需模糊即可读、辅助面不可见）。
 - 规则集的仓库内唯一事实源是 `Scripts/docs/nosdshell-layer-rules.kdl`，`check-layer-namespaces.py` 校验全部发射的 namespace 被归类且阻止 surface 级 `blur true` 回归；该文件经 `vendor-legacy-docs.py` 注入 docs 站的 niri 页。
 
 ### 4.3 `nosd-helpers portal`
 
 - 作用：深色/浅色模式的对外权威面。单进程、单连接同时持有 `org.freedesktop.impl.portal.desktop.nosdshell`（portal Settings 后端：`Read`/`ReadAll`/`Version=1`/`SettingChanged`）、`nl.whynothugo.darkman`（darkman 兼容 API：可写 `Mode` 属性 + `ModeChanged` 信号）与 `org.freedesktop.impl.portal.desktop.darkman`（存量 `darkman.portal` 描述符的零配置别名）。`darkman get|set|toggle`、Emacs `self-theme` 等既有消费者无需改动；`~/.local/share/{dark,light}-mode.d/` 钩子目录语义与 darkman 一致。
 - 命令行：`nosd-helpers portal <run|get|set|toggle|hooks>`；状态持久化于 `~/.local/state/nosdshell/color-scheme`；`~/.config/darkman/config.yaml` 的 `lat`/`lng` 启用 NOAA 日出日落调度（`usegeoclue` 不支持，`dbusserver`/`portal` 可分别关掉对应总线名）。
-- 调用方式：`DarkModeService` 在每次 `darkMode` 变化时执行 `portal set`，并在 helpers 就绪时幂等拉起 `portal run`（进程内 flock + 总线名占有检查保证单实例）。portal 反方向（外部 `set`/`toggle`、太阳计时器）经 `SettingChanged` 广播——`schedulingMode: "system"` 的既有跟随逻辑天然接住，其他模式下由 daemon 侧 `nosdshell ipc call darkMode` 兜底写入。
+- 调用方式：`DarkModeService` 在每次 `darkMode` 变化时执行 `portal set`，并在 helpers 就绪时幂等拉起 `portal run`（进程内 flock + 总线名占有检查保证单实例）。portal 反方向（外部 `set`/`toggle`、太阳计时器）经 `SettingChanged` 广播，`schedulingMode: "system"` 的既有跟随逻辑天然接住，其他模式下由 daemon 侧 `nosdshell ipc call darkMode` 兜底写入。
 - `.d` 钩子开关：设置里的 `colorSchemes.runDarkmanHooks` 由 `DarkModeService` 经 `portal hooks on|off` 写成 `~/.local/state/nosdshell/darkman-hooks` 标志文件（本地写，不等守护进程在线）；daemon 在每次 transition 时重读，0/off/false 即跳过钩子目录（其余状态/信号/转发不受影响）。文件缺失等于开，保持 darkman 默认行为。
 - 工具缺失时 `pushPortal` 输出一次 `Logger.w` 并跳过；shell 自身主题切换不受影响，仅 portal 订阅者（GTK4/Electron 等）收不到通知。
 
@@ -785,7 +785,7 @@ Noctalia 卡片的对应关系：
 
 - `ui.settingsPanelMode`：设置页只在控制中心里显示，选择器已移除。上游的面板代码仍读取这个键，`Migration72` 把旧值固定为 `controlCenter`。
 
-无设置页控件的活跃键（不是兼容钉值——消费方健在，用户入口在别处或刻意不开放）：
+无设置页控件的活跃键（不是兼容钉值，消费方健在，用户入口在别处或刻意不开放）：
 
 - `appLauncher.iconRatio`：全屏启动器内 Ctrl+滚轮/± 调整（§3.4.1）；DDE 把图标大小调节放在启动器内，设置页不开放。
 - `general.shadowOffsetX`、`general.shadowOffsetY`：经 `Commons/Style.qml` 令牌读取（`NDropShadow`），DDE 阴影偏移是 §1.6 的固定规格而非偏好项，设置页不开放；上游键保留，手改 JSON 仍生效。
@@ -812,7 +812,7 @@ Noctalia 卡片的对应关系：
 | `sessionMenu.position`、`sessionMenu.showHeader`、`sessionMenu.largeButtonsStyle`、`sessionMenu.largeButtonsLayout` | DDE 会话菜单是固定全屏按钮行（§3.8），这些布局选项没有对应物；v78 迁移删除 |
 | `controlCenter.position` | 控制中心固定贴屏幕右缘（§3.5.1）；v78 迁移删除 |
 | `Modules/Panels/Dock/StaticDockPanel.qml`（上游的 dock 样式面板） | 没有任何打开路径（无 open()/toggle()/PanelService 入口），随 `d3f2097f2` 与其专属键一起移除 |
-| 通知历史的 Tab 键时间筛选（`currentRange`：全部/今天/昨天/更早） | 可见的日期分段标题取代了它（§3.5.2）。筛选页签在 DDE 化时已删，Tab 键仍切换隐形筛选状态——界面上看不出当前筛的是哪一段，也不能再切回全部；分段标题给出同样的时间上下文且不藏内容 |
+| 通知历史的 Tab 键时间筛选（`currentRange`：全部/今天/昨天/更早） | 可见的日期分段标题取代了它（§3.5.2）。筛选页签在 DDE 化时已删，Tab 键仍切换隐形筛选状态，界面上看不出当前筛的是哪一段，也不能再切回全部；分段标题给出同样的时间上下文且不藏内容 |
 | 启动器的 SmartPanel/overlay 前端（`Modules/Launcher/LauncherOverlayWindow.qml` 等，`appLauncher.position`、`appLauncher.overviewLayer`） | §3.4 的 DDE 视图是唯一激活前端，overlay 前端没有任何显示路径，`390d8de79` 移除 |
 | 把旧配置目录 `~/.config/noctalia` 自动搬到 `~/.config/nosdshell` | 不做。nosDshell 是独立的 shell，不是 noctalia 的就地升级；`MigrationNN` 只负责 nosDshell 自身配置的逐键演进 |
 

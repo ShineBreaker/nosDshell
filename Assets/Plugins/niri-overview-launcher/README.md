@@ -1,29 +1,19 @@
 # Niri Overview Launcher
 
-A Noctalia plugin that automatically opens the launcher when you start typing in niri's overview mode.
+Built-in nosDshell plugin that opens the application launcher and starts searching as soon as you type a character inside Niri's overview mode.
 
-## Features
+## Behavior
 
-- Detects when niri's overview mode is active
-- Captures keyboard input when in overview mode
-- Opens the Noctalia launcher when you type any text
-- Ignores special keys, modifiers, and navigation keys so they still work in overview mode
+- Tracks `CompositorService.overviewActive` to detect when Niri enters or leaves overview mode.
+- Places a transparent, click-through overlay on every screen while the overview is open so pointer clicks still reach Niri's window previews.
+- Forwards arrow keys (`Left`, `Right`, `Up`, `Down`) to Niri column and workspace navigation, and `Escape` or `Return` to exit the overview.
+- Opens the nosDshell launcher with the typed character (`LauncherState.openWithSearch`) when you press any printable key.
+- Closes Niri's overview automatically once you launch an application or dismiss the launcher.
 
 ## Requirements
 
-- Noctalia 4.1.2 or higher
-- Niri window manager
-- The niri socket must be available via `$NIRI_SOCKET` environment variable
-
-## How it works
-
-The plugin:
-1. Connects to niri's event stream via the niri socket
-2. Monitors for `OverviewOpenedOrClosed` events
-3. When overview mode is active, creates transparent overlay windows on all screens
-4. These windows capture keyboard focus but are click-through
-5. When you type a regular character (not a special key), it executes the launcher toggle command
+- Niri window manager with `$NIRI_SOCKET` available in the session environment.
 
 ## Credits
 
-Inspired by the implementation in [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell)
+Adapted from `niri-overview-launcher` in [`noctalia-plugins`](https://github.com/noctalia-dev/noctalia-plugins), inspired by [DankMaterialShell](https://github.com/AvengeMedia/DankMaterialShell).

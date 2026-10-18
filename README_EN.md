@@ -4,7 +4,7 @@
 
 # nosDshell
 
-### A Wayland desktop shell that runs every Noctalia v4 feature behind the deepin 15 interface
+### The classic deepin 15 glass desktop for Wayland, powered by the full Noctalia v4 engine
 
 [中文](README.md) · [Wiki](https://shinebreaker.github.io/nosDshell/) · [Design spec](DESIGN.md) · [Changelog](CHANGELOG.md)
 
@@ -22,32 +22,41 @@
 
 ## About
 
-[Noctalia](https://github.com/noctalia-dev/noctalia-shell) v4 is a Wayland desktop shell built on Quickshell. nosDshell is a fork that keeps all of its features and redraws every surface the way deepin 15 (DDE 15) drew it: the taskbar, launcher, control center, notifications, OSD, shutdown screen, and lock screen.
+Wayland compositors like Niri, Hyprland, and Sway handle windows fast, but turning them into a complete desktop usually means wiring together separate tools for your bar, launcher, notifications, lock screen, wallpaper, Polkit prompts, and dark-mode switching.
 
-- **Every value has a source.** Sizes, opacities, radii, and animation durations come from the [GXDE-OS](https://github.com/GXDE-OS) source (the community-maintained DDE 15). [`DESIGN.md`](DESIGN.md) lists each one with the file and line it came from. Deliberate departures from the original, such as more visible borders and softer shadows, are marked 〔演进〕 (evolved) in the spec.
-- **The full Noctalia v4 feature set.** Six compositors (Niri, Hyprland, Sway, Scroll, Labwc, MangoWC), multi-monitor support, wallpaper management, desktop widgets, plugins, and settings migrations. Upstream components and options that no longer apply are removed — brand services such as telemetry, update checks, and the supporters list, plus lock-screen, session-menu, and panel options that have no DDE counterpart; [`DESIGN.md`](DESIGN.md) §6.1 has the full list.
-- **Light and dark themes.** Glass surfaces follow the theme. Monochrome and `*-symbolic` icons switch color with it: dark on light surfaces, light on dark ones. The fullscreen launcher, lock screen, and shutdown screen sit on the wallpaper and stay dark in both themes, so white text stays readable.
+**nosDshell** replaces that patchwork with one cohesive shell. Built on [Quickshell](https://quickshell.outfoxxed.me) and forked from [Noctalia](https://github.com/noctalia-dev/noctalia-shell) v4, it keeps the entire Noctalia v4 feature set and redraws every surface in the **deepin 15 (DDE 15)** visual language: dark and light frosted glass, crisp hairline borders, a signature `#2CA7F8` accent color, and consistent behavior across every panel.
+
+---
+
+## Why nosDshell
+
+- **Pixel-accurate DDE 15 design.** Sizes, opacities, corner radii, and animation curves come directly from the [GXDE-OS](https://github.com/GXDE-OS) source code (the community-maintained DDE 15) and are cited by file and line number in [`DESIGN.md`](DESIGN.md). Deliberate modern refinements, such as hairline borders, softer drop shadows, and theme-aware notification tiles, are marked 〔演进〕 (evolved) in the spec.
+- **One shell instead of a dozen daemons.** Taskbar, optional top status bar, fullscreen and mini app launchers, slide-out control center, grouped notification center, volume and brightness OSD, wallpaper manager, lock screen, fullscreen shutdown screen, and a native Polkit authentication agent all run in one process.
+- **Two taskbar modes plus an optional status bar.** Switch at any time between Fashion mode, a centered floating dock, and Efficient mode, a full-width edge bar with customizable left, center, and right widget zones. Both work on all four screen edges. In Fashion mode, you can also enable an independent macOS-style top status bar.
+- **Desktop-wide light and dark themes.** Frosted glass surfaces and `*-symbolic` monochrome icons adapt to light and dark modes, or pull a palette from your current wallpaper to theme GTK, terminals, and editors. A built-in `darkman` and `xdg-desktop-portal` daemon keeps GTK4, Qt, Electron apps, and `~/.local/share/{dark,light}-mode.d/` hook scripts in sync.
+- **Six Wayland compositors and built-in plugins.** Supports Niri, Hyprland, Sway, Scroll, Labwc, and MangoWC with multi-monitor layouts, per-display overrides, desktop widgets, and automatic settings migrations. Ships with a taskbar USB drive manager (mount, check capacity, and safely power off drives) and a Niri overview listener that opens the launcher as soon as you start typing in overview mode.
+- **No telemetry or brand clutter.** Upstream telemetry, update checks, and sponsor banners are removed, along with lock-screen, session-menu, and panel layout options that have no DDE counterpart. See [`DESIGN.md`](DESIGN.md) §6.1 for the complete removal registry.
 
 ---
 
 ## Screenshots
 
-| Light | Dark |
+| Light theme | Dark theme |
 |:---:|:---:|
 | ![light desktop](Assets/Screenshots/nosdshell-desktop-light.jpg) | ![dark desktop](Assets/Screenshots/nosdshell-desktop-dark.jpg) |
 | ![light mini launcher](Assets/Screenshots/nosdshell-launcher-mini-light.jpg) | ![dark mini launcher](Assets/Screenshots/nosdshell-launcher-mini-dark.jpg) |
 | ![light settings](Assets/Screenshots/nosdshell-settings-light.jpg) | ![dark control center](Assets/Screenshots/nosdshell-control-center-dark.jpg) |
 
 <details>
-<summary><b>More surfaces</b></summary>
+<summary><b>More desktop surfaces</b></summary>
 
 | | |
 |:---:|:---:|
-| **Fullscreen launcher** (stays dark on the wallpaper) | **Efficient-mode taskbar** |
+| **Fullscreen launcher** (stays dark over the wallpaper) | **Efficient-mode taskbar** |
 | ![fullscreen launcher](Assets/Screenshots/nosdshell-launcher-fullscreen.jpg) | ![efficient taskbar](Assets/Screenshots/nosdshell-efficient.jpg) |
-| **Dock popup panel** | **Control center (light)** |
+| **Taskbar popup panel** | **Control center (light)** |
 | ![dock panel](Assets/Screenshots/nosdshell-dock-panel.jpg) | ![light control center](Assets/Screenshots/nosdshell-control-center-light.jpg) |
-| **Notification** | **OSD** |
+| **Notification bubble** | **OSD tile** |
 | ![notification](Assets/Screenshots/nosdshell-notification.jpg) | ![osd](Assets/Screenshots/nosdshell-osd.jpg) |
 | **Shutdown screen** | **Lock screen** |
 | ![shutdown screen](Assets/Screenshots/nosdshell-session-menu.jpg) | ![lock screen](Assets/Screenshots/nosdshell-lockscreen.jpg) |
@@ -56,65 +65,69 @@
 
 ---
 
-## Surfaces
+## Desktop tour
 
-- **Taskbar.** Two forms you can switch between at any time: efficient mode is a full-width bar along the screen edge, fashion mode is a floating centered dock. Both work on all four edges. Running indicators, window grouping, pinning, and drag reordering follow DDE's rules. Popup panels are arrowed bubbles that point at the taskbar icon that opened them.
-- **Launcher.** Fullscreen mode shows an app grid over the blurred wallpaper while the taskbar stays usable. Mini mode opens next to the taskbar, browses two levels of categories (click a category again to return to all apps), and searches apps, commands, and calculations.
-- **Control center.** Slides in from the right edge, 408 px wide, with a grid of settings modules, paged quick toggles, and notification history. Clicking a module opens its settings page, which has a 56 px navigation rail on the left.
-- **Shutdown screen.** A centered row of 140×140 buttons (power off, reboot, suspend, hibernate, lock, log out, and more; the set and order are configurable). Arrow keys or number keys select a button.
-- **OSD.** A square at the bottom center for volume, brightness, and volume above 100%. Repeated changes update the value in place without replaying the animation.
-- **Notifications and toasts.** 300 px wide bubbles, one at a time by default, with the rest queued. `*-symbolic` app icons are tinted to match the bubble.
-- **Lock screen.** A band along the bottom with the clock, date, media controls, and power button, and a centered avatar, password field, error hint, and Caps Lock hint.
+- **Taskbar and popup panels.** Switch between the centered Fashion dock and the full-width Efficient bar on any screen edge. Running indicators, window grouping, pinned apps, and drag reordering follow DDE 15 rules. Clicking volume, Wi-Fi, Bluetooth, battery, clock, or USB icons opens an arrowed frosted-glass bubble pointing at the icon that triggered it.
+- **Application launcher.** Fullscreen mode displays an app grid over a pre-blurred wallpaper with an 11-category sidebar while keeping the taskbar interactive. Mini mode opens beside the taskbar with two-level category browsing and quick folder links. Both modes search apps, open windows, settings, clipboard history, emoji, math expressions, and shell commands.
+- **Control center and settings.** Slides in from the right edge at 408 px wide. The default view shows notifications grouped by date and application above a collapsible paged strip for weather, media controls, system gauges, audio and brightness sliders, and up to 10 labeled quick switches. Clicking the gear icon or any module tile opens the unified settings view with its 56 px left icon navigation rail.
+- **Lock screen and shutdown screen.** The lock screen pairs a pre-blurred wallpaper with a bottom info band (large clock, date, media controls, power button) and a centered avatar, password or fingerprint prompt, error tooltip, and Caps Lock indicator. The shutdown screen centers a row of 140x140 action buttons (power off, reboot, suspend, hibernate, lock, log out, reboot to UEFI) navigable with arrow keys or number shortcuts.
+- **OSD, notifications, and Polkit authentication.** Volume, brightness, and lock-key changes appear in a bottom-center 140x140 square that updates values in place without replaying its entrance animation. Notifications queue in 300 px wide bubbles. Privileged actions open a native DDE Polkit password dialog that resolves transient systemd units to the actual command requesting elevation.
 
 ---
 
-## Requirements
+## Getting started
 
-- A Wayland compositor: Niri, Hyprland, Sway, Scroll, Labwc, or MangoWC
-- [Quickshell](https://quickshell.outfoxxed.me) 0.3.x
-- Icon theme: Papirus or deepin recommended
-- Optional command-line tools (a missing tool only disables its feature): brightnessctl, ddcutil, wlsunset, wl-clipboard, cliphist, cava, power-profiles-daemon. See [`CREDITS.md`](CREDITS.md) for what each one does.
+### Requirements
 
-| Distro | How |
+- **Wayland compositor**: Niri, Hyprland, Sway, Scroll, Labwc, or MangoWC
+- **[Quickshell](https://quickshell.outfoxxed.me)**: 0.3.x
+- **Icon theme**: Papirus or deepin recommended
+- **Optional CLI tools** (a missing tool only disables its feature): `brightnessctl`, `ddcutil`, `wlsunset`, `wl-clipboard`, `cliphist`, `cava`, `power-profiles-daemon`, `udisksctl`. See [`CREDITS.md`](CREDITS.md) for what each tool provides.
+
+### Installation
+
+| Distribution | Method |
 |---|---|
-| Guix | `nosdshell.scm` at the repo root |
-| Nix / NixOS | `flake.nix`, which includes home-manager and NixOS modules |
-| Other | Clone this repo and run `qs -p <path-to-repo>` |
+| Guix | `nosdshell.scm` at the repository root |
+| Nix / NixOS | `flake.nix` (includes package, Home Manager module, and NixOS module) |
+| Other | Clone this repository and run `qs -p <path-to-repo>` |
+
+Run `nosdshell --version` to print the shell and Quickshell versions. Shell completions for `bash`, `zsh`, and `fish` install to standard paths and load automatically in new terminal sessions.
 
 ---
 
 ## Documentation
 
-- **[Wiki](https://shinebreaker.github.io/nosDshell/)**: a complete archive of the upstream Noctalia v4 docs (installation, configuration, theming, plugin development, IPC reference).
-- [`DESIGN.md`](DESIGN.md): the DDE 15 visual and interaction spec. The interface follows it.
-- [`AGENTS.md`](AGENTS.md): engineering constraints and working method. It links to [`CODING_STANDARDS.md`](CODING_STANDARDS.md), [`DEBUGGING.md`](DEBUGGING.md), and [`TOOLS.md`](TOOLS.md) by task type.
-- [`CHANGELOG.md`](CHANGELOG.md) and [`docs/RELEASE.md`](docs/RELEASE.md): change history and the release process.
+- **[Wiki](https://shinebreaker.github.io/nosDshell/)**: complete archive of the upstream Noctalia v4 documentation (installation, configuration, theming, plugin development, and IPC reference).
+- **[`DESIGN.md`](DESIGN.md)**: the DDE 15 visual and interaction specification. Every surface follows it.
+- **[`AGENTS.md`](AGENTS.md)**: architecture and maintenance rules, linking to [`CODING_STANDARDS.md`](CODING_STANDARDS.md), [`DEBUGGING.md`](DEBUGGING.md), and [`TOOLS.md`](TOOLS.md) by task type.
+- **[`CHANGELOG.md`](CHANGELOG.md)** and **[`docs/RELEASE.md`](docs/RELEASE.md)**: release notes and release workflow.
 
 ---
 
 ## Development
 
-Common commands are wrapped in the `justfile`; run `just` to list them.
+Common tasks are defined in the `justfile`. Run `just` to list all recipes:
 
-| Goal | Command |
+| Task | Command |
 |---|---|
-| Lint | `Scripts/dev/lint.sh [--changed]` |
-| Run isolated and take screenshots | `Scripts/test/verify.sh <name> [--settings seed.json] [--scenes a,b]` |
-| Verify on real niri | `Scripts/test/niri/` (nested niri; opens a window on your desktop) |
-| Performance baseline | `Scripts/test/bench.sh` |
-| Format QML | `Scripts/dev/qmlfmt.sh <path>` |
+| Static checks (settings keys, translations, motion tokens, qmllint) | `Scripts/dev/lint.sh [--changed]` |
+| Run in an isolated headless session and capture screenshots | `Scripts/test/verify.sh <name> [--settings seed.json] [--scenes a,b]` |
+| Verify in a nested Niri window | `Scripts/test/niri/` |
+| Startup and panel latency benchmark | `Scripts/test/bench.sh` |
+| Format QML files | `Scripts/dev/qmlfmt.sh <path>` |
 
 ---
 
 ## License
 
-GPL-3.0, see [LICENSE](LICENSE).
-Parts derived from upstream Noctalia remain under the MIT License, see [LICENSE-MIT](LICENSE-MIT).
+Licensed under GPL-3.0. See [LICENSE](LICENSE).
+Code derived from upstream Noctalia remains under the MIT License. See [LICENSE-MIT](LICENSE-MIT).
 
 ## Credits
 
-- [Noctalia](https://github.com/noctalia-dev/noctalia-shell): the functional base of this project (v4 branch). Its archived v4 docs are hosted in our Wiki.
-- [GXDE-OS](https://github.com/GXDE-OS): the community-maintained DDE 15 and the source of the design values. The default wallpaper `deepin15-desktop.jpg` comes from its wallpaper repo (CC-BY-3.0 © UnionTech).
-- deepin / DDE 15: the original authors of this visual language.
+- **[Noctalia](https://github.com/noctalia-dev/noctalia-shell)**: the functional foundation of this project (v4 branch). Its archived v4 documentation is hosted on our Wiki.
+- **[GXDE-OS](https://github.com/GXDE-OS)**: the community-maintained DDE 15 and the source of our design measurements. The default wallpaper `deepin15-desktop.jpg` comes from its wallpaper repository (CC-BY-3.0 © UnionTech).
+- **deepin / DDE 15**: the original creators of this visual language.
 
-See [`CREDITS.md`](CREDITS.md) for the full list of credits and dependencies.
+See [`CREDITS.md`](CREDITS.md) for the full list of credits and runtime dependencies.
