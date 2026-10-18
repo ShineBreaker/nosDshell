@@ -449,8 +449,11 @@ Singleton {
   readonly property color lowPower: "#FF8000"
   // DDE battery charge green (DESIGN §1.1): gxde-dock's own power-plugin
   // assets fill charging/healthy cells with #9AD82D; empty cells use the
-  // alert family. Shared by every battery state tint.
-  readonly property color positive: "#9AD82D"
+  // alert family. Shared by every battery state tint. The light-mode value
+  // is derived — DDE ships no light shell, and the #9AD82D fill (tuned as a
+  // large glyph interior) reads ~1.6:1 as a light-shell text/icon tint, so
+  // the light side darkens the same hue to ≈4.8:1 on #F8F8F8.
+  readonly property color positive: shellIsDark ? "#9AD82D" : "#4E7A00"
   // MD3 disabled spec: onSurface at 38% — Deepin dark lands ≈#616161, a step
   // off the old fixed #646464.
   readonly property color textDisabledDark: Qt.alpha(onShell, 0.38)

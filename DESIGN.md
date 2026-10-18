@@ -43,7 +43,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | `attention` | `#F18A2E` | 窗口请求注意时（任务栏项填充 80%） | `gxde-dock/frame/item/appitem.cpp:313` |
 | `alert` | `#F9704F` | 密码错误边框、错误提示文字 | `gxde-session-ui/dde-lock/skin/dpasswdeditanimated.qss` |
 | `lowPower` | `#FF8000` | 低电量警告文字 | `gxde-session-ui/dde-lowpower/window.cpp` |
-| `positive` | `#9AD82D` | 接通电源/充电态着色 | `gxde-dock/plugins/power/resources/icons/battery_*_plugged.svg` 填充色 |
+| `positive` | `#9AD82D`（暗）/ `#4E7A00`（亮） | 接通电源/充电态着色 | 暗色侧：`gxde-dock/plugins/power/resources/icons/battery_*_plugged.svg` 填充色；浅色侧〔派生：原填充色在浅底文字/图标上仅约 1.6:1，按同色相加暗至 ≈4.8:1〕 |
 | `textDisabledDark` | `#646464` | 暗色菜单里的禁用项 | `deepin-menu/src/ddockmenu.cpp:92-96` |
 
 ### 1.2 表面（蒙版）
