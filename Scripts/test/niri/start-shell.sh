@@ -26,6 +26,7 @@ HOME="$ISO/home" XDG_CONFIG_HOME="$ISO/config" XDG_CACHE_HOME="$ISO/cache" \
 XDG_STATE_HOME="$ISO/state" XDG_DATA_HOME="$ISO/data" XDG_RUNTIME_DIR="$ISO/runtime" \
 NOSD_CONFIG_DIR="$ISO/config/nosdshell/" NOSD_CACHE_DIR="$ISO/cache/nosdshell/" \
 XDG_CURRENT_DESKTOP=niri WAYLAND_DISPLAY="$(wayland_socket)" \
+NIRI_SOCKET="$(niri_socket)" \
 "$QS_BIN" -p "$REPO" > "$ISO/log/shell.log" 2>&1 &
 echo $! > "$ISO/runtime/shell.pid"
 
