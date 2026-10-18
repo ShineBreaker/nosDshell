@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import qs.Commons
+import qs.Services.Debug
 import qs.Services.UI
 
 // Simple context menu PopupWindow (similar to TrayMenu)
@@ -657,9 +658,24 @@ PopupWindow {
                  });
   }
 
+  // Debug root while open: context menus are anchored PopupWindows — they
+  // live outside every registered root's subtree, so `debug tree/find` was
+  // blind to them. Top-level menus register as "ctxmenu" (last-opened wins;
+  // only one is realistically open at a time), submenus stay unregistered.
   onVisibleChanged: {
     if (!visible)
       _closeSubmenus();
+    if (!isSubmenu) {
+      if (visible)
+        DebugService.registerRoot("ctxmenu", reveal);
+      else
+        DebugService.unregisterRoot("ctxmenu");
+    }
+  }
+
+  Component.onDestruction: {
+    if (!isSubmenu)
+      DebugService.unregisterRoot("ctxmenu");
   }
 
   // Fade-out before the popup surface unmaps: _closing drives the reveal's

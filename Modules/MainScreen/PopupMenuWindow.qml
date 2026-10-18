@@ -3,6 +3,7 @@ import Quickshell
 import Quickshell.Wayland
 import qs.Commons
 import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.UI
 import qs.Widgets
 
@@ -40,17 +41,52 @@ PanelWindow {
   WlrLayershell.namespace: "nosdshell-" + windowType + "-" + (screen?.name || "unknown")
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
-  // Track if a dialog is currently open (needed for keyboard focus)
-  property bool hasDialog: false
+  // The currently open modal dialog (created into dialogContainer by
+  // BarService/DesktopWidgetRegistry). hasDialog is derived — callers assign
+  // dialogItem, never hasDialog, so the window state can't drift from the
+  // item actually on screen.
+  property var dialogItem: null
+  readonly property bool hasDialog: dialogItem !== null
 
-  // Register with PanelService so widgets can find this window
+  // Frosted-glass behind the open dialog: settings popups render inside
+  // this surface, so the blur region rides the same BackgroundEffect path
+  // the panels/dock use (DESIGN §1.2).
+  BackgroundEffect.blurRegion: dialogBlurRegion.region
+  NSurfaceRegion {
+    id: dialogBlurRegion
+    // Dialogs opened here are Qt Quick Popups — QObject, not Item — so the
+    // tracked rect must be their contentItem (Qt Quick renders the popup at
+    // its x/y through that child).
+    trackedItem: {
+      const d = root.dialogItem;
+      if (!d)
+        return null;
+      return (d instanceof Item) ? d : (d.contentItem || null);
+    }
+    radius: Style.radiusWindow
+    activeWhen: Color.blurActive && root.dialogItem !== null
+  }
+
+  // Register with PanelService so widgets can find this window, and as a
+  // debug root so `debug find/tree` can reach dialogs rendered inside it.
+  property string _dbgName: ""
   Component.onCompleted: {
     objectName = "popupMenuWindow-" + (screen?.name || "unknown");
     PanelService.registerPopupMenuWindow(screen, root);
+    if (screen && screen.name) {
+      root._dbgName = "popupMenuWindow-" + screen.name;
+      // Register the window's real content item — root.contentItem is this
+      // file's own popup-content property and shadows QQuickWindow.contentItem;
+      // dialogContainer.parent reaches the actual scene root so debug
+      // tree/find covers dialogs created into dialogContainer.
+      DebugService.registerRoot(root._dbgName, dialogContainer.parent);
+    }
   }
 
   Component.onDestruction: {
     PanelService.unregisterPopupMenuWindow(screen);
+    if (root._dbgName !== "")
+      DebugService.unregisterRoot(root._dbgName);
   }
 
   // Load TrayMenu as the default content

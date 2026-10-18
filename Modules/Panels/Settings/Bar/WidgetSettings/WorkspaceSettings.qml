@@ -12,6 +12,13 @@ ColumnLayout {
   property var screen: null
   property var widgetData: null
   property var widgetMetadata: null
+  // Injected post-load by BarWidgetSettingsDialog ("" when opened elsewhere).
+  property string sectionId: ""
+
+  // Same formula as Workspace.qml's _squaresMode: the widget draws fixed
+  // workspace squares in efficient mode and in the fashion dock. Pill/label
+  // and grouped-app settings have no consumer there — hide the dead rows.
+  readonly property bool squaresMode: Settings.data.dock.mode === "efficient" || (sectionId === "dock" && Settings.data.dock.mode === "fashion")
 
   signal settingsChanged(var settings)
 
@@ -76,6 +83,7 @@ ColumnLayout {
                   saveSettings();
                 }
     minimumWidth: 200
+    visible: !root.squaresMode
   }
 
   NSpinBox {
@@ -88,7 +96,7 @@ ColumnLayout {
       settingsHelper.set("characterCount", value);
       saveSettings();
     }
-    visible: valueLabelMode === "name"
+    visible: valueLabelMode === "name" && !root.squaresMode
   }
 
   NValueSlider {
@@ -105,7 +113,7 @@ ColumnLayout {
                saveSettings();
              }
     text: Math.round(valuePillSize * 100) + "%"
-    visible: !valueShowApplications
+    visible: !valueShowApplications && !root.squaresMode
   }
 
   NComboBox {
@@ -136,6 +144,7 @@ ColumnLayout {
                   saveSettings();
                 }
     minimumWidth: 200
+    visible: !root.squaresMode
   }
 
   NToggle {
@@ -156,6 +165,7 @@ ColumnLayout {
                  settingsHelper.set("showLabelsOnlyWhenOccupied", checked);
                  saveSettings();
                }
+    visible: !root.squaresMode
   }
 
   NToggle {
@@ -180,6 +190,7 @@ ColumnLayout {
 
   NDivider {
     Layout.fillWidth: true
+    visible: !root.squaresMode
   }
 
   NToggle {
@@ -190,6 +201,7 @@ ColumnLayout {
                  settingsHelper.set("showApplications", checked);
                  saveSettings();
                }
+    visible: !root.squaresMode
   }
 
   NToggle {
@@ -200,7 +212,7 @@ ColumnLayout {
                  settingsHelper.set("showApplicationsHover", checked);
                  saveSettings();
                }
-    visible: valueShowApplications
+    visible: valueShowApplications && !root.squaresMode
   }
 
   NToggle {
@@ -211,7 +223,7 @@ ColumnLayout {
                  settingsHelper.set("showBadge", checked);
                  saveSettings();
                }
-    visible: valueShowApplications
+    visible: valueShowApplications && !root.squaresMode
   }
 
   NToggle {
@@ -222,7 +234,7 @@ ColumnLayout {
                  settingsHelper.set("colorizeIcons", checked);
                  saveSettings();
                }
-    visible: valueShowApplications
+    visible: valueShowApplications && !root.squaresMode
   }
 
   NValueSlider {
@@ -239,7 +251,7 @@ ColumnLayout {
                saveSettings();
              }
     text: Math.floor(valueUnfocusedIconsOpacity * 100) + "%"
-    visible: valueShowApplications
+    visible: valueShowApplications && !root.squaresMode
   }
 
   NValueSlider {
@@ -256,7 +268,7 @@ ColumnLayout {
                saveSettings();
              }
     text: Math.floor(valueGroupedBorderOpacity * 100) + "%"
-    visible: valueShowApplications
+    visible: valueShowApplications && !root.squaresMode
   }
 
   NValueSlider {
@@ -273,7 +285,7 @@ ColumnLayout {
                saveSettings();
              }
     text: Math.round(valueIconScale * 100) + "%"
-    visible: valueShowApplications
+    visible: valueShowApplications && !root.squaresMode
   }
 
   NDivider {

@@ -689,7 +689,7 @@ Singleton {
         child.close();
       }
     }
-    popupMenuWindow.hasDialog = false;
+    popupMenuWindow.dialogItem = null;
   }
 
   // Open widget settings dialog for a bar widget
@@ -752,11 +752,12 @@ Singleton {
                                                 }
                                               }
                                             });
-        // Enable keyboard focus for the popup menu window when dialog is open
-        popupMenuWindow.hasDialog = true;
+        // Enable keyboard focus + blur region while a dialog is open
+        popupMenuWindow.dialogItem = dialog;
         // Close the popup menu window when dialog closes
         dialog.closed.connect(() => {
-                                popupMenuWindow.hasDialog = false;
+                                if (popupMenuWindow.dialogItem === dialog)
+                                  popupMenuWindow.dialogItem = null;
                                 popupMenuWindow.close();
                                 dialog.destroy();
                               });
@@ -812,11 +813,12 @@ Singleton {
                                           });
 
       if (dialog) {
-        // Enable keyboard focus for the popup menu window when dialog is open
-        popupMenuWindow.hasDialog = true;
+        // Enable keyboard focus + blur region while a dialog is open
+        popupMenuWindow.dialogItem = dialog;
         // Close the popup menu window when dialog closes
         dialog.closed.connect(() => {
-                                popupMenuWindow.hasDialog = false;
+                                if (popupMenuWindow.dialogItem === dialog)
+                                  popupMenuWindow.dialogItem = null;
                                 popupMenuWindow.close();
                                 dialog.destroy();
                               });

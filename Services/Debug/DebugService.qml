@@ -136,7 +136,16 @@ Singleton {
     if (!item) {
       return "unknown root '" + name + "' (known: " + rootNames() + ")";
     }
-    return dumpItemTree(item, maxDepth);
+    // Window screen position, so callers can convert the dump's window-local
+    // @x,y into screen coords for real pointer input (anchored PopupWindows
+    // like context menus sit away from the screen origin).
+    var head = "";
+    try {
+      var w = item.Window;
+      if (w)
+        head = "window @" + Math.round(w.x) + "," + Math.round(w.y) + " " + Math.round(w.width) + "x" + Math.round(w.height) + "\n";
+    } catch (e) {}
+    return head + dumpItemTree(item, maxDepth);
   }
 
   // The panel actually on screen: PanelService.openedPanel. Names lie when a
