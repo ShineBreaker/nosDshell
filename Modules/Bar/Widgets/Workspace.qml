@@ -340,10 +340,14 @@ Item {
         // Plain JS row: `id` rides as `wsId` because `id` cannot be declared
         // a required property in the delegates. Values are coerced at build
         // time — backends omit fields (niri may lack is_urgent, LabwcService
-        // emits string ids) and a required bool/string/int receiving
-        // undefined fails delegate incubation, blanking the whole widget.
+        // emits string ids) and a required prop receiving undefined fails
+        // delegate incubation, blanking the whole widget. Null/undefined
+        // values must never reach the model either: a key that is always
+        // null creates no role at all, and its required prop fails with
+        // "Required property X was not initialized". Falsy stand-ins (0/"")
+        // are equivalent for every consumer — backends test presence.
         var workspaceData = {
-          wsId: ws.id,
+          wsId: ws.id !== undefined && ws.id !== null ? ws.id : "",
           idx: ws.idx | 0,
           name: ws.name || "",
           output: ws.output || "",
@@ -351,8 +355,8 @@ Item {
           isActive: ws.isActive === true,
           isUrgent: ws.isUrgent === true,
           isOccupied: ws.isOccupied === true,
-          handle: ws.handle !== null && ws.handle !== undefined ? ws.handle : null,
-          oid: ws.oid !== undefined ? ws.oid : null
+          handle: ws.handle || 0,
+          oid: ws.oid || 0
         };
 
         // Windows are fetched live via liveWindows property in grouped mode
