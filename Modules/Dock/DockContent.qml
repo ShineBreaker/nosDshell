@@ -679,6 +679,7 @@ Item {
             // reads crash on role-change capture; see Taskbar's delegate.
             required property string rkey
             required property bool dying
+            required property int sdelay
             readonly property var entry: dockRoot._entryForRow(rkey)
             readonly property real appItemLength: Math.round(dockRoot.itemLength * shrinkFactor)
             readonly property real appIconContent: Math.round(Math.min(appItemLength, dockRoot.itemThickness) * 0.8)
@@ -690,16 +691,76 @@ Item {
             Component.onCompleted: _entered = true
             readonly property bool _shrunk: collapsing || !_entered
             readonly property real longLen_: isVertical ? Layout.preferredHeight : Layout.preferredWidth
-            onLongLen_Changed: {
+            // Dying at already-zero length never fires longLen_ again —
+            // drop it here or it leaks as an invisible ghost row.
+            onLongLen_Changed: _dropIfDone()
+            onCollapsingChanged: _dropIfDone()
+            function _dropIfDone() {
               if (collapsing && longLen_ <= 0)
                 dockRoot._dropDockRow(rkey);
             }
 
+            // Lifecycle presentation (DESIGN §1.7 app-strip recipe, same as
+            // the efficient Taskbar): slot grows/collapses while the content
+            // fades, scales 0.5↔1 and slides a few px toward the screen edge;
+            // sdelay staggers same-sync changes into a wave.
+            readonly property real _edgeSlide: Math.round(8 * Style.uiScaleRatio)
+            readonly property point _edgeShift: {
+              var p = dockRoot.dockPosition;
+              if (isVertical)
+                return Qt.point(p === "right" ? _edgeSlide : -_edgeSlide, 0);
+              return Qt.point(0, p === "top" ? -_edgeSlide : _edgeSlide);
+            }
+
             opacity: _shrunk ? 0 : 1
             Behavior on opacity {
-              NumberAnimation {
-                duration: Style.animationFast
-                easing.type: Easing.OutCubic
+              SequentialAnimation {
+                PauseAnimation {
+                  duration: appButton.sdelay
+                }
+                NumberAnimation {
+                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
+                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                }
+              }
+            }
+            scale: _shrunk ? 0.5 : 1
+            Behavior on scale {
+              SequentialAnimation {
+                PauseAnimation {
+                  duration: appButton.sdelay
+                }
+                NumberAnimation {
+                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
+                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                }
+              }
+            }
+            transform: Translate {
+              x: appButton._shrunk ? appButton._edgeShift.x : 0
+              y: appButton._shrunk ? appButton._edgeShift.y : 0
+
+              Behavior on x {
+                SequentialAnimation {
+                  PauseAnimation {
+                    duration: appButton.sdelay
+                  }
+                  NumberAnimation {
+                    duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
+                    easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                  }
+                }
+              }
+              Behavior on y {
+                SequentialAnimation {
+                  PauseAnimation {
+                    duration: appButton.sdelay
+                  }
+                  NumberAnimation {
+                    duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
+                    easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                  }
+                }
               }
             }
 
@@ -708,15 +769,25 @@ Item {
             Layout.alignment: Qt.AlignCenter
 
             Behavior on Layout.preferredWidth {
-              NumberAnimation {
-                duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                easing.type: appButton.collapsing ? Easing.InCubic : Easing.InOutCubic
+              SequentialAnimation {
+                PauseAnimation {
+                  duration: appButton.sdelay
+                }
+                NumberAnimation {
+                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
+                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.InOutCubic
+                }
               }
             }
             Behavior on Layout.preferredHeight {
-              NumberAnimation {
-                duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                easing.type: appButton.collapsing ? Easing.InCubic : Easing.InOutCubic
+              SequentialAnimation {
+                PauseAnimation {
+                  duration: appButton.sdelay
+                }
+                NumberAnimation {
+                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
+                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.InOutCubic
+                }
               }
             }
 

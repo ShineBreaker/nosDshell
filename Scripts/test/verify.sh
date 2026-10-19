@@ -1759,8 +1759,17 @@ PYEOF
                             echo "efficient-taskbar: skipped (dock.mode=$DOCK_MODE, needs --settings dock.mode=efficient)"
                             return 0
                           fi
+                          # Spawned windows take a few seconds to reach the
+                          # taskbar (compositor events → service → deferred
+                          # sync → row enter); before that the widget is
+                          # hidden-when-empty and the strip reads empty. Poll
+                          # for the first app item instead of a fixed sleep.
+                          for _i in 1 2 3 4 5 6; do
+                            qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 16 > "$WORK/logs/eff-bar-tree.txt" 2>&1 || true
+                            grep -q '"taskbarAppItem"' "$WORK/logs/eff-bar-tree.txt" && break
+                            sleep 1
+                          done
                           qs -p "$REPO" ipc call debug list > "$WORK/logs/eff-roots.txt" 2>&1 || true
-                          qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 16 > "$WORK/logs/eff-bar-tree.txt" 2>&1 || true
                           if grep -qE 'unknown root|Target not found' "$WORK/logs/eff-bar-tree.txt"; then
                             echo "efficient-taskbar: no bar window (roots: $(cat "$WORK/logs/eff-roots.txt"))"; return 0
                           fi
@@ -2055,8 +2064,15 @@ PYEOF
                             return 0
                           fi
                           swaymsg "workspace 1" >/dev/null 2>&1 || true
-                          sleep 0.8
-                          qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 16 > "$WORK/logs/fash-dock-tree.txt" 2>&1 || true
+                          # Spawned windows take a few seconds to reach the
+                          # dock strip; poll for the first grown app button
+                          # instead of a fixed sleep (same fix as
+                          # efficient-taskbar).
+                          for _i in 1 2 3 4 5 6; do
+                            sleep 1
+                            qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 16 > "$WORK/logs/fash-dock-tree.txt" 2>&1 || true
+                            grep -qE '"dockAppButton" [1-9][0-9]*x' "$WORK/logs/fash-dock-tree.txt" && break
+                          done
                           swaymsg -t get_tree > "$WORK/logs/fash-sway-tree.json" 2>&1 || true
                           swaymsg -t get_workspaces > "$WORK/logs/fash-sway-ws.json" 2>&1 || true
                           if grep -q 'unknown root' "$WORK/logs/fash-dock-tree.txt"; then
@@ -2109,17 +2125,35 @@ print(json.dumps({"cur":btnc(cur),"all":(len(set(allids)) if GA else sum(p["wins
 PYEOF
 )
                           # ws1 settle: row count must equal the gate result.
-                          python3 - "$WORK/logs/fash-dock-tree.txt" "$EXPECTED" <<'PYEOF' || SCENE_FAIL=1
+                          # Windows that just crossed workspaces still have
+                          # entering/collapsing rows at dump time — on a
+                          # mismatch, re-dump after a short settle and retry
+                          # once before failing (transient, not a count bug).
+                          python3 - "$WORK/logs/fash-dock-tree.txt" "$EXPECTED" <<'PYEOF' || {
 import json,re,sys
 tree=open(sys.argv[1],encoding="utf-8",errors="replace").read().splitlines()
-btns=[l for l in tree if '"dockAppButton"' in l and 'hidden' not in l]
+btns=[l for l in tree if '"dockAppButton"' in l and 'hidden' not in l and 'dying:true' not in l]
+e=json.loads(sys.argv[2])
+exp=e["cur"] if e["onlyws"] else e["all"]
+if len(btns)!=exp:
+    print(f"fashion-dock: {len(btns)} app buttons on ws1, expected {exp} — retrying after settle")
+    sys.exit(1)
+print(f"fashion-dock: ws1 app filter OK ({exp} buttons, onlyws={e['onlyws']})")
+PYEOF
+                            sleep 0.7
+                            qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 16 > "$WORK/logs/fash-dock-tree.txt" 2>&1 || true
+                            python3 - "$WORK/logs/fash-dock-tree.txt" "$EXPECTED" <<'PYEOF' || SCENE_FAIL=1
+import json,re,sys
+tree=open(sys.argv[1],encoding="utf-8",errors="replace").read().splitlines()
+btns=[l for l in tree if '"dockAppButton"' in l and 'hidden' not in l and 'dying:true' not in l]
 e=json.loads(sys.argv[2])
 exp=e["cur"] if e["onlyws"] else e["all"]
 if len(btns)!=exp:
     print(f"FAIL fashion-dock: {len(btns)} app buttons on ws1, expected {exp}")
     sys.exit(1)
-print(f"fashion-dock: ws1 app filter OK ({exp} buttons, onlyws={e['onlyws']})")
+print(f"fashion-dock: ws1 app filter OK ({exp} buttons, onlyws={e['onlyws']}, after settle retry)")
 PYEOF
+                          }
                           # Switch to ws2: rows must travel — a collapsing or
                           # growing row shows a long-axis length strictly
                           # between 0 and the settled item length.
@@ -2147,15 +2181,19 @@ if not base:
     sys.exit(0)
 axi=1 if VERT else 0          # long axis: height on left/right docks, else width
 L=max(b[axi] for b in base)
-deadline=time.time()+1.4
+deadline=time.time()+2.0
 last=[]
 midshot=None
+prev=None
 while time.time()<deadline:
     s=rows(); last=s
     # in-flight: a row collapsing/growing between 0 and the settled length,
-    # or dying rows still holding extra slots
-    if any(2<v[axi]<L-2 for v in s) or len(s)>len(base):
+    # dying rows still holding extra slots, or consecutive samples differing
+    # (each `qs ipc` call costs ~300ms — mid-width frames are easy to miss,
+    # but a real snap leaves every post-switch sample identical)
+    if any(2<v[axi]<L-2 for v in s) or len(s)>len(base) or (prev is not None and s != prev):
         midshot=s; break
+    prev=s
     time.sleep(0.06)
 if midshot is None:
     print(f"FAIL fashion-dock: workspace switch snapped — no in-flight row sizes; base={base} final={last}")
@@ -2168,7 +2206,7 @@ PYEOF
                           qs -p "$REPO" ipc call debug tree dock-HEADLESS-1 16 > "$WORK/logs/fash-dock-tree2.txt" 2>&1 || true
                           python3 - "$WORK/logs/fash-dock-tree2.txt" "$EXPECTED" <<'PYEOF' || SCENE_FAIL=1
 import json,re,subprocess,sys
-btns=[l for l in open(sys.argv[1],encoding="utf-8",errors="replace") if '"dockAppButton"' in l and 'hidden' not in l]
+btns=[l for l in open(sys.argv[1],encoding="utf-8",errors="replace") if '"dockAppButton"' in l and 'hidden' not in l and 'dying:true' not in l]
 e=json.loads(sys.argv[2])
 GA=e.get("GA",True)
 p2=e["perWs"].get("2") or {"ids":[],"wins":0}

@@ -74,6 +74,14 @@ Singleton {
       if (item.opacity !== undefined && item.opacity < 1) {
         s += " opacity:" + Number(item.opacity).toFixed(2);
       }
+      // Lifecycle row flags (app-strip delayed-removal recipe): a row stuck
+      // at 0 length shows dying:true here — ghost vs still-entering.
+      if (item.dying !== undefined) {
+        s += " dying:" + item.dying;
+      }
+      if (item.scale !== undefined && item.scale !== 1) {
+        s += " scale:" + Number(item.scale).toFixed(2);
+      }
       if (item.clip === true) {
         s += " clip";
       }

@@ -163,6 +163,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 | `motionProgramScroll` | 300 ms | OutQuad | 程序化滚动定位（点分类跳锚点、滚动到可见） | `gxde-launcher/src/fullscreenframe.cpp:189-204`（未显式设时长，Qt 默认 250，归并到 300 主节拍） |
 | `motionSwing` | 1200 ms | Linear 关键帧（±8°，阻尼衰减回中） | dock 项 attention 摆动，持续期间每 ~2.2 s 重播 | `gxde-dock/frame/item/components/appswingeffectbuilder.h:87-118`；`appitem.cpp:690-732` |
 | `motionPointer` | 80 ms | OutCubic | 按钮类控件的悬停、按下颜色淡变（§0 原则 6） | 〔演进〕DDE 原版瞬变。取 Windows 11 WinUI 指针反馈的量级（`ControlFasterAnimationDuration` 83 ms），曲线并入本节词汇表 |
+| `motionStagger` | 30 ms/项，封顶 5 步 | —（级联延时，非曲线时长） | 同一帧里增删多个行项时按位次错峰，形成从左向右的级联 | 〔演进〕见下方应用条配方 |
 | `motionSwitch` | 150 ms | OutCubic | 开关滑块；数据驱动的状态色（选中、已连接、勿扰开启这类不由指针直接决定的颜色）的过渡 | 派生自 DTK（§3.5.4） |
 | `tooltipDelayDock` | 500 ms | — | 任务栏悬停提示 | `gxde-dock/frame/item/dockitem.cpp:75` |
 
@@ -177,7 +178,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - **不对称退场。** 退出比进入短，并使用 ease-in 曲线。OSD 的 160/120 ms、`OutCubic` 进入配 `InCubic` 退出是范例。
 - **合并语义。** 运行中的动画再次被触发时，只改目标值，不打断。QML 的 `Behavior` 本来就这样；手写 `start()` 时先以当前值为起点。
 - **延时不是动画。** tooltip 的 500 ms、预览的 200/300 ms、自动隐藏的 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换前的防抖等待，不换算成缓动。
-- **应用条增删项动画（两模式同一套配方）〔演进〕。** DDE 的应用条增删项瞬变（`Repeater` 直接重建），本实现为数据/生命周期驱动的进出补动效：应用条用带字符串行键的 `ListModel` + 延迟移除——条目消失时行转为 dying、沿长轴塌缩到 0（`animationFast` + `InCubic` 退场曲线）后再从模型里删；新条目在 0 长处长出到正常尺寸（`animationNormal` 300 ms + `InOutCubic`），进出都带 `animationFast` 淡入淡出；兄弟项的滑动由塌缩本身驱动，不用 positioner transition（Layout 容器不支持）。高效 `Taskbar.qml` 的 `itemRows` 与时尚 `Dock.qml` 的 `dockRows` 是同一配方的两份实现。
+- **应用条增删项动画（两模式同一套配方）〔演进〕。** DDE 的应用条增删项瞬变（`Repeater` 直接重建），本实现为数据/生命周期驱动的进出补动效：应用条用带字符串行键的 `ListModel` + 延迟移除——条目消失时行转为 dying、沿长轴塌缩到 0（`animationFast` + `InCubic` 退场曲线）后再从模型里删；新条目在 0 长处长出到正常尺寸（`animationNormal` 300 ms + `InOutCubic`）。槽位塌缩的同时内容本身也动：图标淡出并从 1 缩到 0.5、朝屏边方向滑 ~8 px（进入时反向，缩放回弹到 1、从屏边滑入）——只缩槽位不缩内容会把满尺寸图标挤出槽口、到消失帧才瞬灭，读作被"切掉"而不是退场。同一批同步进出的多行按行序错峰 `motionStagger`（逐项延时写在行角色 `sdelay` 上，各 Behavior 前置 `PauseAnimation`），单项增删延时为 0 不受影响，整批替换（如工作区切换）则呈现为级联波而不是齐刷刷的闪变。兄弟项的滑动由塌缩本身驱动，不用 positioner transition（Layout 容器不支持）。高效 `Taskbar.qml` 的 `itemRows` 与时尚 `Dock.qml` 的 `dockRows` 是同一配方的两份实现，两边的委托视觉保持一致。
 - **动态列表的模型安全（崩溃教训）。** 会反复重建的 JS 数组永远不直接喂 `Repeater.model`——整体赋值即 `QQuickRepeater::setModel` → 孵化，孵化期间的 notify 重入模型变更会踩坏 V4 堆（`QV4::Object::insertMember` SIGSEGV）。收敛做法：渲染模型是常驻 `ListModel`，数据侧变化经 `Qt.callLater` 合并后增量同步（`insert`/`remove`/`setProperty`），行只放原始值键（id/序号/tag），payload 由委托侧按键实时解析；ListModel 行角色在首次写入时钉死类型，存对象/数组/`null` 混合值既触发角色类型冲突警告、又会在委托销毁中途返回已失效的 `QObject*`（`QQmlListModel::data` 崩溃类）。
   
   **绑定内读取可变 ListModel 行一律禁止。** `model.<role>`、`modelData.<role>`、`get(i).<role>`、乃至 `get()` 返回的"快照"对象（实为活代理 `QQmlListElement`）都不是 notify 属性——绑定求值时 `getterFallback` → `QQmlPropertyCapture::captureNonBindableProperty`，下一次 `set`/`remove`/`clear`/`setProperty` 后捕获到的行元素已死，GC `MarkStack::drain` 或当即重估即 SIGSEGV。合法读取只有两条路：

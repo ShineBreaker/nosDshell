@@ -245,9 +245,19 @@ Item {
     }
     _entryByKey = newByKey;
     _limbo = limbo;
-    for (i = 0; i < itemRows.count; i++)
-      itemRows.setProperty(i, "dying", !live[itemRows.get(i).rkey]);
+    // sdelay staggers same-sync changes into a wave along the strip (DESIGN
+    // §1.7): dying rows cascade out in visual order, newcomers cascade in by
+    // live order; survivors reset to 0 so their resizes stay undelayed.
+    var step = Style.motionStagger;
+    var dieSeq = 0;
+    for (i = 0; i < itemRows.count; i++) {
+      var rk2 = itemRows.get(i).rkey;
+      var isLive = live[rk2] === true;
+      itemRows.setProperty(i, "dying", !isLive);
+      itemRows.setProperty(i, "sdelay", isLive ? 0 : Math.min(dieSeq++, 5) * step);
+    }
     var livePos = 0;
+    var insSeq = 0;
     for (i = 0; i < combinedModel.length; i++) {
       var e2 = combinedModel[i];
       if (!e2)
@@ -258,7 +268,8 @@ Item {
         var at = _liveRowPos(livePos);
         itemRows.insert(at === -1 ? itemRows.count : at, {
                           "rkey": key,
-                          "dying": false
+                          "dying": false,
+                          "sdelay": Math.min(insSeq++, 5) * step
                         });
       } else {
         var cur = _liveRowPos(livePos);
@@ -635,8 +646,11 @@ Item {
     }
   }
 
-  // Content dimensions for implicit sizing
-  readonly property real contentWidth: {
+  // Content dimensions for implicit sizing. Writable + Behavior so a count
+  // change animates the capsule/zone reservation instead of snapping it while
+  // the rows are still collapsing/growing inside (efficient mode reads the
+  // live model length; other modes follow taskbarLayout's animated size).
+  property real contentWidth: {
     if (!visible)
       return 0;
     if (efficientMode)
@@ -653,12 +667,25 @@ Item {
 
     return Math.round(calculatedWidth);
   }
-  readonly property real contentHeight: {
+  property real contentHeight: {
     if (!visible)
       return 0;
     if (efficientMode)
       return isVerticalBar ? Math.max(itemLongLength, combinedModel.length * effectiveItemLongLength) : barHeight;
     return isVerticalBar ? Math.round(taskbarLayout.implicitHeight + Style.margin2S) : capsuleHeight;
+  }
+
+  Behavior on contentWidth {
+    NumberAnimation {
+      duration: Style.animationNormal
+      easing.type: Easing.InOutCubic
+    }
+  }
+  Behavior on contentHeight {
+    NumberAnimation {
+      duration: Style.animationNormal
+      easing.type: Easing.InOutCubic
+    }
   }
 
   implicitWidth: contentWidth
@@ -719,6 +746,7 @@ Item {
           // SIGSEGV). The engine keeps required props updated on setProperty.
           required property string rkey
           required property bool dying
+          required property int sdelay
           readonly property var modelData: root._entryForRow(rkey)
           // Hover/drag identity is the row key — sway window rows carry no
           // `id` field, so entry.id collapses every window to undefined.
@@ -747,16 +775,77 @@ Item {
           Component.onCompleted: _entered = true
           readonly property bool _shrunk: collapsing || !_entered
           readonly property real longLen_: root.isVerticalBar ? Layout.preferredHeight : Layout.preferredWidth
-          onLongLen_Changed: {
+          // A row marked dying while still at 0 (killed before its grow ran,
+          // e.g. a fast workspace hop) never sees a longLen change — without
+          // this fallback it leaks as an invisible zero-width ghost row.
+          onLongLen_Changed: _dropIfDone()
+          onCollapsingChanged: _dropIfDone()
+          function _dropIfDone() {
             if (collapsing && longLen_ <= 0)
               root._dropRow(rkey);
           }
 
+          // Lifecycle presentation (DESIGN §1.7 app-strip recipe): the slot
+          // grows/collapses along the long axis while the content fades,
+          // scales 0.5↔1 and slides a few px toward the screen edge; sdelay
+          // staggers same-sync changes into a wave instead of a snap.
+          readonly property real _edgeSlide: Math.round(8 * Style.uiScaleRatio)
+          readonly property point _edgeShift: {
+            var p = root.barPosition;
+            if (root.isVerticalBar)
+              return Qt.point(p === "right" ? _edgeSlide : -_edgeSlide, 0);
+            return Qt.point(0, p === "top" ? -_edgeSlide : _edgeSlide);
+          }
+
           opacity: _shrunk ? 0 : 1
           Behavior on opacity {
-            NumberAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.OutCubic
+            SequentialAnimation {
+              PauseAnimation {
+                duration: taskbarItem.sdelay
+              }
+              NumberAnimation {
+                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+              }
+            }
+          }
+          scale: _shrunk ? 0.5 : 1
+          Behavior on scale {
+            SequentialAnimation {
+              PauseAnimation {
+                duration: taskbarItem.sdelay
+              }
+              NumberAnimation {
+                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+              }
+            }
+          }
+          transform: Translate {
+            x: taskbarItem._shrunk ? taskbarItem._edgeShift.x : 0
+            y: taskbarItem._shrunk ? taskbarItem._edgeShift.y : 0
+
+            Behavior on x {
+              SequentialAnimation {
+                PauseAnimation {
+                  duration: taskbarItem.sdelay
+                }
+                NumberAnimation {
+                  duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+                  easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+                }
+              }
+            }
+            Behavior on y {
+              SequentialAnimation {
+                PauseAnimation {
+                  duration: taskbarItem.sdelay
+                }
+                NumberAnimation {
+                  duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+                  easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+                }
+              }
             }
           }
 
@@ -765,15 +854,25 @@ Item {
           Layout.alignment: Qt.AlignCenter
 
           Behavior on Layout.preferredWidth {
-            NumberAnimation {
-              duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-              easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+            SequentialAnimation {
+              PauseAnimation {
+                duration: taskbarItem.sdelay
+              }
+              NumberAnimation {
+                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+              }
             }
           }
           Behavior on Layout.preferredHeight {
-            NumberAnimation {
-              duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-              easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+            SequentialAnimation {
+              PauseAnimation {
+                duration: taskbarItem.sdelay
+              }
+              NumberAnimation {
+                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
+                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+              }
             }
           }
 

@@ -384,6 +384,11 @@ Singleton {
   readonly property int motionProgramScroll: _motion(300)
   // gxde-dock appswingeffectbuilder.h:87-118 — attention swing cycle
   readonly property int motionSwing: _motion(1200)
+
+  // Per-row cascade delay between siblings entering/leaving an app strip or
+  // list in the same sync (DESIGN §1.7 app-strip recipe). A delay, not a
+  // curve: 0 keeps single-item changes instant, mass changes ripple.
+  readonly property int motionStagger: _motion(30)
   // DESIGN §1.7 — hover/press colour fade on standalone button-class controls
   readonly property int motionPointer: _motion(80)
 

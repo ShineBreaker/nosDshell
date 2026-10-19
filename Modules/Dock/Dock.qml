@@ -192,9 +192,18 @@ Loader {
         }
         _entryByKey = newByKey;
         _limbo = limbo;
-        for (i = 0; i < dockRows.count; i++)
-          dockRows.setProperty(i, "dying", !live[dockRows.get(i).rkey]);
+        // sdelay staggers same-sync changes into a wave along the strip
+        // (DESIGN §1.7 — same recipe as the efficient Taskbar).
+        var step = Style.motionStagger;
+        var dieSeq = 0;
+        for (i = 0; i < dockRows.count; i++) {
+          var rk2 = dockRows.get(i).rkey;
+          var isLive = live[rk2] === true;
+          dockRows.setProperty(i, "dying", !isLive);
+          dockRows.setProperty(i, "sdelay", isLive ? 0 : Math.min(dieSeq++, 5) * step);
+        }
         var livePos = 0;
+        var insSeq = 0;
         for (i = 0; i < dockApps.length; i++) {
           var e2 = dockApps[i];
           if (!e2)
@@ -204,7 +213,8 @@ Loader {
             var at = _liveRowPos(livePos);
             dockRows.insert(at === -1 ? dockRows.count : at, {
                               "rkey": e2._rkey,
-                              "dying": false
+                              "dying": false,
+                              "sdelay": Math.min(insSeq++, 5) * step
                             });
           } else {
             var cur = _liveRowPos(livePos);
