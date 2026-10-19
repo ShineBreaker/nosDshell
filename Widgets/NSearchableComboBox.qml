@@ -43,9 +43,9 @@ NDccRow {
     var displayValue = "";
     if (defaultValue === "") {
       // Try to find the display name for empty key in the model
-      if (model && model.count > 0) {
-        for (var i = 0; i < model.count; i++) {
-          var item = model.get(i);
+      if (_modelRows.length > 0) {
+        for (var i = 0; i < _modelRows.length; i++) {
+          var item = _modelRows[i];
           if (item && item.key === "") {
             displayValue = item.name || I18n.tr("panels.indicator.system-default");
             break;
@@ -60,11 +60,11 @@ NDccRow {
       }
     } else {
       // Try to find the display name for the default key in the model
-      if (model && model.count > 0) {
-        for (var i = 0; i < model.count; i++) {
-          var item = model.get(i);
-          if (item && item.key === defaultValue) {
-            displayValue = item.name || String(defaultValue);
+      if (_modelRows.length > 0) {
+        for (var i = 0; i < _modelRows.length; i++) {
+          var item2 = _modelRows[i];
+          if (item2 && item2.key === defaultValue) {
+            displayValue = item2.name || String(defaultValue);
             break;
           }
         }
@@ -84,11 +84,37 @@ NDccRow {
   property ListModel filteredModel: ListModel {}
   property string searchText: ""
 
+  // Plain-dict mirrors for binding-side lookups. ListModel.get()/model.<role>
+  // reads inside bindings capture the live row proxy and crash in
+  // QQmlListModel::data→captureProperty when the model mutates (DESIGN §1.7);
+  // the mirror is rebuilt from JS handlers, where get() is safe.
+  property var _modelRows: []
+  property var _activeRows: []
+
+  function _rowsOf(m) {
+    var rows = [];
+    if (!m)
+      return rows;
+    var n = (m.count !== undefined) ? m.count : m.length;
+    for (var i = 0; i < n; i++) {
+      var r = (m.count !== undefined) ? m.get(i) : m[i];
+      rows.push({
+                  "key": r.key,
+                  "name": r.name,
+                  "badges": (r.badges !== undefined && r.badges !== null) ? r.badges : []
+                });
+    }
+    return rows;
+  }
+
+  function rebuildRows() {
+    _modelRows = _rowsOf(root.model);
+    _activeRows = _rowsOf(root.activeModel);
+  }
+
   function findIndexByKey(key) {
-    if (!root.model)
-      return -1;
-    for (var i = 0; i < root.model.count; i++) {
-      if (root.model.get(i).key === key) {
+    for (var i = 0; i < _modelRows.length; i++) {
+      if (_modelRows[i].key === key) {
         return i;
       }
     }
@@ -97,16 +123,45 @@ NDccRow {
 
   // The active model used for the popup list (source model or filtered results)
   readonly property var activeModel: isFiltered ? filteredModel : root.model
+  onActiveModelChanged: rebuildRows()
+  onModelChanged: rebuildRows()
+  Component.onCompleted: rebuildRows()
+
+  Connections {
+    target: root.model
+    function onCountChanged() {
+      root.rebuildRows();
+    }
+    function onDataChanged() {
+      root.rebuildRows();
+    }
+  }
+  Connections {
+    target: root.activeModel
+    function onCountChanged() {
+      root.rebuildRows();
+    }
+    function onDataChanged() {
+      root.rebuildRows();
+    }
+  }
 
   function findIndexInActiveModel(key) {
-    if (!activeModel || activeModel.count === undefined)
-      return -1;
-    for (var i = 0; i < activeModel.count; i++) {
-      if (activeModel.get(i).key === key) {
+    for (var i = 0; i < _activeRows.length; i++) {
+      if (_activeRows[i].key === key) {
         return i;
       }
     }
     return -1;
+  }
+
+  function nameByKey(key) {
+    for (var i = 0; i < _modelRows.length; i++) {
+      if (_modelRows[i].key === key) {
+        return _modelRows[i].name;
+      }
+    }
+    return "";
   }
 
   // Whether we're using filtered results or the source model directly
@@ -132,11 +187,8 @@ NDccRow {
     isFiltered = true;
     filteredModel.clear();
 
-    // Convert ListModel to array for fuzzy search
-    var items = [];
-    for (var i = 0; i < root.model.count; i++) {
-      items.push(root.model.get(i));
-    }
+    // Fuzzy search runs on the plain-dict mirror rows.
+    var items = _modelRows;
 
     // Use fuzzy search if available, fallback to simple search
     if (typeof FuzzySort !== 'undefined') {
@@ -200,13 +252,14 @@ NDccRow {
     Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.preferredHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
-    model: root.activeModel
+    // Plain-dict mirror rows — never the live ListModel (DESIGN §1.7).
+    model: root._activeRows
     textRole: "name"
     currentIndex: findIndexInActiveModel(currentKey)
     onActivated: {
-      if (combo.currentIndex >= 0 && root.activeModel && combo.currentIndex < root.activeModel.count) {
-        root.selected(root.activeModel.get(combo.currentIndex).key);
-      }
+      var row = root._activeRows[combo.currentIndex];
+      if (row)
+        root.selected(row.key);
     }
 
     background: Rectangle {
@@ -236,12 +289,12 @@ NDccRow {
 
       // Look up current selection directly in source model by key
       readonly property int sourceIndex: root.findIndexByKey(root.currentKey)
-      readonly property bool hasSelection: root.model && sourceIndex >= 0 && sourceIndex < root.model.count
+      readonly property bool hasSelection: sourceIndex >= 0 && sourceIndex < root._modelRows.length
 
       // Stay opaque: the disabled signal is the color swap, not extra alpha.
       opacity: 1.0
       color: combo.enabled ? (hasSelection ? Color.onShell : Color.onShellTertiary) : Color.textDisabledDark
-      text: hasSelection ? root.model.get(sourceIndex).name : root.placeholder
+      text: hasSelection ? root.nameByKey(root.currentKey) : root.placeholder
     }
 
     indicator: NIcon {
@@ -309,10 +362,9 @@ NDccRow {
                           }
 
           function selectHighlighted() {
-            if (listView.currentIndex >= 0 && listView.model && listView.currentIndex < listView.model.count) {
-              var selectedKey = listView.model.get(listView.currentIndex).key;
-              root.selected(selectedKey);
-            }
+            var row = root._activeRows[listView.currentIndex];
+            if (row)
+              root.selected(row.key);
           }
         }
 
@@ -321,8 +373,10 @@ NDccRow {
           Layout.fillWidth: true
           Layout.fillHeight: true
           gradientColor: "transparent"
-          // Use activeModel (source model when not filtering, filtered results when searching)
-          model: combo.popup.visible ? root.activeModel : null
+          // Plain-dict mirror rows — never the live ListModel: binding-side
+          // model.<role>/get() reads capture the row proxy and crash on the
+          // next mutation (DESIGN §1.7).
+          model: combo.popup.visible ? root._activeRows : null
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
           // Same overlay-scrollbar rule as NComboBox's popup: no reserved
@@ -356,8 +410,9 @@ NDccRow {
               }
 
               onClicked: {
-                var selectedKey = listView.model.get(index).key;
-                root.selected(selectedKey);
+                var row = root._activeRows[index];
+                if (row)
+                  root.selected(row.key);
                 combo.popup.close();
               }
 
@@ -366,7 +421,7 @@ NDccRow {
                 spacing: Style.marginM
 
                 NText {
-                  text: name
+                  text: modelData ? modelData.name : ""
                   pointSize: Style.fontSizeM
                   color: highlighted ? Color.onAccent : Color.onShell
                   verticalAlignment: Text.AlignVCenter
@@ -378,31 +433,13 @@ NDccRow {
                   spacing: Style.marginXXS
                   Layout.alignment: Qt.AlignRight
 
-                  // Generic badge renderer
+                  // Generic badge renderer — modelData rows are plain dicts
                   Repeater {
-                    model: {
-                      if (typeof badges === 'undefined' || badges === null)
-                        return 0;
-                      // Handle both arrays and ListModels
-                      if (typeof badges.length !== 'undefined')
-                        return badges.length;
-                      if (typeof badges.count !== 'undefined')
-                        return badges.count;
-                      return 0;
-                    }
+                    model: (modelData && modelData.badges) ? modelData.badges.length : 0
 
                     delegate: NIcon {
                       required property int index
-                      readonly property var badgeData: {
-                        if (typeof badges === 'undefined' || badges === null)
-                          return null;
-                        // Handle both arrays and ListModels
-                        if (typeof badges.length !== 'undefined')
-                          return badges[index];
-                        if (typeof badges.get !== 'undefined')
-                          return badges.get(index);
-                        return null;
-                      }
+                      readonly property var badgeData: (modelData && modelData.badges) ? modelData.badges[index] : null
 
                       icon: badgeData && badgeData.icon ? badgeData.icon : ""
                       pointSize: {

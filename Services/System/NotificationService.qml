@@ -425,6 +425,10 @@ Singleton {
     // incubates delegates whose signal handlers can re-enter the V4 engine
     // and crash in QV4::Object::insertMember.
     Qt.callLater(() => {
+                   // Parallel immutable role: delegates can't declare `id` as
+                   // a required property (reserved), so notifId mirrors it and
+                   // stays correct under index shifts (insert-at-top model).
+                   data.notifId = data.id;
                    popupModel.insert(0, data);
 
                    // Remove overflow

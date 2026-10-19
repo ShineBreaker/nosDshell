@@ -59,8 +59,11 @@ Item {
   readonly property real barHeight: Style.getBarHeightForScreen(screenName)
   readonly property real capsuleHeight: Style.getCapsuleHeightForScreen(screenName)
   readonly property real barFontSize: Style.getBarFontSizeForScreen(screenName)
-  readonly property bool hasFocusedWindow: CompositorService.getFocusedWindow() !== null
-  readonly property string windowTitle: CompositorService.getFocusedWindowTitle() || "No active window"
+  // Service-maintained properties: getFocusedWindow()/Title() read the live
+  // windows ListModel row proxy — calling them inside a binding captures a
+  // dying element on the next sync (DESIGN §1.7).
+  readonly property bool hasFocusedWindow: CompositorService.hasFocusedWindow
+  readonly property string windowTitle: CompositorService.focusedWindowTitle || "No active window"
   readonly property string fallbackIcon: "user-desktop"
 
   readonly property int iconSize: Style.toOdd(capsuleHeight * 0.75)

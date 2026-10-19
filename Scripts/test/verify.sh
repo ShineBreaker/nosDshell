@@ -481,7 +481,7 @@ PYEOF
   echo "cc-notif-groups: seeded $NOSD_NOTIF_HISTORY_FILE"
 fi
 
-qs -p "$REPO" > "$LOG" 2>&1 &
+QT_LOGGING_RULES="${NOSD_QT_LOGGING:-}" qs -p "$REPO" > "$LOG" 2>&1 &
 QS_PID=$!
 for i in $(seq 1 60); do
   qs -p "$REPO" ipc call state all >/dev/null 2>&1 && break
@@ -1759,9 +1759,10 @@ PYEOF
                             echo "efficient-taskbar: skipped (dock.mode=$DOCK_MODE, needs --settings dock.mode=efficient)"
                             return 0
                           fi
+                          qs -p "$REPO" ipc call debug list > "$WORK/logs/eff-roots.txt" 2>&1 || true
                           qs -p "$REPO" ipc call debug tree bar-HEADLESS-1 16 > "$WORK/logs/eff-bar-tree.txt" 2>&1 || true
-                          if grep -q 'unknown root' "$WORK/logs/eff-bar-tree.txt"; then
-                            echo "efficient-taskbar: no bar window"; return 0
+                          if grep -qE 'unknown root|Target not found' "$WORK/logs/eff-bar-tree.txt"; then
+                            echo "efficient-taskbar: no bar window (roots: $(cat "$WORK/logs/eff-roots.txt"))"; return 0
                           fi
                           # Guardrail (Bar.qml widgetFillsZone): delegates in the
                           # stretched left zone must stay packed — a stretch with

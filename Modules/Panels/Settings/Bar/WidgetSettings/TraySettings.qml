@@ -143,6 +143,9 @@ ColumnLayout {
 
     model: blacklistModel
     delegate: Item {
+      // Role as required property — model.<role> in bindings captures the
+      // live row proxy and crashes when the model mutates (DESIGN §1.7).
+      required property string rule
       width: ListView.width
       height: 40
 
@@ -154,7 +157,7 @@ ColumnLayout {
         border.color: Color.borderShell
         border.width: Style.borderS
         radius: Style.radiusItem
-        visible: model.rule !== undefined && model.rule !== "" // Only visible if rule exists
+        visible: rule !== undefined && rule !== "" // Only visible if rule exists
       }
 
       Row {
@@ -165,7 +168,7 @@ ColumnLayout {
 
         NText {
           anchors.verticalCenter: parent.verticalCenter
-          text: model.rule
+          text: rule
           elide: Text.ElideRight
         }
 

@@ -25,9 +25,11 @@ import qs.Widgets
 * `section` / `notif` rows — built from NotificationService.historyModel, so
 * the whole content block travels with the top-anchored notifications. A
 * notification row carries only its source index and precomputed group facts;
-* the delegate reads the live entry with historyModel.get(index), so the async
-* image cache (setProperty on cachedImage) keeps reaching the delegates the
-* way Taskbar's index-keyed Repeater does (CODING_STANDARDS modelData rule).
+* the delegate reads the entry off `_historyRows`, a plain-dict mirror the
+* service-model Connections rebuild on every mutation — binding-side
+* `historyModel.get()`/`model.<role>` reads capture the live row proxy and
+* crash on the next insert (DESIGN §1.7). The mirror rebuild still lets the
+* async image cache (setProperty on cachedImage) reach the delegates.
 * Rows hold no QObject references, so nothing here can dangle.
 *
 * The upstream invisible Tab range filter (currentRange / Keys.onTabPressed /
@@ -57,6 +59,50 @@ Item {
   property int actionIndex: -1
 
   readonly property var historyModel: NotificationService.historyModel
+
+  // Plain-dict mirror for binding-side reads. historyModel.get()/model.<role>
+  // inside bindings capture the live row proxy and crash in
+  // QQmlListModel::data→captureProperty on the next insert/setProperty
+  // (DESIGN §1.7). Rebuilt from JS handlers only.
+  property var _historyRows: []
+
+  function _rebuildHistoryRows() {
+    const m = NotificationService.historyModel;
+    const rows = [];
+    for (var i = 0; m && i < m.count; i++) {
+      const r = m.get(i);
+      rows.push({
+                  "id": r.id,
+                  "appName": r.appName,
+                  "summary": r.summary,
+                  "summaryMarkdown": r.summaryMarkdown,
+                  "body": r.body,
+                  "bodyMarkdown": r.bodyMarkdown,
+                  "actionsJson": r.actionsJson,
+                  "cachedImage": r.cachedImage,
+                  "originalImage": r.originalImage,
+                  "timestamp": r.timestamp,
+                  "urgency": r.urgency
+                });
+    }
+    _historyRows = rows;
+  }
+
+  Component.onCompleted: _rebuildHistoryRows()
+
+  Connections {
+    target: NotificationService.historyModel
+    function onCountChanged() {
+      root._rebuildHistoryRows();
+    }
+    function onDataChanged() {
+      root._rebuildHistoryRows();
+    }
+  }
+
+  function _entryAt(modelIndex) {
+    return (modelIndex >= 0 && modelIndex < _historyRows.length) ? _historyRows[modelIndex] : null;
+  }
 
   function parseActions(actions) {
     try {
@@ -109,9 +155,8 @@ Item {
   // are only final after the whole model has been walked, and the delegate
   // reads them off the row instead of re-deriving them.
   readonly property var descriptors: {
-    const model = NotificationService.historyModel;
     const rows = [];
-    if (!model || model.count === 0)
+    if (_historyRows.length === 0)
       return rows;
 
     rows.push({
@@ -143,8 +188,8 @@ Item {
                   });
       }
     };
-    for (var i = 0; i < model.count; i++) {
-      const entry = model.get(i);
+    for (var i = 0; i < _historyRows.length; i++) {
+      const entry = _historyRows[i];
       const rowBucket = root.dayBucket(entry.timestamp);
       if (rowBucket !== bucket) {
         flushBucket();
@@ -432,7 +477,7 @@ Item {
           // cache's setProperty(cachedImage) reaches this delegate. Header
           // and section rows have no source index.
           readonly property int modelIndex: modelData.modelIndex || 0
-          readonly property var entry: modelData.kind === "notif" ? (NotificationService.historyModel.get(modelIndex) || null) : null
+          readonly property var entry: modelData.kind === "notif" ? root._entryAt(modelIndex) : null
           readonly property string notificationId: entry ? entry.id : ""
           readonly property string appName: entry ? (entry.appName || "") : ""
           readonly property string groupKey: modelData.groupKey || ""

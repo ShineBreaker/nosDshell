@@ -226,6 +226,11 @@ ColumnLayout {
     Repeater {
       model: root.rootSettings ? root.rootSettings._stateChecksListModel : null
       delegate: Item {
+        // Roles as required properties — model.<role> in bindings captures
+        // the live row proxy and crashes on set()/remove() (DESIGN §1.7).
+        required property string command
+        required property string icon
+        required property int index
         property int currentIndex: index
 
         implicitHeight: contentRow.implicitHeight
@@ -239,9 +244,9 @@ ColumnLayout {
           NTextInput {
             Layout.fillWidth: true
             placeholderText: I18n.tr("panels.control-center.shortcuts-custom-button-state-checks-command")
-            text: model.command
+            text: command
             onTextChanged: {
-              updateStateCheck(currentIndex, text, model.icon);
+              updateStateCheck(currentIndex, text, icon);
             }
           }
 
@@ -250,9 +255,9 @@ ColumnLayout {
             spacing: Style.marginS
 
             NIcon {
-              icon: model.icon
+              icon: icon
               pointSize: Style.fontSizeL
-              visible: model.icon !== undefined && model.icon !== ""
+              visible: icon !== undefined && icon !== ""
             }
 
             NIconButton {
@@ -280,9 +285,9 @@ ColumnLayout {
 
         NIconPicker {
           id: iconPickerDelegate
-          initialIcon: model.icon
+          initialIcon: icon
           onIconSelected: function (iconName) {
-            updateStateCheck(currentIndex, model.command, iconName);
+            updateStateCheck(currentIndex, command, iconName);
           }
         }
       }

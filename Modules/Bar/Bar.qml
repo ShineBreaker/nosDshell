@@ -119,7 +119,7 @@ Item {
     // the ListModels outside the binding system.
     void BarService.widgetsRevision;
     for (var i = 0; i < model.count; i++) {
-      if (widgetFillsZone(model.get(i).id))
+      if (widgetFillsZone(model.get(i).wid))
         return true;
     }
     return false;
@@ -132,7 +132,7 @@ Item {
     // Build list of current IDs in model
     var currentIds = [];
     for (var i = 0; i < model.count; i++) {
-      currentIds.push(model.get(i).id);
+      currentIds.push(model.get(i).wid);
     }
 
     // Build list of new IDs
@@ -152,10 +152,14 @@ Item {
     Logger.d("Bar", "syncWidgetModel:", currentIds.join("|"), "→", newIds.join("|"), "changed:", structureChanged);
 
     if (structureChanged) {
-      // Rebuild model - IDs changed
+      // Rebuild model - IDs changed. Rows carry the widget id as `wid`
+      // (never `id` — `id` can't be a required property and model.<role>
+      // binding reads crash on wrapper capture, DESIGN §1.7).
       model.clear();
       for (var i = 0; i < validWidgets.length; i++) {
-        model.append(validWidgets[i]);
+        model.append({
+                       "wid": validWidgets[i].id
+                     });
       }
     }
     // If structure didn't change, delegates are preserved and will read fresh settings
@@ -637,19 +641,22 @@ Item {
         Repeater {
           model: root.leftWidgetsModel
           delegate: BarWidgetLoader {
-            required property var model
+            // `wid` role as a required property — model.<role> binding reads
+            // crash on wrapper capture (DESIGN §1.7); `id` can't be a
+            // required prop name, so rows carry `wid`.
+            required property string wid
             required property int index
 
-            widgetId: model.id || ""
+            widgetId: wid || ""
             widgetScreen: root.screen
             widgetProps: ({
-                            "widgetId": model.id,
+                            "widgetId": wid,
                             "section": "left",
                             "sectionWidgetIndex": index,
                             "sectionWidgetsCount": root.leftWidgetsModel.count
                           })
             Layout.alignment: Qt.AlignHCenter
-            Layout.fillHeight: root.efficientMode && root.widgetFillsZone(model.id)
+            Layout.fillHeight: root.efficientMode && root.widgetFillsZone(wid)
           }
         }
       }
@@ -664,13 +671,16 @@ Item {
         Repeater {
           model: root.centerWidgetsModel
           delegate: BarWidgetLoader {
-            required property var model
+            // `wid` role as a required property — model.<role> binding reads
+            // crash on wrapper capture (DESIGN §1.7); `id` can't be a
+            // required prop name, so rows carry `wid`.
+            required property string wid
             required property int index
 
-            widgetId: model.id || ""
+            widgetId: wid || ""
             widgetScreen: root.screen
             widgetProps: ({
-                            "widgetId": model.id,
+                            "widgetId": wid,
                             "section": "center",
                             "sectionWidgetIndex": index,
                             "sectionWidgetsCount": root.centerWidgetsModel.count,
@@ -699,13 +709,16 @@ Item {
         Repeater {
           model: root.rightWidgetsModel
           delegate: BarWidgetLoader {
-            required property var model
+            // `wid` role as a required property — model.<role> binding reads
+            // crash on wrapper capture (DESIGN §1.7); `id` can't be a
+            // required prop name, so rows carry `wid`.
+            required property string wid
             required property int index
 
-            widgetId: model.id || ""
+            widgetId: wid || ""
             widgetScreen: root.screen
             widgetProps: ({
-                            "widgetId": model.id,
+                            "widgetId": wid,
                             "section": "right",
                             "sectionWidgetIndex": index,
                             "sectionWidgetsCount": root.rightWidgetsModel.count,
@@ -780,19 +793,22 @@ Item {
         Repeater {
           model: root.leftWidgetsModel
           delegate: BarWidgetLoader {
-            required property var model
+            // `wid` role as a required property — model.<role> binding reads
+            // crash on wrapper capture (DESIGN §1.7); `id` can't be a
+            // required prop name, so rows carry `wid`.
+            required property string wid
             required property int index
 
-            widgetId: model.id || ""
+            widgetId: wid || ""
             widgetScreen: root.screen
             widgetProps: ({
-                            "widgetId": model.id,
+                            "widgetId": wid,
                             "section": "left",
                             "sectionWidgetIndex": index,
                             "sectionWidgetsCount": root.leftWidgetsModel.count
                           })
             Layout.alignment: Qt.AlignVCenter
-            Layout.fillWidth: root.efficientMode && root.widgetFillsZone(model.id)
+            Layout.fillWidth: root.efficientMode && root.widgetFillsZone(wid)
           }
         }
       }
@@ -808,13 +824,16 @@ Item {
         Repeater {
           model: root.centerWidgetsModel
           delegate: BarWidgetLoader {
-            required property var model
+            // `wid` role as a required property — model.<role> binding reads
+            // crash on wrapper capture (DESIGN §1.7); `id` can't be a
+            // required prop name, so rows carry `wid`.
+            required property string wid
             required property int index
 
-            widgetId: model.id || ""
+            widgetId: wid || ""
             widgetScreen: root.screen
             widgetProps: ({
-                            "widgetId": model.id,
+                            "widgetId": wid,
                             "section": "center",
                             "sectionWidgetIndex": index,
                             "sectionWidgetsCount": root.centerWidgetsModel.count,
@@ -846,13 +865,16 @@ Item {
         Repeater {
           model: root.rightWidgetsModel
           delegate: BarWidgetLoader {
-            required property var model
+            // `wid` role as a required property — model.<role> binding reads
+            // crash on wrapper capture (DESIGN §1.7); `id` can't be a
+            // required prop name, so rows carry `wid`.
+            required property string wid
             required property int index
 
-            widgetId: model.id || ""
+            widgetId: wid || ""
             widgetScreen: root.screen
             widgetProps: ({
-                            "widgetId": model.id,
+                            "widgetId": wid,
                             "section": "right",
                             "sectionWidgetIndex": index,
                             "sectionWidgetsCount": root.rightWidgetsModel.count,

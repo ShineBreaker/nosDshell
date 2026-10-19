@@ -24,6 +24,33 @@ Singleton {
   property ListModel windows: ListModel {}
   property int focusedWindowIndex: -1
 
+  // Binding-safe focused-window facts, maintained imperatively by
+  // _syncFocusedDerived(). Consumers must NOT call getFocusedWindow()/
+  // getFocusedWindowTitle() inside bindings: windows.get() returns a live
+  // ListModel row proxy whose property reads capture a dying element on the
+  // next syncWindows()/setProperty() (DESIGN §1.7).
+  property bool hasFocusedWindow: false
+  property string focusedWindowTitle: ""
+
+  function _syncFocusedDerived() {
+    const w = (focusedWindowIndex >= 0 && focusedWindowIndex < windows.count) ? windows.get(focusedWindowIndex) : null;
+    hasFocusedWindow = w !== null && w !== undefined;
+    const t = w && w.title ? String(w.title).replace(/(\r\n|\n|\r)/g, "") : "";
+    focusedWindowTitle = t;
+  }
+
+  onFocusedWindowIndexChanged: _syncFocusedDerived()
+
+  Connections {
+    target: root.windows
+    function onCountChanged() {
+      root._syncFocusedDerived();
+    }
+    function onDataChanged() {
+      root._syncFocusedDerived();
+    }
+  }
+
   // Display scale data
   property var displayScales: ({})
   property bool displayScalesLoaded: false

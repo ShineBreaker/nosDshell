@@ -194,8 +194,21 @@ Variants {
           delegate: Item {
             id: card
 
-            property string notificationId: model.id
-            property var notificationData: model
+            // Roles as required properties — the engine writes updates on
+            // setProperty(); model.<role>/get() reads inside bindings crash
+            // (DESIGN §1.7). `id` is immutable per row → one-shot assignment.
+            required property int index
+            required property string summary
+            required property string body
+            required property string appName
+            required property var timestamp
+            required property string originalImage
+            required property string actionsJson
+            // `id` can't be required (reserved); the service mirrors it as
+            // notifId so delegates get the correct row's identity even when
+            // insert-at-top shifts indices mid-incubation.
+            required property string notifId
+            readonly property string notificationId: notifId
             property bool isHovered: false
             property bool isRemoving: false
 
@@ -204,7 +217,7 @@ Variants {
 
             readonly property var actions: {
               try {
-                return model.actionsJson ? JSON.parse(model.actionsJson) : [];
+                return actionsJson ? JSON.parse(actionsJson) : [];
               } catch (e) {
                 return [];
               }
@@ -480,7 +493,7 @@ Variants {
                 width: Style.bubbleIconSize
                 height: Style.bubbleIconSize
                 radius: Style.radiusRow
-                imagePath: model.originalImage || ""
+                imagePath: originalImage || ""
                 symbolicColor: Color.onTransient
                 borderColor: "transparent"
                 borderWidth: 0
@@ -499,7 +512,7 @@ Variants {
                 // Title — onTransient Medium
                 NText {
                   Layout.fillWidth: true
-                  text: model.summary || I18n.tr("common.no-summary")
+                  text: summary || I18n.tr("common.no-summary")
                   pointSize: Style.fontSizeM
                   font.weight: Style.fontWeightMedium
                   color: Color.onTransient
@@ -513,7 +526,7 @@ Variants {
                 // Body — onTransientBody, at most 3 lines
                 NText {
                   Layout.fillWidth: true
-                  text: model.body || ""
+                  text: body || ""
                   pointSize: Style.fontSizeS
                   color: Color.onTransientBody
                   textFormat: Text.StyledText
@@ -526,7 +539,7 @@ Variants {
                 // App name + relative time
                 NText {
                   Layout.fillWidth: true
-                  text: (model.appName || "") + (model.appName ? " · " : "") + Time.formatRelativeTime(model.timestamp)
+                  text: (appName || "") + (appName ? " · " : "") + Time.formatRelativeTime(timestamp)
                   pointSize: Style.fontSizeXXS
                   color: Color.onTransientBody
                   elide: Text.ElideRight
@@ -711,7 +724,7 @@ Variants {
                               } else {
                                 // Without a default action, or if invoking it fails,
                                 // the best fallback is focusing the sender window.
-                                NotificationService.focusSenderWindow(model.appName);
+                                NotificationService.focusSenderWindow(appName);
                                 card.animateOut();
                               }
                             }

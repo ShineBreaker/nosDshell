@@ -18,10 +18,10 @@ Singleton {
   // All available wallpaper transitions
   readonly property ListModel transitionsModel: ListModel {}
 
-  // All transition keys but filter out "none" and "random" so we are left with the real transitions
-  readonly property var allTransitions: Array.from({
-                                                     "length": transitionsModel.count
-                                                   }, (_, i) => transitionsModel.get(i).key).filter(key => key !== "random" && key != "none")
+  // All transition keys but "none"/"random" — real transitions only. Computed
+  // once in translateModels(): binding-side ListModel.get() captures the live
+  // row proxy and is unsafe (DESIGN §1.7); JS-side reads are fine.
+  property var allTransitions: []
 
   property var wallpaperLists: ({})
   property int scanningCount: 0
@@ -305,6 +305,10 @@ Singleton {
                               "key": "honeycomb",
                               "name": I18n.tr("wallpaper.transitions.honeycomb")
                             });
+
+    allTransitions = Array.from({
+                                  "length": transitionsModel.count
+                                }, (_, i) => transitionsModel.get(i).key).filter(key => key !== "random" && key != "none");
   }
 
   // -------------------------------------------------------------------

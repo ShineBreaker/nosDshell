@@ -452,7 +452,22 @@ Item {
           runningWindows.push({
                                 "id": w.id,
                                 "type": isPinned ? "pinned-running" : "running",
-                                "window": w,
+                                // Snapshot to a plain dict: w is a live
+                                // ListModel row proxy — storing it lets a
+                                // binding read proxy.isFocused, which captures
+                                // a dead element on the next syncWindows()
+                                // clear+append (DESIGN §1.7).
+                                "window": {
+                                  "id": w.id,
+                                  "appId": w.appId,
+                                  "title": w.title,
+                                  "isFocused": w.isFocused,
+                                  "isUrgent": w.isUrgent,
+                                  "fullscreen": w.fullscreen,
+                                  "workspaceId": w.workspaceId,
+                                  "output": w.output,
+                                  "handle": w.handle
+                                },
                                 "appId": w.appId,
                                 "title": w.title || getAppNameFromDesktopEntry(w.appId)
                               });
@@ -697,11 +712,17 @@ Item {
         model: root.itemRows
         delegate: Item {
           id: taskbarItem
-          required property int index
-          readonly property var modelData: root._entryForRow(model.rkey)
+          // Roles arrive as required properties, never via `model.<role>`:
+          // role props have no notify signal, so binding-time capture of
+          // model.<role> on the DelegateModelItem wrapper crashes on the
+          // next role-change notify (QQmlPropertyCapture::captureNonBindableProperty
+          // SIGSEGV). The engine keeps required props updated on setProperty.
+          required property string rkey
+          required property bool dying
+          readonly property var modelData: root._entryForRow(rkey)
           // Hover/drag identity is the row key — sway window rows carry no
           // `id` field, so entry.id collapses every window to undefined.
-          readonly property string rowKey: model.rkey || ""
+          readonly property string rowKey: rkey || ""
           property ShellScreen screen: root.screen
 
           readonly property bool isRunning: modelData.window !== null
@@ -721,14 +742,14 @@ Item {
 
           // Collapse/grow lifecycle: rows enter at 0 and dying rows collapse
           // back to 0 on the long axis before the model drops them.
-          readonly property bool collapsing: model.dying === true
+          readonly property bool collapsing: dying === true
           property bool _entered: false
           Component.onCompleted: _entered = true
           readonly property bool _shrunk: collapsing || !_entered
           readonly property real longLen_: root.isVerticalBar ? Layout.preferredHeight : Layout.preferredWidth
           onLongLen_Changed: {
             if (collapsing && longLen_ <= 0)
-              root._dropRow(model.rkey);
+              root._dropRow(rkey);
           }
 
           opacity: _shrunk ? 0 : 1
@@ -759,7 +780,7 @@ Item {
           // Ensure dragged item is on top
           z: (root.dragSourceIndex === modelIndex) ? 1000 : 1
 
-          property int modelIndex: root._liveIndexOf(model.rkey)
+          property int modelIndex: root._liveIndexOf(rkey)
           objectName: "taskbarAppItem"
 
           // DDE efficient-mode state fill on the item rect inset by 1 px

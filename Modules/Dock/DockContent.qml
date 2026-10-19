@@ -447,10 +447,12 @@ Item {
       Repeater {
         model: segmentRows
         delegate: Loader {
-          required property var model
-          required property int index
-          readonly property string segKind: model.segKind
-          readonly property var segEntry: dock._entryForKey(model.ekey)
+          // Roles as required properties — see Taskbar's delegate for why
+          // model.<role> must never appear in a binding.
+          required property string segKind
+          required property string ekey
+          required property string segTag
+          readonly property var segEntry: dock._entryForKey(ekey)
           Layout.alignment: Qt.AlignCenter
           Layout.fillWidth: !isVertical && segKind === "item" && segEntry && segEntry.id === "Spacer"
           Layout.fillHeight: isVertical && segKind === "item" && segEntry && segEntry.id === "Spacer"
@@ -461,11 +463,11 @@ Item {
           // (setProperty) while the delegate lives.
           onLoaded: {
             if (item.segTag !== undefined)
-              item.segTag = Qt.binding(() => model.segTag);
+              item.segTag = Qt.binding(() => segTag);
             if (item.segEntry !== undefined)
               item.segEntry = Qt.binding(() => segEntry);
             if (item.segEntries !== undefined)
-              item.segEntries = Qt.binding(() => dock._runModels[model.segTag] || null);
+              item.segEntries = Qt.binding(() => dock._runModels[segTag] || null);
           }
         }
       }
@@ -673,20 +675,24 @@ Item {
 
           delegate: Item {
             id: appButton
-            readonly property var entry: dockRoot._entryForRow(model.rkey)
+            // Roles arrive as required properties — model.<role> binding
+            // reads crash on role-change capture; see Taskbar's delegate.
+            required property string rkey
+            required property bool dying
+            readonly property var entry: dockRoot._entryForRow(rkey)
             readonly property real appItemLength: Math.round(dockRoot.itemLength * shrinkFactor)
             readonly property real appIconContent: Math.round(Math.min(appItemLength, dockRoot.itemThickness) * 0.8)
 
             // Collapse/grow lifecycle: rows enter at 0 and dying rows collapse
             // back to 0 on the long axis before the model drops them.
-            readonly property bool collapsing: model.dying === true
+            readonly property bool collapsing: dying === true
             property bool _entered: false
             Component.onCompleted: _entered = true
             readonly property bool _shrunk: collapsing || !_entered
             readonly property real longLen_: isVertical ? Layout.preferredHeight : Layout.preferredWidth
             onLongLen_Changed: {
               if (collapsing && longLen_ <= 0)
-                dockRoot._dropDockRow(model.rkey);
+                dockRoot._dropDockRow(rkey);
             }
 
             opacity: _shrunk ? 0 : 1
@@ -736,7 +742,7 @@ Item {
             property bool isRunning: toplevels.length > 0
 
             // Live-list index for drag-and-drop (dying rows hold extra slots)
-            property int modelIndex: dockRoot._liveIndexOf(model.rkey)
+            property int modelIndex: dockRoot._liveIndexOf(rkey)
             objectName: "dockAppButton"
 
             // Attention: damped swing — ±8° rotation with 18px lift, one
@@ -1252,11 +1258,11 @@ Item {
             Repeater {
               model: pluginRun.segEntries
               delegate: BarWidgetLoader {
-                required property var model
-                required property int index
-                readonly property var modelData: dock._entryForKey(model.ekey) || ({
-                                                                                    "id": ""
-                                                                                  })
+                // Role as a required property — see Taskbar's delegate.
+                required property string ekey
+                readonly property var modelData: dock._entryForKey(ekey) || ({
+                                                                               "id": ""
+                                                                             })
 
                 widgetId: modelData.id || ""
                 widgetScreen: dock.screen

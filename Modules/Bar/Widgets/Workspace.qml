@@ -135,6 +135,11 @@ Item {
   property int iconRevision: 0
   // Revision counter to force window list re-evaluation (for liveWindows binding in grouped mode)
   property int windowRevision: 0
+  // Plain-dict mirror of localWorkspaces for binding-side reads. ListModel
+  // get()/model.<role> reads inside bindings capture the live row proxy and
+  // crash in QQmlListModel::data→captureProperty when set() mutates rows
+  // (DESIGN §1.7). JS-only readers may keep using localWorkspaces.get(i).
+  property var _workspaceRows: []
 
   property ListModel localWorkspaces: ListModel {}
   property int lastFocusedWorkspaceId: -1
@@ -206,46 +211,46 @@ Item {
 
   function computeWidth() {
     let total = 0;
-    for (var i = 0; i < localWorkspaces.count; i++) {
-      const ws = localWorkspaces.get(i);
+    for (var i = 0; i < _workspaceRows.length; i++) {
+      const ws = _workspaceRows[i];
       total += getWorkspaceWidth(ws);
     }
-    total += Math.max(localWorkspaces.count - 1, 0) * spacingBetweenPills;
+    total += Math.max(_workspaceRows.length - 1, 0) * spacingBetweenPills;
     total += horizontalPadding * 2;
     return Style.toOdd(total);
   }
 
   function computeHeight() {
     let total = 0;
-    for (var i = 0; i < localWorkspaces.count; i++) {
-      const ws = localWorkspaces.get(i);
+    for (var i = 0; i < _workspaceRows.length; i++) {
+      const ws = _workspaceRows[i];
       total += getWorkspaceHeight(ws);
     }
-    total += Math.max(localWorkspaces.count - 1, 0) * spacingBetweenPills;
+    total += Math.max(_workspaceRows.length - 1, 0) * spacingBetweenPills;
     total += horizontalPadding * 2;
     return Style.toOdd(total);
   }
 
   function getFocusedLocalIndex() {
-    for (var i = 0; i < localWorkspaces.count; i++) {
-      if (localWorkspaces.get(i).isFocused === true)
+    for (var i = 0; i < _workspaceRows.length; i++) {
+      if (_workspaceRows[i].isFocused === true)
         return i;
     }
     return -1;
   }
 
   function switchByOffset(offset) {
-    if (localWorkspaces.count <= 1)
+    if (_workspaceRows.length <= 1)
       return;
     var current = getFocusedLocalIndex();
     if (current < 0)
       current = 0;
-    var next = (current + offset) % localWorkspaces.count;
+    var next = (current + offset) % _workspaceRows.length;
     if (next < 0)
-      next = localWorkspaces.count - 1;
+      next = _workspaceRows.length - 1;
     if (next === current)
       return;
-    const ws = localWorkspaces.get(next);
+    const ws = _workspaceRows[next];
     if (ws && ws.idx !== undefined)
       CompositorService.switchToWorkspace(ws);
   }
@@ -330,21 +335,20 @@ Item {
         if (hideUnoccupied && !ws.isOccupied && !ws.isFocused)
           continue;
 
-        // Create a plain JS object for the workspace data
+        // Plain JS row: `id` rides as `wsId` because `id` cannot be declared
+        // a required property in the delegates; every role must exist or the
+        // required-prop contract fails at incubation.
         var workspaceData = {
-          id: ws.id,
+          wsId: ws.id,
           idx: ws.idx,
-          name: ws.name,
-          output: ws.output,
+          name: ws.name || "",
+          output: ws.output || "",
           isFocused: ws.isFocused,
           isActive: ws.isActive,
           isUrgent: ws.isUrgent,
-          isOccupied: ws.isOccupied
+          isOccupied: ws.isOccupied,
+          handle: ws.handle !== null && ws.handle !== undefined ? ws.handle : null
         };
-
-        if (ws.handle !== null && ws.handle !== undefined) {
-          workspaceData.handle = ws.handle;
-        }
 
         // Windows are fetched live via liveWindows property in grouped mode
         // to avoid Qt 6.9 ListModel nested array serialization issues
@@ -359,7 +363,7 @@ Item {
       if (i < localWorkspaces.count && i < targetList.length) {
         var existing = localWorkspaces.get(i);
         var target = targetList[i];
-        if (existing.id === target.id) {
+        if (existing.wsId === target.wsId) {
           // Use set() to update all properties, including arrays like 'windows'
           // This is more reliable than repeated setProperty calls for complex types
           localWorkspaces.set(i, target);
@@ -378,6 +382,7 @@ Item {
       }
     }
 
+    root._workspaceRows = targetList;
     updateWorkspaceFocus();
   }
 
@@ -390,11 +395,11 @@ Item {
     for (var i = 0; i < localWorkspaces.count; i++) {
       const ws = localWorkspaces.get(i);
       if (ws.isFocused === true) {
-        if (root.lastFocusedWorkspaceId !== -1 && root.lastFocusedWorkspaceId !== ws.id) {
+        if (root.lastFocusedWorkspaceId !== -1 && root.lastFocusedWorkspaceId !== ws.wsId) {
           root.triggerUnifiedWave();
         }
-        root.lastFocusedWorkspaceId = ws.id;
-        root.workspaceChanged(ws.id, Color.mPrimary);
+        root.lastFocusedWorkspaceId = ws.wsId;
+        root.workspaceChanged(ws.wsId, Color.mPrimary);
         break;
       }
     }
@@ -599,8 +604,29 @@ Item {
       id: workspaceRepeaterHorizontal
       model: localWorkspaces
       delegate: WorkspacePill {
-        required property var model
-        workspace: model
+        // Row roles as required properties — the engine writes updates on
+        // set(); model.<role>/get() reads in bindings capture the live row
+        // proxy and crash (DESIGN §1.7). `id` rides as `wsId`.
+        required property int wsId
+        required property int idx
+        required property string name
+        required property string output
+        required property bool isFocused
+        required property bool isActive
+        required property bool isUrgent
+        required property bool isOccupied
+        required property var handle
+        workspace: ({
+                      "id": wsId,
+                      "idx": idx,
+                      "name": name,
+                      "output": output,
+                      "isFocused": isFocused,
+                      "isActive": isActive,
+                      "isUrgent": isUrgent,
+                      "isOccupied": isOccupied,
+                      "handle": handle
+                    })
         isVertical: false
         baseDimensionRatio: root.baseDimensionRatio
         capsuleHeight: root._capsule
@@ -641,8 +667,27 @@ Item {
       id: workspaceRepeaterVertical
       model: localWorkspaces
       delegate: WorkspacePill {
-        required property var model
-        workspace: model
+        // Row roles as required properties — see the horizontal repeater.
+        required property int wsId
+        required property int idx
+        required property string name
+        required property string output
+        required property bool isFocused
+        required property bool isActive
+        required property bool isUrgent
+        required property bool isOccupied
+        required property var handle
+        workspace: ({
+                      "id": wsId,
+                      "idx": idx,
+                      "name": name,
+                      "output": output,
+                      "isFocused": isFocused,
+                      "isActive": isActive,
+                      "isUrgent": isUrgent,
+                      "isOccupied": isOccupied,
+                      "handle": handle
+                    })
         isVertical: true
         baseDimensionRatio: root.baseDimensionRatio
         capsuleHeight: root._capsule
@@ -673,8 +718,27 @@ Item {
     Rectangle {
       id: groupedContainer
 
-      required property var model
-      property var workspaceModel: model
+      // Row roles as required properties — same recipe as the pill delegates.
+      required property int wsId
+      required property int idx
+      required property string name
+      required property string output
+      required property bool isFocused
+      required property bool isActive
+      required property bool isUrgent
+      required property bool isOccupied
+      required property var handle
+      property var workspaceModel: ({
+                                      "id": wsId,
+                                      "idx": idx,
+                                      "name": name,
+                                      "output": output,
+                                      "isFocused": isFocused,
+                                      "isActive": isActive,
+                                      "isUrgent": isUrgent,
+                                      "isOccupied": isOccupied,
+                                      "handle": handle
+                                    })
       // Fetch windows directly from service to avoid Qt 6.9 ListModel nested array issues
       property var liveWindows: []
       // Inert entry for delegates that briefly outlive a shrunken liveWindows array

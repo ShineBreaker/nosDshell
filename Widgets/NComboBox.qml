@@ -38,65 +38,61 @@ NDccRow {
   // Less strict comparison with != (instead of !==) so it can properly compare int vs string (ex for FPS: 30 and "30")
   readonly property bool isValueChanged: (defaultValue !== undefined) && (currentKey != defaultValue)
 
+  // Plain-dict mirror for all binding-side row reads. model.get()/model.<role>
+  // inside bindings capture the live row proxy and crash in
+  // QQmlListModel::data→captureProperty when a ListModel source mutates
+  // (DESIGN §1.7). Rebuilt from JS handlers, where get() is safe.
+  property var _modelRows: []
+
+  function _rebuildRows() {
+    var rows = [];
+    if (root.model) {
+      if (Array.isArray(root.model)) {
+        rows = root.model.slice();
+      } else if (typeof root.model.get === 'function') {
+        for (var i = 0; i < root.model.count; i++) {
+          var r = root.model.get(i);
+          rows.push({
+                      "key": r.key,
+                      "name": r.name
+                    });
+        }
+      }
+    }
+    _modelRows = rows;
+  }
+
+  Component.onCompleted: _rebuildRows()
+  onModelChanged: _rebuildRows()
+
+  // The source may be a plain array — Connections needs a QObject target,
+  // so only hook mutation signals when the model is a real ListModel.
+  Connections {
+    target: (root.model && typeof root.model.count === "number") ? root.model : null
+    ignoreUnknownSignals: true
+    function onCountChanged() {
+      root._rebuildRows();
+    }
+    function onDataChanged() {
+      root._rebuildRows();
+    }
+  }
+
   readonly property string indicatorTooltip: {
     if (defaultValue === undefined)
       return "";
     var displayValue = "";
-    if (defaultValue === "") {
-      // Try to find the display name for empty key in the model
-      var found = false;
-      if (root.model) {
-        if (Array.isArray(root.model)) {
-          for (var i = 0; i < root.model.length; i++) {
-            var item = root.model[i];
-            if (item && item.key === "") {
-              displayValue = item.name || I18n.tr("panels.indicator.system-default");
-              found = true;
-              break;
-            }
-          }
-        } else if (typeof root.model.get === 'function') {
-          for (var i = 0; i < root.itemCount(); i++) {
-            var item = root.getItem(i);
-            if (item && item.key === "") {
-              displayValue = item.name || I18n.tr("panels.indicator.system-default");
-              found = true;
-              break;
-            }
-          }
-        }
+    var found = false;
+    for (var i = 0; i < _modelRows.length; i++) {
+      var item = _modelRows[i];
+      if (item && item.key === defaultValue) {
+        displayValue = item.name || (defaultValue === "" ? I18n.tr("panels.indicator.system-default") : String(defaultValue));
+        found = true;
+        break;
       }
-      // If not found in model, show "System Default" instead of "(empty)"
-      if (!found) {
-        displayValue = I18n.tr("panels.indicator.system-default");
-      }
-    } else {
-      // Try to find the display name for the default key in the model
-      var found = false;
-      if (root.model) {
-        if (Array.isArray(root.model)) {
-          for (var i = 0; i < root.model.length; i++) {
-            var item = root.model[i];
-            if (item && item.key === defaultValue) {
-              displayValue = item.name || String(defaultValue);
-              found = true;
-              break;
-            }
-          }
-        } else if (typeof root.model.get === 'function') {
-          for (var i = 0; i < root.itemCount(); i++) {
-            var item = root.getItem(i);
-            if (item && item.key === defaultValue) {
-              displayValue = item.name || String(defaultValue);
-              found = true;
-              break;
-            }
-          }
-        }
-      }
-      if (!found) {
-        displayValue = String(defaultValue);
-      }
+    }
+    if (!found) {
+      displayValue = defaultValue === "" ? I18n.tr("panels.indicator.system-default") : String(defaultValue);
     }
     return I18n.tr("panels.indicator.default-value", {
                      "value": displayValue
@@ -104,28 +100,16 @@ NDccRow {
   }
 
   function itemCount() {
-    if (!root.model)
-      return 0;
-    if (typeof root.model.count === 'number')
-      return root.model.count;
-    if (Array.isArray(root.model))
-      return root.model.length;
-    return 0;
+    return _modelRows.length;
   }
 
   function getItem(index) {
-    if (!root.model)
-      return null;
-    if (typeof root.model.get === 'function')
-      return root.model.get(index);
-    if (Array.isArray(root.model))
-      return root.model[index];
-    return null;
+    return _modelRows[index] ?? null;
   }
 
   function findIndexByKey(key) {
-    for (var i = 0; i < itemCount(); i++) {
-      var item = getItem(i);
+    for (var i = 0; i < _modelRows.length; i++) {
+      var item = _modelRows[i];
       if (item && item.key === key)
         return i;
     }
@@ -169,7 +153,8 @@ NDccRow {
     Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
     Layout.preferredHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
-    model: root.model
+    // Plain-dict mirror rows — never the live ListModel (DESIGN §1.7).
+    model: root._modelRows
     textRole: "name"
     currentIndex: root.findIndexByKey(root.currentKey)
 
@@ -298,7 +283,7 @@ NDccRow {
         id: listView
         property var comboBox: combo
         gradientColor: "transparent"
-        model: combo.popup.visible ? root.model : null
+        model: combo.popup.visible ? root._modelRows : null
         highlightMoveDuration: 0
         // Overlay scrollbar: a permanent empty gutter would offset the
         // highlight from the frame edge; the thumb shows whenever the list
@@ -328,7 +313,7 @@ NDccRow {
             pointSize: Style.fontSizeM
             color: delegateRect.isHighlighted ? Color.onAccent : Color.onShell
             text: {
-              var item = root.getItem(delegateRect.index);
+              var item = root._modelRows[delegateRect.index];
               return item && item.name ? item.name : "";
             }
           }

@@ -40,6 +40,10 @@ NIconButton {
 
   readonly property color badgeColor: Color.resolveColorKey(unreadBadgeColor)
 
+  // Recomputed imperatively: historyModel.get() inside a binding captures the
+  // live row proxy and crashes on the next mutation (DESIGN §1.7).
+  property int _unreadCount: 0
+
   function computeUnreadCount() {
     var since = NotificationService.lastSeenTs;
     var count = 0;
@@ -50,10 +54,28 @@ NIconButton {
       if (ts > since)
         count++;
     }
-    return count;
+    _unreadCount = count;
   }
 
-  readonly property int count: computeUnreadCount()
+  Component.onCompleted: computeUnreadCount()
+
+  Connections {
+    target: NotificationService.historyModel
+    function onCountChanged() {
+      root.computeUnreadCount();
+    }
+    function onDataChanged() {
+      root.computeUnreadCount();
+    }
+  }
+  Connections {
+    target: NotificationService
+    function onLastSeenTsChanged() {
+      root.computeUnreadCount();
+    }
+  }
+
+  readonly property int count: _unreadCount
 
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
