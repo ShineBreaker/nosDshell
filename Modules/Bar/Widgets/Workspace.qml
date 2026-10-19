@@ -142,7 +142,9 @@ Item {
   property var _workspaceRows: []
 
   property ListModel localWorkspaces: ListModel {}
-  property int lastFocusedWorkspaceId: -1
+  // var, not int: backend workspace ids can be strings (LabwcService) or
+  // u64 (niri) — the delegate required props are var for the same reason.
+  property var lastFocusedWorkspaceId: -1
   property real masterProgress: 0.0
   property bool effectsActive: false
   property color effectColor: Color.mPrimary
@@ -336,18 +338,21 @@ Item {
           continue;
 
         // Plain JS row: `id` rides as `wsId` because `id` cannot be declared
-        // a required property in the delegates; every role must exist or the
-        // required-prop contract fails at incubation.
+        // a required property in the delegates. Values are coerced at build
+        // time — backends omit fields (niri may lack is_urgent, LabwcService
+        // emits string ids) and a required bool/string/int receiving
+        // undefined fails delegate incubation, blanking the whole widget.
         var workspaceData = {
           wsId: ws.id,
-          idx: ws.idx,
+          idx: ws.idx | 0,
           name: ws.name || "",
           output: ws.output || "",
-          isFocused: ws.isFocused,
-          isActive: ws.isActive,
-          isUrgent: ws.isUrgent,
-          isOccupied: ws.isOccupied,
-          handle: ws.handle !== null && ws.handle !== undefined ? ws.handle : null
+          isFocused: ws.isFocused === true,
+          isActive: ws.isActive === true,
+          isUrgent: ws.isUrgent === true,
+          isOccupied: ws.isOccupied === true,
+          handle: ws.handle !== null && ws.handle !== undefined ? ws.handle : null,
+          oid: ws.oid !== undefined ? ws.oid : null
         };
 
         // Windows are fetched live via liveWindows property in grouped mode
@@ -606,16 +611,19 @@ Item {
       delegate: WorkspacePill {
         // Row roles as required properties — the engine writes updates on
         // set(); model.<role>/get() reads in bindings capture the live row
-        // proxy and crash (DESIGN §1.7). `id` rides as `wsId`.
-        required property int wsId
-        required property int idx
-        required property string name
-        required property string output
-        required property bool isFocused
-        required property bool isActive
-        required property bool isUrgent
-        required property bool isOccupied
+        // proxy and crash (DESIGN §1.7). `id` rides as `wsId`. All `var`:
+        // backend workspaces vary per compositor (string ids, absent flags) —
+        // a typed required prop receiving undefined kills the whole delegate.
+        required property var wsId
+        required property var idx
+        required property var name
+        required property var output
+        required property var isFocused
+        required property var isActive
+        required property var isUrgent
+        required property var isOccupied
         required property var handle
+        required property var oid
         workspace: ({
                       "id": wsId,
                       "idx": idx,
@@ -625,7 +633,8 @@ Item {
                       "isActive": isActive,
                       "isUrgent": isUrgent,
                       "isOccupied": isOccupied,
-                      "handle": handle
+                      "handle": handle,
+                      "oid": oid
                     })
         isVertical: false
         baseDimensionRatio: root.baseDimensionRatio
@@ -668,15 +677,16 @@ Item {
       model: localWorkspaces
       delegate: WorkspacePill {
         // Row roles as required properties — see the horizontal repeater.
-        required property int wsId
-        required property int idx
-        required property string name
-        required property string output
-        required property bool isFocused
-        required property bool isActive
-        required property bool isUrgent
-        required property bool isOccupied
+        required property var wsId
+        required property var idx
+        required property var name
+        required property var output
+        required property var isFocused
+        required property var isActive
+        required property var isUrgent
+        required property var isOccupied
         required property var handle
+        required property var oid
         workspace: ({
                       "id": wsId,
                       "idx": idx,
@@ -686,7 +696,8 @@ Item {
                       "isActive": isActive,
                       "isUrgent": isUrgent,
                       "isOccupied": isOccupied,
-                      "handle": handle
+                      "handle": handle,
+                      "oid": oid
                     })
         isVertical: true
         baseDimensionRatio: root.baseDimensionRatio
@@ -718,16 +729,19 @@ Item {
     Rectangle {
       id: groupedContainer
 
-      // Row roles as required properties — same recipe as the pill delegates.
-      required property int wsId
-      required property int idx
-      required property string name
-      required property string output
-      required property bool isFocused
-      required property bool isActive
-      required property bool isUrgent
-      required property bool isOccupied
+      // Row roles as required properties — same recipe as the pill delegates;
+      // all `var` because backend fields differ per compositor (undefined on a
+      // typed required prop would kill the delegate).
+      required property var wsId
+      required property var idx
+      required property var name
+      required property var output
+      required property var isFocused
+      required property var isActive
+      required property var isUrgent
+      required property var isOccupied
       required property var handle
+      required property var oid
       property var workspaceModel: ({
                                       "id": wsId,
                                       "idx": idx,
@@ -737,7 +751,8 @@ Item {
                                       "isActive": isActive,
                                       "isUrgent": isUrgent,
                                       "isOccupied": isOccupied,
-                                      "handle": handle
+                                      "handle": handle,
+                                      "oid": oid
                                     })
       // Fetch windows directly from service to avoid Qt 6.9 ListModel nested array issues
       property var liveWindows: []
