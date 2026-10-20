@@ -10,6 +10,37 @@
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-10-20
+
+这一版把两块「看着像、用不了」的地方改成了真家伙：高效任务栏的排布从写死的布局变成可编辑模型，配套的分区式 widget 编辑器让你自己决定每个格子里放什么；时尚坞的应用条则换上一套统一的模型与动画，应用进出时沿边缘交错滑入。底下顺手扫掉了一批 ListModel 的老毛病——空值写入、委托角色类型、绑定里读行元素导致的报错与漏渲染，连带着工作区胶囊切换、任务栏溢出收缩、亮色主题强调色可读性一起修好，界面文案与 README 也全部重写了一遍。
+
+---
+
+### 新功能
+
+- staggered edge-slide lifecycle for app-strip add/remove：[`0028f73ca`](https://github.com/ShineBreaker/nosDshell/commit/0028f73ca35c28e38857edb08ce857f4b4737673)
+- unify app-strip model/animation and make fashion dock content configurable：[`1340797da`](https://github.com/ShineBreaker/nosDshell/commit/1340797da27fb525d32a71bc9c5390f0876d0b03)
+- tighten UI copy and converge widget/plugin display names：[`e82c68ce4`](https://github.com/ShineBreaker/nosDshell/commit/e82c68ce4fb56a858402fceb13da1ba2d351b182)
+- sectioned widget editor for the efficient taskbar：[`c4a013d58`](https://github.com/ShineBreaker/nosDshell/commit/c4a013d583105dd97bc6347993df5320f448bf90)
+- make the efficient taskbar layout a real editable model：[`89bb23529`](https://github.com/ShineBreaker/nosDshell/commit/89bb235298cd67467b33d3eed28f1bbe01da529f)
+
+### 修复
+
+- never write null values into workspace ListModel rows：[`5f999bc07`](https://github.com/ShineBreaker/nosDshell/commit/5f999bc0750129b75edd57b5e8a88c182ab64d94)
+- make workspace delegate roles var and coerce backend fields：[`17ab267c0`](https://github.com/ShineBreaker/nosDshell/commit/17ab267c02b4648777833b28339ad1134cbe39aa)
+- purge binding-side reads of live ListModel row elements：[`0076ef3c5`](https://github.com/ShineBreaker/nosDshell/commit/0076ef3c5149caa62f682e8d410e5c34b4139ddc)
+- incubation-safe list models for the dock/taskbar strips：[`225550277`](https://github.com/ShineBreaker/nosDshell/commit/2255502773f43928bbcc04849b1d2d16d073891f)
+- host dialogs on the blur surface and stop cross-model widget writes：[`6e1385f45`](https://github.com/ShineBreaker/nosDshell/commit/6e1385f45cdf4a7ce2c2905d82415554220f1292)
+- animate workspace pill on focus switch：[`38cedb5fe`](https://github.com/ShineBreaker/nosDshell/commit/38cedb5fedff6974779b25eaf3b4091d98c724b6)
+- size overflow shrink off the zone's real free span：[`d3b10c597`](https://github.com/ShineBreaker/nosDshell/commit/d3b10c5977d799835b7db9197fe5f49ae6926f5c)
+- pack efficient left zone and honor colorizeIcons defaults：[`39bb6ed9a`](https://github.com/ShineBreaker/nosDshell/commit/39bb6ed9aae00c8ecae49994821a723d02e28f5c)
+- split positive into dark/light values for light-shell legibility：[`863493992`](https://github.com/ShineBreaker/nosDshell/commit/863493992c4fb3c3873f4d1d028722ebb687bb80)
+- converge efficient-mode indicator on the pill delegates：[`48c6f98df`](https://github.com/ShineBreaker/nosDshell/commit/48c6f98dfeab3f751d30afee96bc3fb7ae943e7e)
+
+### 文档
+
+- rewrite READMEs and repo docs for clarity and product pitch：[`2b946462e`](https://github.com/ShineBreaker/nosDshell/commit/2b946462e4130e5323690d2b4d679e73ee6e4008)
+
 ## [1.5.0] - 2026-10-18
 
 这一版补上了两块 DDE 形态下一直缺着的能力：shell 终于自带 polkit 认证代理——需要提权的操作不再静默失败，而是弹出 DDE 风格的认证对话框；插件机制多了一层「内置插件」，随包分发、默认启用、不可卸载——首发成员是停靠栏里的 USB 设备管理器和「概览里直接打字搜索」两个真实痛点。顺带修掉了日历被天气卡片盖住、Wi-Fi 面板首开塌陷又会无界拉长、设置行标签贴着控件三处观感问题。
@@ -445,7 +476,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.2.1...v1.3.0
