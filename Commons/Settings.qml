@@ -18,6 +18,14 @@ Singleton {
   property bool directoriesCreated: false
   property bool shouldOpenSetupWizard: false
   property bool isFreshInstall: false
+  // Set when a corrupt settings.json was backed up and recovery rewrote it
+  // with defaults. Consumed by the ENOENT branch of onLoadFailed to skip the
+  // setup wizard: this user already has a config (parked in the backup).
+  property bool recoveredFromCorruptSettings: false
+  // End of the self-write suppression window (ms epoch, see saveImmediate):
+  // file changes landing inside the window are the watcher echo of our own
+  // writeAdapter and must not trigger a full external reload.
+  property real suppressExternalReloadUntil: 0
 
   /*
   Shell directories.
@@ -52,6 +60,19 @@ Singleton {
     running: false
     interval: 200
     onTriggered: {
+      if (Date.now() < root.suppressExternalReloadUntil) {
+        // Watcher echo of our own write: the file on disk already matches
+        // the adapter, a reload would only re-parse what we just wrote.
+        // Fails open: if a slow filesystem delivers the echo after the
+        // window expires we just get one redundant reload, never a lost one
+        // (a real external change inside the window is caught by the next
+        // file change). The fresh-install write in onLoadFailed never opens
+        // this window on purpose: its reload is the only path that reaches
+        // onLoaded and completes the isLoaded gate (quickshell emits
+        // saved/saveFailed on write, never loaded).
+        Logger.d("Settings", "Skipping reload, change is the echo of our own write");
+        return;
+      }
       if (settingsFileView.path !== "") {
         Logger.d("Settings", "Reloading settings after external change detection");
         reloadSettings = true;
@@ -76,6 +97,26 @@ Singleton {
     command: ["sh", "-c", "mkdir -p \"" + configDir + "\" \"" + cacheDir + "\""]
     running: true
     onExited: root.directoriesCreated = true
+  }
+
+  // Rename a corrupt settings.json out of the way before any adapter write
+  // can overwrite it (see handleCorruptSettings). On success the reload
+  // below hits the ENOENT branch of onLoadFailed and reuses the whole
+  // fresh-install path; on failure we keep the corrupt file untouched and
+  // open the shell on in-memory defaults.
+  Process {
+    id: corruptBackupProcess
+    command: []
+    running: false
+    onExited: function (exitCode, exitStatus) {
+      if (exitCode === 0) {
+        Logger.i("Settings", "Corrupt settings backed up, restarting load as fresh install");
+        settingsFileView.reload();
+      } else {
+        Logger.e("Settings", "Backup of corrupt settings failed (exit " + exitCode + "), keeping the file and starting with in-memory defaults");
+        startWithInMemoryDefaults();
+      }
+    }
   }
 
   // -----------------------------------------------------
@@ -127,15 +168,22 @@ Singleton {
     }
     onLoaded: function () {
       if (!isLoaded) {
-        Logger.i("Settings", "Settings loaded");
-
         // Load raw JSON for migrations (adapter doesn't expose removed properties)
         var rawJson = null;
         try {
           rawJson = JSON.parse(settingsFileView.text());
         } catch (e) {
-          Logger.w("Settings", "Could not parse raw JSON for migrations");
+          // quickshell reports a readable file as loaded regardless of its
+          // content: on invalid JSON the adapter silently keeps all defaults
+          // and the settingsVersion write below would overwrite the user's
+          // file with them 500 ms later via saveTimer. Treat unparseable
+          // content as corrupt: back the file up first, then restart the
+          // load as a fresh install. Upstream has no such guard.
+          handleCorruptSettings(e);
+          return;
         }
+
+        Logger.i("Settings", "Settings loaded");
 
         // Run versioned migrations immediately, don't move it in upgradeSettings
         runVersionedMigrations(rawJson);
@@ -159,13 +207,27 @@ Singleton {
         return;
       }
       if (error.toString().includes("No such file") || error === 2) {
-        // File doesn't exist, create it with default values
+        // File doesn't exist, create it with default values.
+        // No suppression window here on purpose: the watcher echo of this
+        // write is the only thing that reaches onLoaded and completes the
+        // isLoaded gate (quickshell never emits loaded from a write).
         root.isFreshInstall = true;
         writeAdapter();
 
-        // We started without settings, we should open the setupWizard
-        root.shouldOpenSetupWizard = true;
+        // We started without settings, we should open the setupWizard —
+        // unless the file is missing because corruption recovery just
+        // renamed it away; that user already has a config.
+        root.shouldOpenSetupWizard = !root.recoveredFromCorruptSettings;
+        return;
       }
+      // Any other IO error (EACCES, EISDIR, filesystem failure): the file
+      // exists but cannot be read, so writing defaults over it is neither
+      // possible nor wanted. Upstream drops these errors silently, which
+      // leaves isLoaded false forever and gates the whole shell off with no
+      // log line. Open the shell on in-memory defaults instead; persistence
+      // resumes once the underlying IO problem is fixed.
+      Logger.e("Settings", "Settings file could not be read (" + error + "), starting with in-memory defaults");
+      startWithInMemoryDefaults();
     }
   }
 
@@ -1309,8 +1371,38 @@ Singleton {
   // -----------------------------------------------------
   // Public function to trigger immediate settings saving
   function saveImmediate() {
+    // Open the self-write suppression window: our own write triggers the
+    // file watchers, and the debounced reload of that echo would re-read
+    // and re-parse the exact content the adapter already holds (plus one
+    // settingsReloaded broadcast). 500 ms covers the 200 ms reload debounce
+    // with margin; see externalReloadTimer for the fail-open semantics.
+    suppressExternalReloadUntil = Date.now() + 500;
     settingsFileView.writeAdapter();
     root.settingsSaved(); // Emit signal after saving
+  }
+
+  // -----------------------------------------------------
+  // Corrupt-content recovery: rename the unparseable file aside so no
+  // adapter write can overwrite it, then let the caller restart the load
+  // (the ENOENT branch rewrites defaults over a now-missing file).
+  function handleCorruptSettings(parseError) {
+    const backupPath = settingsFile + ".corrupt-" + Qt.formatDateTime(new Date(), "yyyyMMdd-HHmmss"); // locale-exempt: explicit filename timestamp, not UI text
+    Logger.e("Settings", "settings.json is not valid JSON (" + parseError + "), backing up to " + backupPath);
+    recoveredFromCorruptSettings = true;
+    corruptBackupProcess.command = ["sh", "-c", "mv \"" + settingsFile + "\" \"" + backupPath + "\""];
+    corruptBackupProcess.running = true;
+  }
+
+  // -----------------------------------------------------
+  // Release the startup gate on in-memory defaults, without touching disk:
+  // used when the settings file exists but cannot be read, and when a
+  // corrupt file could not be backed up. Idempotent — repeated load
+  // failures must not re-emit settingsLoaded.
+  function startWithInMemoryDefaults() {
+    if (!root.isLoaded) {
+      root.isLoaded = true;
+      root.settingsLoaded();
+    }
   }
 
   // -----------------------------------------------------
