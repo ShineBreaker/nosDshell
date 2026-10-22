@@ -330,14 +330,27 @@ Item {
     return appId.toLowerCase().trim();
   }
 
+  // Normalized pinned-key cache. isAppPinned runs inside sort comparators
+  // (O(n log n) calls per browse recompute) and inside category scans, so the
+  // per-call property-chain read + O(p) linear scan is folded into a Set built
+  // once per pinnedApps change.
+  property var _pinnedKeySet: null
+
+  function pinnedKeySet() {
+    if (!_pinnedKeySet) {
+      _pinnedKeySet = new Set();
+      const pinnedApps = Settings.data.appLauncher.pinnedApps || [];
+      for (let i = 0; i < pinnedApps.length; i++)
+        _pinnedKeySet.add(normalizeAppId(pinnedApps[i]));
+    }
+    return _pinnedKeySet;
+  }
+
   // Helper function to check if an app is pinned
   function isAppPinned(app) {
     if (!app)
       return false;
-    const pinnedApps = Settings.data.appLauncher.pinnedApps || [];
-    const appId = getAppKey(app);
-    const normalizedId = normalizeAppId(appId);
-    return pinnedApps.some(pinnedId => normalizeAppId(pinnedId) === normalizedId);
+    return pinnedKeySet().has(normalizeAppId(getAppKey(app)));
   }
 
   function appMatchesCategory(app, category) {
@@ -495,6 +508,9 @@ Item {
                                     });
 
     Logger.d("ApplicationsProvider", `Loaded ${entries.length} applications`);
+    // Entry objects were replaced — drop cached result entries so their
+    // activation closures don't capture the stale app objects.
+    _entryCache = null;
     updateAvailableCategories();
     // Entries can be (re)loaded after the launcher already rendered its last
     // result set — refresh the view so a late XDG scan is not invisible.
@@ -509,6 +525,8 @@ Item {
   Connections {
     target: Settings.data.appLauncher
     function onPinnedAppsChanged() {
+      // Invalidate the pinned-key cache for the new list.
+      _pinnedKeySet = null;
       const wasViewingPinned = selectedCategory === "Pinned";
       updateAvailableCategories();
 
@@ -517,11 +535,9 @@ Item {
         selectedCategory = "all";
       }
 
-      // Update results if we're currently viewing the Pinned category
-      if (selectedCategory === "Pinned" && launcher) {
-        launcher.updateResults();
-      } else if (wasViewingPinned && selectedCategory === "all" && launcher) {
-        // Also update results when switching to "all"
+      // Pinned state feeds the Pinned category AND the pinned-first browse
+      // sort, so refresh in every case — not just while viewing Pinned.
+      if (launcher) {
         launcher.updateResults();
       }
     }
@@ -574,30 +590,35 @@ Item {
     }
 
     if (!query || query.trim() === "") {
-      // Return filtered apps, optionally sorted by usage
+      // Return filtered apps, optionally sorted by usage.
+      // Decorate-sort-undecorate: pinned/usage/name are precomputed once per
+      // app instead of being recomputed inside the comparator on every
+      // comparison. Order semantics unchanged: pinned first → usage desc →
+      // name asc.
       let sorted;
       if (Settings.data.appLauncher.sortByMostUsed) {
-        sorted = filteredEntries.slice().sort((a, b) => {
-                                                // Pinned first
-                                                const aPinned = isAppPinned(a);
-                                                const bPinned = isAppPinned(b);
-                                                if (aPinned !== bPinned)
-                                                return aPinned ? -1 : 1;
-
-                                                const ua = getUsageCount(a);
-                                                const ub = getUsageCount(b);
-                                                if (ub !== ua)
-                                                return ub - ua;
-                                                return (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase());
-                                              });
+        sorted = filteredEntries.map(app => ({
+                                          "pinned": isAppPinned(app),
+                                          "usage": getUsageCount(app),
+                                          "name": (app.name || "").toLowerCase(),
+                                          "app": app
+                                        })).sort((a, b) => {
+                                                if (a.pinned !== b.pinned)
+                                                return a.pinned ? -1 : 1;
+                                                if (b.usage !== a.usage)
+                                                return b.usage - a.usage;
+                                                return a.name.localeCompare(b.name);
+                                              }).map(row => row.app);
       } else {
-        sorted = filteredEntries.slice().sort((a, b) => {
-                                                const aPinned = isAppPinned(a);
-                                                const bPinned = isAppPinned(b);
-                                                if (aPinned !== bPinned)
-                                                return aPinned ? -1 : 1;
-                                                return (a.name || "").toLowerCase().localeCompare((b.name || "").toLowerCase());
-                                              });
+        sorted = filteredEntries.map(app => ({
+                                          "pinned": isAppPinned(app),
+                                          "name": (app.name || "").toLowerCase(),
+                                          "app": app
+                                        })).sort((a, b) => {
+                                                if (a.pinned !== b.pinned)
+                                                return a.pinned ? -1 : 1;
+                                                return a.name.localeCompare(b.name);
+                                              }).map(row => row.app);
       }
       return sorted.map(app => createResultEntry(app));
     }
@@ -657,28 +678,46 @@ Item {
     }
   }
 
-  function createResultEntry(app, score) {
-    return {
-      "appId": getAppKey(app),
-      "usageKey": getAppKey(app),
-      "name": app.name || "Unknown",
-      "description": app.genericName || app.comment || "",
-      "icon": app.icon || "application-x-executable",
-      "isImage": false,
-      "_score": (score !== undefined ? score : 0),
-      "provider": root,
-      "onActivate": function () {
-        // Close the launcher/SmartPanel immediately without any animations.
-        // Ensures we are not preventing the future focusing of the app
-        launcher.closeImmediately();
+  // Result-entry cache keyed by the app object. Browse recomputes used to
+  // rebuild every entry (fresh object + activation closure) on each open;
+  // reusing them keeps object identity stable across close/open cycles so
+  // view delegates don't re-evaluate their bindings. A WeakMap keyed by the
+  // app object self-invalidates when loadApplications() replaces the entry
+  // objects (a stale closure would launch the old app), and is cleared there
+  // explicitly as well.
+  property var _entryCache: null
 
-        // Defer execution to next event loop iteration to ensure panel is fully closed
-        Qt.callLater(() => {
-                       Logger.d("ApplicationsProvider", `Launching: ${app.name} (App ID: ${app.id || "unknown"})`);
-                       CompositorService.launchDesktopEntry(app);
-                     });
-      }
-    };
+  function createResultEntry(app, score) {
+    if (!_entryCache)
+      _entryCache = new WeakMap();
+    let entry = _entryCache.get(app);
+    if (!entry) {
+      entry = {
+        "appId": getAppKey(app),
+        "usageKey": getAppKey(app),
+        "name": app.name || "Unknown",
+        "description": app.genericName || app.comment || "",
+        "icon": app.icon || "application-x-executable",
+        "isImage": false,
+        "_score": 0,
+        "provider": root,
+        "onActivate": function () {
+          // Close the launcher/SmartPanel immediately without any animations.
+          // Ensures we are not preventing the future focusing of the app
+          launcher.closeImmediately();
+
+          // Defer execution to next event loop iteration to ensure panel is fully closed
+          Qt.callLater(() => {
+                         Logger.d("ApplicationsProvider", `Launching: ${app.name} (App ID: ${app.id || "unknown"})`);
+                         CompositorService.launchDesktopEntry(app);
+                       });
+        }
+      };
+      _entryCache.set(app, entry);
+    }
+    // _score differs per query (fuzzy scores) and browse resets it to 0.
+    entry._score = (score !== undefined ? score : 0);
+    return entry;
   }
 
   // -------------------------

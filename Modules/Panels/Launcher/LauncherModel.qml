@@ -94,16 +94,27 @@ Item {
                      if (provider.onOpened)
                      provider.onOpened();
                    }
-                   updateResults();
+                   // The views' layer surfaces persist for the whole session
+                   // and updateResults() flags input changes that arrived
+                   // while closed — recompute only when something actually
+                   // changed, so grid and list delegates survive the
+                   // close/open cycle instead of being re-incubated.
+                   if (_resultsDirty)
+                     updateResults();
                  });
   }
 
   function onClosed() {
-    if (Settings.data.appLauncher.clearSearchOnClose)
+    // Freeze the result set (and the search/provider state it was computed
+    // from) instead of clearing it: the views' layer surfaces persist for
+    // the whole session, so delegates can survive the close/open cycle.
+    // Inputs that change while closed are flagged via _resultsDirty inside
+    // updateResults(); clearing the search text is one such input.
+    if (Settings.data.appLauncher.clearSearchOnClose) {
       _searchText = "";
+      _resultsDirty = true;
+    }
     _selectedIndex = 0;
-    _results = [];
-    _activeProvider = null;
     for (let provider of _providers) {
       if (provider.onClosed)
         provider.onClosed();
@@ -129,10 +140,23 @@ Item {
   // Provider change events (desktop-entry rescans, clipboard, pinned edits)
   // can arrive in bursts; coalescing through callLater collapses a burst into
   // one recompute and turns nested re-entry during the _results write into an
-  // iteration instead of recursion.
+  // iteration instead of recursion. While closed, the recompute is deferred:
+  // the change is flagged here and applied once on the next open, so no
+  // UI-thread work runs for an invisible surface.
   property bool _updateQueued: false
 
+  // True whenever an input to _results (provider data, search text, usage,
+  // settings) changed after the last recompute — including "never computed",
+  // so the first open always populates.
+  property bool _resultsDirty: true
+
   function updateResults() {
+    if (!root.isOpen) {
+      // Keep the frozen result set for the persistent surface; remember the
+      // inputs changed and recompute once on the next open.
+      _resultsDirty = true;
+      return;
+    }
     if (_updateQueued)
       return;
     _updateQueued = true;
@@ -141,6 +165,7 @@ Item {
 
   function _updateResultsNow() {
     _updateQueued = false;
+    _resultsDirty = false;
     const text = _searchText;
     // _results is assigned once at the end — clearing first would force the
     // view through a full delegate teardown + re-incubation per keystroke.
@@ -267,8 +292,9 @@ Item {
       unregisterProvider(clipProvider, "clipProvider");
       Logger.d("Launcher", "Unregistered: ClipboardProvider");
     }
-    if (root.isOpen)
-      updateResults();
+    // updateResults() itself defers the recompute while closed (dirty flag),
+    // so a setting flip with the launcher hidden still refreshes on next open.
+    updateResults();
   }
 
   function syncPluginProviders() {
@@ -306,7 +332,7 @@ Item {
       }
     }
 
-    if (changed && root.isOpen) {
+    if (changed) {
       updateResults();
     }
   }
@@ -401,6 +427,9 @@ Item {
     // Usage tracking for providers that opt in ("most used" sorting)
     if (Settings.data.appLauncher.sortByMostUsed && provider && provider.trackUsage && item.usageKey) {
       ShellState.recordLauncherUsage(item.usageKey);
+      // Usage feeds the "most used" browse sort; the launcher closes right
+      // after activation, so flag the recompute for the next open.
+      _resultsDirty = true;
     }
 
     // Auto-paste (clipboard provider)
@@ -453,6 +482,15 @@ Item {
     target: Settings.data.appLauncher
     function onEnableClipboardHistoryChanged() {
       root.syncClipboardProvider();
+    }
+    // These settings feed getResults()/_updateResultsNow() directly and used
+    // to be refreshed only by the unconditional recompute on open; with that
+    // recompute gone they must flag it themselves (deferred while closed).
+    function onSortByMostUsedChanged() {
+      root.updateResults();
+    }
+    function onShowCategoriesChanged() {
+      root.updateResults();
     }
   }
 
