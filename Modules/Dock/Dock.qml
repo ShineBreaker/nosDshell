@@ -592,15 +592,28 @@ Loader {
 
         // Workspace gate — same rule the efficient Taskbar applies: unknown
         // workspace passes, known non-active is dropped. Toplevels carry no
-        // workspaceId, so map them through CompositorService.windows.handle.
+        // workspaceId, so map them through CompositorService.windows
+        // snapshots: by handle where the backend stores the Toplevel object
+        // itself (Sway), otherwise by appId+title — every backend snapshots
+        // both fields and SwayService's own workspace join uses the same key.
         const wsByToplevel = new Map();
+        const wsIdsByAppTitle = new Map();
         const activeWsIds = [];
         if (onlyActiveWorkspaces) {
           const wcount = CompositorService.windows ? CompositorService.windows.count : 0;
           for (var wi = 0; wi < wcount; wi++) {
             var wr = CompositorService.windows.get(wi);
-            if (wr && wr.handle)
+            if (!wr)
+              continue;
+            if (wr.handle)
               wsByToplevel.set(wr.handle, wr.workspaceId);
+            var atKey = (wr.appId || "") + "\u0000" + (wr.title || "");
+            var atIds = wsIdsByAppTitle.get(atKey);
+            if (!atIds) {
+              atIds = new Set();
+              wsIdsByAppTitle.set(atKey, atIds);
+            }
+            atIds.add(wr.workspaceId);
           }
           CompositorService.getActiveWorkspaces().forEach(function (ws) {
             activeWsIds.push(ws.id);
@@ -620,8 +633,19 @@ Loader {
             if (!onLiveScreen(toplevel.screens)) {
               return; // Filtered out by onlySameOutput setting
             }
-            if (onlyActiveWorkspaces && wsByToplevel.has(toplevel)) {
-              const wsId = wsByToplevel.get(toplevel);
+            if (onlyActiveWorkspaces) {
+              var wsId;
+              if (wsByToplevel.has(toplevel)) {
+                wsId = wsByToplevel.get(toplevel);
+              } else {
+                // No handle on niri/Hyprland/Labwc: resolve through the
+                // appId+title join. Ambiguous (same app+title on several
+                // workspaces) stays unknown → passes, like the Taskbar's
+                // unknown-workspace rule.
+                var atIds = wsIdsByAppTitle.get((toplevel.appId || "") + "\u0000" + (toplevel.title || ""));
+                if (atIds && atIds.size === 1)
+                  wsId = atIds.values().next().value;
+              }
               if (!(wsId === undefined || wsId < 0) && activeWsIds.indexOf(wsId) < 0) {
                 return; // Filtered out by onlyActiveWorkspaces (same gate as Taskbar.qml)
               }
