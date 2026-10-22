@@ -44,9 +44,15 @@ Singleton {
 
   readonly property bool hasActiveConnection: activeConnections.length > 0
 
+  // Any VPN/wireguard profile at all (active or not)
+  readonly property bool hasVpnProfiles: Object.keys(connections).length > 0
+
   Timer {
     id: refreshTimer
-    interval: 5000
+    // Poll fast while VPN profiles exist; without any profile, fall back to a
+    // slow sweep so machines without VPN don't fork nmcli every 5 seconds,
+    // while profiles created outside the shell still show up eventually.
+    interval: root.hasVpnProfiles ? 5000 : 60000
     running: true
     repeat: true
     onTriggered: refresh()
