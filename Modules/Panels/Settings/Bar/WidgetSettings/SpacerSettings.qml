@@ -23,19 +23,24 @@ ColumnLayout {
 
   function saveSettings() {
     var settings = settingsHelper.save();
-    settings.width = parseInt(widthInput.text) || widgetMetadata.width;
     settingsChanged(settings);
     return settings;
   }
 
-  NTextInput {
+  WidgetNumberInput {
     id: widthInput
     Layout.fillWidth: true
     label: I18n.tr("common.width")
     description: I18n.tr("bar.spacer.width-description")
     text: String(settingsHelper.value("width", ""))
+    storedValue: settingsHelper.value("width", widgetMetadata.width)
+    minimum: 1
+    maximum: 2000
     placeholderText: I18n.tr("placeholders.enter-width-pixels")
-    onTextChanged: saveSettings()
+    onCommitted: value => {
+                   settingsHelper.set("width", value);
+                   saveSettings();
+                 }
     defaultValue: String(widgetMetadata.width)
   }
 }

@@ -38,7 +38,6 @@ ColumnLayout {
   function saveSettings() {
     var settings = settingsHelper.save();
     if (!isVerticalBar) {}
-    settings.titleWidth = parseInt(titleWidthInput.text) || widgetMetadata.titleWidth;
     settingsChanged(settings);
     return settings;
   }
@@ -147,15 +146,21 @@ ColumnLayout {
     defaultValue: widgetMetadata.showTitle
   }
 
-  NTextInput {
+  WidgetNumberInput {
     id: titleWidthInput
     visible: root.valueShowTitle && !isVerticalBar
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.title-width-label")
     description: I18n.tr("bar.taskbar.title-width-description")
     text: String(settingsHelper.value("titleWidth", ""))
+    storedValue: settingsHelper.value("titleWidth", widgetMetadata.titleWidth)
+    minimum: 1
+    maximum: 2000
     placeholderText: I18n.tr("placeholders.enter-width-pixels")
-    onTextChanged: saveSettings()
+    onCommitted: value => {
+                   settingsHelper.set("titleWidth", value);
+                   saveSettings();
+                 }
     defaultValue: String(widgetMetadata.titleWidth)
   }
 

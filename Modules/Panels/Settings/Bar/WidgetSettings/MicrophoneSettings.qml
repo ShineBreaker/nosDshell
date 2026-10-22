@@ -68,7 +68,7 @@ ColumnLayout {
     description: I18n.tr("panels.audio.on-middle-clicked-description")
     placeholderText: I18n.tr("panels.audio.external-mixer-placeholder")
     text: valueMiddleClickCommand
-    onTextChanged: {
+    onEditingFinished: {
       settingsHelper.set("middleClickCommand", text);
       saveSettings();
     }

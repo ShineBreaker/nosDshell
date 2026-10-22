@@ -36,7 +36,6 @@ ColumnLayout {
 
   function saveSettings() {
     var settings = settingsHelper.save();
-    settings.maxWidth = parseInt(widthInput.text) || widgetMetadata.maxWidth;
     settingsChanged(settings);
     return settings;
   }
@@ -131,14 +130,20 @@ ColumnLayout {
     defaultValue: widgetMetadata.visualizerType
   }
 
-  NTextInput {
+  WidgetNumberInput {
     id: widthInput
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.max-width-label")
     description: I18n.tr("bar.media-mini.max-width-description")
     placeholderText: widgetMetadata.maxWidth
-    text: valueMaxWidth
-    onTextChanged: saveSettings()
+    text: String(valueMaxWidth)
+    storedValue: valueMaxWidth
+    minimum: 1
+    maximum: 2000
+    onCommitted: value => {
+                   settingsHelper.set("maxWidth", value);
+                   saveSettings();
+                 }
     defaultValue: String(widgetMetadata.maxWidth)
   }
 

@@ -3212,7 +3212,7 @@
   {
     "labelKey": "bar.taskbar.max-width-label",
     "descriptionKey": "bar.media-mini.max-width-description",
-    "widget": "NTextInput",
+    "widget": "WidgetNumberInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 3,
@@ -3239,7 +3239,7 @@
   {
     "labelKey": "common.width",
     "descriptionKey": "bar.audio-visualizer.width-description",
-    "widget": "NTextInput",
+    "widget": "WidgetNumberInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 3,
@@ -3590,7 +3590,7 @@
   {
     "labelKey": "bar.custom-button.refresh-interval-label",
     "descriptionKey": "bar.custom-button.refresh-interval-description",
-    "widget": "NTextInput",
+    "widget": "WidgetNumberInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 3,
@@ -3935,7 +3935,7 @@
   {
     "labelKey": "bar.taskbar.title-width-label",
     "descriptionKey": "bar.taskbar.title-width-description",
-    "widget": "NTextInput",
+    "widget": "WidgetNumberInput",
     "tab": 10,
     "tabLabel": "panels.dock.title",
     "subTab": 3,

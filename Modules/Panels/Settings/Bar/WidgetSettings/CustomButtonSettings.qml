@@ -62,7 +62,6 @@ ColumnLayout {
       "horizontal": valueMaxTextLengthHorizontal,
       "vertical": valueMaxTextLengthVertical
     };
-    settings.textIntervalMs = parseInt(textIntervalInput.text || textIntervalInput.placeholderText, 10);
     settingsChanged(settings);
     return settings;
   }
@@ -107,7 +106,7 @@ ColumnLayout {
           description: I18n.tr("bar.custom-button.left-click-description")
           placeholderText: I18n.tr("placeholders.enter-command")
           text: widgetData?.leftClickExec || widgetMetadata.leftClickExec
-          onTextChanged: saveSettings()
+          onEditingFinished: saveSettings()
           defaultValue: widgetMetadata.leftClickExec
         }
 
@@ -137,7 +136,7 @@ ColumnLayout {
           description: I18n.tr("bar.custom-button.right-click-description")
           placeholderText: I18n.tr("placeholders.enter-command")
           text: widgetData?.rightClickExec || widgetMetadata.rightClickExec
-          onTextChanged: saveSettings()
+          onEditingFinished: saveSettings()
           defaultValue: widgetMetadata.rightClickExec
         }
 
@@ -167,7 +166,7 @@ ColumnLayout {
           description: I18n.tr("bar.custom-button.middle-click-description")
           placeholderText: I18n.tr("placeholders.enter-command")
           text: widgetData?.middleClickExec || widgetMetadata.middleClickExec
-          onTextChanged: saveSettings()
+          onEditingFinished: saveSettings()
           defaultValue: widgetMetadata.middleClickExec
         }
 
@@ -216,7 +215,7 @@ ColumnLayout {
             description: I18n.tr("bar.custom-button.wheel-description")
             placeholderText: I18n.tr("placeholders.enter-command")
             text: widgetData?.wheelExec || widgetMetadata?.wheelExec
-            onTextChanged: saveSettings()
+            onEditingFinished: saveSettings()
             defaultValue: widgetMetadata.wheelExec
           }
 
@@ -250,8 +249,8 @@ ColumnLayout {
               label: I18n.tr("bar.custom-button.wheel-up-label")
               description: I18n.tr("bar.custom-button.wheel-up-description")
               placeholderText: I18n.tr("placeholders.enter-command")
-              text: widgetData?.wheelUpExec || widgetMetadata?.wheelUpExec
-              onTextChanged: saveSettings()
+            text: widgetData?.wheelUpExec || widgetMetadata?.wheelUpExec
+            onEditingFinished: saveSettings()
               defaultValue: widgetMetadata.wheelUpExec
             }
 
@@ -280,8 +279,8 @@ ColumnLayout {
               label: I18n.tr("bar.custom-button.wheel-down-label")
               description: I18n.tr("bar.custom-button.wheel-down-description")
               placeholderText: I18n.tr("placeholders.enter-command")
-              text: widgetData?.wheelDownExec || widgetMetadata?.wheelDownExec
-              onTextChanged: saveSettings()
+            text: widgetData?.wheelDownExec || widgetMetadata?.wheelDownExec
+            onEditingFinished: saveSettings()
               defaultValue: widgetMetadata.wheelDownExec
             }
 
@@ -401,7 +400,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.general-tooltip-text-description")
         placeholderText: I18n.tr("placeholders.enter-tooltip")
         text: valueGeneralTooltipText
-        onTextChanged: {
+        onEditingFinished: {
           settingsHelper.set("generalTooltipText", text);
           saveSettings();
         }
@@ -438,7 +437,7 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.ipc-identifier-description")
         placeholderText: I18n.tr("placeholders.enter-ipc-identifier")
         text: valueIpcIdentifier
-        onTextChanged: {
+        onEditingFinished: {
           settingsHelper.set("ipcIdentifier", text);
           saveSettings();
         }
@@ -518,7 +517,7 @@ ColumnLayout {
         description: valueTextStream ? I18n.tr("bar.custom-button.display-command-output-stream-description") : I18n.tr("bar.custom-button.display-command-output-description")
         placeholderText: I18n.tr("placeholders.command-example")
         text: widgetData?.textCommand || widgetMetadata.textCommand
-        onTextChanged: saveSettings()
+        onEditingFinished: saveSettings()
         defaultValue: widgetMetadata.textCommand
       }
 
@@ -530,11 +529,11 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.collapse-condition-description")
         placeholderText: I18n.tr("placeholders.enter-text-to-collapse")
         text: widgetData?.textCollapse || widgetMetadata.textCollapse
-        onTextChanged: saveSettings()
+        onEditingFinished: saveSettings()
         defaultValue: widgetMetadata.textCollapse
       }
 
-      NTextInput {
+      WidgetNumberInput {
         id: textIntervalInput
         Layout.fillWidth: true
         visible: !valueTextStream
@@ -542,7 +541,15 @@ ColumnLayout {
         description: I18n.tr("bar.custom-button.refresh-interval-description")
         placeholderText: String(widgetMetadata.textIntervalMs)
         text: widgetData && widgetData.textIntervalMs !== undefined ? String(widgetData.textIntervalMs) : ""
-        onTextChanged: saveSettings()
+        storedValue: settingsHelper.value("textIntervalMs", widgetMetadata.textIntervalMs)
+        // The widget itself parks the timer at 250 ms (CustomButton.qml
+        // interval: Math.max(250, textIntervalMs)); 1 h is the guardrail cap.
+        minimum: 250
+        maximum: 3600000
+        onCommitted: value => {
+                       settingsHelper.set("textIntervalMs", value);
+                       saveSettings();
+                     }
         defaultValue: String(widgetMetadata.textIntervalMs)
       }
 
