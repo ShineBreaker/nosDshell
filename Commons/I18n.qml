@@ -15,6 +15,7 @@ Singleton {
   property string fullLocaleCode: "" // Preserves regional locale variants
   property var translations: ({})
   property var fallbackTranslations: ({})
+  property string _lastLoadPath: ""
 
   // Static list of available translations — update when adding/removing translation files
   property var availableLanguages: ["en", "en-GB", "cs", "de", "es", "fr", "hu", "it", "ja", "ko-KR", "ku", "nl", "nn-HN", "nn-NO", "pl", "pt", "ru", "sv", "tr", "uk-UA", "vi", "zh-CN", "zh-TW"]
@@ -241,8 +242,16 @@ Singleton {
     if (langCode === "")
       return;
     const filePath = `file://${Quickshell.shellDir}/Assets/Translations/${langCode}.json`;
-    fileView.path = filePath;
     isLoaded = false;
+    if (filePath === _lastLoadPath) {
+      // Re-assigning the same path is a no-op (FileView.setPath short-circuits
+      // on equal paths), so reload explicitly or nothing would ever set
+      // isLoaded back to true.
+      fileView.reload();
+    } else {
+      _lastLoadPath = filePath;
+      fileView.path = filePath;
+    }
   }
 
   // -------------------------------------------
