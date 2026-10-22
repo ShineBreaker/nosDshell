@@ -44,6 +44,11 @@ Singleton {
   property var preppedNames: []
   property var preppedIcons: []
   property var preppedIds: []
+  // appId -> resolved icon name. This sits on delegate bindings that
+  // re-evaluate on every window-list change, while the resolution fallback
+  // chain (fuzzy sorts over all entries + a clean match scan) is expensive,
+  // so resolve each appId once. Invalidated in refreshEntries().
+  property var _iconNameCache: (new Map())
 
   Component.onCompleted: refreshEntries()
 
@@ -61,6 +66,8 @@ Singleton {
     const values = Array.from(DesktopEntries.applications.values);
     if (values) {
       entryList = values.sort((a, b) => a.name.localeCompare(b.name));
+      // The entry set changed: cached icon-name resolutions may be stale.
+      _iconNameCache = new Map();
       updatePreppedData();
     }
   }
@@ -89,17 +96,27 @@ Singleton {
     if (!appId)
       return iconFromName(fallback, fallback);
 
+    let iconName = _iconNameCache.get(appId);
+    if (iconName === undefined) {
+      iconName = resolveIconName(appId);
+      _iconNameCache.set(appId, iconName);
+    }
+    return iconFromName(iconName, fallback);
+  }
+
+  // Only the name resolution is cached; the iconPath lookup stays live so a
+  // runtime icon theme change is still picked up.
+  function resolveIconName(appId) {
     const entry = findAppEntry(appId);
     if (entry) {
-      return iconFromName(entry.icon, fallback);
+      return entry.icon;
     }
 
     // Reverse-domain app ids (org.gnome.Calculator) are reported in varying
     // case by compositors; themes like papirus store the capitalised leaf.
     if (!iconExists(appId) && iconExists(lastSegmentTitleCase(appId)))
-      return iconFromName(lastSegmentTitleCase(appId), fallback);
-
-    return iconFromName(appId, fallback);
+      return lastSegmentTitleCase(appId);
+    return appId;
   }
 
   function lastSegmentTitleCase(name) {
@@ -287,9 +304,13 @@ Singleton {
   function fuzzyQuery(search, preppedData) {
     if (!search || !preppedData || preppedData.length === 0)
       return [];
+    // Callers only use the best match; sorting the full entry set for it is
+    // wasted work on the fallback path (FuzzySort keeps a bounded top-k heap,
+    // so the first result is identical with or without the limit).
     return FuzzySort.go(search, preppedData, {
                           all: true,
-                          key: "name"
+                          key: "name",
+                          limit: 1
                         }).map(r => r.obj.entry);
   }
 
