@@ -52,13 +52,13 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 |---|---|---|---|
 | `maskDark` | `mSurface` × `ui.panelBackgroundOpacity`（默认 0.65） | `mSurface` × 0.8 | dtkwidget `DBlurEffectWidget::maskColor()`（DarkColor：有模糊时用 maskAlpha，无模糊时用 `MASK_COLOR_ALPHA_DEFAULT=204`）。Deepin 原默认 `opacity=0.4`（`gxde-desktop-schemas` `com.deepin.dde.appearance`），这里提到 0.65，压住透上来的文字〔演进〕。RGB 改取方案表面色〔演进〕，Deepin 的 `#181818` 接近原版 `#000000` |
 | `maskLight` | `mSurface` × `ui.panelBackgroundOpacity`〔派生，与暗色对称〕 | `mSurface` × 0.8 | 同上（LightColor）。RGB 改取方案表面色〔演进〕，Deepin 的 `#F8F8F8` 接近原版 `#FFFFFF` |
-| `popupDark` | `mSurfaceVariant` × 0.86 × `ui.popupOpacity`（默认 1.0，范围 0.3–1.0；`popupShell` 在应用层再乘这个系数） | 同左 | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）。RGB 改取方案 `mSurfaceVariant`〔演进〕，Deepin 的 `#2A2A2A` 接近原版 `#242424` |
+| `popupDark` | `mSurfaceVariant` × 0.86 × `ui.popupOpacity`（默认 1.0，范围 0.3–1.0；`popupShell` 在应用层再乘这个系数） | 同左，但最终 alpha 不低于 0.9（floor，与瞬时面同一条规则） | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）。RGB 改取方案 `mSurfaceVariant`〔演进〕，Deepin 的 `#2A2A2A` 接近原版 `#242424`。无模糊 floor〔演进：原先两列同为左列，无模糊合成器上低调值可透到不可读〕 |
 | `borderDark` | `mOutline` × 0.10〔演进：原版 0.05 在现代屏幕上几乎看不见，提高到看得见的发丝边。底色改取方案 `mOutline`，Deepin 的 `#3A3A3A` 接近原版 `#2C3238`〕 | `mOutline` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
 | `borderLight` | `mOutline` × 0.08〔演进：原版 0.04。底色改取方案 `mOutline`，Deepin 的 `#D5D5D5` 接近原版 `#E5E5E5`〕 | `mOutline` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
 
 规则：
 
-- 任务栏、控制中心和启动器小窗口用 `maskDark`。任务栏弹出层和暗色菜单面积小，需要更高的不透明度才看得清，用 `popupDark`。
+- 任务栏、控制中心和启动器小窗口用 `maskDark`。任务栏弹出层和暗色菜单面积小，需要更高的不透明度才看得清，用 `popupDark`。`ui.popupOpacity` 乘上基准 alpha（dark 0.86 / light 0.9）后的最终值，无模糊时不低于 0.9——与瞬时面的 `ui.transientOpacity` 同一条规则：没有合成器模糊的半透明弹层浮在清晰壁纸上会发浑，文字无法阅读。有模糊时不设下限，玻璃感是这个系数在有模糊时的调节空间。
 - OSD、通知气泡和吐司用 `maskTransient` 令牌族。瞬时面的形态由 `ui.transientSurface` 控制：
   - `light`：不透明的浅色实底配深色文字，即 DDE 15 原版形态，浅色瞬时提示叠在暗色常驻外壳之上。底色取方案的浅色面〔演进〕。浅色模式下就是 `mSurface`（Deepin 为 `#F8F8F8`，其他浅色方案各随其色调）；暗色模式下方案没有浅色面，退为固定的经典值 `#F8F8F8`，保证 `light` 始终是 DDE 的那块浅色方块。DDE 原版用近乎不透明的 `DBlurEffectWidget::LightColor`，半透明会发浑并降低对比度，所以取实色。
   - `dark`〔演进〕：深色玻璃。暗色模式下底色取方案的 `mSurfaceVariant`（Deepin 为 `#2A2A2A`）；浅色模式下方案没有深色面，退为固定的 `#242424`。有模糊时 alpha 不低于 0.5。文字、描边和叠加层整体换成暗面规格（见本节最后一条）。
@@ -69,7 +69,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 - 半透明蒙版是为"底下有合成器模糊"设计的：任何用 `maskShell`/`maskDark` 这类蒙版填充可视内容的表面（面板、菜单、对话框宿主），都必须把这块区域注册为 `BackgroundEffect.blurRegion`（用 `NSurfaceRegion` 跟踪可视项），漏注册时蒙版下透出的是清晰内容。例：`PopupMenuWindow` 承载右键菜单打开的挂件设置对话框，只在对话框存在且 `Color.blurActive` 时把对话框矩形注册为模糊区域。因此设置页里的模态 `Popup`（挂件/插件/规则编辑等）一律经 `PanelService.hostSettingsPopup`（一次性对象则用 `PopupMenuWindow.hostDialog`）寄宿到该表面，不要直接挂在 `Overlay.overlay` 上——设置窗口自己的表面没有为对话框注册模糊区。
 - 组件实际读的是下列语义令牌：
   - `Color.maskShell`：常驻外壳（任务栏、控制中心、小窗口启动器、对话框）。暗色模式下等于 `maskDark`，浅色模式下等于 `maskLight`。DDE 15 只有暗色外壳，浅色外壳是为配色方案的浅色模式准备的。
-  - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原为固定白色 × 0.9〕。
+  - `Color.popupShell`：弹出层和暗色菜单。暗色模式下等于 `popupDark`，浅色模式下为 `mSurface` × 0.9〔演进：原为固定白色 × 0.9〕。最终 alpha 再乘 `ui.popupOpacity`，无模糊时乘积不低于 0.9（floor 机制与 `_transientAlpha` 相同）。
   - `Color.popupPage`：不透明页面表面上的弹出菜单（设置页等内容页里的下拉）。RGB 同 `popupShell`（暗色 `mSurfaceVariant`、浅色 `mSurface`），恒不透明、不受 `ui.popupOpacity` 缩放。底下的表面是页面不是壁纸，半透明会透出文字〔演进：原先组件直用不透明的方案表面色实填〕。
   - `Color.borderShell` 和 `Color.borderTransient`：分别对应 `borderDark` 和 `borderLight`，浅色外壳使用 `borderLight`。描边透明度整体乘以 `ui.borderEmphasis`（0–2，默认 1，0 表示无描边）〔演进〕。
   - `Color.maskTransient`：瞬时提示（OSD、通知气泡、吐司），按上面的 `ui.transientSurface` 规则取值〔演进：原版恒为不透明 `#F8F8F8`〕。
@@ -784,7 +784,7 @@ Noctalia 卡片的对应关系：
 | `bar.enabled` | `false`（可选状态栏，§3.13） |
 | `ui.transientSurface` | `"auto"`（`light`/`dark`/`auto`，§1.2）〔演进〕 |
 | `ui.transientOpacity` | `1.0`（0.3–1.0，瞬时面不透明度，§1.2）〔演进〕 |
-| `ui.popupOpacity` | `1.0`（0.3–1.0，`popupShell` 族：菜单/箭头弹层/迷你启动器）〔演进〕 |
+| `ui.popupOpacity` | `1.0`（0.3–1.0，`popupShell` 族：菜单/箭头弹层/迷你启动器；无模糊时最终 alpha 不低于 0.9，§1.2）〔演进〕 |
 | `dock.backgroundOpacity` | `1.0`（0.3–1.0，dock 背景在 `panelBackgroundOpacity` 上的额外系数）〔演进〕 |
 | `general.dimmerOpacity` | `0.35`（帧类面板背幕压暗，§3.5.1）〔演进〕 |
 | `ui.borderEmphasis` | `1.0`（0–2，描边强度，§1.2）〔演进〕 |

@@ -21,6 +21,10 @@ Singleton {
   id: root
 
   property bool reloadColors: false
+  // End of the self-write suppression window (ms epoch), same pattern as
+  // Settings.qml: changes landing inside are the watcher echo of our own
+  // colors.json write and must not trigger a reload.
+  property real suppressReloadUntil: 0
 
   // Debounce external reload requests (file watcher + directory watcher)
   // so atomic replacements only trigger one reload.
@@ -29,6 +33,10 @@ Singleton {
     running: false
     interval: 200
     onTriggered: {
+      if (Date.now() < root.suppressReloadUntil) {
+        Logger.d("Color", "Skipping reload, change is the echo of our own write");
+        return;
+      }
       if (customColorsFile.path !== undefined) {
         Logger.d("Color", "Reloading colors from disk");
         reloadColors = true;
@@ -487,9 +495,16 @@ Singleton {
 
   readonly property color maskShell: shellIsDark ? maskDark : maskLight
   // ui.popupOpacity multiplies the token's tuned alpha (dark 0.86 /
-  // light 0.9) so menus and arrow popups follow one user knob.
+  // light 0.9) so menus and arrow popups follow one user knob. Without
+  // compositor blur the final alpha is floored at 0.9 (DESIGN §1.2), the
+  // same mechanism as _transientAlpha: a translucent popup floating over
+  // sharp wallpaper turns unreadable.
   readonly property color _popupBase: shellIsDark ? popupDark : Qt.alpha(mSurface, 0.9)
-  readonly property color popupShell: Qt.rgba(_popupBase.r, _popupBase.g, _popupBase.b, _popupBase.a * Settings.data.ui.popupOpacity)
+  readonly property real _popupAlpha: {
+    const a = _popupBase.a * Settings.data.ui.popupOpacity;
+    return blurActive ? a : Math.max(0.9, a);
+  }
+  readonly property color popupShell: Qt.rgba(_popupBase.r, _popupBase.g, _popupBase.b, _popupAlpha)
 
   // Opaque popup plate for menus that open on opaque page surfaces
   // (settings content, dialogs) — DESIGN §1.2. Same RGB role as
@@ -692,6 +707,10 @@ Singleton {
     onFileChanged: scheduleExternalColorReload()
     onAdapterUpdated: {
       Logger.d("Color", "Writing colors to disk");
+      // Suppress the watcher echo of this write (same pattern as
+      // Settings.saveImmediate). The ENOENT write in onLoadFailed stays
+      // unsuppressed: its echo is what first reaches onLoaded.
+      suppressReloadUntil = Date.now() + 500;
       writeAdapter();
     }
 
