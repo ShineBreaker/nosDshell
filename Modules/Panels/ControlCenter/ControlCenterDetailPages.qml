@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import qs.Commons
 import qs.Services.Hardware
 import qs.Services.Networking
@@ -40,6 +41,24 @@ Item {
 
   implicitHeight: body.implicitHeight
 
+  // Bluetooth discovery follows the page through BluetoothService's owner
+  // accounting (startDiscovery/stopDiscovery): acquire while the bluetooth
+  // list is showing AND the panel is actually open, release otherwise. The
+  // detail page is keep-alive inside the control center, so leaving the
+  // page, closing the panel and destroying the component all must drop
+  // ownership — setScanActive(true) alone had no stop path at all.
+  readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
+  readonly property bool btScanWanted: page === "bluetooth" && effectivelyVisible && BluetoothService.enabled
+
+  function _syncBtScan() {
+    if (btScanWanted)
+      BluetoothService.startDiscovery(root);
+    else
+      BluetoothService.stopDiscovery(root);
+  }
+
+  onBtScanWantedChanged: _syncBtScan()
+
   Component.onCompleted: {
     if (page === "wifi" && NetworkService.wifiEnabled) {
       NetworkService.scan();
@@ -47,14 +66,19 @@ Item {
     } else if (page === "vpn") {
       VPNService.refresh();
     }
+    _syncBtScan();
   }
+
+  Component.onDestruction: BluetoothService.stopDiscovery(root)
 
   Connections {
     target: BluetoothService.adapter
     ignoreUnknownSignals: true
     function onDevicesChanged() {
-      if (root.page === "bluetooth")
-        BluetoothService.setScanActive(true);
+      // Re-assert while on the page: BlueZ may have stopped discovery on
+      // its own, and each discovery round changes the device set.
+      if (root.btScanWanted)
+        BluetoothService.startDiscovery(root);
     }
   }
 
@@ -66,9 +90,9 @@ Item {
         NetworkService.refreshActiveWifiDetails();
       } else if (page === "vpn") {
         VPNService.refresh();
-      } else if (page === "bluetooth") {
-        BluetoothService.setScanActive(true);
       }
+      // Bluetooth is driven solely by btScanWanted (page is one of its
+      // inputs), so page switches go through onBtScanWantedChanged.
     }
   }
 

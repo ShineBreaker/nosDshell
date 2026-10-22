@@ -251,6 +251,36 @@ Singleton {
     }
   }
 
+  // Discovery ownership (reference counting). UI surfaces acquire while
+  // they need discovery and release when done; the adapter stops only when
+  // the last owner released. History: surfaces used to flip setScanActive
+  // directly — several keep-alive instances ping-ponged the adapter (~1 Hz,
+  // jittering the settings page), and the control-center detail page turned
+  // discovery on with no stop path at all. Ownership lives here so both
+  // classes of bug can't come back.
+  property var _discoveryOwners: (new Set())
+
+  // Acquire discovery for `owner` (any stable object identity, usually the
+  // calling component). Idempotent per owner; a repeated acquire also
+  // re-asserts discovery because BlueZ may have stopped it on its own —
+  // surfaces used to re-arm themselves on every state change for exactly
+  // that reason.
+  function startDiscovery(owner) {
+    if (!owner)
+      return;
+    _discoveryOwners.add(owner);
+    setScanActive(true);
+  }
+
+  // Release a previous acquire from `owner`. Releasing an owner that never
+  // acquired is a no-op, so stale state can't stop a scan someone else owns.
+  function stopDiscovery(owner) {
+    if (!_discoveryOwners.delete(owner))
+      return;
+    if (_discoveryOwners.size === 0)
+      setScanActive(false);
+  }
+
   // Toggle adapter discoverability (advertising visibility) via bluetoothctl
   function setDiscoverable(state) {
     if (!adapter) {
@@ -581,8 +611,11 @@ Singleton {
     onExited: {
       root.pinRequired = false;
       Logger.i("Bluetooth", "Pairing process exited.");
-      // Restore discovery if we paused it
-      if (root._discoveryWasRunning) {
+      // Restore discovery if we paused it — but only while a UI owner still
+      // wants it: the last owner leaving during the pair already released
+      // the discovery intent, and restoring here would relight a scan
+      // nobody is watching.
+      if (root._discoveryWasRunning && root._discoveryOwners.size > 0) {
         root.setScanActive(true);
       }
       root._discoveryWasRunning = false;

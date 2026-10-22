@@ -20,7 +20,6 @@ Item {
   // Configuration for shared use (e.g. by BluetoothPanel)
   property bool showOnlyLists: false
 
-  readonly property bool isScanningActive: BluetoothService.scanningActive
   readonly property bool isDiscoverable: BluetoothService.discoverable
 
   // Device lists with local filtering logic
@@ -101,22 +100,21 @@ Item {
     onTriggered: root._updateScanningState()
   }
 
-  // What THIS instance switched on. Several BluetoothSubTab instances stay
-  // alive at once (keep-alive panels preload the settings view while hidden —
-  // the CC-embedded module view, the standalone settings window, per-screen
-  // panels); every discoverable/discovering change re-arms every instance's
-  // debouncer, so a hidden instance that tore down state it never owned just
-  // ping-ponged the adapter with the visible one (~1 Hz, jittering the page).
-  property bool _ownsScan: false
+  // Scanning ownership lives in BluetoothService.startDiscovery/
+  // stopDiscovery (reference counted). Several BluetoothSubTab instances
+  // stay alive at once (keep-alive panels preload the settings view while
+  // hidden — the CC-embedded module view, the standalone settings window,
+  // per-screen panels); when each instance flipped setScanActive directly a
+  // hidden instance that tore down state it never owned just ping-ponged
+  // the adapter with the visible one (~1 Hz, jittering the page), and an
+  // owner-less scan had no stop path at all. Discoverable keeps its
+  // per-instance ownership here — no second surface toggles it.
   property bool _ownsDiscoverable: false
 
   function _updateScanningState() {
     if (effectivelyVisible && BluetoothService.enabled && !showOnlyLists) {
       Logger.d("BluetoothPrefs", "Panel/tab active");
-      if (!isScanningActive) {
-        BluetoothService.setScanActive(true);
-        _ownsScan = true;
-      }
+      BluetoothService.startDiscovery(root);
       if (!isDiscoverable) {
         BluetoothService.setDiscoverable(true);
         _ownsDiscoverable = true;
@@ -126,11 +124,7 @@ Item {
       // Read the live state before writing: BlueZ may already have stopped
       // discovery on its own — a redundant stop is what "No discovery
       // started" warnings look like.
-      if (_ownsScan) {
-        _ownsScan = false;
-        if (isScanningActive)
-          BluetoothService.setScanActive(false);
-      }
+      BluetoothService.stopDiscovery(root);
       if (_ownsDiscoverable) {
         _ownsDiscoverable = false;
         if (isDiscoverable)
@@ -140,13 +134,10 @@ Item {
   }
 
   Component.onDestruction: {
-    // Release only what this instance owns; a sibling instance may be the
-    // one keeping scanning/discoverable on.
-    if (_ownsScan) {
-      _ownsScan = false;
-      if (isScanningActive)
-        BluetoothService.setScanActive(false);
-    }
+    // Release only what this instance owns; the service keeps scanning
+    // alive while any other owner (sibling sub-tab, CC detail page) holds
+    // its own reference.
+    BluetoothService.stopDiscovery(root);
     if (_ownsDiscoverable) {
       _ownsDiscoverable = false;
       if (isDiscoverable)
