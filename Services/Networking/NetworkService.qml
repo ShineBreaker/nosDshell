@@ -108,6 +108,7 @@ Singleton {
       if (ProgramCheckerService.nmcliAvailable) {
         deviceStatusProcess.running = true;
         connectivityCheckProcess.running = true;
+        networkMonitorProcess.running = true;
       }
     }
   }
@@ -120,6 +121,7 @@ Singleton {
     if (ProgramCheckerService.nmcliAvailable) {
       deviceStatusProcess.running = true;
       connectivityCheckProcess.running = true;
+      networkMonitorProcess.running = true;
     }
   }
 
@@ -1124,9 +1126,14 @@ Singleton {
   }
 
   // Listen to NetworkManager events in real-time (roaming, auto-connect)  -- ~9mb Memory usage.
+  // Started imperatively (Component.onCompleted / onNmcliAvailableChanged):
+  // a declarative `running` binding is destroyed the first time the Process
+  // itself writes `running` back to false when nmcli dies (e.g. a
+  // NetworkManager restart), so the monitor would never come back. Same
+  // pattern as NiriService's event stream and ClipboardService's watchers.
   Process {
     id: networkMonitorProcess
-    running: ProgramCheckerService.nmcliAvailable
+    running: false
     command: ["nmcli", "-t", "monitor"]
     environment: ({
                     "LC_ALL": "C"
@@ -1139,6 +1146,28 @@ Singleton {
           connectivityCheckProcess.running = true;
         }
       }
+    }
+    onExited: (exitCode, exitStatus) => {
+      if (ProgramCheckerService.nmcliAvailable) {
+        Logger.w("Network", "nmcli monitor exited with code", exitCode, "- restarting");
+        monitorRetryTimer.restart();
+      }
+    }
+  }
+
+  // Backoff restart for the nmcli monitor. Also refreshes device state once
+  // on recovery, because events during the downtime window were missed.
+  Timer {
+    id: monitorRetryTimer
+    interval: 2000
+    repeat: false
+    onTriggered: {
+      if (!ProgramCheckerService.nmcliAvailable) {
+        return;
+      }
+      networkMonitorProcess.running = true;
+      deviceStatusProcess.running = true;
+      connectivityCheckProcess.running = true;
     }
   }
 }
