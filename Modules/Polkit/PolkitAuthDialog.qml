@@ -34,6 +34,15 @@ PanelWindow {
 
   property string resolvedMessage: ""
   property var transientMatch: null
+  // Request token for the transient-name resolution: the shared Process
+  // cannot apply a new command while the previous cat is still running
+  // (setting running=true on a running quickshell Process is a no-op), so
+  // each request advances _resolveToken, stream output is tagged with the
+  // token the process actually serves and stale output is dropped instead
+  // of being spliced into the newer request's message.
+  property int _resolveToken: 0
+  property int _runningToken: 0
+  property bool _resolveBusy: false
   // AuthDialog.cpp: a wrong password puts the field in alert state; typing
   // again clears it. flow.failed is readonly, so dismissal is tracked here.
   property bool errorDismissed: false
@@ -52,6 +61,10 @@ PanelWindow {
 
     stdout: StdioCollector {
       onStreamFinished: function () {
+        // Drop output of an outdated request: the process may still be the
+        // previous one when a newer flow replaced the match under it.
+        if (root._runningToken !== root._resolveToken)
+          return;
         var args = this.text.split(String.fromCharCode(0)).filter(function (s) {
           return s.length > 0;
         });
@@ -64,6 +77,15 @@ PanelWindow {
           }
         }
       }
+    }
+
+    onExited: {
+      root._resolveBusy = false;
+      // A request that arrived while the previous cat was still running
+      // never started (see _launchResolve); replay it now that the process
+      // slot is free.
+      if (root._runningToken !== root._resolveToken && root.transientMatch)
+        Qt.callLater(root._launchResolve);
     }
   }
 
@@ -78,7 +100,18 @@ PanelWindow {
     root.transientMatch = match;
     if (!match)
       return;
-    cmdLineProcess.command = ["cat", "/proc/" + match[1] + "/cmdline"];
+    root._resolveToken++;
+    _launchResolve();
+  }
+
+  function _launchResolve() {
+    // transientMatch may have been cleared while this was queued via
+    // Qt.callLater (the flow went away in between) — nothing to resolve then.
+    if (root._resolveBusy || !root.transientMatch || root._runningToken === root._resolveToken)
+      return;
+    root._runningToken = root._resolveToken;
+    root._resolveBusy = true;
+    cmdLineProcess.command = ["cat", "/proc/" + root.transientMatch[1] + "/cmdline"];
     cmdLineProcess.running = true;
   }
 
@@ -202,7 +235,7 @@ PanelWindow {
                         if (root.flow && root.flow.identities) {
                           var idx = parseInt(key);
                           if (idx >= 0 && idx < root.flow.identities.length)
-                            root.flow.selectedIdentity = root.flow.identities[idx];
+                          root.flow.selectedIdentity = root.flow.identities[idx];
                         }
                       }
         }
@@ -351,7 +384,12 @@ PanelWindow {
 
   onVisibleChanged: {
     if (visible) {
-      resolvedMessage = "";
+      // No resolvedMessage reset here: visible is bound to
+      // PolkitService.isActive && flow !== null, and isActive is exactly
+      // activeFlow() != nullptr (quickshell-nosd qml.cpp), so every show
+      // path has already run onFlowChanged → resolveTransientServiceName.
+      // The old clear ran after that handler (downstream visible handlers
+      // fire last) and silently wiped the just-resolved message.
       Qt.callLater(function () {
         passwordInput.forceActiveFocus();
       });
