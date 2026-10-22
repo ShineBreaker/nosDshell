@@ -7,7 +7,8 @@ Rectangle {
   id: root
 
   // Live "now": the example column renders against the current time.
-  property date sampleDate: new Date()
+  // Same source as NClock — the Time singleton ticks every second.
+  property var sampleDate: Time.now
 
   signal tokenClicked(string token)
 

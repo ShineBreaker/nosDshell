@@ -107,7 +107,15 @@ NDccRow {
     return rows;
   }
 
+  // Set while filterModel batch-fills filteredModel: ListModel::append emits
+  // countChanged synchronously per row, and each hit would rebuild both
+  // mirrors (O((N+M)×M) gets per keystroke). While set, rebuilds are skipped;
+  // the batch caller rebuilds once at the end.
+  property bool _batchFilling: false
+
   function rebuildRows() {
+    if (_batchFilling)
+      return;
     _modelRows = _rowsOf(root.model);
     _activeRows = _rowsOf(root.activeModel);
   }
@@ -184,32 +192,40 @@ NDccRow {
     }
 
     // We have search text - need to filter
-    isFiltered = true;
-    filteredModel.clear();
+    _batchFilling = true;
+    try {
+      isFiltered = true;
+      filteredModel.clear();
 
-    // Fuzzy search runs on the plain-dict mirror rows.
-    var items = _modelRows;
+      // Fuzzy search runs on the plain-dict mirror rows.
+      var items = _modelRows;
 
-    // Use fuzzy search if available, fallback to simple search
-    if (typeof FuzzySort !== 'undefined') {
-      var fuzzyResults = FuzzySort.go(query, items, {
-                                        "key": "name",
-                                        "limit": 50
-                                      });
+      // Use fuzzy search if available, fallback to simple search
+      if (typeof FuzzySort !== 'undefined') {
+        var fuzzyResults = FuzzySort.go(query, items, {
+                                          "key": "name",
+                                          "limit": 50
+                                        });
 
-      // Add results in order of relevance
-      for (var j = 0; j < fuzzyResults.length; j++) {
-        filteredModel.append(fuzzyResults[j].obj);
-      }
-    } else {
-      // Fallback to simple search
-      var searchLower = query.toLowerCase();
-      for (var i = 0; i < items.length; i++) {
-        var item = items[i];
-        if (item.name.toLowerCase().includes(searchLower)) {
-          filteredModel.append(item);
+        // Add results in order of relevance
+        for (var j = 0; j < fuzzyResults.length; j++) {
+          filteredModel.append(fuzzyResults[j].obj);
+        }
+      } else {
+        // Fallback to simple search
+        var searchLower = query.toLowerCase();
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          if (item.name.toLowerCase().includes(searchLower)) {
+            filteredModel.append(item);
+          }
         }
       }
+    } finally {
+      // One rebuild for the whole batch: isFiltered's model switch, clear()
+      // and every append were all skipped above.
+      _batchFilling = false;
+      rebuildRows();
     }
   }
 

@@ -319,7 +319,7 @@ Popup {
 
                 onValueChanged: {
                   if (!selectedSlider.pressed && !fieldMouse.pressed && !hexInput.activeFocus && value !== Math.round(root.selectedColor.hsvSaturation * 100)) {
-                    root.selectedColor = Qt.hsva(root.selectedColor.hsvHue, value / 100, root.selectedColor.hsvValue, 1);
+                    root.selectedColor = Qt.hsva(root.displayHue, value / 100, root.selectedColor.hsvValue, 1);
                   }
                 }
                 Binding {
@@ -349,7 +349,7 @@ Popup {
 
                 onValueChanged: {
                   if (!selectedSlider.pressed && !fieldMouse.pressed && !hexInput.activeFocus && value !== Math.round(root.selectedColor.hsvValue * 100)) {
-                    root.selectedColor = Qt.hsva(root.selectedColor.hsvHue, root.selectedColor.hsvSaturation, value / 100, 1);
+                    root.selectedColor = Qt.hsva(root.displayHue, root.selectedColor.hsvSaturation, value / 100, 1);
                   }
                 }
                 Binding {
@@ -461,10 +461,10 @@ Popup {
                   root.stableHue = v;
                   break;
                 case NColorPickerDialog.EditMode.S:
-                  root.selectedColor = Qt.hsva(root.selectedColor.hsvHue, v, root.selectedColor.hsvValue, 1);
+                  root.selectedColor = Qt.hsva(root.displayHue, v, root.selectedColor.hsvValue, 1);
                   break;
                 case NColorPickerDialog.EditMode.V:
-                  root.selectedColor = Qt.hsva(root.selectedColor.hsvHue, root.selectedColor.hsvSaturation, v, 1);
+                  root.selectedColor = Qt.hsva(root.displayHue, root.selectedColor.hsvSaturation, v, 1);
                   break;
                 }
               }
