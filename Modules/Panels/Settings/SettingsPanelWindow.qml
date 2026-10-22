@@ -25,6 +25,14 @@ FloatingWindow {
     SettingsPanelService.settingsWindow = root;
   }
 
+  // shell.qml gates this window behind a Loader (window mode only). When the
+  // mode flips away the Loader releases the window — drop the service
+  // reference so its window-mode branches see null instead of a corpse.
+  Component.onDestruction: {
+    if (SettingsPanelService.settingsWindow === root)
+      SettingsPanelService.settingsWindow = null;
+  }
+
   // The module shown in the two-column view (null = first module)
   property var activeModule: null
 

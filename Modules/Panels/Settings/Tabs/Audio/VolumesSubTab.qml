@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import Quickshell
 import qs.Commons
 import qs.Services.Media
@@ -13,6 +14,13 @@ ColumnLayout {
   Layout.fillWidth: true
 
   property real localVolume: AudioService.volume
+
+  // Combined visibility check: tab must be visible AND the window must be
+  // visible (same gate as WifiSubTab/BluetoothSubTab). The stacked DDE layout
+  // keeps every sub-tab visible once idle-filled, so the poller below must
+  // not run merely because the tab instance is alive (keep-alive preload,
+  // resident windows).
+  readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
@@ -53,9 +61,14 @@ ColumnLayout {
         onMoved: value => localVolume = value
       }
 
+      // Debounced write-back of the slider drag: only ticks while the page is
+      // actually on screen (dragging implies visible), so a hidden keep-alive
+      // instance stops waking the event loop 10x/s. Service-driven volume
+      // changes re-sync localVolume through the Connections above, so nothing
+      // is lost while the timer is parked.
       Timer {
         interval: 100
-        running: true
+        running: root.effectivelyVisible
         repeat: true
         onTriggered: {
           if (!AudioService.isSwitchingSink && Math.abs(localVolume - AudioService.volume) >= 0.01) {

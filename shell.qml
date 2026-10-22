@@ -149,8 +149,17 @@ ShellRoot {
       // PolkitService.isActive flips on an auth request.
       PolkitAuthDialog {}
 
-      // Settings window mode (single window across all monitors)
-      SettingsPanelWindow {}
+      // Settings window mode (single window across all monitors).
+      // Loader-gated: Migration72 pins ui.settingsPanelMode to controlCenter
+      // and the mode picker is gone, so instantiating this window statically
+      // would build a second full settings tree (~15.5k lines of tabs) at
+      // every startup for nothing. A hand-edited config can still select
+      // "window", so keep the escape hatch instead of deleting the window —
+      // same rule as SettingsPanel.keepContentAlive.
+      Loader {
+        active: Settings.data.ui.settingsPanelMode === "window"
+        sourceComponent: SettingsPanelWindow {}
+      }
 
       // Shared screen detector for IPC and plugins
       CurrentScreenDetector {

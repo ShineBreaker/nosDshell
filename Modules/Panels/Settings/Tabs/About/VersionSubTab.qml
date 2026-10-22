@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import Quickshell
 import Quickshell.Io
 import qs.Commons
@@ -39,6 +40,18 @@ ColumnLayout {
   property var systemInfo: null
   property bool systemInfoLoading: true
   property bool systemInfoAvailable: true
+
+  // Combined visibility check: tab must be visible AND the window must be
+  // visible (same gate as WifiSubTab/BluetoothSubTab). The stacked DDE layout
+  // keeps every sub-tab visible once idle-filled, so `visible` alone is not a
+  // "user is looking at this" signal for the host window either.
+  readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
+
+  // Version info is a per-session snapshot: spawn fastfetch/qs/git at most
+  // once per instance, and only once the page is actually on screen —
+  // instantiating the tab (idle fill, keep-alive preload) must not fork
+  // subprocesses on its own.
+  property bool infoRequested: false
 
   spacing: 0
 
@@ -115,7 +128,14 @@ ColumnLayout {
     ToastService.showNotice(I18n.tr("panels.about.title"), I18n.tr("panels.about.info-copied"));
   }
 
-  Component.onCompleted: {
+  Component.onCompleted: _startInfoFetch()
+  onEffectivelyVisibleChanged: _startInfoFetch()
+
+  function _startInfoFetch() {
+    if (!effectivelyVisible || infoRequested)
+      return;
+    infoRequested = true;
+
     // Check if fastfetch is available before trying to run it
     checkFastfetchProcess.running = true;
     qsVersionProcess.running = true;

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Window
 import qs.Commons
 import qs.Services.Plugins
 import qs.Services.UI
@@ -25,11 +26,30 @@ ColumnLayout {
     return author;
   }
 
-  // Check for updates when tab becomes visible
-  onVisibleChanged: {
-    if (visible && PluginService.pluginsFullyLoaded) {
-      PluginService.checkForUpdates();
-    }
+  // Combined visibility check: tab must be visible AND the window must be
+  // visible (same gate as WifiSubTab/BluetoothSubTab). The stacked DDE layout
+  // keeps every sub-tab visible once idle-filled, so instantiating the tab
+  // must not be a trigger on its own.
+  readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
+
+  // Auto-check for updates at most once per instance, on first real
+  // visibility. checkForUpdates falls back to a per-source git fetch of the
+  // plugin registries when availablePlugins is empty, so re-running it on
+  // every panel open (high-frequency surfaces like the control center)
+  // spends network for no new information — the refresh button stays for
+  // on-demand checks.
+  property bool updateCheckDone: false
+
+  Component.onCompleted: _autoCheckUpdates()
+  onEffectivelyVisibleChanged: _autoCheckUpdates()
+
+  function _autoCheckUpdates() {
+    if (!effectivelyVisible || updateCheckDone)
+      return;
+    if (!PluginService.pluginsFullyLoaded)
+      return;
+    updateCheckDone = true;
+    PluginService.checkForUpdates();
   }
 
   // Auto-update toggle
