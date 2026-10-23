@@ -10,6 +10,32 @@
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-10-23
+
+这一版修掉一个会卡死整个会话的问题：按时间自动切换深浅色时，日出日落边界可能触发深色/浅色每秒两次的死斗——主题、GTK 设置和夜灯钩子被反复拉起，桌面直接冻住。根因（边界定时器提前触发后又被旧逻辑反向写回）已铲除，边界处现在只翻一次。顺带还带上了一批挂件生命期修复、设置页与启动器的性能优化，以及网络、VPN、图标解析的若干小修。
+
+---
+
+### 修复
+
+- stop schedule-boundary fight that flipped dark/light in a loop：[`ebfc52450`](https://github.com/ShineBreaker/nosDshell/commit/ebfc52450fe3f23d5fddc6d467fd84845d05d532)
+
+### 其他
+
+- commit numeric widget settings on finished editing only：[`5ee5599dd`](https://github.com/ShineBreaker/nosDshell/commit/5ee5599dd504afea98b4a6e4e953c75678d176cd)
+- fix four lifecycle and value bugs in shared widgets：[`0a608d19c`](https://github.com/ShineBreaker/nosDshell/commit/0a608d19c569e18d810d1214b7a0da72e68477ac)
+- stop paying for the settings view before anyone opens it：[`7a969d6fb`](https://github.com/ShineBreaker/nosDshell/commit/7a969d6fb1d6052255fff5452ab4448060b9fae2)
+- stop rebuilding the launcher result set on every open：[`179ce7d3f`](https://github.com/ShineBreaker/nosDshell/commit/179ce7d3fab9a275e0d1bcc92eef2af3c75b1749)
+- keep transient service-name resolution across dialog shows：[`c40485119`](https://github.com/ShineBreaker/nosDshell/commit/c404851190f491332467491d01bef46c9f1d7707)
+- resolve fashion-dock workspace filter on every backend：[`5a7f2993a`](https://github.com/ShineBreaker/nosDshell/commit/5a7f2993a87270ed543f347fc4734b11db354ed3)
+- count discovery owners in the service instead of each surface：[`65b20b047`](https://github.com/ShineBreaker/nosDshell/commit/65b20b0474eabd1cf62464da29001094aa58b4ef)
+- poll VPN connections slowly when no profiles exist：[`a5f82eb2e`](https://github.com/ShineBreaker/nosDshell/commit/a5f82eb2e18e6a820ad218ccd05f283e0058d7dd)
+- keep the nmcli monitor alive across NetworkManager restarts：[`20bd7a8b4`](https://github.com/ShineBreaker/nosDshell/commit/20bd7a8b45e2e827c561c4546676290d2d9b4c5c)
+- cache icon-name resolution and cap fuzzy fallback at one result：[`5978a07f2`](https://github.com/ShineBreaker/nosDshell/commit/5978a07f2c6f3f78929fd24ce87e37436d744f1e)
+- floor popup alpha at 0.9 without blur and mute write-echo reloads：[`d72830ff7`](https://github.com/ShineBreaker/nosDshell/commit/d72830ff71ea6870bb0a6ffc386df71530201cd8)
+- force explicit reload when the translation path is unchanged：[`61138f714`](https://github.com/ShineBreaker/nosDshell/commit/61138f714ed9280c13246b213d7e32df4e4748a2)
+- guard settings load against corrupt JSON and unreadable files：[`062376f39`](https://github.com/ShineBreaker/nosDshell/commit/062376f39f0a49a2649a08f965ec23d1e42b12bb)
+
 ## [1.6.0] - 2026-10-20
 
 这一版把两块「看着像、用不了」的地方改成了真家伙：高效任务栏的排布从写死的布局变成可编辑模型，配套的分区式 widget 编辑器让你自己决定每个格子里放什么；时尚坞的应用条则换上一套统一的模型与动画，应用进出时沿边缘交错滑入。底下顺手扫掉了一批 ListModel 的老毛病——空值写入、委托角色类型、绑定里读行元素导致的报错与漏渲染，连带着工作区胶囊切换、任务栏溢出收缩、亮色主题强调色可读性一起修好，界面文案与 README 也全部重写了一遍。
@@ -476,7 +502,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.1...HEAD
+[1.6.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.3.0...v1.4.0
