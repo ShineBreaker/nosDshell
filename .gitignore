@@ -13,3 +13,4 @@ build
 references/
 tools/*/target/
 .agents/
+.mimosa/
