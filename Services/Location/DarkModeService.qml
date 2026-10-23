@@ -138,7 +138,18 @@ Singleton {
   Timer {
     id: timer
     onTriggered: {
-      Settings.data.colorSchemes.darkMode = root.nextDarkModeState;
+      // Re-derive from the wall clock instead of blindly writing the
+      // scheduled state: QML timers are coarse and may fire before the
+      // boundary, and the old write-then-update sequence let update()'s
+      // re-derivation reverse the flip within the same tick — the igniter
+      // of the dark/light oscillation at schedule boundaries, where every
+      // reversal fans out through portal set -> daemon transition -> hooks
+      // + ipc forward. The scheduled value survives only as the fallback
+      // when the weather needed to re-derive is unavailable.
+      if (Settings.data.colorSchemes.schedulingMode == "location" && !LocationService.data.weather) {
+        Settings.data.colorSchemes.darkMode = root.nextDarkModeState;
+        return;
+      }
       root.update();
     }
   }
@@ -337,10 +348,15 @@ Singleton {
     Logger.i("DarkModeService", `Applying mode at ${new Date(now).toLocaleString()} (${now})`); // locale-exempt 日志非界面文案
 
     // changes.findLast(change => change.time < now) // not available in QML...
+    // Inclusive comparison: a boundary timer firing at exactly the change
+    // time (Date.now() == change.time is a real outcome with second-granular
+    // schedules) must already select the new phase; a strict < would pick the
+    // previous phase and write the opposite value, re-igniting the same
+    // boundary fight the timer handler above fixes.
     let lastChange = null;
     for (var i = 0; i < changes.length; i++) {
       Logger.d("DarkModeService", `Checking change: time=${changes[i].time} (${new Date(changes[i].time).toLocaleString()}), darkMode=${changes[i].darkMode}`); // locale-exempt 日志非界面文案
-      if (changes[i].time < now) {
+      if (changes[i].time <= now) {
         lastChange = changes[i];
       }
     }
