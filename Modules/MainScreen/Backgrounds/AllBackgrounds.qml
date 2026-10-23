@@ -83,7 +83,7 @@ Item {
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
             // Only render if this panel belongs to this screen
-            return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && !p.ownBackgroundAlpha && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
           }
           shapeContainer: unifiedBackgroundsShape
           defaultBackgroundColor: Color.maskShell
@@ -95,7 +95,7 @@ Item {
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
             // Only render if this panel belongs to this screen
-            return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && !p.ownBackgroundAlpha && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
           }
           shapeContainer: unifiedBackgroundsShape
           defaultBackgroundColor: Color.maskShell
@@ -112,9 +112,9 @@ Item {
         readonly property var shadow: {
           var p = PanelService.backgroundSlotAssignments[0];
           var c = PanelService.backgroundSlotAssignments[1];
-          var own = (p && p.screen === root.windowRoot.screen) ? p.panelShadow : undefined;
+          var own = (p && p.screen?.name === root.windowRoot.screen?.name) ? p.panelShadow : undefined;
           if (own === undefined)
-            own = (c && c.screen === root.windowRoot.screen) ? c.panelShadow : undefined;
+            own = (c && c.screen?.name === root.windowRoot.screen?.name) ? c.panelShadow : undefined;
           return own !== undefined ? own : null;
         }
       }
@@ -154,7 +154,7 @@ Item {
             assignedPanel: {
               var p = PanelService.backgroundSlotAssignments[0];
               // Only render if this panel belongs to this screen
-              return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+              return (p && !p.ownBackgroundAlpha && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
             }
             shapeContainer: panelBackgroundsShape
             defaultBackgroundColor: Color.maskShell
@@ -166,7 +166,7 @@ Item {
             assignedPanel: {
               var p = PanelService.backgroundSlotAssignments[1];
               // Only render if this panel belongs to this screen
-              return (p && !p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+              return (p && !p.ownBackgroundAlpha && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
             }
             shapeContainer: panelBackgroundsShape
             defaultBackgroundColor: Color.maskShell
@@ -184,9 +184,9 @@ Item {
           readonly property var shadow: {
             var p = PanelService.backgroundSlotAssignments[0];
             var c = PanelService.backgroundSlotAssignments[1];
-            var own = (p && p.screen === root.windowRoot.screen) ? p.panelShadow : undefined;
+            var own = (p && p.screen?.name === root.windowRoot.screen?.name) ? p.panelShadow : undefined;
             if (own === undefined)
-              own = (c && c.screen === root.windowRoot.screen) ? c.panelShadow : undefined;
+              own = (c && c.screen?.name === root.windowRoot.screen?.name) ? c.panelShadow : undefined;
             return own !== undefined ? own : null;
           }
         }
@@ -243,7 +243,7 @@ Item {
           id: ownAlphaSlot0
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
-            return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && p.ownBackgroundAlpha && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
           }
           shapeContainer: ownAlphaPanelShape
           defaultBackgroundColor: Color.maskShell
@@ -254,7 +254,7 @@ Item {
           id: ownAlphaSlot1
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
-            return (p && p.ownBackgroundAlpha && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && p.ownBackgroundAlpha && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
           }
           shapeContainer: ownAlphaPanelShape
           defaultBackgroundColor: Color.maskShell
@@ -268,9 +268,9 @@ Item {
         readonly property var shadow: {
           var p = PanelService.backgroundSlotAssignments[0];
           var c = PanelService.backgroundSlotAssignments[1];
-          var own = (p && p.screen === root.windowRoot.screen) ? p.panelShadow : undefined;
+          var own = (p && p.screen?.name === root.windowRoot.screen?.name) ? p.panelShadow : undefined;
           if (own === undefined)
-            own = (c && c.screen === root.windowRoot.screen) ? c.panelShadow : undefined;
+            own = (c && c.screen?.name === root.windowRoot.screen?.name) ? c.panelShadow : undefined;
           return own !== undefined ? own : null;
         }
       }
@@ -299,7 +299,7 @@ Item {
           id: arrowSlot0
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[0];
-            return (p && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
           }
           shapeContainer: arrowPopupShape
         }
@@ -309,7 +309,7 @@ Item {
           id: arrowSlot1
           assignedPanel: {
             var p = PanelService.backgroundSlotAssignments[1];
-            return (p && p.screen === root.windowRoot.screen) ? p : null;
+            return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
           }
           shapeContainer: arrowPopupShape
         }

@@ -600,7 +600,7 @@ PanelWindow {
       // Panel background geometry (from the currently open panel on this screen)
       readonly property var panelBg: {
         var op = PanelService.openedPanel;
-        if (!op || op.screen !== root.screen || op.blurEnabled === false)
+        if (!op || op.screen?.name !== root.screen?.name || op.blurEnabled === false)
           return null;
         // Blur cannot fade with the closing popup — DESIGN §1.7 drops it at
         // exit start, so an arrow popup's blur rect detaches the moment
@@ -618,7 +618,7 @@ PanelWindow {
       // Panel background geometry for the closing panel (may coexist with panelBg)
       readonly property var closingPanelBg: {
         var cp = PanelService.closingPanel;
-        if (!cp || cp.screen !== root.screen || cp.blurEnabled === false)
+        if (!cp || cp.screen?.name !== root.screen?.name || cp.blurEnabled === false)
           return null;
         // Same early detach as panelBg — blur does not fade (§1.7).
         if (cp.isClosing && (cp.useArrowPopup || Style.animationFaster === 0))
