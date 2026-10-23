@@ -46,17 +46,40 @@ tools:
 # ---- run ---------------------------------------------------------------------
 
 # guix-build the working tree package, print the store path.
+# Uses the same channel lock as `just run` so the binary matches what
+# the packaged service runs (Qt 6.12, not the moving guix channel's
+# Qt 6.9.2).
 build:
-    guix build -f nosdshell.scm
+    #!/usr/bin/env bash
+    set -euo pipefail
+    channel_lock="${GUIX_CHANNEL_LOCK:-$HOME/.config/guix/trusted-channels.scm}"
+    if [ -f "$channel_lock" ]; then
+      guix time-machine -C "$channel_lock" -- build -f nosdshell.scm
+    else
+      guix build -f nosdshell.scm
+    fi
 
 #   Stops the shepherd `nosdshell` service and any previous manual instance,
 #   then starts <store>/bin/nosdshell detached (log: /tmp/nosdshell-manual.log).
 #   `just restore` hands back to the packaged generation.
 # Build the working tree and run it in place of the packaged shell.
+# Builds inside `guix time-machine` pinned to channel.lock so the
+# resulting nosdshell sees the same Qt/quickshell revisions as the
+# packaged shepherd service (Qt 6.12). Without the pin, `guix build`
+# resolves `(inherit quickshell)` against the user's current guix
+# channel, which carries Qt 6.9.2 — that Qt release has a known
+# QQmlDelegateModel::_q_itemsChanged UAF that makes the shell SIGSEGV
+# during startup when WallpaperService fills its model while delegates
+# are being instantiated.
 run:
     #!/usr/bin/env bash
     set -euo pipefail
-    store=$(guix build -f nosdshell.scm | tail -n1)
+    channel_lock="${GUIX_CHANNEL_LOCK:-$HOME/.config/guix/trusted-channels.scm}"
+    if [ -f "$channel_lock" ]; then
+      store=$(guix time-machine -C "$channel_lock" -- build -f nosdshell.scm | tail -n1)
+    else
+      store=$(guix build -f nosdshell.scm | tail -n1)
+    fi
     echo "built: $store"
     herd stop nosdshell 2>/dev/null || true
     # The real process is `quickshell --config <store>/etc/xdg/...` — clear a
