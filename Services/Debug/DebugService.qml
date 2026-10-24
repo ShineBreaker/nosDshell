@@ -118,6 +118,15 @@ Singleton {
     try {
       kids = item.children || [];
     } catch (e) {}
+    // PanelWindow/Window children live on contentItem, not children[].
+    try {
+      if (item.contentItem) {
+        var ck = item.contentItem.children || [];
+        for (var j = 0; j < ck.length; j++) {
+          kids.push(ck[j]);
+        }
+      }
+    } catch (e) {}
     if (depth >= maxDepth) {
       if (kids.length > 0) {
         lines.push(indent + "  … (" + kids.length + " more)");
@@ -167,6 +176,85 @@ Singleton {
       return "no panel open";
     var head = describe(p) + " isPanelOpen=" + p.isPanelOpen + " isPanelVisible=" + p.isPanelVisible;
     return head + "\n" + dumpItemTree(p, maxDepth);
+  }
+
+  // PanelService render-chain snapshot: why the background is/isn't drawing.
+  // Answers "assignedPanel null?" / "screen match?" / "panelBg geometry?" in
+  // one shot instead of inferring from half a dozen IPC round-trips.
+  function dumpBackgroundChain() {
+    var lines = [];
+    var op = null, cp = null;
+    try { op = PanelService.openedPanel; } catch (e) {}
+    try { cp = PanelService.closingPanel; } catch (e) {}
+    var slots = [];
+    try { slots = PanelService.backgroundSlotAssignments; } catch (e) {}
+    lines.push("openedPanel=" + (op ? (op.objectName || String(op)) : "null"));
+    lines.push("closingPanel=" + (cp ? (cp.objectName || String(cp)) : "null"));
+    lines.push("backgroundSlotAssignments[0]=" + (slots[0] ? (slots[0].objectName || String(slots[0])) : "null"));
+    lines.push("backgroundSlotAssignments[1]=" + (slots[1] ? (slots[1].objectName || String(slots[1])) : "null"));
+    if (op) {
+      lines.push("openedPanel.screen=" + (op.screen ? op.screen.name : "null"));
+      lines.push("openedPanel.isPanelOpen=" + op.isPanelOpen);
+      lines.push("openedPanel.isPanelVisible=" + op.isPanelVisible);
+      lines.push("openedPanel.isClosing=" + op.isClosing);
+      lines.push("openedPanel.ownBackgroundAlpha=" + op.ownBackgroundAlpha);
+      lines.push("openedPanel.dimsBackground=" + op.dimsBackground);
+      var pr = null;
+      try { pr = op.panelRegion; } catch (e) {}
+      lines.push("openedPanel.panelRegion=" + (pr ? describe(pr) : "null"));
+      if (pr) {
+        lines.push("  panelRegion.visible=" + pr.visible);
+        var pi = null;
+        try { pi = pr.panelItem; } catch (e) {}
+        lines.push("  panelRegion.panelItem=" + (pi ? describe(pi) : "null"));
+        if (pi) {
+          lines.push("    panelItem.visible=" + pi.visible);
+          lines.push("    panelItem.size=" + Math.round(pi.width) + "x" + Math.round(pi.height));
+        }
+      }
+      // finishOpen gate: the reopen hook needs _contentReady + contentLoader.item.
+      try { lines.push("openedPanel._contentReady=" + op._contentReady); } catch (e) {}
+      try { lines.push("openedPanel.keepContentAlive=" + op.keepContentAlive); } catch (e) {}
+      var cl = null;
+      try { cl = op.contentLoader; } catch (e) {}
+      lines.push("openedPanel.contentLoader=" + (cl ? "item=" + (cl.item ? "yes" : "null") + " active=" + cl.active + " status=" + cl.status : "null"));
+    }
+    // Walk every registered root that is a MainScreen to report isPanelOpen/color
+    var names = Object.keys(roots);
+    for (var i = 0; i < names.length; i++) {
+      var r = roots[names[i]];
+      if (!r) continue;
+      if (r.isPanelOpen !== undefined) {
+        lines.push("root[" + names[i] + "].screen=" + (r.screen ? r.screen.name : "null") + " isPanelOpen=" + r.isPanelOpen + " dimmerOpacity=" + r.dimmerOpacity + " color=" + r.color + " children=" + (r.children ? r.children.length : "?") + " contentItem=" + (r.contentItem ? "yes" : "no"));
+      }
+    }
+    // PanelBackground slots: reach into the AllBackgrounds instance under each
+    // MainScreen root and report assignedPanel + isRenderable — the two values
+    // that decide whether a ShapePath paints anything at all. AllBackgrounds
+    // exposes them as property aliases (ownAlphaSlot0/1, unifiedSlot0/1).
+    for (var i = 0; i < names.length; i++) {
+      var r = roots[names[i]];
+      if (!r || r.isPanelOpen === undefined) continue;
+      var ab = null;
+      try {
+        _walkItems(r, 0, function (it) {
+          if (!ab && it.ownAlphaSlot0 !== undefined) ab = it;
+        });
+      } catch (e) {}
+      if (!ab) { lines.push("root[" + names[i] + "]: AllBackgrounds not found"); continue; }
+      var s0 = null, s1 = null, u0 = null, u1 = null;
+      try { s0 = ab.ownAlphaSlot0; } catch (e) {}
+      try { s1 = ab.ownAlphaSlot1; } catch (e) {}
+      try { u0 = ab.unifiedSlot0; } catch (e) {}
+      try { u1 = ab.unifiedSlot1; } catch (e) {}
+      lines.push("root[" + names[i] + "].ownAlphaSlot0.assignedPanel=" + (s0 && s0.assignedPanel ? (s0.assignedPanel.objectName || String(s0.assignedPanel)) : "null") + " isRenderable=" + (s0 ? s0.isRenderable : "?") + " fillColor=" + (s0 ? s0.fillColor : "?"));
+      lines.push("root[" + names[i] + "].ownAlphaSlot1.assignedPanel=" + (s1 && s1.assignedPanel ? (s1.assignedPanel.objectName || String(s1.assignedPanel)) : "null") + " isRenderable=" + (s1 ? s1.isRenderable : "?"));
+      lines.push("root[" + names[i] + "].unifiedSlot0.assignedPanel=" + (u0 && u0.assignedPanel ? (u0.assignedPanel.objectName || String(u0.assignedPanel)) : "null") + " isRenderable=" + (u0 ? u0.isRenderable : "?"));
+      lines.push("root[" + names[i] + "].unifiedSlot1.assignedPanel=" + (u1 && u1.assignedPanel ? (u1.assignedPanel.objectName || String(u1.assignedPanel)) : "null") + " isRenderable=" + (u1 ? u1.isRenderable : "?"));
+    }
+    var out = lines.join("\n");
+    console.info(out);
+    return out;
   }
 
   // Pointer forensics: walk childAt() from a root item down to the deepest
@@ -328,6 +416,15 @@ Singleton {
     for (var i = 0; i < kids.length; i++) {
       _walkItems(kids[i], depth + 1, fn);
     }
+    // PanelWindow/Window children live on contentItem, not children[].
+    try {
+      if (item.contentItem) {
+        var ck = item.contentItem.children || [];
+        for (var j = 0; j < ck.length; j++) {
+          _walkItems(ck[j], depth + 1, fn);
+        }
+      }
+    } catch (e) {}
   }
 
   // Compact "what the shell thinks the world looks like" snapshot.

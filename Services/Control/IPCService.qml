@@ -1107,6 +1107,13 @@ Singleton {
       return DebugService.dumpOpenedPanel(depth);
     }
 
+    // PanelService → slot → PanelBackground render-chain snapshot: opened/closing
+    // panel, slot assignments, screen match, panelRegion geometry, and every
+    // MainScreen root's isPanelOpen/color in one call.
+    function backgroundChain(): string {
+      return DebugService.dumpBackgroundChain();
+    }
+
     // ObjectName lookup: walks the full subtree (no depth cap) and returns
     // describe() — type, WxH and the window-local scene position — so verify
     // scenes can locate items without probing coordinates. A trailing
@@ -1125,6 +1132,27 @@ Singleton {
           out += " G@" + Math.round(g.x) + "," + Math.round(g.y);
       } catch (e) {}
       return out;
+    }
+
+    // Read a property off an item: find(root, objectName).prop — e.g.
+    // "debug get cc-eDP-1 contentLoader status" → "1" (Ready).
+    // Supports dot-separated paths: "ownAlphaSlot0.assignedPanel.objectName".
+    function get(root: string, objectName: string, prop: string): string {
+      var it = objectName === "" ? DebugService.rootItem(root) : DebugService.findItem(root, objectName);
+      if (!it)
+        return "no item '" + objectName + "' under " + root;
+      try {
+        var parts = prop.split(".");
+        var v = it;
+        for (var i = 0; i < parts.length; i++) {
+          if (v === null || v === undefined)
+            return "null";
+          v = v[parts[i]];
+        }
+        return String(v);
+      } catch (e) {
+        return "error: " + e;
+      }
     }
 
     function hit(root: string, x: real, y: real): string {

@@ -35,7 +35,7 @@ Item {
   // default panel renders outside the Style.effectivePanelOpacity layer;
   // only a panel supplying an opaque color opts back into that layer with
   // ownBackgroundAlpha: false.
-  property color panelBackgroundColor: Color.maskShell
+  property color panelBackgroundColor: Colors.maskShell
   property bool ownBackgroundAlpha: true
   property var buttonItem: null
   property bool forceAttachToBar: false
@@ -1717,6 +1717,7 @@ Item {
     // Panel top content: Text, icons, etc...
     Loader {
       id: contentLoader
+      objectName: "contentLoader"
       // Keep-alive panels hold their content across close/open cycles — and
       // build it while hidden: activating only on first open made the first
       // open pay the full incubation cost (settings: ~3 s of placeholder
