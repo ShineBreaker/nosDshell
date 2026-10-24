@@ -61,6 +61,12 @@
 ;;; Upstream's adjacent destructor-order fixes (36517a2, 91dcb41, 13fe9b0)
 ;;; do not remove the dangling-pointer windows, so both fixes are still
 ;;; needed.
+;;;
+;;; 5ff26dc adds one more fix on top: PR_SET_PDEATHSIG for managed child
+;;; processes.  The shell spawns long-lived helpers (wl-paste clipboard
+;;; watchers, niri event-stream, nmcli monitor, udevadm monitor) that must
+;;; not outlive it; without the parent-death signal a crash or SIGTERM
+;;; reparented them to init and they kept running as orphans.
 (define quickshell/nosd
   (package
     (inherit quickshell)
@@ -71,11 +77,11 @@
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/ShineBreaker/quickshell-nosd")
-             (commit "903a70a9cc7a98834e79db25a8c708acfcffd248")))
+             (commit "5ff26dce11ba3a2ce4b9855c269964d6367f718c")))
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0b2gb4cb9w8x71r7ik0s9sl5jm1smgs3chfd9halcr8pd549820w"))))))
+         "1k7sk1qfw7gw4j8dj5adrm1s06qr1ipx4q6fxllka4dfvk8dfm51"))))))
 
 (define-public nosd-blur
   (package
@@ -231,7 +237,7 @@ and Matugen-compatible template rendering.")
                     (format #t "~
 #!~a
 if [ \"$1\" = \"--version\" ] || [ \"$1\" = \"-V\" ]; then
-  echo \"nosdshell v1.6.1 (with quickshell v0.3.2 903a70a)\"
+  echo \"nosdshell v1.6.1 (with quickshell v0.3.2 5ff26dc)\"
   exit 0
 fi
 exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
