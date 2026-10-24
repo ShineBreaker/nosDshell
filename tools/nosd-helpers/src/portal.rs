@@ -502,9 +502,18 @@ fn take_lock() -> Result<fs::File, String> {
         .write(true)
         .open(&path)
         .map_err(|e| format!("open {}: {e}", path.display()))?;
-    file.lock()
-        .map_err(|e| format!("lock {}: {e}", path.display()))?;
-    Ok(file)
+    // try_lock, not lock: a second `portal run` must fail fast instead of
+    // blocking on the held lock. The blocking variant left every extra spawn
+    // (each shell restart execDetached's one) parked on the flock queue as a
+    // live but useless process — the multi-copy resident-memory leak.
+    match file.try_lock() {
+        Ok(()) => Ok(file),
+        Err(fs::TryLockError::WouldBlock) => Err(format!(
+            "another portal daemon already holds {}; exiting",
+            path.display()
+        )),
+        Err(e) => Err(format!("lock {}: {e}", path.display())),
+    }
 }
 
 async fn own_name(conn: &zbus::Connection, name: &'static str, required: bool) -> Result<(), String> {
