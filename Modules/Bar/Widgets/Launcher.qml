@@ -58,8 +58,8 @@ NIconButton {
 
   readonly property color iconColor: {
     if (!enableColorization)
-      return Color.mOnSurface;
-    return Color.resolveColorKey(colorizeSystemIcon);
+      return Colors.mOnSurface;
+    return Colors.resolveColorKey(colorizeSystemIcon);
   }
 
   // Without a user-picked glyph this bar widget shows the same launcher icon
@@ -82,9 +82,9 @@ NIconButton {
   applyUiScale: false
   customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
   colorBg: Style.capsuleColor
-  colorFg: efficientMode ? (enableColorization ? iconColor : Color.onShell) : iconColor
-  colorBgHover: efficientMode ? Color.overlay("hover") : Color.mHover
-  colorFgHover: efficientMode ? (enableColorization ? iconColor : Color.onShell) : Color.mOnHover
+  colorFg: efficientMode ? (enableColorization ? iconColor : Colors.onShell) : iconColor
+  colorBgHover: efficientMode ? Colors.overlay("hover") : Colors.mHover
+  colorFgHover: efficientMode ? (enableColorization ? iconColor : Colors.onShell) : Colors.mOnHover
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
 
@@ -154,7 +154,7 @@ NIconButton {
     asynchronous: true
     layer.enabled: (enableColorization) && (useDistroLogo || customIconPath !== "")
     layer.effect: ShaderEffect {
-      property color targetColor: !hovering ? iconColor : Color.mOnHover
+      property color targetColor: !hovering ? iconColor : Colors.mOnHover
       property real colorizeMode: 2.0
 
       fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")

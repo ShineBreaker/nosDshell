@@ -55,12 +55,12 @@ Popup {
   property real arrowPosition: -1 // -1 = centered
 
   readonly property bool _light: variant === "light"
-  readonly property color _bgColor: _light ? Color.popupLight : Color.popupShell
-  readonly property color _borderColor: _light ? Color.popupLightBorder : Color.borderShell
+  readonly property color _bgColor: _light ? Colors.popupLight : Colors.popupShell
+  readonly property color _borderColor: _light ? Colors.popupLightBorder : Colors.borderShell
   readonly property real _radius: _light ? Style.radiusRow : Style.radiusPopup
   readonly property var _shadow: _light ? Style.shadowMenuLight : Style.shadowPopup
-  readonly property color _textColor: _light ? Color.popupLightText : Color.onShell
-  readonly property color _disabledColor: _light ? Color.popupLightDisabled : Color.textDisabledDark
+  readonly property color _textColor: _light ? Colors.popupLightText : Colors.onShell
+  readonly property color _disabledColor: _light ? Colors.popupLightDisabled : Colors.textDisabledDark
   readonly property real _rowHeight: itemHeight > 0 ? itemHeight : rowMeasure.implicitHeight + 8
 
   signal triggered(string action)
@@ -186,7 +186,7 @@ Popup {
         Rectangle {
           visible: !listView._isSeparator(modelData)
           anchors.fill: parent
-          color: menuItem.highlighted || (menuItem.hovered && menuItem.enabled) ? Color.accent : "transparent"
+          color: menuItem.highlighted || (menuItem.hovered && menuItem.enabled) ? Colors.accent : "transparent"
           radius: Style.radiusRow
         }
       }
@@ -200,14 +200,14 @@ Popup {
           visible: modelData.icon !== undefined
           icon: modelData.icon || ""
           pointSize: Style.fontSizeM
-          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : root._textColor
+          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Colors.onAccent : root._textColor
           Layout.leftMargin: root.itemPadding
         }
 
         NText {
           text: modelData.label || modelData.text || ""
           pointSize: Style.fontSizeM
-          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : root._textColor
+          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Colors.onAccent : root._textColor
           verticalAlignment: Text.AlignVCenter
           Layout.fillWidth: true
           Layout.leftMargin: modelData.icon === undefined ? root.itemPadding : 0
@@ -218,7 +218,7 @@ Popup {
           visible: modelData.checked === true || modelData.hasSubmenu === true
           icon: modelData.hasSubmenu === true ? "chevron-right" : "check"
           pointSize: Style.fontSizeXL
-          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Color.onAccent : root._textColor
+          color: !menuItem.enabled ? root._disabledColor : (menuItem.highlighted || menuItem.hovered) ? Colors.onAccent : root._textColor
           Layout.rightMargin: root.itemPadding
         }
       }

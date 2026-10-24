@@ -62,7 +62,7 @@ Item {
     y: root.isVertical ? root.stripGap : root.crossInset
     width: root.isVertical ? Math.max(0, parent.width - root.crossInset * 2) : root.stripThickness
     height: root.isVertical ? root.stripThickness : Math.max(0, parent.height - root.crossInset * 2)
-    color: mouseArea.pressed ? Color.accent : (mouseArea.containsMouse ? Color.overlay("strong") : Color.overlay("hover"))
+    color: mouseArea.pressed ? Colors.accent : (mouseArea.containsMouse ? Colors.overlay("strong") : Colors.overlay("hover"))
   }
 
   MouseArea {

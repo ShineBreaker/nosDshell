@@ -119,7 +119,7 @@ NBox {
             anchors.centerIn: parent
             icon: weatherReady ? LocationService.weatherSymbolFromCode(LocationService.data.weather.current_weather.weathercode) : ""
             pointSize: Style.fontSizeXXXL * 1.75
-            color: Color.mPrimary
+            color: Colors.mPrimary
           }
         }
 
@@ -157,7 +157,7 @@ NBox {
             NText {
               text: weatherReady ? `(${LocationService.data.weather.timezone_abbreviation})` : ""
               pointSize: Style.fontSizeXS
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
               visible: LocationService.data.weather && showLocation && !Settings.data.location.hideWeatherTimezone
             }
           }
@@ -190,7 +190,7 @@ NBox {
               var weatherDate = new Date(LocationService.data.weather.daily.time[index].replace(/-/g, "/"));
               return I18n.locale.toString(weatherDate, "ddd");
             }
-            color: Color.mOnSurface
+            color: Colors.mOnSurface
           }
           Item {
             Layout.preferredWidth: forecastWeatherIconSide
@@ -202,7 +202,7 @@ NBox {
               anchors.centerIn: parent
               icon: LocationService.weatherSymbolFromCode(LocationService.data.weather.daily.weathercode[index])
               pointSize: Style.fontSizeXXL * 1.6
-              color: Color.mPrimary
+              color: Colors.mPrimary
             }
           }
           NText {
@@ -219,7 +219,7 @@ NBox {
               return `${max}°/${min}°`;
             }
             pointSize: Style.fontSizeXS
-            color: Color.mOnSurfaceVariant
+            color: Colors.mOnSurfaceVariant
           }
         }
       }
@@ -240,7 +240,7 @@ NBox {
         Layout.alignment: Qt.AlignCenter
         text: I18n.tr("common.weather-no-location")
         pointSize: Style.fontSizeS
-        color: Color.mOnSurfaceVariant
+        color: Colors.mOnSurfaceVariant
       }
     }
   }

@@ -135,9 +135,9 @@ Popup {
   anchors.centerIn: Overlay.overlay
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -230,14 +230,14 @@ Popup {
 
         NIcon {
           icon: "filepicker-folder"
-          color: Color.accent
+          color: Colors.accent
           pointSize: Style.fontSizeXXL
         }
         NText {
           text: root.title
           pointSize: Style.fontSizeXL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
           Layout.fillWidth: true
         }
 
@@ -281,9 +281,9 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 45
-        color: Color.overlay("field")
+        color: Colors.overlay("field")
         radius: Style.radiusWindow
-        border.color: Color.borderShell
+        border.color: Colors.borderShell
         border.width: Style.borderS
 
         RowLayout {
@@ -408,9 +408,9 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.fillHeight: true
-        color: Color.maskShell
+        color: Colors.maskShell
         radius: Style.radiusWindow
-        border.color: Color.borderShell
+        border.color: Colors.borderShell
         border.width: Style.borderS
 
         FolderListModel {
@@ -495,15 +495,15 @@ Popup {
               anchors.fill: parent
               color: "transparent"
               radius: parent.radius
-              border.color: isSelected ? Color.accent : Color.borderShell
+              border.color: isSelected ? Colors.accent : Colors.borderShell
               border.width: Style.borderL
             }
 
             Rectangle {
               anchors.fill: parent
-              color: (mouseArea.containsMouse && !isSelected) ? Color.overlay("checked") : "transparent"
+              color: (mouseArea.containsMouse && !isSelected) ? Colors.overlay("checked") : "transparent"
               radius: parent.radius
-              border.color: (mouseArea.containsMouse && !isSelected) ? Color.overlay("checked") : "transparent"
+              border.color: (mouseArea.containsMouse && !isSelected) ? Colors.overlay("checked") : "transparent"
               border.width: Style.borderS
             }
 
@@ -544,13 +544,13 @@ Popup {
 
                   Rectangle {
                     anchors.fill: parent
-                    color: Color.overlay("field")
+                    color: Colors.overlay("field")
                     radius: Style.radiusItem
                     visible: thumbnail.status === Image.Loading
                     NIcon {
                       icon: "filepicker-photo"
                       pointSize: Style.fontSizeL
-                      color: Color.onShellSecondary
+                      color: Colors.onShellSecondary
                       anchors.centerIn: parent
                     }
                   }
@@ -561,11 +561,11 @@ Popup {
                   pointSize: Style.fontSizeXXL * 2
                   color: {
                     if (isSelected)
-                      return Color.accent;
+                      return Colors.accent;
                     else if (mouseArea.containsMouse)
-                      return Color.accent;
+                      return Colors.accent;
                     else
-                      return fileIsDir ? Color.accent : Color.onShellSecondary;
+                      return fileIsDir ? Colors.accent : Colors.onShellSecondary;
                   }
                   anchors.centerIn: parent
                   visible: !iconContainer.isImage || thumbnail.status !== Image.Ready
@@ -578,14 +578,14 @@ Popup {
                   width: 24
                   height: 24
                   radius: Math.min(Style.radiusRow, width / 2)
-                  color: Color.accent
-                  border.color: Color.borderShell
+                  color: Colors.accent
+                  border.color: Colors.borderShell
                   border.width: Style.borderS
                   visible: isSelected
                   NIcon {
                     icon: "filepicker-check"
                     pointSize: Style.fontSizeS
-                    color: Color.onAccent
+                    color: Colors.onAccent
                     anchors.centerIn: parent
                   }
                 }
@@ -595,11 +595,11 @@ Popup {
                 text: fileName
                 color: {
                   if (isSelected)
-                    return Color.accent;
+                    return Colors.accent;
                   else if (mouseArea.containsMouse)
-                    return Color.accent;
+                    return Colors.accent;
                   else
-                    return Color.onShellSecondary;
+                    return Colors.onShellSecondary;
                 }
                 pointSize: Style.fontSizeS
                 font.weight: isSelected ? Style.fontWeightSemiBold : Style.fontWeightRegular
@@ -673,9 +673,9 @@ Popup {
             height: 40
             color: {
               if (filePickerPanel.currentSelection.includes(filePath))
-                return Color.accent;
+                return Colors.accent;
               if (listMouseArea.containsMouse)
-                return Color.overlay("checked");
+                return Colors.overlay("checked");
               return "transparent";
             }
             radius: Style.radiusItem
@@ -689,12 +689,12 @@ Popup {
               NIcon {
                 icon: fileIsDir ? "filepicker-folder" : root.getFileIcon(fileName)
                 pointSize: Style.fontSizeL
-                color: fileIsDir ? (filePickerPanel.currentSelection.includes(filePath) ? Color.onAccent : Color.accent) : Color.onShellSecondary
+                color: fileIsDir ? (filePickerPanel.currentSelection.includes(filePath) ? Colors.onAccent : Colors.accent) : Colors.onShellSecondary
               }
 
               NText {
                 text: fileName
-                color: filePickerPanel.currentSelection.includes(filePath) ? Color.onAccent : Color.onShell
+                color: filePickerPanel.currentSelection.includes(filePath) ? Colors.onAccent : Colors.onShell
                 pointSize: Style.fontSizeM
                 font.weight: filePickerPanel.currentSelection.includes(filePath) ? Style.fontWeightSemiBold : Style.fontWeightRegular
                 Layout.fillWidth: true
@@ -703,7 +703,7 @@ Popup {
 
               NText {
                 text: fileIsDir ? "" : root.formatFileSize(fileSize)
-                color: filePickerPanel.currentSelection.includes(filePath) ? Color.onAccent : Color.onShellSecondary
+                color: filePickerPanel.currentSelection.includes(filePath) ? Colors.onAccent : Colors.onShellSecondary
                 pointSize: Style.fontSizeS
                 visible: !fileIsDir
                 Layout.preferredWidth: implicitWidth
@@ -757,7 +757,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
       }
 
       // Footer
@@ -776,7 +776,7 @@ Popup {
               return filteredModel.count + " " + (filteredModel.count === 1 ? I18n.tr("widgets.file-picker.item") : I18n.tr("widgets.file-picker.items"));
             }
           }
-          color: filePickerPanel.searchText.length > 0 ? Color.accent : Color.onShellSecondary
+          color: filePickerPanel.searchText.length > 0 ? Colors.accent : Colors.onShellSecondary
           pointSize: Style.fontSizeS
           Layout.fillWidth: true
         }
@@ -793,7 +793,7 @@ Popup {
         NButton {
           text: root.selectionMode === "folders" ? I18n.tr("widgets.file-picker.select-folder") : I18n.tr("widgets.file-picker.select-file")
           icon: "filepicker-check"
-          backgroundColor: Color.accent // recommended action → accent text
+          backgroundColor: Colors.accent // recommended action → accent text
           enabled: filePickerPanel.currentSelection.length > 0
           onClicked: root.confirmSelection()
         }

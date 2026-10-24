@@ -16,8 +16,8 @@ Item {
   property real arrowPosition: -1
   property real arrowWidth: Style.popupArrowWidth
   property real arrowHeight: Style.popupArrowHeight
-  property color fillColor: Color.popupShell
-  property color borderColor: Color.borderShell
+  property color fillColor: Colors.popupShell
+  property color borderColor: Colors.borderShell
   property real borderWidth: 1
   // A Style.shadow* object ({blur, x, y, color}) or null
   property var shadow: Style.shadowPopup

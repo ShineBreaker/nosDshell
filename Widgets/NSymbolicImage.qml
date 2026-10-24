@@ -9,9 +9,9 @@ import qs.Commons
 Image {
   id: root
 
-  // Surface ink: Color.onShell on theme surfaces, Color.onWallpaper on the
+  // Surface ink: Colors.onShell on theme surfaces, Colors.onWallpaper on the
   // always-dark wallpaper surfaces (DESIGN §1.3/§1.5).
-  property color color: Color.onShell
+  property color color: Colors.onShell
   // Set false to render the source pixels untouched (multicolor assets).
   property bool symbolic: true
   // When true, tint only freedesktop *-symbolic sources

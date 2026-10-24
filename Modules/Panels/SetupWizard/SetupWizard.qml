@@ -247,7 +247,7 @@ PanelWindow {
               width: 120
               height: 120
               radius: width / 2
-              color: Color.mPrimary
+              color: Colors.mPrimary
               opacity: 0.08
               scale: 1.3
             }
@@ -262,16 +262,16 @@ PanelWindow {
 
               Rectangle {
                 anchors.fill: parent
-                color: Color.overlay("idle")
+                color: Colors.overlay("idle")
                 radius: width / 2
-                border.color: Color.mOutline
+                border.color: Colors.mOutline
                 border.width: Style.borderM
                 visible: parent.status === Image.Error
 
                 NIcon {
                   icon: "sparkles"
                   pointSize: Style.fontSizeXXL * 1.5
-                  color: Color.mPrimary
+                  color: Colors.mPrimary
                   anchors.centerIn: parent
                 }
               }
@@ -299,7 +299,7 @@ PanelWindow {
           Rectangle {
             Layout.fillWidth: true
             Layout.preferredHeight: welcomeNoteText.implicitHeight + Style.margin2M
-            color: Color.overlay("strong")
+            color: Colors.overlay("strong")
             radius: Style.radiusL
 
             NText {
@@ -311,7 +311,7 @@ PanelWindow {
               width: parent.width - Style.margin2L
               text: I18n.tr("setup.welcome-note")
               pointSize: Style.fontSizeM
-              color: Color.onShellSecondary
+              color: Colors.onShellSecondary
               horizontalAlignment: Text.AlignHCenter
               wrapMode: Text.WordWrap
             }
@@ -384,7 +384,7 @@ PanelWindow {
         // was wrong -- next to a pure-black face the translucent drop shadow
         // reads as a *lighter* halo, and DDE's dialog is a mask over the
         // wallpaper, not a solid plate.
-        color: Color.maskDark
+        color: Colors.maskDark
         radius: Style.radiusWindow
         clip: true
 
@@ -415,7 +415,7 @@ PanelWindow {
               // px = pt * 4/3 (see the font scale note in Style.qml).
               icon: panelContent.currentStepData.icon
               pointSize: Style.dialogIconSize * 0.75
-              color: Color.onShell
+              color: Colors.onShell
               Layout.alignment: Qt.AlignTop
             }
 
@@ -428,7 +428,7 @@ PanelWindow {
                 text: panelContent.currentStepData.title
                 pointSize: Style.fontSizeSubtitle
                 font.weight: Style.fontWeightMedium
-                color: Color.onShell
+                color: Colors.onShell
                 wrapMode: Text.WordWrap
               }
 
@@ -436,7 +436,7 @@ PanelWindow {
                 Layout.fillWidth: true
                 text: panelContent.currentStepData.description
                 pointSize: Style.fontSizeBody
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
                 wrapMode: Text.WordWrap
               }
             }
@@ -480,10 +480,10 @@ PanelWindow {
                   width: 8
                   height: 8
                   radius: width / 2
-                  color: active ? Qt.alpha(Color.onWallpaper, Style.pageDotCurrent) : Qt.alpha(Color.onWallpaper, Style.pageDotOther)
+                  color: active ? Qt.alpha(Colors.onWallpaper, Style.pageDotCurrent) : Qt.alpha(Colors.onWallpaper, Style.pageDotOther)
 
                   Behavior on color {
-                    enabled: !Color.isTransitioning
+                    enabled: !Colors.isTransitioning
                     ColorAnimation {
                       duration: Style.motionPointer
                       easing.type: Easing.OutCubic
@@ -502,7 +502,7 @@ PanelWindow {
               Layout.preferredHeight: 1
               Layout.minimumHeight: 1
               Layout.maximumHeight: 1
-              color: Color.overlayWallpaper("hover")
+              color: Colors.overlayWallpaper("hover")
             }
 
             RowLayout {
@@ -521,8 +521,8 @@ PanelWindow {
               NButton {
                 text: I18n.tr("setup.skip-setup")
                 backgroundColor: "transparent"
-                textColor: Color.onShell
-                hoverColor: Color.overlay("hover")
+                textColor: Colors.onShell
+                hoverColor: Colors.overlay("hover")
                 buttonRadius: 0
                 Layout.fillHeight: true
                 onClicked: {
@@ -537,8 +537,8 @@ PanelWindow {
               NButton {
                 text: I18n.tr("common.back")
                 backgroundColor: "transparent"
-                textColor: Color.onShell
-                hoverColor: Color.overlay("hover")
+                textColor: Colors.onShell
+                hoverColor: Colors.overlay("hover")
                 buttonRadius: 0
                 visible: panelContent.currentStep > 0
                 Layout.fillHeight: true
@@ -553,7 +553,7 @@ PanelWindow {
                 Layout.fillHeight: true
                 Layout.preferredWidth: 1
                 Layout.maximumHeight: Style.dialogButtonHeight
-                color: Color.overlayWallpaper("hover")
+                color: Colors.overlayWallpaper("hover")
                 visible: panelContent.currentStep > 0
               }
 
@@ -564,8 +564,8 @@ PanelWindow {
               NButton {
                 text: panelContent.currentStep === panelContent.totalSteps - 1 ? I18n.tr("setup.all-done") : I18n.tr("common.continue")
                 backgroundColor: "transparent"
-                textColor: Color.accent
-                textHoverColor: Color.accent
+                textColor: Colors.accent
+                textHoverColor: Colors.accent
                 hoverColor: "transparent"
                 buttonRadius: 0
                 Layout.fillHeight: true

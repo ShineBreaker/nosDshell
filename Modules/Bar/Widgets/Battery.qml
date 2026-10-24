@@ -75,7 +75,7 @@ Item {
   // plugged in (charging or full) -> positive green, at/below
   // batteryWarningThreshold -> alert.
   // Transparent while normal/unavailable so the regular on-shell color wins.
-  readonly property color stateColor: !isReady ? "transparent" : ((isCharging || isPluggedIn) ? Color.positive : ((isLowBattery || isCriticalBattery) ? Color.alert : "transparent"))
+  readonly property color stateColor: !isReady ? "transparent" : ((isCharging || isPluggedIn) ? Colors.positive : ((isLowBattery || isCriticalBattery) ? Colors.alert : "transparent"))
 
   readonly property bool reverseScroll: Settings.data.general.reverseScroll
   property int wheelAccumulator: 0
@@ -197,7 +197,7 @@ Item {
     width: root.isBarVertical ? root.capsuleHeight : nBattery.width + Style.margin2S
     height: root.isBarVertical ? nBattery.height + Style.margin2S : root.capsuleHeight
     radius: Math.min(Style.radiusL, width / 2)
-    color: graphicMouseArea.containsMouse ? Color.mHover : Style.capsuleColor
+    color: graphicMouseArea.containsMouse ? Colors.mHover : Style.capsuleColor
     border.color: Style.capsuleBorderColor
     border.width: Style.capsuleBorderWidth
   }
@@ -215,9 +215,9 @@ Item {
     pluggedIn: root.isPluggedIn
     low: root.isLowBattery
     critical: root.isCriticalBattery
-    baseColor: graphicMouseArea.containsMouse ? Color.mOnHover : Color.mOnSurface
-    textColor: graphicMouseArea.containsMouse ? Color.mHover : Color.mSurface
-    chargingColor: Color.positive
+    baseColor: graphicMouseArea.containsMouse ? Colors.mOnHover : Colors.mOnSurface
+    textColor: graphicMouseArea.containsMouse ? Colors.mHover : Colors.mSurface
+    chargingColor: Colors.positive
   }
 
   MouseArea {

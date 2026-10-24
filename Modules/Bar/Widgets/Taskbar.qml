@@ -765,8 +765,8 @@ Item {
           readonly property real contentWidth: shouldShowTitle ? root.itemSize + itemSpacing + root.titleWidth : root.itemSize
 
           readonly property string title: modelData.title || modelData.appId || "Unknown application"
-          readonly property color titleBgColor: (isHovered || isFocused) ? Color.mHover : Style.capsuleColor
-          readonly property color titleFgColor: (isHovered || isFocused) ? Color.mOnHover : Color.mOnSurface
+          readonly property color titleBgColor: (isHovered || isFocused) ? Colors.mHover : Style.capsuleColor
+          readonly property color titleFgColor: (isHovered || isFocused) ? Colors.mOnHover : Colors.mOnSurface
 
           // Collapse/grow lifecycle: rows enter at 0 and dying rows collapse
           // back to 0 on the long axis before the model drops them.
@@ -890,11 +890,11 @@ Item {
             anchors.margins: 1
             color: {
               if (taskbarItem.isFocused)
-                return Qt.alpha(Color.accent, 0.3);
+                return Qt.alpha(Colors.accent, 0.3);
               if (taskbarItem.isUrgent)
-                return Qt.alpha(Color.attention, 0.8);
+                return Qt.alpha(Colors.attention, 0.8);
               if (taskbarItem.isRunning)
-                return Color.overlay("strong");
+                return Colors.overlay("strong");
               return "transparent";
             }
           }
@@ -903,7 +903,7 @@ Item {
           // (4 px when the item thickness is > 50, otherwise 2 px)
           Rectangle {
             visible: root.efficientMode && taskbarItem.isFocused
-            color: Color.accent
+            color: Colors.accent
             readonly property real lw: root.barHeight > 50 ? 4 : 2
             x: root.barPosition === "left" ? 0 : (root.barPosition === "right" ? parent.width - width : 0)
             y: root.barPosition === "top" ? 0 : (root.barPosition === "bottom" ? parent.height - height : 0)
@@ -1078,7 +1078,7 @@ Item {
                     // Apply dock shader to all taskbar icons
                     layer.enabled: root.colorizeIcons
                     layer.effect: ShaderEffect {
-                      property color targetColor: Settings.data.colorSchemes.darkMode ? Color.mOnSurface : Color.mSurfaceVariant
+                      property color targetColor: Settings.data.colorSchemes.darkMode ? Colors.mOnSurface : Colors.mSurfaceVariant
                       property real colorizeMode: 0.0 // Dock mode (grayscale)
 
                       fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
@@ -1093,7 +1093,7 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: Style.toOdd(root.itemSize * 0.25)
                     height: 4
-                    color: taskbarItem.isFocused ? Color.mPrimary : (taskbarItem.isHovered ? Color.mHover : "transparent")
+                    color: taskbarItem.isFocused ? Colors.mPrimary : (taskbarItem.isHovered ? Colors.mHover : "transparent")
                     radius: Math.min(Style.radiusXXS, width / 2)
                   }
                 }

@@ -145,7 +145,7 @@ Variants {
         // Same niri stale-region trap as the mini window: detach when hidden
         // so no blurred ghost stays behind after the surface unmaps.
         // blurActive rides the same object swap instead of a null assignment.
-        activeWhen: Color.blurActive && screenItem.isActive
+        activeWhen: Colors.blurActive && screenItem.isActive
       }
 
       // The layer surface covers the whole output, taskbar area included; the
@@ -171,7 +171,7 @@ Variants {
         id: background
         anchors.fill: parent
         screen: screenItem.liveScreen
-        visible: !Color.blurActive
+        visible: !Colors.blurActive
         opacity: screenItem.isActive ? 1 : 0
 
         Behavior on opacity {
@@ -188,7 +188,7 @@ Variants {
       // requires the wallpaper surface to stay dark for onWallpaper ink.
       Rectangle {
         anchors.fill: parent
-        color: Qt.alpha(Color.veilWallpaper, 0.55)
+        color: Qt.alpha(Colors.veilWallpaper, 0.55)
         opacity: view.opacity
       }
 

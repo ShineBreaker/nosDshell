@@ -46,12 +46,12 @@ PopupWindow {
   property real submenuAnchorY: 0
 
   readonly property bool _light: variant === "light"
-  readonly property color _bgColor: _light ? Color.popupLight : Color.popupShell
-  readonly property color _borderColor: _light ? Color.popupLightBorder : Color.borderShell
+  readonly property color _bgColor: _light ? Colors.popupLight : Colors.popupShell
+  readonly property color _borderColor: _light ? Colors.popupLightBorder : Colors.borderShell
   readonly property real _radius: _light ? Style.radiusRow : Style.radiusPopup
   readonly property var _shadow: _light ? Style.shadowMenuLight : Style.shadowPopup
-  readonly property color _textColor: _light ? Color.popupLightText : Color.onShell
-  readonly property color _disabledColor: _light ? Color.popupLightDisabled : Color.textDisabledDark
+  readonly property color _textColor: _light ? Colors.popupLightText : Colors.onShell
+  readonly property color _disabledColor: _light ? Colors.popupLightDisabled : Colors.textDisabledDark
   readonly property real _rowHeight: itemHeight > 0 ? itemHeight : rowMeasure.implicitHeight + 8
 
   // Keyboard highlight index (-1 = none)
@@ -92,7 +92,7 @@ PopupWindow {
     id: menuBlurRegion
     trackedItem: menuBackground.bodyItem
     radius: menuBackground.radius
-    activeWhen: Color.blurActive
+    activeWhen: Colors.blurActive
     // The reveal slides the card inside the surface — feed the sentinel the
     // animated distance so the region follows each frame.
     watch: reveal.revealDistance
@@ -547,7 +547,7 @@ PopupWindow {
               id: innerRect
               anchors.fill: parent
               visible: !menuItem.isSeparator
-              color: menuItem.active ? Color.accent : "transparent"
+              color: menuItem.active ? Colors.accent : "transparent"
               radius: Style.radiusRow
 
               RowLayout {
@@ -561,14 +561,14 @@ PopupWindow {
                   icon: modelData.icon || ""
                   pointSize: Style.fontSizeS
                   applyUiScale: false
-                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Colors.onAccent : root._textColor
                   verticalAlignment: Text.AlignVCenter
                 }
 
                 NText {
                   text: modelData.label || modelData.text || ""
                   pointSize: Style.fontSizeS
-                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Colors.onAccent : root._textColor
                   verticalAlignment: Text.AlignVCenter
                   Layout.fillWidth: true
                 }
@@ -578,7 +578,7 @@ PopupWindow {
                   visible: modelData.checked === true || menuItem.hasSubmenu || modelData.hasSubmenu === true
                   icon: (menuItem.hasSubmenu || modelData.hasSubmenu === true) ? "chevron-right" : "check"
                   pointSize: Style.fontSizeXL
-                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Color.onAccent : root._textColor
+                  color: !menuItem.rowEnabled ? root._disabledColor : menuItem.active ? Colors.onAccent : root._textColor
                 }
               }
 

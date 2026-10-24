@@ -58,9 +58,9 @@ Popup {
   }
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -78,14 +78,14 @@ Popup {
         NIcon {
           icon: "color-picker"
           pointSize: Style.fontSizeXXL
-          color: Color.accent
+          color: Colors.accent
         }
 
         NText {
           text: I18n.tr("widgets.color-picker.title")
           pointSize: Style.fontSizeXL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
         }
       }
 
@@ -105,7 +105,7 @@ Popup {
       Layout.preferredHeight: 80
       radius: Style.radiusWindow
       color: root.selectedColor
-      border.color: Color.borderShell
+      border.color: Colors.borderShell
       border.width: Style.borderS
 
       ColumnLayout {
@@ -479,7 +479,7 @@ Popup {
               Layout.alignment: Qt.AlignTop
 
               radius: 0
-              border.color: Color.borderShell
+              border.color: Colors.borderShell
               border.width: Style.borderS
               clip: true
 
@@ -602,7 +602,7 @@ Popup {
               Rectangle {
                 anchors.fill: parent
                 color: "transparent"
-                border.color: Color.borderShell
+                border.color: Colors.borderShell
                 border.width: Style.borderS
                 antialiasing: false
               }
@@ -639,31 +639,31 @@ Popup {
               model: [
                 {
                   name: "mPrimary",
-                  color: Color.mPrimary
+                  color: Colors.mPrimary
                 },
                 {
                   name: "mSecondary",
-                  color: Color.mSecondary
+                  color: Colors.mSecondary
                 },
                 {
                   name: "mTertiary",
-                  color: Color.mTertiary
+                  color: Colors.mTertiary
                 },
                 {
                   name: "mError",
-                  color: Color.mError
+                  color: Colors.mError
                 },
                 {
                   name: "mSurface",
-                  color: Color.mSurface
+                  color: Colors.mSurface
                 },
                 {
                   name: "mSurfaceVariant",
-                  color: Color.mSurfaceVariant
+                  color: Colors.mSurfaceVariant
                 },
                 {
                   name: "mOutline",
-                  color: Color.mOutline
+                  color: Colors.mOutline
                 }
               ]
 
@@ -672,7 +672,7 @@ Popup {
                 height: 24
                 radius: Style.radiusRow
                 color: modelData.color
-                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.accent : Color.borderShell
+                border.color: root.selectedColor.toString() === modelData.color.toString() ? Colors.accent : Colors.borderShell
                 border.width: Math.max(1, root.selectedColor.toString() === modelData.color.toString() ? Style.borderM : Style.borderS)
 
                 MouseArea {
@@ -715,7 +715,7 @@ Popup {
                 height: 24
                 radius: Math.min(Style.radiusRow, width / 2)
                 color: modelData.color
-                border.color: root.selectedColor.toString() === modelData.color.toString() ? Color.accent : Color.borderShell
+                border.color: root.selectedColor.toString() === modelData.color.toString() ? Colors.accent : Colors.borderShell
                 border.width: root.selectedColor.toString() === modelData.color.toString() ? 2 : 1
 
                 MouseArea {
@@ -746,7 +746,7 @@ Popup {
       visible: !root.liveMode
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      color: Color.overlay("hover")
+      color: Colors.overlay("hover")
     }
 
     RowLayout {
@@ -772,7 +772,7 @@ Popup {
       NButton {
         text: I18n.tr("common.apply")
         icon: "check"
-        backgroundColor: Color.accent // recommended action → accent text
+        backgroundColor: Colors.accent // recommended action → accent text
         onClicked: {
           root.colorSelected(root.selectedColor);
           // Delay close to prevent click propagation to elements behind the dialog

@@ -25,7 +25,7 @@ RadioButton {
     implicitWidth: rowContent.implicitWidth
     implicitHeight: rowContent.implicitHeight
     radius: Style.radiusRow
-    color: root.hovered ? Color.overlay("hover") : "transparent"
+    color: root.hovered ? Colors.overlay("hover") : "transparent"
 
     RowLayout {
       id: rowContent
@@ -44,7 +44,7 @@ RadioButton {
       NIcon {
         icon: "check"
         pointSize: Style.fontSizeXL
-        color: Color.accent
+        color: Colors.accent
         visible: root.checked
       }
     }

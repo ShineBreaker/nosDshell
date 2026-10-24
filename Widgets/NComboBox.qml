@@ -210,13 +210,13 @@ NDccRow {
       // §3.5.4: the drop-down looks like a text field — field fill, radius 5,
       // 1 px accent outline on focus.
       implicitHeight: Style.settingsFieldHeight
-      color: combo.enabled ? Color.overlay("field") : Color.overlay("idle")
-      border.color: combo.activeFocus ? Color.accent : "transparent"
+      color: combo.enabled ? Colors.overlay("field") : Colors.overlay("idle")
+      border.color: combo.activeFocus ? Colors.accent : "transparent"
       border.width: Style.borderS
       radius: Style.settingsFieldRadius
 
       Behavior on border.color {
-        enabled: !Color.isTransitioning
+        enabled: !Colors.isTransitioning
         ColorAnimation {
           duration: Style.motionSwitch
           easing.type: Easing.OutCubic
@@ -248,7 +248,7 @@ NDccRow {
       elide: Text.ElideRight
       // Stay opaque: the disabled signal is the color swap, not extra alpha.
       opacity: 1.0
-      color: combo.enabled ? (combo.currentIndex >= 0 ? Color.onShell : Color.onShellTertiary) : Color.textDisabledDark
+      color: combo.enabled ? (combo.currentIndex >= 0 ? Colors.onShell : Colors.onShellTertiary) : Colors.textDisabledDark
       text: {
         if (combo.currentIndex >= 0 && combo.currentIndex < root.itemCount()) {
           var item = root.getItem(combo.currentIndex);
@@ -263,7 +263,7 @@ NDccRow {
       y: combo.topPadding + (combo.availableHeight - height) / 2
       icon: "caret-down"
       pointSize: Style.fontSizeL
-      color: combo.enabled ? Color.onShellSecondary : Color.textDisabledDark
+      color: combo.enabled ? Colors.onShellSecondary : Colors.textDisabledDark
     }
 
     popup: Popup {
@@ -301,7 +301,7 @@ NDccRow {
           width: listView.availableWidth
           height: delegateText.implicitHeight + Style.margin2S
           radius: Style.radiusRow
-          color: isHighlighted ? Color.accent : "transparent"
+          color: isHighlighted ? Colors.accent : "transparent"
 
           NText {
             id: delegateText
@@ -311,7 +311,7 @@ NDccRow {
             verticalAlignment: Text.AlignVCenter
             elide: Text.ElideRight
             pointSize: Style.fontSizeM
-            color: delegateRect.isHighlighted ? Color.onAccent : Color.onShell
+            color: delegateRect.isHighlighted ? Colors.onAccent : Colors.onShell
             text: {
               var item = root._modelRows[delegateRect.index];
               return item && item.name ? item.name : "";
@@ -339,12 +339,12 @@ NDccRow {
       }
 
       background: NArrowRect {
-        // Page-surface menus stay opaque (Color.popupPage) — popupShell's
+        // Page-surface menus stay opaque (Colors.popupPage) — popupShell's
         // translucency (built for blurred shell popups) bleeds page text
         // through the list. On a shell surface the glass look is intentional.
         arrowEdge: ""
-        fillColor: root.onShellSurface ? Color.popupShell : Color.popupPage
-        borderColor: root.onShellSurface ? Color.borderShell : Color.mOutline
+        fillColor: root.onShellSurface ? Colors.popupShell : Colors.popupPage
+        borderColor: root.onShellSurface ? Colors.borderShell : Colors.mOutline
         borderWidth: Style.borderS
         radius: Style.radiusPopup
         shadow: Style.shadowPopup

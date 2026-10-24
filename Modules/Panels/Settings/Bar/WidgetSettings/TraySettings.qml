@@ -154,7 +154,7 @@ ColumnLayout {
         anchors.fill: parent
         anchors.margins: Style.marginXS
         color: "transparent" // Make background transparent
-        border.color: Color.borderShell
+        border.color: Colors.borderShell
         border.width: Style.borderS
         radius: Style.radiusItem
         visible: rule !== undefined && rule !== "" // Only visible if rule exists
@@ -176,10 +176,10 @@ ColumnLayout {
           anchors.verticalCenter: parent.verticalCenter
           icon: "close"
           baseSize: 12 * Style.uiScaleRatio
-          colorBg: Color.overlay("field")
-          colorFg: Color.onShellTertiary
-          colorBgHover: Color.alert
-          colorFgHover: Color.onAccent
+          colorBg: Colors.overlay("field")
+          colorFg: Colors.onShellTertiary
+          colorBgHover: Colors.alert
+          colorFgHover: Colors.onAccent
           onClicked: {
             blacklistModel.remove(index);
             saveSettings();

@@ -242,13 +242,13 @@ Item {
           NIcon {
             icon: "plus"
             pointSize: Style.fontSizeXXL
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
           }
 
           NText {
             text: I18n.tr("wifi.panel.add-network")
             pointSize: Style.fontSizeM
-            color: Color.onShell
+            color: Colors.onShell
             Layout.fillWidth: true
           }
         }
@@ -350,8 +350,8 @@ Item {
       id: customPopupBg
       anchors.fill: parent
       radius: Style.radiusWindow
-      color: Color.maskShell
-      border.color: Color.borderShell
+      color: Colors.maskShell
+      border.color: Colors.borderShell
       border.width: Style.borderS
     }
 
@@ -381,7 +381,7 @@ Item {
             text: I18n.tr("wifi.panel.add-network")
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightSemiBold
-            color: Color.onShell
+            color: Colors.onShell
             wrapMode: Text.Wrap
             Layout.fillWidth: true
           }
@@ -566,16 +566,16 @@ Item {
 
         NButton {
           text: I18n.tr("common.cancel")
-          backgroundColor: Color.overlay("strong")
-          textColor: Color.onShell
+          backgroundColor: Colors.overlay("strong")
+          textColor: Colors.onShell
           outlined: false
           onClicked: addNetworkPopup.close()
         }
 
         NButton {
           text: I18n.tr("common.connect")
-          backgroundColor: Color.accent
-          textColor: Color.onAccent
+          backgroundColor: Colors.accent
+          textColor: Colors.onAccent
           enabled: addNetworkPopup.customSsid.length > 0 && (addNetworkPopup.customSecurityKey === "open" || addNetworkPopup.customPassword.length > 0) && (addNetworkPopup.customSecurityKey.indexOf("-eap") === -1 || addNetworkPopup.customIdentity.length > 0)
           onClicked: {
             NetworkService.connect(addNetworkPopup.customSsid, addNetworkPopup.customPassword, addNetworkPopup.customIsHidden, addNetworkPopup.customSecurityKey, addNetworkPopup.customIdentity, {
@@ -628,7 +628,7 @@ Item {
             horizontalAlignment: Text.AlignLeft
             icon: NetworkService.getSignalInfo(modelData.signal, modelData.connected).icon
             pointSize: Style.fontSizeXXL
-            color: Color.onShell
+            color: Colors.onShell
 
             MouseArea {
               anchors.fill: parent
@@ -647,7 +647,7 @@ Item {
               pointSize: Style.fontSizeM
               font.weight: modelData.connected ? Style.fontWeightSemiBold : Style.fontWeightMedium
               elide: Text.ElideRight
-              color: Color.onShell
+              color: Colors.onShell
               Layout.fillWidth: true
             }
 
@@ -657,7 +657,7 @@ Item {
               NIcon {
                 icon: NetworkService.isSecured(modelData.security) ? "lock" : "lock-open"
                 pointSize: Style.fontSizeXXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
                 visible: !modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid && NetworkService.forgettingNetwork !== modelData.ssid
               }
 
@@ -684,7 +684,7 @@ Item {
                   return NetworkService.isSecured(modelData.security) ? modelData.security : I18n.tr("wifi.panel.security-open");
                 }
                 pointSize: Style.fontSizeXXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
 
               // Network speed indicators (visible when connected and speed > 0)
@@ -698,14 +698,14 @@ Item {
                   visible: SystemStatService.rxSpeed > 0
                   icon: "arrow-down"
                   pointSize: Style.fontSizeXXS
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                 }
 
                 NText {
                   visible: SystemStatService.rxSpeed > 0
                   text: SystemStatService.formatSpeed(SystemStatService.rxSpeed)
                   pointSize: Style.fontSizeXXS
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   elide: Text.ElideNone
                 }
 
@@ -719,14 +719,14 @@ Item {
                   visible: SystemStatService.txSpeed > 0
                   icon: "arrow-up"
                   pointSize: Style.fontSizeXXS
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                 }
 
                 NText {
                   visible: SystemStatService.txSpeed > 0
                   text: SystemStatService.formatSpeed(SystemStatService.txSpeed)
                   pointSize: Style.fontSizeXXS
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   elide: Text.ElideNone
                 }
               }
@@ -741,7 +741,7 @@ Item {
             visible: modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
             icon: "check"
             pointSize: Style.fontSizeXL
-            color: Color.accent
+            color: Colors.accent
             Layout.alignment: Qt.AlignVCenter
           }
 
@@ -751,7 +751,7 @@ Item {
             NBusyIndicator {
               visible: networkItem.isBusy
               running: visible && root.effectivelyVisible
-              color: Color.onShell
+              color: Colors.onShell
               size: Style.baseWidgetSize * 0.5
             }
 
@@ -764,8 +764,8 @@ Item {
               icon: "info"
               tooltipText: I18n.tr("common.info")
               baseSize: Style.baseWidgetSize * 0.75
-              colorBg: Color.overlay("field")
-              colorFg: Color.onShell
+              colorBg: Colors.overlay("field")
+              colorFg: Colors.onShell
               colorBorder: "transparent"
               colorBorderHover: "transparent"
               onClicked: {
@@ -783,8 +783,8 @@ Item {
               icon: "trash"
               tooltipText: I18n.tr("tooltips.forget-network")
               baseSize: Style.baseWidgetSize * 0.75
-              colorBg: Color.overlay("field")
-              colorFg: Color.alert
+              colorBg: Colors.overlay("field")
+              colorFg: Colors.alert
               colorBorder: "transparent"
               colorBorderHover: "transparent"
               onClicked: root.requestForget(modelData.ssid)
@@ -795,8 +795,8 @@ Item {
               visible: networkItem.hovered && modelData.connected && NetworkService.disconnectingFrom !== modelData.ssid
               text: I18n.tr("common.disconnect")
               fontSize: Style.fontSizeS
-              backgroundColor: Color.overlay("strong")
-              textColor: Color.onShell
+              backgroundColor: Colors.overlay("strong")
+              textColor: Colors.onShell
               onClicked: NetworkService.disconnect(modelData.ssid)
             }
           }
@@ -825,9 +825,9 @@ Item {
           Layout.fillWidth: true
           implicitHeight: infoColumn.implicitHeight + Style.margin2S
           radius: Style.settingsFieldRadius
-          color: Color.overlay("field")
+          color: Colors.overlay("field")
           border.width: Style.borderS
-          border.color: Color.borderShell
+          border.color: Colors.borderShell
           clip: true
 
           onVisibleChanged: {
@@ -877,7 +877,7 @@ Item {
               NIcon {
                 icon: "network"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
@@ -888,7 +888,7 @@ Item {
               NText {
                 text: NetworkService.activeWifiIf || "-"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
                 wrapMode: root.detailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere
                 elide: root.detailsGrid ? Text.ElideRight : Text.ElideNone
@@ -920,7 +920,7 @@ Item {
               NIcon {
                 icon: "router"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
@@ -942,7 +942,7 @@ Item {
               NIcon {
                 icon: "gauge"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
@@ -953,7 +953,7 @@ Item {
               NText {
                 text: (NetworkService.activeWifiDetails.rateShort && NetworkService.activeWifiDetails.rateShort.length > 0) ? NetworkService.activeWifiDetails.rateShort : ((NetworkService.activeWifiDetails.rate && NetworkService.activeWifiDetails.rate.length > 0) ? NetworkService.activeWifiDetails.rate : "-")
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
               }
             }
@@ -965,7 +965,7 @@ Item {
               NIcon {
                 icon: "network"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
@@ -980,7 +980,7 @@ Item {
               NText {
                 text: root.ipVersion === 4 ? (NetworkService.activeWifiDetails.ipv4 || "-") : ((NetworkService.activeWifiDetails.ipv6 || []).join(", ") || "-")
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
 
                 MouseArea {
@@ -1008,7 +1008,7 @@ Item {
               NIcon {
                 icon: "world"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
@@ -1023,7 +1023,7 @@ Item {
               NText {
                 text: root.ipVersion === 4 ? ((NetworkService.activeWifiDetails.dns4 || []).join(", ") || "-") : ((NetworkService.activeWifiDetails.dns6 || []).join(", ") || "-")
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
 
                 MouseArea {
@@ -1051,7 +1051,7 @@ Item {
               NIcon {
                 icon: "router"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 MouseArea {
                   anchors.fill: parent
                   hoverEnabled: true
@@ -1066,7 +1066,7 @@ Item {
               NText {
                 text: root.ipVersion === 4 ? (NetworkService.activeWifiDetails.gateway4 || "-") : ((NetworkService.activeWifiDetails.gateway6 || []).join(", ") || "-")
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
 
                 MouseArea {
@@ -1094,8 +1094,8 @@ Item {
           visible: root.passwordSsid === modelData.ssid && !networkItem.isBusy
           Layout.fillWidth: true
           height: passwordLayout.implicitHeight + Style.margin2S
-          color: Color.overlay("field")
-          border.color: Color.borderShell
+          color: Colors.overlay("field")
+          border.color: Colors.borderShell
           border.width: Style.borderS
           radius: Style.settingsFieldRadius
 
@@ -1166,8 +1166,8 @@ Item {
                     Layout.fillWidth: true
                     Layout.preferredHeight: Style.baseWidgetSize * 0.9
                     radius: Style.settingsFieldRadius
-                    color: Color.overlay("strong")
-                    border.color: caCertInput.activeFocus ? Color.accent : Color.borderShell
+                    color: Colors.overlay("strong")
+                    border.color: caCertInput.activeFocus ? Colors.accent : Colors.borderShell
                     border.width: Style.borderS
 
                     TextInput {
@@ -1178,7 +1178,7 @@ Item {
                       anchors.margins: Style.marginS
                       font.family: Settings.data.ui.fontFixed
                       font.pointSize: Style.fontSizeS
-                      color: Color.onShell
+                      color: Colors.onShell
                       selectByMouse: true
                       text: root.enterpriseCaCert
                       onTextChanged: root.enterpriseCaCert = text
@@ -1187,7 +1187,7 @@ Item {
                         visible: parent.text.length === 0
                         anchors.verticalCenter: parent.verticalCenter
                         text: I18n.tr("wifi.enterprise.ca-cert")
-                        color: Color.onShellTertiary
+                        color: Colors.onShellTertiary
                         pointSize: Style.fontSizeS
                       }
                     }
@@ -1207,8 +1207,8 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.baseWidgetSize * 0.9
                 radius: Style.settingsFieldRadius
-                color: Color.overlay("strong")
-                border.color: anonIdentityInput.activeFocus ? Color.accent : Color.borderShell
+                color: Colors.overlay("strong")
+                border.color: anonIdentityInput.activeFocus ? Colors.accent : Colors.borderShell
                 border.width: Style.borderS
 
                 TextInput {
@@ -1219,7 +1219,7 @@ Item {
                   anchors.margins: Style.marginS
                   font.family: Settings.data.ui.fontFixed
                   font.pointSize: Style.fontSizeS
-                  color: Color.onShell
+                  color: Colors.onShell
                   selectByMouse: true
                   text: root.enterpriseAnonIdentity
                   onTextChanged: root.enterpriseAnonIdentity = text
@@ -1229,7 +1229,7 @@ Item {
                     visible: parent.text.length === 0
                     anchors.verticalCenter: parent.verticalCenter
                     text: I18n.tr("wifi.enterprise.anonymous-identity")
-                    color: Color.onShellTertiary
+                    color: Colors.onShellTertiary
                     pointSize: Style.fontSizeS
                   }
                 }
@@ -1241,8 +1241,8 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.baseWidgetSize * 0.9
                 radius: Style.settingsFieldRadius
-                color: Color.overlay("strong")
-                border.color: identityInput.activeFocus ? Color.accent : Color.borderShell
+                color: Colors.overlay("strong")
+                border.color: identityInput.activeFocus ? Colors.accent : Colors.borderShell
                 border.width: Style.borderS
 
                 TextInput {
@@ -1253,7 +1253,7 @@ Item {
                   anchors.margins: Style.marginS
                   font.family: Settings.data.ui.fontFixed
                   font.pointSize: Style.fontSizeS
-                  color: Color.onShell
+                  color: Colors.onShell
                   selectByMouse: true
                   onVisibleChanged: {
                     if (visible) {
@@ -1266,7 +1266,7 @@ Item {
                     visible: parent.text.length === 0
                     anchors.verticalCenter: parent.verticalCenter
                     text: I18n.tr("wifi.enterprise.username")
-                    color: Color.onShellTertiary
+                    color: Colors.onShellTertiary
                     pointSize: Style.fontSizeS
                   }
                 }
@@ -1277,8 +1277,8 @@ Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Style.baseWidgetSize * 0.9
                 radius: Style.settingsFieldRadius
-                color: Color.overlay("strong")
-                border.color: pwdInput.activeFocus ? Color.accent : Color.borderShell
+                color: Colors.overlay("strong")
+                border.color: pwdInput.activeFocus ? Colors.accent : Colors.borderShell
                 border.width: Style.borderS
 
                 TextInput {
@@ -1289,7 +1289,7 @@ Item {
                   anchors.margins: Style.marginS
                   font.family: Settings.data.ui.fontFixed
                   font.pointSize: Style.fontSizeS
-                  color: Color.onShell
+                  color: Colors.onShell
                   echoMode: TextInput.Password
                   selectByMouse: true
                   passwordCharacter: "●"
@@ -1310,7 +1310,7 @@ Item {
                     visible: parent.text.length === 0
                     anchors.verticalCenter: parent.verticalCenter
                     text: networkItem.isEnterprise ? I18n.tr("wifi.enterprise.password") : I18n.tr("wifi.panel.enter-password")
-                    color: Color.onShellTertiary
+                    color: Colors.onShellTertiary
                     pointSize: Style.fontSizeS
                   }
                 }
@@ -1347,10 +1347,10 @@ Item {
           visible: root.expandedSsid === modelData.ssid && !networkItem.isBusy
           Layout.fillWidth: true
           height: forgetRow.implicitHeight + Style.margin2S
-          color: Color.overlay("field")
+          color: Colors.overlay("field")
           radius: Style.settingsFieldRadius
           border.width: Style.borderS
-          border.color: Color.borderShell
+          border.color: Colors.borderShell
 
           RowLayout {
             id: forgetRow
@@ -1362,13 +1362,13 @@ Item {
               NIcon {
                 icon: "trash"
                 pointSize: Style.fontSizeL
-                color: Color.alert
+                color: Colors.alert
               }
 
               NText {
                 text: I18n.tr("wifi.panel.forget-network")
                 pointSize: Style.fontSizeS
-                color: Color.alert
+                color: Colors.alert
                 Layout.fillWidth: true
               }
             }
@@ -1377,7 +1377,7 @@ Item {
               id: forgetButton
               text: I18n.tr("wifi.panel.forget")
               fontSize: Style.fontSizeXXS
-              backgroundColor: Color.alert
+              backgroundColor: Colors.alert
               outlined: !forgetButton.hovered
               onClicked: root.confirmForget(modelData.ssid)
             }

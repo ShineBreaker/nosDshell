@@ -689,9 +689,9 @@ Item {
                   radius: Style.radiusRow
                   color: {
                     if (railArea.containsMouse)
-                      return Color.overlay("strong");
+                      return Colors.overlay("strong");
                     if (selected)
-                      return Color.overlay("checked");
+                      return Colors.overlay("checked");
                     return "transparent";
                   }
 
@@ -707,8 +707,8 @@ Item {
                     smooth: true
                     // Same dim ladder as the NIcon fallback below: on-shell
                     // ink, 0.4 on the dark frame / 0.6 on the light frame.
-                    color: Color.onShell
-                    opacity: selected ? 1.0 : (Color.shellIsDark ? Style.settingsRailIconDim : 0.6)
+                    color: Colors.onShell
+                    opacity: selected ? 1.0 : (Colors.shellIsDark ? Style.settingsRailIconDim : 0.6)
                   }
 
                   NIcon {
@@ -723,7 +723,7 @@ Item {
                     // spec is white@0.4 on the dark frame; on a light frame
                     // the same alpha is applied to #303030 with a bit more
                     // weight (0.6) so the icon survives on the light rail.
-                    color: selected ? Color.onShell : Qt.alpha(Color.onShell, Color.shellIsDark ? Style.settingsRailIconDim : 0.6)
+                    color: selected ? Colors.onShell : Qt.alpha(Colors.onShell, Colors.shellIsDark ? Style.settingsRailIconDim : 0.6)
                   }
                 }
               }
@@ -764,7 +764,7 @@ Item {
             // 24×24, radius 4, white×0.2 block (DESIGN §3.5.3).
             baseSize: 24
             customRadius: Style.radiusRow
-            colorBg: Color.overlay("strong")
+            colorBg: Colors.overlay("strong")
             tooltipText: I18n.tr("common.back")
             onClicked: root.subPageOpen ? root.popPage() : root.backRequested()
           }
@@ -778,7 +778,7 @@ Item {
             text: root.title
             pointSize: Style.settingsModuleTitleSize
             font.weight: Style.fontWeightMedium
-            color: Color.onShell
+            color: Colors.onShell
             elide: Text.ElideRight
           }
         }
@@ -789,7 +789,7 @@ Item {
           Layout.leftMargin: Style.settingsRowPaddingH
           Layout.rightMargin: Style.settingsRowPaddingH
           Layout.bottomMargin: Style.settingsModuleSeparatorGap
-          color: Color.separator
+          color: Colors.separator
         }
 
         // Search (DESIGN §3.5.4 input: height 30, bg field, radiusItem, focus
@@ -805,9 +805,9 @@ Item {
           // The search index only covers the base page — hide it on 二级页.
           visible: !root.subPageOpen
           radius: Style.radiusItem
-          color: Color.overlay("field")
+          color: Colors.overlay("field")
           border.width: searchInput.activeFocus ? Style.borderS : 0
-          border.color: Color.accent
+          border.color: Colors.accent
 
           NIcon {
             anchors.left: parent.left
@@ -815,7 +815,7 @@ Item {
             anchors.verticalCenter: parent.verticalCenter
             icon: "search"
             pointSize: Style.fontSizeTitle
-            color: Color.onShellSecondary
+            color: Colors.onShellSecondary
           }
 
           TextInput {
@@ -829,7 +829,7 @@ Item {
             anchors.rightMargin: Style.marginS
             verticalAlignment: Text.AlignVCenter
             leftPadding: Style.margin2S
-            color: Color.onShell
+            color: Colors.onShell
             font.pointSize: Style.fontSizeBody
             selectByMouse: true
             onAccepted: {
@@ -849,7 +849,7 @@ Item {
             visible: searchInput.text === ""
             elide: Text.ElideRight
             text: I18n.tr("settings.search-placeholder")
-            color: Qt.alpha(Color.onShell, 0.6)
+            color: Qt.alpha(Colors.onShell, 0.6)
             font.pointSize: Style.fontSizeS
           }
         }
@@ -888,7 +888,7 @@ Item {
             verticalPolicy: ScrollBar.AsNeeded
             reserveScrollbarSpace: false
             showGradientMasks: false
-            gradientColor: Color.maskShell
+            gradientColor: Colors.maskShell
 
             // User scroll cancels programmatic scroll + pending re-snap and
             // re-syncs the rail highlight on every step so the accent follows
@@ -992,7 +992,7 @@ Item {
                         source: headArt
                         visible: headArt !== "" && status !== Image.Error
                         smooth: true
-                        color: Color.onShell
+                        color: Colors.onShell
                       }
                       NIcon {
                         anchors.verticalCenter: parent.verticalCenter
@@ -1000,13 +1000,13 @@ Item {
                         pointSize: Style.settingsModuleHeadIcon
                         applyUiScale: false
                         visible: !headArtImage.visible
-                        color: Color.onShell
+                        color: Colors.onShell
                       }
                       NText {
                         anchors.verticalCenter: parent.verticalCenter
                         text: ControlCenterModules.tr(sectionModule.label)
                         pointSize: Style.fontSizeXL
-                        color: Color.onShell
+                        color: Colors.onShell
                       }
                     }
                   }
@@ -1133,8 +1133,8 @@ Item {
         height: Math.min(searchResults.contentHeight, Style.controlCenterWidth)
         visible: searchResults.count > 0 && searchInput.text.trim() !== "" && !root.subPageOpen
         radius: Style.radiusPopup
-        color: Color.popupShell
-        border.color: Color.borderShell
+        color: Colors.popupShell
+        border.color: Colors.borderShell
         border.width: Style.borderS
         clip: true
 
@@ -1145,7 +1145,7 @@ Item {
           // Explicit highlight kept under the delegates — Qt's default highlight
           // item sits above row 0 and swallows its clicks
           highlight: Rectangle {
-            color: Color.overlay("checked")
+            color: Colors.overlay("checked")
             radius: Style.radiusRow
             z: -1
           }
@@ -1183,7 +1183,7 @@ Item {
               Layout.alignment: Qt.AlignVCenter
               text: I18n.tr(entry.labelKey)
               pointSize: Style.fontSizeBody
-              color: Color.onShell
+              color: Colors.onShell
               elide: Text.ElideRight
             }
           }
@@ -1316,7 +1316,7 @@ Item {
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
         showGradientMasks: false
-        gradientColor: Color.maskShell
+        gradientColor: Colors.maskShell
       }
 
       Component.onCompleted: {

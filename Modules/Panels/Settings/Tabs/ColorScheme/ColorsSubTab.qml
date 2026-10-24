@@ -54,16 +54,16 @@ ColumnLayout {
     }
 
     if (colorKey === "mSurface")
-      return Color.mSurfaceVariant;
+      return Colors.mSurfaceVariant;
     if (colorKey === "mPrimary")
-      return Color.mPrimary;
+      return Colors.mPrimary;
     if (colorKey === "mSecondary")
-      return Color.mSecondary;
+      return Colors.mSecondary;
     if (colorKey === "mTertiary")
-      return Color.mTertiary;
+      return Colors.mTertiary;
     if (colorKey === "mError")
-      return Color.mError;
-    return Color.mOnSurfaceVariant;
+      return Colors.mError;
+    return Colors.mOnSurfaceVariant;
   }
 
   function schemeLoaded(schemeName, jsonData) {
@@ -134,7 +134,7 @@ ColumnLayout {
     }
 
     // Accent override: a pinned #hex replaces the accent family on the shell
-    // (DESIGN §5); invalid input is ignored by Color.qml
+    // (DESIGN §5); invalid input is ignored by Colors.qml
     NTextInput {
       label: I18n.tr("panels.color-scheme.accent-override-label")
       description: I18n.tr("panels.color-scheme.accent-override-description")
@@ -287,7 +287,7 @@ ColumnLayout {
       visible: Settings.data.colorSchemes.useWallpaperColors
       Layout.fillWidth: true
       implicitHeight: descriptionColumn.implicitHeight + Style.margin2L
-      color: Color.overlay("field")
+      color: Colors.overlay("field")
 
       Column {
         id: descriptionColumn
@@ -302,7 +302,7 @@ ColumnLayout {
           wrapMode: Text.WordWrap
           text: I18n.tr("panels.color-scheme.method-description." + Settings.data.colorSchemes.generationMethod)
           pointSize: Style.fontSizeS
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
         }
 
         Row {
@@ -312,7 +312,7 @@ ColumnLayout {
           property int diameter: 16 * Style.uiScaleRatio
 
           Repeater {
-            model: [Color.mPrimary, Color.mSecondary, Color.mTertiary, Color.mError]
+            model: [Colors.mPrimary, Colors.mSecondary, Colors.mTertiary, Colors.mError]
 
             Rectangle {
               width: colorPreviewRow.diameter
@@ -369,12 +369,12 @@ ColumnLayout {
           border.width: Style.borderL
           border.color: {
             if ((Settings.data.colorSchemes.predefinedScheme === schemeName) && schemeItem.enabled) {
-              return Color.accent;
+              return Colors.accent;
             }
             if (itemMouseArea.containsMouse) {
-              return Color.onShellTertiary;
+              return Colors.onShellTertiary;
             }
-            return Color.borderShell;
+            return Colors.borderShell;
           }
 
           RowLayout {
@@ -451,14 +451,14 @@ ColumnLayout {
             width: Style.settingsSchemeBadgeSize
             height: Style.settingsSchemeBadgeSize
             radius: Math.min(Style.radiusL, width / 2)
-            color: Color.accent
+            color: Colors.accent
             border.width: Style.borderS
-            border.color: Color.onAccent
+            border.color: Colors.onAccent
 
             NIcon {
               icon: "check"
               pointSize: Style.fontSizeXS
-              color: Color.onAccent
+              color: Colors.onAccent
               anchors.centerIn: parent
             }
           }

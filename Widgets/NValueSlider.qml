@@ -80,7 +80,7 @@ NDccRow {
         features: {
           "tnum": 1
         }
-        color: Color.onShellSecondary
+        color: Colors.onShellSecondary
         opacity: root.enabled ? 1.0 : 0.6
         Layout.alignment: Qt.AlignVCenter
         horizontalAlignment: Text.AlignRight
@@ -110,7 +110,7 @@ NDccRow {
         features: {
           "tnum": 1
         }
-        color: Color.onShellSecondary
+        color: Colors.onShellSecondary
         opacity: root.enabled ? 1.0 : 0.6
         Layout.alignment: Qt.AlignVCenter
         Layout.preferredWidth: 45 * Style.uiScaleRatio

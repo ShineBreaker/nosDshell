@@ -13,8 +13,8 @@ NDccRow {
   property var currentKeybinds: []
   property string defaultKeybind: ""
   property bool allowEmpty: false
-  property color labelColor: Color.onShell
-  property color descriptionColor: Color.onShellTertiary
+  property color labelColor: Colors.onShell
+  property color descriptionColor: Colors.onShellTertiary
   property string settingsPath: ""
   // A labelled recorder is a settings row; a bare one is not.
   property bool dccRow: label !== ""
@@ -149,8 +149,8 @@ NDccRow {
             anchors.fill: parent
             radius: Style.radiusItem
             clip: true
-            color: root.hasConflict && slotArea.isRecordingThis ? Qt.alpha(Color.alert, 0.15) : (slotArea.isRecordingThis ? Color.overlay("checked") : (slotArea.containsMouse ? Color.overlay("hover") : Color.overlay("field")))
-            border.color: root.hasConflict && slotArea.isRecordingThis ? Color.alert : (slotArea.isRecordingThis ? Color.accent : "transparent")
+            color: root.hasConflict && slotArea.isRecordingThis ? Qt.alpha(Colors.alert, 0.15) : (slotArea.isRecordingThis ? Colors.overlay("checked") : (slotArea.containsMouse ? Colors.overlay("hover") : Colors.overlay("field")))
+            border.color: root.hasConflict && slotArea.isRecordingThis ? Colors.alert : (slotArea.isRecordingThis ? Colors.accent : "transparent")
             border.width: Style.borderS
 
             // Empty slots are too narrow for the "add keybind"
@@ -159,7 +159,7 @@ NDccRow {
             NIcon {
               anchors.centerIn: parent
               icon: "keyboard"
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
               opacity: 0.8
               visible: !slotArea.isOccupied && !slotArea.isRecordingThis
             }
@@ -175,7 +175,7 @@ NDccRow {
               // occupied slot spends its width on the key name.
               NIcon {
                 icon: root.hasConflict ? "alert-circle" : "circle-dot"
-                color: root.hasConflict ? Color.alert : Color.accent
+                color: root.hasConflict ? Colors.alert : Colors.accent
                 opacity: 0.8
                 visible: slotArea.isRecordingThis
               }
@@ -183,7 +183,7 @@ NDccRow {
               NText {
                 Layout.fillWidth: true
                 text: slotArea.keybindText
-                color: Color.onShell
+                color: Colors.onShell
                 family: Settings.data.ui.fontFixed
                 pointSize: Style.fontSizeM
                 font.weight: Style.fontWeightMedium
@@ -203,9 +203,9 @@ NDccRow {
                   visible: root.recordingIndex === -1
                   icon: "x"
                   colorBg: "transparent"
-                  colorBgHover: Qt.alpha(Color.alert, 0.1)
-                  colorFg: Color.onShellTertiary
-                  colorFgHover: Color.alert
+                  colorBgHover: Qt.alpha(Colors.alert, 0.1)
+                  colorFg: Colors.onShellTertiary
+                  colorFgHover: Colors.alert
                   border.width: 0
                   baseSize: Style.baseWidgetSize * 0.7
                   onClicked: {

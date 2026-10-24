@@ -64,7 +64,7 @@ PanelWindow {
       return (d instanceof Item) ? d : (d.contentItem || null);
     }
     radius: Style.radiusWindow
-    activeWhen: Color.blurActive && root.dialogItem !== null
+    activeWhen: Colors.blurActive && root.dialogItem !== null
   }
 
   // Register with PanelService so widgets can find this window, and as a

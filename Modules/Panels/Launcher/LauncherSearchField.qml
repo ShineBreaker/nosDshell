@@ -22,7 +22,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: Style.radiusItem
-    color: root.wallpaperSurface ? Color.overlayWallpaper("strong") : Color.overlay("strong")
+    color: root.wallpaperSurface ? Colors.overlayWallpaper("strong") : Colors.overlay("strong")
   }
 
   RowLayout {
@@ -34,7 +34,7 @@ Item {
     NIcon {
       icon: "search"
       pointSize: Style.fontSizeM
-      color: root.wallpaperSurface ? Color.onWallpaperTertiary : Color.onShellTertiary
+      color: root.wallpaperSurface ? Colors.onWallpaperTertiary : Colors.onShellTertiary
       Layout.alignment: Qt.AlignVCenter
     }
 
@@ -43,9 +43,9 @@ Item {
 
       Layout.fillWidth: true
       Layout.fillHeight: true
-      color: root.wallpaperSurface ? Color.onWallpaper : Color.onShell
-      selectionColor: Color.accent
-      selectedTextColor: root.wallpaperSurface ? Color.onWallpaper : Color.onShell
+      color: root.wallpaperSurface ? Colors.onWallpaper : Colors.onShell
+      selectionColor: Colors.accent
+      selectedTextColor: root.wallpaperSurface ? Colors.onWallpaper : Colors.onShell
       font.family: Settings.data.ui.fontDefault
       font.pointSize: 12 * Style.uiScaleRatio
       verticalAlignment: TextInput.AlignVCenter
@@ -62,7 +62,7 @@ Item {
         anchors.leftMargin: 2
         verticalAlignment: input.verticalAlignment
         text: root.placeholderText
-        color: root.wallpaperSurface ? Color.onWallpaperTertiary : Color.onShellTertiary
+        color: root.wallpaperSurface ? Colors.onWallpaperTertiary : Colors.onShellTertiary
         font: input.font
         visible: input.text === ""
       }
@@ -70,7 +70,7 @@ Item {
       cursorDelegate: Rectangle {
         visible: input.activeFocus
         width: 1
-        color: root.wallpaperSurface ? Color.onWallpaper : Color.onShell
+        color: root.wallpaperSurface ? Colors.onWallpaper : Colors.onShell
       }
     }
   }

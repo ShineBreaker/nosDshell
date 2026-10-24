@@ -99,7 +99,7 @@ Slider {
 
       ShapePath {
         id: trackPath
-        strokeColor: Color.borderShell
+        strokeColor: Colors.borderShell
         strokeWidth: Style.borderS
         fillGradient: root.rainbowMode ? rainbowLinearGradient : standardLinearGradient
 
@@ -180,7 +180,7 @@ Slider {
         }
       }
 
-      border.color: root.pressed ? Color.accent : "#FFFFFF"
+      border.color: root.pressed ? Colors.accent : "#FFFFFF"
       border.width: Style.borderM
       anchors.centerIn: parent
     }

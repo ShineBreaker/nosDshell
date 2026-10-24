@@ -23,15 +23,15 @@ Rectangle {
 
   // Color properties
   property color colorBg: "transparent"
-  property color colorFg: Color.onShellSecondary
-  property color colorBgHover: Color.overlay("hover")
-  property color colorFgHover: Color.onShell
+  property color colorFg: Colors.onShellSecondary
+  property color colorBgHover: Colors.overlay("hover")
+  property color colorFgHover: Colors.onShell
   property color colorBorder: "transparent"
   property color colorBorderHover: "transparent"
 
   // Hot state colors
-  property color colorBgHot: Color.overlay("checked")
-  property color colorFgHot: Color.onShell
+  property color colorBgHot: Colors.overlay("checked")
+  property color colorFgHot: Colors.onShell
 
   // Signals
   signal entered
@@ -61,7 +61,7 @@ Rectangle {
   border.width: Style.borderS
 
   Behavior on color {
-    enabled: !Color.isTransitioning
+    enabled: !Colors.isTransitioning
     ColorAnimation {
       duration: Style.motionPointer
       easing.type: Easing.OutCubic
@@ -75,7 +75,7 @@ Rectangle {
     applyUiScale: root.applyUiScale
     color: {
       if (root.enabled && root.pressed) {
-        return Color.accent;
+        return Colors.accent;
       }
       if (root.enabled && root.hovering) {
         return colorFgHover;
@@ -91,7 +91,7 @@ Rectangle {
     y: (root.height - height) / 2 + (height - contentHeight) / 2
 
     Behavior on color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionPointer
         easing.type: Easing.OutCubic

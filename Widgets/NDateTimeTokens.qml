@@ -13,8 +13,8 @@ Rectangle {
   signal tokenClicked(string token)
 
   Layout.margins: Style.borderS
-  color: Color.overlay("field")
-  border.color: Color.borderShell
+  color: Colors.overlay("field")
+  border.color: Colors.borderShell
   border.width: Style.borderS
   radius: Style.radiusItem
 
@@ -214,7 +214,7 @@ Rectangle {
             width: tokensColumn.width
             height: layout.implicitHeight + Style.marginS
             radius: Style.radiusItem
-            color: tokenMouseArea.containsMouse ? Color.overlay("checked") : Color.overlay("strong")
+            color: tokenMouseArea.containsMouse ? Colors.overlay("checked") : Colors.overlay("strong")
 
             // Mouse area for the entire delegate
             MouseArea {
@@ -235,13 +235,13 @@ Rectangle {
               PropertyAnimation {
                 target: tokenDelegate
                 property: "color"
-                to: Qt.alpha(Color.accent, 0.3)
+                to: Qt.alpha(Colors.accent, 0.3)
                 duration: Style.animationFaster
               }
               PropertyAnimation {
                 target: tokenDelegate
                 property: "color"
-                to: tokenMouseArea.containsMouse ? Color.overlay("checked") : Color.overlay("strong")
+                to: tokenMouseArea.containsMouse ? Colors.overlay("checked") : Colors.overlay("strong")
                 duration: Style.animationFast
               }
             }
@@ -275,13 +275,13 @@ Rectangle {
                 Layout.alignment: Qt.AlignVCenter // Added this line
                 width: 100
                 height: 22
-                color: tokenMouseArea.containsMouse ? Color.accent : Color.overlay("checked")
+                color: tokenMouseArea.containsMouse ? Colors.accent : Colors.overlay("checked")
                 radius: Style.radiusItem
 
                 NText {
                   anchors.centerIn: parent
                   text: modelData.token
-                  color: tokenMouseArea.containsMouse ? Color.onAccent : Color.onShell
+                  color: tokenMouseArea.containsMouse ? Colors.onAccent : Colors.onShell
                   pointSize: Style.fontSizeS
                   font.weight: Style.fontWeightSemiBold
                 }
@@ -292,7 +292,7 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter // Added this line
                 text: modelData.description
-                color: tokenMouseArea.containsMouse ? Color.onShell : Color.onShellTertiary
+                color: tokenMouseArea.containsMouse ? Colors.onShell : Colors.onShellTertiary
                 pointSize: Style.fontSizeS
                 wrapMode: Text.WordWrap
               }
@@ -302,15 +302,15 @@ Rectangle {
                 Layout.alignment: Qt.AlignVCenter // Added this line
                 width: 90
                 height: 22
-                color: tokenMouseArea.containsMouse ? Color.accent : Color.overlay("checked")
+                color: tokenMouseArea.containsMouse ? Colors.accent : Colors.overlay("checked")
                 radius: Style.radiusItem
-                border.color: tokenMouseArea.containsMouse ? Color.accent : Color.borderShell
+                border.color: tokenMouseArea.containsMouse ? Colors.accent : Colors.borderShell
                 border.width: Style.borderS
 
                 NText {
                   anchors.centerIn: parent
                   text: I18n.locale.toString(root.sampleDate, modelData.token)
-                  color: tokenMouseArea.containsMouse ? Color.onAccent : Color.onShellTertiary
+                  color: tokenMouseArea.containsMouse ? Colors.onAccent : Colors.onShellTertiary
                   pointSize: Style.fontSizeS
                 }
               }
@@ -324,25 +324,25 @@ Rectangle {
   function getCategoryColor(category) {
     switch (category) {
     case "Year":
-      return [Color.accent, Color.onAccent];
+      return [Colors.accent, Colors.onAccent];
     case "Month":
-      return [Color.accentAlt, Color.onAccent];
+      return [Colors.accentAlt, Colors.onAccent];
     case "Day":
-      return [Color.accentAction, Color.onAccent];
+      return [Colors.accentAction, Colors.onAccent];
     case "Hour":
-      return [Color.accent, Color.onAccent];
+      return [Colors.accent, Colors.onAccent];
     case "Minute":
-      return [Color.accentAlt, Color.onAccent];
+      return [Colors.accentAlt, Colors.onAccent];
     case "Second":
-      return [Color.accentAction, Color.onAccent];
+      return [Colors.accentAction, Colors.onAccent];
     case "AM/PM":
-      return [Color.alert, Color.onAccent];
+      return [Colors.alert, Colors.onAccent];
     case "Timezone":
-      return [Color.overlay("checked"), Color.onShell];
+      return [Colors.overlay("checked"), Colors.onShell];
     case "Common":
-      return [Color.alert, Color.onAccent];
+      return [Colors.alert, Colors.onAccent];
     default:
-      return [Color.overlay("strong"), Color.onShellTertiary];
+      return [Colors.overlay("strong"), Colors.onShellTertiary];
     }
   }
 }

@@ -129,7 +129,7 @@ Item {
     width: root.buttonSize
     height: width
     radius: width / 2
-    color: pressed ? Color.overlayWallpaper("checked") : (hovered ? Color.overlayWallpaper("strong") : Color.overlayWallpaper("field"))
+    color: pressed ? Colors.overlayWallpaper("checked") : (hovered ? Colors.overlayWallpaper("strong") : Colors.overlayWallpaper("field"))
 
     Image {
       anchors.centerIn: parent
@@ -168,9 +168,9 @@ Item {
       icon: "media-previous"
       tooltipText: I18n.tr("common.previous")
       baseSize: buttonSize
-      colorBg: Color.overlayWallpaper("field")
-      colorFg: Color.onWallpaper
-      colorBgHover: Color.overlayWallpaper("strong")
+      colorBg: Colors.overlayWallpaper("field")
+      colorFg: Colors.onWallpaper
+      colorBgHover: Colors.overlayWallpaper("strong")
       onClicked: MediaService.canGoPrevious && MediaService.previous()
     }
 
@@ -178,9 +178,9 @@ Item {
       icon: MediaService.isPlaying ? "media-pause" : "media-play"
       tooltipText: MediaService.isPlaying ? I18n.tr("common.pause") : I18n.tr("common.play")
       baseSize: buttonSize
-      colorBg: Color.overlayWallpaper("field")
-      colorFg: Color.onWallpaper
-      colorBgHover: Color.overlayWallpaper("strong")
+      colorBg: Colors.overlayWallpaper("field")
+      colorFg: Colors.onWallpaper
+      colorBgHover: Colors.overlayWallpaper("strong")
       onClicked: MediaService.playPause()
     }
 
@@ -188,9 +188,9 @@ Item {
       icon: "media-next"
       tooltipText: I18n.tr("common.next")
       baseSize: buttonSize
-      colorBg: Color.overlayWallpaper("field")
-      colorFg: Color.onWallpaper
-      colorBgHover: Color.overlayWallpaper("strong")
+      colorBg: Colors.overlayWallpaper("field")
+      colorFg: Colors.onWallpaper
+      colorBgHover: Colors.overlayWallpaper("strong")
       onClicked: MediaService.canGoNext && MediaService.next()
     }
   }

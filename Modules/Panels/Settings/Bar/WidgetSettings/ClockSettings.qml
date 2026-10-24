@@ -32,7 +32,7 @@ ColumnLayout {
   property string valueTooltipFormat: settingsHelper.value("tooltipFormat")
   property int valueLineSpacing: settingsHelper.value("lineSpacing")
 
-  readonly property color textColor: Color.resolveColorKey(valueClockColor)
+  readonly property color textColor: Colors.resolveColorKey(valueClockColor)
 
   // Track the currently focused input field
   property var focusedInput: null
@@ -240,9 +240,9 @@ ColumnLayout {
         Layout.preferredWidth: 320
         Layout.preferredHeight: 160 // Fixed height instead of fillHeight
 
-        color: Color.overlay("field")
+        color: Colors.overlay("field")
         radius: Style.radiusItem
-        border.color: Color.accent
+        border.color: Colors.accent
         border.width: Style.borderS
 
         ColumnLayout {
@@ -268,7 +268,7 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
                 Behavior on color {
-                  enabled: !Color.isTransitioning
+                  enabled: !Colors.isTransitioning
                   ColorAnimation {
                     duration: Style.motionSwitch
                     easing.type: Easing.OutCubic
@@ -301,7 +301,7 @@ ColumnLayout {
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
                 Behavior on color {
-                  enabled: !Color.isTransitioning
+                  enabled: !Colors.isTransitioning
                   ColorAnimation {
                     duration: Style.motionSwitch
                     easing.type: Easing.OutCubic

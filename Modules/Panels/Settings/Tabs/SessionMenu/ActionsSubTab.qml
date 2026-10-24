@@ -50,7 +50,7 @@ ColumnLayout {
           Layout.preferredHeight: Style.baseWidgetSize * 0.7
           Layout.alignment: Qt.AlignVCenter
           radius: Style.radiusXS
-          color: dragHandleMouseArea.containsMouse ? Color.overlay("strong") : "transparent"
+          color: dragHandleMouseArea.containsMouse ? Colors.overlay("strong") : "transparent"
 
           ColumnLayout {
             anchors.centerIn: parent
@@ -62,7 +62,7 @@ ColumnLayout {
                 Layout.preferredWidth: Style.baseWidgetSize * 0.28
                 Layout.preferredHeight: Style.marginXXS
                 radius: Style.marginXXXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
             }
           }
@@ -123,12 +123,12 @@ ColumnLayout {
           Layout.preferredHeight: Style.baseWidgetSize * 0.7
           Layout.alignment: Qt.AlignVCenter
           radius: Style.radiusXS
-          color: modelData.enabled ? Color.accent : Color.overlay("field")
-          border.color: modelData.enabled ? Color.accent : Color.borderShell
+          color: modelData.enabled ? Colors.accent : Colors.overlay("field")
+          border.color: modelData.enabled ? Colors.accent : Colors.borderShell
           border.width: Style.borderS
 
           Behavior on color {
-            enabled: !Color.isTransitioning
+            enabled: !Colors.isTransitioning
             ColorAnimation {
               duration: Style.motionSwitch
               easing.type: Easing.OutCubic
@@ -140,7 +140,7 @@ ColumnLayout {
             anchors.centerIn: parent
             anchors.horizontalCenterOffset: -1
             icon: "check"
-            color: Color.onAccent
+            color: Colors.onAccent
             pointSize: Math.max(Style.fontSizeXS, Style.baseWidgetSize * 0.35)
           }
 
@@ -159,7 +159,7 @@ ColumnLayout {
         NText {
           Layout.fillWidth: true
           text: modelData.text
-          color: Color.onShell
+          color: Colors.onShell
           verticalAlignment: Text.AlignVCenter
           elide: Text.ElideRight
         }

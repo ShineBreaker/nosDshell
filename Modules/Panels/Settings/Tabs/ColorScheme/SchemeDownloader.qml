@@ -63,14 +63,14 @@ Popup {
 
     // Return visible defaults while loading
     var defaults = {
-      "mSurface": Color.mSurfaceVariant,
-      "mPrimary": Color.mPrimary,
-      "mSecondary": Color.mSecondary,
-      "mTertiary": Color.mTertiary,
-      "mError": Color.mError,
-      "mOnSurface": Color.mOnSurfaceVariant
+      "mSurface": Colors.mSurfaceVariant,
+      "mPrimary": Colors.mPrimary,
+      "mSecondary": Colors.mSecondary,
+      "mTertiary": Colors.mTertiary,
+      "mError": Colors.mError,
+      "mOnSurface": Colors.mOnSurfaceVariant
     };
-    return defaults[colorKey] || Color.mOnSurfaceVariant;
+    return defaults[colorKey] || Colors.mOnSurfaceVariant;
   }
 
   // Colors are now provided directly in the registry, no need to fetch individual files
@@ -79,9 +79,9 @@ Popup {
   }
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusL
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -760,7 +760,7 @@ Popup {
         text: I18n.tr("panels.color-scheme.download-title")
         pointSize: Style.fontSizeL
         font.weight: Style.fontWeightSemiBold
-        color: Color.accent
+        color: Colors.accent
         Layout.fillWidth: true
       }
 
@@ -792,7 +792,7 @@ Popup {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      color: Color.separator
+      color: Colors.separator
     }
 
     // Error message
@@ -800,7 +800,7 @@ Popup {
       Layout.fillWidth: true
       Layout.preferredHeight: errorText.implicitHeight + Style.marginM
       visible: downloadError !== ""
-      color: Color.alert
+      color: Colors.alert
       radius: Style.radiusS
 
       NText {
@@ -809,7 +809,7 @@ Popup {
         anchors.margins: Style.marginM
         text: downloadError
         pointSize: Style.fontSizeS
-        color: Color.onAccent
+        color: Colors.onAccent
         wrapMode: Text.WordWrap
       }
     }
@@ -828,7 +828,7 @@ Popup {
       NText {
         text: I18n.tr("panels.color-scheme.download-fetching")
         pointSize: Style.fontSizeM
-        color: Color.onShellSecondary
+        color: Colors.onShellSecondary
       }
     }
 
@@ -840,7 +840,7 @@ Popup {
       visible: hasInitialData && availableSchemes.length > 0
       verticalPolicy: ScrollBar.AsNeeded
       horizontalPolicy: ScrollBar.AlwaysOff
-      gradientColor: Color.maskShell
+      gradientColor: Colors.maskShell
 
       ColumnLayout {
         width: schemesScrollView.availableWidth
@@ -857,14 +857,14 @@ Popup {
             property string schemeName: modelData.name
             color: root.getSchemeColor(schemeName, "mSurface")
             border.width: Style.borderL
-            border.color: hoverHandler.hovered ? root.getSchemeColor(schemeName, "mPrimary") : Color.borderShell
+            border.color: hoverHandler.hovered ? root.getSchemeColor(schemeName, "mPrimary") : Colors.borderShell
 
             HoverHandler {
               id: hoverHandler
             }
 
             Behavior on color {
-              enabled: !Color.isTransitioning
+              enabled: !Colors.isTransitioning
               ColorAnimation {
                 duration: Style.motionSwitch
                 easing.type: Easing.OutCubic
@@ -893,7 +893,7 @@ Popup {
               NText {
                 text: schemeRow.schemeName
                 pointSize: Style.fontSizeS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
                 elide: Text.ElideRight
                 Layout.alignment: Qt.AlignVCenter
@@ -910,7 +910,7 @@ Popup {
                   Layout.alignment: Qt.AlignVCenter
 
                   Behavior on color {
-                    enabled: !Color.isTransitioning
+                    enabled: !Colors.isTransitioning
                     ColorAnimation {
                       duration: Style.motionSwitch
                       easing.type: Easing.OutCubic
@@ -955,14 +955,14 @@ Popup {
       NIcon {
         icon: "package"
         pointSize: Style.emptyStateIconSize
-        color: Color.onShellSecondary
+        color: Colors.onShellSecondary
         Layout.alignment: Qt.AlignHCenter
       }
 
       NText {
         text: I18n.tr("panels.color-scheme.download-empty")
         pointSize: Style.fontSizeM
-        color: Color.onShellSecondary
+        color: Colors.onShellSecondary
         Layout.alignment: Qt.AlignHCenter
       }
     }

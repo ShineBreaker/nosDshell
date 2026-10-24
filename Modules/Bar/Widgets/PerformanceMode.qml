@@ -42,8 +42,8 @@ NIconButton {
   applyUiScale: false
   customRadius: fashionMode ? Style.radiusPopup : Style.radiusL
   iconRatio: fashionMode ? 0.45 : 0.48
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (PowerProfileService.performanceMode ? Color.mPrimary : Style.capsuleColor)
-  colorFg: fashionMode ? Color.onShell : (PowerProfileService.performanceMode ? Color.mOnPrimary : Color.resolveColorKey(iconColorKey))
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : (PowerProfileService.performanceMode ? Colors.mPrimary : Style.capsuleColor)
+  colorFg: fashionMode ? Colors.onShell : (PowerProfileService.performanceMode ? Colors.mOnPrimary : Colors.resolveColorKey(iconColorKey))
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 

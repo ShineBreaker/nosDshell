@@ -98,7 +98,7 @@ PanelWindow {
 
   color: {
     if (dimmerOpacity > 0 && isPanelOpen && !isPanelClosing && (PanelService.openedPanel.dimsBackground ?? true)) {
-      return Qt.alpha(Color.veilWallpaper, dimmerOpacity);
+      return Qt.alpha(Colors.veilWallpaper, dimmerOpacity);
     }
     return "transparent";
   }
@@ -223,13 +223,13 @@ PanelWindow {
   // While the bar is fully hidden and no panel is open (e.g. an active
   // fullscreen window) the region is detached — NSurfaceRegion's activeWhen
   // swaps in the empty object so a stale band can't keep blurring where the
-  // bar used to be. Color.blurActive rides the same object-swap: assigning
+  // bar used to be. Colors.blurActive rides the same object-swap: assigning
   // null here would replay the unreliable null→object rebind trap.
   BackgroundEffect.blurRegion: screenBlurRegion.region
   NSurfaceRegion {
     id: screenBlurRegion
 
-    activeWhen: Color.blurActive && (!barPlaceholder.effectivelyHidden || root.isAnyPanelOpen)
+    activeWhen: Colors.blurActive && (!barPlaceholder.effectivelyHidden || root.isAnyPanelOpen)
     activeRegion: mainScreenBlurTree
 
     Region {

@@ -37,7 +37,7 @@ ColumnLayout {
       text: root.label
       pointSize: Style.fontSizeL
       font.weight: Style.fontWeightSemiBold
-      color: Color.onShell
+      color: Colors.onShell
       wrapMode: Text.WordWrap
     }
 
@@ -45,7 +45,7 @@ ColumnLayout {
       text: root.description
       pointSize: Style.fontSizeS
       font.weight: Style.fontWeightRegular
-      color: Color.onShellTertiary
+      color: Colors.onShellTertiary
       Layout.fillWidth: true
       wrapMode: Text.WordWrap
       visible: root.description !== ""
@@ -62,10 +62,10 @@ ColumnLayout {
 
       delegate: NButton {
         text: root.formatTag(modelData)
-        backgroundColor: root.selectedTag === modelData ? Color.overlay("checked") : Color.overlay("field")
-        textColor: root.selectedTag === modelData ? Color.accent : Color.onShellSecondary
-        hoverColor: Color.overlay("strong")
-        textHoverColor: Color.onShell
+        backgroundColor: root.selectedTag === modelData ? Colors.overlay("checked") : Colors.overlay("field")
+        textColor: root.selectedTag === modelData ? Colors.accent : Colors.onShellSecondary
+        hoverColor: Colors.overlay("strong")
+        textHoverColor: Colors.onShell
         onClicked: root.selectedTag = modelData
         fontSize: Style.fontSizeS
         iconSize: Style.fontSizeS

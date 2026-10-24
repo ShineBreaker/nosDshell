@@ -62,14 +62,14 @@ Item {
                     NIcon {
                         icon: "usb"
                         pointSize: Style.fontSizeL
-                        color: Color.onShell
+                        color: Colors.onShell
                     }
 
                     NText {
                         text: pluginApi?.tr("panel.title")
                         font.pointSize: Style.fontSizeL
                         font.weight: Style.fontWeightMedium
-                        color: Color.onShell
+                        color: Colors.onShell
                         Layout.fillWidth: true
                     }
 
@@ -103,7 +103,7 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             icon: "usb"
                             pointSize: Style.fontSizeXXL
-                            color: Color.onShellSecondary
+                            color: Colors.onShellSecondary
                             opacity: 0.4
                         }
 
@@ -111,14 +111,14 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             text: pluginApi?.tr("panel.empty")
                             pointSize: Style.fontSizeM
-                            color: Color.onShellSecondary
+                            color: Colors.onShellSecondary
                         }
 
                         NText {
                             Layout.alignment: Qt.AlignHCenter
                             text: pluginApi?.tr("panel.empty-hint")
                             pointSize: Style.fontSizeS
-                            color: Color.onShellSecondary
+                            color: Colors.onShellSecondary
                             opacity: 0.7
                         }
                     }
@@ -156,7 +156,7 @@ Item {
 
                     Rectangle {
                         height: Math.max(1, Style.marginXXS)
-                        color: Color.separator
+                        color: Colors.separator
                         Layout.fillWidth: true
                     }
 

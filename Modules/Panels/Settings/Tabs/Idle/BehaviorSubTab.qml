@@ -48,7 +48,7 @@ ColumnLayout {
           "tnum": 1
         }
         pointSize: Style.fontSizeM
-        color: IdleService.idleSeconds > 0 ? Color.accent : Color.onShellTertiary
+        color: IdleService.idleSeconds > 0 ? Colors.accent : Colors.onShellTertiary
       }
     }
 

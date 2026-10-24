@@ -35,10 +35,10 @@ ColumnLayout {
                    // If enabling custom colors and no custom color is saved, persist current theme colors
                    if (checked) {
                      if (!Settings.data.systemMonitor.warningColor || Settings.data.systemMonitor.warningColor === "") {
-                       Settings.data.systemMonitor.warningColor = Color.mTertiary.toString();
+                       Settings.data.systemMonitor.warningColor = Colors.mTertiary.toString();
                      }
                      if (!Settings.data.systemMonitor.criticalColor || Settings.data.systemMonitor.criticalColor === "") {
-                       Settings.data.systemMonitor.criticalColor = Color.alert.toString();
+                       Settings.data.systemMonitor.criticalColor = Colors.alert.toString();
                      }
                    }
                    Settings.data.systemMonitor.useCustomColors = checked;
@@ -67,7 +67,7 @@ ColumnLayout {
           Layout.fillWidth: true
           Layout.preferredHeight: Style.baseWidgetSize
           enabled: Settings.data.systemMonitor.useCustomColors
-          selectedColor: Settings.data.systemMonitor.warningColor || Color.mTertiary
+          selectedColor: Settings.data.systemMonitor.warningColor || Colors.mTertiary
           onColorSelected: color => Settings.data.systemMonitor.warningColor = color
         }
       }
@@ -86,7 +86,7 @@ ColumnLayout {
           Layout.fillWidth: true
           Layout.preferredHeight: Style.baseWidgetSize
           enabled: Settings.data.systemMonitor.useCustomColors
-          selectedColor: Settings.data.systemMonitor.criticalColor || Color.alert
+          selectedColor: Settings.data.systemMonitor.criticalColor || Colors.alert
           onColorSelected: color => Settings.data.systemMonitor.criticalColor = color
         }
       }

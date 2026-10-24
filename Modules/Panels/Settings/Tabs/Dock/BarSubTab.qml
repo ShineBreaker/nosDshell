@@ -327,8 +327,8 @@ ColumnLayout {
       visible: Settings.data.bar.showCapsule
       label: I18n.tr("panels.bar.appearance-capsule-color-label")
       description: I18n.tr("panels.bar.appearance-capsule-color-description")
-      noneColor: Color.overlay("field")
-      noneOnColor: Color.onShellTertiary
+      noneColor: Colors.overlay("field")
+      noneOnColor: Colors.onShellTertiary
       currentKey: Settings.data.bar.capsuleColorKey
       onSelected: key => Settings.data.bar.capsuleColorKey = key
     }

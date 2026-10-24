@@ -84,7 +84,7 @@ NBox {
         text: Time.formatMonthYear(new Date(root.calendarYear, root.calendarMonth, 1))
         pointSize: Style.fontSizeM
         font.weight: Style.fontWeightBold
-        color: Color.mOnSurface
+        color: Colors.mOnSurface
       }
 
       NDivider {
@@ -140,7 +140,7 @@ NBox {
                 let dayIndex = (root.firstDayOfWeek + index) % 7;
                 return I18n.locale.dayName(dayIndex, Locale.ShortFormat);
               }
-              color: Color.mPrimary
+              color: Colors.mPrimary
               pointSize: Style.fontSizeS
               font.weight: Style.fontWeightBold
               horizontalAlignment: Text.AlignHCenter
@@ -191,11 +191,11 @@ NBox {
 
       function getEventColor(event, isToday) {
         if (isMultiDayEvent(event)) {
-          return isToday ? Color.mOnSecondary : Color.mTertiary;
+          return isToday ? Colors.mOnSecondary : Colors.mTertiary;
         } else if (root.isAllDayEvent(event)) {
-          return isToday ? Color.mOnSecondary : Color.mSecondary;
+          return isToday ? Colors.mOnSecondary : Colors.mSecondary;
         } else {
-          return isToday ? Color.mOnSecondary : Color.mPrimary;
+          return isToday ? Colors.mOnSecondary : Colors.mPrimary;
         }
       }
 
@@ -239,7 +239,7 @@ NBox {
 
             NText {
               anchors.centerIn: parent
-              color: Qt.alpha(Color.mPrimary, 0.7)
+              color: Qt.alpha(Colors.mPrimary, 0.7)
               pointSize: Style.fontSizeXXS
               text: modelData
             }
@@ -323,17 +323,17 @@ NBox {
               height: Style.baseWidgetSize * 0.9
               anchors.centerIn: parent
               radius: Style.radiusM
-              color: modelData.today ? Color.mSecondary : "transparent"
+              color: modelData.today ? Colors.mSecondary : "transparent"
 
               NText {
                 anchors.centerIn: parent
                 text: modelData.day
                 color: {
                   if (modelData.today)
-                    return Color.mOnSecondary;
+                    return Colors.mOnSecondary;
                   if (modelData.currentMonth)
-                    return Color.mOnSurface;
-                  return Color.mOnSurfaceVariant;
+                    return Colors.mOnSurface;
+                  return Colors.mOnSurfaceVariant;
                 }
                 opacity: modelData.currentMonth ? 1.0 : 0.4
                 pointSize: Style.fontSizeM
@@ -397,7 +397,7 @@ NBox {
               }
 
               Behavior on color {
-                enabled: !Color.isTransitioning
+                enabled: !Colors.isTransitioning
                 ColorAnimation {
                   duration: Style.motionSwitch
                   easing.type: Easing.OutCubic

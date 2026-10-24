@@ -44,7 +44,7 @@ ColumnLayout {
                 NIcon {
                     icon: "check"
                     pointSize: Style.fontSizeXL
-                    color: Color.accent
+                    color: Colors.accent
                     visible: entry ? AudioService.sink?.id === entry.id : false
                 }
             }
@@ -88,7 +88,7 @@ ColumnLayout {
                 NIcon {
                     icon: "check"
                     pointSize: Style.fontSizeXL
-                    color: Color.accent
+                    color: Colors.accent
                     visible: entry ? AudioService.source?.id === entry.id : false
                 }
             }

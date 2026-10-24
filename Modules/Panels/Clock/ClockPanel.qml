@@ -68,7 +68,7 @@ SmartPanel {
                 text: Time.now.getDate()
                 pointSize: Style.fontSizeXXL
                 font.weight: Style.fontWeightBold
-                color: Color.accent
+                color: Colors.accent
               }
 
               NText {
@@ -81,7 +81,7 @@ SmartPanel {
               NText {
                 text: I18n.locale.dayName(Time.now.getDay(), Locale.LongFormat)
                 pointSize: Style.fontSizeS
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
               }
             }
           }
@@ -192,13 +192,13 @@ SmartPanel {
 
                   NIconButton {
                     icon: "chevron-left"
-                    colorFg: Color.onShell
+                    colorFg: Colors.onShell
                     onClicked: monthRoot.navigateToPreviousMonth()
                   }
 
                   NIconButton {
                     icon: "calendar"
-                    colorFg: Color.onShell
+                    colorFg: Colors.onShell
                     tooltipText: I18n.tr("common.today")
                     onClicked: {
                       monthRoot.calendarMonth = monthRoot.now.getMonth();
@@ -209,7 +209,7 @@ SmartPanel {
 
                   NIconButton {
                     icon: "chevron-right"
-                    colorFg: Color.onShell
+                    colorFg: Colors.onShell
                     onClicked: monthRoot.navigateToNextMonth()
                   }
                 }
@@ -244,7 +244,7 @@ SmartPanel {
                           let dayIndex = (monthRoot.firstDayOfWeek + index) % 7;
                           return I18n.locale.dayName(dayIndex, Locale.ShortFormat);
                         }
-                        color: Color.onShellSecondary
+                        color: Colors.onShellSecondary
                         pointSize: Style.fontSizeS
                         font.weight: Style.fontWeightBold
                         horizontalAlignment: Text.AlignHCenter
@@ -300,7 +300,7 @@ SmartPanel {
 
                       NText {
                         anchors.centerIn: parent
-                        color: Color.onShellTertiary
+                        color: Colors.onShellTertiary
                         pointSize: Style.fontSizeXXS
                         text: modelData
                       }
@@ -381,17 +381,17 @@ SmartPanel {
                         anchors.centerIn: parent
                         // DDE: today is an accent filled circle
                         radius: width / 2
-                        color: modelData.today ? Color.accent : (cellMouse.containsMouse ? Color.overlay("hover") : "transparent")
+                        color: modelData.today ? Colors.accent : (cellMouse.containsMouse ? Colors.overlay("hover") : "transparent")
 
                         NText {
                           anchors.centerIn: parent
                           text: modelData.day
                           color: {
                             if (modelData.today)
-                              return Color.onAccent;
+                              return Colors.onAccent;
                             if (modelData.currentMonth)
-                              return Color.onShell;
-                            return Color.onShellTertiary;
+                              return Colors.onShell;
+                            return Colors.onShellTertiary;
                           }
                           pointSize: Style.fontSizeM
                           font.weight: modelData.today ? Style.fontWeightBold : Style.fontWeightMedium
@@ -412,7 +412,7 @@ SmartPanel {
                               width: 4
                               height: width
                               radius: 2
-                              color: modelData.today ? Color.onAccent : Color.accent
+                              color: modelData.today ? Colors.onAccent : Colors.accent
                             }
                           }
                         }
@@ -514,7 +514,7 @@ SmartPanel {
                 NIcon {
                   icon: LocationService.weatherSymbolFromCode(LocationService.data.weather.current_weather.weathercode)
                   pointSize: Style.fontSizeXL
-                  color: Color.accent
+                  color: Colors.accent
                 }
 
                 NText {
@@ -536,7 +536,7 @@ SmartPanel {
                   visible: !Settings.data.location.hideWeatherCityName
                   text: Settings.data.location.name.split(",")[0]
                   pointSize: Style.fontSizeS
-                  color: Color.onShellSecondary
+                  color: Colors.onShellSecondary
                   elide: Text.ElideRight
                 }
               }

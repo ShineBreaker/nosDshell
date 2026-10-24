@@ -117,14 +117,14 @@ SmartPanel {
               Layout.fillWidth: true
               text: MediaService.currentPlayer ? MediaService.currentPlayer.identity : I18n.tr("common.media-player")
               pointSize: Style.fontSizeS
-              color: Color.onShellSecondary
+              color: Colors.onShellSecondary
               elide: Text.ElideRight
             }
 
             NIcon {
               icon: "chevron-down"
               pointSize: Style.fontSizeS
-              color: Color.onShellSecondary
+              color: Colors.onShellSecondary
             }
           }
 
@@ -145,8 +145,8 @@ SmartPanel {
             exit: NPopupExit {}
 
             background: Rectangle {
-              color: Color.popupShell
-              border.color: Color.borderShell
+              color: Colors.popupShell
+              border.color: Colors.borderShell
               border.width: Style.borderS
               radius: Style.radiusPopup
             }
@@ -163,7 +163,7 @@ SmartPanel {
                   readonly property var entry: playerContent.players[index]
                   Layout.fillWidth: true
                   Layout.preferredHeight: 30
-                  color: itemMouse.containsMouse ? Color.overlay("hover") : "transparent"
+                  color: itemMouse.containsMouse ? Colors.overlay("hover") : "transparent"
                   radius: Style.radiusRow
 
                   RowLayout {
@@ -182,7 +182,7 @@ SmartPanel {
                     NIcon {
                       visible: entry && MediaService.currentPlayer && MediaService.currentPlayer.identity === entry.identity
                       icon: "check"
-                      color: Color.accent
+                      color: Colors.accent
                       pointSize: Style.fontSizeS
                     }
                   }
@@ -254,7 +254,7 @@ SmartPanel {
                 delegate: NText {
                   pointSize: Style.fontSizeM
                   font.weight: Style.fontWeightBold
-                  color: Color.onShell
+                  color: Colors.onShell
                   elide: Text.ElideNone
                   wrapMode: Text.NoWrap
                 }
@@ -280,7 +280,7 @@ SmartPanel {
                 fadeExtent: 0.01
                 delegate: NText {
                   pointSize: Style.fontSizeS
-                  color: Color.onShellSecondary
+                  color: Colors.onShellSecondary
                   elide: Text.ElideNone
                   wrapMode: Text.NoWrap
                 }
@@ -371,7 +371,7 @@ SmartPanel {
               NText {
                 text: MediaService.positionString || "0:00"
                 pointSize: Style.fontSizeXS
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
               }
 
               Item {
@@ -381,7 +381,7 @@ SmartPanel {
               NText {
                 text: MediaService.lengthString || "0:00"
                 pointSize: Style.fontSizeXS
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
                 horizontalAlignment: Text.AlignRight
               }
             }
@@ -396,20 +396,20 @@ SmartPanel {
 
           NIconButton {
             icon: "media-prev"
-            colorFg: Color.onShell
+            colorFg: Colors.onShell
             onClicked: MediaService.previous()
           }
 
           NIconButton {
             icon: MediaService.isPlaying ? "media-pause" : "media-play"
-            colorFg: Color.onShell
+            colorFg: Colors.onShell
             baseSize: Style.baseWidgetSize
             onClicked: MediaService.playPause()
           }
 
           NIconButton {
             icon: "media-next"
-            colorFg: Color.onShell
+            colorFg: Colors.onShell
             onClicked: MediaService.next()
           }
         }
@@ -436,7 +436,7 @@ SmartPanel {
       width: parent.width - Style.marginS
       height: 20
       values: SpectrumService.values
-      fillColor: Color.accent
+      fillColor: Colors.accent
       opacity: 0.4
       barPosition: Settings.getBarPositionForScreen(root.screen?.name)
     }
@@ -448,7 +448,7 @@ SmartPanel {
       width: parent.width - Style.marginS
       height: 20
       values: SpectrumService.values
-      fillColor: Color.accent
+      fillColor: Colors.accent
       opacity: 0.4
       mirrored: Settings.data.audio.spectrumMirrored
     }
@@ -460,7 +460,7 @@ SmartPanel {
       width: parent.width - Style.marginS
       height: 20
       values: SpectrumService.values
-      fillColor: Color.accent
+      fillColor: Colors.accent
       opacity: 0.4
       mirrored: Settings.data.audio.spectrumMirrored
     }

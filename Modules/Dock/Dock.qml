@@ -886,7 +886,7 @@ Loader {
 
             trackedItem: dockContent.dockContainer
             radius: Style.radiusItem
-            activeWhen: Color.blurActive && !root.fullscreenCovered
+            activeWhen: Colors.blurActive && !root.fullscreenCovered
             slideX: dockSlide.x
             slideY: dockSlide.y
           }

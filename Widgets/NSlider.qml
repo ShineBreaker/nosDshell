@@ -8,13 +8,13 @@ Slider {
   id: root
 
   readonly property bool sliderActive: activeFocus || pressed
-  property color fillColor: Color.accent
+  property color fillColor: Colors.accent
   property bool snapAlways: true
   property var tooltipText
   property string tooltipDirection: "auto"
   property bool hovering: false
 
-  readonly property color effectiveFillColor: enabled ? fillColor : Color.onShellTertiary
+  readonly property color effectiveFillColor: enabled ? fillColor : Colors.onShellTertiary
 
   // DSlider (DESIGN §3.5.4): 2px groove, 12px white knob, whole control >= 22px tall
   readonly property real knobDiameter: Math.max(4, Math.round(12 * Style.uiScaleRatio / 2) * 2)
@@ -48,7 +48,7 @@ Slider {
         id: bgPath
         strokeColor: "transparent"
         strokeWidth: -1
-        fillColor: Color.overlay("strong")
+        fillColor: Colors.overlay("strong")
 
         readonly property real w: bgContainer.width
         readonly property real h: bgContainer.height
@@ -176,8 +176,8 @@ Slider {
       implicitWidth: knobDiameter
       implicitHeight: knobDiameter
       radius: width / 2
-      color: Color.knobFill
-      border.color: Color.knobBorder
+      color: Colors.knobFill
+      border.color: Colors.knobBorder
       border.width: Style.borderS
       anchors.centerIn: parent
     }

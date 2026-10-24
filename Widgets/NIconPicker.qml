@@ -40,9 +40,9 @@ Popup {
   }
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -57,7 +57,7 @@ Popup {
         text: I18n.tr("widgets.icon-picker.title")
         pointSize: Style.fontSizeL
         font.weight: Style.fontWeightSemiBold
-        color: Color.onShell
+        color: Colors.onShell
         Layout.fillWidth: true
       }
       NIconButton {
@@ -94,15 +94,15 @@ Popup {
       cellHeight: root.cellH
       model: root.filteredIcons
       reserveScrollbarSpace: false
-      gradientColor: Color.maskShell
+      gradientColor: Colors.maskShell
 
       delegate: Rectangle {
         width: grid.cellWidth
         height: grid.cellHeight
         radius: Style.iRadiusS
 
-        color: (root.selectedIcon === modelData) ? Qt.alpha(Color.accent, 0.15) : "transparent"
-        border.color: (root.selectedIcon === modelData) ? Color.accent : "transparent"
+        color: (root.selectedIcon === modelData) ? Qt.alpha(Colors.accent, 0.15) : "transparent"
+        border.color: (root.selectedIcon === modelData) ? Colors.accent : "transparent"
         border.width: (root.selectedIcon === modelData) ? Style.borderS : 0
 
         MouseArea {
@@ -136,7 +136,7 @@ Popup {
             wrapMode: Text.NoWrap
             maximumLineCount: 1
             horizontalAlignment: Text.AlignHCenter
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
             pointSize: Style.fontSizeXS
             text: modelData
           }
@@ -151,7 +151,7 @@ Popup {
     Rectangle {
       Layout.fillWidth: true
       Layout.preferredHeight: 1
-      color: Color.overlay("hover")
+      color: Colors.overlay("hover")
     }
 
     RowLayout {
@@ -168,7 +168,7 @@ Popup {
       NButton {
         text: I18n.tr("common.apply")
         icon: "check"
-        backgroundColor: Color.mPrimary // recommended action → accent text
+        backgroundColor: Colors.mPrimary // recommended action → accent text
         enabled: root.selectedIcon !== ""
         onClicked: {
           root.iconSelected(root.selectedIcon);

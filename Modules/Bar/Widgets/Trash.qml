@@ -38,8 +38,8 @@ NIconButton {
   iconSource: onShellSurface ? ThemeIcons.symbolicOnly(isFull ? "user-trash-full" : "user-trash") : ""
   recolorIcon: onShellSurface
   iconRatio: fashionMode ? 0.45 : (efficientMode ? 16.0 / baseSize : 0.48)
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
-  colorFg: onShellSurface ? Color.onShell : Color.mOnSurface
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorFg: onShellSurface ? Colors.onShell : Colors.mOnSurface
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
   tooltipText: I18n.tr("tooltips.trash")

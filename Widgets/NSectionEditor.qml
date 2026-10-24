@@ -157,7 +157,7 @@ NBox {
   signal dragPotentialEnded
   signal openPluginSettingsRequested(var pluginManifest, string settingsEntryPoint)
 
-  color: Color.overlay("idle")
+  color: Colors.overlay("idle")
   Layout.fillWidth: true
   z: flowDragArea?.dragStarted ? 5000 : 0
 
@@ -227,7 +227,7 @@ NBox {
   // them too (widget tiles otherwise use one field-level chip colour).
   function tileBorderColor(widget) {
     if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(widget.id)) {
-      return Qt.alpha(Color.accent, 0.45);
+      return Qt.alpha(Colors.accent, 0.45);
     }
     return "transparent";
   }
@@ -382,7 +382,7 @@ NBox {
           text: sectionName
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
           elide: Text.ElideRight
           Layout.fillWidth: true
         }
@@ -391,7 +391,7 @@ NBox {
           visible: sectionSubtitle !== ""
           text: sectionSubtitle
           pointSize: Style.fontSizeS
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
           elide: Text.ElideRight
           Layout.fillWidth: true
         }
@@ -402,7 +402,7 @@ NBox {
         visible: root.maxWidgets >= 0
         text: root.maxWidgets === 0 ? "(LOCKED)" : "(" + widgetModel.length + "/" + root.maxWidgets + ")"
         pointSize: Style.fontSizeS
-        color: root.isAtMaxCapacity ? Color.alert : Color.onShellTertiary
+        color: root.isAtMaxCapacity ? Colors.alert : Colors.onShellTertiary
         Layout.alignment: Qt.AlignVCenter
         Layout.leftMargin: Style.marginXS
       }
@@ -440,10 +440,10 @@ NBox {
 
       NIconButton {
         icon: "add"
-        colorBg: Color.overlay("field")
-        colorFg: Color.onShell
-        colorBgHover: Color.overlay("checked")
-        colorFgHover: Color.onShell
+        colorBg: Colors.overlay("field")
+        colorFg: Colors.onShell
+        colorBgHover: Colors.overlay("checked")
+        colorFgHover: Colors.onShell
         enabled: comboBox.currentKey !== "" && !root.isAtMaxCapacity
         tooltipText: root.isAtMaxCapacity ? I18n.tr("tooltips.max-widgets-reached") : I18n.tr("tooltips.add-widget")
         Layout.alignment: Qt.AlignVCenter
@@ -480,8 +480,8 @@ NBox {
       Rectangle {
         anchors.fill: parent
         radius: Style.radiusItem
-        color: Qt.alpha(Color.accent, 0.12)
-        border.color: Color.accent
+        color: Qt.alpha(Colors.accent, 0.12)
+        border.color: Colors.accent
         border.width: Style.borderM
         visible: root.showCrossSectionDropHint
         z: 1500
@@ -520,7 +520,7 @@ NBox {
             radius: Style.radiusItem
             // Field-level chip, same ladder step as NComboBox/NTextInput
             // fields (DESIGN §1.3); hover lifts one step.
-            color: widgetItem.enabled ? (tileHover.containsMouse ? Color.overlay("strong") : Color.overlay("field")) : Color.overlay("idle")
+            color: widgetItem.enabled ? (tileHover.containsMouse ? Colors.overlay("strong") : Colors.overlay("field")) : Colors.overlay("idle")
             border.color: root.tileBorderColor(modelData)
             border.width: Style.borderS
 
@@ -646,7 +646,7 @@ NBox {
                 // widgetItem already dims the whole tile when disabled.
                 autoDim: false
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
@@ -661,7 +661,7 @@ NBox {
                 visible: root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)
                 icon: "plugin"
                 pointSize: Style.fontSizeXXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
                 Layout.preferredHeight: Style.baseWidgetSize * 0.5
               }
@@ -671,7 +671,7 @@ NBox {
                 visible: root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id)
                 icon: "cpu-intensive"
                 pointSize: Style.fontSizeXXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
                 Layout.preferredHeight: Style.baseWidgetSize * 0.5
               }
@@ -692,10 +692,10 @@ NBox {
                     tooltipText: I18n.tr("actions.widget-settings")
                     baseSize: miniButtonSize
                     colorBorder: "transparent"
-                    colorBg: Color.overlay("hover")
-                    colorFg: Color.onShell
-                    colorBgHover: Color.overlay("checked")
-                    colorFgHover: Color.onShell
+                    colorBg: Colors.overlay("hover")
+                    colorFg: Colors.onShell
+                    colorBgHover: Colors.overlay("checked")
+                    colorFgHover: Colors.onShell
                     onClicked: {
                       root.openWidgetSettings(index, modelData);
                     }
@@ -714,7 +714,7 @@ NBox {
         height: Style.baseWidgetSize * 1.15
         radius: Style.radiusItem
         color: "transparent"
-        border.color: Color.borderShell
+        border.color: Colors.borderShell
         border.width: Style.borderS
         opacity: 0.7
         visible: flowDragArea?.dragStarted === true
@@ -725,7 +725,7 @@ NBox {
           id: ghostText
           anchors.centerIn: parent
           pointSize: Style.fontSizeS
-          color: Color.onShell
+          color: Colors.onShell
         }
       }
 
@@ -735,7 +735,7 @@ NBox {
         width: 3
         height: Style.baseWidgetSize * 1.15
         radius: Style.radiusRow
-        color: Color.accent
+        color: Colors.accent
         opacity: 0
         visible: opacity > 0
         z: 1999
@@ -962,7 +962,7 @@ NBox {
                                  // Setup ghost widget
                                  if (draggedWidget) {
                                    dragGhost.width = draggedWidget.width;
-                                   dragGhost.color = Color.overlay("field");
+                                   dragGhost.color = Colors.overlay("field");
                                    ghostText.text = draggedModelData.id;
                                  }
 

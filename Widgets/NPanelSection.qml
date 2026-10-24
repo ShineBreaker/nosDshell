@@ -14,7 +14,7 @@ ColumnLayout {
   NText {
     text: root.text
     pointSize: Style.fontSizeS
-    color: Color.onShellTertiary
+    color: Colors.onShellTertiary
     Layout.fillWidth: true
     Layout.leftMargin: Style.marginM
     Layout.bottomMargin: 4
@@ -24,6 +24,6 @@ ColumnLayout {
   Rectangle {
     Layout.fillWidth: true
     height: 1
-    color: Color.overlay("hover")
+    color: Colors.overlay("hover")
   }
 }

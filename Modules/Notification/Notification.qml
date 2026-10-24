@@ -480,8 +480,8 @@ Variants {
               width: notifWindow.notifWidth
               height: contentColumn.implicitHeight + Style.margin2M
               radius: Style.radiusWindow
-              color: Color.stackAlpha(Color.maskTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
-              border.color: Color.stackAlpha(Color.borderTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
+              color: Colors.stackAlpha(Colors.maskTransient, Colors.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
+              border.color: Colors.stackAlpha(Colors.borderTransient, Colors.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
               border.width: Style.borderS
 
               // App / notification image, inset from the left and vertically
@@ -494,7 +494,7 @@ Variants {
                 height: Style.bubbleIconSize
                 radius: Style.radiusRow
                 imagePath: originalImage || ""
-                symbolicColor: Color.onTransient
+                symbolicColor: Colors.onTransient
                 borderColor: "transparent"
                 borderWidth: 0
                 fallbackIcon: "bell"
@@ -515,7 +515,7 @@ Variants {
                   text: summary || I18n.tr("common.no-summary")
                   pointSize: Style.fontSizeM
                   font.weight: Style.fontWeightMedium
-                  color: Color.onTransient
+                  color: Colors.onTransient
                   textFormat: Text.StyledText
                   wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                   maximumLineCount: 2
@@ -528,7 +528,7 @@ Variants {
                   Layout.fillWidth: true
                   text: body || ""
                   pointSize: Style.fontSizeS
-                  color: Color.onTransientBody
+                  color: Colors.onTransientBody
                   textFormat: Text.StyledText
                   wrapMode: Text.WrapAtWordBoundaryOrAnywhere
                   maximumLineCount: Style.bubbleMaxBodyLines
@@ -541,7 +541,7 @@ Variants {
                   Layout.fillWidth: true
                   text: (appName || "") + (appName ? " · " : "") + Time.formatRelativeTime(timestamp)
                   pointSize: Style.fontSizeXXS
-                  color: Color.onTransientBody
+                  color: Colors.onTransientBody
                   elide: Text.ElideRight
                   visible: text.length > 0
                 }
@@ -563,7 +563,7 @@ Variants {
                   delegate: Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    color: actionArea.containsMouse ? Color.transientAction : "transparent"
+                    color: actionArea.containsMouse ? Colors.transientAction : "transparent"
 
                     NText {
                       anchors.centerIn: parent
@@ -575,7 +575,7 @@ Variants {
                         return actionText;
                       }
                       pointSize: Style.fontSizeS
-                      color: actionArea.containsMouse ? "white" : Color.transientAction
+                      color: actionArea.containsMouse ? "white" : Colors.transientAction
                       elide: Text.ElideRight
                       horizontalAlignment: Text.AlignHCenter
                     }
@@ -596,7 +596,7 @@ Variants {
                   delegate: Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 1
-                    color: Color.overlayTransient("hover")
+                    color: Colors.overlayTransient("hover")
                   }
                 }
               }
@@ -609,9 +609,9 @@ Variants {
                 baseSize: Style.baseWidgetSize * 0.6
                 // Sits on a transient tile, not the shell — use the flipped
                 // transient foreground (DESIGN §1.2)
-                colorFg: Color.onTransientBody
-                colorFgHover: Color.onTransient
-                colorBgHover: Color.overlayTransient("hover")
+                colorFg: Colors.onTransientBody
+                colorFgHover: Colors.onTransient
+                colorBgHover: Colors.overlayTransient("hover")
                 anchors.top: parent.top
                 anchors.topMargin: Style.marginXS
                 anchors.right: parent.right

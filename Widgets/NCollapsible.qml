@@ -24,7 +24,7 @@ ColumnLayout {
     id: headerContainer
     Layout.fillWidth: true
     Layout.preferredHeight: headerContent.implicitHeight + Style.margin2M
-    color: headerArea.containsMouse ? Color.overlay("hover") : "transparent"
+    color: headerArea.containsMouse ? Colors.overlay("hover") : "transparent"
     radius: Style.radiusRow
     border.color: "transparent"
     border.width: Style.borderS
@@ -53,7 +53,7 @@ ColumnLayout {
         id: chevronIcon
         icon: "chevron-right"
         pointSize: Style.fontSizeL
-        color: Color.onShellSecondary
+        color: Colors.onShellSecondary
         Layout.alignment: Qt.AlignVCenter
 
         rotation: root.expanded ? 90 : 0
@@ -76,7 +76,7 @@ ColumnLayout {
           text: root.label
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
           wrapMode: Text.WordWrap
         }
 
@@ -84,7 +84,7 @@ ColumnLayout {
           text: root.description
           pointSize: Style.fontSizeS
           font.weight: Style.fontWeightRegular
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
           Layout.fillWidth: true
           wrapMode: Text.WordWrap
           visible: root.description !== ""
@@ -100,7 +100,7 @@ ColumnLayout {
     Layout.topMargin: Style.marginS
 
     visible: root.expanded
-    color: Color.overlay("strong")
+    color: Colors.overlay("strong")
     radius: Style.radiusItem
     border.color: Style.boxBorderColor
     border.width: Style.borderS

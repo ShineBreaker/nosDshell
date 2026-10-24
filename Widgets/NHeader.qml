@@ -31,7 +31,7 @@ ColumnLayout {
     text: root.label
     pointSize: Style.fontSizeTitle
     font.weight: Style.fontWeightSemiBold
-    color: Color.onShell
+    color: Colors.onShell
     visible: root.label !== ""
     Layout.fillWidth: true
     Layout.leftMargin: Style.settingsHeadPaddingH
@@ -41,7 +41,7 @@ ColumnLayout {
   NText {
     text: root.description
     pointSize: Style.fontSizeM
-    color: Color.onShellTertiary
+    color: Colors.onShellTertiary
     wrapMode: Text.WordWrap
     Layout.fillWidth: true
     Layout.leftMargin: Style.settingsHeadPaddingH

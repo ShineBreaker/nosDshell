@@ -156,7 +156,7 @@ Loader {
                   anchors.bottom: parent.bottom
                   anchors.bottomMargin: 360 * Style.uiScaleRatio
                   radius: Style.radiusL
-                  color: Color.mTertiary
+                  color: Colors.mTertiary
                   visible: lockContext.showInfo && lockContext.infoMessage && !panelComponent.timerActive
                   opacity: visible ? 1.0 : 0.0
 
@@ -168,12 +168,12 @@ Loader {
                     NIcon {
                       icon: "circle-key"
                       pointSize: Style.fontSizeXL
-                      color: Color.mOnTertiary
+                      color: Colors.mOnTertiary
                     }
 
                     NText {
                       text: lockContext.infoMessage
-                      color: Color.mOnTertiary
+                      color: Colors.mOnTertiary
                       pointSize: Style.fontSizeL
                       horizontalAlignment: Text.AlignHCenter
                     }
@@ -197,7 +197,7 @@ Loader {
                   radius: Style.radiusL
                   // Wallpaper surface: constant-white ladder, same family as
                   // the onWallpaper ink and the field-level password box.
-                  color: Color.overlayWallpaper("strong")
+                  color: Colors.overlayWallpaper("strong")
                   visible: panelComponent.timerActive
                   opacity: visible ? 1.0 : 0.0
 
@@ -210,7 +210,7 @@ Loader {
                     NIcon {
                       icon: "clock"
                       pointSize: Style.fontSizeXL
-                      color: Color.mPrimary
+                      color: Colors.mPrimary
                     }
 
                     NText {
@@ -218,7 +218,7 @@ Loader {
                                       "action": I18n.tr("common." + panelComponent.pendingAction),
                                       "seconds": Math.ceil(panelComponent.timeRemaining / 1000)
                                     })
-                      color: Color.onWallpaper
+                      color: Colors.onWallpaper
                       pointSize: Style.fontSizeL
                       horizontalAlignment: Text.AlignHCenter
                       font.weight: Style.fontWeightBold
@@ -232,9 +232,9 @@ Loader {
                       icon: "x"
                       tooltipText: I18n.tr("session-menu.cancel-timer")
                       baseSize: 32
-                      colorBg: Qt.alpha(Color.mPrimary, 0.1)
-                      colorFg: Color.mPrimary
-                      colorBgHover: Color.mPrimary
+                      colorBg: Qt.alpha(Colors.mPrimary, 0.1)
+                      colorFg: Colors.mPrimary
+                      colorBgHover: Colors.mPrimary
                       onClicked: panelComponent.cancelTimer()
                     }
                   }

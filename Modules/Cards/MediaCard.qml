@@ -97,7 +97,7 @@ NBox {
     // Solid color background (always present as base layer)
     Rectangle {
       anchors.fill: parent
-      color: Settings.data.wallpaper.useSolidColor ? Settings.data.wallpaper.solidColor : Color.mSurface
+      color: Settings.data.wallpaper.useSolidColor ? Settings.data.wallpaper.solidColor : Colors.mSurface
     }
 
     // Background image that covers everything
@@ -123,7 +123,7 @@ NBox {
     // color washed the cover out to white-on-white there).
     Rectangle {
       anchors.fill: parent
-      color: Color.veilWallpaper
+      color: Colors.veilWallpaper
       opacity: 0.65
       radius: Style.radiusM
     }
@@ -160,7 +160,7 @@ NBox {
         NLinearSpectrum {
           anchors.fill: parent
           values: SpectrumService.values
-          fillColor: Color.mPrimary
+          fillColor: Colors.mPrimary
           opacity: 0.8
           mirrored: Settings.data.audio.spectrumMirrored
         }
@@ -171,7 +171,7 @@ NBox {
         NMirroredSpectrum {
           anchors.fill: parent
           values: SpectrumService.values
-          fillColor: Color.mPrimary
+          fillColor: Colors.mPrimary
           opacity: 0.8
           mirrored: Settings.data.audio.spectrumMirrored
         }
@@ -182,7 +182,7 @@ NBox {
         NWaveSpectrum {
           anchors.fill: parent
           values: SpectrumService.values
-          fillColor: Color.mPrimary
+          fillColor: Colors.mPrimary
           opacity: 0.8
           mirrored: Settings.data.audio.spectrumMirrored
         }
@@ -213,13 +213,13 @@ NBox {
       NIcon {
         icon: "caret-down"
         pointSize: Style.fontSizeXXL
-        color: Color.mOnSurfaceVariant
+        color: Colors.mOnSurfaceVariant
       }
 
       NText {
         text: playerSelectorButton.currentPlayer ? playerSelectorButton.currentPlayer.identity : ""
         pointSize: Style.fontSizeXS
-        color: Color.mOnSurfaceVariant
+        color: Colors.mOnSurfaceVariant
         Layout.fillWidth: true
       }
     }
@@ -282,7 +282,7 @@ NBox {
         anchors.horizontalCenter: parent.horizontalCenter
         icon: "disc"
         pointSize: Style.fontSizeXXXL * 3
-        color: Color.mOnSurfaceVariant
+        color: Colors.mOnSurfaceVariant
         opacity: 1.0
       }
 
@@ -290,7 +290,7 @@ NBox {
         anchors.horizontalCenter: parent.horizontalCenter
         text: I18n.tr("media.card-no-media")
         pointSize: Style.fontSizeS
-        color: Qt.alpha(Color.onShell, 0.6)
+        color: Qt.alpha(Colors.onShell, 0.6)
       }
     }
 
@@ -347,7 +347,7 @@ NBox {
             NText {
               visible: MediaService.trackArtist !== ""
               text: MediaService.trackArtist
-              color: Color.mSecondary
+              color: Colors.mSecondary
               pointSize: Style.fontSizeS
               elide: Text.ElideRight
               Layout.fillWidth: true
@@ -356,7 +356,7 @@ NBox {
             NText {
               visible: MediaService.trackAlbum !== ""
               text: MediaService.trackAlbum
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
               pointSize: Style.fontSizeM
               elide: Text.ElideRight
               Layout.fillWidth: true

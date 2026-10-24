@@ -36,8 +36,8 @@ NIconButton {
   bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
-  colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorFg: onShellSurface ? Colors.onShell : Colors.resolveColorKey(iconColorKey)
   onClicked: Settings.data.colorSchemes.darkMode = !Settings.data.colorSchemes.darkMode
 
   border.color: Style.capsuleBorderColor

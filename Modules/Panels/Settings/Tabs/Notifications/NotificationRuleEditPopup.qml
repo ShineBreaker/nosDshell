@@ -27,9 +27,9 @@ Popup {
   property string _selectedAction: "block"
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -98,7 +98,7 @@ Popup {
       NLabel {
         Layout.fillWidth: true
         label: _selectedAction === "block" ? I18n.tr("panels.notifications.rules-action-block-desc") : (_selectedAction === "mute" ? I18n.tr("panels.notifications.rules-action-mute-desc") : I18n.tr("panels.notifications.rules-action-hide-desc"))
-        labelColor: Color.onShellTertiary
+        labelColor: Colors.onShellTertiary
       }
     }
 
@@ -119,8 +119,8 @@ Popup {
       NButton {
         text: I18n.tr("common.save")
         icon: "check"
-        backgroundColor: Color.accent
-        textColor: Color.onAccent
+        backgroundColor: Colors.accent
+        textColor: Colors.onAccent
         enabled: patternInput.text.trim() !== ""
         onClicked: {
           root.saved(patternInput.text.trim(), _selectedAction || "block");

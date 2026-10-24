@@ -27,7 +27,7 @@ ShapePath {
 
   // Default background color (used if panel doesn't specify one): the
   // maskShell semantic token, matching the SmartPanel default (DESIGN §1.2).
-  property color defaultBackgroundColor: Color.maskShell
+  property color defaultBackgroundColor: Colors.maskShell
 
   // Corner radius (from Style)
   // Corner radius; the panel may force square corners (edge sheets, §3.5.1)

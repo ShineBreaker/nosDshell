@@ -245,7 +245,7 @@ Item {
         visible: root.availableDevices.length === 0 && root.unnamedAvailableDevices.length > 0
         text: I18n.tr("panels.connections.bluetooth-devices-unnamed")
         pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         horizontalAlignment: Text.AlignHCenter
         Layout.fillWidth: true
       }
@@ -334,7 +334,7 @@ Item {
             horizontalAlignment: Text.AlignLeft
             icon: BluetoothService.getDeviceIcon(entry)
             pointSize: Style.fontSizeXXL
-            color: Color.onShell
+            color: Colors.onShell
           }
 
           ColumnLayout {
@@ -346,7 +346,7 @@ Item {
               pointSize: Style.fontSizeM
               font.weight: entry?.connected ? Style.fontWeightSemiBold : Style.fontWeightMedium
               elide: Text.ElideRight
-              color: Color.onShell
+              color: Colors.onShell
               Layout.fillWidth: true
             }
 
@@ -365,7 +365,7 @@ Item {
               }
               visible: text !== ""
               pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             RowLayout {
@@ -377,7 +377,7 @@ Item {
                   return BatteryService.getIcon(b !== null ? b : 0, false, false, b !== null);
                 }
                 pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
               NText {
                 text: {
@@ -385,7 +385,7 @@ Item {
                   return b === null ? "-" : (b + "%");
                 }
                 pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
             }
           }
@@ -398,7 +398,7 @@ Item {
             visible: (entry?.connected ?? false) && entry?.state !== BluetoothDeviceState.Disconnecting
             icon: "check"
             pointSize: Style.fontSizeXL
-            color: Color.accent
+            color: Colors.accent
             Layout.alignment: Qt.AlignVCenter
           }
 
@@ -408,7 +408,7 @@ Item {
             NBusyIndicator {
               visible: isBusy
               running: visible && root.effectivelyVisible
-              color: Color.onShell
+              color: Colors.onShell
               size: Style.baseWidgetSize * 0.5
             }
 
@@ -417,8 +417,8 @@ Item {
               icon: "info"
               tooltipText: I18n.tr("common.info")
               baseSize: Style.baseWidgetSize * 0.75
-              colorBg: Color.overlay("field")
-              colorFg: Color.onShell
+              colorBg: Colors.overlay("field")
+              colorFg: Colors.onShell
               colorBorder: "transparent"
               colorBorderHover: "transparent"
               onClicked: {
@@ -432,8 +432,8 @@ Item {
               icon: "trash"
               tooltipText: I18n.tr("common.unpair")
               baseSize: Style.baseWidgetSize * 0.75
-              colorBg: Color.overlay("field")
-              colorFg: Color.alert
+              colorBg: Colors.overlay("field")
+              colorFg: Colors.alert
               colorBorder: "transparent"
               colorBorderHover: "transparent"
               onClicked: BluetoothService.unpairDevice(entry)
@@ -444,8 +444,8 @@ Item {
               visible: entry?.state !== BluetoothDeviceState.Connecting && entry?.state !== BluetoothDeviceState.Disconnecting
               enabled: (canConnect || canDisconnect || (root.showOnlyLists ? false : canPair)) && !isBusy
               fontSize: Style.fontSizeS
-              backgroundColor: entry?.connected ? Color.overlay("strong") : Color.accent
-              textColor: entry?.connected ? Color.onShell : Color.onAccent
+              backgroundColor: entry?.connected ? Colors.overlay("strong") : Colors.accent
+              textColor: entry?.connected ? Colors.onShell : Colors.onAccent
               text: {
                 if (entry?.pairing)
                   return I18n.tr("common.pairing");
@@ -478,9 +478,9 @@ Item {
           Layout.fillWidth: true
           implicitHeight: infoColumn.implicitHeight + Style.margin2S
           radius: Style.radiusItem
-          color: Color.overlay("field")
+          color: Colors.overlay("field")
           border.width: Style.borderS
-          border.color: Color.borderShell
+          border.color: Colors.borderShell
           clip: true
 
           GridLayout {
@@ -501,12 +501,12 @@ Item {
               NIcon {
                 icon: BluetoothService.getSignalIcon(entry)
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
               }
               NText {
                 text: BluetoothService.getSignalStrength(entry)
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
               }
             }
@@ -522,7 +522,7 @@ Item {
                   return BatteryService.getIcon(b !== null ? b : 0, false, false, b !== null);
                 }
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
               }
               NText {
                 text: {
@@ -530,7 +530,7 @@ Item {
                   return b === null ? "-" : (b + "%");
                 }
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
               }
             }
@@ -542,12 +542,12 @@ Item {
               NIcon {
                 icon: "link"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
               }
               NText {
                 text: entry?.paired ? I18n.tr("common.yes") : I18n.tr("common.no")
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
               }
             }
@@ -559,12 +559,12 @@ Item {
               NIcon {
                 icon: "shield-check"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
               }
               NText {
                 text: entry?.trusted ? I18n.tr("common.yes") : I18n.tr("common.no")
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
               }
             }
@@ -576,12 +576,12 @@ Item {
               NIcon {
                 icon: "hash"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
               }
               NText {
                 text: entry?.address || "-"
                 pointSize: Style.fontSizeXS
-                color: Color.onShell
+                color: Colors.onShell
                 Layout.fillWidth: true
               }
             }
@@ -617,9 +617,9 @@ Item {
     anchors.centerIn: parent
     width: Math.min(parent.width * 0.9, 400)
     height: pinCol.implicitHeight + Style.margin2L
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
     z: 1000
 
@@ -639,21 +639,21 @@ Item {
       NIcon {
         icon: "lock"
         pointSize: Style.emptyStateIconSize
-        color: Color.accent
+        color: Colors.accent
         Layout.alignment: Qt.AlignHCenter
       }
       NText {
         text: I18n.tr("panels.connections.authentication-required")
         pointSize: Style.fontSizeXL
         font.weight: Style.fontWeightSemiBold
-        color: Color.onShell
+        color: Colors.onShell
         horizontalAlignment: Text.AlignHCenter
         Layout.fillWidth: true
       }
       NText {
         text: I18n.tr("panels.connections.pin-instructions")
         pointSize: Style.fontSizeM
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         wrapMode: Text.WordWrap
         horizontalAlignment: Text.AlignHCenter
         Layout.fillWidth: true
@@ -687,8 +687,8 @@ Item {
         NButton {
           text: I18n.tr("common.confirm")
           icon: "check"
-          backgroundColor: Color.accent
-          textColor: Color.onAccent
+          backgroundColor: Colors.accent
+          textColor: Colors.onAccent
           enabled: pinInput.text.length > 0
           onClicked: {
             BluetoothService.submitPin(pinInput.text);

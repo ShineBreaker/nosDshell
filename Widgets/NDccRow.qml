@@ -7,7 +7,7 @@ import qs.Widgets
 * NDccRow - the DDE SettingsItem row container (DESIGN §3.5.4).
 *
 * Background `overlay("strong")`, `overlay("checked")` while an interactive row
-* is hovered, a 2 px Color.alert border in the error state. Rows are at least
+* is hovered, a 2 px Colors.alert border in the error state. Rows are at least
 * 36 px tall but grow for a description or a slider groove; horizontal padding
 * is 20, vertical 10.
 *
@@ -79,15 +79,15 @@ Rectangle {
   implicitWidth: Math.min(contentRow.implicitWidth, Style.settingsRowContentMaxWidth) + (plain ? 0 : Style.settingsRowPaddingH * 2)
 
   color: rowColor
-  border.color: root.error ? Color.alert : (root.active ? Color.borderShell : "transparent")
+  border.color: root.error ? Colors.alert : (root.active ? Colors.borderShell : "transparent")
   border.width: root.error ? Style.borderM : (root.active ? Style.borderS : 0)
 
   readonly property color rowColor: {
     if (root.plain)
       return "transparent";
     if ((root.hovered || root.active) && root.interactive && !root.error)
-      return Color.overlay("checked");
-    return Color.overlay("strong");
+      return Colors.overlay("checked");
+    return Colors.overlay("strong");
   }
 
   // Only the head row's top corners and the tail row's bottom corners are

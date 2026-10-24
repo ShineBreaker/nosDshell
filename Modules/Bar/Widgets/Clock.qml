@@ -54,7 +54,7 @@ Item {
   readonly property bool fashionMode: dockPresentation === "fashion"
   readonly property bool onShellSurface: efficientMode || fashionMode
 
-  readonly property color textColor: onShellSurface ? Color.onShell : Color.resolveColorKey(clockColor)
+  readonly property color textColor: onShellSurface ? Colors.onShell : Colors.resolveColorKey(clockColor)
 
   // DDE efficient clock: hh:mm / yyyy-MM-dd on two lines (three lines when vertical)
   readonly property string effectiveFormatHorizontal: efficientMode ? "hh:mm\\nyyyy/MM/dd" : formatHorizontal.trim()

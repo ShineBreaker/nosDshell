@@ -204,9 +204,9 @@ ColumnLayout {
       Rectangle {
         Layout.preferredWidth: 320
         Layout.preferredHeight: 160
-        color: Color.overlay("field")
+        color: Colors.overlay("field")
         radius: Style.radiusItem
-        border.color: Color.accent
+        border.color: Colors.accent
         border.width: Style.borderS
 
         ColumnLayout {
@@ -226,12 +226,12 @@ ColumnLayout {
                 family: valueUseCustomFont && valueCustomFont ? valueCustomFont : Settings.data.ui.fontDefault
                 pointSize: Style.fontSizeM
                 font.weight: Style.fontWeightSemiBold
-                color: Color.resolveColorKey(valueClockColor)
+                color: Colors.resolveColorKey(valueClockColor)
                 wrapMode: Text.WordWrap
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
 
                 Behavior on color {
-                  enabled: !Color.isTransitioning
+                  enabled: !Colors.isTransitioning
                   ColorAnimation {
                     duration: Style.motionSwitch
                     easing.type: Easing.OutCubic

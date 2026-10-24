@@ -9,9 +9,9 @@ Item {
   // Public API
   property var model: []
   property var disabledIds: []
-  property color activeColor: Color.accent
-  property color activeOnColor: Color.onAccent
-  property color dragHandleColor: Color.onShellTertiary
+  property color activeColor: Colors.accent
+  property color activeOnColor: Colors.onAccent
+  property color dragHandleColor: Colors.onShellTertiary
   property int baseSize: Style.baseWidgetSize * 0.7
   property int spacing: Style.settingsGroupGap
 
@@ -104,7 +104,7 @@ Item {
           Layout.preferredWidth: root.baseSize
           Layout.preferredHeight: root.baseSize
           radius: Style.radiusRow
-          color: dragHandleMouseArea.containsMouse ? Color.overlay("hover") : "transparent"
+          color: dragHandleMouseArea.containsMouse ? Colors.overlay("hover") : "transparent"
 
           ColumnLayout {
             anchors.centerIn: parent
@@ -196,7 +196,7 @@ Item {
         NText {
           Layout.fillWidth: true
           text: delegateItem.text
-          color: Color.onShell
+          color: Colors.onShell
           verticalAlignment: Text.AlignVCenter
           elide: Text.ElideRight
         }
@@ -205,7 +205,7 @@ Item {
         NText {
           visible: delegateItem.required
           text: I18n.tr("common.required")
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
           verticalAlignment: Text.AlignVCenter
         }
 

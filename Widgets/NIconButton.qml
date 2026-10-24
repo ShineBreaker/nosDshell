@@ -30,9 +30,9 @@ Item {
   property bool checked: false
 
   property color colorBg: "transparent"
-  property color colorFg: Color.onShellSecondary
-  property color colorBgHover: Color.overlay("hover")
-  property color colorFgHover: Color.onShell
+  property color colorFg: Colors.onShellSecondary
+  property color colorBgHover: Colors.overlay("hover")
+  property color colorFgHover: Colors.onShell
   property color colorBorder: "transparent"
   property color colorBorderHover: "transparent"
   property real customRadius: -1 // -1 means use default (radiusRow), otherwise use this value
@@ -71,7 +71,7 @@ Item {
 
     color: {
       if (root.enabled && root.checked)
-        return Color.overlay("checked");
+        return Colors.overlay("checked");
       return root.enabled && root.hovering ? colorBgHover : colorBg;
     }
     radius: Math.min((customRadius >= 0 ? customRadius : Style.radiusRow), width / 2)
@@ -79,7 +79,7 @@ Item {
     border.width: Style.borderS
 
     Behavior on color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionPointer
         easing.type: Easing.OutCubic
@@ -96,7 +96,7 @@ Item {
       // Themed *-symbolic icons are recolored to the foreground color
       layer.enabled: root.iconSource !== "" && root.recolorIcon
       layer.effect: ShaderEffect {
-        property color targetColor: root.enabled && visualButton.pressed ? Color.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
+        property color targetColor: root.enabled && visualButton.pressed ? Colors.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
         property real colorizeMode: 3.0
         fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
       }
@@ -107,13 +107,13 @@ Item {
       icon: root.icon
       pointSize: Style.toOdd(visualButton.width * root.iconRatio)
       applyUiScale: root.applyUiScale
-      color: root.enabled && visualButton.pressed ? Color.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
+      color: root.enabled && visualButton.pressed ? Colors.accent : (root.enabled && root.hovering ? colorFgHover : colorFg)
       // Pixel-perfect centering
       x: Style.pixelAlignCenter(visualButton.width, width)
       y: Style.pixelAlignCenter(visualButton.height, contentHeight)
 
       Behavior on color {
-        enabled: !Color.isTransitioning
+        enabled: !Colors.isTransitioning
         ColorAnimation {
           duration: Style.motionPointer
           easing.type: Easing.OutCubic

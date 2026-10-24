@@ -46,8 +46,8 @@ Item {
     dockPresentation: root.dockPresentation
     text: IdleInhibitorService.timeout == null ? "" : Time.formatVagueHumanReadableDuration(IdleInhibitorService.timeout)
     oppositeDirection: BarService.getPillDirection(root)
-    customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
-    customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
+    customIconColor: Colors.resolveColorKeyOptional(root.iconColorKey)
+    customTextColor: Colors.resolveColorKeyOptional(root.textColorKey)
     icon: IdleInhibitorService.isInhibited ? "keep-awake-on" : "keep-awake-off"
     tooltipText: I18n.tr("tooltips.keep-awake")
     onClicked: IdleInhibitorService.manualToggle()

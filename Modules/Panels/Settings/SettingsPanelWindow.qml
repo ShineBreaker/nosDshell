@@ -92,7 +92,7 @@ FloatingWindow {
     // DDialog-style window (DESIGN §3.5.3): maskShell carries the final alpha
     // itself (blur ? panelBackgroundOpacity : 0.8), so re-applying the setting
     // here would multiply it — same rule as ControlCenterPanel's ownBackgroundAlpha.
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
 
     SettingsModuleView {

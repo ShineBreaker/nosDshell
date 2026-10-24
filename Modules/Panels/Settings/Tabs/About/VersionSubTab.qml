@@ -339,7 +339,7 @@ ColumnLayout {
           // Installed Version (Shell)
           NText {
             text: "nosDshell:"
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
           }
 
@@ -348,7 +348,7 @@ ColumnLayout {
 
             NText {
               text: root.currentVersion
-              color: Color.onShell
+              color: Colors.onShell
               font.weight: Style.fontWeightSemiBold
             }
 
@@ -357,7 +357,7 @@ ColumnLayout {
               id: commitText
               visible: root.isGitVersion
               text: "(" + (root.commitInfo || I18n.tr("common.loading")) + ")"
-              color: commitMouseArea.containsMouse ? Color.accent : Color.onShellTertiary
+              color: commitMouseArea.containsMouse ? Colors.accent : Colors.onShellTertiary
               pointSize: Style.fontSizeXS
               font.underline: commitMouseArea.containsMouse && root.commitInfo
 
@@ -385,14 +385,14 @@ ColumnLayout {
           NText {
             visible: root.qsVersion !== ""
             text: "Quickshell:"
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
           }
 
           NText {
             visible: root.qsVersion !== ""
             text: root.qsVersion
-            color: Color.onShell
+            color: Colors.onShell
             font.weight: Style.fontWeightSemiBold
             wrapMode: Text.Wrap
             Layout.fillWidth: true
@@ -426,7 +426,7 @@ ColumnLayout {
       Layout.bottomMargin: Style.marginM
       text: I18n.tr("panels.about.updates-via-package-manager")
       pointSize: Style.fontSizeXS
-      color: Color.onShellTertiary
+      color: Colors.onShellTertiary
       horizontalAlignment: Text.AlignHCenter
       wrapMode: Text.Wrap
     }
@@ -455,12 +455,12 @@ ColumnLayout {
 
       NText {
         text: I18n.tr("panels.about.system-not-installed")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
       }
 
       NText {
         text: I18n.tr("panels.about.system-install-hint")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: Style.fontSizeXS
       }
     }
@@ -479,7 +479,7 @@ ColumnLayout {
       // OS
       NText {
         text: I18n.tr("panels.about.system-os")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -487,7 +487,7 @@ ColumnLayout {
           const os = root.getModule("OS");
           return os?.result?.prettyName || "N/A";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -496,7 +496,7 @@ ColumnLayout {
       // Kernel
       NText {
         text: I18n.tr("panels.about.system-kernel")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -504,7 +504,7 @@ ColumnLayout {
           const kernel = root.getModule("Kernel");
           return kernel?.result?.release || "N/A";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -513,7 +513,7 @@ ColumnLayout {
       // Host
       NText {
         text: I18n.tr("panels.about.system-host")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -521,7 +521,7 @@ ColumnLayout {
           const title = root.getModule("Title");
           return title?.result?.hostName || "N/A";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -530,7 +530,7 @@ ColumnLayout {
       // Product name
       NText {
         text: I18n.tr("panels.about.system-product")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -538,7 +538,7 @@ ColumnLayout {
           const title = root.getModule("Host");
           return title?.result?.name || "N/A";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -547,7 +547,7 @@ ColumnLayout {
       // Board name
       NText {
         text: I18n.tr("panels.about.system-board")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -555,7 +555,7 @@ ColumnLayout {
           const title = root.getModule("Board");
           return title?.result?.name || "N/A";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -564,7 +564,7 @@ ColumnLayout {
       // Uptime
       NText {
         text: I18n.tr("panels.about.system-uptime")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -572,7 +572,7 @@ ColumnLayout {
           const value = root.getModule("Uptime")?.result?.uptime;
           return value ? Time.formatVagueHumanReadableDuration(value / 1000) : "-";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -581,7 +581,7 @@ ColumnLayout {
       // CPU
       NText {
         text: I18n.tr("panels.about.system-cpu")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -596,7 +596,7 @@ ColumnLayout {
           }
           return cpuText;
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -605,7 +605,7 @@ ColumnLayout {
       // GPU
       NText {
         text: I18n.tr("panels.about.system-gpu")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -615,7 +615,7 @@ ColumnLayout {
             return "N/A";
           return gpu.result.map(g => g.name || "Unknown").join(", ");
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -624,7 +624,7 @@ ColumnLayout {
       // Memory
       NText {
         text: I18n.tr("panels.about.system-memory")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -636,7 +636,7 @@ ColumnLayout {
           const total = (mem.result.total / root.gigaB).toFixed(1);
           return used + " GiB / " + total + " GiB";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -645,7 +645,7 @@ ColumnLayout {
       // Disk
       NText {
         text: I18n.tr("panels.about.system-disk")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -660,7 +660,7 @@ ColumnLayout {
           const total = (rootDisk.bytes.total / root.gigaD).toFixed(1);
           return used + " GB / " + total + " GB" + " (" + rootDisk.filesystem + ")";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -669,7 +669,7 @@ ColumnLayout {
       // WM
       NText {
         text: I18n.tr("panels.about.system-wm")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -683,7 +683,7 @@ ColumnLayout {
           }
           return wmText;
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -692,7 +692,7 @@ ColumnLayout {
       // Packages
       NText {
         text: I18n.tr("panels.about.system-packages")
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         pointSize: sysInfo.textSize
       }
       NText {
@@ -728,7 +728,7 @@ ColumnLayout {
           }
           return "N/A";
         }
-        color: Color.onShell
+        color: Colors.onShell
         pointSize: sysInfo.textSize
         Layout.fillWidth: true
         wrapMode: Text.Wrap
@@ -752,7 +752,7 @@ ColumnLayout {
             const scaleValue = (typeof scaleData === "object" && scaleData !== null) ? (scaleData.scale || 1.0) : (scaleData || 1.0);
             return name + ": " + (screen?.width || 0) + "x" + (screen?.height || 0) + " @ " + scaleValue + "x";
           }
-          color: isLabel ? Color.onShellTertiary : Color.onShell
+          color: isLabel ? Colors.onShellTertiary : Colors.onShell
           pointSize: sysInfo.textSize
           Layout.fillWidth: !isLabel
           wrapMode: Text.Wrap

@@ -282,14 +282,14 @@ Item {
   }
 
   // Edit / drag outline. §3.12: the droppable area is shown with a white@0.1
-  // stroke only -- no accent fill, no glow. Color.overlay("hover") is that
-  // exact 0.1 step of the white ladder (Color.qml:445-457).
+  // stroke only -- no accent fill, no glow. Colors.overlay("hover") is that
+  // exact 0.1 step of the white ladder (Colors.qml:445-457).
   Rectangle {
     id: decorationRect
     anchors.fill: parent
     anchors.margins: -outlineMargin
     color: "transparent"
-    border.color: (DesktopWidgetRegistry.editMode || internal.isDragging) ? Color.overlay("hover") : "transparent"
+    border.color: (DesktopWidgetRegistry.editMode || internal.isDragging) ? Colors.overlay("hover") : "transparent"
     border.width: DesktopWidgetRegistry.editMode || internal.isDragging ? Style.borderS : 0
     radius: Math.min(Math.round(Style.radiusL * root.widgetScale), Style.radiusL, width / 2, height / 2)
     z: -1
@@ -302,10 +302,10 @@ Item {
     // maskDark, not a Noctalia surface colour: §3.12 puts desktop widget cards
     // on the same mask every other dark surface uses, which also picks up the
     // no-blur fallback (DESIGN §1.2).
-    color: Color.maskDark
+    color: Colors.maskDark
     border {
       width: 1
-      color: Qt.alpha(Color.mOutline, 0.12)
+      color: Qt.alpha(Colors.mOutline, 0.12)
     }
     clip: true
     visible: root.showBackground
@@ -478,7 +478,7 @@ Item {
   // Scale grips stay neutral white rather than an accent: they are an edit
   // affordance, not the drop-zone marker, so they take a higher step of the
   // same ladder and never read as a glow.
-  readonly property color colorHandle: Color.overlay("checked")
+  readonly property color colorHandle: Colors.overlay("checked")
 
   // Corner handle model: defines position, direction, cursor, and triangle points for each corner
   // xMult/yMult: multipliers for position (0 = left/top edge, 1 = right/bottom edge)

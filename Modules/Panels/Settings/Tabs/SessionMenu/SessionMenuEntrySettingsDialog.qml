@@ -60,9 +60,9 @@ Popup {
   background: Rectangle {
     id: bgRect
 
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderM
   }
 
@@ -85,7 +85,7 @@ Popup {
                         })
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
           Layout.fillWidth: true
         }
 
@@ -103,7 +103,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
       }
 
       // Command input
@@ -132,8 +132,8 @@ Popup {
           Layout.fillWidth: true
           Layout.preferredHeight: defaultCommandText.implicitHeight + Style.margin2M
           radius: Style.radiusWindow
-          color: Color.overlay("field")
-          border.color: Color.borderShell
+          color: Colors.overlay("field")
+          border.color: Colors.borderShell
           border.width: Style.borderS
 
           RowLayout {
@@ -143,7 +143,7 @@ Popup {
 
             NIcon {
               icon: "info"
-              color: Color.onShellSecondary
+              color: Colors.onShellSecondary
               pointSize: Style.fontSizeM
             }
 
@@ -151,7 +151,7 @@ Popup {
               id: defaultCommandText
               Layout.fillWidth: true
               text: root.defaultCommand
-              color: Color.onShellSecondary
+              color: Colors.onShellSecondary
               font.family: "monospace"
               font.pointSize: Style.fontSizeS
               wrapMode: Text.Wrap

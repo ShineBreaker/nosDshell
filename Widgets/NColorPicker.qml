@@ -20,8 +20,8 @@ Rectangle {
   implicitHeight: Math.round(Style.baseWidgetSize * 1.1)
 
   radius: Style.radiusItem
-  color: Color.overlay("field")
-  border.color: Color.borderShell
+  color: Colors.overlay("field")
+  border.color: Colors.borderShell
   border.width: Style.borderS
 
   // Minimized Look
@@ -94,7 +94,7 @@ Rectangle {
         Layout.preferredHeight: root.height * 0.6
         radius: Math.min(Style.iRadiusL, Layout.preferredWidth / 2)
         color: root.selectedColor
-        border.color: Color.borderShell
+        border.color: Colors.borderShell
         border.width: Style.borderS
       }
 
@@ -107,7 +107,7 @@ Rectangle {
 
       NIcon {
         icon: "color-picker"
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
       }

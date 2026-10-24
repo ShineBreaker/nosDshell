@@ -114,7 +114,7 @@ SmartPanel {
           visible: BatteryService.laptopBatteries.length === 0 && BatteryService.bluetoothBatteries.length === 0
           text: I18n.tr("battery.no-battery-detected")
           pointSize: Style.fontSizeM
-          color: Color.onShellSecondary
+          color: Colors.onShellSecondary
           verticalAlignment: Text.AlignVCenter
         }
 
@@ -146,19 +146,19 @@ SmartPanel {
             NIcon {
               icon: "powersaver"
               pointSize: Style.fontSizeS
-              color: PowerProfileService.getIcon() === "powersaver" ? Color.accent : Color.onShellTertiary
+              color: PowerProfileService.getIcon() === "powersaver" ? Colors.accent : Colors.onShellTertiary
             }
 
             NIcon {
               icon: "balanced"
               pointSize: Style.fontSizeS
-              color: PowerProfileService.getIcon() === "balanced" ? Color.accent : Color.onShellTertiary
+              color: PowerProfileService.getIcon() === "balanced" ? Colors.accent : Colors.onShellTertiary
             }
 
             NIcon {
               icon: "performance"
               pointSize: Style.fontSizeS
-              color: PowerProfileService.getIcon() === "performance" ? Color.accent : Color.onShellTertiary
+              color: PowerProfileService.getIcon() === "performance" ? Colors.accent : Colors.onShellTertiary
             }
           }
         }
@@ -201,7 +201,7 @@ SmartPanel {
             NIcon {
               icon: PowerProfileService.performanceMode ? "rocket" : "rocket-off"
               pointSize: Style.fontSizeXL
-              color: PowerProfileService.performanceMode ? Color.accent : Color.onShellTertiary
+              color: PowerProfileService.performanceMode ? Colors.accent : Colors.onShellTertiary
             }
 
             NText {
@@ -246,7 +246,7 @@ SmartPanel {
 
         NIcon {
           icon: BatteryService.getIcon(BatteryService.getPercentage(batteryRow.device), BatteryService.isCharging(batteryRow.device), BatteryService.isPluggedIn(batteryRow.device), BatteryService.isDeviceReady(batteryRow.device))
-          color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Color.accent : (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Color.mError : Color.onShell
+          color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Colors.accent : (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Colors.mError : Colors.onShell
           pointSize: Style.fontSizeXL
         }
 
@@ -272,7 +272,7 @@ SmartPanel {
           text: `${BatteryService.getPercentage(batteryRow.device)}%`
           pointSize: Style.fontSizeS
           font.weight: Font.DemiBold
-          color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Color.accent : Color.onShellSecondary
+          color: (BatteryService.isCharging(batteryRow.device) || BatteryService.isPluggedIn(batteryRow.device)) ? Colors.accent : Colors.onShellSecondary
         }
       }
     }
@@ -292,13 +292,13 @@ SmartPanel {
           Layout.preferredHeight: 2
           orientation: Qt.Horizontal
           ratio: Math.max(0, Math.min(1, BatteryService.getPercentage(batteryRow.device) / 100))
-          fillColor: (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Color.mError : Color.accent
+          fillColor: (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Colors.mError : Colors.accent
         }
 
         NText {
           text: BatteryService.getTimeRemainingText(batteryRow.device)
           pointSize: Style.fontSizeXS
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
         }
       }
     }

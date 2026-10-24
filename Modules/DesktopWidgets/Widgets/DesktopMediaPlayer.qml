@@ -115,7 +115,7 @@ DraggableDesktopWidget {
       NLinearSpectrum {
         anchors.fill: parent
         values: SpectrumService.values
-        fillColor: Color.mPrimary
+        fillColor: Colors.mPrimary
         opacity: 0.5
         mirrored: Settings.data.audio.spectrumMirrored
       }
@@ -126,7 +126,7 @@ DraggableDesktopWidget {
       NMirroredSpectrum {
         anchors.fill: parent
         values: SpectrumService.values
-        fillColor: Color.mPrimary
+        fillColor: Colors.mPrimary
         opacity: 0.5
         mirrored: Settings.data.audio.spectrumMirrored
       }
@@ -137,7 +137,7 @@ DraggableDesktopWidget {
       NWaveSpectrum {
         anchors.fill: parent
         values: SpectrumService.values
-        fillColor: Color.mPrimary
+        fillColor: Colors.mPrimary
         opacity: 0.5
         mirrored: Settings.data.audio.spectrumMirrored
       }
@@ -218,7 +218,7 @@ DraggableDesktopWidget {
         anchors.centerIn: parent
         icon: "disc"
         pointSize: Math.round(24 * widgetScale)
-        color: Color.mOnSurfaceVariant
+        color: Colors.mOnSurfaceVariant
       }
     }
 
@@ -233,7 +233,7 @@ DraggableDesktopWidget {
         text: hasPlayer ? (MediaService.trackTitle || "Unknown Track") : "No media playing"
         pointSize: Math.round(Style.fontSizeS * widgetScale)
         font.weight: Style.fontWeightSemiBold
-        color: Color.mOnSurface
+        color: Colors.mOnSurface
         elide: Text.ElideRight
         maximumLineCount: 1
       }
@@ -244,7 +244,7 @@ DraggableDesktopWidget {
         text: MediaService.trackArtist || ""
         pointSize: Math.round(Style.fontSizeXS * widgetScale)
         font.weight: Style.fontWeightRegular
-        color: Color.mSecondary
+        color: Colors.mSecondary
         elide: Text.ElideRight
         maximumLineCount: 1
       }
@@ -268,8 +268,8 @@ DraggableDesktopWidget {
         baseSize: Math.round(32 * widgetScale)
         icon: "media-prev"
         enabled: hasPlayer && MediaService.canGoPrevious
-        colorBg: Color.mSurfaceVariant
-        colorFg: enabled ? Color.mPrimary : Color.mOnSurfaceVariant
+        colorBg: Colors.mSurfaceVariant
+        colorFg: enabled ? Colors.mPrimary : Colors.mOnSurfaceVariant
         customRadius: Math.round(Style.radiusS * widgetScale)
         onClicked: {
           if (enabled)
@@ -281,10 +281,10 @@ DraggableDesktopWidget {
         baseSize: Math.round(36 * widgetScale)
         icon: isPlaying ? "media-pause" : "media-play"
         enabled: hasPlayer && (MediaService.canPlay || MediaService.canPause)
-        colorBg: Color.mPrimary
-        colorFg: Color.mOnPrimary
-        colorBgHover: Qt.lighter(Color.mPrimary, 1.1)
-        colorFgHover: Color.mOnPrimary
+        colorBg: Colors.mPrimary
+        colorFg: Colors.mOnPrimary
+        colorBgHover: Qt.lighter(Colors.mPrimary, 1.1)
+        colorFgHover: Colors.mOnPrimary
         customRadius: Math.round(Style.radiusS * widgetScale)
         onClicked: {
           if (enabled) {
@@ -304,8 +304,8 @@ DraggableDesktopWidget {
         baseSize: Math.round(32 * widgetScale)
         icon: "media-next"
         enabled: hasPlayer && MediaService.canGoNext
-        colorBg: Color.mSurfaceVariant
-        colorFg: enabled ? Color.mPrimary : Color.mOnSurfaceVariant
+        colorBg: Colors.mSurfaceVariant
+        colorFg: enabled ? Colors.mPrimary : Colors.mOnSurfaceVariant
         customRadius: Math.round(Style.radiusS * widgetScale)
         onClicked: {
           if (enabled)

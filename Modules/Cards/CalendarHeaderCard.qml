@@ -14,7 +14,7 @@ Rectangle {
   Layout.preferredHeight: (60 * Style.uiScaleRatio) + Style.margin2M
   implicitHeight: (60 * Style.uiScaleRatio) + Style.margin2M
   radius: Style.radiusL
-  color: Color.mPrimary
+  color: Colors.mPrimary
 
   // Internal state
   readonly property var now: Time.now
@@ -51,7 +51,7 @@ Rectangle {
         text: root.now.getDate()
         pointSize: Style.fontSizeXXXL * 1.5
         font.weight: Style.fontWeightBold
-        color: Color.mOnPrimary
+        color: Colors.mOnPrimary
       }
 
       // Month, year, location
@@ -69,7 +69,7 @@ Rectangle {
             text: Time.formatMonthYear(new Date(root.currentYear, root.currentMonth, 1))
             pointSize: Style.fontSizeXL * 1.1
             font.weight: Style.fontWeightBold
-            color: Color.mOnPrimary
+            color: Colors.mOnPrimary
             Layout.alignment: Qt.AlignBaseline
             elide: Text.ElideRight
           }
@@ -92,7 +92,7 @@ Rectangle {
               return chunks[0];
             }
             pointSize: Style.fontSizeM
-            color: Color.mOnPrimary
+            color: Colors.mOnPrimary
             Layout.maximumWidth: 150
             elide: Text.ElideRight
           }
@@ -100,7 +100,7 @@ Rectangle {
           NText {
             text: root.weatherReady && !Settings.data.location.hideWeatherTimezone ? `${Settings.data.location.hideWeatherCityName ? "" : " "}(${LocationService.data.weather.timezone_abbreviation})` : ""
             pointSize: Style.fontSizeXS
-            color: Qt.alpha(Color.mOnPrimary, 0.7)
+            color: Qt.alpha(Colors.mOnPrimary, 0.7)
           }
         }
       }
@@ -119,7 +119,7 @@ Rectangle {
     anchors.rightMargin: Style.marginXL
     anchors.verticalCenter: parent.verticalCenter
     clockStyle: Settings.data.location.analogClockInCalendar ? "analog" : "digital"
-    progressColor: Color.mOnPrimary
+    progressColor: Colors.mOnPrimary
     Layout.alignment: Qt.AlignVCenter
     now: root.now
   }

@@ -44,9 +44,9 @@ Popup {
 
   background: Rectangle {
     id: bgRect
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderM
   }
 
@@ -70,7 +70,7 @@ Popup {
                         })
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
           Layout.fillWidth: true
         }
 
@@ -85,7 +85,7 @@ Popup {
         id: separator
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
       }
 
       // Scrollable settings area
@@ -94,7 +94,7 @@ Popup {
         Layout.fillWidth: true
         Layout.fillHeight: true
         Layout.minimumHeight: 100
-        gradientColor: Color.maskShell
+        gradientColor: Colors.maskShell
 
         ColumnLayout {
           width: scrollView.availableWidth
@@ -141,7 +141,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
       }
 
       RowLayout {

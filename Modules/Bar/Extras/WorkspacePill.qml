@@ -54,18 +54,18 @@ Item {
 
     color: {
       if (pillMouseArea.containsMouse)
-        return Color.mHover;
+        return Colors.mHover;
       if (workspace.isFocused)
-        return Color.resolveColorKey(focusedColor);
+        return Colors.resolveColorKey(focusedColor);
       if (workspace.isUrgent)
-        return Color.mError;
+        return Colors.mError;
       if (workspace.isOccupied)
-        return Color.resolveColorKey(occupiedColor);
-      return Qt.alpha(Color.resolveColorKey(emptyColor), 0.3);
+        return Colors.resolveColorKey(occupiedColor);
+      return Qt.alpha(Colors.resolveColorKey(emptyColor), 0.3);
     }
 
     Behavior on color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionSwitch
         easing.type: Easing.OutCubic
@@ -90,18 +90,18 @@ Item {
           wrapMode: Text.Wrap
           color: {
             if (pillMouseArea.containsMouse)
-              return Color.mOnHover;
+              return Colors.mOnHover;
             if (workspace.isFocused)
-              return Color.resolveOnColorKey(focusedColor);
+              return Colors.resolveOnColorKey(focusedColor);
             if (workspace.isUrgent)
-              return Color.mOnError;
+              return Colors.mOnError;
             if (workspace.isOccupied)
-              return Color.resolveOnColorKey(occupiedColor);
-            return Color.resolveOnColorKey(emptyColor);
+              return Colors.resolveOnColorKey(occupiedColor);
+            return Colors.resolveOnColorKey(emptyColor);
           }
 
           Behavior on color {
-            enabled: !Color.isTransitioning
+            enabled: !Colors.isTransitioning
             ColorAnimation {
               duration: Style.motionSwitch
               easing.type: Easing.OutCubic

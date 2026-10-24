@@ -26,7 +26,7 @@ Item {
   // replace. Default off: wallpaper surfaces keep the baked white artwork
   // (§1.5 — those surfaces stay dark in both modes).
   property bool recolorArtwork: false
-  property color artworkColor: Color.onShell
+  property color artworkColor: Colors.onShell
 
   // Set false for artwork without a "@2x" sibling.
   property bool hasRetinaAsset: true
@@ -66,7 +66,7 @@ Item {
 
     layer.enabled: root.recolorArtwork
     layer.effect: ShaderEffect {
-      property color targetColor: (mouseArea.pressed || root.checked) ? Color.accent : root.artworkColor
+      property color targetColor: (mouseArea.pressed || root.checked) ? Colors.accent : root.artworkColor
       property real colorizeMode: 3.0
       fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
     }

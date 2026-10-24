@@ -40,7 +40,7 @@ Rectangle {
     }
 
     // ===== APPEARANCE =====
-    color: rowHover.hovered ? Color.overlay("hover") : "transparent"
+    color: rowHover.hovered ? Colors.overlay("hover") : "transparent"
     radius: Style.radiusRow
     implicitHeight: cardLayout.implicitHeight + Style.marginS * 2
 
@@ -67,7 +67,7 @@ Rectangle {
             NIcon {
                 icon: "usb"
                 pointSize: Style.fontSizeL
-                color: device?.isMounted ? Color.accent : Color.onShellSecondary
+                color: device?.isMounted ? Colors.accent : Colors.onShellSecondary
             }
 
             // Label + subtitle
@@ -80,7 +80,7 @@ Rectangle {
                     text: root.displayLabel
                     pointSize: Style.fontSizeM
                     font.weight: Style.fontWeightMedium
-                    color: Color.onShell
+                    color: Colors.onShell
                     elide: Text.ElideRight
                 }
 
@@ -88,7 +88,7 @@ Rectangle {
                     Layout.fillWidth: true
                     text: root.displaySubtitle
                     pointSize: Style.fontSizeXS
-                    color: Color.onShellSecondary
+                    color: Colors.onShellSecondary
                     elide: Text.ElideRight
                 }
             }
@@ -102,9 +102,9 @@ Rectangle {
                 tooltipText: pluginApi?.tr("device.action-open")
                 baseSize: Style.baseWidgetSize * 0.8
                 colorBg: "transparent"
-                colorFg: Color.onShellSecondary
-                colorBgHover: Color.overlay("hover")
-                colorFgHover: Color.onShell
+                colorFg: Colors.onShellSecondary
+                colorBgHover: Colors.overlay("hover")
+                colorFgHover: Colors.onShell
                 colorBorder: "transparent"
                 colorBorderHover: "transparent"
                 onClicked: root.openRequested(device.mountpoint)
@@ -117,9 +117,9 @@ Rectangle {
                 tooltipText: pluginApi?.tr("device.action-copy-path")
                 baseSize: Style.baseWidgetSize * 0.8
                 colorBg: "transparent"
-                colorFg: Color.onShellSecondary
-                colorBgHover: Color.overlay("hover")
-                colorFgHover: Color.onShell
+                colorFg: Colors.onShellSecondary
+                colorBgHover: Colors.overlay("hover")
+                colorFgHover: Colors.onShell
                 colorBorder: "transparent"
                 colorBorderHover: "transparent"
                 onClicked: root.copyPathRequested(device.mountpoint)
@@ -132,9 +132,9 @@ Rectangle {
                 tooltipText: pluginApi?.tr("device.action-mount")
                 baseSize: Style.baseWidgetSize * 0.8
                 colorBg: "transparent"
-                colorFg: Color.onShellSecondary
-                colorBgHover: Color.overlay("hover")
-                colorFgHover: Color.onShell
+                colorFg: Colors.onShellSecondary
+                colorBgHover: Colors.overlay("hover")
+                colorFgHover: Colors.onShell
                 colorBorder: "transparent"
                 colorBorderHover: "transparent"
                 onClicked: root.mountRequested(device.path, root.displayLabel)
@@ -147,9 +147,9 @@ Rectangle {
                 tooltipText: pluginApi?.tr("device.action-unmount")
                 baseSize: Style.baseWidgetSize * 0.8
                 colorBg: "transparent"
-                colorFg: Color.onShellSecondary
-                colorBgHover: Color.overlay("hover")
-                colorFgHover: Color.onShell
+                colorFg: Colors.onShellSecondary
+                colorBgHover: Colors.overlay("hover")
+                colorFgHover: Colors.onShell
                 colorBorder: "transparent"
                 colorBorderHover: "transparent"
                 onClicked: root.unmountRequested(device.path, root.displayLabel)
@@ -161,9 +161,9 @@ Rectangle {
                 tooltipText: pluginApi?.tr("device.action-eject")
                 baseSize: Style.baseWidgetSize * 0.8
                 colorBg: "transparent"
-                colorFg: Color.onShellSecondary
-                colorBgHover: Color.overlay("hover")
-                colorFgHover: Color.alert
+                colorFg: Colors.onShellSecondary
+                colorBgHover: Colors.overlay("hover")
+                colorFgHover: Colors.alert
                 colorBorder: "transparent"
                 colorBorderHover: "transparent"
                 onClicked: root.ejectRequested(device.path, device.parentPath, root.displayLabel)
@@ -176,7 +176,7 @@ Rectangle {
             Layout.fillWidth: true
             text: device?.mountpoint || ""
             pointSize: Style.fontSizeXS
-            color: Color.onShellSecondary
+            color: Colors.onShellSecondary
             elide: Text.ElideMiddle
         }
 
@@ -186,9 +186,9 @@ Rectangle {
             Layout.preferredHeight: Style.marginXS
             orientation: Qt.Horizontal
             ratio: (device?.usedPercent ?? 0) / 100
-            fillColor: (device?.usedPercent ?? 0) > 90 ? Color.alert
-                     : (device?.usedPercent ?? 0) > 75 ? Color.attention
-                     : Color.accent
+            fillColor: (device?.usedPercent ?? 0) > 90 ? Colors.alert
+                     : (device?.usedPercent ?? 0) > 75 ? Colors.attention
+                     : Colors.accent
         }
 
         // Usage text
@@ -201,7 +201,7 @@ Rectangle {
                     ? pluginApi?.tr("device.used", { size: device?.usedSize ?? "" })
                     : pluginApi?.tr("device.loading")
                 pointSize: Style.fontSizeXXS
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
             }
 
             Item { Layout.fillWidth: true }
@@ -211,7 +211,7 @@ Rectangle {
                     ? pluginApi?.tr("device.free", { size: device?.freeSize ?? "" })
                     : ""
                 pointSize: Style.fontSizeXXS
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
             }
         }
     }

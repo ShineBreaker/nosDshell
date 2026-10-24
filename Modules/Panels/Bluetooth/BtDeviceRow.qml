@@ -38,7 +38,7 @@ Rectangle {
   readonly property bool known: (entry?.paired ?? false) || (entry?.trusted ?? false)
 
   radius: Style.radiusRow
-  color: rowHover.hovered ? Color.overlay("hover") : "transparent"
+  color: rowHover.hovered ? Colors.overlay("hover") : "transparent"
 
   HoverHandler {
     id: rowHover
@@ -54,7 +54,7 @@ Rectangle {
     NIcon {
       icon: BluetoothService.getDeviceIcon(root.entry)
       pointSize: Style.fontSizeXL
-      color: Color.onShell
+      color: Colors.onShell
       visible: icon !== ""
     }
 
@@ -79,14 +79,14 @@ Rectangle {
         return I18n.tr("common.connected");
       }
       pointSize: Style.fontSizeS
-      color: Color.onShellSecondary
+      color: Colors.onShellSecondary
     }
 
     NIcon {
       visible: root.connected && !root.busy
       icon: "check"
       pointSize: Style.fontSizeXL
-      color: Color.accent
+      color: Colors.accent
     }
 
     NBusyIndicator {
@@ -99,7 +99,7 @@ Rectangle {
     NIconButton {
       visible: rowHover.hovered && root.connected
       icon: "bluetooth-off"
-      colorFg: Color.onShell
+      colorFg: Colors.onShell
       tooltipText: I18n.tr("common.disconnect")
       onClicked: root.disconnectRequested(root.entry)
     }
@@ -107,14 +107,14 @@ Rectangle {
     NIconButton {
       visible: rowHover.hovered && root.known
       icon: "info-circle"
-      colorFg: Color.onShell
+      colorFg: Colors.onShell
       onClicked: root.detailsRequested(root.entry)
     }
 
     NIconButton {
       visible: rowHover.hovered && root.known && !root.connected && !root.busy
       icon: "trash"
-      colorFg: Color.onShell
+      colorFg: Colors.onShell
       onClicked: {
         if (root.entry)
           BluetoothService.forgetDevice(root.entry);

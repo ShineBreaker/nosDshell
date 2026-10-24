@@ -75,10 +75,10 @@ Item {
       baseSize: Style.baseWidgetSize * 0.8
       applyUiScale: false
       visible: root.pageCount > 1
-      colorFg: Color.onShellSecondary
+      colorFg: Colors.onShellSecondary
       colorBg: "transparent"
-      colorBgHover: Color.overlay("hover")
-      colorFgHover: Color.onShell
+      colorBgHover: Colors.overlay("hover")
+      colorFgHover: Colors.onShell
       onClicked: {
         wheelDebounce.restartIfActive();
         root.previousRequested();
@@ -100,7 +100,7 @@ Item {
           radius: 4
           // On-shell alphas: DDE spec is white@0.8/0.3 on its always-dark
           // panel; the token flips to dark dots on a light frame.
-          color: active ? Qt.alpha(Color.onShell, Style.pageDotCurrent) : Qt.alpha(Color.onShell, Style.pageDotOther)
+          color: active ? Qt.alpha(Colors.onShell, Style.pageDotCurrent) : Qt.alpha(Colors.onShell, Style.pageDotOther)
           anchors.verticalCenter: parent.verticalCenter
         }
       }
@@ -112,10 +112,10 @@ Item {
       baseSize: Style.baseWidgetSize * 0.8
       applyUiScale: false
       visible: root.pageCount > 1
-      colorFg: Color.onShellSecondary
+      colorFg: Colors.onShellSecondary
       colorBg: "transparent"
-      colorBgHover: Color.overlay("hover")
-      colorFgHover: Color.onShell
+      colorBgHover: Colors.overlay("hover")
+      colorFgHover: Colors.onShell
       onClicked: {
         wheelDebounce.restartIfActive();
         root.nextRequested();

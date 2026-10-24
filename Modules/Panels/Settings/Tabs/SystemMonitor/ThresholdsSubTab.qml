@@ -48,7 +48,7 @@ ColumnLayout {
         horizontalAlignment: Text.AlignHCenter
         text: I18n.tr("panels.system-monitor.threshold-warning")
         pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
       }
 
       NText {
@@ -56,7 +56,7 @@ ColumnLayout {
         horizontalAlignment: Text.AlignHCenter
         text: I18n.tr("panels.system-monitor.threshold-critical")
         pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
       }
 
       // CPU Usage

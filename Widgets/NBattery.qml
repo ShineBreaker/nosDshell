@@ -19,13 +19,13 @@ Item {
   property real baseSize: Style.fontSizeM
 
   // Styling - no hardcoded colors, only theme colors
-  property color baseColor: Color.onShell
-  property color lowColor: Color.alert
-  property color chargingColor: Color.accent
+  property color baseColor: Colors.onShell
+  property color lowColor: Colors.alert
+  property color chargingColor: Colors.accent
   // Ink on the baseColor-filled battery shape: mSurface is the deliberate
   // inverse pair of the onShell fill (same pairing Battery.qml overrides
   // with), not a background-plate use of the surface token.
-  property color textColor: Color.mSurface
+  property color textColor: Colors.mSurface
 
   // Display options
   property bool showPercentageText: true
@@ -79,7 +79,7 @@ Item {
   }
 
   // Background color for empty portion (semi-transparent)
-  readonly property color emptyColor: Color.overlay("strong")
+  readonly property color emptyColor: Colors.overlay("strong")
 
   // State icon logic
   readonly property string stateIcon: {

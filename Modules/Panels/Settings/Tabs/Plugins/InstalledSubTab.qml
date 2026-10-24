@@ -106,8 +106,8 @@ ColumnLayout {
       icon: "download"
       visible: (updateCount > 0)
       enabled: !isUpdating
-      backgroundColor: Color.accent
-      textColor: Color.onAccent
+      backgroundColor: Colors.accent
+      textColor: Colors.onAccent
       Layout.fillWidth: true
       onClicked: {
         isUpdating = true;
@@ -203,13 +203,13 @@ ColumnLayout {
               NIcon {
                 icon: "plugin"
                 pointSize: Style.fontSizeL
-                color: PluginService.hasPluginError(modelData.compositeKey) ? Color.alert : Color.accent
+                color: PluginService.hasPluginError(modelData.compositeKey) ? Colors.alert : Colors.accent
               }
 
               NText {
                 text: PluginRegistry.pluginDisplayName(modelData)
                 font.weight: Style.fontWeightMedium
-                color: Color.onShell
+                color: Colors.onShell
                 elide: Text.ElideRight
                 Layout.fillWidth: true
               }
@@ -217,7 +217,7 @@ ColumnLayout {
               // Official badge (marked official by the plugin's registry)
               Rectangle {
                 visible: modelData.official === true
-                color: Color.accentAlt
+                color: Colors.accentAlt
                 radius: Style.radiusRow
                 implicitWidth: officialBadgeRow.implicitWidth + Style.margin2S
                 implicitHeight: officialBadgeRow.implicitHeight + Style.margin2XS
@@ -230,14 +230,14 @@ ColumnLayout {
                   NIcon {
                     icon: "official-plugin"
                     pointSize: Style.fontSizeXXS
-                    color: Color.onAccent
+                    color: Colors.onAccent
                   }
 
                   NText {
                     text: I18n.tr("common.official")
                     font.pointSize: Style.fontSizeXXS
                     font.weight: Style.fontWeightMedium
-                    color: Color.onAccent
+                    color: Colors.onAccent
                   }
                 }
               }
@@ -245,7 +245,7 @@ ColumnLayout {
               // Built-in badge (shipped with the shell, cannot be uninstalled)
               Rectangle {
                 visible: modelData.builtin === true
-                color: Color.mSurfaceVariant
+                color: Colors.mSurfaceVariant
                 radius: Style.radiusRow
                 implicitWidth: builtinBadgeRow.implicitWidth + Style.margin2S
                 implicitHeight: builtinBadgeRow.implicitHeight + Style.margin2XS
@@ -258,7 +258,7 @@ ColumnLayout {
                     text: I18n.tr("common.builtin")
                     font.pointSize: Style.fontSizeXXS
                     font.weight: Style.fontWeightMedium
-                    color: Color.mOnSurfaceVariant
+                    color: Colors.mOnSurfaceVariant
                   }
                 }
               }
@@ -324,8 +324,8 @@ ColumnLayout {
                 icon: isUpdating ? "" : "download"
                 visible: modelData.updateInfo !== undefined
                 enabled: !isUpdating
-                backgroundColor: Color.accent
-                textColor: Color.onAccent
+                backgroundColor: Colors.accent
+                textColor: Colors.onAccent
                 fontSize: Style.fontSizeXXS
                 fontWeight: Style.fontWeightMedium
                 onClicked: {
@@ -376,7 +376,7 @@ ColumnLayout {
               visible: resolvedDesc !== ""
               text: resolvedDesc
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
               wrapMode: Text.WordWrap
               maximumLineCount: 2
               elide: Text.ElideRight
@@ -405,20 +405,20 @@ ColumnLayout {
                   return "v" + modelData.version;
                 }
                 font.pointSize: Style.fontSizeXS
-                color: modelData.updateInfo ? Color.accent : (modelData.pendingUpdateInfo ? Color.accentAlt : Color.onShellTertiary)
+                color: modelData.updateInfo ? Colors.accent : (modelData.pendingUpdateInfo ? Colors.accentAlt : Colors.onShellTertiary)
                 font.weight: (modelData.updateInfo || modelData.pendingUpdateInfo) ? Style.fontWeightMedium : Style.fontWeightRegular
               }
 
               NText {
                 text: "•"
                 font.pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
 
               NText {
                 text: stripAuthorEmail(modelData.author)
                 font.pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
 
               // Source indicator for plugins from non-official repos
@@ -426,28 +426,28 @@ ColumnLayout {
                 visible: !modelData.isFromOfficialRepo
                 text: "•"
                 font.pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
 
               NText {
                 visible: !modelData.isFromOfficialRepo
                 text: modelData.sourceName || I18n.tr("panels.plugins.source-custom")
                 font.pointSize: Style.fontSizeXS
-                color: Color.accentAlt
+                color: Colors.accentAlt
               }
 
               NText {
                 visible: !!modelData.lastUpdated
                 text: "•"
                 font.pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
 
               NText {
                 visible: !!modelData.lastUpdated
                 text: modelData.lastUpdated ? Time.formatRelativeTime(new Date(modelData.lastUpdated)) : ""
                 font.pointSize: Style.fontSizeXS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
               }
 
               Item {
@@ -463,14 +463,14 @@ ColumnLayout {
               NIcon {
                 icon: "alert-triangle"
                 pointSize: Style.fontSizeS
-                color: Color.alert
+                color: Colors.alert
               }
 
               NText {
                 property var errorInfo: PluginService.getPluginError(modelData.compositeKey)
                 text: errorInfo ? errorInfo.error : ""
                 font.pointSize: Style.fontSizeXXS
-                color: Color.alert
+                color: Colors.alert
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 elide: Text.ElideRight
@@ -505,9 +505,9 @@ ColumnLayout {
     property var pluginToUninstall: null
 
     background: Rectangle {
-      color: Color.maskShell
+      color: Colors.maskShell
       radius: Style.radiusWindow
-      border.color: Color.borderShell
+      border.color: Colors.borderShell
       border.width: Style.borderM
     }
 
@@ -537,8 +537,8 @@ ColumnLayout {
 
         NButton {
           text: I18n.tr("common.uninstall")
-          backgroundColor: Color.accent
-          textColor: Color.onAccent
+          backgroundColor: Colors.accent
+          textColor: Colors.onAccent
           onClicked: {
             if (uninstallDialog.pluginToUninstall) {
               root.uninstallPlugin(uninstallDialog.pluginToUninstall.compositeKey);

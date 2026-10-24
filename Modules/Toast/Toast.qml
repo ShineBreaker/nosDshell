@@ -100,7 +100,7 @@ Item {
     anchors.fill: parent
     anchors.margins: shadowPadding
     radius: Style.radiusL
-    color: Color.stackAlpha(Color.maskTransient, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
+    color: Colors.stackAlpha(Colors.maskTransient, Colors.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0)
 
     // Colored border based on type
     border.width: Style.borderS
@@ -108,13 +108,13 @@ Item {
       var baseColor;
       switch (root.type) {
       case "error":
-        baseColor = Color.alert;
+        baseColor = Colors.alert;
         break;
       default:
-        baseColor = Color.borderTransient;
+        baseColor = Colors.borderTransient;
         break;
       }
-      return Color.stackAlpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
+      return Colors.stackAlpha(baseColor, Colors.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
     }
 
     // Progress bar
@@ -137,16 +137,16 @@ Item {
           var baseColor;
           switch (root.type) {
           case "warning":
-            baseColor = Color.accent;
+            baseColor = Colors.accent;
             break;
           case "error":
-            baseColor = Color.alert;
+            baseColor = Colors.alert;
             break;
           default:
-            baseColor = Color.accent; // Match standard notification color
+            baseColor = Colors.accent; // Match standard notification color
             break;
           }
-          return Color.stackAlpha(baseColor, Color.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
+          return Colors.stackAlpha(baseColor, Colors.adaptiveOpacity(Settings.data.notifications.backgroundOpacity) || 1.0);
         }
       }
     }
@@ -310,11 +310,11 @@ Item {
       color: {
         switch (type) {
         case "warning":
-          return Color.accent;
+          return Colors.accent;
         case "error":
-          return Color.alert;
+          return Colors.alert;
         default:
-          return Color.onTransient;
+          return Colors.onTransient;
         }
       }
       pointSize: isCompact ? Style.fontSizeXL : Style.fontSizeXXL * 1.5
@@ -330,7 +330,7 @@ Item {
       NText {
         Layout.fillWidth: true
         text: root.title
-        color: Color.onTransient
+        color: Colors.onTransient
         pointSize: isCompact ? Style.fontSizeM : Style.fontSizeL
         font.weight: Style.fontWeightSemiBold
         wrapMode: Text.WordWrap
@@ -340,7 +340,7 @@ Item {
       NText {
         Layout.fillWidth: true
         text: root.description
-        color: Color.onTransientBody
+        color: Colors.onTransientBody
         pointSize: isCompact ? Style.fontSizeS : Style.fontSizeM
         wrapMode: Text.WordWrap
         maximumLineCount: isCompact ? 2 : 20
@@ -354,9 +354,9 @@ Item {
         visible: root.actionLabel.length > 0 && root.actionCallback !== null
         Layout.topMargin: Style.marginXS
         fontSize: Style.fontSizeS
-        backgroundColor: Color.accent
-        textColor: Color.onAccent
-        hoverColor: Color.accentHover
+        backgroundColor: Colors.accent
+        textColor: Colors.onAccent
+        hoverColor: Colors.accentHover
         outlined: false
         implicitHeight: Style.toastActionHeight
 

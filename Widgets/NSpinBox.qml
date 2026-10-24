@@ -109,12 +109,12 @@ NDccRow {
     Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
     implicitHeight: Math.max(Style.settingsFieldHeight, Math.round((root.baseSize - 4) / 2) * 2)
     radius: Style.settingsFieldRadius
-    color: Color.overlay("field")
-    border.color: (root.hovering || decreaseArea.containsMouse || increaseArea.containsMouse) ? Color.accent : "transparent"
+    color: Colors.overlay("field")
+    border.color: (root.hovering || decreaseArea.containsMouse || increaseArea.containsMouse) ? Colors.accent : "transparent"
     border.width: Style.borderS
 
     Behavior on border.color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionPointer
         easing.type: Easing.OutCubic
@@ -168,7 +168,7 @@ NDccRow {
         width: parent.height
         height: width
         radius: spinBoxContainer.radius
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
         opacity: decreaseArea.containsMouse ? 1.0 : 0.0
       }
 
@@ -176,7 +176,7 @@ NDccRow {
         anchors.centerIn: parent
         icon: "chevron-left"
         pointSize: Style.fontSizeS
-        color: decreaseArea.containsMouse ? Color.onShell : Color.onShellSecondary
+        color: decreaseArea.containsMouse ? Colors.onShell : Colors.onShellSecondary
       }
 
       MouseArea {
@@ -210,7 +210,7 @@ NDccRow {
         width: parent.height
         height: width
         radius: spinBoxContainer.radius
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
         opacity: increaseArea.containsMouse ? 1.0 : 0.0
       }
 
@@ -218,7 +218,7 @@ NDccRow {
         anchors.centerIn: parent
         icon: "chevron-right"
         pointSize: Style.fontSizeS
-        color: increaseArea.containsMouse ? Color.onShell : Color.onShellSecondary
+        color: increaseArea.containsMouse ? Colors.onShell : Colors.onShellSecondary
       }
 
       MouseArea {
@@ -258,7 +258,7 @@ NDccRow {
           }
           pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
-          color: Qt.alpha(Color.onShell, root.enabled ? 1.0 : 0.6)
+          color: Qt.alpha(Colors.onShell, root.enabled ? 1.0 : 0.6)
           verticalAlignment: Text.AlignVCenter
           Layout.alignment: Qt.AlignVCenter
           visible: root.prefix !== ""
@@ -273,7 +273,7 @@ NDccRow {
           }
           font.pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
-          color: Qt.alpha(Color.onShell, root.enabled ? 1.0 : 0.6)
+          color: Qt.alpha(Colors.onShell, root.enabled ? 1.0 : 0.6)
           verticalAlignment: Text.AlignVCenter
           Layout.alignment: Qt.AlignVCenter
           selectByMouse: true
@@ -321,7 +321,7 @@ NDccRow {
           }
           pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
-          color: Qt.alpha(Color.onShell, root.enabled ? 1.0 : 0.6)
+          color: Qt.alpha(Colors.onShell, root.enabled ? 1.0 : 0.6)
           verticalAlignment: Text.AlignVCenter
           Layout.alignment: Qt.AlignVCenter
           visible: root.suffix !== ""

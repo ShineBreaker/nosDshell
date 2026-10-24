@@ -11,10 +11,10 @@ Item {
   property string text: ""
   property string icon: ""
   property var tooltipText
-  property color backgroundColor: Color.overlay("strong")
-  property color textColor: Color.onShell
-  property color hoverColor: Color.overlay("press")
-  property color textHoverColor: Color.onShell
+  property color backgroundColor: Colors.overlay("strong")
+  property color textColor: Colors.onShell
+  property color hoverColor: Colors.overlay("press")
+  property color textHoverColor: Colors.onShell
   property real fontSize: Style.fontSizeM
   property int fontWeight: Style.fontWeightMedium
   property real iconSize: Style.fontSizeL
@@ -27,7 +27,7 @@ Item {
   // accent while pressed.
   property real buttonRadius: Style.radiusPill
   // Recommended action: the label turns accent. Existing callers get this for
-  // free by passing `backgroundColor: Color.mPrimary`; setting `primary`
+  // free by passing `backgroundColor: Colors.mPrimary`; setting `primary`
   // directly is the explicit form.
   property bool primary: false
 
@@ -42,16 +42,16 @@ Item {
   property bool hovered: false
   readonly property bool pressed: mouseArea.pressed
   // Callers that pass the accent color as background get the "recommended" look (DESIGN §3.5.4)
-  readonly property bool isPrimary: root.primary || Qt.colorEqual(root.backgroundColor, Color.mPrimary)
+  readonly property bool isPrimary: root.primary || Qt.colorEqual(root.backgroundColor, Colors.mPrimary)
   readonly property color contentColor: {
     if (!root.enabled) {
-      return Color.onShellTertiary;
+      return Colors.onShellTertiary;
     }
     if (root.pressed) {
-      return Color.mOnPrimary;
+      return Colors.mOnPrimary;
     }
     if (root.isPrimary) {
-      return Color.accent;
+      return Colors.accent;
     }
     if (root.hovered) {
       return root.textHoverColor;
@@ -76,18 +76,18 @@ Item {
     radius: root.buttonRadius
     color: {
       if (!root.enabled)
-        return Color.overlay("idle");
+        return Colors.overlay("idle");
       if (root.pressed)
-        return Color.accent;
+        return Colors.accent;
       if (root.hovered)
         return root.hoverColor;
       if (root.isPrimary)
-        return Color.overlay("strong");
+        return Colors.overlay("strong");
       return root.backgroundColor;
     }
 
     Behavior on color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionPointer
         easing.type: Easing.OutCubic
@@ -112,7 +112,7 @@ Item {
         color: root.contentColor
 
         Behavior on color {
-          enabled: !Color.isTransitioning
+          enabled: !Colors.isTransitioning
           ColorAnimation {
             duration: Style.motionPointer
             easing.type: Easing.OutCubic
@@ -131,7 +131,7 @@ Item {
         autoDim: false
 
         Behavior on color {
-          enabled: !Color.isTransitioning
+          enabled: !Colors.isTransitioning
           ColorAnimation {
             duration: Style.motionPointer
             easing.type: Easing.OutCubic

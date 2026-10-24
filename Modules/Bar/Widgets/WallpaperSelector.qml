@@ -50,8 +50,8 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : Style.capsuleColor
-  colorFg: fashionMode ? Color.onShell : Color.resolveColorKey(iconColorKey)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : Style.capsuleColor
+  colorFg: fashionMode ? Colors.onShell : Colors.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
 

@@ -174,13 +174,13 @@ ColumnLayout {
       if (BarWidgetRegistry.isPluginWidget(id)) {
         badges.push({
                       "icon": "plugin",
-                      "color": Color.accentAlt
+                      "color": Colors.accentAlt
                     });
       }
       if (BarWidgetRegistry.isCpuIntensive(id)) {
         badges.push({
                       "icon": "cpu-intensive",
-                      "color": Color.accentAlt
+                      "color": Colors.accentAlt
                     });
       }
       availableWidgetsModel.append({

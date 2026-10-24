@@ -18,7 +18,7 @@ ColumnLayout {
   Layout.fillWidth: true
   spacing: Style.settingsGroupGap
 
-  readonly property color launcherPreviewColor: Color.resolveColorKey((Settings.data.dock.launcherIconColor !== undefined) ? Settings.data.dock.launcherIconColor : "none")
+  readonly property color launcherPreviewColor: Colors.resolveColorKey((Settings.data.dock.launcherIconColor !== undefined) ? Settings.data.dock.launcherIconColor : "none")
   readonly property bool fashionMode: Settings.data.dock.mode === "fashion"
 
   NToggle {
@@ -56,8 +56,8 @@ ColumnLayout {
       width: Style.toOdd(Style.baseWidgetSize * Style.uiScaleRatio)
       height: width
       radius: Math.min(Style.radiusItem, width / 2)
-      color: Color.overlay("field")
-      border.color: Color.borderShell
+      color: Colors.overlay("field")
+      border.color: Colors.borderShell
       border.width: Style.borderS
 
       Image {

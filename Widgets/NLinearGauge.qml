@@ -10,8 +10,8 @@ Rectangle {
   required property real ratio // 0..1
 
   radius: Style.radiusXXXS
-  color: Color.overlay("strong")
-  property color fillColor: Color.accent
+  color: Colors.overlay("strong")
+  property color fillColor: Colors.accent
 
   // Fill that grows from bottom if vertical and left if horizontal.
   // Snap to zero if the computed pixel length is sub-pixel (< 1px).

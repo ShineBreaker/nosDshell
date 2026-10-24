@@ -148,7 +148,7 @@ ColumnLayout {
           Layout.fillWidth: true
           label: entryDelegate.name || I18n.tr("panels.idle.custom-entry-unnamed")
           description: I18n.trp("common.second", entryDelegate.timeout)
-          labelColor: (entryDelegate.command || entryDelegate.resumeCommand) ? Color.accent : Color.onShell
+          labelColor: (entryDelegate.command || entryDelegate.resumeCommand) ? Colors.accent : Colors.onShell
           labelWeight: Style.fontWeightRegular
         }
 

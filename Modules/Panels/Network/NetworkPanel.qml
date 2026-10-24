@@ -109,7 +109,7 @@ SmartPanel {
             id: modeIcon
             icon: panelViewMode === "wifi" ? (NetworkService.wifiEnabled ? "wifi" : "wifi-off") : (NetworkService.ethernetAvailable ? (NetworkService.ethernetConnected ? "ethernet" : "ethernet") : "ethernet-off")
             pointSize: Style.fontSizeXL
-            color: (panelViewMode === "wifi" ? NetworkService.wifiEnabled : NetworkService.ethernetConnected) ? Color.accent : Color.onShellSecondary
+            color: (panelViewMode === "wifi" ? NetworkService.wifiEnabled : NetworkService.ethernetConnected) ? Colors.accent : Colors.onShellSecondary
             MouseArea {
               anchors.fill: parent
               hoverEnabled: true
@@ -139,7 +139,7 @@ SmartPanel {
 
           NIconButton {
             icon: "settings"
-            colorFg: Color.onShell
+            colorFg: Colors.onShell
             tooltipText: I18n.tr("tooltips.open-settings")
             onClicked: SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 0, screen)
           }
@@ -196,10 +196,10 @@ SmartPanel {
           visible: panelViewMode === "wifi" && NetworkService.lastError.length > 0
           Layout.fillWidth: true
           Layout.preferredHeight: errorRow.implicitHeight + Style.margin2M
-          color: Qt.alpha(Color.mError, 0.1)
+          color: Qt.alpha(Colors.mError, 0.1)
           radius: Style.radiusItem
           border.width: Style.borderS
-          border.color: Color.mError
+          border.color: Colors.mError
 
           RowLayout {
             id: errorRow
@@ -210,12 +210,12 @@ SmartPanel {
             NIcon {
               icon: "warning"
               pointSize: Style.fontSizeL
-              color: Color.mError
+              color: Colors.mError
             }
 
             NText {
               text: NetworkService.lastError
-              color: Color.mError
+              color: Colors.mError
               pointSize: Style.fontSizeS
               wrapMode: Text.Wrap
               Layout.fillWidth: true
@@ -243,7 +243,7 @@ SmartPanel {
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
           reserveScrollbarSpace: false
-          gradientColor: Color.popupShell
+          gradientColor: Colors.popupShell
 
           ColumnLayout {
             id: contentColumn
@@ -270,21 +270,21 @@ SmartPanel {
                 NIcon {
                   icon: "wifi-off"
                   pointSize: Style.emptyStateIconSize
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
                 NText {
                   text: I18n.tr("wifi.panel.disabled")
                   pointSize: Style.fontSizeL
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
                 NText {
                   text: I18n.tr("wifi.panel.enable-message")
                   pointSize: Style.fontSizeS
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   horizontalAlignment: Text.AlignHCenter
                   Layout.fillWidth: true
                   wrapMode: Text.WordWrap
@@ -315,7 +315,7 @@ SmartPanel {
 
                 NBusyIndicator {
                   running: visible && root.effectivelyVisible
-                  color: Color.accent
+                  color: Colors.accent
                   size: Style.baseWidgetSize
                   Layout.alignment: Qt.AlignHCenter
                 }
@@ -323,7 +323,7 @@ SmartPanel {
                 NText {
                   text: I18n.tr("wifi.panel.searching")
                   pointSize: Style.fontSizeM
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
@@ -353,14 +353,14 @@ SmartPanel {
                 NIcon {
                   icon: "wifi-question"
                   pointSize: Style.emptyStateIconSize
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
                 NText {
                   text: I18n.tr("wifi.panel.no-networks")
                   pointSize: Style.fontSizeL
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                   Layout.alignment: Qt.AlignHCenter
                 }
 
@@ -420,14 +420,14 @@ SmartPanel {
                   NIcon {
                     icon: "ethernet-off"
                     pointSize: Style.emptyStateIconSize
-                    color: Color.onShellTertiary
+                    color: Colors.onShellTertiary
                     Layout.alignment: Qt.AlignHCenter
                   }
 
                   NText {
                     text: I18n.tr("wifi.panel.no-ethernet-devices")
                     pointSize: Style.fontSizeL
-                    color: Color.onShellTertiary
+                    color: Colors.onShellTertiary
                     Layout.alignment: Qt.AlignHCenter
                   }
 
@@ -448,7 +448,7 @@ SmartPanel {
                     delegate: NBox {
                       id: ethItem
 
-                      function getContentColors(defaultColors = ["transparent", Color.onShell]) {
+                      function getContentColors(defaultColors = ["transparent", Colors.onShell]) {
                         return defaultColors;
                       }
 
@@ -570,8 +570,8 @@ SmartPanel {
                             icon: "info"
                             tooltipText: I18n.tr("common.info")
                             baseSize: Style.baseWidgetSize * 0.75
-                            colorBg: Color.overlay("strong")
-                            colorFg: Color.onShell
+                            colorBg: Colors.overlay("strong")
+                            colorFg: Colors.onShell
                             colorBorder: "transparent"
                             colorBorderHover: "transparent"
                             enabled: true
@@ -613,7 +613,7 @@ SmartPanel {
                           id: ethInfoInline
                           visible: ethernetInfoExpanded && NetworkService.activeEthernetIf === modelData.ifname
                           Layout.fillWidth: true
-                          color: Color.overlay("field")
+                          color: Colors.overlay("field")
                           radius: Style.radiusItem
                           border.width: 0
                           implicitHeight: ethInfoGrid.implicitHeight + Style.margin2S
@@ -661,7 +661,7 @@ SmartPanel {
                               NIcon {
                                 icon: "ethernet"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.alignment: Qt.AlignVCenter
                                 MouseArea {
                                   anchors.fill: parent
@@ -673,7 +673,7 @@ SmartPanel {
                               NText {
                                 text: (NetworkService.activeEthernetDetails.ifname && NetworkService.activeEthernetDetails.ifname.length > 0) ? NetworkService.activeEthernetDetails.ifname : (NetworkService.activeEthernetIf || "-")
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 wrapMode: ethernetDetailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere
@@ -709,7 +709,7 @@ SmartPanel {
                               NIcon {
                                 icon: "hash"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.alignment: Qt.AlignVCenter
                                 MouseArea {
                                   anchors.fill: parent
@@ -721,7 +721,7 @@ SmartPanel {
                               NText {
                                 text: NetworkService.activeEthernetDetails.hwAddr || "-"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 wrapMode: ethernetDetailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere
@@ -755,7 +755,7 @@ SmartPanel {
                               NIcon {
                                 icon: "gauge"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.alignment: Qt.AlignVCenter
                                 MouseArea {
                                   anchors.fill: parent
@@ -767,7 +767,7 @@ SmartPanel {
                               NText {
                                 text: (NetworkService.activeEthernetDetails.speed && NetworkService.activeEthernetDetails.speed.length > 0) ? NetworkService.activeEthernetDetails.speed : "-"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 wrapMode: ethernetDetailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere
@@ -785,7 +785,7 @@ SmartPanel {
                               NIcon {
                                 icon: "network"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.alignment: Qt.AlignVCenter
                                 MouseArea {
                                   anchors.fill: parent
@@ -801,7 +801,7 @@ SmartPanel {
                               NText {
                                 text: root.ipVersion === 4 ? (NetworkService.activeEthernetDetails.ipv4 || "-") : ((NetworkService.activeEthernetDetails.ipv6 || []).join(", ") || "-")
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 wrapMode: ethernetDetailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere
@@ -836,7 +836,7 @@ SmartPanel {
                               NIcon {
                                 icon: "world"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.alignment: Qt.AlignVCenter
                                 MouseArea {
                                   anchors.fill: parent
@@ -852,7 +852,7 @@ SmartPanel {
                               NText {
                                 text: root.ipVersion === 4 ? ((NetworkService.activeEthernetDetails.dns4 || []).join(", ") || "-") : ((NetworkService.activeEthernetDetails.dns6 || []).join(", ") || "-")
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 wrapMode: ethernetDetailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere
@@ -887,7 +887,7 @@ SmartPanel {
                               NIcon {
                                 icon: "router"
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.alignment: Qt.AlignVCenter
                                 MouseArea {
                                   anchors.fill: parent
@@ -903,7 +903,7 @@ SmartPanel {
                               NText {
                                 text: root.ipVersion === 4 ? (NetworkService.activeEthernetDetails.gateway4 || "-") : ((NetworkService.activeEthernetDetails.gateway6 || []).join(", ") || "-")
                                 pointSize: Style.fontSizeXS
-                                color: Color.onShell
+                                color: Colors.onShell
                                 Layout.fillWidth: true
                                 Layout.alignment: Qt.AlignVCenter
                                 wrapMode: ethernetDetailsGrid ? Text.NoWrap : Text.WrapAtWordBoundaryOrAnywhere

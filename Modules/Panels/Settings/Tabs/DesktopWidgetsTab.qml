@@ -205,13 +205,13 @@ ColumnLayout {
         if (isPlugin) {
           badges.push({
                         "icon": "plugin",
-                        "color": Color.accentAlt
+                        "color": Colors.accentAlt
                       });
         }
         if (DesktopWidgetRegistry.isCpuIntensive(widgetId)) {
           badges.push({
                         "icon": "cpu-intensive",
-                        "color": Color.accentAlt
+                        "color": Colors.accentAlt
                       });
         }
 

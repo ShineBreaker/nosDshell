@@ -74,7 +74,7 @@ Singleton {
   readonly property real opacityAlmost: 0.95
   readonly property real opacityFull: 1.0
 
-  readonly property real effectivePanelOpacity: PowerProfileService.performanceMode ? 1.0 : Color.adaptiveOpacity(Settings.data.ui.panelBackgroundOpacity)
+  readonly property real effectivePanelOpacity: PowerProfileService.performanceMode ? 1.0 : Colors.adaptiveOpacity(Settings.data.ui.panelBackgroundOpacity)
   readonly property real effectiveBarOpacity: PowerProfileService.performanceMode ? 1.0 : Settings.data.bar.backgroundOpacity
 
   // Shadows
@@ -167,12 +167,12 @@ Singleton {
   readonly property real barFontSize: _barEffectiveVertical ? _barBaseFontSize * 0.9 * Settings.data.bar.fontScale : _barBaseFontSize * Settings.data.bar.fontScale
 
   // Efficient mode never draws capsules (DESIGN §3.1.3: no capsules on the taskbar)
-  readonly property color capsuleColor: (Settings.data.dock.mode === "efficient" || !Settings.data.bar.showCapsule) ? "transparent" : Qt.alpha(Settings.data.bar.capsuleColorKey !== "none" ? Color.resolveColorKey(Settings.data.bar.capsuleColorKey) : Color.mSurfaceVariant, Settings.data.bar.capsuleOpacity)
+  readonly property color capsuleColor: (Settings.data.dock.mode === "efficient" || !Settings.data.bar.showCapsule) ? "transparent" : Qt.alpha(Settings.data.bar.capsuleColorKey !== "none" ? Colors.resolveColorKey(Settings.data.bar.capsuleColorKey) : Colors.mSurfaceVariant, Settings.data.bar.capsuleOpacity)
 
-  readonly property color capsuleBorderColor: (Settings.data.dock.mode !== "efficient" && Settings.data.bar.showOutline) ? Color.mPrimary : "transparent"
+  readonly property color capsuleBorderColor: (Settings.data.dock.mode !== "efficient" && Settings.data.bar.showOutline) ? Colors.mPrimary : "transparent"
   readonly property int capsuleBorderWidth: Settings.data.bar.showOutline ? Style.borderS : 0
 
-  readonly property color boxBorderColor: Settings.data.ui.boxBorderEnabled ? Color.mOutline : "transparent"
+  readonly property color boxBorderColor: Settings.data.ui.boxBorderEnabled ? Colors.mOutline : "transparent"
 
   // Pixel-perfect utility for centering content without subpixel positioning
   function pixelAlignCenter(containerSize, contentSize) {
@@ -358,7 +358,7 @@ Singleton {
   function _motion(baseMs, noBlurMs) {
     if (Settings.data.general.animationDisabled || PowerProfileService.performanceMode)
       return 0;
-    const ms = (noBlurMs !== undefined && !Color.blurActive) ? noBlurMs : baseMs;
+    const ms = (noBlurMs !== undefined && !Colors.blurActive) ? noBlurMs : baseMs;
     return Math.round(ms / Settings.data.general.animationSpeed);
   }
 

@@ -135,8 +135,8 @@ Item {
 
     screen: root.screen
     oppositeDirection: BarService.getPillDirection(root)
-    customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
-    customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
+    customIconColor: Colors.resolveColorKeyOptional(root.iconColorKey)
+    customTextColor: Colors.resolveColorKeyOptional(root.textColorKey)
     icon: AudioService.getInputIcon()
     dockPresentation: root.dockPresentation
     iconSource: root.onShellSurface ? ThemeIcons.symbolicOnly(AudioService.getInputIcon() === "microphone-off" ? "microphone-sensitivity-muted" : "microphone-sensitivity-high") : ""

@@ -6,7 +6,7 @@ import qs.Commons
 ScrollView {
   id: root
 
-  property color handleColor: Color.overlay("checked")
+  property color handleColor: Colors.overlay("checked")
   property color handleHoverColor: handleColor
   property color handlePressedColor: handleColor
   property color trackColor: "transparent"
@@ -19,7 +19,7 @@ ScrollView {
   readonly property bool verticalScrollable: (contentItem.contentHeight > contentItem.height) || (verticalPolicy == ScrollBar.AlwaysOn)
   readonly property bool horizontalScrollable: (contentItem.contentWidth > contentItem.width) || (horizontalPolicy == ScrollBar.AlwaysOn)
   property bool showGradientMasks: true
-  property color gradientColor: Color.mSurfaceVariant
+  property color gradientColor: Colors.mSurfaceVariant
   property int gradientHeight: 16
   property bool reserveScrollbarSpace: true
   property real userRightPadding: 0

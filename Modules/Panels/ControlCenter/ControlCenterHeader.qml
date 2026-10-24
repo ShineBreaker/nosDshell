@@ -76,7 +76,7 @@ Item {
         }
         font.pointSize: Math.max(1, Style.fontSizeClockCC * (Settings.data.ui.fontDefaultScale) * Style.uiScaleRatio)
         font.weight: Style.fontWeightLight
-        color: Color.onShell
+        color: Colors.onShell
         horizontalAlignment: Text.AlignHCenter
         // The column between avatar and buttons is ~120 px — narrower than
         // "HH:mm" at fontSizeClockCC on wider fonts — so shrink instead of
@@ -96,7 +96,7 @@ Item {
         horizontalAlignment: Text.AlignHCenter
         fontSizeMode: Text.HorizontalFit
         minimumPointSize: Style.fontSizeXXS
-        color: Color.onShell
+        color: Colors.onShell
         elide: Text.ElideRight
       }
     }
@@ -111,9 +111,9 @@ Item {
         icon: "settings"
         baseSize: 32
         applyUiScale: false
-        colorFg: Color.onShell
+        colorFg: Colors.onShell
         colorBg: "transparent"
-        colorBgHover: Color.overlay("hover")
+        colorBgHover: Colors.overlay("hover")
         tooltipText: I18n.tr("actions.open-settings")
         onClicked: root.settingsRequested()
       }
@@ -122,9 +122,9 @@ Item {
         icon: "power"
         baseSize: 32
         applyUiScale: false
-        colorFg: Color.onShell
+        colorFg: Colors.onShell
         colorBg: "transparent"
-        colorBgHover: Color.overlay("hover")
+        colorBgHover: Colors.overlay("hover")
         tooltipText: I18n.tr("tooltips.session-menu")
         onClicked: root.sessionRequested()
       }
@@ -147,7 +147,7 @@ Item {
             const name = bellArea.containsMouse ? "hover" : "normal";
             return Quickshell.shellDir + "/Assets/DDE/gxde-control-center/src/frame/themes/dark/icons/notifications_toggle_" + name + ".svg";
           }
-          color: (root.notificationPage || bellArea.pressed) ? Color.accent : Color.onShell
+          color: (root.notificationPage || bellArea.pressed) ? Colors.accent : Colors.onShell
         }
 
         MouseArea {

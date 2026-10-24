@@ -28,7 +28,7 @@ ColumnLayout {
       if (data && data[mode] && data[mode][key])
         return data[mode][key];
     } catch (e) {}
-    return Color.mSurfaceVariant;
+    return Colors.mSurfaceVariant;
   }
 
   // Match ColorSchemeTab helpers
@@ -68,12 +68,12 @@ ColumnLayout {
           width: 28
           height: 28
           radius: Style.radiusM
-          color: Color.overlay("idle")
+          color: Colors.overlay("idle")
 
           NIcon {
             icon: "moon"
             pointSize: Style.fontSizeL
-            color: Color.mPrimary
+            color: Colors.mPrimary
             anchors.centerIn: parent
           }
         }
@@ -86,13 +86,13 @@ ColumnLayout {
             text: I18n.tr("tooltips.switch-to-dark-mode")
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightSemiBold
-            color: Color.mOnSurface
+            color: Colors.mOnSurface
           }
 
           NText {
             text: I18n.tr("panels.color-scheme.dark-mode-switch-description")
             pointSize: Style.fontSizeS
-            color: Color.mOnSurfaceVariant
+            color: Colors.mOnSurfaceVariant
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
           }
@@ -108,7 +108,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -123,12 +123,12 @@ ColumnLayout {
           width: 28
           height: 28
           radius: Style.radiusM
-          color: Color.overlay("idle")
+          color: Colors.overlay("idle")
 
           NIcon {
             icon: "color-picker"
             pointSize: Style.fontSizeL
-            color: Color.mPrimary
+            color: Colors.mPrimary
             anchors.centerIn: parent
           }
         }
@@ -141,13 +141,13 @@ ColumnLayout {
             text: I18n.tr("panels.color-scheme.color-source-use-wallpaper-colors-label")
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightSemiBold
-            color: Color.mOnSurface
+            color: Colors.mOnSurface
           }
 
           NText {
             text: I18n.tr("panels.color-scheme.color-source-use-wallpaper-colors-description")
             pointSize: Style.fontSizeS
-            color: Color.mOnSurfaceVariant
+            color: Colors.mOnSurfaceVariant
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
           }
@@ -173,7 +173,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -194,12 +194,12 @@ ColumnLayout {
             width: 28
             height: 28
             radius: Style.radiusM
-            color: Color.overlay("idle")
+            color: Colors.overlay("idle")
 
             NIcon {
               icon: "palette"
               pointSize: Style.fontSizeL
-              color: Color.mPrimary
+              color: Colors.mPrimary
               anchors.centerIn: parent
             }
           }
@@ -212,13 +212,13 @@ ColumnLayout {
               text: I18n.tr("panels.color-scheme.predefined-title")
               pointSize: Style.fontSizeL
               font.weight: Style.fontWeightSemiBold
-              color: Color.mOnSurface
+              color: Colors.mOnSurface
             }
 
             NText {
               text: I18n.tr("panels.color-scheme.predefined-desc")
               pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
             }
           }
         }
@@ -246,7 +246,7 @@ ColumnLayout {
               radius: Style.radiusS
               color: root.cacheVersion >= 0 ? root.getSchemeColor(schemeName, "mSurface") : root.getSchemeColor(schemeName, "mSurface")
               border.width: Style.borderL
-              border.color: itemMouseArea.containsMouse ? Color.mHover : (Settings.data.colorSchemes.predefinedScheme === schemeName ? Color.mSecondary : Color.mOutline)
+              border.color: itemMouseArea.containsMouse ? Colors.mHover : (Settings.data.colorSchemes.predefinedScheme === schemeName ? Colors.mSecondary : Colors.mOutline)
 
               RowLayout {
                 anchors.fill: parent
@@ -257,7 +257,7 @@ ColumnLayout {
                   text: schemeItem.schemeName
                   pointSize: Style.fontSizeS
                   font.weight: Style.fontWeightMedium
-                  color: Color.mOnSurface
+                  color: Colors.mOnSurface
                   Layout.fillWidth: true
                   elide: Text.ElideRight
                   verticalAlignment: Text.AlignVCenter
@@ -273,7 +273,7 @@ ColumnLayout {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
                     var cached = root.schemeColorsCache[schemeItem.schemeName];
                     return (cached && cached[mode] && cached[mode].mPrimary) || root.getSchemeColor(schemeItem.schemeName, "mPrimary");
-                  })() : Color.mPrimary
+                  })() : Colors.mPrimary
                 }
                 Rectangle {
                   width: 14
@@ -283,7 +283,7 @@ ColumnLayout {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
                     var cached = root.schemeColorsCache[schemeItem.schemeName];
                     return (cached && cached[mode] && cached[mode].mSecondary) || root.getSchemeColor(schemeItem.schemeName, "mSecondary");
-                  })() : Color.mSecondary
+                  })() : Colors.mSecondary
                 }
                 Rectangle {
                   width: 14
@@ -293,7 +293,7 @@ ColumnLayout {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
                     var cached = root.schemeColorsCache[schemeItem.schemeName];
                     return (cached && cached[mode] && cached[mode].mTertiary) || root.getSchemeColor(schemeItem.schemeName, "mTertiary");
-                  })() : Color.mTertiary
+                  })() : Colors.mTertiary
                 }
                 Rectangle {
                   width: 14
@@ -303,7 +303,7 @@ ColumnLayout {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
                     var cached = root.schemeColorsCache[schemeItem.schemeName];
                     return (cached && cached[mode] && cached[mode].mError) || root.getSchemeColor(schemeItem.schemeName, "mError");
-                  })() : Color.mError
+                  })() : Colors.mError
                 }
               }
 

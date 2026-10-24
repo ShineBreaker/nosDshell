@@ -143,8 +143,8 @@ Item {
 
     screen: root.screen
     oppositeDirection: BarService.getPillDirection(root)
-    customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
-    customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
+    customIconColor: Colors.resolveColorKeyOptional(root.iconColorKey)
+    customTextColor: Colors.resolveColorKeyOptional(root.textColorKey)
     icon: getIcon()
     dockPresentation: root.dockPresentation
     iconSource: root.onShellSurface ? ThemeIcons.symbolicOnly(getIcon() === "sun-off" ? "display-brightness-off" : "display-brightness") : ""

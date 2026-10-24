@@ -30,7 +30,7 @@ NBox {
       imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
       fallbackImagePath: Settings.ddeDefaultAvatar
       fallbackIcon: "person"
-      borderColor: Color.mPrimary
+      borderColor: Colors.mPrimary
       borderWidth: Style.borderS * 1.5
     }
 
@@ -51,7 +51,7 @@ NBox {
                         "uptime": uptimeText
                       })
         pointSize: Style.fontSizeS
-        color: Color.mOnSurfaceVariant
+        color: Colors.mOnSurfaceVariant
       }
     }
 

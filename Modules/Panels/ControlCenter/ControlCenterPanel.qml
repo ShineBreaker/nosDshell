@@ -128,7 +128,7 @@ SmartPanel {
   preferredWidth: Style.controlCenterWidth
   preferredHeight: root.screen?.height ?? 0
 
-  panelBackgroundColor: Color.maskShell
+  panelBackgroundColor: Colors.maskShell
   // maskShell already carries the final alpha (blur ? setting : 0.8 fallback);
   // rendering under the effectivePanelOpacity layer would multiply it again.
   ownBackgroundAlpha: true
@@ -235,7 +235,7 @@ SmartPanel {
             root.openModule(module, -1);
           }
 
-          // The !Color.isTransitioning guard elsewhere exists to freeze *color*
+          // The !Colors.isTransitioning guard elsewhere exists to freeze *color*
           // Behaviors during a theme swap — geometry slides must still run.
           Behavior on x {
             NumberAnimation {

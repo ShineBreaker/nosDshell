@@ -29,9 +29,9 @@ Popup {
   property string _settingsSource: ""
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -53,7 +53,7 @@ Popup {
                         })
           pointSize: Style.fontSizeL
           font.weight: Style.fontWeightSemiBold
-          color: Color.onShell
+          color: Colors.onShell
           Layout.fillWidth: true
         }
 
@@ -68,7 +68,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
       }
 
       // Settings loader - pluginApi is passed via setSource() in openPluginSettings()
@@ -78,7 +78,7 @@ Popup {
         Layout.fillHeight: true
         Layout.minimumHeight: 100
         horizontalPolicy: ScrollBar.AlwaysOff
-        gradientColor: Color.maskShell
+        gradientColor: Colors.maskShell
 
         Loader {
           id: settingsLoader
@@ -90,7 +90,7 @@ Popup {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.overlay("hover")
+        color: Colors.overlay("hover")
       }
 
       // Action buttons: destructive-ish actions left, safe actions right.
@@ -121,7 +121,7 @@ Popup {
         NButton {
           text: I18n.tr("common.apply")
           icon: "check"
-          backgroundColor: Color.mPrimary // recommended action → accent text
+          backgroundColor: Colors.mPrimary // recommended action → accent text
           onClicked: {
             if (settingsLoader.item && settingsLoader.item.saveSettings) {
               settingsLoader.item.saveSettings();

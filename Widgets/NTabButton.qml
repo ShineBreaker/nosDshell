@@ -38,12 +38,12 @@ Rectangle {
   topRightRadius: plain ? 0 : (isLast ? Style.radiusItem : Style.radiusXXXS)
   bottomRightRadius: plain ? 0 : (isLast ? Style.radiusItem : Style.radiusXXXS)
 
-  color: plain ? "transparent" : (root.isHovered ? Color.overlay("hover") : (root.checked ? Color.overlay("checked") : "transparent"))
+  color: plain ? "transparent" : (root.isHovered ? Colors.overlay("hover") : (root.checked ? Colors.overlay("checked") : "transparent"))
   border.color: "transparent"
   border.width: Style.borderS
 
   Behavior on color {
-    enabled: !Color.isTransitioning
+    enabled: !Colors.isTransitioning
     ColorAnimation {
       duration: Style.motionPointer
       easing.type: Easing.OutCubic
@@ -62,7 +62,7 @@ Rectangle {
       Layout.alignment: Qt.AlignVCenter
       icon: root.icon
       pointSize: root.pointSize * 1.2
-      color: Color.onShell
+      color: Colors.onShell
     }
 
     NText {
@@ -72,7 +72,7 @@ Rectangle {
       text: root.text
       pointSize: root.plain ? Style.fontSizeTitle : root.pointSize
       font.weight: root.plain ? Style.fontWeightMedium : (root.checked ? Style.fontWeightMedium : Style.fontWeightRegular)
-      color: Color.onShell
+      color: Colors.onShell
       horizontalAlignment: Text.AlignHCenter
       verticalAlignment: Text.AlignVCenter
     }

@@ -147,7 +147,7 @@ Variants {
         // dock strip). Swap to the empty region as soon as the window is no
         // longer active — the last committed state before unmap must be empty.
         // blurActive rides the same object swap instead of a null assignment.
-        activeWhen: Color.blurActive && screenItem.isActive
+        activeWhen: Colors.blurActive && screenItem.isActive
         slideX: surface.slideX
         slideY: surface.slideY
       }
@@ -217,10 +217,10 @@ Variants {
         Rectangle {
           id: panelBg
           anchors.fill: parent
-          color: Color.maskShell
+          color: Colors.maskShell
           radius: Style.radiusItem
           border.width: Style.borderS
-          border.color: Color.borderShell
+          border.color: Colors.borderShell
         }
 
         LauncherMiniView {

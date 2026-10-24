@@ -46,7 +46,7 @@ NDccRow {
     description: root.description
     icon: root.icon
     labelWeight: Style.fontWeightRegular
-    iconColor: root.checked ? Color.accent : Color.onShell
+    iconColor: root.checked ? Colors.accent : Colors.onShell
     visible: root.label !== "" || root.description !== ""
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
@@ -65,10 +65,10 @@ NDccRow {
     implicitWidth: Math.round(40 * root._switchScale)
     implicitHeight: Math.round(22 * root._switchScale)
     radius: height / 2
-    color: root.checked ? Color.accent : Color.overlay("strong")
+    color: root.checked ? Colors.accent : Colors.overlay("strong")
 
     Behavior on color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionSwitch
         easing.type: Easing.OutCubic
@@ -81,7 +81,7 @@ NDccRow {
       radius: height / 2
       // Off-track is the light overlay (DDE white disc); on-track is accent,
       // so the knob follows onAccent to stay readable under accentOverride.
-      color: root.checked ? Color.onAccent : Color.onWallpaper
+      color: root.checked ? Colors.onAccent : Colors.onWallpaper
       anchors.verticalCenter: parent.verticalCenter
       anchors.verticalCenterOffset: 0
       x: root.checked ? switcher.width - width - 2 : 2

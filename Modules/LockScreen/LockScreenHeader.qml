@@ -41,7 +41,7 @@ Item {
     pointSize: Style.fontSizeLockClock
     font.weight: Font.Light
     font.family: "Noto Sans"
-    color: Color.onWallpaper
+    color: Colors.onWallpaper
   }
 
   // Date below the clock (DESIGN §3.9: yyyy-MM-dd dddd, 16 px).
@@ -52,6 +52,6 @@ Item {
     text: I18n.locale.toString(root.currentDate, "yyyy-MM-dd dddd")
     pointSize: Style.fontSizeLockLabel
     font.family: "Noto Sans"
-    color: Color.onWallpaper
+    color: Colors.onWallpaper
   }
 }

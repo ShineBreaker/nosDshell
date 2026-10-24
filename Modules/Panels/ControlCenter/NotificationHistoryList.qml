@@ -429,7 +429,7 @@ Item {
         anchors.centerIn: parent
         text: I18n.tr("notifications.panel.no-notifications")
         pointSize: Style.fontSizeM
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
       }
     }
 
@@ -566,7 +566,7 @@ Item {
               Layout.fillWidth: true
               text: I18n.tr("notifications.panel.title")
               pointSize: Style.fontSizeS
-              color: Qt.alpha(Color.onShell, 0.6)
+              color: Qt.alpha(Colors.onShell, 0.6)
               font.weight: Style.fontWeightMedium
               elide: Text.ElideRight
             }
@@ -579,10 +579,10 @@ Item {
               implicitWidth: clearAllText.implicitWidth + Style.margin2XS
               implicitHeight: clearAllText.implicitHeight + Style.margin2XS
               radius: Style.radiusRow
-              color: clearAllMouse.containsMouse ? Color.overlay("hover") : Color.overlay("idle")
+              color: clearAllMouse.containsMouse ? Colors.overlay("hover") : Colors.overlay("idle")
 
               Behavior on color {
-                enabled: !Color.isTransitioning
+                enabled: !Colors.isTransitioning
                 ColorAnimation {
                   duration: Style.motionPointer
                   easing.type: Easing.OutCubic
@@ -594,7 +594,7 @@ Item {
                 anchors.centerIn: parent
                 text: I18n.tr("actions.clear-history")
                 pointSize: Style.fontSizeS
-                color: Color.onShellSecondary
+                color: Colors.onShellSecondary
               }
 
               MouseArea {
@@ -617,7 +617,7 @@ Item {
             visible: modelData.kind === "section"
             text: root.bucketTitle(modelData.bucket)
             pointSize: Style.fontSizeXS
-            color: Qt.alpha(Color.onShell, 0.6)
+            color: Qt.alpha(Colors.onShell, 0.6)
             font.weight: Style.fontWeightMedium
             elide: Text.ElideRight
           }
@@ -637,8 +637,8 @@ Item {
             anchors.right: parent.right
             height: shown ? cardColumn.implicitHeight + Style.margin2S : 0
             radius: Style.radiusItem
-            color: Color.overlay("strong")
-            border.color: delegateItem.isFocused ? Color.accent : "transparent"
+            color: Colors.overlay("strong")
+            border.color: delegateItem.isFocused ? Colors.accent : "transparent"
             border.width: Style.borderS
             visible: shown
 
@@ -671,14 +671,14 @@ Item {
                   text: delegateItem.appName || I18n.tr("system.unknown-app")
                   pointSize: Style.fontSizeXS
                   font.weight: Style.fontWeightMedium
-                  color: Color.onShell
+                  color: Colors.onShell
                   elide: Text.ElideRight
                 }
 
                 NText {
                   text: I18n.tr("notifications.panel.collapse-group")
                   pointSize: Style.fontSizeXS
-                  color: Color.accentAlt
+                  color: Colors.accentAlt
                   MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
@@ -690,10 +690,10 @@ Item {
                   baseSize: Style.baseWidgetSize * 0.7
                   applyUiScale: false
                   icon: "x"
-                  colorFg: Color.onShellTertiary
+                  colorFg: Colors.onShellTertiary
                   colorBg: "transparent"
-                  colorBgHover: Color.overlay("hover")
-                  colorFgHover: Color.onShell
+                  colorBgHover: Colors.overlay("hover")
+                  colorFgHover: Colors.onShell
                   tooltipText: I18n.tr("notifications.panel.clear-group")
                   onClicked: root.clearGroup(delegateItem.groupKey)
                 }
@@ -709,7 +709,7 @@ Item {
                   Layout.alignment: Qt.AlignTop
                   radius: Math.min(Style.radiusRow, width / 2)
                   imagePath: entry ? (entry.cachedImage || entry.originalImage || "") : ""
-                  symbolicColor: Color.onShell
+                  symbolicColor: Colors.onShell
                   borderColor: "transparent"
                   borderWidth: 0
                   fallbackIcon: "bell"
@@ -730,7 +730,7 @@ Item {
                       text: delegateItem.appName || I18n.tr("system.unknown-app")
                       pointSize: Style.fontSizeXS
                       font.weight: Style.fontWeightMedium
-                      color: Color.onShell
+                      color: Colors.onShell
                       elide: Text.ElideRight
                     }
 
@@ -738,7 +738,7 @@ Item {
                       textFormat: Text.PlainText
                       text: Time.formatRelativeTime(entry ? entry.timestamp : 0)
                       pointSize: Style.fontSizeXXS
-                      color: Color.onShellTertiary
+                      color: Colors.onShellTertiary
                     }
                   }
 
@@ -747,7 +747,7 @@ Item {
                     Layout.fillWidth: true
                     text: (delegateItem.markdownEnabled && delegateItem.isExpanded) ? (entry.summaryMarkdown || I18n.tr("common.no-summary")) : delegateItem.summary
                     pointSize: Style.fontSizeM
-                    color: Color.onShell
+                    color: Colors.onShell
                     textFormat: delegateItem.textFormat
                     wrapMode: Text.Wrap
                     maximumLineCount: delegateItem.isExpanded ? 999 : 2
@@ -760,7 +760,7 @@ Item {
                     Layout.fillWidth: true
                     text: (delegateItem.markdownEnabled && delegateItem.isExpanded) ? (entry.bodyMarkdown || "") : delegateItem.body
                     pointSize: Style.fontSizeS
-                    color: Color.onShellSecondary
+                    color: Colors.onShellSecondary
                     textFormat: delegateItem.textFormat
                     wrapMode: Text.Wrap
                     maximumLineCount: delegateItem.isExpanded ? 999 : 3
@@ -782,7 +782,7 @@ Item {
                         readonly property bool isDefault: modelData.identifier === "default"
                         text: modelData.text
                         pointSize: Style.fontSizeS
-                        color: (delegateItem.isFocused && root.actionIndex === index) ? Color.accent : Color.accentAlt
+                        color: (delegateItem.isFocused && root.actionIndex === index) ? Colors.accent : Colors.accentAlt
                         font.weight: (delegateItem.isFocused && root.actionIndex === index) ? Style.fontWeightSemiBold : Style.fontWeightNormal
                         visible: !isDefault
 
@@ -809,7 +809,7 @@ Item {
                                     count: delegateItem.groupSize - 1
                                   })
                     pointSize: Style.fontSizeXXS
-                    color: Color.onShellTertiary
+                    color: Colors.onShellTertiary
                     MouseArea {
                       anchors.fill: parent
                       cursorShape: Qt.PointingHandCursor
@@ -839,7 +839,7 @@ Item {
               width: cardSurface.width - 16
               height: 4
               radius: Style.radiusItem
-              color: Color.overlay("hover")
+              color: Colors.overlay("hover")
             }
 
             Rectangle {
@@ -848,7 +848,7 @@ Item {
               width: cardSurface.width - 32
               height: 4
               radius: Style.radiusItem
-              color: Color.overlay("hover")
+              color: Colors.overlay("hover")
             }
           }
 
@@ -865,10 +865,10 @@ Item {
             baseSize: Style.baseWidgetSize * 0.7
             applyUiScale: false
             icon: delegateItem.isExpanded ? "chevron-up" : "chevron-down"
-            colorFg: Color.onShellTertiary
+            colorFg: Colors.onShellTertiary
             colorBg: "transparent"
-            colorBgHover: Color.overlay("hover")
-            colorFgHover: Color.onShell
+            colorBgHover: Colors.overlay("hover")
+            colorFgHover: Colors.onShell
             tooltipText: delegateItem.isExpanded ? I18n.tr("notifications.panel.click-to-collapse") : I18n.tr("notifications.panel.click-to-expand")
             visible: delegateItem.canExpand || delegateItem.isExpanded
             onClicked: root.expandedNotification = delegateItem.isExpanded ? "" : delegateItem.notificationId
@@ -888,10 +888,10 @@ Item {
             visible: opacity > 0
             opacity: hoverHandler.hovered ? 1 : 0
             icon: "x"
-            colorFg: Color.onShellTertiary
+            colorFg: Colors.onShellTertiary
             colorBg: "transparent"
-            colorBgHover: Color.overlay("hover")
-            colorFgHover: Color.onShell
+            colorBgHover: Colors.overlay("hover")
+            colorFgHover: Colors.onShell
             tooltipText: I18n.tr("tooltips.dismiss-notification")
             onClicked: delegateItem.dismiss(0)
           }

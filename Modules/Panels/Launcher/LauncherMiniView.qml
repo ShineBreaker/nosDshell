@@ -210,7 +210,7 @@ Item {
         Rectangle {
           Layout.fillWidth: true
           Layout.preferredHeight: 1
-          color: Color.overlay("hover")
+          color: Colors.overlay("hover")
         }
 
         Item {
@@ -263,10 +263,10 @@ Item {
                     // Category rows (§3.4.2): dark tile only when active,
                     // hover otherwise.
                     if (isActiveRow)
-                      return Color.launcherMiniActiveTile;
-                    return (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent";
+                      return Colors.launcherMiniActiveTile;
+                    return (rowMouse.containsMouse || appList.currentIndex === index) ? Colors.overlay("hover") : "transparent";
                   }
-                  return (rowMouse.containsMouse || appList.currentIndex === index) ? Color.overlay("hover") : "transparent";
+                  return (rowMouse.containsMouse || appList.currentIndex === index) ? Colors.overlay("hover") : "transparent";
                 }
               }
 
@@ -277,7 +277,7 @@ Item {
                 width: model.listIconSize + Style.marginS * 2
                 height: model.listIconSize + Style.marginS * 2
                 radius: Style.radiusRow
-                color: Color.overlay("hover")
+                color: Colors.overlay("hover")
                 visible: Settings.data.appLauncher.showIconBackground && !isCategoryRow && !modelData?.isImage
               }
 
@@ -289,7 +289,7 @@ Item {
                 height: model.listIconSize
                 source: (!isCategoryRow && modelData?.icon) ? ThemeIcons.iconFromName(modelData.icon) : ""
                 detectSymbolic: true
-                color: Color.onShell
+                color: Colors.onShell
                 visible: status === Image.Ready
                 asynchronous: true
               }
@@ -305,7 +305,7 @@ Item {
                 // Themed lookup failed (or no icon at all): fall back to the
                 // Tabler glyph when the name is one, a generic app glyph else.
                 icon: (Icons.icons[modelData?.icon] !== undefined || Icons.aliases[modelData?.icon] !== undefined) ? modelData.icon : "apps"
-                color: Color.onShell
+                color: Colors.onShell
                 visible: !isCategoryRow && (modelData?.icon === "" || rowIcon.status === Image.Error)
               }
 
@@ -317,7 +317,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: isCategoryRow ? "" : (modelData?.name || "")
                 pointSize: Style.fontSizeBody
-                color: Color.onShell
+                color: Colors.onShell
                 elide: Text.ElideRight
                 maximumLineCount: 1
                 visible: !isCategoryRow
@@ -332,7 +332,7 @@ Item {
                 verticalAlignment: Text.AlignVCenter
                 text: isCategoryRow ? (appsProvider ? appsProvider.getDDECategoryName(modelData) : modelData) : ""
                 pointSize: Style.fontSizeBody
-                color: isActiveRow ? Color.accent : Color.onShellTertiary
+                color: isActiveRow ? Colors.accent : Colors.onShellTertiary
                 elide: Text.ElideRight
                 maximumLineCount: 1
               }
@@ -371,7 +371,7 @@ Item {
           Layout.preferredHeight: model.listRowHeight
           visible: Settings.data.appLauncher.showCategories
           radius: Style.radiusRow
-          color: switchRowMouse.containsMouse || switchRowMouse.pressed ? Color.overlay("hover") : "transparent"
+          color: switchRowMouse.containsMouse || switchRowMouse.pressed ? Colors.overlay("hover") : "transparent"
 
           RowLayout {
             anchors.fill: parent
@@ -383,7 +383,7 @@ Item {
               Layout.preferredWidth: 24
               Layout.preferredHeight: 24
               source: root.ddeImages + "all.svg"
-              color: Color.onShell
+              color: Colors.onShell
               fillMode: Image.PreserveAspectFit
               smooth: true
               asynchronous: true
@@ -398,7 +398,7 @@ Item {
               text: root.showCategoryList ? I18n.tr("launcher.dde.back") : I18n.tr("launcher.dde.categories-label")
               pointSize: Style.fontSizeBody
               font.weight: Style.fontWeightMedium
-              color: switchRowMouse.pressed ? Color.accent : Color.onShell
+              color: switchRowMouse.pressed ? Colors.accent : Colors.onShell
               elide: Text.ElideRight
             }
 
@@ -406,7 +406,7 @@ Item {
               Layout.preferredWidth: 20
               Layout.preferredHeight: 20
               source: root.ddeImages + "enter_details_normal.svg"
-              color: Color.onShell
+              color: Colors.onShell
               fillMode: Image.PreserveAspectFit
               smooth: true
               asynchronous: true
@@ -451,7 +451,7 @@ Item {
         x: 0
         width: 1
         height: parent.height
-        color: Qt.alpha(Color.onShell, 0.1)
+        color: Qt.alpha(Colors.onShell, 0.1)
       }
 
       // 24x24 fullscreen toggle, 5 px from the right edge and 12 px from the
@@ -560,7 +560,7 @@ Item {
             text: I18n.locale.toString(Time.now, "HH:mm")
             pointSize: Style.launcherMiniClockSize / (96 / 72)
             font.weight: Style.fontWeightRegular
-            color: Color.onShell
+            color: Colors.onShell
             applyUiScale: false
             // Never elide the clock — shrink the glyphs instead (the right
             // pane should already widen via measuredRightPaneWidth; this is
@@ -576,7 +576,7 @@ Item {
             horizontalAlignment: Text.AlignHCenter
             text: Time.formatLongDate(Time.now)
             pointSize: Style.fontSizeBody
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
             applyUiScale: false
             elide: Text.ElideNone
             fontSizeMode: Text.HorizontalFit

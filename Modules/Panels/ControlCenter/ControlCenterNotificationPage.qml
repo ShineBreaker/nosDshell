@@ -48,7 +48,7 @@ Item {
         NIcon {
           icon: Settings.data.notifications.doNotDisturb ? "bell-off" : "bell"
           pointSize: Style.fontSizeXL
-          color: Settings.data.notifications.doNotDisturb ? Color.accent : Color.onShellSecondary
+          color: Settings.data.notifications.doNotDisturb ? Colors.accent : Colors.onShellSecondary
         }
 
         NText {

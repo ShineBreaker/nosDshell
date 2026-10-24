@@ -11,8 +11,8 @@ NDccRow {
   property string description: ""
   property string inputIconName: ""
   property bool readOnly: false
-  property color labelColor: Color.onShell
-  property color descriptionColor: Color.onShellTertiary
+  property color labelColor: Colors.onShell
+  property color descriptionColor: Colors.onShellTertiary
   property string fontFamily: Settings.data.ui.fontDefault
   property real fontSize: Style.fontSizeS
   property int fontWeight: Style.fontWeightRegular
@@ -87,12 +87,12 @@ NDccRow {
       id: frame
 
       radius: root.radius
-      color: Color.overlay("field")
-      border.color: input.activeFocus ? Color.accent : "transparent"
+      color: Colors.overlay("field")
+      border.color: input.activeFocus ? Colors.accent : "transparent"
       border.width: Style.borderS
 
       Behavior on border.color {
-        enabled: !Color.isTransitioning
+        enabled: !Colors.isTransitioning
         ColorAnimation {
           duration: Style.motionSwitch
           easing.type: Easing.OutCubic
@@ -173,8 +173,8 @@ NDccRow {
 
             echoMode: TextInput.Normal
             readOnly: root.readOnly
-            placeholderTextColor: Color.onShellTertiary
-            color: enabled ? Color.onShell : Qt.alpha(Color.onShell, 0.4)
+            placeholderTextColor: Colors.onShellTertiary
+            color: enabled ? Colors.onShell : Qt.alpha(Colors.onShell, 0.4)
 
             selectByMouse: true
 
@@ -242,8 +242,8 @@ NDccRow {
 
             colorBg: "transparent"
             colorBgHover: "transparent"
-            colorFg: Color.onShellSecondary
-            colorFgHover: Color.alert
+            colorFg: Colors.onShellSecondary
+            colorFgHover: Colors.alert
 
             visible: root.showClearButton && input.text.length > 0 && !root.readOnly
             enabled: input.text.length > 0 && !root.readOnly && root.enabled

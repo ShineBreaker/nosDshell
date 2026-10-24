@@ -127,10 +127,10 @@ Item {
         delegate: DetailRow {
           required property var modelData
           glyph: NetworkService.getSignalInfo(modelData.signal, modelData.connected).icon
-          glyphColor: modelData.connected ? Color.accent : Color.onShellSecondary
+          glyphColor: modelData.connected ? Colors.accent : Colors.onShellSecondary
           rowText: modelData.ssid
           secondary: modelData.connected ? I18n.tr("common.connected") : (NetworkService.isSecured(modelData.security) ? modelData.security : I18n.tr("wifi.panel.security-open"))
-          secondaryColor: Color.onShellTertiary
+          secondaryColor: Colors.onShellTertiary
           check: modelData.connected
           onClicked: {
             if (modelData.connected) {
@@ -151,7 +151,7 @@ Item {
         visible: NetworkService.wifiEnabled && root.wifiRows.length === 0
         text: I18n.tr("wifi.panel.no-networks")
         pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
       }
     }
 
@@ -178,10 +178,10 @@ Item {
         delegate: DetailRow {
           readonly property var entry: root.bluetoothRows[index]
           glyph: "bt-device-generic"
-          glyphColor: entry?.connected ? Color.accent : Color.onShellSecondary
+          glyphColor: entry?.connected ? Colors.accent : Colors.onShellSecondary
           rowText: entry?.name || entry?.deviceName || I18n.tr("common.devices")
           secondary: entry?.connected ? I18n.tr("common.connected") : ""
-          secondaryColor: Color.onShellTertiary
+          secondaryColor: Colors.onShellTertiary
           check: entry?.connected ?? false
           onClicked: {
             if (!entry)
@@ -203,7 +203,7 @@ Item {
         visible: BluetoothService.enabled && root.bluetoothRows.length === 0
         text: I18n.tr("bluetooth.panel.no-devices")
         pointSize: Style.fontSizeS
-        color: Color.onShellTertiary
+        color: Colors.onShellTertiary
       }
     }
 
@@ -219,10 +219,10 @@ Item {
         delegate: DetailRow {
           required property var modelData
           glyph: modelData.active ? "shield-lock" : "shield-off"
-          glyphColor: modelData.active ? Color.accent : Color.onShellSecondary
+          glyphColor: modelData.active ? Colors.accent : Colors.onShellSecondary
           rowText: modelData.name
           secondary: modelData.active ? I18n.tr("common.connected") : ""
-          secondaryColor: Color.onShellTertiary
+          secondaryColor: Colors.onShellTertiary
           check: modelData.active
           onClicked: VPNService.toggle(modelData.uuid)
         }
@@ -237,10 +237,10 @@ Item {
   // row isn't shadowed by an Item-level `text` property.
   component DetailRow: NDccRow {
     property string glyph: ""
-    property color glyphColor: Color.onShellSecondary
+    property color glyphColor: Colors.onShellSecondary
     property string rowText: ""
     property string secondary: ""
-    property color secondaryColor: Color.onShellTertiary
+    property color secondaryColor: Colors.onShellTertiary
     property bool check: false
 
     clickable: true
@@ -260,7 +260,7 @@ Item {
       verticalAlignment: Text.AlignVCenter
       text: rowText
       pointSize: Style.fontSizeM
-      color: Color.onShell
+      color: Colors.onShell
       elide: Text.ElideRight
     }
 
@@ -279,7 +279,7 @@ Item {
       Layout.alignment: Qt.AlignVCenter
       icon: "check"
       pointSize: Style.fontSizeL
-      color: Color.accent
+      color: Colors.accent
     }
   }
 }

@@ -83,7 +83,7 @@ PopupWindow {
     id: menuBlurRegion
     trackedItem: menuBody.bodyItem
     radius: menuBody.radius
-    activeWhen: Color.blurActive
+    activeWhen: Colors.blurActive
     // The reveal slides the card inside the surface — feed the sentinel the
     // animated distance so the region follows each frame.
     watch: reveal.revealDistance
@@ -662,9 +662,9 @@ PopupWindow {
       anchors.fill: parent
       arrowEdge: root.arrowEdge
       arrowPosition: root._arrowPos
-      fillColor: Color.popupShell
+      fillColor: Colors.popupShell
       radius: Style.radiusPopup
-      borderColor: Color.borderShell
+      borderColor: Colors.borderShell
       borderWidth: Style.borderS
       shadow: Style.shadowPopup
 
@@ -734,7 +734,7 @@ PopupWindow {
               readonly property bool isSeparator: modelData && modelData.separator === true
               width: scrollColumn.width
               height: root.rowHeightForItem(modelData)
-              color: (!isSeparator && root.hoveredItem === index) ? Color.accent : "transparent"
+              color: (!isSeparator && root.hoveredItem === index) ? Colors.accent : "transparent"
               radius: Style.radiusRow
 
               // Separator: DDE two-line groove (dark over light, inset 4)
@@ -758,7 +758,7 @@ PopupWindow {
                 NIcon {
                   icon: modelData.icon
                   pointSize: Style.fontSizeL
-                  color: root.hoveredItem === index ? Color.onAccent : Color.onShellSecondary
+                  color: root.hoveredItem === index ? Colors.onAccent : Colors.onShellSecondary
                   visible: icon !== ""
                   anchors.verticalCenter: parent.verticalCenter
                 }
@@ -766,7 +766,7 @@ PopupWindow {
                 NText {
                   text: modelData.text
                   pointSize: Style.fontSizeS
-                  color: root.hoveredItem === index ? Color.onAccent : Color.onShell
+                  color: root.hoveredItem === index ? Colors.onAccent : Colors.onShell
                   anchors.verticalCenter: parent.verticalCenter
                   width: rowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
                   elide: Text.ElideRight
@@ -836,7 +836,7 @@ PopupWindow {
             readonly property int globalIndex: root.fixedItemGlobalIndex(index)
             width: fixedColumn.width
             height: root.rowHeightForItem(modelData)
-            color: root.hoveredItem === globalIndex ? Color.accent : "transparent"
+            color: root.hoveredItem === globalIndex ? Colors.accent : "transparent"
             radius: Style.radiusRow
 
             Row {
@@ -851,7 +851,7 @@ PopupWindow {
               NIcon {
                 icon: modelData.icon
                 pointSize: Style.fontSizeL
-                color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShellSecondary
+                color: root.hoveredItem === fixedItemRect.globalIndex ? Colors.onAccent : Colors.onShellSecondary
                 visible: icon !== ""
                 anchors.verticalCenter: parent.verticalCenter
               }
@@ -859,7 +859,7 @@ PopupWindow {
               NText {
                 text: modelData.text
                 pointSize: Style.fontSizeS
-                color: root.hoveredItem === fixedItemRect.globalIndex ? Color.onAccent : Color.onShell
+                color: root.hoveredItem === fixedItemRect.globalIndex ? Colors.onAccent : Colors.onShell
                 anchors.verticalCenter: parent.verticalCenter
                 width: fixedRowLayout.width - ((modelData.icon && modelData.icon !== "") ? (Style.fontSizeL + Style.marginS) : 0)
                 elide: Text.ElideRight

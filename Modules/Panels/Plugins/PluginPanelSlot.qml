@@ -34,7 +34,7 @@ SmartPanel {
   panelAnchorRight: pluginInstance?.panelAnchorRight ?? false
 
   // Panel background color
-  panelBackgroundColor: pluginInstance?.panelBackgroundColor ?? Color.popupShell
+  panelBackgroundColor: pluginInstance?.panelBackgroundColor ?? Colors.popupShell
 
   // Panel content is dynamically loaded
   panelContent: Component {

@@ -251,7 +251,7 @@ Variants {
               ctx.reset();
               // §3.12: the grid is part of the droppable-area indication, so it is a
               // white@0.1 stroke like the per-widget outline -- not an accent.
-              ctx.strokeStyle = Color.overlay("hover");
+              ctx.strokeStyle = Colors.overlay("hover");
               ctx.lineWidth = 1;
 
               // Draw vertical lines
@@ -417,11 +417,11 @@ Variants {
 
           // Same mask as the widget cards (§3.12); mSurface@0.85 is a Noctalia
           // surface colour with no place in a DDE-styled shell.
-          color: Color.maskDark
+          color: Colors.maskDark
           radius: Style.radiusL
           border {
             width: Style.borderS
-            color: Color.mOutline
+            color: Colors.mOutline
           }
           z: 9999
 
@@ -513,16 +513,16 @@ Variants {
                 icon: "grid-3x3"
                 visible: Settings.data.desktopWidgets.gridSnap
                 tooltipText: I18n.tr("panels.desktop-widgets.edit-mode-grid-snap-scale-label")
-                colorBg: Settings.data.desktopWidgets.gridSnapScale ? Color.mPrimary : Color.mSurfaceVariant
-                colorFg: Settings.data.desktopWidgets.gridSnapScale ? Color.mOnPrimary : Color.mPrimary
+                colorBg: Settings.data.desktopWidgets.gridSnapScale ? Colors.mPrimary : Colors.mSurfaceVariant
+                colorFg: Settings.data.desktopWidgets.gridSnapScale ? Colors.mOnPrimary : Colors.mPrimary
                 onClicked: Settings.data.desktopWidgets.gridSnapScale = !Settings.data.desktopWidgets.gridSnapScale
               }
 
               NIconButton {
                 icon: "grid-4x4"
                 tooltipText: I18n.tr("panels.desktop-widgets.edit-mode-grid-snap-label")
-                colorBg: Settings.data.desktopWidgets.gridSnap ? Color.mPrimary : Color.mSurfaceVariant
-                colorFg: Settings.data.desktopWidgets.gridSnap ? Color.mOnPrimary : Color.mPrimary
+                colorBg: Settings.data.desktopWidgets.gridSnap ? Colors.mPrimary : Colors.mSurfaceVariant
+                colorFg: Settings.data.desktopWidgets.gridSnap ? Colors.mOnPrimary : Colors.mPrimary
                 onClicked: Settings.data.desktopWidgets.gridSnap = !Settings.data.desktopWidgets.gridSnap
               }
 
@@ -549,7 +549,7 @@ Variants {
               Layout.maximumWidth: 300 * Style.uiScaleRatio
               text: I18n.tr("panels.desktop-widgets.edit-mode-controls-explanation")
               pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
               horizontalAlignment: Text.AlignRight
               wrapMode: Text.WordWrap
             }

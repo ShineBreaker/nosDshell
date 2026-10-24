@@ -97,7 +97,7 @@ ColumnLayout {
           NIcon {
             icon: brightnessMonitor && brightnessMonitor.method == "internal" ? "device-laptop" : "device-desktop"
             pointSize: Style.fontSizeXL
-            color: Color.onShell
+            color: Colors.onShell
             Layout.alignment: Qt.AlignVCenter
           }
 
@@ -123,7 +123,7 @@ ColumnLayout {
                       });
             }
             pointSize: Style.fontSizeS
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
             wrapMode: Text.WordWrap
             horizontalAlignment: Text.AlignRight
             Layout.alignment: Qt.AlignBottom

@@ -33,7 +33,7 @@ Item {
         id: cornersPath
 
         // Corner configuration
-        readonly property color cornerColor: Settings.data.general.forceBlackScreenCorners ? "black" : Color.mSurface
+        readonly property color cornerColor: Settings.data.general.forceBlackScreenCorners ? "black" : Colors.mSurface
         readonly property real cornerRadius: Style.screenRadius
         readonly property real cornerSize: Style.screenRadius
 
@@ -54,9 +54,9 @@ Item {
         strokeWidth: -1 // No stroke, fill only
         fillColor: shouldShow ? cornerColor : "transparent"
 
-        // Smooth color animation (disabled during theme transitions to sync with Color.qml)
+        // Smooth color animation (disabled during theme transitions to sync with Colors.qml)
         Behavior on fillColor {
-          enabled: !Color.isTransitioning
+          enabled: !Colors.isTransitioning
           ColorAnimation {
             duration: Style.animationFast
           }

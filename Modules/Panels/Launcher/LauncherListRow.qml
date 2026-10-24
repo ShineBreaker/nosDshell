@@ -42,7 +42,7 @@ Item {
     anchors.topMargin: 1
     anchors.bottomMargin: 1
     radius: Style.radiusRow
-    color: (mouseArea.containsMouse || root.selected) ? Color.overlayWallpaper("hover") : "transparent"
+    color: (mouseArea.containsMouse || root.selected) ? Colors.overlayWallpaper("hover") : "transparent"
   }
 
   // Optional backing plate behind the icon (appLauncher.showIconBackground)
@@ -52,7 +52,7 @@ Item {
     width: root.iconSize + Style.marginS * 2
     height: root.iconSize + Style.marginS * 2
     radius: Style.radiusRow
-    color: Color.overlayWallpaper("hover")
+    color: Colors.overlayWallpaper("hover")
     visible: Settings.data.appLauncher.showIconBackground && !modelData?.isImage
   }
 
@@ -65,7 +65,7 @@ Item {
     y: root.iconY
     source: modelData?.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
     detectSymbolic: true
-    color: Color.onWallpaper
+    color: Colors.onWallpaper
     visible: status === Image.Ready
     asynchronous: true
   }
@@ -83,7 +83,7 @@ Item {
     // real Tabler glyph names to the font path, app icon names would warn and
     // render the fallback.
     icon: (Icons.icons[modelData?.icon] !== undefined || Icons.aliases[modelData?.icon] !== undefined) ? modelData.icon : "apps"
-    color: Color.onWallpaper
+    color: Colors.onWallpaper
     visible: modelData?.icon === "" || rowIcon.status === Image.Error
   }
 
@@ -94,7 +94,7 @@ Item {
     verticalAlignment: Text.AlignVCenter
     text: modelData?.name || ""
     pointSize: Style.fontSizeBody
-    color: Color.onWallpaper
+    color: Colors.onWallpaper
     elide: Text.ElideRight
     maximumLineCount: 1
     applyUiScale: false

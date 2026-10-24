@@ -42,14 +42,14 @@ ColumnLayout {
             NText {
               text: modelData.name
               font.weight: Style.fontWeightMedium
-              color: Color.onShell
+              color: Colors.onShell
               Layout.fillWidth: true
             }
 
             NText {
               text: modelData.url
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
               Layout.fillWidth: true
               elide: Text.ElideRight
             }
@@ -103,9 +103,9 @@ ColumnLayout {
     padding: Style.marginL
 
     background: Rectangle {
-      color: Color.maskShell
+      color: Colors.maskShell
       radius: Style.radiusWindow
-      border.color: Color.borderShell
+      border.color: Colors.borderShell
       border.width: Style.borderM
     }
 
@@ -147,8 +147,8 @@ ColumnLayout {
 
         NButton {
           text: I18n.tr("common.add")
-          backgroundColor: Color.accent
-          textColor: Color.onAccent
+          backgroundColor: Colors.accent
+          textColor: Colors.onAccent
           enabled: sourceNameInput.text.length > 0 && sourceUrlInput.text.length > 0
           onClicked: {
             if (PluginRegistry.addPluginSource(sourceNameInput.text, sourceUrlInput.text)) {

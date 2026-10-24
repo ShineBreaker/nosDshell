@@ -186,13 +186,13 @@ ColumnLayout {
             NIcon {
               icon: "plugin"
               pointSize: Style.fontSizeL
-              color: Color.accent
+              color: Colors.accent
             }
 
             NText {
               text: modelData.name
               font.weight: Style.fontWeightMedium
-              color: Color.onShell
+              color: Colors.onShell
               elide: Text.ElideRight
               Layout.fillWidth: true
             }
@@ -200,7 +200,7 @@ ColumnLayout {
             // Official badge (marked official by the plugin's registry)
             Rectangle {
               visible: modelData.official === true
-              color: Color.accentAlt
+              color: Colors.accentAlt
               radius: Style.radiusRow
               implicitWidth: officialBadgeRow.implicitWidth + Style.margin2S
               implicitHeight: officialBadgeRow.implicitHeight + Style.margin2XS
@@ -213,14 +213,14 @@ ColumnLayout {
                 NIcon {
                   icon: "official-plugin"
                   pointSize: Style.fontSizeXXS
-                  color: Color.onAccent
+                  color: Colors.onAccent
                 }
 
                 NText {
                   text: I18n.tr("common.official")
                   font.pointSize: Style.fontSizeXXS
                   font.weight: Style.fontWeightMedium
-                  color: Color.onAccent
+                  color: Colors.onAccent
                 }
               }
             }
@@ -245,7 +245,7 @@ ColumnLayout {
             NIcon {
               icon: "circle-check"
               pointSize: Style.baseWidgetSize * 0.5
-              color: Color.accent
+              color: Colors.accent
               visible: modelData.downloaded === true
             }
 
@@ -271,7 +271,7 @@ ColumnLayout {
             visible: modelData.description
             text: modelData.description || ""
             font.pointSize: Style.fontSizeXS
-            color: Color.onShellTertiary
+            color: Colors.onShellTertiary
             wrapMode: Text.WordWrap
             maximumLineCount: 2
             elide: Text.ElideRight
@@ -286,45 +286,45 @@ ColumnLayout {
             NText {
               text: "v" + modelData.version
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             NText {
               text: "•"
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             NText {
               text: stripAuthorEmail(modelData.author)
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             NText {
               text: "•"
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             NText {
               text: modelData.source ? modelData.source.name : ""
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             NText {
               visible: !!modelData.lastUpdated
               text: "•"
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             NText {
               visible: !!modelData.lastUpdated
               text: modelData.lastUpdated ? Time.formatRelativeTime(new Date(modelData.lastUpdated)) : ""
               font.pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
             }
 
             Item {

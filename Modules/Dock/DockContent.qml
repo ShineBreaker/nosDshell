@@ -365,7 +365,7 @@ Item {
     // (radiusItem = 5 px when compositing is on), no border, no shadow.
     // dock.backgroundOpacity multiplies the token alpha on top of
     // ui.panelBackgroundOpacity — the dock knob only detunes the dock.
-    color: Qt.rgba(Color.maskShell.r, Color.maskShell.g, Color.maskShell.b, Color.maskShell.a * Settings.data.dock.backgroundOpacity)
+    color: Qt.rgba(Colors.maskShell.r, Colors.maskShell.g, Colors.maskShell.b, Colors.maskShell.a * Settings.data.dock.backgroundOpacity)
     radius: Style.radiusItem
 
     readonly property real contentLength: Math.min(dockLayout.implicitLength + Style.margin2XS, dockRoot.maxLength)
@@ -544,7 +544,7 @@ Item {
           anchors.centerIn: parent
           icon: launcherItem.launcherIcon
           pointSize: launcherIconContainer.width * 0.7
-          color: Color.resolveColorKey(launcherItem.launcherIconColorKey)
+          color: Colors.resolveColorKey(launcherItem.launcherIconColorKey)
           visible: !launcherItem.launcherUseDistroLogo && launcherItem.launcherIcon !== ""
         }
 
@@ -556,7 +556,7 @@ Item {
           asynchronous: true
           layer.enabled: visible
           layer.effect: ShaderEffect {
-            property color targetColor: Color.resolveColorKey(launcherItem.launcherIconColorKey)
+            property color targetColor: Colors.resolveColorKey(launcherItem.launcherIconColorKey)
             property real colorizeMode: 2.0
 
             fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
@@ -986,7 +986,7 @@ Item {
                 layer.enabled: !appButton.isActive && (Settings.data.dock.colorizeIcons)
                 layer.smooth: true
                 layer.effect: ShaderEffect {
-                  property color targetColor: Color.onShell
+                  property color targetColor: Colors.onShell
                   property real colorizeMode: 0.0 // Dock mode (grayscale)
 
                   fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
@@ -1006,7 +1006,7 @@ Item {
                 visible: !appIcon.visible
                 icon: "question-mark"
                 pointSize: appButton.appIconContent * 0.7
-                color: appButton.isActive ? Color.accent : Color.onShellSecondary
+                color: appButton.isActive ? Colors.accent : Colors.onShellSecondary
                 opacity: appButton.isRunning ? 1.0 : 0.6
               }
 
@@ -1173,7 +1173,7 @@ Item {
             // DDE running indicator (DESIGN §3.1.2): 20x2 bar (2x20 vertical) on
             // the screen-edge side, 2 px from the item edge; running = white
             // x0.25, active = accent with horizontally fading ends,
-            // attention = Color.attention.
+            // attention = Colors.attention.
             Rectangle {
               visible: appButton.isRunning
               width: isVertical ? 2 : Math.min(20, Math.max(4, appButton.appIconContent * 0.5))
@@ -1197,7 +1197,7 @@ Item {
                 anchors.fill: parent
                 radius: parent.radius
                 visible: !appButton.isActive
-                color: appButton.isUrgentApp ? Color.attention : Color.overlay("indicator")
+                color: appButton.isUrgentApp ? Colors.attention : Colors.overlay("indicator")
               }
 
               // Active window: accent bar with fading ends (appitem.cpp:320-358)
@@ -1213,11 +1213,11 @@ Item {
                   }
                   GradientStop {
                     position: 0.3
-                    color: Color.accent
+                    color: Colors.accent
                   }
                   GradientStop {
                     position: 0.7
-                    color: Color.accent
+                    color: Colors.accent
                   }
                   GradientStop {
                     position: 1.0
@@ -1237,11 +1237,11 @@ Item {
                   }
                   GradientStop {
                     position: 0.3
-                    color: Color.attention
+                    color: Colors.attention
                   }
                   GradientStop {
                     position: 0.7
-                    color: Color.attention
+                    color: Colors.attention
                   }
                   GradientStop {
                     position: 1.0
@@ -1313,7 +1313,7 @@ Item {
             width: isVertical ? Style.dockPluginTileSize + Style.marginXS * 2 : pluginGrid.implicitWidth + parent.fusedPad
             height: isVertical ? pluginGrid.implicitHeight + parent.fusedPad : Style.dockPluginTileSize + Style.marginXS * 2
             radius: Style.radiusL
-            color: Color.overlay("subtle")
+            color: Colors.overlay("subtle")
             border.color: Style.capsuleBorderColor
             border.width: Style.capsuleBorderWidth
           }

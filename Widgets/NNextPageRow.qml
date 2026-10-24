@@ -58,13 +58,13 @@ NDccRow {
     visible: root.value !== ""
     text: root.value
     pointSize: Style.fontSizeS
-    color: Qt.alpha(Color.onShell, 0.8)
+    color: Qt.alpha(Colors.onShell, 0.8)
   }
 
   NIcon {
     icon: "chevron-right"
     pointSize: Style.fontSizeL
-    color: Color.onShellTertiary
+    color: Colors.onShellTertiary
     Layout.alignment: Qt.AlignVCenter
   }
 }

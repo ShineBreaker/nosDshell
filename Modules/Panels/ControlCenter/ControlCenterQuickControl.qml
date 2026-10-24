@@ -228,7 +228,7 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        gradientColor: Color.maskShell
+        gradientColor: Colors.maskShell
         ScrollBar.horizontal.visible: false
 
         ColumnLayout {
@@ -300,7 +300,7 @@ Item {
           NIcon {
             icon: "volume-off"
             pointSize: Style.fontSizeTitle
-            color: Color.onShellSecondary
+            color: Colors.onShellSecondary
           }
 
           NSlider {
@@ -320,7 +320,7 @@ Item {
           NIcon {
             icon: "volume-high"
             pointSize: Style.fontSizeTitle
-            color: Color.onShellSecondary
+            color: Colors.onShellSecondary
           }
         }
 
@@ -349,7 +349,7 @@ Item {
           NIcon {
             icon: "brightness-low"
             pointSize: Style.fontSizeTitle
-            color: Color.onShellSecondary
+            color: Colors.onShellSecondary
           }
 
           NSlider {
@@ -369,7 +369,7 @@ Item {
           NIcon {
             icon: "brightness-high"
             pointSize: Style.fontSizeTitle
-            color: Color.onShellSecondary
+            color: Colors.onShellSecondary
           }
         }
 
@@ -407,7 +407,7 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        gradientColor: Color.maskShell
+        gradientColor: Colors.maskShell
         ScrollBar.horizontal.visible: false
 
         ControlCenterDetailPages {

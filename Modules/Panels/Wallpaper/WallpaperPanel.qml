@@ -23,7 +23,7 @@ SmartPanel {
   edgeSheet: true
   edgeSheetEdge: "bottom"
 
-  panelBackgroundColor: Color.maskDark
+  panelBackgroundColor: Colors.maskDark
 
   // panelContent is created lazily by SmartPanel's content loader, so these
   // key handlers must not assume the strip exists yet — the same guard the
@@ -311,7 +311,7 @@ SmartPanel {
       NIcon {
         icon: "settings-wallpaper-selector"
         pointSize: Style.fontSizeXXL
-        color: Color.onShell
+        color: Colors.onShell
       }
 
       NTextInput {
@@ -417,8 +417,8 @@ SmartPanel {
         icon: "palette"
         baseSize: Style.wallpaperStripRowHeight
         tooltipText: I18n.tr("wallpaper.panel.solid-color-tooltip")
-        colorBg: Settings.data.wallpaper.useSolidColor ? Color.mPrimary : "transparent"
-        colorFg: Settings.data.wallpaper.useSolidColor ? Color.mOnPrimary : Color.onShellSecondary
+        colorBg: Settings.data.wallpaper.useSolidColor ? Colors.mPrimary : "transparent"
+        colorFg: Settings.data.wallpaper.useSolidColor ? Colors.mOnPrimary : Colors.onShellSecondary
         onClicked: solidColorPicker.open()
       }
 
@@ -600,9 +600,9 @@ SmartPanel {
           width: Style.wallpaperStripThumbWidth
           height: Style.wallpaperStripThumbHeight
           radius: Style.radiusM
-          color: Color.overlay("field")
+          color: Colors.overlay("field")
           border.width: thumb.isCurrent ? Style.wallpaperStripCurrentRingWidth : 0
-          border.color: Color.accent
+          border.color: Colors.accent
           clip: true
 
           NImageRounded {
@@ -617,7 +617,7 @@ SmartPanel {
             visible: thumb.isDirectory
             icon: "folder"
             pointSize: Style.fontSizeXXXL
-            color: Color.accent
+            color: Colors.accent
           }
         }
 
@@ -642,8 +642,8 @@ SmartPanel {
           visible: isFavorited || thumb.hovered
           color: {
             if (isFavorited)
-              return starHover.hovered ? Color.mHover : Color.mPrimary;
-            return starHover.hovered ? Color.mSurfaceVariant : Color.mSurface;
+              return starHover.hovered ? Colors.mHover : Colors.mPrimary;
+            return starHover.hovered ? Colors.mSurfaceVariant : Colors.mSurface;
           }
           opacity: isFavorited || starHover.hovered ? 1.0 : 0.7
 
@@ -652,8 +652,8 @@ SmartPanel {
             pointSize: Style.fontSizeM
             color: {
               if (favStar.isFavorited)
-                return starHover.hovered ? Color.mOnHover : Color.mOnPrimary;
-              return starHover.hovered ? Color.mOnSurface : Color.mOnSurfaceVariant;
+                return starHover.hovered ? Colors.mOnHover : Colors.mOnPrimary;
+              return starHover.hovered ? Colors.mOnSurface : Colors.mOnSurfaceVariant;
             }
             anchors.centerIn: parent
           }
@@ -696,10 +696,10 @@ SmartPanel {
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
-            backgroundColor: Qt.alpha(Color.veilWallpaper, 0.6)
-            textColor: Color.onWallpaper
-            hoverColor: Qt.alpha(Color.veilWallpaper, 0.8)
-            textHoverColor: Color.onWallpaper
+            backgroundColor: Qt.alpha(Colors.veilWallpaper, 0.6)
+            textColor: Colors.onWallpaper
+            hoverColor: Qt.alpha(Colors.veilWallpaper, 0.8)
+            textHoverColor: Colors.onWallpaper
             onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "light") : strip.applySlot(thumb.path, "light")
           }
           NButton {
@@ -708,10 +708,10 @@ SmartPanel {
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
-            backgroundColor: Qt.alpha(Color.veilWallpaper, 0.6)
-            textColor: Color.onWallpaper
-            hoverColor: Qt.alpha(Color.veilWallpaper, 0.8)
-            textHoverColor: Color.onWallpaper
+            backgroundColor: Qt.alpha(Colors.veilWallpaper, 0.6)
+            textColor: Colors.onWallpaper
+            hoverColor: Qt.alpha(Colors.veilWallpaper, 0.8)
+            textHoverColor: Colors.onWallpaper
             onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "dark") : strip.applySlot(thumb.path, "dark")
           }
           NButton {
@@ -720,10 +720,10 @@ SmartPanel {
             fontSize: Style.fontSizeXS
             buttonRadius: Style.radiusPill
             height: Style.wallpaperStripActionHeight
-            backgroundColor: Qt.alpha(Color.veilWallpaper, 0.6)
-            textColor: Color.onWallpaper
-            hoverColor: Qt.alpha(Color.veilWallpaper, 0.8)
-            textHoverColor: Color.onWallpaper
+            backgroundColor: Qt.alpha(Colors.veilWallpaper, 0.6)
+            textColor: Colors.onWallpaper
+            hoverColor: Qt.alpha(Colors.veilWallpaper, 0.8)
+            textHoverColor: Colors.onWallpaper
             onClicked: strip.isWallhaven ? strip.applyWallhaven(stripView.wallhavenById(thumb.wallhavenId), "both") : strip.applyBoth(thumb.path)
           }
         }
@@ -769,9 +769,9 @@ SmartPanel {
       baseSize: Style.baseWidgetSize
       applyUiScale: false
       visible: stripView.contentWidth > stripView.width && stripView.contentX > 0.5
-      colorBg: Color.overlay("field")
-      colorBgHover: Color.overlay("hover")
-      colorBorder: Color.borderShell
+      colorBg: Colors.overlay("field")
+      colorBgHover: Colors.overlay("hover")
+      colorBorder: Colors.borderShell
       onClicked: stripView.scrollPage(-1)
     }
 
@@ -784,9 +784,9 @@ SmartPanel {
       baseSize: Style.baseWidgetSize
       applyUiScale: false
       visible: stripView.contentWidth > stripView.width && stripView.contentX < stripView.contentWidth - stripView.width - 0.5
-      colorBg: Color.overlay("field")
-      colorBgHover: Color.overlay("hover")
-      colorBorder: Color.borderShell
+      colorBg: Colors.overlay("field")
+      colorBgHover: Colors.overlay("hover")
+      colorBorder: Colors.borderShell
       onClicked: stripView.scrollPage(1)
     }
 
@@ -800,12 +800,12 @@ SmartPanel {
         width: Style.fontSizeXXL
         height: Style.fontSizeXXL
         icon: "settings-wallpaper-selector"
-        color: Color.overlay("strong")
+        color: Colors.overlay("strong")
       }
 
       NLabel {
         labelSize: Style.fontSizeM
-        labelColor: Color.onShell
+        labelColor: Colors.onShell
         label: strip.isWallhaven ? (strip.wallhavenBusy ? I18n.tr("wallpaper.wallhaven.loading") : I18n.tr("wallpaper.wallhaven.no-results")) : (strip.filterText.trim() === "" ? I18n.tr("wallpaper.no-wallpaper") : I18n.tr("wallpaper.no-match"))
       }
     }

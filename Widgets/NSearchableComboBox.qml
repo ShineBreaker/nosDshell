@@ -282,13 +282,13 @@ NDccRow {
       // §3.5.4: the drop-down looks like a text field — field fill, radius 5,
       // 1 px accent outline on focus.
       implicitHeight: Style.settingsFieldHeight
-      color: combo.enabled ? Color.overlay("field") : Color.overlay("idle")
-      border.color: combo.activeFocus ? Color.accent : "transparent"
+      color: combo.enabled ? Colors.overlay("field") : Colors.overlay("idle")
+      border.color: combo.activeFocus ? Colors.accent : "transparent"
       border.width: Style.borderS
       radius: Style.settingsFieldRadius
 
       Behavior on border.color {
-        enabled: !Color.isTransitioning
+        enabled: !Colors.isTransitioning
         ColorAnimation {
           duration: Style.motionSwitch
           easing.type: Easing.OutCubic
@@ -309,7 +309,7 @@ NDccRow {
 
       // Stay opaque: the disabled signal is the color swap, not extra alpha.
       opacity: 1.0
-      color: combo.enabled ? (hasSelection ? Color.onShell : Color.onShellTertiary) : Color.textDisabledDark
+      color: combo.enabled ? (hasSelection ? Colors.onShell : Colors.onShellTertiary) : Colors.textDisabledDark
       text: hasSelection ? root.nameByKey(root.currentKey) : root.placeholder
     }
 
@@ -318,7 +318,7 @@ NDccRow {
       y: combo.topPadding + (combo.availableHeight - height) / 2
       icon: "caret-down"
       pointSize: Style.fontSizeL
-      color: combo.enabled ? Color.onShellSecondary : Color.textDisabledDark
+      color: combo.enabled ? Colors.onShellSecondary : Colors.textDisabledDark
     }
 
     popup: Popup {
@@ -439,7 +439,7 @@ NDccRow {
                 NText {
                   text: modelData ? modelData.name : ""
                   pointSize: Style.fontSizeM
-                  color: highlighted ? Color.onAccent : Color.onShell
+                  color: highlighted ? Colors.onAccent : Colors.onShell
                   verticalAlignment: Text.AlignVCenter
                   elide: Text.ElideRight
                   Layout.fillWidth: true
@@ -468,7 +468,7 @@ NDccRow {
                         else
                           return Style.fontSizeXS;
                       }
-                      color: highlighted ? Color.onAccent : (badgeData && badgeData.color ? badgeData.color : Color.onShellSecondary)
+                      color: highlighted ? Colors.onAccent : (badgeData && badgeData.color ? badgeData.color : Colors.onShellSecondary)
                       Layout.preferredWidth: Math.round(Style.baseWidgetSize * 0.6)
                       Layout.preferredHeight: Math.round(Style.baseWidgetSize * 0.6)
                       visible: badgeData && badgeData.icon !== undefined && badgeData.icon !== ""
@@ -478,7 +478,7 @@ NDccRow {
               }
               background: Rectangle {
                 anchors.fill: parent
-                color: highlighted ? Color.accent : "transparent"
+                color: highlighted ? Colors.accent : "transparent"
                 radius: Style.radiusRow
               }
             }
@@ -487,12 +487,12 @@ NDccRow {
       }
 
       background: NArrowRect {
-        // Same as NComboBox: page-surface menus stay opaque (Color.popupPage)
+        // Same as NComboBox: page-surface menus stay opaque (Colors.popupPage)
         // — popupShell's translucency would bleed settings page text
         // through the list.
         arrowEdge: ""
-        fillColor: root.onShellSurface ? Color.popupShell : Color.popupPage
-        borderColor: root.onShellSurface ? Color.borderShell : Color.mOutline
+        fillColor: root.onShellSurface ? Colors.popupShell : Colors.popupPage
+        borderColor: root.onShellSurface ? Colors.borderShell : Colors.mOutline
         borderWidth: Style.borderS
         radius: Style.radiusPopup
         shadow: Style.shadowPopup

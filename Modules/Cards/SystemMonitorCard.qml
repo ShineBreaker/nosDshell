@@ -65,7 +65,7 @@ NBox {
     case "disk":
       return SystemStatService.getDiskColor(root.diskPath);
     }
-    return Color.accent;
+    return Colors.accent;
   }
 
   function _tooltip(m) {

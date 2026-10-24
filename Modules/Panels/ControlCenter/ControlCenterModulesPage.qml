@@ -45,7 +45,7 @@ Item {
     horizontalPolicy: ScrollBar.AlwaysOff
     verticalPolicy: ScrollBar.AsNeeded
     reserveScrollbarSpace: false
-    gradientColor: Color.maskShell
+    gradientColor: Colors.maskShell
     // Scrollbar hidden until hover (DESIGN §3.5.2)
     ScrollBar.horizontal.visible: false
 
@@ -93,7 +93,7 @@ Item {
             Layout.topMargin: root.row === 0 ? 0 : Style.moduleCellInset
             Layout.bottomMargin: root.row === root.rowCount - 1 ? 0 : Style.moduleCellInset
             radius: Style.radiusItem
-            color: cellArea.containsMouse ? Color.overlay("hover") : Color.overlay("idle")
+            color: cellArea.containsMouse ? Colors.overlay("hover") : Colors.overlay("idle")
             opacity: spacerCell ? 0 : 1
 
             ColumnLayout {
@@ -112,8 +112,8 @@ Item {
                 visible: ddeArt !== ""
                 smooth: true
                 // Same ink ladder as the NIcon fallback below.
-                color: Color.onShell
-                opacity: cellArea.containsMouse ? 1.0 : Color.onShellSecondary.a
+                color: Colors.onShell
+                opacity: cellArea.containsMouse ? 1.0 : Colors.onShellSecondary.a
               }
 
               NIcon {
@@ -122,7 +122,7 @@ Item {
                 pointSize: Style.moduleCellIcon
                 applyUiScale: false
                 visible: ddeArt === ""
-                color: cellArea.containsMouse ? Color.onShell : Color.onShellSecondary
+                color: cellArea.containsMouse ? Colors.onShell : Colors.onShellSecondary
               }
 
               NText {
@@ -130,7 +130,7 @@ Item {
                 Layout.maximumWidth: cell.width - Style.marginS
                 text: ControlCenterModules.tr(modelData.label)
                 pointSize: Style.fontSizeS
-                color: Color.onShell
+                color: Colors.onShell
                 elide: Text.ElideRight
               }
             }

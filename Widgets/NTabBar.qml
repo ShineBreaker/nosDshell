@@ -34,7 +34,7 @@ Rectangle {
   function _updateGroupMode() {
     if (!tabRow)
       return;
-    color = groupMode ? "transparent" : Color.overlay("strong");
+    color = groupMode ? "transparent" : Colors.overlay("strong");
     for (let i = 0; i < tabRow.children.length; i++) {
       const child = tabRow.children[i];
       if (child.isTabButton === true) {
@@ -135,7 +135,7 @@ Rectangle {
   Layout.margins: Style.borderS
   implicitWidth: tabRow.implicitWidth + (margins * 2)
   implicitHeight: tabHeight + (margins * 2)
-  color: Color.overlay("strong")
+  color: Colors.overlay("strong")
   radius: Style.radiusItem
 
   RowLayout {

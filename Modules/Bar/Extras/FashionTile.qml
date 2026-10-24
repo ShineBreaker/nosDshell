@@ -17,8 +17,8 @@ NIconButton {
   bgSize: Style.dockPluginTileSize
   iconRatio: 0.45
   customRadius: Style.radiusPopup
-  colorBg: Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")
-  colorBgHover: Color.overlay("hover")
-  colorFg: Color.onShell
+  colorBg: Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")
+  colorBgHover: Colors.overlay("hover")
+  colorFg: Colors.onShell
   border.width: 0
 }

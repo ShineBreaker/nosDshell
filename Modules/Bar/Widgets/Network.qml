@@ -101,8 +101,8 @@ Item {
     id: pill
     screen: root.screen
     oppositeDirection: BarService.getPillDirection(root)
-    customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
-    customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
+    customIconColor: Colors.resolveColorKeyOptional(root.iconColorKey)
+    customTextColor: Colors.resolveColorKeyOptional(root.textColorKey)
     icon: NetworkService.getIcon()
     iconSource: root.onShellSurface ? ThemeIcons.symbolicOnly(root.symbolicName()) : ""
     dockPresentation: root.dockPresentation

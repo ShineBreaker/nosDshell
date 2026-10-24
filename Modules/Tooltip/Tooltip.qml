@@ -110,7 +110,7 @@ PopupWindow {
     id: tipBlurRegion
     trackedItem: arrowRect.bodyItem
     radius: arrowRect.radius
-    activeWhen: Color.blurActive
+    activeWhen: Colors.blurActive
   }
 
   anchor.item: targetItem
@@ -714,8 +714,8 @@ PopupWindow {
       radius: Style.radiusPopup
       arrowEdge: root._arrowEdgeFor(root._effectiveDirection)
       arrowPosition: root._arrowPosition
-      fillColor: Color.popupShell
-      borderColor: Color.borderShell
+      fillColor: Colors.popupShell
+      borderColor: Colors.borderShell
       borderWidth: Style.borderS
       shadow: Style.shadowPopup
 
@@ -738,7 +738,7 @@ PopupWindow {
           text: root.text
           pointSize: Style.fontSizeS
           family: Settings.data.ui.fontFixed
-          color: Color.onShell
+          color: Colors.onShell
           horizontalAlignment: Text.AlignHCenter
           verticalAlignment: Text.AlignVCenter
           wrapMode: Text.WordWrap
@@ -762,7 +762,7 @@ PopupWindow {
               text: modelData
               pointSize: Style.fontSizeS
               family: tooltipText.family
-              color: Color.onShell
+              color: Colors.onShell
               Layout.preferredHeight: rowHeightMeasure.implicitHeight
             }
           }

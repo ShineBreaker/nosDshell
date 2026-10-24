@@ -46,8 +46,8 @@ NIconButton {
                          "profile": PowerProfileService.getName()
                        })
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : ((PowerProfileService.profile === PowerProfile.Balanced) ? Style.capsuleColor : Color.mPrimary)
-  colorFg: fashionMode ? Color.onShell : ((PowerProfileService.profile === PowerProfile.Balanced) ? Color.resolveColorKey(iconColorKey) : Color.mOnPrimary)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : ((PowerProfileService.profile === PowerProfile.Balanced) ? Style.capsuleColor : Colors.mPrimary)
+  colorFg: fashionMode ? Colors.onShell : ((PowerProfileService.profile === PowerProfile.Balanced) ? Colors.resolveColorKey(iconColorKey) : Colors.mOnPrimary)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
   onClicked: PowerProfileService.cycleProfile()

@@ -15,7 +15,7 @@ Item {
   // Pre-blurred variant produced by nosd-blur (empty until ready/unavailable)
   property string resolvedBlurredPath: ""
   readonly property bool usePreBlurred: resolvedBlurredPath !== "" && Settings.data.general.lockScreenBlur > 0 && !PowerProfileService.performanceMode
-  property color tintColor: Color.veilWallpaper
+  property color tintColor: Colors.veilWallpaper
 
   required property var screen
 
@@ -186,19 +186,19 @@ Item {
     gradient: Gradient {
       GradientStop {
         position: 0.0
-        color: Qt.alpha(Color.veilWallpaper, 0.4)
+        color: Qt.alpha(Colors.veilWallpaper, 0.4)
       }
       GradientStop {
         position: 0.3
-        color: Qt.alpha(Color.veilWallpaper, 0.2)
+        color: Qt.alpha(Colors.veilWallpaper, 0.2)
       }
       GradientStop {
         position: 0.7
-        color: Qt.alpha(Color.veilWallpaper, 0.25)
+        color: Qt.alpha(Colors.veilWallpaper, 0.25)
       }
       GradientStop {
         position: 1.0
-        color: Qt.alpha(Color.veilWallpaper, 0.5)
+        color: Qt.alpha(Colors.veilWallpaper, 0.5)
       }
     }
   }
@@ -208,7 +208,7 @@ Item {
     anchors.fill: parent
     visible: Settings.data.general.showScreenCorners
 
-    property color cornerColor: Settings.data.general.forceBlackScreenCorners ? "black" : Color.mSurface
+    property color cornerColor: Settings.data.general.forceBlackScreenCorners ? "black" : Colors.mSurface
     property real cornerRadius: Style.screenRadius
     property real cornerSize: Style.screenRadius
 

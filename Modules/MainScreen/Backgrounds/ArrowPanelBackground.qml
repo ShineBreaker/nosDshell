@@ -55,9 +55,9 @@ ShapePath {
   readonly property real _fade: assignedPanel ? assignedPanel.opacity : 0
 
   strokeWidth: 1
-  strokeColor: isRenderable ? Qt.rgba(Color.borderShell.r, Color.borderShell.g, Color.borderShell.b, Color.borderShell.a * _fade) : "transparent"
+  strokeColor: isRenderable ? Qt.rgba(Colors.borderShell.r, Colors.borderShell.g, Colors.borderShell.b, Colors.borderShell.a * _fade) : "transparent"
   joinStyle: ShapePath.MiterJoin
-  fillColor: isRenderable ? Qt.rgba(Color.popupShell.r, Color.popupShell.g, Color.popupShell.b, Color.popupShell.a * _fade) : "transparent"
+  fillColor: isRenderable ? Qt.rgba(Colors.popupShell.r, Colors.popupShell.g, Colors.popupShell.b, Colors.popupShell.a * _fade) : "transparent"
 
   startX: 0
   startY: 0

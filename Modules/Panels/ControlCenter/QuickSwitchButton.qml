@@ -84,11 +84,11 @@ Item {
     anchors.bottomMargin: Style.quickSwitchBlockBottomMargin
     height: parent.height - Style.quickSwitchBlockBottomMargin
     radius: Style.radiusPopup
-    color: root.hot ? Color.overlay("strong") : (hoverArea.containsMouse ? Color.overlay("hover") : "transparent")
+    color: root.hot ? Colors.overlay("strong") : (hoverArea.containsMouse ? Colors.overlay("hover") : "transparent")
     visible: root.hot || hoverArea.containsMouse
 
     Behavior on color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionPointer
         easing.type: Easing.OutCubic
@@ -107,7 +107,7 @@ Item {
     }
     pointSize: Style.quickSwitchIconSize
     applyUiScale: false
-    color: root.hot ? Color.onShell : Color.onShellSecondary
+    color: root.hot ? Colors.onShell : Colors.onShellSecondary
   }
 
   // Name under the icon — the same word the settings shortcut list shows.
@@ -122,7 +122,7 @@ Item {
     elide: Text.ElideRight
     maximumLineCount: 1
     font.pixelSize: Math.round(Style.fontSizeXS * Style.uiScaleRatio)
-    color: root.hot ? Color.onShell : Color.onShellSecondary
+    color: root.hot ? Colors.onShell : Colors.onShellSecondary
     text: ControlCenterWidgetRegistry.widgetDisplayName(root.widgetId)
   }
 

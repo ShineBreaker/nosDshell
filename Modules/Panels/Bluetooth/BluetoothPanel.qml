@@ -90,7 +90,7 @@ SmartPanel {
             NIcon {
               icon: "bluetooth"
               pointSize: Style.fontSizeXL
-              color: BluetoothService.enabled ? Color.accent : Color.onShellSecondary
+              color: BluetoothService.enabled ? Colors.accent : Colors.onShellSecondary
             }
 
             NText {
@@ -102,14 +102,14 @@ SmartPanel {
 
             NIconButton {
               icon: Settings.data.network.bluetoothAutoConnect ? "bluetooth-connected" : "bluetooth"
-              colorFg: Settings.data.network.bluetoothAutoConnect ? Color.accent : Color.onShellTertiary
+              colorFg: Settings.data.network.bluetoothAutoConnect ? Colors.accent : Colors.onShellTertiary
               tooltipText: Settings.data.network.bluetoothAutoConnect ? I18n.tr("tooltips.bluetooth-auto-connect-on") : I18n.tr("tooltips.bluetooth-auto-connect-off")
               onClicked: Settings.data.network.bluetoothAutoConnect = !Settings.data.network.bluetoothAutoConnect
             }
 
             NIconButton {
               icon: "settings"
-              colorFg: Color.onShell
+              colorFg: Colors.onShell
               tooltipText: I18n.tr("tooltips.open-settings")
               onClicked: SettingsPanelService.openToTab(SettingsPanel.Tab.Connections, 1, screen)
             }
@@ -132,7 +132,7 @@ SmartPanel {
           visible: !BluetoothService.bluetoothAvailable
           text: I18n.tr("bluetooth.panel.unavailable")
           pointSize: Style.fontSizeS
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
         }
 
         // ---- Connected devices ----
@@ -186,7 +186,7 @@ SmartPanel {
           visible: BluetoothService.enabled && panelContent.availableDevices.length === 0 && !BluetoothService.scanningActive
           text: I18n.tr("bluetooth.panel.no-devices")
           pointSize: Style.fontSizeS
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
         }
 
         Repeater {

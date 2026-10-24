@@ -76,7 +76,7 @@ Item {
   property bool drawerEnabled: widgetSettings.drawerEnabled !== undefined ? widgetSettings.drawerEnabled : (widgetMetadata.drawerEnabled !== undefined ? widgetMetadata.drawerEnabled : true) // Enable drawer panel
   property bool hidePassive: widgetSettings.hidePassive !== undefined ? widgetSettings.hidePassive : true // Hide passive status items
   readonly property string chevronColorKey: widgetSettings.chevronColor !== undefined ? widgetSettings.chevronColor : widgetMetadata.chevronColor
-  readonly property color chevronColor: Color.resolveColorKey(chevronColorKey)
+  readonly property color chevronColor: Colors.resolveColorKey(chevronColorKey)
   property var filteredItems: [] // Items to show inline (pinned)
   property var dropdownItems: [] // Items to show in drawer (unpinned)
   property var _snItems: [] // Raw item snapshot for status Connections
@@ -399,7 +399,7 @@ Item {
       applyUiScale: false
       customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
       colorBg: "transparent"
-      colorFg: efficientMode ? Color.onShell : root.chevronColor
+      colorFg: efficientMode ? Colors.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
       // DDE efficient uses thin outline arrows; caret-* are filled triangles
@@ -455,7 +455,7 @@ Item {
           height: root.isVertical ? 2 : parent.height - 8
           x: root.isVertical ? 4 : -6
           y: root.isVertical ? -6 : 4
-          color: Color.overlay("hover")
+          color: Colors.overlay("hover")
         }
 
         // Tooltip anchor representing the visual area (for proper tooltip positioning)
@@ -499,7 +499,7 @@ Item {
             // DDE surfaces (taskbar, fashion tile) tint to the shell ink like
             // the chevron/drawer do; the status-bar capsule keeps upstream's
             // scheme colours.
-            property color targetColor: (root.efficientMode || root.fashionMode) ? Color.onShell : (Settings.data.colorSchemes.darkMode ? Color.mOnSurface : Color.mSurfaceVariant)
+            property color targetColor: (root.efficientMode || root.fashionMode) ? Colors.onShell : (Settings.data.colorSchemes.darkMode ? Colors.mOnSurface : Colors.mSurfaceVariant)
             property real colorizeMode: 1.0
 
             fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
@@ -514,7 +514,7 @@ Item {
           anchors.horizontalCenter: trayIcon.horizontalCenter
           width: Style.toOdd(iconSize * 0.25)
           height: 4
-          color: trayDelegate.isHovered ? Color.mHover : "transparent"
+          color: trayDelegate.isHovered ? Colors.mHover : "transparent"
           radius: Math.min(Style.radiusXXS, width / 2)
         }
 
@@ -617,7 +617,7 @@ Item {
       applyUiScale: false
       customRadius: efficientMode ? Style.radiusPopup : Style.radiusL
       colorBg: "transparent"
-      colorFg: efficientMode ? Color.onShell : root.chevronColor
+      colorFg: efficientMode ? Colors.onShell : root.chevronColor
       colorBorder: "transparent"
       colorBorderHover: "transparent"
       // DDE efficient uses thin outline arrows; caret-* are filled triangles
@@ -654,7 +654,7 @@ Item {
     width: root.isVertical ? root.fashionPillHeight : Math.round(fashionIconsFlow.implicitWidth + 12)
     height: root.isVertical ? Math.round(fashionIconsFlow.implicitHeight + 12) : root.fashionPillHeight
     radius: Style.radiusLarge
-    color: Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")
+    color: Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")
 
     Flow {
       id: fashionIconsFlow
@@ -682,7 +682,7 @@ Item {
     radius: Style.radiusLarge
     // Same overlay ramp as the plugin tiles in both states — upstream's dark
     // expanded variant made the collapser read as a different element.
-    color: collapserArea.containsMouse ? (collapserArea.pressed ? Color.overlay("checked") : Color.overlay("hover")) : (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle"))
+    color: collapserArea.containsMouse ? (collapserArea.pressed ? Colors.overlay("checked") : Colors.overlay("hover")) : (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle"))
 
     NIcon {
       anchors.centerIn: parent
@@ -693,7 +693,7 @@ Item {
       }
       pointSize: Style.fontSizeL
       applyUiScale: false
-      color: Color.onShell
+      color: Colors.onShell
     }
 
     MouseArea {

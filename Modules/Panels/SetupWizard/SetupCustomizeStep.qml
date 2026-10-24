@@ -40,12 +40,12 @@ ColumnLayout {
             width: 28
             height: 28
             radius: Style.radiusM
-            color: Color.overlay("idle")
+            color: Colors.overlay("idle")
 
             NIcon {
               icon: "layout-2"
               pointSize: Style.fontSizeL
-              color: Color.mPrimary
+              color: Colors.mPrimary
               anchors.centerIn: parent
             }
           }
@@ -58,13 +58,13 @@ ColumnLayout {
               text: I18n.tr("panels.bar.appearance-position-label")
               pointSize: Style.fontSizeL
               font.weight: Style.fontWeightSemiBold
-              color: Color.mOnSurface
+              color: Colors.mOnSurface
             }
 
             NText {
               text: I18n.tr("panels.bar.appearance-position-description")
               pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
             }
           }
         }
@@ -104,14 +104,14 @@ ColumnLayout {
 
               property bool isActive: selectedBarPosition === modelData.key
 
-              color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.overlay("idle")
-              border.color: (positionHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
+              color: (positionHoverHandler.hovered || isActive) ? Colors.mPrimary : Colors.overlay("idle")
+              border.color: (positionHoverHandler.hovered || isActive) ? Colors.mPrimary : Colors.mOutline
 
               NText {
                 text: modelData.name
                 pointSize: Style.fontSizeM
                 font.weight: (positionHoverHandler.hovered || parent.isActive) ? Style.fontWeightSemiBold : Style.fontWeightMedium
-                color: (positionHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
+                color: (positionHoverHandler.hovered || parent.isActive) ? Colors.mOnPrimary : Colors.mOnSurface
                 anchors.centerIn: parent
               }
 
@@ -135,7 +135,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -150,11 +150,11 @@ ColumnLayout {
           width: 32
           height: 32
           radius: Style.radiusM
-          color: Color.overlay("idle")
+          color: Colors.overlay("idle")
           NIcon {
             icon: "minimize"
             pointSize: Style.fontSizeL
-            color: Color.mPrimary
+            color: Colors.mPrimary
             anchors.centerIn: parent
           }
         }
@@ -166,12 +166,12 @@ ColumnLayout {
             text: I18n.tr("panels.bar.appearance-density-label")
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightSemiBold
-            color: Color.mOnSurface
+            color: Colors.mOnSurface
           }
           NText {
             text: I18n.tr("panels.bar.appearance-density-description")
             pointSize: Style.fontSizeS
-            color: Color.mOnSurfaceVariant
+            color: Colors.mOnSurfaceVariant
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
           }
@@ -210,15 +210,15 @@ ColumnLayout {
 
               property bool isActive: Settings.data.bar.density === modelData.key
 
-              color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.overlay("idle")
-              border.color: (densityHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
+              color: (densityHoverHandler.hovered || isActive) ? Colors.mPrimary : Colors.overlay("idle")
+              border.color: (densityHoverHandler.hovered || isActive) ? Colors.mPrimary : Colors.mOutline
 
               NText {
                 id: densityText
                 text: modelData.name
                 pointSize: Style.fontSizeS
                 font.weight: (densityHoverHandler.hovered || parent.isActive) ? Style.fontWeightSemiBold : Style.fontWeightMedium
-                color: (densityHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
+                color: (densityHoverHandler.hovered || parent.isActive) ? Colors.mOnPrimary : Colors.mOnSurface
                 anchors.centerIn: parent
               }
 
@@ -241,7 +241,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -259,11 +259,11 @@ ColumnLayout {
             width: 32
             height: 32
             radius: Style.radiusM
-            color: Color.overlay("idle")
+            color: Colors.overlay("idle")
             NIcon {
               icon: "maximize"
               pointSize: Style.fontSizeL
-              color: Color.mPrimary
+              color: Colors.mPrimary
               anchors.centerIn: parent
             }
           }
@@ -274,12 +274,12 @@ ColumnLayout {
               text: I18n.tr("panels.user-interface.scaling-label")
               pointSize: Style.fontSizeL
               font.weight: Style.fontWeightSemiBold
-              color: Color.mOnSurface
+              color: Colors.mOnSurface
             }
             NText {
               text: I18n.tr("panels.user-interface.scaling-description")
               pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
             }
           }
         }
@@ -302,7 +302,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -321,12 +321,12 @@ ColumnLayout {
             width: 28
             height: 28
             radius: Style.radiusM
-            color: Color.overlay("idle")
+            color: Colors.overlay("idle")
 
             NIcon {
               icon: "layout-2"
               pointSize: Style.fontSizeL
-              color: Color.mPrimary
+              color: Colors.mPrimary
               anchors.centerIn: parent
             }
           }
@@ -339,13 +339,13 @@ ColumnLayout {
               text: I18n.tr("panels.bar.appearance-type-label") ?? "Bar Type"
               pointSize: Style.fontSizeL
               font.weight: Style.fontWeightSemiBold
-              color: Color.mOnSurface
+              color: Colors.mOnSurface
             }
 
             NText {
               text: I18n.tr("panels.bar.appearance-type-description") ?? "Choose the style of the bar: Simple, Floating or Framed"
               pointSize: Style.fontSizeS
-              color: Color.mOnSurfaceVariant
+              color: Colors.mOnSurfaceVariant
             }
           }
         }
@@ -373,14 +373,14 @@ ColumnLayout {
 
               property bool isActive: Settings.data.bar.barType === modelData.key
 
-              color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.overlay("idle")
-              border.color: (typeHoverHandler.hovered || isActive) ? Color.mPrimary : Color.mOutline
+              color: (typeHoverHandler.hovered || isActive) ? Colors.mPrimary : Colors.overlay("idle")
+              border.color: (typeHoverHandler.hovered || isActive) ? Colors.mPrimary : Colors.mOutline
 
               NText {
                 text: modelData.name
                 pointSize: Style.fontSizeM
                 font.weight: (typeHoverHandler.hovered || parent.isActive) ? Style.fontWeightSemiBold : Style.fontWeightMedium
-                color: (typeHoverHandler.hovered || parent.isActive) ? Color.mOnPrimary : Color.mOnSurface
+                color: (typeHoverHandler.hovered || parent.isActive) ? Colors.mOnPrimary : Colors.mOnSurface
                 anchors.centerIn: parent
               }
 
@@ -403,7 +403,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -413,7 +413,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -427,11 +427,11 @@ ColumnLayout {
           width: 32
           height: 32
           radius: Style.radiusM
-          color: Color.overlay("idle")
+          color: Colors.overlay("idle")
           NIcon {
             icon: "screen-share"
             pointSize: Style.fontSizeL
-            color: Color.mPrimary
+            color: Colors.mPrimary
             anchors.centerIn: parent
           }
         }
@@ -442,12 +442,12 @@ ColumnLayout {
             text: I18n.tr("panels.user-interface.dimmer-opacity-label")
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightSemiBold
-            color: Color.mOnSurface
+            color: Colors.mOnSurface
           }
           NText {
             text: I18n.tr("panels.user-interface.dimmer-opacity-description")
             pointSize: Style.fontSizeS
-            color: Color.mOnSurfaceVariant
+            color: Colors.mOnSurfaceVariant
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
           }
@@ -468,7 +468,7 @@ ColumnLayout {
       Rectangle {
         Layout.fillWidth: true
         Layout.preferredHeight: 1
-        color: Color.mOutline
+        color: Colors.mOutline
         opacity: 0.2
         Layout.topMargin: Style.marginS
         Layout.bottomMargin: Style.marginS
@@ -482,11 +482,11 @@ ColumnLayout {
           width: 32
           height: 32
           radius: Style.radiusM
-          color: Color.overlay("idle")
+          color: Colors.overlay("idle")
           NIcon {
             icon: "shadow"
             pointSize: Style.fontSizeL
-            color: Color.mPrimary
+            color: Colors.mPrimary
             anchors.centerIn: parent
           }
         }
@@ -497,12 +497,12 @@ ColumnLayout {
             text: I18n.tr("panels.user-interface.shadows-label")
             pointSize: Style.fontSizeL
             font.weight: Style.fontWeightSemiBold
-            color: Color.mOnSurface
+            color: Colors.mOnSurface
           }
           NText {
             text: I18n.tr("panels.user-interface.shadows-description")
             pointSize: Style.fontSizeS
-            color: Color.mOnSurfaceVariant
+            color: Colors.mOnSurfaceVariant
             wrapMode: Text.WordWrap
             Layout.fillWidth: true
           }

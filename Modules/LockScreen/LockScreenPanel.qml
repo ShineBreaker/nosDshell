@@ -170,7 +170,7 @@ Item {
           Layout.bottomMargin: 20
           text: HostService.displayName
           pointSize: Style.fontSizeLockLabel
-          color: Color.onWallpaper
+          color: Colors.onWallpaper
           horizontalAlignment: Text.AlignHCenter
         }
       }
@@ -204,8 +204,8 @@ Item {
           // Wallpaper surface: the field level must come from the constant
           // white ladder, not the theme-flipping overlay() one.
           radius: Style.lockPasswordFieldRadius
-          color: Color.overlayWallpaper("field")
-          border.color: lockControl.showFailure ? Color.alert : (passwordInput.activeFocus ? Color.mPrimary : Qt.alpha(Color.mOutline, 0.3))
+          color: Colors.overlayWallpaper("field")
+          border.color: lockControl.showFailure ? Colors.alert : (passwordInput.activeFocus ? Colors.mPrimary : Qt.alpha(Colors.mOutline, 0.3))
           border.width: 1
 
           property bool passwordVisible: false
@@ -222,7 +222,7 @@ Item {
             arrowHeight: Style.marginS
             radius: Style.radiusPopup
             fillColor: "white"
-            borderColor: Color.alert
+            borderColor: Colors.alert
             borderWidth: 1
             visible: lockControl.showFailure && (lockControl.errorMessage || "").length > 0
             z: 3
@@ -233,12 +233,12 @@ Item {
               NIcon {
                 icon: "alert-circle"
                 pointSize: Style.fontSizeL
-                color: Color.alert
+                color: Colors.alert
               }
 
               NText {
                 text: lockControl.errorMessage || "Authentication failed"
-                color: Color.alert
+                color: Colors.alert
                 pointSize: Style.fontSizeM
                 horizontalAlignment: Text.AlignHCenter
               }
@@ -273,7 +273,7 @@ Item {
               id: capsLockGlyph
               icon: "arrow-bar-up"
               pointSize: Style.fontSizeL
-              color: Color.mPrimary
+              color: Colors.mPrimary
               visible: LockKeysService.capsLockOn
             }
 
@@ -284,7 +284,7 @@ Item {
               Rectangle {
                 width: 2
                 height: 20
-                color: Color.mPrimary
+                color: Colors.mPrimary
                 visible: passwordInput.activeFocus && passwordInput.text.length === 0
                 anchors.verticalCenter: parent.verticalCenter
 
@@ -368,7 +368,7 @@ Item {
                   Rectangle {
                     id: selectionHighlight
                     visible: passwordInput.selectionStart !== passwordInput.selectionEnd && passwordInput.text.length > 0
-                    color: Qt.alpha(Color.mPrimary, 0.8)
+                    color: Qt.alpha(Colors.mPrimary, 0.8)
                     height: parent.height + Style.marginS
                     anchors.verticalCenter: parent.verticalCenter
                     x: (passwordInput.selectionStart / passwordInput.text.length) * passwordDisplayContent.width
@@ -400,7 +400,7 @@ Item {
 
                         icon: drawCustomChar ? iconRepeater.passwordChars[index % iconRepeater.passwordChars.length] : "circle-filled"
                         pointSize: Style.fontSizeL
-                        color: isSelected ? Color.mOnPrimary : Color.mPrimary
+                        color: isSelected ? Colors.mOnPrimary : Colors.mPrimary
                         opacity: 1.0
                         scale: animationsEnabled ? 0.5 : 1
                         ParallelAnimation {
@@ -480,7 +480,7 @@ Item {
                 NText {
                   id: visiblePasswordPlainText
                   text: passwordInput.text
-                  color: Color.mPrimary
+                  color: Colors.mPrimary
                   pointSize: Style.fontSizeM
                   visible: passwordInput.text.length > 0 && passwordInputContainer.passwordVisible
                   anchors.left: parent.left
@@ -498,7 +498,7 @@ Item {
                   width: 2
                   height: 20
                   x: passwordVisualHost.caretVisualX
-                  color: Color.mPrimary
+                  color: Colors.mPrimary
                   // Hide the cursor when text is selected
                   visible: passwordInput.activeFocus && passwordInput.text.length > 0 && passwordInput.selectionStart === passwordInput.selectionEnd
                   anchors.verticalCenter: parent.verticalCenter
@@ -624,7 +624,7 @@ Item {
                                              "seconds": Math.ceil(root.timeRemaining / 1000)
                                            }) : ""
           pointSize: Style.fontSizeL
-          color: Color.onWallpaper
+          color: Colors.onWallpaper
         }
       }
     }

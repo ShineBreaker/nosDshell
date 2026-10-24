@@ -68,8 +68,8 @@ ColumnLayout {
         delegate: Rectangle {
           required property string modelData
           property real pad: Style.marginS
-          color: Color.overlay("field")
-          border.color: Color.borderShell
+          color: Colors.overlay("field")
+          border.color: Colors.borderShell
           border.width: Style.borderS
 
           RowLayout {
@@ -80,7 +80,7 @@ ColumnLayout {
 
             NText {
               text: modelData
-              color: Color.onShell
+              color: Colors.onShell
               pointSize: Style.fontSizeS
               Layout.alignment: Qt.AlignVCenter
               Layout.leftMargin: Style.marginS

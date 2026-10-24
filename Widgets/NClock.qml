@@ -17,14 +17,14 @@ Item {
   property bool showProgress: true
 
   // Color properties
-  property color backgroundColor: Color.accent
-  property color clockColor: Color.onAccent
+  property color backgroundColor: Colors.accent
+  property color clockColor: Colors.onAccent
 
   property color secondHandColor: {
-    var defaultColor = Color.alert;
+    var defaultColor = Colors.alert;
     var bestContrast = 1.0; // 1.0 is "no contrast"
     var bestColor = defaultColor;
-    var candidates = [Color.accentAlt, Color.accentAction, Color.alert];
+    var candidates = [Colors.accentAlt, Colors.accentAction, Colors.alert];
 
     const minContrast = 1.149;
 
@@ -132,9 +132,9 @@ Item {
   // Analog Clock Component
   component NClockAnalog: Item {
     property var now
-    property color backgroundColor: Color.accent
-    property color clockColor: Color.onAccent
-    property color secondHandColor: Color.alert
+    property color backgroundColor: Colors.accent
+    property color clockColor: Colors.onAccent
+    property color secondHandColor: Colors.alert
     property real scaleRatio: Style.uiScaleRatio
     anchors.fill: parent
 
@@ -233,9 +233,9 @@ Item {
   // Digital Clock Component
   component NClockDigital: Item {
     property var now
-    property color backgroundColor: Color.accent
-    property color clockColor: Color.onAccent
-    property color progressColor: Color.alert
+    property color backgroundColor: Colors.accent
+    property color clockColor: Colors.onAccent
+    property color progressColor: Colors.alert
     property real hoursFontSize: Style.fontSizeXS
     property real minutesFontSize: Style.fontSizeXXS
     property int hoursFontWeight: Style.fontWeightSemiBold
@@ -320,7 +320,7 @@ Item {
   component NClockBinary: Item {
     property var now
     property color backgroundColor
-    property color clockColor: Color.onAccent
+    property color clockColor: Colors.onAccent
 
     anchors.fill: parent
 
@@ -421,7 +421,7 @@ Item {
         color: isActive ? activeColor : Qt.alpha(activeColor, 0.2)
 
         Behavior on color {
-          enabled: !Color.isTransitioning
+          enabled: !Colors.isTransitioning
           ColorAnimation {
             duration: Style.motionSwitch
             easing.type: Easing.OutCubic

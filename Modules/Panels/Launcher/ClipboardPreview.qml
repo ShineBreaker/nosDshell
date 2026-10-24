@@ -145,7 +145,7 @@ Item {
           return `${format} • ${previewImage.implicitWidth}×${previewImage.implicitHeight}`;
         }
         pointSize: Style.fontSizeS
-        color: Color.onWallpaperSecondary
+        color: Colors.onWallpaperSecondary
       }
     }
 
@@ -169,7 +169,7 @@ Item {
           textFormat: Text.PlainText
           font.pointSize: Style.fontSizeM
           font.family: Settings.data.ui.fontFixed
-          color: Color.onWallpaper
+          color: Colors.onWallpaper
         }
       }
 
@@ -188,7 +188,7 @@ Item {
           return `${chars} chars, ${words} words, ${lines} lines`;
         }
         pointSize: Style.fontSizeS
-        color: Color.onWallpaperSecondary
+        color: Colors.onWallpaperSecondary
       }
     }
   }

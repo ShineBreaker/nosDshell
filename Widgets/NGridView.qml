@@ -10,7 +10,7 @@ Item {
   // Signal for key press events when keyNavigationEnabled is true
   signal keyPressed(var event)
 
-  property color handleColor: Color.overlay("checked")
+  property color handleColor: Colors.overlay("checked")
   property color handleHoverColor: handleColor
   property color handlePressedColor: handleColor
   property color trackColor: "transparent"
@@ -27,7 +27,7 @@ Item {
 
   // Gradient properties
   property bool showGradientMasks: true
-  property color gradientColor: Color.mSurfaceVariant
+  property color gradientColor: Colors.mSurfaceVariant
   // Fully transparent gradientColor: fade the rows out (OpacityMask) instead
   // of painting an opaque surface color over them — see NListView.
   readonly property bool _fadeToTransparent: gradientColor.a === 0

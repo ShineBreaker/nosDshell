@@ -8,11 +8,11 @@ Item {
 
   // Primary line
   property var values: []
-  property color color: Color.accent
+  property color color: Colors.accent
 
   // Optional secondary line
   property var values2: []
-  property color color2: Color.alert
+  property color color2: Colors.alert
 
   // Range settings for primary line
   property real minValue: 0

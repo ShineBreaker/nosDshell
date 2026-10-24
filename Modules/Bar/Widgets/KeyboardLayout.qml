@@ -78,8 +78,8 @@ Item {
     screen: root.screen
     dockPresentation: root.dockPresentation
     oppositeDirection: BarService.getPillDirection(root)
-    customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
-    customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
+    customIconColor: Colors.resolveColorKeyOptional(root.iconColorKey)
+    customTextColor: Colors.resolveColorKeyOptional(root.textColorKey)
     icon: root.showIcon ? "keyboard" : ""
     autoHide: false // Important to be false so we can hover as long as we want
     text: isBarVertical ? currentLayout.substring(0, 3).toUpperCase() : currentLayout

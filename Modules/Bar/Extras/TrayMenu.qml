@@ -78,7 +78,7 @@ PopupWindow {
     id: menuBlurRegion
     trackedItem: menuBody.bodyItem
     radius: menuBody.radius
-    activeWhen: Color.blurActive
+    activeWhen: Colors.blurActive
     // The reveal slides the card inside the surface — feed the sentinel the
     // animated distance so the region follows each frame.
     watch: reveal.revealDistance
@@ -272,8 +272,8 @@ PopupWindow {
       id: menuBody
       anchors.fill: parent
       radius: Style.radiusPopup
-      fillColor: Color.popupShell
-      borderColor: Color.borderShell
+      fillColor: Colors.popupShell
+      borderColor: Colors.borderShell
       borderWidth: Style.borderS
       shadow: Style.shadowPopup
     }
@@ -328,7 +328,7 @@ PopupWindow {
             Rectangle {
               id: innerRect
               anchors.fill: parent
-              color: mouseArea.containsMouse ? Color.accent : "transparent"
+              color: mouseArea.containsMouse ? Colors.accent : "transparent"
               radius: Style.radiusRow
               visible: !(entry?.isSeparator ?? false)
 
@@ -352,7 +352,7 @@ PopupWindow {
                   readonly property bool isChecked: entry?.checkState === Qt.Checked || (entry?.checked ?? false)
 
                   // Color Logic — OptionItem style: accent check, white when the row is hovered
-                  readonly property color activeColor: mouseArea.containsMouse ? Color.onAccent : Color.accent
+                  readonly property color activeColor: mouseArea.containsMouse ? Colors.onAccent : Colors.accent
                   readonly property color borderColor: activeColor
 
                   // Checkbox Visuals
@@ -401,7 +401,7 @@ PopupWindow {
                 NText {
                   id: text
                   Layout.fillWidth: true
-                  color: (entry?.enabled ?? true) ? (mouseArea.containsMouse ? Color.onAccent : Color.onShell) : Color.textDisabledDark
+                  color: (entry?.enabled ?? true) ? (mouseArea.containsMouse ? Colors.onAccent : Colors.onShell) : Colors.textDisabledDark
                   text: (entry?.text ?? "") !== "" ? entry.text.replace(/[\n\r]+/g, ' ') : "..."
                   pointSize: Style.fontSizeS
                   verticalAlignment: Text.AlignVCenter
@@ -422,7 +422,7 @@ PopupWindow {
                   applyUiScale: false
                   verticalAlignment: Text.AlignVCenter
                   visible: entry?.hasChildren ?? false
-                  color: (mouseArea.containsMouse ? Color.onAccent : Color.onShellSecondary)
+                  color: (mouseArea.containsMouse ? Colors.onAccent : Colors.onShellSecondary)
                 }
               }
 
@@ -527,7 +527,7 @@ PopupWindow {
           }
           Layout.preferredWidth: parent.width
           Layout.preferredHeight: Math.round(Style.fontSizeS * 1.33) + 8
-          color: pinUnpinMouseArea.containsMouse ? Color.accent : "transparent"
+          color: pinUnpinMouseArea.containsMouse ? Colors.accent : "transparent"
           radius: Style.radiusRow
           border.color: "transparent"
           border.width: Style.borderS
@@ -543,12 +543,12 @@ PopupWindow {
               pointSize: Style.fontSizeS
               applyUiScale: false
               verticalAlignment: Text.AlignVCenter
-              color: pinUnpinMouseArea.containsMouse ? Color.onAccent : Color.accent
+              color: pinUnpinMouseArea.containsMouse ? Colors.onAccent : Colors.accent
             }
 
             NText {
               Layout.fillWidth: true
-              color: pinUnpinMouseArea.containsMouse ? Color.onAccent : Color.accent
+              color: pinUnpinMouseArea.containsMouse ? Colors.onAccent : Colors.accent
               text: root.isPinned ? I18n.tr("panels.bar.tray-unpin-application") : I18n.tr("panels.bar.tray-pin-application")
               pointSize: Style.fontSizeS
               verticalAlignment: Text.AlignVCenter

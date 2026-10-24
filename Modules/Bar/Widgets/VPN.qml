@@ -105,8 +105,8 @@ Item {
     screen: root.screen
     dockPresentation: root.dockPresentation
     oppositeDirection: BarService.getPillDirection(root)
-    customIconColor: Color.resolveColorKeyOptional(root.iconColorKey)
-    customTextColor: Color.resolveColorKeyOptional(root.textColorKey)
+    customIconColor: Colors.resolveColorKeyOptional(root.iconColorKey)
+    customTextColor: Colors.resolveColorKeyOptional(root.textColorKey)
     icon: VPNService.hasActiveConnection ? "shield-lock" : "shield"
     text: {
       if (VPNService.activeConnections.length > 0) {

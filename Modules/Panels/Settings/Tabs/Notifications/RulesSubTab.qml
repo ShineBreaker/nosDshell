@@ -100,7 +100,7 @@ ColumnLayout {
           Layout.fillWidth: true
           label: (entryDelegate.isRegex ? "regex: " : "") + entryDelegate.pattern
           description: entryDelegate.action === "block" ? I18n.tr("panels.notifications.rules-action-block") : (entryDelegate.action === "mute" ? I18n.tr("panels.notifications.rules-action-mute") : I18n.tr("panels.notifications.rules-action-hide"))
-          labelColor: entryDelegate.pattern ? Color.accent : Color.onShell
+          labelColor: entryDelegate.pattern ? Colors.accent : Colors.onShell
           labelWeight: Style.fontWeightRegular
         }
 

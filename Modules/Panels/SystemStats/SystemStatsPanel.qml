@@ -128,7 +128,7 @@ SmartPanel {
     property string label: ""
     property string value: ""
     property real gaugeRatio: -1 // < 0 hides the gauge
-    property color gaugeColor: Color.accent
+    property color gaugeColor: Colors.accent
 
     spacing: Style.marginXXS
     Layout.fillWidth: true
@@ -153,7 +153,7 @@ SmartPanel {
         NText {
           text: statRow.value
           pointSize: Style.fontSizeS
-          color: Color.onShellSecondary
+          color: Colors.onShellSecondary
           features: {
             "tnum": 1
           }

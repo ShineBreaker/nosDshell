@@ -223,8 +223,8 @@ ColumnLayout {
         icon: "filter"
         tooltipText: root.showOnlyActive ? I18n.tr("actions.show-all") : I18n.tr("actions.show-active-only")
 
-        colorBg: root.showOnlyActive ? Color.accent : Color.overlay("strong")
-        colorFg: root.showOnlyActive ? Color.onAccent : Color.onShell
+        colorBg: root.showOnlyActive ? Colors.accent : Colors.overlay("strong")
+        colorFg: root.showOnlyActive ? Colors.onAccent : Colors.onShell
 
         onClicked: root.showOnlyActive = !root.showOnlyActive
       }
@@ -253,7 +253,7 @@ ColumnLayout {
           readonly property bool isActive: root.isTemplateActive(modelData.id)
 
           radius: Style.radiusItem
-          color: cellHover.hovered ? Color.overlay("checked") : Color.overlay("strong")
+          color: cellHover.hovered ? Colors.overlay("checked") : Colors.overlay("strong")
 
           RowLayout {
             anchors.fill: parent
@@ -264,7 +264,7 @@ ColumnLayout {
             NText {
               text: templateCell.modelData.name
               pointSize: Style.fontSizeS
-              color: Color.onShell
+              color: Colors.onShell
               elide: Text.ElideRight
               Layout.fillWidth: true
             }
@@ -272,7 +272,7 @@ ColumnLayout {
             NIcon {
               icon: "check"
               pointSize: Style.fontSizeL
-              color: Color.accent
+              color: Colors.accent
               visible: templateCell.isActive
             }
           }
@@ -301,7 +301,7 @@ ColumnLayout {
     NText {
       visible: filteredTemplates.length === 0 && searchText.trim() !== ""
       text: I18n.tr("common.no-results")
-      color: Color.onShellTertiary
+      color: Colors.onShellTertiary
     }
   }
 

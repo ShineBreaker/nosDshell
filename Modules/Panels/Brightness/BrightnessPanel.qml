@@ -131,7 +131,7 @@ SmartPanel {
             NIcon {
               icon: panelContent.getIcon(panelContent.globalBrightness)
               pointSize: Style.fontSizeXL
-              color: Color.onShell
+              color: Colors.onShell
             }
 
             NValueSlider {
@@ -159,7 +159,7 @@ SmartPanel {
               text: panelContent.globalBrightnessCapableMonitors > 0 ? Math.round(panelContent.globalBrightness * 100) + "%" : "N/A"
               Layout.preferredWidth: 40
               horizontalAlignment: Text.AlignRight
-              color: Color.onShellSecondary
+              color: Colors.onShellSecondary
               pointSize: Style.fontSizeS
               Layout.alignment: Qt.AlignVCenter
             }
@@ -206,7 +206,7 @@ SmartPanel {
                 NText {
                   text: Math.round(modelData.width * compositorScale) + "x" + Math.round(modelData.height * compositorScale)
                   pointSize: Style.fontSizeS
-                  color: Color.onShellTertiary
+                  color: Colors.onShellTertiary
                 }
               }
             }
@@ -224,7 +224,7 @@ SmartPanel {
                 NIcon {
                   icon: getIcon(brightnessMonitor ? brightnessMonitor.brightness : 0)
                   pointSize: Style.fontSizeXL
-                  color: Color.onShell
+                  color: Colors.onShell
                 }
 
                 NValueSlider {

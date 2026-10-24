@@ -110,19 +110,19 @@ Item {
         visible: !root.isVertical
 
         NIcon {
-          color: LockKeysService.capsLockOn ? Color.mTertiary : Qt.alpha(Color.mOnSurfaceVariant, 0.3)
+          color: LockKeysService.capsLockOn ? Colors.mTertiary : Qt.alpha(Colors.mOnSurfaceVariant, 0.3)
           icon: root.capsIcon
           visible: root.showCaps && (!root.hideWhenOff || LockKeysService.capsLockOn)
         }
 
         NIcon {
-          color: LockKeysService.numLockOn ? Color.mTertiary : Qt.alpha(Color.mOnSurfaceVariant, 0.3)
+          color: LockKeysService.numLockOn ? Colors.mTertiary : Qt.alpha(Colors.mOnSurfaceVariant, 0.3)
           icon: root.numIcon
           visible: root.showNum && (!root.hideWhenOff || LockKeysService.numLockOn)
         }
 
         NIcon {
-          color: LockKeysService.scrollLockOn ? Color.mTertiary : Qt.alpha(Color.mOnSurfaceVariant, 0.3)
+          color: LockKeysService.scrollLockOn ? Colors.mTertiary : Qt.alpha(Colors.mOnSurfaceVariant, 0.3)
           icon: root.scrollIcon
           visible: root.showScroll && (!root.hideWhenOff || LockKeysService.scrollLockOn)
         }
@@ -135,19 +135,19 @@ Item {
         visible: root.isVertical
 
         NIcon {
-          color: LockKeysService.capsLockOn ? Color.mTertiary : Qt.alpha(Color.mOnSurfaceVariant, 0.3)
+          color: LockKeysService.capsLockOn ? Colors.mTertiary : Qt.alpha(Colors.mOnSurfaceVariant, 0.3)
           icon: root.capsIcon
           visible: root.showCaps && (!root.hideWhenOff || LockKeysService.capsLockOn)
         }
 
         NIcon {
-          color: LockKeysService.numLockOn ? Color.mTertiary : Qt.alpha(Color.mOnSurfaceVariant, 0.3)
+          color: LockKeysService.numLockOn ? Colors.mTertiary : Qt.alpha(Colors.mOnSurfaceVariant, 0.3)
           icon: root.numIcon
           visible: root.showNum && (!root.hideWhenOff || LockKeysService.numLockOn)
         }
 
         NIcon {
-          color: LockKeysService.scrollLockOn ? Color.mTertiary : Qt.alpha(Color.mOnSurfaceVariant, 0.3)
+          color: LockKeysService.scrollLockOn ? Colors.mTertiary : Qt.alpha(Colors.mOnSurfaceVariant, 0.3)
           icon: root.scrollIcon
           visible: root.showScroll && (!root.hideWhenOff || LockKeysService.scrollLockOn)
         }
@@ -174,7 +174,7 @@ Item {
     anchors.centerIn: parent
     visible: root.fashionMode
     icon: root.capsIcon
-    colorFg: LockKeysService.capsLockOn ? Color.mTertiary : Color.onShell
+    colorFg: LockKeysService.capsLockOn ? Colors.mTertiary : Colors.onShell
     tooltipText: I18n.tr("widgets.label-lock-keys")
     tooltipDirection: BarService.getTooltipDirection(root.screen?.name, root.section === "dock")
     onRightClicked: PanelService.showContextMenu(contextMenu, root, root.screen)

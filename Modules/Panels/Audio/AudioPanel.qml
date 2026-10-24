@@ -121,7 +121,7 @@ SmartPanel {
             }
             NIconButton {
               icon: panelContent.outputIcon
-              colorFg: Color.onShell
+              colorFg: Colors.onShell
               tooltipText: I18n.tr("tooltips.mute-output")
               onClicked: AudioService.setOutputMuted(!panelContent.localOutputMuted)
             }
@@ -169,7 +169,7 @@ SmartPanel {
             }
             NIconButton {
               icon: panelContent.inputIcon
-              colorFg: Color.onShell
+              colorFg: Colors.onShell
               tooltipText: I18n.tr("tooltips.mute-input")
               onClicked: AudioService.setInputMuted(!panelContent.localInputMuted)
             }
@@ -247,7 +247,7 @@ SmartPanel {
                   Layout.preferredWidth: Style.baseWidgetSize * 0.6
                   Layout.preferredHeight: Style.baseWidgetSize * 0.6
                   detectSymbolic: true
-                  color: Color.onShell
+                  color: Colors.onShell
                   source: {
                     let icon = appBox.entry && appBox.entry.properties ? appBox.entry.properties["application.icon-name"] : "";
                     return ThemeIcons.iconFromName(icon, "audio-x-generic");
@@ -271,7 +271,7 @@ SmartPanel {
 
                 NIconButton {
                   icon: appBox.appMuted ? "volume-off" : "volume-2"
-                  colorFg: Color.onShell
+                  colorFg: Colors.onShell
                   enabled: !!(appBox.nodeAudio && appBox.entry && appBox.entry.ready === true)
                   tooltipText: appBox.appMuted ? I18n.tr("tooltips.unmute-stream") : I18n.tr("tooltips.mute-stream")
                   onClicked: {
@@ -339,7 +339,7 @@ SmartPanel {
           Layout.topMargin: Style.marginXS
           text: I18n.tr("panels.audio.section-input-devices")
           pointSize: Style.fontSizeS
-          color: Color.onShellTertiary
+          color: Colors.onShellTertiary
           visible: AudioService.sources.length > 0
         }
 

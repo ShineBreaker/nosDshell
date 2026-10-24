@@ -72,12 +72,12 @@ Item {
   // the item slot; efficient is bare icon with an overlay("hover") hover fill
   // (gxde-dock pluginsitem.cpp paints no idle background).
   readonly property bool onShellSurface: efficientMode || fashionMode
-  readonly property color bgColor: hovered ? (onShellSurface ? Color.overlay("hover") : Color.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor))
-  readonly property color fgColor: onShellSurface ? Color.onShell : (hovered ? Color.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color bgColor: hovered ? (onShellSurface ? Colors.overlay("hover") : Colors.mHover) : (customBackgroundColor.a > 0) ? customBackgroundColor : (fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor))
+  readonly property color fgColor: onShellSurface ? Colors.onShell : (hovered ? Colors.mOnHover : (customTextIconColor.a > 0) ? customTextIconColor : Colors.mOnSurface)
   // customIconColor/customTextColor also win over onShell — battery state
   // tints use them to recolor dock plugin items.
-  readonly property color iconFgColor: onShellSurface ? ((customIconColor.a > 0) ? customIconColor : Color.onShell) : (hovered ? Color.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
-  readonly property color textFgColor: onShellSurface ? ((customTextColor.a > 0) ? customTextColor : Color.onShell) : (hovered ? Color.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Color.mOnSurface)
+  readonly property color iconFgColor: onShellSurface ? ((customIconColor.a > 0) ? customIconColor : Colors.onShell) : (hovered ? Colors.mOnHover : (customIconColor.a > 0) ? customIconColor : (customTextIconColor.a > 0) ? customTextIconColor : Colors.mOnSurface)
+  readonly property color textFgColor: onShellSurface ? ((customTextColor.a > 0) ? customTextColor : Colors.onShell) : (hovered ? Colors.mOnHover : (customTextColor.a > 0) ? customTextColor : (customTextIconColor.a > 0) ? customTextIconColor : Colors.mOnSurface)
 
   // Painted tile size: fashion is a 36px chip inside the 54px item slot
   // (same ratio as the tray pill); efficient covers the full 26px cell.

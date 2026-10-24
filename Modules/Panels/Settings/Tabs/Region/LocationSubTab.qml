@@ -116,7 +116,7 @@ ColumnLayout {
                     "coordinates": LocationService.displayCoordinates
                 })
                 pointSize: Style.fontSizeS
-                color: Color.onShellTertiary
+                color: Colors.onShellTertiary
                 font.italic: true
                 Layout.fillWidth: true
             }

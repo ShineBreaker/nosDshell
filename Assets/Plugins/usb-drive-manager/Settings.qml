@@ -48,7 +48,7 @@ ColumnLayout {
     text: pluginApi?.tr("settings.section-bar")
     pointSize: Style.fontSizeM
     font.weight: Style.fontWeightMedium
-    color: Color.mOnSurface
+    color: Colors.mOnSurface
   }
 
   NToggle {
@@ -82,7 +82,7 @@ ColumnLayout {
     text: pluginApi?.tr("settings.section-behavior")
     pointSize: Style.fontSizeM
     font.weight: Style.fontWeightMedium
-    color: Color.mOnSurface
+    color: Colors.mOnSurface
   }
 
   NToggle {
@@ -116,7 +116,7 @@ ColumnLayout {
     text: pluginApi?.tr("settings.section-browser")
     pointSize: Style.fontSizeM
     font.weight: Style.fontWeightMedium
-    color: Color.mOnSurface
+    color: Colors.mOnSurface
   }
 
   NComboBox {

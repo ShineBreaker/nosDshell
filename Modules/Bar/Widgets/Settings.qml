@@ -31,7 +31,7 @@ NIconButton {
 
   readonly property string valueIconColor: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
 
-  readonly property color iconColor: Color.resolveColorKey(valueIconColor)
+  readonly property color iconColor: Colors.resolveColorKey(valueIconColor)
   readonly property bool efficientMode: Settings.data.dock.mode === "efficient"
   // "fashion" = DDE fashion dock presentation (square item, icon at 0.8)
   property string dockPresentation: ""
@@ -60,10 +60,10 @@ NIconButton {
   bgSize: fashionMode ? Style.dockPluginTileSize : -1
   applyUiScale: false
   customRadius: onShellSurface ? Style.radiusPopup : Style.radiusL
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
-  colorFg: onShellSurface ? Color.onShell : iconColor
-  colorBgHover: onShellSurface ? Color.overlay("hover") : Color.mHover
-  colorFgHover: onShellSurface ? Color.onShell : Color.mOnHover
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorFg: onShellSurface ? Colors.onShell : iconColor
+  colorBgHover: onShellSurface ? Colors.overlay("hover") : Colors.mHover
+  colorFgHover: onShellSurface ? Colors.onShell : Colors.mOnHover
   colorBorder: Style.capsuleBorderColor
   colorBorderHover: Style.capsuleBorderColor
 

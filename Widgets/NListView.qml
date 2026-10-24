@@ -7,7 +7,7 @@ import qs.Commons
 Item {
   id: root
 
-  property color handleColor: Color.overlay("checked")
+  property color handleColor: Colors.overlay("checked")
   property color handleHoverColor: handleColor
   property color handlePressedColor: handleColor
   property color trackColor: "transparent"
@@ -30,7 +30,7 @@ Item {
   readonly property bool wheelScrollable: horizontalOverflows || contentOverflows
 
   property bool showGradientMasks: true
-  property color gradientColor: Color.mSurfaceVariant
+  property color gradientColor: Colors.mSurfaceVariant
   // A fully transparent gradientColor switches the edge hint from "paint
   // surface color over the rows" to "fade the rows themselves out" — the only
   // fade that can end in nothing on a translucent surface.

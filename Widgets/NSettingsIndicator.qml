@@ -14,7 +14,7 @@ Rectangle {
   width: root.show ? 6 * Style.uiScaleRatio : 0
   height: root.show ? 6 * Style.uiScaleRatio : 0
   radius: width / 2
-  color: Color.accent
+  color: Colors.accent
   opacity: 0.6
 
   visible: root.show

@@ -241,7 +241,7 @@ SmartPanel {
 
             layer.enabled: panelContent.colorizeIcons
             layer.effect: ShaderEffect {
-              property color targetColor: Color.onShell
+              property color targetColor: Colors.onShell
               property real colorizeMode: 1.0
               fragmentShader: Qt.resolvedUrl(Quickshell.shellDir + "/Shaders/qsb/appicon_colorize.frag.qsb")
             }

@@ -27,11 +27,11 @@ Rectangle {
       }
       GradientStop {
         position: 0.1
-        color: Color.overlay("field")
+        color: Colors.overlay("field")
       }
       GradientStop {
         position: 0.9
-        color: Color.overlay("field")
+        color: Colors.overlay("field")
       }
       GradientStop {
         position: 1.0
@@ -46,7 +46,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.top: parent.top
     height: Style.borderS
-    color: Color.grooveShadow
+    color: Colors.grooveShadow
   }
 
   Rectangle {
@@ -56,6 +56,6 @@ Rectangle {
     anchors.top: parent.top
     anchors.topMargin: Style.borderS
     height: Style.borderS
-    color: Color.grooveLine
+    color: Colors.grooveLine
   }
 }

@@ -119,12 +119,12 @@ PanelWindow {
     id: dialogBackground
     anchors.fill: parent
     radius: Style.radiusWindow
-    color: Color.maskShell
-    border.color: (root.flow && ((root.flow.failed && !root.errorDismissed) || root.flow.supplementaryIsError)) ? Color.alert : Color.borderShell
+    color: Colors.maskShell
+    border.color: (root.flow && ((root.flow.failed && !root.errorDismissed) || root.flow.supplementaryIsError)) ? Colors.alert : Colors.borderShell
     border.width: Style.borderM
 
     Behavior on border.color {
-      enabled: !Color.isTransitioning
+      enabled: !Colors.isTransitioning
       ColorAnimation {
         duration: Style.motionSwitch
       }
@@ -181,7 +181,7 @@ PanelWindow {
               text: root.resolvedMessage || (root.flow ? root.flow.message : I18n.tr("authentication.required"))
               pointSize: Style.fontSizeM
               font.weight: Style.fontWeightMedium
-              color: Color.onShell
+              color: Colors.onShell
               wrapMode: Text.Wrap
               Layout.fillWidth: true
             }
@@ -189,7 +189,7 @@ PanelWindow {
             NText {
               text: root.flow ? root.flow.actionId : ""
               pointSize: Style.fontSizeXS
-              color: Color.onShellTertiary
+              color: Colors.onShellTertiary
               wrapMode: Text.Wrap
               Layout.fillWidth: true
               visible: text !== ""
@@ -202,7 +202,7 @@ PanelWindow {
           visible: root.flow && root.flow.supplementaryMessage !== ""
           text: root.flow ? root.flow.supplementaryMessage : ""
           pointSize: Style.fontSizeS
-          color: (root.flow && root.flow.supplementaryIsError) ? Color.alert : Color.onShellSecondary
+          color: (root.flow && root.flow.supplementaryIsError) ? Colors.alert : Colors.onShellSecondary
           wrapMode: Text.Wrap
           Layout.fillWidth: true
         }
@@ -248,8 +248,8 @@ PanelWindow {
           Layout.fillWidth: true
           Layout.preferredHeight: Math.round(24 * Style.uiScaleRatio)
           radius: Style.settingsFieldRadius
-          color: Color.overlay("field")
-          border.color: (root.flow && root.flow.failed && !root.errorDismissed) ? Color.alert : (passwordInput.activeFocus ? Color.accent : "transparent")
+          color: Colors.overlay("field")
+          border.color: (root.flow && root.flow.failed && !root.errorDismissed) ? Colors.alert : (passwordInput.activeFocus ? Colors.accent : "transparent")
           border.width: Style.borderS
 
           TextField {
@@ -265,8 +265,8 @@ PanelWindow {
             background: null
             echoMode: (root.flow && root.flow.responseVisible) ? TextInput.Normal : TextInput.Password
             placeholderText: root.flow ? root.flow.inputPrompt : ""
-            placeholderTextColor: Color.onShellTertiary
-            color: Color.onShell
+            placeholderTextColor: Colors.onShellTertiary
+            color: Colors.onShell
             font.family: Settings.data.ui.fontDefault
             font.pointSize: Style.fontSizeS * Style.uiScaleRatio
             selectByMouse: true
@@ -285,7 +285,7 @@ PanelWindow {
           visible: root.flow && root.flow.failed && !root.errorDismissed && !(root.flow.supplementaryIsError && root.flow.supplementaryMessage !== "")
           text: I18n.tr("authentication.wrong-password")
           pointSize: Style.fontSizeS
-          color: Color.alert
+          color: Colors.alert
           Layout.fillWidth: true
         }
       }
@@ -294,7 +294,7 @@ PanelWindow {
       Rectangle {
         Layout.fillWidth: true
         height: Math.max(1, Style.borderM)
-        color: Color.separator
+        color: Colors.separator
       }
 
       RowLayout {
@@ -310,7 +310,7 @@ PanelWindow {
             anchors.fill: parent
             anchors.margins: 1
             radius: Style.radiusRow
-            color: cancelHover.hovered ? Color.overlay("hover") : "transparent"
+            color: cancelHover.hovered ? Colors.overlay("hover") : "transparent"
           }
 
           HoverHandler {
@@ -321,7 +321,7 @@ PanelWindow {
             anchors.centerIn: parent
             text: I18n.tr("common.cancel")
             pointSize: Style.fontSizeM
-            color: Color.onShell
+            color: Colors.onShell
           }
 
           MouseArea {
@@ -338,7 +338,7 @@ PanelWindow {
           Layout.topMargin: Style.marginS
           Layout.bottomMargin: Style.marginS
           width: Math.max(1, Style.borderM)
-          color: Color.separator
+          color: Colors.separator
         }
 
         Item {
@@ -349,7 +349,7 @@ PanelWindow {
             anchors.fill: parent
             anchors.margins: 1
             radius: Style.radiusRow
-            color: confirmHover.hovered ? Color.overlay("hover") : "transparent"
+            color: confirmHover.hovered ? Colors.overlay("hover") : "transparent"
           }
 
           HoverHandler {
@@ -361,7 +361,7 @@ PanelWindow {
             text: I18n.tr("common.confirm")
             pointSize: Style.fontSizeM
             font.weight: Style.fontWeightMedium
-            color: (root.flow && root.flow.isResponseRequired) ? Color.accent : Color.onShellTertiary
+            color: (root.flow && root.flow.isResponseRequired) ? Colors.accent : Colors.onShellTertiary
           }
 
           MouseArea {

@@ -126,9 +126,9 @@ Variants {
     function getIconColor() {
       const isMutedState = (currentOSDType === OSD.Type.Volume && isMuted) || (currentOSDType === OSD.Type.InputVolume && isInputMuted);
       if (isMutedState)
-        return Color.alert;
+        return Colors.alert;
 
-      return Color.onTransient;
+      return Colors.onTransient;
     }
 
     // Brightness Handling
@@ -566,8 +566,8 @@ Variants {
           width: Style.osdTileSize
           height: Style.osdTileSize
           radius: Style.radiusLarge
-          color: Color.maskTransient
-          border.color: Color.borderTransient
+          color: Colors.maskTransient
+          border.color: Colors.borderTransient
           border.width: Style.borderS
 
           // ---- progress types: volume / input volume / brightness ----
@@ -592,7 +592,7 @@ Variants {
             width: Style.osdProgressWidth
             height: Style.osdProgressHeight
             radius: Style.osdProgressHeight / 2
-            color: Color.onTransientTrack
+            color: Colors.onTransientTrack
 
             Rectangle {
               anchors.left: parent.left
@@ -600,7 +600,7 @@ Variants {
               anchors.bottom: parent.bottom
               width: parent.width * Math.min(1.0, root.getCurrentValue() / root.getMaxValue())
               radius: parent.radius
-              color: Color.onTransient
+              color: Colors.onTransient
               // DDE updates the OSD value bar without tweening
               // (dde-osd/manager.cpp updateUI → direct repaint).
             }
@@ -613,7 +613,7 @@ Variants {
               y: -8
               width: Style.osdTickWidth
               height: Style.osdTickHeight
-              color: Color.onTransientTick
+              color: Colors.onTransientTick
             }
 
             Rectangle {
@@ -622,7 +622,7 @@ Variants {
               y: parent.height + 3
               width: Style.osdTickWidth
               height: Style.osdTickHeight
-              color: Color.onTransientTick
+              color: Colors.onTransientTick
             }
           }
 
@@ -643,7 +643,7 @@ Variants {
             y: Style.osdIconOffsetWithText + Style.fontSizeXL * Style.uiScaleRatio + Style.marginS
             visible: root.currentOSDType === OSD.Type.LockKey
             text: root.getDisplayPercentage()
-            color: Color.onTransient
+            color: Colors.onTransient
             pointSize: Style.fontSizeS
             features: {
               "tnum": 1

@@ -38,7 +38,7 @@ NIconButton {
   readonly property string unreadBadgeColor: widgetSettings.unreadBadgeColor !== undefined ? widgetSettings.unreadBadgeColor : widgetMetadata.unreadBadgeColor
   readonly property string iconColorKey: widgetSettings.iconColor !== undefined ? widgetSettings.iconColor : widgetMetadata.iconColor
 
-  readonly property color badgeColor: Color.resolveColorKey(unreadBadgeColor)
+  readonly property color badgeColor: Colors.resolveColorKey(unreadBadgeColor)
 
   // Recomputed imperatively: historyModel.get() inside a binding captures the
   // live row proxy and crashes on the next mutation (DESIGN §1.7).
@@ -101,8 +101,8 @@ NIconButton {
     }
   }
   tooltipDirection: BarService.getTooltipDirection(screen?.name, root.section === "dock")
-  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Color.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
-  colorFg: onShellSurface ? Color.onShell : Color.resolveColorKey(iconColorKey)
+  colorBg: fashionMode ? (Settings.data.dock.fusedPlugins ? "transparent" : Colors.overlay("subtle")) : (efficientMode ? "transparent" : Style.capsuleColor)
+  colorFg: onShellSurface ? Colors.onShell : Colors.resolveColorKey(iconColorKey)
   border.color: Style.capsuleBorderColor
   border.width: fashionMode ? 0 : Style.capsuleBorderWidth
   visible: !((hideWhenZero && NotificationService.historyModel.count === 0) || (hideWhenZeroUnread && count === 0))
@@ -170,8 +170,8 @@ NIconButton {
       height: 7
       width: height
       radius: Style.radiusXS
-      color: root.badgeColor || Color.alert
-      border.color: Color.maskShell
+      color: root.badgeColor || Colors.alert
+      border.color: Colors.maskShell
       border.width: Style.borderS
       visible: count > 0
     }

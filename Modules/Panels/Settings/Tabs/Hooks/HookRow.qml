@@ -18,7 +18,7 @@ NDccRow {
   NLabel {
     label: root.label
     description: root.description
-    labelColor: root.value ? Color.accent : Color.onShell
+    labelColor: root.value ? Colors.accent : Colors.onShell
     labelWeight: Style.fontWeightRegular
     Layout.fillWidth: true
   }

@@ -38,7 +38,7 @@ Rectangle {
   readonly property string artworkState: pressed ? "press" : (dimmed ? "hover" : "normal")
 
   radius: Style.radiusLarge
-  color: dimmed ? Color.pressDim : "transparent"
+  color: dimmed ? Colors.pressDim : "transparent"
   // rounditembutton.cpp:65-74 — setDisabled() drops the whole widget to 0.5
   opacity: button.available ? 1.0 : 0.5
 
@@ -85,7 +85,7 @@ Rectangle {
       Layout.preferredHeight: Style.shutdownButtonIcon
       visible: button.artworkPath === ""
       icon: button.icon
-      color: Color.onWallpaper
+      color: Colors.onWallpaper
       pointSize: Style.fontSizeXXXL
     }
 
@@ -94,7 +94,7 @@ Rectangle {
       Layout.maximumWidth: Style.shutdownButtonSize - Style.marginM
       text: button.title
       pointSize: Style.fontSizeM
-      color: Color.onWallpaper
+      color: Colors.onWallpaper
       horizontalAlignment: Text.AlignHCenter
       wrapMode: Text.WrapAtWordBoundaryOrAnywhere
     }
@@ -105,7 +105,7 @@ Rectangle {
       Layout.alignment: Qt.AlignHCenter
       text: button.keybind
       pointSize: Style.fontSizeS
-      color: Color.onWallpaperTertiary
+      color: Colors.onWallpaperTertiary
       visible: text.length > 0
     }
   }

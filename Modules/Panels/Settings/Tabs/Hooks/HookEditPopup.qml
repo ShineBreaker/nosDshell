@@ -30,9 +30,9 @@ Popup {
   property var _testSlot: null
 
   background: Rectangle {
-    color: Color.maskShell
+    color: Colors.maskShell
     radius: Style.radiusWindow
-    border.color: Color.borderShell
+    border.color: Colors.borderShell
     border.width: Style.borderS
   }
 
@@ -63,7 +63,7 @@ Popup {
     // Description/Help
     NText {
       text: root.hookDescription
-      color: Color.onShellTertiary
+      color: Colors.onShellTertiary
       wrapMode: Text.WordWrap
       Layout.fillWidth: true
     }
@@ -108,8 +108,8 @@ Popup {
       NButton {
         text: I18n.tr("common.save")
         icon: "check"
-        backgroundColor: Color.accent
-        textColor: Color.onAccent
+        backgroundColor: Colors.accent
+        textColor: Colors.onAccent
         onClicked: {
           root.saved(commandInput.text);
           root.close();

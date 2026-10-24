@@ -53,7 +53,7 @@ Item {
     width: root._side - root.blockMargin * 2
     height: root._side - 1 - root.blockMargin * 2
     radius: Style.radiusLarge
-    color: (mouseArea.containsMouse || root.selected) ? Color.pressDim : "transparent"
+    color: (mouseArea.containsMouse || root.selected) ? Colors.pressDim : "transparent"
   }
 
   ColumnLayout {
@@ -77,7 +77,7 @@ Item {
         width: root.iconSize + Style.marginS * 2
         height: root.iconSize + Style.marginS * 2
         radius: Style.radiusRow
-        color: Color.overlayWallpaper("hover")
+        color: Colors.overlayWallpaper("hover")
         visible: Settings.data.appLauncher.showIconBackground
       }
 
@@ -88,7 +88,7 @@ Item {
         height: root.iconSize
         source: modelData?.icon ? ThemeIcons.iconFromName(modelData.icon) : ""
         detectSymbolic: true
-        color: Color.onWallpaper
+        color: Colors.onWallpaper
         visible: source !== "" && status === Image.Ready
         asynchronous: true
         smooth: true
@@ -100,7 +100,7 @@ Item {
         // Tabler glyph fallback: also covers the themed lookup failing (e.g.
         // iconMode "tabler" emits glyph names that iconFromName cannot map).
         icon: (Icons.icons[modelData?.icon] !== undefined || Icons.aliases[modelData?.icon] !== undefined) ? modelData.icon : "apps"
-        color: Color.onWallpaper
+        color: Colors.onWallpaper
         visible: !modelData?.icon || modelData.icon === "" || cellIcon.status === Image.Error
       }
     }
@@ -112,9 +112,9 @@ Item {
       Layout.topMargin: Math.max(1, root.iconSize * 0.06)
       text: modelData?.name || ""
       pointSize: Style.fontSizeBody
-      color: Color.onWallpaper
+      color: Colors.onWallpaper
       style: Text.Sunken
-      styleColor: Color.onWallpaperShadow
+      styleColor: Colors.onWallpaperShadow
       horizontalAlignment: Text.AlignHCenter
       verticalAlignment: Text.AlignTop
       wrapMode: Text.Wrap
@@ -130,7 +130,7 @@ Item {
     width: 10
     height: 10
     radius: width / 2
-    color: Color.accent
+    color: Colors.accent
     x: block.x + 2
     y: appLabel.mapToItem(root, 0, 0).y - 1
   }

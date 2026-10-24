@@ -8,7 +8,7 @@ import qs.Widgets
 // miniframebutton.cpp + skin/qss/miniframe.qss `#MiniFrameButton`): a 30 px row
 // holding a 24 px icon and a 14 px label, white text, 6 px left padding, and a
 // white 0.1 rounded-4 background while hovered or keyboard-selected. Pressed
-// text turns accent (#2ca7f8 upstream, Color.accent here).
+// text turns accent (#2ca7f8 upstream, Colors.accent here).
 Item {
   id: root
 
@@ -20,7 +20,7 @@ Item {
   // Monochrome artwork is repainted in iconColor so baked-white DDE glyphs
   // follow the panel foreground; set false for multicolor assets.
   property bool recolorIcon: true
-  property color iconColor: Color.onShell
+  property color iconColor: Colors.onShell
   property int iconSize: 24
   property bool selected: false
   property real rowHeight: Style.launcherMiniButtonRowHeight
@@ -36,7 +36,7 @@ Item {
   Rectangle {
     anchors.fill: parent
     radius: Style.radiusRow
-    color: root._active ? Color.overlay("hover") : "transparent"
+    color: root._active ? Colors.overlay("hover") : "transparent"
   }
 
   RowLayout {
@@ -66,7 +66,7 @@ Item {
       icon: root.icon
       // iconSize is in logical px; 96 dpi means 1 px == 0.75 pt
       pointSize: root.iconSize * 0.75
-      color: Color.onShell
+      color: Colors.onShell
     }
 
     NText {
@@ -75,7 +75,7 @@ Item {
       text: root.text
       pointSize: Style.launcherMiniButtonFontSize
       font.weight: Style.fontWeightMedium
-      color: mouseArea.pressed ? Color.accent : Color.onShell
+      color: mouseArea.pressed ? Colors.accent : Colors.onShell
       elide: Text.ElideRight
       horizontalAlignment: Text.AlignLeft
     }
