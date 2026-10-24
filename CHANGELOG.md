@@ -10,6 +10,32 @@
 
 ## [Unreleased]
 
+## [1.6.2] - 2026-10-24
+
+这一版修掉一个在 Qt 6.12 下暴露的界面问题：设置面板、控制中心这类带背景的窗口一打开就整块发黑，界面几乎全透明，底栏也跟着失色——原因是新版本 Qt 引入了一个同名的颜色类型，把主题色单例挡在了后面，主题色全部取空。现在主题色重新由自己的令牌接管，面板恢复半透明磨砂，底栏配色与之前一致。
+
+同时把一类"越攒越多"的常驻进程收干净：深浅色守护进程此前每启动一次就多排一份新的等待队列，现在全局只保留一份；剪贴板监听、事件流、网络与设备监控等子进程改为随主进程一同退出，崩溃后不再留在后台悄悄吃内存。
+
+另外修正了输出分辨率变更后壁纸背景被清掉的问题，以及构建时会随 channel 漂移的问题。
+
+---
+
+### 新功能
+
+- add IPC/property-debug hooks for live shell introspection：[`4ff30d8ba`](https://github.com/ShineBreaker/nosDshell/commit/4ff30d8ba541c70fd6fd0e405f8fb0b3f1264f50)
+
+### 修复
+
+- use try_lock for portal daemon so duplicate spawns exit fast：[`ecc6db1db`](https://github.com/ShineBreaker/nosDshell/commit/ecc6db1dbdc4c32fd7d56976056fadf10f8a16d9)
+- rename Color singleton to Colors to escape Qt 6.12 QQuickColor shadowing：[`e2e8198c6`](https://github.com/ShineBreaker/nosDshell/commit/e2e8198c6507f872b79859ec20f8287d994ef77d)
+- build nosdshell inside guix time-machine pinned to channel.lock：[`832a5eac6`](https://github.com/ShineBreaker/nosDshell/commit/832a5eac6d13dc51eecf8faf8757115d812ae2e3)
+- compare screens by name so background survives output renegotiation：[`c61e1d7be`](https://github.com/ShineBreaker/nosDshell/commit/c61e1d7be15c02215bff3dcb22c31cc3b6589bcc)
+- make managed child processes die with the shell (PR_SET_PDEATHSIG)：[`cafe892df`](https://github.com/ShineBreaker/nosDshell/commit/cafe892dff1d7813ab9e3c9bd87d4d558d36a2fd)
+
+### 工程
+
+- update `.gitignore`：[`f0b1ed33d`](https://github.com/ShineBreaker/nosDshell/commit/f0b1ed33d4d195a69a82ab591de2311423efef13)
+
 ## [1.6.1] - 2026-10-23
 
 这一版修掉一个会卡死整个会话的问题：按时间自动切换深浅色时，日出日落边界可能触发深色/浅色每秒两次的死斗——主题、GTK 设置和夜灯钩子被反复拉起，桌面直接冻住。根因（边界定时器提前触发后又被旧逻辑反向写回）已铲除，边界处现在只翻一次。顺带还带上了一批挂件生命期修复、设置页与启动器的性能优化，以及网络、VPN、图标解析的若干小修。
@@ -502,7 +528,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.1...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.2...HEAD
+[1.6.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.4.0...v1.5.0

@@ -176,7 +176,7 @@ and Matugen-compatible template rendering.")
 (define-public nosdshell
   (package
     (name "nosdshell")
-    (version "1.6.1")
+    (version "1.6.2")
     (source (local-file %repo-root
                         #:recursive? #t
                         #:select? (git-predicate %repo-root)))
@@ -237,7 +237,7 @@ and Matugen-compatible template rendering.")
                     (format #t "~
 #!~a
 if [ \"$1\" = \"--version\" ] || [ \"$1\" = \"-V\" ]; then
-  echo \"nosdshell v1.6.1 (with quickshell v0.3.2 5ff26dc)\"
+  echo \"nosdshell v1.6.2 (with quickshell v0.3.2 5ff26dc)\"
   exit 0
 fi
 exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
