@@ -6,7 +6,7 @@ nosDshell 是 Noctalia v4（基于 Quickshell/QML 的 Wayland shell）的分叉�
 
 这个仓库要长期维护。修一个问题，目标是让同一类问题以后不再出现。任何改动都要让代码库更收敛，即同一件事只有一种做法、一处实现。
 
-收敛沿着代码库的分层进行。业务行为留在 `Services/` 和设置管线（`Commons/Settings.qml`、迁移）里，与上游语义一致；表现层的数值和样式收进令牌（`Commons/Style.qml`、`Commons/Color.qml`）和公共件，与 `DESIGN.md` 一致；组件只负责组合。判断一处修复该落在哪里，先判断问题属于哪一层。
+收敛沿着代码库的分层进行。业务行为留在 `Services/` 和设置管线（`Commons/Settings.qml`、迁移）里，与上游语义一致；表现层的数值和样式收进令牌（`Commons/Style.qml`、`Commons/Colors.qml`）和公共件，与 `DESIGN.md` 一致；组件只负责组合。判断一处修复该落在哪里，先判断问题属于哪一层。
 
 动手修改之前，先查清三件事：
 
@@ -38,7 +38,7 @@ nosDshell 是 Noctalia v4（基于 Quickshell/QML 的 Wayland shell）的分叉�
 ## 依据
 
 - 视觉和交互以 `DESIGN.md` 为唯一依据。改任何可见界面、加组件、调颜色、尺寸或动效，或者决定 Noctalia 的某个功能落到 DDE 的哪个模块（对照表在 §2）之前，先读 `DESIGN.md` 的对应章节。
-- 数值只有一条来路。`DESIGN.md` 给出数值，`Commons/Style.qml` 和 `Commons/Color.qml` 把它定义成令牌，组件只读令牌。新数值在两个令牌文件里都没有时，先去 `references/` 找出处，把令牌加上，最后才在组件里使用。
+- 数值只有一条来路。`DESIGN.md` 给出数值，`Commons/Style.qml` 和 `Commons/Colors.qml` 把它定义成令牌，组件只读令牌。新数值在两个令牌文件里都没有时，先去 `references/` 找出处，把令牌加上，最后才在组件里使用。
 - `references/` 是 GXDE-OS（DDE 15 的社区维护版）源码的浅克隆，只读，已被 git 忽略。数值、结构和行为都在这里查，仓库与组件的对照见 `references/README.md`。
 - DDE 专属素材（时钟表盘、关机按钮、启动器和控制中心图标等）从 `references/` 复制原件，规则见 `DESIGN.md` §1.9。
 

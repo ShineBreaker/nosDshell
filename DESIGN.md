@@ -31,7 +31,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 ## 1. 设计令牌（Design Tokens）
 
-令牌放在 `Commons/Style.qml`（尺寸、时长）和 `Commons/Color.qml`（颜色）。组件只读令牌；需要新数值时，先在这两个文件里加令牌。
+令牌放在 `Commons/Style.qml`（尺寸、时长）和 `Commons/Colors.qml`（颜色）。组件只读令牌；需要新数值时，先在这两个文件里加令牌。
 
 ### 1.1 强调色与功能色
 
@@ -749,7 +749,7 @@ Noctalia 卡片的对应关系：
   - 浅色：强调色相同；`mSurface #F8F8F8`、`mOnSurface #303030`、`mSurfaceVariant #EBEBEB`、`mOnSurfaceVariant #6B6B6B`、`mOutline #D5D5D5`、`mShadow #000000`。
   - 方案中的颜色一律不透明，因为 GTK、终端等模板要直接使用这些颜色，尚未改造的组件也会把 `mSurfaceVariant` 当作实色来画。DDE 的半透明表面只从 §1.2 和 §1.3 的令牌获得。
 - **表面令牌读取配色方案的表面角色**〔演进：原来只看明暗模式〕：蒙版取 `mSurface`，弹出层取 `mSurfaceVariant`，描边取 `mOutline`，外壳前景和叠加阶梯取 `mOnSurface`，`alert` 取 `mError`，禁用文字按 MD3 规则取 `onSurface` × 0.38。切换方案或用壁纸取色时，表面色调、文字色相、状态层和错误色都随方案变化。Deepin 方案的这些角色特意设成 DDE 15 的值（`#181818`、`#2A2A2A`、`#3A3A3A`、`#FFFFFF`、`#F9704F`），所以默认观感不变。以下颜色固定，不随方案变化：壁纸面的恒白阶梯、强制使用相反形态时瞬时面的经典值、浅色菜单的固定浅色调色板（`popupLight*`）、分隔槽的一对刻线，以及下一条的强调色覆盖。
-- **`ui.accentOverride`**（默认空）〔演进〕：值为合法颜色时，`Color.mPrimary`、`mSecondary`、`mTertiary`、`mHover` 四个强调色角色都取这个颜色，对应的 `mOn*` 按它的亮度取白色或 `#303030`。`accent`、`accentAlt`、`accentAction`、`onAccent` 是这些 `m*` 角色的别名，所以直接读 `mPrimary` 的组件（进度环、滑块、勾选态）也会跟着变。`mError` 和表面类令牌不受影响。GTK 和终端模板直接读方案 JSON，不经过 `Color.qml`，照常使用方案颜色。设置页"当前方案"的预览条显示生效的颜色（即覆盖色），各方案的候选色板仍显示方案自带的颜色。
+- **`ui.accentOverride`**（默认空）〔演进〕：值为合法颜色时，`Color.mPrimary`、`mSecondary`、`mTertiary`、`mHover` 四个强调色角色都取这个颜色，对应的 `mOn*` 按它的亮度取白色或 `#303030`。`accent`、`accentAlt`、`accentAction`、`onAccent` 是这些 `m*` 角色的别名，所以直接读 `mPrimary` 的组件（进度环、滑块、勾选态）也会跟着变。`mError` 和表面类令牌不受影响。GTK 和终端模板直接读方案 JSON，不经过 `Colors.qml`，照常使用方案颜色。设置页"当前方案"的预览条显示生效的颜色（即覆盖色），各方案的候选色板仍显示方案自带的颜色。
 - 模板功能（GTK、终端等配色文件的生成）照常使用当前方案的完整颜色。
 
 ---
