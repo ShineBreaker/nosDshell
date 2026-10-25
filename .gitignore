@@ -12,5 +12,6 @@ build
 .envrc
 references/
 tools/*/target/
-.agents/
+.agents/*
+!.agents/skills/
 .mimosa/
