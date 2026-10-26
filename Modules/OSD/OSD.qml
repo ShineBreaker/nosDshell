@@ -489,6 +489,19 @@ Variants {
       // Click-through — OSD is display-only, no input needed
       mask: Region {}
 
+      // The tile publishes its own blur region — maskTransient assumes a
+      // blurred backdrop (DESIGN §1.2). slideY carries the show/hide
+      // Translate sentinel; the region detaches while the tile is hidden.
+      BackgroundEffect.blurRegion: osdBlur.region
+
+      NSurfaceRegion {
+        id: osdBlur
+        trackedItem: tile
+        radius: Style.radiusLarge
+        slideY: osdItem.slideOffset
+        activeWhen: Colors.blurActive && osdItem.visible
+      }
+
       Item {
         id: osdItem
         anchors.fill: parent

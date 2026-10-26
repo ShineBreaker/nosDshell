@@ -32,6 +32,17 @@ PanelWindow {
   implicitWidth: 380 * Style.uiScaleRatio
   implicitHeight: contentColumn.implicitHeight
 
+  // maskShell assumes a blurred backdrop (DESIGN §1.2): publish the dialog
+  // rect so the compositor follows it exactly.
+  BackgroundEffect.blurRegion: dialogBlurRegion.region
+
+  NSurfaceRegion {
+    id: dialogBlurRegion
+    trackedItem: dialogBackground
+    radius: Style.radiusWindow
+    activeWhen: Colors.blurActive && root.visible
+  }
+
   property string resolvedMessage: ""
   property var transientMatch: null
   // Request token for the transient-name resolution: the shared Process

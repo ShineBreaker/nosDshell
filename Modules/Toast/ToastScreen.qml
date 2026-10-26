@@ -198,6 +198,20 @@ Item {
         watch: toastItem.scale
       }
 
+      // The same tracked rect is also the blur region — maskTransient is a
+      // glass token that assumes a blurred backdrop (DESIGN §1.2).
+      BackgroundEffect.blurRegion: toastBlur.region
+
+      NSurfaceRegion {
+        id: toastBlur
+        trackedItem: toastItem.bubble
+        radius: Style.radiusL
+        slideX: toastItem.swipeOffset
+        slideY: toastItem.swipeOffsetY
+        watch: toastItem.scale
+        activeWhen: Colors.blurActive
+      }
+
       function showToast(title, description, icon, type, duration, actionLabel, actionCallback) {
         toastItem.show(title, description, icon, type, duration, actionLabel, actionCallback);
       }

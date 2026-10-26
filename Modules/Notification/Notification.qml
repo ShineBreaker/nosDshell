@@ -90,8 +90,25 @@ Variants {
         regions: notifWindow._maskRegions
       }
 
+      // Blur = union of the live bubble rects — the same tracked items the
+      // input mask uses, without the Subtract (maskTransient is a glass
+      // token that assumes a blurred backdrop, DESIGN §1.2).
+      BackgroundEffect.blurRegion: notifBlurRegion.region
+
+      Region {
+        id: notifBlurUnion
+        regions: notifWindow._blurRegions
+      }
+
+      NSurfaceRegion {
+        id: notifBlurRegion
+        activeRegion: notifBlurUnion
+        activeWhen: Colors.blurActive
+      }
+
       // Bubble regions contributed by the delegates below.
       property var _maskRegions: []
+      property var _blurRegions: []
 
       // Parse location setting
       readonly property string location: Settings.data.notifications.location || "top_right"
@@ -311,14 +328,35 @@ Variants {
               }
             }
 
+            // The same live rect contributes to the blur union — plain item
+            // tracking, no Subtract (that complement is only for input).
+            Region {
+              id: cardBlurRegion
+
+              Region {
+                item: bubbleBody
+                radius: Style.radiusWindow
+              }
+
+              Region {
+                x: card.slideOffset + card.enterOffset + card.swipeOffset + card.swipeOffsetY
+                width: 0
+                height: 0
+              }
+            }
+
             Component.onCompleted: {
               notifWindow._maskRegions = notifWindow._maskRegions.concat([cardMaskRegion]);
+              notifWindow._blurRegions = notifWindow._blurRegions.concat([cardBlurRegion]);
               triggerEntryAnimation();
             }
 
             Component.onDestruction: {
               notifWindow._maskRegions = notifWindow._maskRegions.filter(function (r) {
                 return r !== cardMaskRegion;
+              });
+              notifWindow._blurRegions = notifWindow._blurRegions.filter(function (r) {
+                return r !== cardBlurRegion;
               });
             }
 

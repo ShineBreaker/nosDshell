@@ -90,6 +90,38 @@ Variants {
         regions: window._maskRegions
       }
 
+      // Blur = union of the widget card rects — the cards fill maskDark,
+      // which assumes a blurred backdrop (DESIGN §1.2). This surface sits
+      // at WlrLayer.Bottom over nothing but the wallpaper, so the layer
+      // rules sample it via xray (tier 1).
+      BackgroundEffect.blurRegion: widgetsBlurRegion.region
+
+      Region {
+        id: widgetsBlurUnion
+        regions: window._blurRegions.concat([editPanelBlurRegion])
+      }
+
+      // The edit-mode controls card fills maskDark like the widget cards,
+      // so it joins the same union — gated on its own visibility so a
+      // hidden panel leaves no stray blurred band.
+      Region {
+        id: editPanelBlurRegion
+
+        Region {
+          item: editModeControlsPanel.visible ? editModeControlsPanel : null
+          radius: Style.radiusL
+        }
+      }
+
+      NSurfaceRegion {
+        id: widgetsBlurRegion
+        activeRegion: widgetsBlurUnion
+        activeWhen: Colors.blurActive
+      }
+
+      // Widget card blur regions contributed by the delegates below.
+      property var _blurRegions: []
+
       WlrLayershell.layer: WlrLayer.Bottom
       WlrLayershell.exclusionMode: ExclusionMode.Ignore
       WlrLayershell.namespace: "nosdshell-desktop-widgets-" + (screen?.name || "unknown")
@@ -313,11 +345,39 @@ Variants {
             property var _maskRegion: null
             readonly property bool _isPlugin: DesktopWidgetRegistry.isPluginWidget(modelData.id)
 
+            // Blur contribution — declared, not created, so no unload
+            // bookkeeping: a null inner item simply contributes nothing.
+            // The gate is the card's own showBackground: an invisible
+            // widget would otherwise leave a stray blurred band.
+            Region {
+              id: widgetBlurRegion
+
+              Region {
+                item: (widgetLoader.item && widgetLoader.item.showBackground !== false) ? widgetLoader.item : null
+                radius: Style.radiusL
+              }
+
+              Region {
+                x: widgetLoader.item ? (widgetLoader.item.widgetScale || 0) : 0
+                width: 0
+                height: 0
+              }
+            }
+
             // All widgets use setSource() so that screen, widgetData, and
             // widgetIndex are set as initial properties, available during
             // Component.onCompleted. This prevents registration-key
             // mismatches in widgets that build IDs from screen.name.
-            Component.onCompleted: _loadWidget()
+            Component.onCompleted: {
+              _loadWidget();
+              window._blurRegions = window._blurRegions.concat([widgetBlurRegion]);
+            }
+
+            Component.onDestruction: {
+              window._blurRegions = window._blurRegions.filter(function (r) {
+                return r !== widgetBlurRegion;
+              });
+            }
 
             onActiveChanged: {
               if (active)
