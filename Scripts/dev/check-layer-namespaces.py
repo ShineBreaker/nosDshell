@@ -34,6 +34,11 @@ Checks:
 3. A sample whose rules disagree on the same property — in niri the later
    rule wins, so file order would be load-bearing.
 4. An alternation member matched by no sample — stale rule entry.
+5. A namespace emitted by a file that also publishes
+   `BackgroundEffect.blurRegion` must not resolve to `blur false` — in
+   niri that flag force-disables the client's own ext-background-effect
+   regions, which was the 2026-10 popupmenu dialog regression
+   (translucent mask, sharp backdrop).
 """
 
 import re
@@ -58,11 +63,12 @@ ALT_RE = re.compile(r"\(([^()]*)\)")
 
 
 def emitted_samples():
-    samples = []  # (sample, file, line_no)
+    samples = []  # (sample, file, line_no, publishes_blur_region)
     for qml in sorted(ROOT.rglob("*.qml")):
         if EXCLUDED_DIRS & set(qml.parts):
             continue
         text = qml.read_text()
+        publishes = "BackgroundEffect.blurRegion" in text
         wintype = WINTYPE_RE.search(text)
         for i, line in enumerate(text.splitlines(), 1):
             m = NS_RE.search(line)
@@ -80,7 +86,7 @@ def emitted_samples():
                 sample = lits[0] + "SAMPLE"
             else:
                 sample = lits[0]
-            samples.append((sample, qml.relative_to(ROOT), i))
+            samples.append((sample, qml.relative_to(ROOT), i, publishes))
     return samples
 
 
@@ -125,7 +131,7 @@ def main():
             fail = 1
 
     classified = {}  # sample -> {prop: bool}
-    for sample, path, line in samples:
+    for sample, path, line, publishes in samples:
         props = {}
         for compiled, _, sf, _ in rules:
             if not sf or not any(r.search(sample) for r in compiled):
@@ -142,6 +148,12 @@ def main():
             fail = 1
         else:
             classified[sample] = props
+            if publishes and props.get("blur") is False:
+                print(f"BLUR-DENIED {path}:{line} {sample!r}: file publishes"
+                      " BackgroundEffect.blurRegion but the matching rule"
+                      " pins `blur false`, which force-disables client"
+                      " regions — move it to the xray tiers")
+                fail = 1
 
     # Reverse: every alternation member should still correspond to a real
     # emitted namespace, so the file cannot silently rot.

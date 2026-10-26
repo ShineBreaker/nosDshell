@@ -132,14 +132,19 @@ window-rule {
   `blur true` is only safe inside `popups {}`, where the surface is always
   sized to its card.
 
+  Equally, NEVER pin `blur false` on a surface that publishes regions or
+  fills translucent masks: `blur false` force-disables even the client's
+  own ext-background-effect regions, so a mask fills over sharp content
+  (the 2026-10 popupmenu dialog regression). `blur false` is only for
+  surfaces that paint no translucent mask at all.
+
   Three tiers, cheapest first:
 
     Tier 0  no blur     — surfaces never translucent over meaningful
                           content, or drawing their own backdrop already.
     Tier 1  xray blur   — wallpaper-sampled blur (xray is niri's default
-                          for layer surfaces). Right for static fullscreen
-                          surfaces whose backdrop should look like blurred
-                          wallpaper anyway.
+                          for layer surfaces). Right for surfaces whose
+                          only backdrop is the wallpaper anyway.
     Tier 2  real blur   — `xray false` on the region publishers that float
                           over arbitrary windows; translucency then shows
                           the actual window stack, not just the wallpaper.
@@ -148,22 +153,27 @@ window-rule {
   (check-layer-namespaces.py keeps it in sync with emitted namespaces).
 */
 
-// Tier 2 — region publishers floating over windows: the bar strip, every
+// Tier 2 — region publishers floating over windows: the bar strip and every
 // open panel (hosted by nosdshell-background), the fashion dock, the mini
-// launcher. These must blur the real window stack.
+// launcher, the popupmenu plane while it hosts a dialog (widget/plugin
+// settings, color/file pickers), notification bubbles, toasts, the OSD
+// tile, and the polkit auth dialog. These must blur the real window stack.
 layer-rule {
-  match namespace="^nosdshell-(background|dock)-.*$"
+  match namespace="^nosdshell-(background|dock|popupmenu|notifications|toast|osd)-.*$"
+  match namespace="^nosdshell-polkit$"
   match namespace="^nosd-launcher-mini-.*$"
   background-effect {
     xray false
   }
 }
 
-// Tier 1 — the fullscreen launcher wants the "blurred wallpaper" look;
-// xray samples the backdrop only, which is both the right aesthetic and
-// the cheap path.
+// Tier 1 — wallpaper-sampled blur: the fullscreen launcher wants the
+// "blurred wallpaper" look, and desktop widgets at WlrLayer.Bottom only
+// ever float over the wallpaper. xray samples the backdrop only, which is
+// both the right aesthetic and the cheap path.
 layer-rule {
   match namespace="^nosd-launcher-full-.*$"
+  match namespace="^nosdshell-desktop-widgets-.*$"
   background-effect {
     xray true
   }
@@ -189,16 +199,15 @@ layer-rule {
   }
 }
 
-// Tier 0 — never blur. wallpaper IS the blur source; overview, session
-// menu and the setup wizard draw their own pre-blurred backdrop;
-// bar-content reveals background's already-blurred regions (a second pass
-// would double it); popupmenu/notifications/toast/session-menu/setup-
-// wizard/desktop-widgets/polkit are fullscreen or transient planes; the
-// rest are invisible helpers. Plugin-owned overlays (nosdshell:*) are
-// invisible input-capture planes by convention.
+// Tier 0 — never blur, never translucent: wallpaper IS the blur source;
+// overview, session menu and the setup wizard draw their own pre-blurred
+// backdrop; bar-content reveals background's already-blurred regions (a
+// second pass would double it); fade-overlay is a dimming veil, not a
+// glass mask; the rest are invisible helpers. Plugin-owned overlays
+// (nosdshell:*) are invisible input-capture planes by convention.
 layer-rule {
   match namespace="^nosdshell:"
-  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay|popupmenu|notifications|toast|osd|session-menu|setup-wizard|desktop-widgets|polkit)(-.*)?$"
+  match namespace="^nosdshell-(wallpaper|overview|bar-content|bar-exclusion|bar-trigger|screen-detector|image-cache-renderer|fade-overlay|session-menu|setup-wizard)(-.*)?$"
   background-effect {
     blur false
   }
