@@ -10,6 +10,31 @@
 
 ## [Unreleased]
 
+## [1.6.3] - 2026-10-27
+
+控制中心与设置里的模块图标终于成了一家人：此前 DDE 原版剪影、仓库自绘仿品和
+Tabler 描边字形三套并排，线宽粗细对不上；现在统一到 Papirus 的单色 symbolic 家族，
+跟随你当前的图标主题解析，主题缺图时用打包副本兜底，未选中态靠不透明度分级而
+不是另存一份素材。
+
+另一处修的是半透明遮罩的磨砂：通知、OSD、桌面挂件这些浮在真实窗口之上的半透明层
+此前被 niri 的模糊强制关闭规则误判在门外，看上去"透明但不糊"；现在这些层会正式
+发布模糊区域，磨砂按设计生效。
+
+另外把三个 quickshell 系的开发 skill 一并入库，方便后续接着演进。
+
+---
+
+### 新功能
+
+- unify module icons on the Papirus symbolic family：[`72ccf749e`](https://github.com/ShineBreaker/nosDshell/commit/72ccf749edff001395ee177708468780e6269c6f)
+- publish blur regions from remaining translucent surfaces：[`d4b624891`](https://github.com/ShineBreaker/nosDshell/commit/d4b62489139eebc6db378df9067eeef0a97047c3)
+- 从 hermes 平移 quickshell 系三个 skill 入库：[`2642d4a8c`](https://github.com/ShineBreaker/nosDshell/commit/2642d4a8c2002f848821e0d2b001e8f7a0cf6e8e)
+
+### 修复
+
+- move blur-region publishers out of the force-off layer tier：[`790c4324c`](https://github.com/ShineBreaker/nosDshell/commit/790c4324cd34c5c59900e2ad27da2eab98e1bdfb)
+
 ## [1.6.2] - 2026-10-24
 
 这一版修掉一个在 Qt 6.12 下暴露的界面问题：设置面板、控制中心这类带背景的窗口一打开就整块发黑，界面几乎全透明，底栏也跟着失色——原因是新版本 Qt 引入了一个同名的颜色类型，把主题色单例挡在了后面，主题色全部取空。现在主题色重新由自己的令牌接管，面板恢复半透明磨砂，底栏配色与之前一致。
@@ -528,7 +553,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.2...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.3...HEAD
+[1.6.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.5.0...v1.6.0
