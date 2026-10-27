@@ -33,7 +33,7 @@ Singleton {
     readonly property var modules: [
         {
             "id": "accounts",
-            "ddeIcon": "accounts",
+            "symbolicIcons": ["system-users", "org.gnome.Settings-users", "user-info"],
             "label": "control-center.module.accounts",
             "icon": "person",
             "tabs": [
@@ -45,7 +45,7 @@ Singleton {
         },
         {
             "id": "display",
-            "ddeIcon": "display",
+            "symbolicIcons": ["preferences-desktop-display", "org.gnome.Settings-display", "display"],
             "label": "control-center.module.display",
             "icon": "settings-display",
             "tabs": [
@@ -57,7 +57,7 @@ Singleton {
         },
         {
             "id": "personalization",
-            "ddeIcon": "personalization",
+            "symbolicIcons": ["preferences-desktop-appearance", "org.gnome.Settings-appearance", "preferences-desktop-wallpaper", "appearance"],
             "label": "control-center.module.personalization",
             "icon": "palette",
             "tabs": [
@@ -77,7 +77,7 @@ Singleton {
         },
         {
             "id": "dock",
-            "ddeIcon": "dock",
+            "symbolicIcons": ["preferences-ubuntu-panel", "top_bar", "task-list"],
             "label": "control-center.module.taskbar",
             "icon": "layout-bottombar",
             "tabs": [
@@ -89,7 +89,7 @@ Singleton {
         },
         {
             "id": "launcher",
-            "ddeIcon": "launcher",
+            "symbolicIcons": ["view-app-grid", "application-menu", "applications-all"],
             "label": "control-center.module.launcher",
             "icon": "rocket",
             "tabs": [
@@ -101,7 +101,7 @@ Singleton {
         },
         {
             "id": "controlcenter",
-            "ddeIcon": "controlcenter",
+            "symbolicIcons": ["gnome-control-center", "org.gnome.Settings", "settings", "utilities-tweak-tool"],
             "label": "control-center.module.control-center",
             "icon": "settings-control-center",
             "tabs": [
@@ -113,7 +113,7 @@ Singleton {
         },
         {
             "id": "network",
-            "ddeIcon": "network",
+            "symbolicIcons": ["network-workgroup", "preferences-system-network", "org.gnome.Settings-network", "globe"],
             "label": "control-center.module.network",
             "icon": "wifi",
             "tabs": [
@@ -125,7 +125,7 @@ Singleton {
         },
         {
             "id": "bluetooth",
-            "ddeIcon": "bluetooth",
+            "symbolicIcons": ["bluetooth", "org.gnome.Settings-bluetooth", "network-bluetooth"],
             "label": "control-center.module.bluetooth",
             "icon": "bluetooth",
             "tabs": [
@@ -137,7 +137,7 @@ Singleton {
         },
         {
             "id": "sound",
-            "ddeIcon": "sound",
+            "symbolicIcons": ["org.gnome.Settings-sound", "sound", "multimedia-volume-control", "audio-speakers"],
             "label": "control-center.module.sound",
             "icon": "device-speaker",
             "tabs": [
@@ -153,7 +153,7 @@ Singleton {
         },
         {
             "id": "notifications",
-            "ddeIcon": "notifications",
+            "symbolicIcons": ["preferences-system-notifications", "org.gnome.Settings-notifications", "notification"],
             "label": "control-center.module.notifications",
             "icon": "bell",
             "tabs": [
@@ -165,7 +165,7 @@ Singleton {
         },
         {
             "id": "datetime",
-            "ddeIcon": "datetime",
+            "symbolicIcons": ["preferences-system-time", "org.gnome.Settings-time", "clock-applet", "org.gnome.clocks"],
             "label": "control-center.module.datetime",
             "icon": "clock",
             "tabs": [
@@ -177,7 +177,7 @@ Singleton {
         },
         {
             "id": "power",
-            "ddeIcon": "power",
+            "symbolicIcons": ["org.gnome.Settings-power", "preferences-system-power", "power", "gnome-power-manager"],
             "label": "control-center.module.power",
             "icon": "moon",
             "tabs": [
@@ -197,7 +197,7 @@ Singleton {
         },
         {
             "id": "keyboard",
-            "ddeIcon": "keyboard",
+            "symbolicIcons": ["preferences-desktop-keyboard", "input-keyboard", "org.gnome.Settings-keyboard", "keyboard-layout"],
             "label": "control-center.module.keyboard",
             "icon": "keyboard",
             "tabs": [
@@ -209,7 +209,7 @@ Singleton {
         },
         {
             "id": "desktopwidgets",
-            "ddeIcon": "desktopwidgets",
+            "symbolicIcons": ["org.gnome.Settings-multitasking", "preferences-desktop-apps", "applications-other"],
             "label": "control-center.module.desktop-widget",
             "icon": "layout-board",
             "tabs": [
@@ -221,7 +221,7 @@ Singleton {
         },
         {
             "id": "systemmonitor",
-            "ddeIcon": "systemmonitor",
+            "symbolicIcons": ["utilities-system-monitor", "org.gnome.SystemMonitor", "org.gnome.Settings-diagnostics"],
             "label": "control-center.module.system-monitor",
             "icon": "activity",
             "tabs": [
@@ -233,7 +233,7 @@ Singleton {
         },
         {
             "id": "plugins",
-            "ddeIcon": "plugins",
+            "symbolicIcons": ["extension", "xapp-prefs-plugins", "application-x-addon"],
             "label": "control-center.module.plugins",
             "icon": "plug-connected",
             "tabs": [
@@ -248,7 +248,7 @@ Singleton {
             // semantic module (taskbar/monitors → 任务栏, panels & corners →
             // 个性化). 高级 now means "things with no DDE home at all": hooks.
             "id": "advanced",
-            "ddeIcon": "advanced",
+            "symbolicIcons": ["applications-engineering", "utilities-tweak-tool", "gnome-tweak-tool", "tools"],
             "label": "control-center.module.advanced",
             "icon": "link",
             "tabs": [
@@ -260,7 +260,7 @@ Singleton {
         },
         {
             "id": "systeminfo",
-            "ddeIcon": "systeminfo",
+            "symbolicIcons": ["dialog-information", "help-about", "org.gnome.Settings-about", "info-outline"],
             "label": "control-center.module.system-info",
             "icon": "info-square-rounded",
             "tabs": [
@@ -278,22 +278,21 @@ Singleton {
         return true;
     }
 
-    // DDE 15 original navigation artwork (DESIGN §1.9/§3.5.3): selected state
-    // uses nav_<m>.svg, default state nav_<m>_normal.svg. Returns "" when the
-    // module has no artwork (caller falls back to a Tabler glyph).
-    //
-    // Modules that exist only in nosDshell (no upstream counterpart) carry
-    // same-style artwork drawn in-house under Assets/Nav/ — mixing real DDE
-    // fills with Tabler strokes made the rail read as two different icon sets.
-    readonly property var nosdNavIcons: ["advanced", "controlcenter", "desktopwidgets", "dock", "launcher", "notifications", "plugins", "systemmonitor"]
-
-    function navIconUrl(module, selected) {
-        if (!module || !module.ddeIcon)
+    // Module icon source (DESIGN §1.9/§3.5.3): first the *-symbolic variant of
+    // each name in the module's `symbolicIcons` list from the current icon
+    // theme; the bundled Papirus copy at Assets/Nav/nav_<id>.svg is the floor
+    // so a theme without coverage still renders the same family. Callers tint
+    // the monochrome artwork to the surface ink via NSymbolicImage. Returns ""
+    // only when a module lacks both (caller falls back to a Tabler glyph).
+    function navIconUrl(module) {
+        if (!module)
             return "";
-        const suffix = selected ? "" : "_normal";
-        if (nosdNavIcons.indexOf(module.ddeIcon) >= 0)
-            return Quickshell.shellDir + "/Assets/Nav/nav_" + module.ddeIcon + suffix + ".svg";
-        return Quickshell.shellDir + "/Assets/DDE/gxde-control-center/src/frame/modules/" + module.ddeIcon + "/themes/dark/icons/nav_" + module.ddeIcon + suffix + ".svg";
+        const themed = ThemeIcons.symbolicOnlyAny(module.symbolicIcons ?? []);
+        if (themed !== "")
+            return themed;
+        if (!module.id)
+            return "";
+        return Quickshell.shellDir + "/Assets/Nav/nav_" + module.id + ".svg";
     }
 
     // First module carrying `tab`, optionally on the given sub-tab. Used by

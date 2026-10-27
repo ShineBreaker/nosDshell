@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg">
-    <title>nav_dock</title>
-    <g id="UI" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="nav_dock" fill="#FFFFFF">
-            <path fill-rule="evenodd" d="M4.5,5 C3.67,5 3,5.67 3,6.5 L3,14.5 C3,15.33 3.67,16 4.5,16 L19.5,16 C20.33,16 21,15.33 21,14.5 L21,6.5 C21,5.67 20.33,5 19.5,5 Z M4.5,6 C4.22,6 4,6.22 4,6.5 L4,14.5 C4,14.78 4.22,15 4.5,15 L19.5,15 C19.78,15 20,14.78 20,14.5 L20,6.5 C20,6.22 19.78,6 19.5,6 Z"/>
-            <rect x="7.5" y="18.15" width="9" height="1.2" rx="0.6"/>
-        </g>
-    </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" version="1.1">
+ <defs>
+  <style id="current-color-scheme" type="text/css">
+   .ColorScheme-Text { color:#444444; } .ColorScheme-Highlight { color:#4285f4; } .ColorScheme-NeutralText { color:#ff9800; } .ColorScheme-PositiveText { color:#4caf50; } .ColorScheme-NegativeText { color:#f44336; }
+  </style>
+ </defs>
+ <path style="opacity:0.35;fill:currentColor" class="ColorScheme-Text" d="M 8,5 V 19 H 19.199219 C 19.642419,19 20,18.653545 20,18.222656 V 17.445312 5.7773438 C 20,5.3464548 19.642419,5 19.199219,5 Z"/>
+ <path style="fill:currentColor" class="ColorScheme-Text" d="M 4.8007812,5 C 4.3575812,5 4,5.3464549 4,5.7773438 V 17.445312 18.222656 C 4,18.653545 4.3575812,19 4.8007812,19 H 8 V 5 Z M 5.25,6 h 1.5 C 6.8885,6 7,6.1115 7,6.25 v 1.5 C 7,7.8885 6.8885,8 6.75,8 H 5.25 C 5.1115,8 5,7.8885 5,7.75 V 6.25 C 5,6.1115 5.1115,6 5.25,6 Z m 0,3 h 1.5 C 6.8885,9 7,9.1115 7,9.25 v 1.5 C 7,10.8885 6.8885,11 6.75,11 H 5.25 C 5.1115,11 5,10.8885 5,10.75 V 9.25 C 5,9.1115 5.1115,9 5.25,9 Z m 0,3 h 1.5 C 6.8885,12 7,12.1115 7,12.25 v 1.5 C 7,13.8885 6.8885,14 6.75,14 H 5.25 C 5.1115,14 5,13.8885 5,13.75 v -1.5 C 5,12.1115 5.1115,12 5.25,12 Z m 0,3 h 1.5 C 6.8885,15 7,15.1115 7,15.25 v 1.5 C 7,16.8885 6.8885,17 6.75,17 H 5.25 C 5.1115,17 5,16.8885 5,16.75 v -1.5 C 5,15.1115 5.1115,15 5.25,15 Z"/>
 </svg>

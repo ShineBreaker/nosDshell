@@ -1446,8 +1446,8 @@ PYEOF
                           notify-send -a nosdshell-verify -i "$REPO/Scripts/test/assets/audio-volume-high-symbolic.png" \
                             "Symbolic icon 2" "Second symbolic send after a live popup." 2>/dev/null
                           sleep 0.8; shot notification-icon-2
-                          notify-send -a nosdshell-verify -i "$REPO/Assets/DDE/gxde-control-center/src/frame/modules/accounts/themes/dark/icons/nav_accounts.svg" \
-                            "White artwork" "Non-symbolic artwork stays raw (negative control)." 2>/dev/null
+                          notify-send -a nosdshell-verify -i "$REPO/Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg" \
+                            "Colored artwork" "Non-symbolic artwork stays raw (negative control)." 2>/dev/null
                           sleep 0.8; shot notification-icon-art ;;
     osd-volume)           call volume increase 0.4; call volume increase 0.4
                           call volume increase 0.4; shot osd-volume ;;

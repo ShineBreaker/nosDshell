@@ -212,14 +212,13 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
   - 关机界面按钮（`gxde-session-ui/dde-shutdown/img/*.svg`，含 normal / hover / press 三态）
   - 锁屏右下角操作按钮（`gxde-session-ui/widgets/img/bottom_actions/*.svg`）
   - 启动器搜索行按钮、分类图标、小窗口右栏图标（`gxde-launcher/src/skin/icons/*`、`gxde-launcher/src/widgets/images/*`）
-  - 控制中心导航条与模块图标（`gxde-control-center/src/frame/modules/*/themes/dark/icons/*.svg`）
 - 复用规则：
   - 原样复制到 `Assets/DDE/<参考仓库名>/<原相对路径>`，不改文件名，便于溯源；每个 `Assets/DDE/<仓库>/` 目录放一份 `NOTICE`，列出来源仓库、上游版权声明和许可证。
   - 有多态素材（normal / hover / press / checked）的，按原逻辑切换，不用透明度或滤镜模拟。
   - 只复制实际用到的文件。应用图标和托盘/状态图标仍然从系统图标主题读取，不随仓库分发。
   - 复制的位图如有 `@2x` 版本，一并复制，按屏幕缩放选用。
 - 参考仓库里没有素材的小装饰（运行指示条、弹出层箭头等），继续用 QML 画（`Rectangle`、`Shape`、`Canvas`）。
-- **自绘图标与原版同重。** `Assets/Nav/` 里补齐的扩展模块图标会和 DDE 原版图标并排出现在导航条和所有设置页的模块网格里，视觉重量必须一致：以实心剪影为主，图形占 24 px 画布中约 20 px（坐标 2–22），镂空和间隙不窄于 1.5 px，不用 1 px 线框〔演进：早期自绘图标是 1 px 描边、只占 18 px，与原版的实心剪影并排时明显偏小偏淡〕。
+- **控制中心/设置的模块图标出自 Papirus。** `ControlCenterModules.navIconUrl` 先在当前图标主题里找模块 `symbolicIcons` 候选的 `*-symbolic` 变体，找不到时用 `Assets/Nav/nav_<id>.svg`——那里打包了同一批 Papirus symbolic 图标的副本（GPL-3.0，原名对照见 `Assets/Nav/README.md`），两条路出自同一绘制规范，主题有无 coverage 图标家族都一致。统一按 `onShell` 单色剪影着色，rail 未选中态用不透明度分级（暗底 0.4 / 亮底 0.6），不再有单独的 `_normal` 素材文件〔演进：最初是 10 个 DDE 原版剪影加 8 个自绘仿品再回退 Tabler，三套画法并排不统一；改为同一 Papirus symbolic 家族，主题与打包互为冗余〕。
 - **启动器图标只有一个来源。** 时尚模式的启动器项、高效模式的启动器插件和状态栏的启动器挂件都取同一个图标：主题图标 `deepin-launcher`，找不到时依次试 `start-here`，最后用 `Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg`。查找逻辑只在 `Commons/ThemeIcons.qml` 的一个函数里，用户在设置里指定的自定义图标优先。
 
 ### 1.10 文案与术语
@@ -520,12 +519,12 @@ Noctalia 卡片的对应关系：
 
 - DDE 15 的设置页是一整页"所有设置"（`settingswidget.cpp:90`），所有模块按顺序纵向排在同一个滚动区里，每个模块以"模块头"开头。从所有设置页的模块网格点某个模块进来，等于打开"所有设置"并滚动到该模块；返回回到模块网格〔演进〕。
 - 进入模块视图后，控制中心外框不动，头部（头像、时钟）和底部快捷控制面板都隐藏，整个外框高度只留给两栏（`frame.cpp:127-137`，参照 `references/1.jpg`）：
-  - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体垂直居中（上下各一段伸缩空白），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标用原版 24 px 的 `nav_<模块>_normal.svg`（默认）和 `nav_<模块>.svg`（选中）（§1.9）。上游没有的扩展模块（任务栏、启动器、控制中心、通知、桌面挂件、系统监视、插件、高级）用 `Assets/Nav/` 下同规格的自绘素材（24 px、白色、默认态内嵌 0.2 透明度），不混用其他图标族。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
+  - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体垂直居中（上下各一段伸缩空白），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标取模块的 Papirus symbolic 图：先在当前主题找 `symbolicIcons` 候选的 `*-symbolic` 变体，找不到用 `Assets/Nav/nav_<id>.svg` 的打包副本（§1.9），统一按 `onShell` 剪影着色，未选中态压到 0.4（亮底 0.6）不透明度。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
   - **右栏**：内容区，宽 352。
 - 导航与滚动联动：
   - 点导航按钮时，内容区平滑滚动到该模块头，`OutQuint` 1400 ms（`contentwidget.cpp:51,106-112`）。
   - 滚动过程中导航选中项实时跟随视口中第一个顶部可见的模块（`settingswidget.cpp:342-380`；〔演进〕上游按滚动停下再更新，这里逐帧同步，选中项拖动到哪高亮到哪；当前模块在视口内仍相交时保持选中，避免来回抖动）。
-- 模块头（`modulewidget.cpp`）：左边距 11，24×24 的模块图标（与导航选中态同一个 `nav_<模块>.svg`），接大号标题（LargeLabel，白色），上下内边距 5（`modulewidgetheader.cpp`）。模块之间留 1 个分组间距。
+- 模块头（`modulewidget.cpp`）：左边距 11，24×24 的模块图标（与导航条同一个 `navIconUrl` 来源，§1.9），接大号标题（LargeLabel，白色），上下内边距 5（`modulewidgetheader.cpp`）。模块之间留 1 个分组间距。
 - 内容区顶部：返回按钮（24×24 圆角 4 的方块，底色白 × 0.2），居中标题"所有设置"（14 px / 500），再下面 15 px 是一条分隔线。内容可滚动，滚动条隐藏。
 - 二级页（"下一页"行进入，`NNextPageRow` → `SettingsModuleView.pushPage`）：新页面从右侧推入，旧页面向左推出，`motionPanel`（300 ms InOutCubic）；位移过程中按距离同步淡出。二级页的标题换成该页名称，返回按钮回到上一级。进入方式、转场和返回在所有页面统一，不允许在行内展开大段内容作为替代。
 - 性能：一次展开所有模块代价较大，允许按顺序异步加载（`Loader.asynchronous`）。先加载目标模块和它前后各一个，其余在空闲时补齐。未加载的模块用估计高度占位，加载完成后当前目标模块的头部位置保持不动。

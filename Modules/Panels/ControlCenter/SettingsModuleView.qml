@@ -661,11 +661,10 @@ Item {
                 required property int index
 
                 readonly property bool selected: root.module !== null && modelData !== null && root.module.id === modelData.id
-                // Always the full-alpha artwork: the dimmed state comes from
-                // railArt.opacity, matching the NIcon fallback's dim ladder
-                // (the baked *_normal variant is only ~0.2, too faint for the
-                // project's documented rail spec).
-                readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData, true)
+                // Theme symbolic first, bundled Papirus floor (the dimmed
+                // state comes from railArt.opacity, matching the NIcon
+                // fallback's dim ladder).
+                readonly property string ddeArt: ControlCenterModules.navIconUrl(modelData)
 
                 width: Style.settingsRailWidth
                 height: Style.settingsModuleHeadIcon + 2 * Style.settingsRailButtonPadV
@@ -939,8 +938,8 @@ Item {
                   required property int index
                   readonly property var sectionModule: modelData
                   readonly property int sectionIndex: index
-                  // Original nav art for the header (selected variant); "" → Tabler.
-                  readonly property string headArt: ControlCenterModules.navIconUrl(sectionModule, true)
+                  // Theme symbolic / bundled nav art; "" → Tabler.
+                  readonly property string headArt: ControlCenterModules.navIconUrl(sectionModule)
                   width: sectionsColumn.width
                   spacing: Style.marginS
 

@@ -37,6 +37,7 @@ Every external CLI tool is optional. When a tool is not installed, only the feat
 ## Icons
 
 - [Tabler Icons](https://tabler.io/icons): interface glyph set
+- [Papirus](https://github.com/PapirusDevelopmentTeam/papirus-icon-theme): monochrome `*-symbolic` module icons for the settings navigation rail, module grid and module headers — resolved from the user's icon theme at runtime, with bundled copies under `Assets/Nav/` as the fallback (GPL-3.0, provenance in `Assets/Nav/README.md`)
 
 ## Audio assets
 
