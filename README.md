@@ -86,11 +86,66 @@ Wayland 平铺与滚动合成器（Niri、Hyprland、Sway 等）轻快高效，�
 
 ### 安装与运行
 
-| 发行版 | 安装方式 |
-|---|---|
-| Guix | 使用仓库根目录的 `nosdshell.scm` |
-| Nix / NixOS | 使用 `flake.nix`（提供软件包、Home Manager 模块与 NixOS 模块） |
-| 其他发行版 | 克隆本仓库，执行 `qs -p <仓库路径>` 启动 |
+#### Guix
+
+本仓库即 Guix channel（`.guix-channel`）。在 `~/.config/guix/channels.scm` 中加入：
+
+```scheme
+(cons* (channel
+        (name 'nosdshell)
+        (url "https://github.com/ShineBreaker/nosDshell")
+        ;; 跟踪 main；要装某个发行版可改为 (branch "v1.7.0")
+        (branch "main"))
+       %default-channels)
+```
+
+然后 `guix pull` 并安装：`guix install nosdshell`。channel 的每个提交打包其自身源码树，所以 pin 到 tag 得到的就是对应版本。
+
+开发态构建（打包当前工作区而非远端提交）：`guix build -f nosdshell.scm`。
+
+#### Nix / NixOS
+
+`flake.nix` 提供软件包 `packages.<system>.default`、overlay `overlays.default`、Home Manager 模块 `homeModules.default`（`programs.nosdshell`）与 NixOS 模块 `nixosModules.default`（`services.nosdshell`）。
+
+NixOS（在你的 flake 里）：
+
+```nix
+{
+  inputs.nosdshell.url = "github:ShineBreaker/nosDshell";
+
+  outputs = { nixpkgs, nosdshell, ... }: {
+    nixosConfigurations.<主机名> = nixpkgs.lib.nixosSystem {
+      modules = [
+        nosdshell.nixosModules.default
+        { services.nosdshell.enable = true; }
+      ];
+    };
+  };
+}
+```
+
+Home Manager：
+
+```nix
+{
+  inputs.nosdshell.url = "github:ShineBreaker/nosDshell";
+
+  outputs = { home-manager, nosdshell, ... }: {
+    homeConfigurations.<用户名> = home-manager.lib.homeManagerConfiguration {
+      modules = [
+        nosdshell.homeModules.default
+        { programs.nosdshell.enable = true; }
+      ];
+    };
+  };
+}
+```
+
+临时试用不改配置：`nix run github:ShineBreaker/nosDshell`。
+
+#### 其他发行版
+
+克隆本仓库，执行 `qs -p <仓库路径>` 启动。
 
 安装完成后，可执行 `nosdshell --version` 查看当前 shell 与 Quickshell 版本。`bash`、`zsh` 与 `fish` 的命令行补全脚本随包安装至标准目录，新开终端即可生效。
 

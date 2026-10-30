@@ -47,7 +47,7 @@ nav_exclude: true
 5. 按 Conventional Commits 提交（如 `chore(release): ...`），建附注 tag 并推送：`git tag -a v<版号> -m "v<版号>" && git push origin v<版号>`，同时推送 `main`。
 6. CI 的 Release workflow 自动发布。需要手动重发已存在的 tag 时，运行 `gh workflow run release.yml -f tag=v<版号>`。
 7. reopen：把 `isDevelopment` 改回 `true` 再提交一次，`[Unreleased]` 留空。
-8. Guix 正式构建（脚本不做这一步）：把 `nosdshell.scm` 的 `source` 从 `local-file` 换成指向该 tag 的 `git-fetch`（见文件头注释），填好 hash，用 `guix build -f nosdshell.scm` 验证。
+8. Guix 无需额外步骤：本仓库即 Guix channel（`.guix-channel`），包的 `source` 始终是 `local-file` 的当前 checkout——`guix pull` 用户 pin 到 `v<版号>` tag 得到的就是该 tag 的树，`guix build -f nosdshell.scm` 打包的是工作区，两者共用同一份定义。jeans 频道里的固定 pin（`%nosdshell-version` + hash）需要单独 bump。
 
 ## tag 约定
 
