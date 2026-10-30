@@ -96,10 +96,10 @@ Item {
   property real animatedPercentage: percentage
 
   Behavior on animatedPercentage {
-    enabled: !Settings.data.general.animationDisabled
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+    enabled: !Style.reduceMotion
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
 
@@ -180,10 +180,10 @@ Item {
     lineHeightMode: Text.ProportionalHeight
 
     Behavior on opacity {
-      enabled: !Settings.data.general.animationDisabled
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      enabled: !Style.reduceMotion
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "swift"
       }
     }
   }
@@ -200,10 +200,10 @@ Item {
     color: Qt.alpha(root.textColor, 0.75)
 
     Behavior on opacity {
-      enabled: !Settings.data.general.animationDisabled
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      enabled: !Style.reduceMotion
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "swift"
       }
     }
   }

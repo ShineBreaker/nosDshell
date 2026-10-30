@@ -115,9 +115,9 @@ NDccRow {
 
     Behavior on border.color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionPointer
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
 

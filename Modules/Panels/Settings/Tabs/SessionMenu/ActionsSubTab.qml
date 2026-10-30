@@ -129,9 +129,9 @@ ColumnLayout {
 
           Behavior on color {
             enabled: !Colors.isTransitioning
-            ColorAnimation {
+            NColorAnim {
               duration: Style.motionSwitch
-              easing.type: Easing.OutCubic
+              curve: "swift"
             }
           }
 
@@ -221,9 +221,9 @@ ColumnLayout {
 
         Behavior on y {
           enabled: !delegateItem.dragging
-          NumberAnimation {
-            duration: Style.animationNormal
-            easing.type: Easing.OutQuad
+          NAnim {
+            duration: Style.motionExpand
+            curve: "expand"
           }
         }
       }

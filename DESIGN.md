@@ -215,6 +215,7 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 | `motionProgramScroll` | 300 | out | 位置 | 程序化定位（点分类跳锚点、滚动到可见） | `fullscreenframe.cpp:189-204` |
 | `motionSettingsScroll` | 450 | swift | 位置 | 设置页导航跳转的长距离滚动 | `cds-theme.css:222` |
 | `motionSwing` | 1200 | Linear 关键帧 | ±8° 阻尼摆动 | dock 项 attention 摆动，每 ~2.2 s 重播 | `appswingeffectbuilder.h:87-118` |
+| `motionPulse` | 450（半周期） | pulse | 不透明度 | 装饰性脉动（拖放目标的高亮呼吸），`reduceMotion` 时停止 | `cds-theme.css:211,222` |
 | `motionStagger` | 30 ms/项，封顶 8 项 | — | 延时 | 同一帧里多个行项进出时按位次错峰 | `docs/v2` chip 级联（30 ms × min(i, 8)） |
 | 壁纸过渡 | 1000 | `wallpaper.transitionDuration` | 交叉淡化 | 壁纸切换（用户设置，0.5–10 s） | `fullscreenbackground.cpp:51-74` |
 

@@ -446,6 +446,8 @@ Singleton {
   readonly property int motionProgramScroll: durSheet    // out
   // gxde-dock appswingeffectbuilder.h:87-118 — attention swing cycle (Linear keyframes)
   readonly property int motionSwing: _motion(1200)
+  // Half-period of decorative pulses (pulse curve), e.g. a drop-target glow
+  readonly property int motionPulse: durSlow
   // Per-row cascade delay between siblings entering/leaving in the same sync
   // (DESIGN §1.7). A delay, not a curve: single-item changes stay instant.
   readonly property int motionStagger: _motion(30)

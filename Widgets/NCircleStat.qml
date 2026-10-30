@@ -37,10 +37,10 @@ Item {
   property real animatedRatio: ratio
 
   Behavior on animatedRatio {
-    enabled: !Settings.data.general.animationDisabled
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+    enabled: !Style.reduceMotion
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
 
