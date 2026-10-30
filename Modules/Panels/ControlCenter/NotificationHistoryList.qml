@@ -523,7 +523,7 @@ Item {
             isRemoving = true;
             interactionArea.isSwiping = false;
             interactionArea.swipeOffset = dir >= 0 ? width + Style.marginL : -width - Style.marginL;
-            if (Settings.data.general.animationDisabled) {
+            if (Style.reduceMotion) {
               NotificationService.removeFromHistory(notificationId);
               return;
             }
@@ -540,10 +540,10 @@ Item {
           opacity: isRemoving ? 0 : 1
 
           Behavior on opacity {
-            enabled: !Settings.data.general.animationDisabled && delegateItem.isRemoving
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.OutCubic
+            enabled: !Style.reduceMotion && delegateItem.isRemoving
+            NAnim {
+              duration: Style.motionExit
+              curve: "out"
             }
           }
 
@@ -583,9 +583,9 @@ Item {
 
               Behavior on color {
                 enabled: !Colors.isTransitioning
-                ColorAnimation {
+                NColorAnim {
                   duration: Style.motionPointer
-                  easing.type: Easing.OutCubic
+                  curve: "swift"
                 }
               }
 
@@ -644,10 +644,10 @@ Item {
 
             // Expand/collapse is a data-driven size change.
             Behavior on height {
-              enabled: !Settings.data.general.animationDisabled
-              NumberAnimation {
-                duration: Style.motionPanel
-                easing.type: Easing.OutCubic
+              enabled: !Style.reduceMotion
+              NAnim {
+                duration: Style.motionExpand
+                curve: "expand"
               }
             }
 
@@ -919,12 +919,14 @@ Item {
             readonly property real swipeStartThreshold: Math.round(16 * Style.uiScaleRatio)
             readonly property real swipeDismissThreshold: Math.max(110, width * 0.3)
 
-            // Spring back (motionPanel) unless the swipe dismissed the row.
+            // A released swipe springs back on the CDS drag-release spring
+            // (motionSnapBack, "snappy"); a dismissing swipe slides out on
+            // motionExit (DESIGN §3.5.2).
             Behavior on swipeOffset {
-              enabled: !Settings.data.general.animationDisabled && !interactionArea.isSwiping
-              NumberAnimation {
-                duration: Style.motionPanel
-                easing.type: Easing.OutCubic
+              enabled: !Style.reduceMotion && !interactionArea.isSwiping
+              NAnim {
+                duration: delegateItem.isRemoving ? Style.motionExit : Style.motionSnapBack
+                curve: delegateItem.isRemoving ? "out" : "snappy"
               }
             }
 

@@ -439,6 +439,7 @@ Singleton {
   readonly property int motionOsdOut: _motion(180)       // fall
   readonly property int motionSwitch: durBase            // overshoot (knob) / swift (colour)
   readonly property int motionSnap: durSnap              // snap
+  readonly property int motionSnapBack: durSheet         // snappy, drag released short of its threshold
   readonly property int motionNavZoom: durBase           // overshoot
   readonly property int motionTheme: durSlow             // swift
   readonly property int motionScrollWheel: _motion(800)  // swift

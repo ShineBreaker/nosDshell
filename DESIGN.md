@@ -208,6 +208,7 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 | `motionOsdIn` / `motionOsdOut` | 300 / 180 | enter / fall | 进场下边距偏移 −12→0、缩放 0.96→1；退场偏移到 −8 | OSD | 同气泡 |
 | `motionSwitch` | 200 | overshoot（滑块）/ swift（颜色） | 位移、颜色 | 开关滑块；数据驱动的状态色（选中、已连接、勿扰开启） | `cds-theme.css:209,220` |
 | `motionSnap` | 120 | snap | 位移 | 分段控件、页签指示条 | `cds-theme.css:208,219` |
+| `motionSnapBack` | 300 | snappy | 位移 | 拖动没过阈值松手后回弹到原位（通知卡片左右滑） | `ClaudeMotionPresets.ts:72-82`（SPRING_SNAPPY 用于拖拽回弹） |
 | `motionNavZoom` | 200 | overshoot | 缩放 1.0→1.2 | 启动器分类导航悬停 | `navigationwidget.cpp:213-230` 的缩放幅度 |
 | `motionTheme` | 450 | swift | 颜色 | 切换配色方案和明暗模式时全部颜色交叉淡化 | `cds-theme.css:222` |
 | `motionScrollWheel` | 800 | swift | 位置 | 滚轮惯性滚动 | DDE `applistview.cpp:105-112` 的时长 |
