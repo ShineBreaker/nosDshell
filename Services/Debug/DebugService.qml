@@ -379,14 +379,23 @@ Singleton {
     return found;
   }
 
+  // `prop` may be a dot-separated path like the IPC `get`
+  // ("contentItem.contentY" sets the flickable inside a ScrollView).
   function setProperty(rootName, objectName, prop, value) {
     var it = findItem(rootName, objectName);
     if (!it)
       return "no item '" + objectName + "' under " + rootName + " (roots: " + rootNames() + ")";
     try {
-      if (it[prop] === undefined)
+      var parts = prop.split(".");
+      var last = parts.pop();
+      for (var i = 0; i < parts.length; i++) {
+        it = it[parts[i]];
+        if (it === null || it === undefined)
+          return "null at '" + parts.slice(0, i + 1).join(".") + "'";
+      }
+      if (it[last] === undefined)
         return "no property '" + prop + "' on " + describe(it);
-      it[prop] = value;
+      it[last] = value;
       return "ok " + describe(it) + " " + prop + "=" + value;
     } catch (e) {
       return "set failed on " + describe(it) + ": " + e;

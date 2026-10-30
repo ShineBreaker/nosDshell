@@ -869,6 +869,7 @@ Item {
 
           NScrollView {
             id: contentScroll
+            objectName: "settingsContentScroll"
             // Not anchored: x carries the slide-out (anchors would own it).
             width: pageArea.width
             height: pageArea.height

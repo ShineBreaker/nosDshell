@@ -231,7 +231,7 @@ SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-m
 control-center cc-switch cc-page cc-slider cc-notifications cc-notif-groups cc-notif-focus cc-quick-wifi
 cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
 cc-collapse cc-geom settings-cc-pages
-settings session-menu notification
+settings edge-fade session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
 battery-panel calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
@@ -856,8 +856,6 @@ run_scene() {
     # (notifCard / notifMore / notifClearAll); debug tree prints global
     # coords, so their centres are direct click points.
     # Keyboard focus ring on a notification card (DESIGN §1.11): the list's
-    # focusIndex is arrow-key driven; set it through `debug set` instead.
-    # Keyboard focus ring on a notification card (DESIGN §1.11): the list's
     # focusIndex is arrow-key driven; with no key injection, set it through
     # `debug set` to the first row whose descriptor is a notification.
     cc-notif-focus)       call controlCenter notifications 1.5
@@ -1089,6 +1087,27 @@ PYEOF
                             shot "settings-scroll-${tab}-${i}"
                           done
                           call settings toggle 2 ;;
+    # Scroll edge fade (DESIGN §1.11): park the settings content mid-page and
+    # assert both edges fade the full Style.scrollFadeSize (28), then back at
+    # the top the top edge must not fade. The widths are read off the
+    # NScrollEdgeMask in the scroll view's background slot; the crops show the
+    # dissolve itself.
+    edge-fade)            call settings openTab general 3
+                          ef() { qs -p "$REPO" ipc call debug "$@" 2>&1; }
+                          ef set cc-HEADLESS-1 settingsContentScroll contentItem.contentY 600
+                          sleep 1
+                          EFT=$(ef get cc-HEADLESS-1 settingsContentScroll background.children.0.topFade)
+                          EFB=$(ef get cc-HEADLESS-1 settingsContentScroll background.children.0.bottomFade)
+                          echo "edge-fade mid: top=$EFT bottom=$EFB"
+                          shot edge-fade-mid
+                          convert "$OUT/edge-fade-mid.png" -crop 420x1080+1500+0 +repage "$OUT/edge-fade-mid-crop.png"
+                          [ "$EFT" = 28 ] && [ "$EFB" = 28 ] || { echo "FAIL edge-fade: mid-page fades top=$EFT bottom=$EFB, want 28/28"; SCENE_FAIL=1; }
+                          ef set cc-HEADLESS-1 settingsContentScroll contentItem.contentY 0
+                          sleep 1
+                          EFT=$(ef get cc-HEADLESS-1 settingsContentScroll background.children.0.topFade)
+                          echo "edge-fade top: top=$EFT"
+                          [ "$EFT" = 0 ] || { echo "FAIL edge-fade: top fade $EFT at scroll 0, want 0"; SCENE_FAIL=1; }
+                          call settings toggle 0.5 ;;
     # Live theme-switch with settings open: catches stale/leftover regions at
     # the panel edges that a fresh-open screenshot can't.
     settings-themeswitch) call settings openTab general 3
