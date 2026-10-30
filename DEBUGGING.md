@@ -77,6 +77,20 @@ Qt 类别日志只能在启动前用环境变量打开，QML 运行时改不了�
 
 core 验尸要设置 `QS_DISABLE_CRASH_HANDLER=1` 并执行 `ulimit -c unlimited`。Guix 下加载调试符号用 gdb 的 `add-symbol-file`，以绕过 `.gnu_debuglink` 的 CRC 校验。
 
+## 动效取证
+
+`Scripts/test/motion.sh <名字>` 拍摄弹出层、控制中心、启动器、OSD、通知、吐司、按压和开关的开合过程。它把 `general.animationSpeed` 设成 1/N（默认 N=10），让所有时长拉长 N 倍，然后在动画期间用 grim 连续截取局部画面（软件渲染下每帧约 30 ms，换算回原速约 3 ms）。每段过程输出三样东西，时间都已换算回原速：
+
+- `filmstrip.png`：从触发到稳定的 10 帧，每帧标注毫秒数。
+- `curve.png`：两条曲线。蓝线是像素进度，即当前帧与终帧的差异占初始差异的比例；橙线是变化区域的包围盒相对终态的大小，高于 1 说明画面越过了终态，也就是有回弹。
+- `metrics.json`：`settle_ms`（进度稳定在 98% 以上的时刻）、`t50_ms`、`bbox_overshoot`、`monotonic`。
+
+`motion-summary.txt` 每段一行，可以直接和 `Style.motion*` 令牌对照；由于截图延迟，读数最多晚一帧。
+
+改动动效时，在基线提交的 worktree 和改动后各跑一次，再用 `Scripts/test/motion-compare.sh <基线 shots 目录> <改动后 shots 目录> <输出目录>` 把两次的胶片和曲线上下拼在一起，逐段看。场景定义在 `verify.sh` 的 `motion-*` 分支里，截取区域按默认的底部时尚模式任务栏写死；新增场景时同时写开、合两段，并保证截取区域内没有别的东西在动。`motion_settle` 会先等屏幕静止再开拍，避免壁纸解码这类后台变化混进曲线。
+
+`nosd-helpers vinput click` 加环境变量 `VINPUT_PRESS_MS` 可以按住指定的毫秒数再松开，用来拍按压态。
+
 ## 现成脚本
 
 - `Scripts/test/debug-smoke.sh`：调试功能全链路冒烟测试。

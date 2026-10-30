@@ -41,6 +41,10 @@
 #   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
 #   settings-subpage is off the default set (needs its own seed — see the
 #   scene comment): drives the §3.5.3 二级页 rows on the dock tab.
+#   motion-* scenes (motion-popup, motion-cc, motion-launcher, motion-osd,
+#   motion-bubble, motion-toast, motion-press, motion-switch) are off the
+#   default set: run them through Scripts/test/motion.sh, which stretches
+#   the durations and turns each burst into filmstrip/curve/metrics.
 #   settings-reset is off the default set too (own seed): clicks a widget
 #   gear, asserts the 重置为默认值 button rebuilds the entry as defaults.
 #
@@ -255,7 +259,7 @@ if [ -n "$SCENES_ARG" ]; then
   # pass any requested ones through in the order given.
   for s in $WANTED; do
     case "$s" in
-      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|taskbar-settings-write|taskbar-add-widgets|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
+      settings-*/*|settings-scroll-*|settings-themeswitch|settings-search|settings-combo|settings-combo-scheme|settings-subpage|settings-reset|dock-fullscreen|dock-battery-wheel|dock-context-menu|dock-widget-settings|taskbar-settings-write|taskbar-add-widgets|efficient-taskbar|fashion-dock|dark-mode-system|idle-inhibit|usb-panel|motion-*) [[ " $SELECTED " == *" $s "* ]] || SELECTED="$SELECTED $s" ;;
     esac
   done
 else
@@ -507,6 +511,71 @@ sleep 6
 shot() { grim "$OUT/$1.png" && echo "saved $1.png"; }
 call() { local s="${!#}"; set -- "${@:1:$#-1}"; echo "ipc: $*"; qs -p "$REPO" ipc call "$@" 2>&1; sleep "$s"; }
 toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
+
+# --- motion capture (motion-* scenes; run them through Scripts/test/motion.sh,
+# which seeds general.animationSpeed so every duration is stretched by
+# NOSD_MOTION_SLOW) ----------------------------------------------------------
+# burst_start <name> <geometry>  grab frames of a region back to back until
+#   burst_stop; geometry is grim's "X,Y WxH", or "full" (whole output, half
+#   size). Frames and their capture times land in $OUT/<name>/.
+# burst_mark   record the trigger time; call it right before the action.
+# burst_stop <seconds>  keep capturing that long after the trigger, stop, and
+#   run Scripts/test/motion-report.py (filmstrip.png, curve.png, metrics.json).
+MOTION_SLOW="${NOSD_MOTION_SLOW:-1}"
+BURST_DIR=""; BURST_PID=""
+# Wait until two quarter-size grabs 0.5 s apart are identical: late work
+# (wallpaper decode, icon loads, a previous exit) must not be read as part
+# of the animation under test.
+motion_settle() {
+  local prev="" cur
+  for _ in $(seq 1 60); do
+    cur=$(grim -s 0.25 - 2>/dev/null | md5sum)
+    [ "$cur" = "$prev" ] && return 0
+    prev="$cur"; sleep 0.5
+  done
+  echo "motion_settle: screen never stopped changing" >&2
+}
+burst_start() {
+  motion_settle
+  BURST_DIR="$OUT/$1"
+  rm -rf "$BURST_DIR"; mkdir -p "$BURST_DIR"
+  local geom=(-g "$2")
+  [ "$2" = full ] && geom=(-s 0.5)
+  ( i=0
+    while [ ! -e "$BURST_DIR/.stop" ]; do
+      t=$(date +%s%N)
+      grim -l 0 "${geom[@]}" "$(printf '%s/f%04d.png' "$BURST_DIR" "$i")" 2>/dev/null \
+        && echo "$i $t" >> "$BURST_DIR/times"
+      i=$((i + 1))
+    done ) &
+  BURST_PID=$!
+  sleep 0.4   # a few settled frames before the trigger
+}
+burst_mark() { echo "trigger $(date +%s%N)" >> "$BURST_DIR/times"; }
+burst_stop() {
+  sleep "$1"
+  touch "$BURST_DIR/.stop"; wait "$BURST_PID" 2>/dev/null; rm -f "$BURST_DIR/.stop"
+  python3 "$REPO/Scripts/test/motion-report.py" "$BURST_DIR" "$MOTION_SLOW" ${NOSD_MOTION_KEEP:+--keep-frames} \
+    || SCENE_FAIL=1
+}
+# motion_secs <real ms>: whole seconds that cover <real ms> once stretched by
+# MOTION_SLOW, plus one second of settle margin.
+motion_secs() { echo $(( ($1 * MOTION_SLOW + 999) / 1000 + 1 )); }
+# jq_seed <dot.path> <default>: a value from the seeded settings.json.
+jq_seed() {
+  python3 - "$NOSD_CONFIG_DIR/settings.json" "$1" "$2" <<'PYEOF'
+import json, sys
+v = json.load(open(sys.argv[1]))
+for k in sys.argv[2].split("."):
+    v = v.get(k) if isinstance(v, dict) else None
+print(sys.argv[3] if v is None else v)
+PYEOF
+}
+# Close whatever popup is open by clicking bare desktop (top-left quadrant).
+motion_dismiss() { $VINPUT click 300 300 > /dev/null 2>&1; }
+VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+[ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+VINPUT="$VINPUT vinput"
 
 # --- real windows so the dock shows running/active apps --------------------
 # NOSD_SPAWN_WINDOWS=1 (default): the headless sway starts with no windows, so
@@ -2663,6 +2732,67 @@ PYEOF
         echo "lockscreen-error needs NOSD_PAM_BAD=1 (separate verify run)"
       fi
       ;;
+    # --- motion scenes (Scripts/test/motion.sh). Each captures an open and a
+    # close burst; region coordinates assume the default bottom fashion dock
+    # on the 1920x1080 headless output. Burst lengths are in stretched time:
+    # MOTION_SLOW x the longest real duration involved, plus margin.
+    motion-popup)         burst_start motion-popup-open "700,640 520x440"; burst_mark
+                          qs -p "$REPO" ipc call dock showSettingsMenu > /dev/null
+                          burst_stop "$(motion_secs 400)"
+                          burst_start motion-popup-close "700,640 520x440"; burst_mark
+                          motion_dismiss; burst_stop "$(motion_secs 300)" ;;
+    motion-cc)            burst_start motion-cc-open "1440,0 480x1080"; burst_mark
+                          qs -p "$REPO" ipc call controlCenter toggle > /dev/null
+                          burst_stop "$(motion_secs 500)"
+                          burst_start motion-cc-close "1440,0 480x1080"; burst_mark
+                          qs -p "$REPO" ipc call controlCenter toggle > /dev/null
+                          burst_stop "$(motion_secs 400)" ;;
+    motion-launcher)      burst_start motion-launcher-open full; burst_mark
+                          qs -p "$REPO" ipc call launcher toggle > /dev/null
+                          burst_stop "$(motion_secs 500)"
+                          burst_start motion-launcher-close full; burst_mark
+                          qs -p "$REPO" ipc call launcher toggle > /dev/null
+                          burst_stop "$(motion_secs 400)" ;;
+    motion-osd)           burst_start motion-osd-open "780,640 360x320"; burst_mark
+                          qs -p "$REPO" ipc call volume increase > /dev/null
+                          burst_stop "$(motion_secs 400)"
+                          # motion.sh seeds osd.autoHideMs long enough for the
+                          # enter to settle; the hide starts when it runs out.
+                          burst_start motion-osd-close "780,640 360x320"; burst_mark
+                          burst_stop "$(( $(jq_seed osd.autoHideMs 8000) / 1000 + $(motion_secs 300) ))" ;;
+    motion-bubble)        burst_start motion-bubble-open "1500,0 420x220"; burst_mark
+                          notify-send -a nosdshell-verify -t 60000 "Motion bubble" "Notification enter and exit."
+                          burst_stop "$(motion_secs 500)"
+                          burst_start motion-bubble-close "1500,0 420x220"; burst_mark
+                          qs -p "$REPO" ipc call notifications dismissOldest > /dev/null
+                          burst_stop "$(motion_secs 400)" ;;
+    motion-toast)         burst_start motion-toast-open "1380,0 540x220"; burst_mark
+                          qs -p "$REPO" ipc call toast send '{"title":"Toast","body":"Toast motion","duration":60000}' > /dev/null
+                          burst_stop "$(motion_secs 500)"
+                          burst_start motion-toast-close "1380,0 540x220"; burst_mark
+                          qs -p "$REPO" ipc call toast dismiss > /dev/null
+                          burst_stop "$(motion_secs 400)" ;;
+    # Press-and-hold on the control-center header gear (button class, §0
+    # principle 6): the open frames show the press, the close frames the
+    # release. Needs the control center open first.
+    motion-press)         qs -p "$REPO" ipc call controlCenter toggle > /dev/null; sleep "$(motion_secs 400)"
+                          burst_start motion-press-down "1740,20 160x100"; burst_mark
+                          VINPUT_PRESS_MS=$(( $(motion_secs 600) * 1000 )) $VINPUT click 1806 64 > /dev/null 2>&1 &
+                          VP=$!
+                          burst_stop "$(motion_secs 500)"
+                          wait "$VP"
+                          burst_start motion-press-up "1740,20 160x100"; burst_mark
+                          burst_stop "$(motion_secs 600)"
+                          qs -p "$REPO" ipc call controlCenter toggle > /dev/null
+                          sleep "$(motion_secs 400)" ;;
+    motion-switch)        qs -p "$REPO" ipc call controlCenter toggle > /dev/null; sleep "$(motion_secs 400)"
+                          burst_start motion-switch-on "1820,130 100x70"; burst_mark
+                          $VINPUT click 1888 164 > /dev/null 2>&1
+                          burst_stop "$(motion_secs 400)"
+                          burst_start motion-switch-off "1820,130 100x70"; burst_mark
+                          $VINPUT click 1888 164 > /dev/null 2>&1
+                          burst_stop "$(motion_secs 400)"
+                          qs -p "$REPO" ipc call controlCenter toggle > /dev/null; sleep "$(motion_secs 400)" ;;
     *)                    echo "unknown scene: $1" ;;
   esac
 }

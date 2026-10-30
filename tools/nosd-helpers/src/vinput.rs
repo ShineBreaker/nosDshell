@@ -18,6 +18,10 @@
 //! 销毁时合成器会给悬停面发 leave，hover 状态在截图前就复位了。
 //! 需要 hover 可见的场景在 move 上加这个环境变量，并在截图前并行睡同样的
 //! 时长由 shot 侧控制。
+//!
+//! VINPUT_PRESS_MS: click 系列按下与抬起之间保持这么多毫秒（默认 50），并在
+//! 按下后立即 flush，让合成器在保持期间就把按下投递出去。用来拍按压态的
+//! 动效（verify.sh 的 motion-press 场景）。
 
 use std::thread::sleep;
 use std::time::Duration;
@@ -164,8 +168,25 @@ fn run_op(args: &[String]) -> Result<(), String> {
                 _ => BTN_LEFT,
             };
             let (ew, eh) = extent_at(2);
-            click_at(&vp, arg_f32(p, 0)?, arg_f32(p, 1)?, btn, ew, eh, &mut t);
-            flush(&mut queue);
+            let (x, y) = (arg_f32(p, 0)?, arg_f32(p, 1)?);
+            match std::env::var("VINPUT_PRESS_MS").ok().and_then(|v| v.parse::<u64>().ok()) {
+                Some(hold) => {
+                    move_to(&vp, x, y, ew, eh, tick());
+                    t += 30;
+                    vp.button(t, btn, wl_pointer::ButtonState::Pressed);
+                    vp.frame();
+                    flush(&mut queue);
+                    sleep(Duration::from_millis(hold));
+                    t += hold as u32;
+                    vp.button(t, btn, wl_pointer::ButtonState::Released);
+                    vp.frame();
+                    flush(&mut queue);
+                }
+                None => {
+                    click_at(&vp, x, y, btn, ew, eh, &mut t);
+                    flush(&mut queue);
+                }
+            }
         }
         "jclick" => {
             // press, jitter by (dx,dy) while held, release — simulates the
