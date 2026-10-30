@@ -2,6 +2,30 @@
 
 本文件收集定位界面问题的工具。取证要一直做到能写出 `AGENTS.md`「工作方式」要求的根因和影响面，现象消失不等于查完。
 
+## 运行环境
+
+`verify.sh`、`bench.sh`、`debug-smoke.sh`、`repro-hover-crash.sh` 和 `lint.sh` 都通过 `Scripts/test/lib/pkgenv.sh` 取得 quickshell、sway、grim、qmllint 等工具，由 `NOSD_PKG_BACKEND` 选择来源：
+
+- `guix`：`guix shell <各脚本自己的包清单>`。Guix 开发机的默认值。
+- `nix`：`Scripts/test/lib/testenv.nix` 定义的一个超集环境，nixpkgs 版本由仓库的 `flake.lock` 锁定。给 Nix 主机和云端容器（agent 运行的环境）用。脚本的 guix 包清单加了包时，在 `testenv.nix` 里补上对应的 nixpkgs 包，行尾注释写 guix 包名。
+- `auto`（默认）：有 `guix` 用 guix，否则有 `nix` 用 nix。
+
+`lint.sh` 在本机找不到 `qmllint` 时，会自动在 nix 环境里重跑自己。
+
+机器上没有 GPU 渲染节点（`/dev/dri/renderD*`）时，两种后端都会让 sway 改用 wlroots 的 pixman 渲染器，让 shell 改用 Mesa llvmpipe。阴影、模糊等着色器效果照常渲染，只是更慢。云端容器就是这种情况。
+
+在新的容器里准备环境：
+
+```sh
+# nix 已装好时跳过这步（/nix 存在、`nix --version` 有输出）
+curl -L https://nixos.org/nix/install | sh -s -- --no-daemon
+cargo build --release --manifest-path tools/nosd-helpers/Cargo.toml   # vinput 和守护进程，just tools 的一部分
+Scripts/dev/lint.sh                                                    # 第一次运行会构建 nix 环境
+Scripts/test/verify.sh probe --scenes idle,control-center              # 确认能出图
+```
+
+容器里没有 `just`，`justfile` 的配方直接照抄命令运行。
+
 ## 打开调试
 
 调试模式有四个等价入口：设置 → 关于 → 调试开关；关于页 logo 连点 8 次；`qs ipc call debug toggle`；启动前设置 `NOSD_DEBUG=1`。查启动期问题只能用最后一种。

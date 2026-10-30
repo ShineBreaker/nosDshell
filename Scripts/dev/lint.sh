@@ -27,6 +27,19 @@ WORK="${NOSD_VERIFY_DIR:-/tmp/nosd-verify}"
 MIRROR="$WORK/qmlimp"
 mkdir -p "$WORK/logs"
 
+# No qmllint on this host (no guix home, no distro Qt): rerun the whole
+# script inside the nix test environment, which carries qmllint and the
+# quickshell qml modules (Scripts/test/lib/pkgenv.sh).
+if [ -z "${QMLLINT:-}" ] && [ -z "${NOSD_LINT_IN_ENV:-}" ] \
+  && [ ! -x "$HOME/.guix-home/profile/bin/qmllint" ] && ! command -v qmllint > /dev/null; then
+  # shellcheck source=../test/lib/pkgenv.sh
+  . "$REPO/Scripts/test/lib/pkgenv.sh"
+  if [ "$(nosd_pkg_backend)" = nix ]; then
+    NOSD_LINT_IN_ENV=1 nosd_pkg_run "" "$0" "$@"
+    exit $?
+  fi
+fi
+
 # --- repo consistency checks ---------------------------------------------
 FAIL=0
 for check in check-settings-keys check-translations check-popup-motion check-color-motion check-locale-format check-docs-sync check-groove-separators check-launch-path check-layer-namespaces check-wheel-accepted check-migration-registry; do
@@ -44,14 +57,14 @@ fi
 
 QMLLINT="${QMLLINT:-$HOME/.guix-home/profile/bin/qmllint}"
 [ -x "$QMLLINT" ] || QMLLINT=$(command -v qmllint) || { echo "qmllint not found" >&2; exit 2; }
-QTQML="${QTQML:-$HOME/.guix-home/profile/lib/qt6/qml}"
+QTQML="${QTQML:-${NOSD_QTQML:-$HOME/.guix-home/profile/lib/qt6/qml}}"
 [ -d "$QTQML" ] || QTQML=/usr/lib/qt6/qml   # distro layout fallback (CI containers)
 [ -d "$QTQML" ] || QTQML=""
 
 # upstream quickshell qml dir; noctalia-qs kept as fallback for comparison.
 # QSQML env override wins (CI passes the distro package's lib/qt6/qml);
 # otherwise ask guix only when it exists.
-QSQML="${QSQML:-}"
+QSQML="${QSQML:-${NOSD_QSQML:-}}"
 if [ -z "$QSQML" ] && command -v guix >/dev/null; then
   for pkg in quickshell noctalia-qs; do
     d=$(guix build "$pkg" 2>/dev/null | tail -1)/lib/qt6/qml

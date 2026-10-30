@@ -316,7 +316,9 @@ export WORK REPO LOG METRICS
 # stdout is reserved for the metric lines re-emitted below; everything the
 # inner run prints (including dbus-activated helpers) already goes to stderr
 # or log files.
-guix shell $PKGS -- bash "$INNER" >&2
+# shellcheck source=lib/pkgenv.sh
+. "$SCRIPT_DIR/lib/pkgenv.sh"
+nosd_pkg_run "$PKGS" bash "$INNER" >&2
 STATUS=$?
 if [ "$STATUS" -ne 0 ] || [ ! -s "$METRICS" ]; then
   echo "FATAL: benchmark round failed (status $STATUS), see $WORK/logs/" >&2

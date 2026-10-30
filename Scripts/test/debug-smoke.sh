@@ -150,7 +150,9 @@ INNEREOF
 chmod +x "$INNER"
 
 export WORK REPO LOG NOSD_CONFIG_DIR NOSD_CACHE_DIR
-guix shell ${QS_PKG:-quickshell} sway grim dbus foot pipewire wireplumber \
-  font-google-noto adwaita-icon-theme qtwayland qtmultimedia qt5compat qtimageformats \
-  coreutils findutils grep gawk procps \
-  -- dbus-run-session -- bash "$INNER"
+# shellcheck source=lib/pkgenv.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/pkgenv.sh"
+nosd_pkg_run "${QS_PKG:-quickshell} sway grim dbus foot pipewire wireplumber
+  font-google-noto adwaita-icon-theme qtwayland qtmultimedia qt5compat qtimageformats
+  coreutils findutils grep gawk procps" \
+  dbus-run-session -- bash "$INNER"

@@ -44,7 +44,7 @@ nosDshell 是 Noctalia v4（基于 Quickshell/QML 的 Wayland shell）的分叉�
 
 ## 运行与校验
 
-开发机是 Guix，没有 Nix。`lefthook.yml` 声明的 pre-commit（QML 格式化、重建设置索引）要靠 `nix/shell.nix` 提供 lefthook，在本机不会执行，这两步要自己跑。
+开发机是 Guix，没有 Nix；云端容器里没有 Guix，有 Nix。测试脚本通过 `NOSD_PKG_BACKEND` 在两者之间切换，准备步骤见 `DEBUGGING.md`「运行环境」。`lefthook.yml` 声明的 pre-commit（QML 格式化、重建设置索引）要靠 `nix/shell.nix` 提供 lefthook，在 Guix 开发机上不会执行，这两步要自己跑。
 
 - shell 跑在上游 `quickshell` 上。上游缺少两个 PipeWire 释放后使用（UAF）修复，需要它们时用 `nosdshell.scm` 打包的 `quickshell-nosd`（我们的 fork）。上游 quickshell 也没有内置音频频谱，频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）。
 - 常用命令包在 `justfile` 里，运行 `just` 可以列出全部。`just run` 和 `just restore` 会替换用户正在使用的 shell，`just release` 会推送 tag 和 main，这三条只在用户要求时运行。

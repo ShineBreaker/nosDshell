@@ -70,7 +70,9 @@ font-google-noto font-google-noto-sans-cjk papirus-icon-theme adwaita-icon-theme
 qtwayland qtmultimedia qt5compat python coreutils findutils grep gawk procps"
 
 export WORK REPO LOG DURATION
-guix shell $PKGS -- bash <<'INNEREOF'
+# shellcheck source=lib/pkgenv.sh
+. "$(dirname "${BASH_SOURCE[0]}")/lib/pkgenv.sh"
+nosd_pkg_run "$PKGS" bash <<'INNEREOF'
 set -uo pipefail
 cd "$WORK"
 

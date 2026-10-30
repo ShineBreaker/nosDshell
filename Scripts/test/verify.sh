@@ -52,7 +52,8 @@
 #   desktopWidgets, location, systemMonitor, plugin
 #
 # Runs under upstream `quickshell` by default; set QS_PKG=noctalia-qs to
-# compare against the (archived) fork. All packages come from `guix shell` —
+# compare against the (archived) fork. Packages come from `guix shell` or the
+# nix test environment (NOSD_PKG_BACKEND, Scripts/test/lib/pkgenv.sh);
 # nothing is installed into any profile.
 #
 # Environment knobs:
@@ -2673,7 +2674,9 @@ INNEREOF
 chmod +x "$INNER"
 
 export WORK REPO OUT LOG SCENES_ARG SEED USER_SETTINGS
-guix shell $PKGS -- bash "$INNER"
+# shellcheck source=lib/pkgenv.sh
+. "$SCRIPT_DIR/lib/pkgenv.sh"
+nosd_pkg_run "$PKGS" bash "$INNER"
 STATUS=$?
 
 echo "================ error summary ($LOG) ================"
