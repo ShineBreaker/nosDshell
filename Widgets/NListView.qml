@@ -29,13 +29,8 @@ Item {
   // scroller.
   readonly property bool wheelScrollable: horizontalOverflows || contentOverflows
 
-  property bool showGradientMasks: true
-  property color gradientColor: Colors.mSurfaceVariant
-  // A fully transparent gradientColor switches the edge hint from "paint
-  // surface color over the rows" to "fade the rows themselves out" — the only
-  // fade that can end in nothing on a translucent surface.
-  readonly property bool _fadeToTransparent: gradientColor.a === 0
-  property int gradientHeight: 16
+  // Non-linear edge fade where more content scrolls (DESIGN §1.11)
+  property bool edgeFade: true
   property bool reserveScrollbarSpace: true
 
   // Keep scrollbars visible whenever overflow exists (without forcing visibility when not scrollable)
@@ -258,126 +253,20 @@ Item {
   Component.onCompleted: {
     _wheelTargetY = listView.contentY;
     _wheelTargetX = listView.contentX;
-    createGradients();
   }
 
-  // Dynamically create gradient overlays
-  function createGradients() {
-    if (!showGradientMasks || root._fadeToTransparent)
-      return;
-
-    Qt.createQmlObject(`
-      import QtQuick
-      import qs.Commons
-      Rectangle {
-        x: 0
-        y: 0
-        width: root.availableWidth
-        height: root.gradientHeight
-        z: 1
-        visible: root.showGradientMasks && root.contentOverflows
-        opacity: {
-          if (listView.contentY <= 1) return 0;
-          if (listView.currentItem && listView.currentItem.y - listView.contentY < root.gradientHeight) return 0;
-          return 1;
-        }
-        Behavior on opacity {
-          NAnim { duration: Style.motionPointer; curve: "swift" }
-        }
-        gradient: Gradient {
-          GradientStop { position: 0.0; color: root.gradientColor }
-          GradientStop { position: 1.0; color: "transparent" }
-        }
-      }
-    `, root, "topGradient");
-
-    Qt.createQmlObject(`
-      import QtQuick
-      import qs.Commons
-      Rectangle {
-        x: 0
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: -1
-        width: root.availableWidth
-        height: root.gradientHeight + 1
-        z: 1
-        visible: root.showGradientMasks && root.contentOverflows
-        opacity: {
-          if (listView.contentY + listView.height >= listView.contentHeight - 1) return 0;
-          if (listView.currentItem && listView.currentItem.y + listView.currentItem.height > listView.contentY + listView.height - root.gradientHeight) return 0;
-          return 1;
-        }
-        Behavior on opacity {
-          NAnim { duration: Style.motionPointer; curve: "swift" }
-        }
-        gradient: Gradient {
-          GradientStop { position: 0.0; color: "transparent" }
-          GradientStop { position: 1.0; color: root.gradientColor }
-        }
-      }
-    `, root, "bottomGradient");
-  }
-
-  // Fade-out mask used when gradientColor is transparent: a full-size opaque
-  // field whose edge zones turn transparent under the same show/hide rules as
-  // the overlay gradients, so rows dissolve instead of being painted over.
-  Item {
-    id: fadeMask
-    opacity: 0
-    layer.enabled: true
-    layer.smooth: true
-    width: listView.width
-    height: listView.height
-
-    readonly property bool topFade: {
-      if (!root.contentOverflows)
-        return false;
-      if (listView.contentY <= 1)
-        return false;
-      if (listView.currentItem && listView.currentItem.y - listView.contentY < root.gradientHeight)
-        return false;
-      return true;
-    }
-    readonly property bool bottomFade: {
-      if (!root.contentOverflows)
-        return false;
-      if (listView.contentY + listView.height >= listView.contentHeight - 1)
-        return false;
-      if (listView.currentItem && listView.currentItem.y + listView.currentItem.height > listView.contentY + listView.height - root.gradientHeight)
-        return false;
-      return true;
-    }
-    readonly property real fadeFrac: Math.min(0.4, (root.gradientHeight + 1) / Math.max(1, height))
-
-    Rectangle {
-      anchors.fill: parent
-      gradient: Gradient {
-        GradientStop {
-          position: 0.0
-          color: fadeMask.topFade ? "transparent" : "white"
-        }
-        GradientStop {
-          position: fadeMask.fadeFrac
-          color: "white"
-        }
-        GradientStop {
-          position: 1.0 - fadeMask.fadeFrac
-          color: "white"
-        }
-        GradientStop {
-          position: 1.0
-          color: fadeMask.bottomFade ? "transparent" : "white"
-        }
-      }
-    }
-  }
-
-  Component {
-    id: fadeEffect
-    MultiEffect {
-      maskEnabled: true
-      maskSource: fadeMask
-    }
+  // A selected row inside an edge zone keeps that edge solid. A row scrolled
+  // fully out of view does not: ListView defaults currentIndex to 0, so
+  // without the overlap test the first row would pin the top edge forever.
+  readonly property real _currentTop: listView.currentItem ? listView.currentItem.y - listView.contentY : -1
+  readonly property real _currentBottom: listView.currentItem ? _currentTop + listView.currentItem.height : -1
+  NScrollEdgeMask {
+    id: edgeMask
+    anchors.fill: listView
+    flickable: listView
+    active: root.edgeFade && root.contentOverflows
+    holdTop: root._currentBottom > 0 && root._currentTop < Style.scrollFadeSize
+    holdBottom: root._currentTop < listView.height && root._currentBottom > listView.height - Style.scrollFadeSize
   }
 
   ListView {
@@ -385,8 +274,8 @@ Item {
     anchors.fill: parent
     anchors.rightMargin: root.reserveScrollbarSpace ? root.handleWidth + Style.marginXS : 0
 
-    layer.enabled: root.showGradientMasks && root._fadeToTransparent
-    layer.effect: root._fadeToTransparent ? fadeEffect : null
+    layer.enabled: edgeMask.needed
+    layer.effect: edgeMask.effect
 
     clip: true
     boundsBehavior: Flickable.StopAtBounds

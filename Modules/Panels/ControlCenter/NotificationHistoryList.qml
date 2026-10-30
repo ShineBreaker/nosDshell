@@ -454,7 +454,6 @@ Item {
         // marginS and blow a hole between the day sections.
         spacing: 0
         reuseItems: true
-        gradientColor: "transparent"
         reserveScrollbarSpace: false
         boundsBehavior: Flickable.StopAtBounds
         model: root.descriptors

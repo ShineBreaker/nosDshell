@@ -480,6 +480,8 @@ Singleton {
   // slides this far toward the screen edge as its slot collapses.
   readonly property real stripExitScale: 0.5
   readonly property int stripEdgeSlide: 8
+  // Scroll edge fade zone (DESIGN §1.11, cds-theme.css:196)
+  readonly property int scrollFadeSize: 28
 
   // Text caret blink half-period (ms): a convention of text fields, not a
   // motion; it is not stretched by animationSpeed. Smooth blinking stops

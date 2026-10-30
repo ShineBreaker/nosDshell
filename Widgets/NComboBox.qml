@@ -282,7 +282,6 @@ NDccRow {
       contentItem: NListView {
         id: listView
         property var comboBox: combo
-        gradientColor: "transparent"
         model: combo.popup.visible ? root._modelRows : null
         highlightMoveDuration: 0
         // Overlay scrollbar: a permanent empty gutter would offset the

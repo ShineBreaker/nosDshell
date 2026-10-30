@@ -78,7 +78,6 @@ Popup {
         Layout.fillHeight: true
         Layout.minimumHeight: 100
         horizontalPolicy: ScrollBar.AlwaysOff
-        gradientColor: Colors.maskShell
 
         Loader {
           id: settingsLoader

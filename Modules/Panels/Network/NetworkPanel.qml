@@ -243,7 +243,6 @@ SmartPanel {
           horizontalPolicy: ScrollBar.AlwaysOff
           verticalPolicy: ScrollBar.AsNeeded
           reserveScrollbarSpace: false
-          gradientColor: Colors.popupShell
 
           ColumnLayout {
             id: contentColumn

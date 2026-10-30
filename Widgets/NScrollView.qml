@@ -18,9 +18,8 @@ ScrollView {
   property int boundsBehavior: Flickable.StopAtBounds
   readonly property bool verticalScrollable: (contentItem.contentHeight > contentItem.height) || (verticalPolicy == ScrollBar.AlwaysOn)
   readonly property bool horizontalScrollable: (contentItem.contentWidth > contentItem.width) || (horizontalPolicy == ScrollBar.AlwaysOn)
-  property bool showGradientMasks: true
-  property color gradientColor: Colors.mSurfaceVariant
-  property int gradientHeight: 16
+  // Non-linear edge fade where more content scrolls (DESIGN §1.11)
+  property bool edgeFade: true
   property bool reserveScrollbarSpace: true
   property real userRightPadding: 0
   // Keep scrollbars visible whenever overflow exists (without forcing visibility when not scrollable)
@@ -72,58 +71,36 @@ ScrollView {
   implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset, contentWidth + leftPadding + rightPadding)
   implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset, contentHeight + topPadding + bottomPadding)
 
+  // The edge-fade mask rides in the background slot (a plain child of a
+  // ScrollView would become scroll content) and lines up with the flickable.
+  // The layer goes on the flickable, not on the ScrollView: the mask texture
+  // must not be a descendant of the layered item, or the layer samples itself
+  // and stops repainting after the first frame.
+  background: Item {
+    NScrollEdgeMask {
+      id: edgeMask
+      x: root.contentItem.x - parent.x
+      y: root.contentItem.y - parent.y
+      width: root.contentItem.width
+      height: root.contentItem.height
+      flickable: root.contentItem
+      active: root.edgeFade
+    }
+  }
+  Binding {
+    target: root.contentItem.layer
+    property: "enabled"
+    value: edgeMask.needed
+  }
+  Binding {
+    target: root.contentItem.layer
+    property: "effect"
+    value: edgeMask.effect
+  }
+
   // Configure the internal flickable when it becomes available
   Component.onCompleted: {
     configureFlickable();
-    createGradients();
-  }
-
-  // Dynamically create gradient overlays to avoid interfering with ScrollView content management
-  function createGradients() {
-    if (!showGradientMasks)
-      return;
-
-    Qt.createQmlObject(`
-      import QtQuick
-      import qs.Commons
-      Rectangle {
-        x: root.leftPadding
-        y: root.topPadding
-        width: root.availableWidth
-        height: root.gradientHeight
-        z: 1
-        visible: root.showGradientMasks && root.verticalScrollable
-        opacity: root.contentItem.contentY <= 1 ? 0 : 1
-        Behavior on opacity {
-          NAnim { duration: Style.motionPointer; curve: "swift" }
-        }
-        gradient: Gradient {
-          GradientStop { position: 0.0; color: root.gradientColor }
-          GradientStop { position: 1.0; color: "transparent" }
-        }
-      }
-    `, root, "topGradient");
-
-    Qt.createQmlObject(`
-      import QtQuick
-      import qs.Commons
-      Rectangle {
-        x: root.leftPadding
-        y: root.height - root.bottomPadding - height + 1
-        width: root.availableWidth
-        height: root.gradientHeight + 1
-        z: 1
-        visible: root.showGradientMasks && root.verticalScrollable
-        opacity: (root.contentItem.contentY + root.contentItem.height >= root.contentItem.contentHeight - 1) ? 0 : 1
-        Behavior on opacity {
-          NAnim { duration: Style.motionPointer; curve: "swift" }
-        }
-        gradient: Gradient {
-          GradientStop { position: 0.0; color: "transparent" }
-          GradientStop { position: 1.0; color: root.gradientColor }
-        }
-      }
-    `, root, "bottomGradient");
   }
 
   // Reference to the internal Flickable for wheel handling

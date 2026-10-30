@@ -228,7 +228,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        gradientColor: Colors.maskShell
         ScrollBar.horizontal.visible: false
 
         ColumnLayout {
@@ -407,7 +406,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        gradientColor: Colors.maskShell
         ScrollBar.horizontal.visible: false
 
         ControlCenterDetailPages {

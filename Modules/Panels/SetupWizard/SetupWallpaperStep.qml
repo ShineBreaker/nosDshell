@@ -94,7 +94,7 @@ ColumnLayout {
       anchors.fill: parent
       horizontalPolicy: ScrollBar.AsNeeded
       verticalPolicy: ScrollBar.AlwaysOff
-      showGradientMasks: false
+      edgeFade: false
       reserveScrollbarSpace: false
 
       RowLayout {

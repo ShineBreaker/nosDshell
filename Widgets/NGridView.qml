@@ -25,13 +25,8 @@ Item {
   }
   readonly property bool contentOverflows: gridView.contentHeight > gridView.height
 
-  // Gradient properties
-  property bool showGradientMasks: true
-  property color gradientColor: Colors.mSurfaceVariant
-  // Fully transparent gradientColor: fade the rows out (OpacityMask) instead
-  // of painting an opaque surface color over them — see NListView.
-  readonly property bool _fadeToTransparent: gradientColor.a === 0
-  property int gradientHeight: 16
+  // Non-linear edge fade where more content scrolls (DESIGN §1.11)
+  property bool edgeFade: true
   property bool reserveScrollbarSpace: true
 
   // Keep scrollbars visible whenever overflow exists (without forcing visibility when not scrollable)
@@ -274,102 +269,16 @@ Item {
 
   Component.onCompleted: {
     _wheelTargetY = gridView.contentY;
-    createGradients();
   }
 
-  // Dynamically create gradient overlays
-  function createGradients() {
-    if (!showGradientMasks || root._fadeToTransparent)
-      return;
-
-    Qt.createQmlObject(`
-      import QtQuick
-      import qs.Commons
-      Rectangle {
-        x: 0
-        y: 0
-        width: root.availableWidth
-        height: root.gradientHeight
-        z: 1
-        visible: root.showGradientMasks && root.contentOverflows
-        opacity: (gridView.contentY <= 1 || root.selectionOnFirstVisibleRow) ? 0 : 1
-        Behavior on opacity {
-          NAnim { duration: Style.motionPointer; curve: "swift" }
-        }
-        gradient: Gradient {
-          GradientStop { position: 0.0; color: root.gradientColor }
-          GradientStop { position: 1.0; color: "transparent" }
-        }
-      }
-    `, root, "topGradient");
-
-    Qt.createQmlObject(`
-      import QtQuick
-      import qs.Commons
-      Rectangle {
-        x: 0
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: -1
-        width: root.availableWidth
-        height: root.gradientHeight + 1
-        z: 1
-        visible: root.showGradientMasks && root.contentOverflows
-        opacity: ((gridView.contentY + gridView.height >= gridView.contentHeight - 1) || root.selectionOnLastVisibleRow) ? 0 : 1
-        Behavior on opacity {
-          NAnim { duration: Style.motionPointer; curve: "swift" }
-        }
-        gradient: Gradient {
-          GradientStop { position: 0.0; color: "transparent" }
-          GradientStop { position: 1.0; color: root.gradientColor }
-        }
-      }
-    `, root, "bottomGradient");
-  }
-
-  // Fade-out mask for the transparent-gradientColor mode (NListView sibling):
-  // full-size opaque field whose edge zones turn transparent under the same
-  // show/hide rules as the overlay gradients.
-  Item {
-    id: fadeMask
-    opacity: 0
-    layer.enabled: true
-    layer.smooth: true
-    width: gridView.width
-    height: gridView.height
-
-    readonly property bool topFade: root.contentOverflows && !(gridView.contentY <= 1 || root.selectionOnFirstVisibleRow)
-    readonly property bool bottomFade: root.contentOverflows && !((gridView.contentY + gridView.height >= gridView.contentHeight - 1) || root.selectionOnLastVisibleRow)
-    readonly property real fadeFrac: Math.min(0.4, (root.gradientHeight + 1) / Math.max(1, height))
-
-    Rectangle {
-      anchors.fill: parent
-      gradient: Gradient {
-        GradientStop {
-          position: 0.0
-          color: fadeMask.topFade ? "transparent" : "white"
-        }
-        GradientStop {
-          position: fadeMask.fadeFrac
-          color: "white"
-        }
-        GradientStop {
-          position: 1.0 - fadeMask.fadeFrac
-          color: "white"
-        }
-        GradientStop {
-          position: 1.0
-          color: fadeMask.bottomFade ? "transparent" : "white"
-        }
-      }
-    }
-  }
-
-  Component {
-    id: fadeEffect
-    MultiEffect {
-      maskEnabled: true
-      maskSource: fadeMask
-    }
+  // A keyboard-selected cell on the first/last visible row keeps that edge solid.
+  NScrollEdgeMask {
+    id: edgeMask
+    anchors.fill: gridView
+    flickable: gridView
+    active: root.edgeFade && root.contentOverflows
+    holdTop: root.selectionOnFirstVisibleRow
+    holdBottom: root.selectionOnLastVisibleRow
   }
 
   GridView {
@@ -377,8 +286,8 @@ Item {
     anchors.fill: parent
     anchors.rightMargin: root.reserveScrollbarSpace ? root.handleWidth + Style.marginXS : 0
 
-    layer.enabled: root.showGradientMasks && root._fadeToTransparent
-    layer.effect: root._fadeToTransparent ? fadeEffect : null
+    layer.enabled: edgeMask.needed
+    layer.effect: edgeMask.effect
 
     move: root.animateMovement ? moveTransitionImpl : null
     displaced: root.animateMovement ? displacedTransitionImpl : null

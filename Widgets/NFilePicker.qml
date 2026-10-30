@@ -462,7 +462,6 @@ Popup {
           model: filteredModel
           visible: filePickerPanel.viewMode
           reuseItems: true
-          gradientColor: "transparent"
 
           property int columns: Math.max(1, Math.floor(availableWidth / 120))
           property int itemSize: Math.floor((availableWidth - leftMargin - rightMargin - (columns * Style.marginS)) / columns)
@@ -660,7 +659,6 @@ Popup {
           anchors.margins: Style.marginS
           model: filteredModel
           visible: !filePickerPanel.viewMode
-          gradientColor: "transparent"
 
           delegate: Rectangle {
             id: listItem

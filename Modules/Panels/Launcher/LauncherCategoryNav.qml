@@ -89,7 +89,6 @@ Item {
     id: navList
     anchors.fill: parent
     spacing: 0
-    gradientColor: "transparent"
     model: root.categories
     currentIndex: root.currentIndex
     interactive: false

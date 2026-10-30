@@ -630,7 +630,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        showGradientMasks: false
         ScrollBar.vertical.visible: false
         // The flickable must never grab presses: a real mouse jitters a few
         // pixels during a click, the flickable interprets it as a drag start
@@ -888,8 +887,6 @@ Item {
             horizontalPolicy: ScrollBar.AlwaysOff
             verticalPolicy: ScrollBar.AsNeeded
             reserveScrollbarSpace: false
-            showGradientMasks: false
-            gradientColor: Colors.maskShell
 
             // User scroll cancels programmatic scroll + pending re-snap and
             // re-syncs the rail highlight on every step so the accent follows
@@ -1316,8 +1313,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        showGradientMasks: false
-        gradientColor: Colors.maskShell
       }
 
       Component.onCompleted: {
