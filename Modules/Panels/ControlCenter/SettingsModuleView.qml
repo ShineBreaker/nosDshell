@@ -1044,6 +1044,9 @@ Item {
 
                       Connections {
                         id: readyConn
+                        // Bound in tabLoader.onLoaded. The default target is
+                        // the parent slot, which has no initialized signal.
+                        target: null
                         enabled: false
                         function onInitializedChanged() {
                           if (readyConn.target && readyConn.target.initialized) {

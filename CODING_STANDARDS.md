@@ -100,6 +100,7 @@
 - 可交互 item 上的 `layer.enabled` 不要绑到会在交互过程中翻转的状态（滚动位置、悬停、选中项、动画中的尺寸）。开关一次 layer 就会销毁并重建盖在 item 上的 effect item，翻转恰好落在按下与松开之间时，这次点击整个丢失，不报错，只能统计复现。layer 的开关条件只用变化缓慢的结构性状态（例如"内容能否滚动"），随交互变化的部分放进 effect 的参数里。再有，遮罩源不能是被 layer 的 item 自己的后代，否则 layer 会采样自身，第一帧之后不再重绘。例子见 `Widgets/NScrollEdgeMask.qml` 的 `needed`，以及 `NScrollView` 把 layer 放在内层 Flickable 上的做法。
 - `MouseArea` 的 `onWheel` 里"放行"（让下层 item 继续收到滚轮）必须显式写 `event.accepted = false` 再 `return`，只 `return` 或条件不命中让它掉到函数末尾都不算放行：niri 的滚轮事件到达时默认 accepted，事件就此终止，sway 下却会穿透，差异只在 niri 上暴露。所有盖在可滚内容上、只想旁观滚轮的 `NoButton` 覆盖层都遵守这条；消费滚轮时显式 `event.accepted = true`。例子见 `Widgets/NScrollView.qml` 的滚轮覆盖层和 `SettingsModuleView` 的 takeover 层。
 - `ScrollView`（包括 `NScrollView`）里只有一个内容子项时，它按这个子项的隐式尺寸推算 `contentWidth` 和 `contentHeight`。内容子项有两个或更多时（比如内容列旁边再放一个旁观滚轮的覆盖层），推算结果不可靠，可能读出 0，滚动和边缘淡出随之失效且不报错。这种情况下显式写 `contentWidth` 和 `contentHeight`。`lint.sh` 里的 `check-scrollview-content.py` 拦截缺 `contentHeight` 的写法。例子见 `SettingsModuleView` 的 `settingsContentScroll`。
+- `Connections` 的 `target` 要等运行时才赋值时，声明处写 `target: null`。不写时 `target` 默认是父项，父项没有对应信号就会报 `Detected function "onXxx" in Connections element`。
 
 ## 界面文字
 
