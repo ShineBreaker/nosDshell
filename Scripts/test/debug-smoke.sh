@@ -83,7 +83,13 @@ for _ in $(seq 1 100); do
   kill -0 "$QS_PID" 2>/dev/null || { echo "FAIL: qs exited early"; tail -20 "$LOG"; exit 1; }
   sleep 0.2
 done
-sleep 2
+# IPC answers before the dock has finished loading; on a software-rendered
+# host (no GPU, see DEBUGGING.md「运行环境」) that gap is several seconds, so
+# wait for the dock root itself instead of a fixed sleep.
+for _ in $(seq 1 60); do
+  qs -p "$REPO" ipc call debug status 2>/dev/null | grep -q "roots=.*dock-" && break
+  sleep 0.5
+done
 call() { echo "\$ qs ipc call debug $*"; qs -p "$REPO" ipc call debug "$@" 2>&1; echo; }
 
 FAIL=0
@@ -94,7 +100,8 @@ check() { # check <desc> <expected-extended-regex> <haystack>
 echo "=== debug.status (pre-toggle) ==="
 OUT=$(call status)
 check "isDebug reported" "isDebug=" "$OUT"
-check "roots registered unconditionally" "roots=dock-" "$OUT"
+# roots= is a comma list in registration order (cc-/main- register first)
+check "roots registered unconditionally" "roots=.*dock-" "$OUT"
 
 echo "=== debug.toggle on ==="
 call toggle
@@ -109,7 +116,7 @@ check "dock root registered" "dock-HEADLESS" "$OUT"
 echo "  note: bar- roots exist only in efficient mode (fashion = dock only)"
 
 echo "=== debug.tree dock ==="
-OUT=$(call tree dock-HEADLESS-1)
+OUT=$(call tree dock-HEADLESS-1 8)
 check "tree walks children" "(QQuickItem|Item_QML|MouseArea|Rectangle)" "$OUT"
 check "tree has geometry" "[0-9]+x[0-9]+" "$OUT"
 
