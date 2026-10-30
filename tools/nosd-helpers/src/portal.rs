@@ -35,6 +35,18 @@
 //! (NOAA sunrise equation, zenith 90.833°); `usegeoclue` is honoured as
 //! "unsupported, falls back to lat/lng"; `pollinterval` is ignored. If
 //! no coordinates are configured the daemon serves state only.
+//!
+//! The solar timer owns policy only while the shell cedes it:
+//! `portal scheduler on|off` writes $XDG_STATE_HOME/nosdshell/
+//! solar-scheduler (absent = on, so standalone `portal run` keeps darkman
+//! semantics) and pokes RefreshScheduler so a schedulingMode change lands
+//! on the current tick. The shell writes it on iff its own
+//! schedulingMode is "system"; in manual/location/off the shell is the
+//! policy owner and daemon asserts stay off — two schedulers alternating
+//! on the same state is the 06:07-vs-08:30 fight this flag ends.
+//! Asserts also only follow a real solar boundary, so a manual
+//! `darkman set` holds until the next event instead of being stomped at
+//! the next 15-minute recheck (upstream darkman behaviour).
 
 use std::collections::HashMap;
 use std::fs;
@@ -119,12 +131,29 @@ fn hooks_flag_enabled() -> bool {
     }
 }
 
-fn write_hooks_flag(enabled: bool) -> Result<(), String> {
-    if let Some(parent) = hooks_flag_file().parent() {
+// Policy-owner flag for the solar timer, written by the shell via
+// `portal scheduler on|off`: on only while colorSchemes.schedulingMode is
+// "system" (the shell follows the session portal state); every other mode
+// makes the shell's own schedule the authority and daemon asserts stay
+// off. Absent file = on: standalone `portal run` with lat/lng keeps
+// darkman's solar default.
+fn scheduler_flag_file() -> PathBuf {
+    state_dir().join("solar-scheduler")
+}
+
+fn scheduler_flag_enabled() -> bool {
+    match fs::read_to_string(scheduler_flag_file()) {
+        Ok(s) => !matches!(s.trim(), "0" | "off" | "false"),
+        Err(_) => true,
+    }
+}
+
+fn write_flag(file: PathBuf, enabled: bool) -> Result<(), String> {
+    if let Some(parent) = file.parent() {
         let _ = fs::create_dir_all(parent);
     }
-    fs::write(hooks_flag_file(), if enabled { "1" } else { "0" })
-        .map_err(|e| format!("write {}: {e}", hooks_flag_file().display()))
+    fs::write(&file, if enabled { "1" } else { "0" })
+        .map_err(|e| format!("write {}: {e}", file.display()))
 }
 
 fn home() -> PathBuf {
@@ -304,6 +333,25 @@ fn next_boundary<Tz: TimeZone>(lat: f64, lng: f64, now: DateTime<Tz>) -> Option<
     events.into_iter().min()
 }
 
+// Newest solar event at or before `now`. Solar events repeat daily outside
+// the polar regions, so the latest one is always within the last few days;
+// the 4-day window also covers a daemon that slept across a weekend.
+fn prev_boundary<Tz: TimeZone>(lat: f64, lng: f64, now: DateTime<Tz>) -> Option<DateTime<Tz>> {
+    let tz = now.timezone();
+    let mut events = Vec::new();
+    for offset in -3..=0 {
+        let date = now.date_naive() + Duration::days(offset);
+        for sunrise in [true, false] {
+            if let Some(local) = solar_time(date, lat, lng, sunrise, &tz) {
+                if local <= now {
+                    events.push(local);
+                }
+            }
+        }
+    }
+    events.into_iter().max()
+}
+
 // ---------------------------------------------------------------------------
 // Shared daemon state.
 
@@ -312,6 +360,9 @@ struct Daemon {
     conn: zbus::Connection,
     hooks: bool,
     forward: bool,
+    // Poked by RefreshScheduler so the solar loop re-evaluates the
+    // policy-owner flag on the current tick instead of the next ≤15-min one.
+    sched_kick: tokio::sync::Notify,
 }
 
 impl Daemon {
@@ -490,6 +541,14 @@ impl DarkmanApi {
             None => Err(fdo::Error::InvalidArgs(format!("unknown mode: {mode}"))),
         }
     }
+
+    // nosdshell extension (upstream darkman has no such member; compat
+    // clients ignore it): `portal scheduler` writes the flag file then
+    // pokes here so the solar loop honours a schedulingMode change on the
+    // current tick rather than the next ≤15-minute recheck.
+    async fn refresh_scheduler(&self) {
+        self.d.sched_kick.notify_one();
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -532,24 +591,40 @@ async fn own_name(conn: &zbus::Connection, name: &'static str, required: bool) -
 }
 
 async fn scheduler(d: Arc<Daemon>, lat: f64, lng: f64) {
+    // Asserts only while the shell cedes policy (solar-scheduler flag on),
+    // and only when a solar boundary newer than the last asserted one has
+    // passed: the <=15-minute recheck exists to catch missed boundaries
+    // (suspend/resume, DST), not to re-assert — a `darkman set` between
+    // boundaries must hold, matching upstream darkman.
+    let mut last_boundary: Option<DateTime<Local>> = None;
     loop {
         let now = Local::now();
-        let expected = expected_mode(lat, lng, now);
-        d.transition(expected).await;
+        if scheduler_flag_enabled() {
+            let boundary = prev_boundary(lat, lng, now);
+            if boundary.is_some() && boundary != last_boundary {
+                d.transition(expected_mode(lat, lng, now)).await;
+                last_boundary = boundary;
+            }
+        }
         let next = next_boundary(lat, lng, now);
         let wait = match next {
             Some(t) => (t - now).to_std().unwrap_or_default(),
             None => Duration::minutes(30).to_std().unwrap_or_default(),
         };
-        // Recheck at least every 15 minutes: picks up config.yaml edits,
-        // DST shifts and post-resume drift without a file watcher.
-        tokio::time::sleep(std::cmp::min(wait, std::time::Duration::from_secs(900))).await;
+        // Recheck at least every 15 minutes: picks up flag writes, DST
+        // shifts and post-resume drift without a file watcher.
+        // RefreshScheduler wakes the loop early through sched_kick.
+        tokio::select! {
+            _ = tokio::time::sleep(std::cmp::min(wait, std::time::Duration::from_secs(900))) => {}
+            _ = d.sched_kick.notified() => {}
+        }
     }
 }
 
 fn print_usage() -> ! {
     eprintln!("Usage: nosd-helpers portal <run|get|set|toggle> [dark|light]");
     eprintln!("       nosd-helpers portal hooks <on|off>");
+    eprintln!("       nosd-helpers portal scheduler <on|off>");
     std::process::exit(2);
 }
 
@@ -572,8 +647,15 @@ pub fn run(args: &[String]) -> i32 {
         // Local flag write, not a bus call: the flag must land even when the
         // daemon is not running yet so the next transition honours it.
         Some("hooks") => match args.get(1).map(String::as_str) {
-            Some("on") => write_hooks_flag(true),
-            Some("off") => write_hooks_flag(false),
+            Some("on") => write_flag(hooks_flag_file(), true),
+            Some("off") => write_flag(hooks_flag_file(), false),
+            _ => print_usage(),
+        },
+        // Same pattern: flag file lands without the daemon, the
+        // RefreshScheduler poke wakes a running one best-effort.
+        Some("scheduler") => match args.get(1).map(String::as_str) {
+            Some("on") => rt().block_on(client_scheduler(true)),
+            Some("off") => rt().block_on(client_scheduler(false)),
             _ => print_usage(),
         },
         _ => print_usage(),
@@ -627,6 +709,19 @@ async fn client_toggle() -> Result<(), String> {
         .map_err(|e| e.to_string())
 }
 
+async fn client_scheduler(enabled: bool) -> Result<(), String> {
+    write_flag(scheduler_flag_file(), enabled)?;
+    // Best effort: the flag file is authoritative, so a missing session bus
+    // or a not-yet-running daemon must not fail the command — the daemon
+    // re-reads the flag on its next tick either way.
+    if let Ok(conn) = zbus::Connection::session().await {
+        if let Ok(proxy) = mode_proxy(&conn).await {
+            let _ = proxy.call_method("RefreshScheduler", &()).await;
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -663,6 +758,24 @@ mod tests {
         assert!(next > now);
         // Solstice has both events within ~14h of each other.
         assert!(next - now < Duration::hours(26));
+    }
+
+    #[test]
+    fn prev_boundary_finds_latest_past_event() {
+        let (lat, lng) = (31.2304, 121.4737);
+        // Solstice late evening: the newest past boundary is today's
+        // ~19:02 sunset, not yesterday's.
+        let night = Shanghai.with_ymd_and_hms(2026, 6, 21, 23, 0, 0).unwrap();
+        let b = prev_boundary(lat, lng, night).expect("a boundary exists");
+        assert!(b <= night);
+        assert_eq!(b.date_naive(), night.date_naive());
+        assert!(b > night - Duration::hours(8), "boundary {b} too old");
+        // Pre-dawn: today's ~04:51 sunrise is still in the future, so the
+        // newest past boundary is yesterday's sunset.
+        let early = Shanghai.with_ymd_and_hms(2026, 6, 21, 4, 0, 0).unwrap();
+        let b = prev_boundary(lat, lng, early).expect("a boundary exists");
+        assert!(b <= early);
+        assert_eq!(b.date_naive(), NaiveDate::from_ymd_opt(2026, 6, 20).unwrap());
     }
 
     #[test]
@@ -735,6 +848,7 @@ async fn serve() -> Result<(), String> {
         conn: conn.clone(),
         hooks: true,
         forward: true,
+        sched_kick: tokio::sync::Notify::new(),
     });
 
     conn.object_server()

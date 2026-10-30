@@ -735,7 +735,8 @@ Noctalia 卡片的对应关系：
 ### 4.3 `nosd-helpers portal`
 
 - 作用：深色/浅色模式的对外权威面。单进程、单连接同时持有 `org.freedesktop.impl.portal.desktop.nosdshell`（portal Settings 后端：`Read`/`ReadAll`/`Version=1`/`SettingChanged`）、`nl.whynothugo.darkman`（darkman 兼容 API：可写 `Mode` 属性 + `ModeChanged` 信号）与 `org.freedesktop.impl.portal.desktop.darkman`（存量 `darkman.portal` 描述符的零配置别名）。`darkman get|set|toggle`、Emacs `self-theme` 等既有消费者无需改动；`~/.local/share/{dark,light}-mode.d/` 钩子目录语义与 darkman 一致。
-- 命令行：`nosd-helpers portal <run|get|set|toggle|hooks>`；状态持久化于 `~/.local/state/nosdshell/color-scheme`；`~/.config/darkman/config.yaml` 的 `lat`/`lng` 启用 NOAA 日出日落调度（`usegeoclue` 不支持，`dbusserver`/`portal` 可分别关掉对应总线名）。
+- 命令行：`nosd-helpers portal <run|get|set|toggle|hooks|scheduler>`；状态持久化于 `~/.local/state/nosdshell/color-scheme`；`~/.config/darkman/config.yaml` 的 `lat`/`lng` 启用 NOAA 日出日落调度（`usegeoclue` 不支持，`dbusserver`/`portal` 可分别关掉对应总线名）。
+- 调度权的单一所有者：任何时刻只有一个调度器能主动断言 color-scheme。`schedulingMode == "system"` 时 daemon 的太阳计时器是所有者（shell 跟随 portal）；其余模式（`off`/`manual`/`location`）shell 的所有者，daemon 只透传收到的写入，绝不自行断言。`DarkModeService` 经 `portal scheduler on|off` 把该选择写进 `~/.local/state/nosdshell/solar-scheduler` 标志文件（本地写，daemon 未起也生效；缺失 = on，保持独立 `portal run` 的 darkman 语义），并经 `RefreshScheduler` 总线方法即时唤醒调度循环。daemon 的太阳断言只在真正跨过日出/日落边界时发生：边界之间的 `darkman set` 手动覆盖一直保持到下个事件，与上游 darkman 一致。
 - 调用方式：`DarkModeService` 在每次 `darkMode` 变化时执行 `portal set`，并在 helpers 就绪时幂等拉起 `portal run`（进程内 flock + 总线名占有检查保证单实例）。portal 反方向（外部 `set`/`toggle`、太阳计时器）经 `SettingChanged` 广播，`schedulingMode: "system"` 的既有跟随逻辑天然接住，其他模式下由 daemon 侧 `nosdshell ipc call darkMode` 兜底写入。
 - `.d` 钩子开关：设置里的 `colorSchemes.runDarkmanHooks` 由 `DarkModeService` 经 `portal hooks on|off` 写成 `~/.local/state/nosdshell/darkman-hooks` 标志文件（本地写，不等守护进程在线）；daemon 在每次 transition 时重读，0/off/false 即跳过钩子目录（其余状态/信号/转发不受影响）。文件缺失等于开，保持 darkman 默认行为。
 - 工具缺失时 `pushPortal` 输出一次 `Logger.w` 并跳过；shell 自身主题切换不受影响，仅 portal 订阅者（GTK4/Electron 等）收不到通知。

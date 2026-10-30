@@ -38,9 +38,27 @@ Singleton {
     Quickshell.execDetached([TemplateRegistry.helpersBin, "portal", "run"]);
     root.pushPortal();
   }
+
+  // Policy ownership, one owner at a time: the daemon's own solar timer
+  // may assert only while the shell follows it (schedulingMode "system").
+  // In every other mode the shell's schedule — or the user's toggles — is
+  // the authority; leaving the daemon's timer armed makes the two
+  // schedulers overwrite the same state on alternating ticks, each
+  // overwrite running the {dark,light}-mode.d hooks. `portal scheduler`
+  // writes the flag locally (lands even before the daemon starts) and
+  // pokes the running daemon so a mode change applies on the current tick.
+  // Flag must land before the daemon's first scheduler tick, so this runs
+  // ahead of startPortal() on both entry points.
+  function pushSchedulerFlag() {
+    const cmd = TemplateRegistry.helperCmd("portal", ["scheduler", Settings.data.colorSchemes.schedulingMode === "system" ? "on" : "off"]);
+    if (cmd !== null)
+      Quickshell.execDetached(cmd);
+  }
+
   Connections {
     target: TemplateRegistry
     function onHelpersBinChanged() {
+      root.pushSchedulerFlag();
       root.startPortal();
       root.pushHooksFlag();
     }
@@ -48,6 +66,7 @@ Singleton {
   // TemplateRegistry may resolve helpers before this singleton is
   // instantiated, in which case no change signal fires.
   Component.onCompleted: {
+    root.pushSchedulerFlag();
     root.startPortal();
     root.pushHooksFlag();
   }
@@ -122,6 +141,7 @@ Singleton {
   Connections {
     target: Settings.data.colorSchemes
     function onSchedulingModeChanged() {
+      root.pushSchedulerFlag();
       root.update();
     }
   }
@@ -135,17 +155,33 @@ Singleton {
     }
   }
 
+  // The wall-clock time the armed timer is waiting for; 0 = nothing armed.
+  // scheduleNextMode is the only writer.
+  property double nextChangeTime: 0
+
   Timer {
     id: timer
     onTriggered: {
+      // Coarse QML timers may fire before the boundary (observed 2 s early
+      // on a 08:30 sunrise). Re-deriving then selects the phase that is
+      // still current and writes it — a real flip — after which the
+      // re-armed timer flips back at the boundary (the 08:29:58 dark ->
+      // 08:30:00 light pair, fanned out through portal set -> daemon
+      // transition -> hooks). Re-arm for the remainder instead; a second
+      // early fire just re-arms again until the wall clock is past the
+      // boundary.
+      const now = Date.now();
+      if (root.nextChangeTime > now) {
+        timer.interval = root.nextChangeTime - now + 250;
+        timer.restart();
+        return;
+      }
       // Re-derive from the wall clock instead of blindly writing the
-      // scheduled state: QML timers are coarse and may fire before the
-      // boundary, and the old write-then-update sequence let update()'s
+      // scheduled state: the old write-then-update sequence let update()'s
       // re-derivation reverse the flip within the same tick — the igniter
-      // of the dark/light oscillation at schedule boundaries, where every
-      // reversal fans out through portal set -> daemon transition -> hooks
-      // + ipc forward. The scheduled value survives only as the fallback
-      // when the weather needed to re-derive is unavailable.
+      // of the dark/light oscillation at schedule boundaries. The
+      // scheduled value survives only as the fallback when the weather
+      // needed to re-derive is unavailable.
       if (Settings.data.colorSchemes.schedulingMode == "location" && !LocationService.data.weather) {
         Settings.data.colorSchemes.darkMode = root.nextDarkModeState;
         return;
@@ -185,6 +221,7 @@ Singleton {
       // A pending scheduled flip from manual/location must not race the
       // system preference.
       timer.stop();
+      root.nextChangeTime = 0;
       if (!systemReadProc.running) {
         systemReadProc.running = true;
       }
@@ -192,6 +229,10 @@ Singleton {
         systemWatchProc.running = true;
       }
     } else {
+      // "off" (and any unknown value): the shell schedules nothing; a
+      // timer armed by a previous mode must not linger.
+      timer.stop();
+      root.nextChangeTime = 0;
       if (systemReadProc.running) {
         systemReadProc.running = false;
       }
@@ -375,9 +416,13 @@ Singleton {
     const nextChange = changes.find(change => change.time > now);
     if (nextChange) {
       root.nextDarkModeState = nextChange.darkMode;
+      root.nextChangeTime = nextChange.time;
       timer.interval = nextChange.time - now;
       timer.restart();
       Logger.d("DarkModeService", `Scheduled: darkmode=${nextChange.darkMode} in ${timer.interval} ms`);
+    } else {
+      root.nextChangeTime = 0;
+      timer.stop();
     }
   }
 }
