@@ -30,6 +30,7 @@ import qs.Services.Compositor
 import qs.Services.Debug
 import qs.Services.Power
 import qs.Services.UI
+import qs.Widgets
 
 /**
 * MainScreen - Single PanelWindow per screen that manages all panels and the bar
@@ -105,9 +106,12 @@ PanelWindow {
 
   Behavior on color {
     enabled: !PanelService.closedImmediately
-    ColorAnimation {
-      duration: isPanelClosing ? Style.motionPopupOut : Style.motionEnter
-      easing.type: isPanelClosing ? Easing.InCubic : Easing.OutCubic
+    // DESIGN §1.7 motionScrim: the dimmer behind a panel fades like the CDS
+    // dialog backdrop (ConfirmationDialog.tsx:79) and clears with the
+    // panel's own exit.
+    NColorAnim {
+      duration: isPanelClosing ? Style.motionPopupOut : Style.motionScrim
+      curve: "cssEaseOut"
     }
   }
 
@@ -483,15 +487,15 @@ PanelWindow {
       property real hiddenSlideY: (effectivelyHidden && Settings.data.dock.mode === "efficient") ? (barPosition === "top" ? -barHeight : (barPosition === "bottom" ? barHeight : 0)) : 0
 
       Behavior on hiddenSlideX {
-        NumberAnimation {
+        NAnim {
           duration: Style.motionPanel
-          easing.type: Easing.InOutCubic
+          curve: "out"
         }
       }
       Behavior on hiddenSlideY {
-        NumberAnimation {
+        NAnim {
           duration: Style.motionPanel
-          easing.type: Easing.InOutCubic
+          curve: "out"
         }
       }
 

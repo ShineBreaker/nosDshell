@@ -3,6 +3,7 @@ import QtQuick.Shapes
 import qs.Commons
 import qs.Modules.MainScreen.Backgrounds
 import qs.Services.UI
+import qs.Widgets
 
 /**
 * BarBackground - ShapePath component for rendering the bar background
@@ -128,9 +129,11 @@ ShapePath {
 
   Behavior on opacityFactor {
     enabled: bar && Settings.data.dock.mode !== "efficient"
-    NumberAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
+    // Same beat as BarContentWindow's legacy fade so the strip and its
+    // content leave together (DESIGN §1.7 motionPanel).
+    NAnim {
+      duration: Style.motionPanel
+      curve: "out"
     }
   }
 

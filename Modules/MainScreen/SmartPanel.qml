@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import qs.Commons
 import qs.Services.UI
+import qs.Widgets
 
 /**
 * SmartPanel for use within MainScreen
@@ -260,9 +261,9 @@ Item {
     // offset must snap to the enter position so the next open starts
     // displaced — same gating as the edge-sheet x Behavior below.
     enabled: root.useArrowPopup && root.isPanelVisible && !PanelService.closedImmediately
-    NumberAnimation {
+    NAnim {
       duration: root.isClosing ? Style.motionPopupOut : Style.motionPopupIn
-      easing.type: root.isClosing ? Easing.InCubic : Easing.OutCubic
+      curve: root.isClosing ? "cssEaseOut" : "snappy"
     }
   }
 
@@ -1066,12 +1067,13 @@ Item {
 
   Behavior on opacity {
     enabled: !PanelService.closedImmediately
-    NumberAnimation {
+    NAnim {
       id: opacityAnimation
-      // Arrow popups fade on the popup-motion tokens (DESIGN §1.7
-      // motionPopupIn/Out); panels keep the generic fast beat.
-      duration: root.useArrowPopup ? (root.isClosing ? Style.motionPopupOut : Style.motionPopupIn) : (root.isClosing ? Style.animationFaster : Style.animationFast)
-      easing.type: root.isClosing ? Easing.InCubic : Easing.OutCubic
+      // DESIGN §1.7: arrow popups fade with the popover recipe
+      // (motionPopupIn/Out); other panels fade in like a dialog once their
+      // size has grown halfway and fade out fast before they shrink.
+      duration: root.isClosing ? Style.motionPopupOut : (root.useArrowPopup ? Style.motionPopupIn : Style.motionDialogIn)
+      curve: root.isClosing ? "cssEaseOut" : (root.useArrowPopup ? "snappy" : "out")
 
       onRunningChanged: {
         // Safety: If animation didn't run (zero duration), handle immediately
@@ -1115,7 +1117,7 @@ Item {
   // Timer to trigger opacity fade at 50% of size animation
   Timer {
     id: opacityTrigger
-    interval: Style.animationNormal * 0.5
+    interval: Style.motionEnter * 0.5
     repeat: false
     onTriggered: {
       if (root.isPanelVisible) {
@@ -1127,7 +1129,7 @@ Item {
   // Watchdog timer for open sequence (safety mechanism)
   Timer {
     id: openWatchdogTimer
-    interval: Style.animationNormal * 3 // 3x normal animation time
+    interval: (Style.motionEnter + Style.motionPopupIn) * 3 // 3x the open sequence
     repeat: false
     onTriggered: {
       if (root.openWatchdogActive) {
@@ -1145,7 +1147,7 @@ Item {
   // Watchdog timer for close sequence (safety mechanism)
   Timer {
     id: closeWatchdogTimer
-    interval: Style.animationFast * 3 // 3x fast animation time
+    interval: (Style.motionPopupOut + Style.motionExit) * 3 // 3x the close sequence
     repeat: false
     onTriggered: {
       if (root.closeWatchdogActive && !root.closeFinalized) {
@@ -1465,9 +1467,10 @@ Item {
         // off-screen position must snap instantly — otherwise the Behavior
         // retargets mid-flight and the sheet sweeps across the screen.
         enabled: panelBackground.slidesAlongEdge && !PanelService.closedImmediately && root.isPanelVisible
-        NumberAnimation {
-          duration: Style.motionEnter
-          easing.type: Easing.OutCubic
+        NAnim {
+          // DESIGN §3.5.1: slide in on motionEnter, out on the shorter motionExit
+          duration: root.isClosing ? Style.motionExit : Style.motionEnter
+          curve: "out"
 
           onRunningChanged: {
             // Edge sheets have no size animation to serialize against, so the
@@ -1493,15 +1496,15 @@ Item {
 
       Behavior on width {
         enabled: !PanelService.closedImmediately
-        NumberAnimation {
+        NAnim {
           id: widthAnimation
           // Use 0ms if dimensions not initialized to prevent initial changes from animating
-          // During opening: use 0ms if not animating width, otherwise use normal duration
-          // During closing: use 0ms if not animating width, otherwise use fast duration
-          // During normal content resizing: always use normal duration
-          duration: !panelBackground.dimensionsInitialized ? 0 : (root.isOpening && !panelBackground.shouldAnimateWidth) ? 0 : root.isOpening ? Style.animationNormal : (root.isClosing && !panelBackground.shouldAnimateWidth) ? 0 : root.isClosing ? Style.animationFast : Style.animationNormal
-          // Size changes use InOutCubic (DESIGN §1.7 曲线词汇表)
-          easing.type: Easing.InOutCubic
+          // Opening grows on motionEnter, closing shrinks on motionExit, and
+          // content resizes in between use motionExpand; 0 when this axis does
+          // not animate.
+          duration: !panelBackground.dimensionsInitialized ? 0 : (root.isOpening && !panelBackground.shouldAnimateWidth) ? 0 : root.isOpening ? Style.motionEnter : (root.isClosing && !panelBackground.shouldAnimateWidth) ? 0 : root.isClosing ? Style.motionExit : Style.motionExpand
+          // DESIGN §1.7: growing and content resizes on "expand", the shrink on "out"
+          curve: root.isClosing ? "out" : "expand"
 
           onRunningChanged: {
             // Safety: Zero-duration animation handling
@@ -1523,15 +1526,15 @@ Item {
 
       Behavior on height {
         enabled: !PanelService.closedImmediately
-        NumberAnimation {
+        NAnim {
           id: heightAnimation
           // Use 0ms if dimensions not initialized to prevent initial changes from animating
-          // During opening: use 0ms if not animating height, otherwise use normal duration
-          // During closing: use 0ms if not animating height, otherwise use fast duration
-          // During normal content resizing: always use normal duration
-          duration: !panelBackground.dimensionsInitialized ? 0 : (root.isOpening && !panelBackground.shouldAnimateHeight) ? 0 : root.isOpening ? Style.animationNormal : (root.isClosing && !panelBackground.shouldAnimateHeight) ? 0 : root.isClosing ? Style.animationFast : Style.animationNormal
-          // Size changes use InOutCubic (DESIGN §1.7 曲线词汇表)
-          easing.type: Easing.InOutCubic
+          // Opening grows on motionEnter, closing shrinks on motionExit, and
+          // content resizes in between use motionExpand; 0 when this axis does
+          // not animate.
+          duration: !panelBackground.dimensionsInitialized ? 0 : (root.isOpening && !panelBackground.shouldAnimateHeight) ? 0 : root.isOpening ? Style.motionEnter : (root.isClosing && !panelBackground.shouldAnimateHeight) ? 0 : root.isClosing ? Style.motionExit : Style.motionExpand
+          // DESIGN §1.7: growing and content resizes on "expand", the shrink on "out"
+          curve: root.isClosing ? "out" : "expand"
 
           onRunningChanged: {
             // Safety: Zero-duration animation handling

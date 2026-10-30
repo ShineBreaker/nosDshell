@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
 import qs.Commons
+import qs.Widgets
 
 /**
 * ScreenCorners - Shape component for rendering screen corners
@@ -57,8 +58,9 @@ Item {
         // Smooth color animation (disabled during theme transitions to sync with Colors.qml)
         Behavior on fillColor {
           enabled: !Colors.isTransitioning
-          ColorAnimation {
-            duration: Style.animationFast
+          // Toggled by a setting, not the pointer: a state colour (§1.7 motionSwitch)
+          NColorAnim {
+            duration: Style.motionSwitch
           }
         }
 
