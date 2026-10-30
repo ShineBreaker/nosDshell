@@ -43,6 +43,8 @@ import qs.Widgets
 */
 Item {
   id: root
+  // Stable anchor for `debug set/get` (verify.sh cc-notif-focus).
+  objectName: "notifHistoryList"
 
   property var screen: null
   property var closeOnAction: null
@@ -638,8 +640,6 @@ Item {
             height: shown ? cardColumn.implicitHeight + Style.margin2S : 0
             radius: Style.radiusItem
             color: Colors.overlay("strong")
-            border.color: delegateItem.isFocused ? Colors.accent : "transparent"
-            border.width: Style.borderS
             visible: shown
 
             // Expand/collapse is a data-driven size change.
@@ -818,6 +818,14 @@ Item {
                   }
                 }
               }
+            }
+            // Keyboard focus (focusIndex is driven by the arrow keys only):
+            // the shared focus ring, on the card edge because the list clips.
+            NFocusRing {
+              anchors.fill: parent
+              radius: cardSurface.radius
+              outside: false
+              shown: delegateItem.isFocused
             }
           }
 
