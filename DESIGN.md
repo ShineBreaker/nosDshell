@@ -177,7 +177,7 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 | `snap` | cubic-bezier(.32, .72, 0, 1) | 分段滑块、页签指示条的吸附 |
 | `overshoot` | cubic-bezier(.34, 1.3, .64, 1)，约 +3% | 开关滑块、分类导航放大 |
 | `pop` | cubic-bezier(.34, 1.56, .64, 1)，约 +10% | 强调型出现（保留，目前无使用方） |
-| `pulse` | cubic-bezier(.4, 0, .2, 1) | 呼吸、脉动等循环 |
+| `pulse` | cubic-bezier(.4, 0, .2, 1) | 呼吸、脉动等循环；空闲时屏幕渐暗 |
 | `rise` / `fall` | cubic-bezier(.3, .7, .4, 1) / (0, 0, .2, 1) | 状态行抬升 / 气泡、OSD 退场 |
 | `cssEaseOut` | CSS `ease-out` = (0, 0, .58, 1) | 按下塌陷、弹出层退场 |
 | `release` | `--cds-btn-spring` 的 15 个关键点，+9% 回弹 | 按钮松手复位 |
@@ -216,8 +216,9 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 | `motionSettingsScroll` | 450 | swift | 位置 | 设置页导航跳转的长距离滚动 | `cds-theme.css:222` |
 | `motionSwing` | 1200 | Linear 关键帧 | ±8° 阻尼摆动 | dock 项 attention 摆动，每 ~2.2 s 重播 | `appswingeffectbuilder.h:87-118` |
 | `motionPulse` | 450（半周期） | pulse | 不透明度 | 装饰性脉动（拖放目标的高亮呼吸），`reduceMotion` 时停止 | `cds-theme.css:211,222` |
+| `motionBreathe` | 1500（半周期） | pulse | 缩放 | 慢速环境呼吸（首次设置向导的标志），`reduceMotion` 时停止 | `cds-theme.css:513`（3 s clay breathe） |
 | `motionStagger` | 30 ms/项，封顶 8 项 | — | 延时 | 同一帧里多个行项进出时按位次错峰 | `docs/v2` chip 级联（30 ms × min(i, 8)） |
-| 壁纸过渡 | 1000 | `wallpaper.transitionDuration` | 交叉淡化 | 壁纸切换（用户设置，0.5–10 s） | `fullscreenbackground.cpp:51-74` |
+| 壁纸过渡 | 1000 | pulse | 交叉淡化 | 壁纸切换（时长是用户设置 `wallpaper.transitionDuration`，0.5–10 s） | `fullscreenbackground.cpp:51-74` |
 
 非动画时长不进 Style 令牌，它们是用户可调设置：`osd.autoHideMs`（默认 1000，`dde-osd/manager.cpp:74`）与 `notifications.*UrgencyDuration`（低/普通/紧急 3/5/15 s，`bubble.cpp:514-517`）。
 

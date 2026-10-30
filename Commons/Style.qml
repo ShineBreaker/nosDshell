@@ -450,6 +450,14 @@ Singleton {
   readonly property int motionSwing: _motion(1200)
   // Half-period of decorative pulses (pulse curve), e.g. a drop-target glow
   readonly property int motionPulse: durSlow
+  // Half-period of a slow ambient breath (open-claude-ui cds-theme.css:513,
+  // the 3 s clay breathe), e.g. the setup wizard's logo
+  readonly property int motionBreathe: _motion(1500)
+  // Busy spinner revolution (a loop period, not a transition)
+  readonly property int spinPeriod: 1000
+  // Clock period driving ambient shader effects (weather card): a time base
+  // for the shader, not a motion; it stops under reduceMotion.
+  readonly property int ambientShaderPeriod: 300000
   // Per-row cascade delay between siblings entering/leaving in the same sync
   // (DESIGN §1.7). A delay, not a curve: single-item changes stay instant.
   readonly property int motionStagger: _motion(30)

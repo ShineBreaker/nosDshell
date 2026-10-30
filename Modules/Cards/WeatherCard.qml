@@ -42,11 +42,13 @@ NBox {
 
       // Animated time for shaders
       property real shaderTime: 0
-      NumberAnimation on shaderTime {
+      NAnim on shaderTime {
+        running: !Style.reduceMotion
         loops: Animation.Infinite
         from: 0
         to: root.isSnowing ? 900 : 3000
-        duration: 300000
+        duration: Style.ambientShaderPeriod
+        curve: "linear"
       }
 
       ShaderEffect {

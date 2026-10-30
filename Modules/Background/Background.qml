@@ -5,6 +5,7 @@ import qs.Commons
 import qs.Services.Compositor
 import qs.Services.Power
 import qs.Services.UI
+import qs.Widgets
 
 Variants {
   id: backgroundVariants
@@ -424,14 +425,15 @@ Variants {
       }
 
       // Animation for the transition progress
-      NumberAnimation {
+      NAnim {
         id: transitionAnimation
         target: root
         property: "transitionProgress"
         from: 0.0
         to: 1.0
         duration: Settings.data.wallpaper.transitionDuration
-        easing.type: Easing.InOutCubic
+        // A crossfade both ways, so ease in and out (DESIGN §1.7 壁纸过渡)
+        curve: "pulse"
         onFinished: {
           // Mark startup complete now that the animation has finished,
           // so displayScalesChanged doesn't trigger a duplicate transition.

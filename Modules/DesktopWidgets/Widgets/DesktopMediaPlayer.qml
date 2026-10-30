@@ -264,9 +264,9 @@ DraggableDesktopWidget {
       NIconButton {
         opacity: showPrev ? 1 : 0
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationSlow
-            easing.type: Easing.OutCubic
+          NAnim {
+            duration: Style.motionSwitch
+            curve: "swift"
           }
         }
         baseSize: Math.round(32 * widgetScale)
@@ -300,9 +300,9 @@ DraggableDesktopWidget {
       NIconButton {
         opacity: showNext ? 1 : 0
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationSlow
-            easing.type: Easing.OutCubic
+          NAnim {
+            duration: Style.motionSwitch
+            curve: "swift"
           }
         }
         baseSize: Math.round(32 * widgetScale)

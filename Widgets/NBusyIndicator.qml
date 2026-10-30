@@ -9,7 +9,7 @@ Item {
   property color color: Colors.onShell
   property int size: Style.baseWidgetSize
   property int strokeWidth: Style.borderM
-  property int duration: Style.animationSlow * 2
+  property int duration: Style.spinPeriod
 
   implicitWidth: size
   implicitHeight: size
