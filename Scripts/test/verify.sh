@@ -531,6 +531,18 @@ MOTION_SLOW="${NOSD_MOTION_SLOW:-1}"
 BURST_DIR=""; BURST_PID=""
 # Wait until four quarter-size grabs 0.5 s apart are identical: late work
 # (wallpaper decode, icon loads, a previous exit) must not be read as part
+# item_centre <root> <objectName> → "cx cy", the centre of a visible item as
+# `debug find` reports it (scene coordinates: screen coordinates on the
+# full-screen roots cc-*, main-*), or nothing when it is hidden or missing.
+# Locate click targets this way instead of hard-coding coordinates, which go
+# stale whenever the layout moves.
+item_centre() {
+  local d w h x y
+  d=$(qs -p "$REPO" ipc call debug find "$1" "$2" 2>/dev/null)
+  case "$d" in "" | *hidden* | *"no item"*) return ;; esac
+  read -r w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+  [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+}
 # of the animation under test. Two equal grabs were not enough: under
 # software rendering the wallpaper decode can sit idle for over a second
 # before it paints.
@@ -791,16 +803,33 @@ run_scene() {
                           call launcher toggle 0.5
                           call launcher switchMode fullscreen 0.8 ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
-    # Quick-switch row: inject a real click on the first switch cell
-    # (bottom-left of the quick-control strip) and compare before/after.
-    cc-switch)            call controlCenter toggle 1.5
+    # Quick-switch cell: on the basic page, click the 性能模式 switch, found by
+    # objectName because its cell follows the user's shortcut list, assert it
+    # turned on, then click again to restore. Performance mode is in-memory
+    # state with no hardware behind it, so the click is the only variable.
+    cc-switch)            call controlCenter quickPage basic 1.5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
-                          qs -p "$REPO" ipc call debug hit opened 1610 1015 > "$WORK/logs/cc-switch-hit.txt" 2>&1 || true
-                          shot cc-switch-before
-                          "$VINPUT" vinput click 1610 1015 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.2
-                          shot cc-switch-after
-                          qs -p "$REPO" ipc call debug opened 1 > "$WORK/logs/cc-switch-opened.txt" 2>&1 || true
+                          SW=quickSwitch-PerformanceMode
+                          swhot() { qs -p "$REPO" ipc call debug get cc-HEADLESS-1 "$SW" hot 2>&1; }
+                          read -r SWX SWY < <(item_centre cc-HEADLESS-1 "$SW")
+                          if [ -z "${SWX:-}" ]; then
+                            echo "FAIL cc-switch: $SW not found on the basic page"
+                            SCENE_FAIL=1
+                          else
+                            qs -p "$REPO" ipc call debug hit opened "$SWX" "$SWY" > "$WORK/logs/cc-switch-hit.txt" 2>&1 || true
+                            SWH0=$(swhot)
+                            shot cc-switch-before
+                            "$VINPUT" vinput click "$SWX" "$SWY" 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot cc-switch-after
+                            SWH1=$(swhot)
+                            "$VINPUT" vinput click "$SWX" "$SWY" 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            SWH2=$(swhot)
+                            echo "cc-switch: $SW at $SWX,$SWY hot $SWH0 -> $SWH1 -> $SWH2"
+                            [ "$SWH0" = false ] && [ "$SWH1" = true ] || { echo "FAIL cc-switch: click did not turn $SW on ($SWH0 -> $SWH1)"; SCENE_FAIL=1; }
+                            [ "$SWH2" = false ] || { echo "FAIL cc-switch: second click did not turn $SW off ($SWH2)"; SCENE_FAIL=1; }
+                          fi
                           call controlCenter toggle 0.5 ;;
     # Page-indicator chevron clicks. The dots row (and thus the chevrons'
     # x) shifts with pageCount — probe the indicator row for the actual
@@ -1375,12 +1404,8 @@ PYEOF
                          # describe(): "<type> WxH @x,y" in scene coords — on
                          # the single 1920 output that equals screen coords.
                          fxy() { # <objectName> → "cx cy" screen centre, or ""
-                           local d w h x y
-                           d=$(qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null)
-                           echo "$1 → $d" >> "$WORK/logs/subpage-find.txt"
-                           case "$d" in *hidden*|*"no item"*) return;; esac
-                           read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
-                           [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+                           qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null | sed "s|^|$1 → |" >> "$WORK/logs/subpage-find.txt"
+                           item_centre "$SROOT" "$1"
                          }
                          read RX RY < <(fxy nextPage-barWidgets)
                          if [ -z "${RX:-}" ]; then
@@ -1456,18 +1481,15 @@ PYEOF
                          SROOT=cc-HEADLESS-1
                          SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
                          fxy() { # <objectName> → "cx cy" screen centre, or ""
-                           local d w h x y
+                           local r c
                            # Dialog buttons live on the popupMenuWindow surface
                            # (dialogs are hosted there for the blur region);
                            # editor tiles live under the cc panel root.
                            for r in "$SROOT" popupMenuWindow-HEADLESS-1; do
-                             d=$(qs -p "$REPO" ipc call debug find "$r" "$1" 2>/dev/null)
-                             echo "$r $1 → $d" >> "$WORK/logs/reset-find.txt"
-                             case "$d" in *hidden*|*"no item"*|"") ;; *) break;; esac
+                             c=$(item_centre "$r" "$1")
+                             echo "$r $1 → ${c:-none}" >> "$WORK/logs/reset-find.txt"
+                             [ -n "$c" ] && { echo "$c"; return; }
                            done
-                           case "$d" in *hidden*|*"no item"*|"") return;; esac
-                           read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
-                           [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
                          }
                          # Assert the on-disk Clock entry is back to defaults:
                          # seeded clockColor/lineSpacing must be gone. FileView

@@ -56,6 +56,8 @@ Scripts/test/verify.sh probe --scenes idle,control-center              # 确认�
 
 `tools/nosd-helpers/target/release/nosd-helpers vinput click|jclick|scroll <x> <y> [...]` 通过 `zwlr_virtual_pointer_v1` 注入指针事件，进程存活期间虚拟指针一直有效。`verify.sh` 的隔离 sway 和 `Scripts/test/niri/` 的嵌套 niri 都支持该协议（把 `WAYLAND_DISPLAY` 指向对应 socket 即可）；用户的真实会话不要注入。`verify.sh` 的 `settings-tree` 场景是一个完整示例：先做命中探测，再注入点击，最后点外部关闭面板。
 
+点击坐标不要写死。`verify.sh` 的 `item_centre <根> <objectName>` 经 `debug find` 取可见 item 的中心，布局一变，写死的坐标就会落到别的控件上（`cc-switch` 曾经因此一直点在媒体卡片上）。要点的控件没有 objectName 就给它加一个，重复的委托用带区分后缀的名字，例如快捷开关格的 `quickSwitch-<widgetId>`。
+
 判断"点击丢了"之前，先确认按下有没有进到 Qt：用 `NOSD_QT_LOGGING="qt.quick.pointer.grab=true;qt.quick.mouse.target=true"` 跑场景，按下送达时日志里会出现目标 MouseArea 的 grab 行。只有移动、没有 grab 行，说明按下在合成器或注入这一层就丢了，不是 QML 的问题。
 
 间歇性的问题要统计复现：同一组场景至少跑 3 次再下结论，基线（`git worktree` 取出的改动前提交）也跑同样次数。单次通过或失败都不能说明问题；本仓库里出现过 2/2 碰巧通过、换个时序就 4/4 失败的情况。用 `git bisect run` 二分时，每个提交只跑一次的结果同样会被间歇性问题带偏。
