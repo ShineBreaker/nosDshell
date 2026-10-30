@@ -6,6 +6,7 @@
 
 - 〔派生〕：参考源码里没有，由本规范按 DDE 的总体规则推导。
 - 〔演进〕：有意偏离原版的现代化取值（见 §0「2026 演绎」），新值取代原值生效。
+- 〔CDS〕：动效与质感的取值来自 open-claude-ui（https://github.com/Caho1/open-claude-ui，对 Claude Desktop 设计体系 CDS 的整理）。出处写成 `open-claude-ui/code-examples/cds-theme.css:204` 的形式，路径相对该仓库的 main 分支。该仓库内部有互相矛盾的取值，以 `code-examples/cds-theme.css` 和 `code-examples/ClaudeMotionPresets.ts` 为准。
 
 ---
 
@@ -16,6 +17,8 @@
 DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色蒙版"，要么是"模糊加白色蒙版"。悬停、按下、选中这几种状态，只靠白色叠加层的透明度来区分，不换颜色。表面上不放彩色，强调色只用在"当前项"上。
 
 > **2026 演绎**：结构、布局和交互逐条忠于 DDE 15，渲染层按现代惯例精修，包括看得见的发丝描边、更柔和的阴影，以及能跟随主题的瞬时面（OSD、通知、吐司，见 §1.2）。这些取值标为〔演进〕。默认值仍落在 DDE 15 的范围内，超出范围的调节交给设置项（§6）。
+>
+> **动效与质感取自 CDS**：DDE 15 几乎没有动效。本实现的动效语言、阴影分层、按压与焦点反馈统一采用 CDS（Claude Desktop 设计体系）的做法，取值标为〔CDS〕：贝塞尔曲线令牌、五档时长、出场比进场短、弹出层带轻微回弹、按钮按下时微缩。布局、配色、圆角和组件形态仍然是 DDE 15。
 
 ### 设计原则
 
@@ -24,8 +27,8 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 3. **一个强调色。** `#2CA7F8` 只用在：当前活动项、菜单悬停行、按下态、进度和高亮、链接。其他地方不出现。
 4. **小圆角。** 圆角在 4–10 px 之间（§1.4）。除头像、圆点这类正圆外，不要胶囊形，不要大圆角卡片。
 5. **贴边并居中。** 任务栏贴住屏幕边缘并居中；控制中心贴右边、占满屏高；弹出层用带箭头的矩形指向触发它的任务栏图标，与栏保持分离，不用 Noctalia 的 attached panel 和反向圆角。
-6. **少动效。** 指针反馈分两类。独立的按钮类控件（按钮、图标按钮、页签、快捷开关格、分段按钮）的悬停和按下颜色用 80 ms 的 `motionPointer` 淡变〔演进，§1.7〕；成组排列的行类元素（菜单行、列表行、网格单元、设置行、导航按钮、任务栏项）仍然瞬变，与 DDE 的即时重绘一致，指针扫过一串行时不留拖影。弹出层、菜单与提示框的显隐用一套短促的淡入淡出〔演进，§1.7〕。只有数据或生命周期驱动的变化才做动画：进入用 `OutCubic`，位移和尺寸用 `InOutCubic`，时长基准 300 ms，退场比进场快并使用 ease-in 曲线。弹簧、回弹和水波纹都不用。
-7. **每个效果都要有降级方案。** 关掉模糊时，蒙版要更不透明（§1.2）。关掉动画时，时长为 0。
+6. **动效有感知，但不抢注意力〔CDS〕。** 每个动效都要交代一件事：东西从哪里来、往哪里去、操作是否被接收。动效只用 §1.7 的令牌，曲线只用 §1.7 的曲线表，不写 `Linear` 之外的具名缓动。指针反馈分两类：独立的按钮类控件（按钮、图标按钮、页签、快捷开关格、分段按钮）悬停时底色和文字色用 150 ms 淡变，按下时整体微缩到 0.975，松开时带一点回弹复位（§1.11）；成组排列的行类元素（菜单行、列表行、网格单元、设置行、导航按钮、任务栏项）的指针态仍然瞬变，与 DDE 的即时重绘一致，指针扫过一串行时不留拖影，也不缩放。弹出层进场时从锚点方向缩放加位移，带约 2% 的轻微回弹；出场更短、不回弹。
+7. **每个效果都要有降级方案。** 关掉模糊时，蒙版要更不透明（§1.2）。关掉动画或进入性能模式时，时长为 0，装饰性循环停止（`Style.reduceMotion`，§1.7）。
 
 ---
 
@@ -133,52 +136,100 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 ### 1.6 阴影
 
-| 用途 | 模糊半径 | 偏移 | 颜色 | 来源 |
-|---|---|---|---|---|
-| 带箭头弹出层 | 32 | (0,3) | 黑 × 0.18〔演进：原版为 20、(0,2)、0.5，改为半径更大、不透明度更低的柔和阴影〕 | `dockitem.cpp:64-67` |
-| 控制中心 | 32 | (-16,0) | 黑 × 0.24 〔演进〕 | `frame.cpp:151-154` |
-| OSD | 24 | (0,5) | 黑 × 0.14 〔演进：原版 16/0.27〕 | `container.cpp:73-78` |
-| 通知气泡 | 24 | (0,4) | 黑 × 0.18 〔演进：原版 14/0.39〕 | `bubble.cpp:133-134` |
-| 浅色菜单 | 20 | (0,8) | 黑 × 0.12 〔演进：原版 12/0.2〕 | `dmenubase.cpp:88-96` |
-| 对话框 | 32 | (0,0) | 黑 × 0.18 〔演进〕 | `dockitem.cpp:64-67` |
+阴影只画在表面轮廓的外侧〔CDS：CSS 的外 `box-shadow` 本来就在边框盒内被裁掉〕。`NDropShadow` 用反相蒙版把表面自身的剪影从阴影里挖掉，所以半透明表面底下不会透出一块阴影，表面本身也只画一遍，透明度就是 §1.2 的蒙版值〔演进：旧实现把表面再画了一遍、阴影也从表面下透出来，半透明弹出层因此比令牌更不透明、气泡底下发灰〕。
 
-任务栏本身没有阴影（`mainwindow.cpp:104-110`）。阴影统一用 `NDropShadow` 绘制，参数从令牌读取。原有的 `general.shadowDirection` 和 `shadowOffset*` 设置保留，默认值改为上表。`general.shadowStrength`（0–2，默认 1）整体缩放阴影颜色的不透明度〔演进〕。阴影颜色的不透明度刻意压在 0.24 以下：剪影式阴影在原轮廓内部是一整块满 alpha 的区域，放在矩形气泡下会看成一块半透明黑底；低 alpha 加大模糊半径能让这块区域淡成柔和的投影。
+每种表面有两层阴影：贴近轮廓的接触层交代表面贴在哪里，扩散层交代它浮起多高〔CDS：`cds-theme.css:114-119` 的双层阴影〕。取值按表面所在的明暗模式选择（`Colors.shellIsDark`；瞬时面看 `Colors.transientIsDark`）。暗色取值是 CDS 暗色值乘以 0.6〔演进〕：CDS 的暗色值是给近黑画布用的，这里的背景是壁纸。
+
+| 令牌 | 用途 | 接触层（模糊, x, y, α） 浅 / 暗 | 扩散层（模糊, x, y, α） 浅 / 暗 | 出处 |
+|---|---|---|---|---|
+| `shadowPopup` | 带箭头弹出层、菜单、提示框、下拉列表 | 6, 0, 2, .08 / 8, 0, 2, .27 | 24, 0, 8, .12 / 28, 0, 8, .39 | `cds-theme.css:117-119,330-331`（popover） |
+| `shadowDialog` | 对话框 | 8, 0, 4, .06 / 8, 0, 4, .30 | 28, 0, 12, .08 / 36, 0, 16, .24 | `cds-theme.css:116,329`（shadow-lg） |
+| `shadowBubble` | 通知气泡、吐司 | 4, 0, 2, .05 / 4, 0, 2, .24 | 16, 0, 6, .08 / 16, 0, 6, .24 | `cds-theme.css:115,328`（shadow-md） |
+| `shadowOsd` | OSD | 同 `shadowBubble` | 同 `shadowBubble` | 同上 |
+| `shadowControlCenter` | 控制中心（只向左投） | 8, −4, 0, .06 / 8, −4, 0, .30 | 28, −12, 0, .08 / 36, −16, 0, .24 | shadow-lg 转到水平方向；DDE 只向左投（`frame.cpp:151-154`） |
+
+任务栏本身没有阴影（`mainwindow.cpp:104-110`）。阴影统一用 `NDropShadow` 绘制，参数从令牌读取，令牌是 `{contact, key}` 两层，每层 `{blur, x, y, color}`。原有的 `general.shadowDirection` 和 `shadowOffset*` 设置保留给没有指定令牌的旧调用方。`general.shadowStrength`（0–2，默认 1）整体缩放两层阴影的不透明度〔演进〕。
+
+暗色弹出层顶边内侧再画一条白 × 0.10 的 1 px 高光线〔CDS：`cds-theme.css:330` 暗色 popover 的 `inset 0 0 0 1px rgba(255,255,255,.10)`，暗色模式用内高光代替外描边〕，让深色面在深色壁纸上也能分出上沿。这条线与 §1.2 的发丝描边共存：描边定轮廓，高光只在顶边。
 
 ### 1.7 动效
 
-DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 的弹出层、tooltip 和窗口预览全部瞬变（本实现给弹出面的显隐补了短淡入淡出，见下方规则）；hover 高亮在鼠标事件里直接重绘。真正做插值的动画分三层：微反馈（不超过 180 ms）、空间过渡（300 ms 主节拍）、长动效（壁纸交叉淡化、滚轮惯性、attention 摆动）。
+DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出层和提示框都是瞬显瞬隐。本实现保留 DDE 的布局和节奏感，动效语言整体采用 CDS〔CDS〕：所有时长取自五档，所有曲线取自一张曲线表，进场和出场不对称，弹出层带轻微回弹，按钮按下时微缩。目标是让每个动效都有感知但不抢注意力：用户能看出东西从哪里来，却不会等它。
 
-| 令牌 | 时长 | 曲线 | 用于 | 来源 |
-|---|---|---|---|---|
-| `motionPanel` | 300 ms | InOutCubic | 任务栏显示/隐藏/尺寸变化、控制中心内的页面切换 | `gxde-dock/frame/window/mainwindow.cpp:360-386`；`gxde-control-center/src/frame/framewidget.cpp:44-51` |
-| `motionEnter` | 300 ms | OutCubic | 控制中心整窗滑入、各类面板出现 | `gxde-control-center/src/frame/frame.cpp:71,90-95` |
-| `motionBubbleIn` | 180 ms | OutCubic，从锚定的屏幕边水平滑入 12 px 并淡入（DDE 右下角气泡把 waylandEnterOffset 从 −12 变到 0，加在 rightMargin 上） | 通知出现 | `gxde-session-ui/dde-osd/notification/bubble.cpp:218-225,496-508` |
-| `motionBubbleOut` | 300 ms | OutCubic，向右滑出（DDE 为向右缘塌缩的 geometry 动画） | 通知消失 | `gxde-session-ui/dde-osd/notification/bubble.cpp:486-488` |
-| `motionOsdIn` / `motionOsdOut` | 160 / 120 ms | OutCubic / InCubic。进入时下边距偏移从 −12 变到 0（自下而上），退出时变到 −8 | OSD 出现/消失 | `gxde-session-ui/dde-osd/container.cpp:199-218` |
-| 壁纸过渡 | 1000 ms | InOutCubic | `wallpaper.transitionDuration`（默认 1000，设置滑杆 0.5–10 s） | `gxde-session-ui/widgets/fullscreenbackground.cpp:51-74` |
-| `motionPopupIn` / `motionPopupOut` | 160 / 120 ms | OutCubic / InCubic。淡入淡出；有锚定边的弹出面（任务栏弹出层、菜单）同时沿锚定边方向位移：进入时从朝锚点偏移 `popupEnterOffset`（8 px）处滑到原位，退出时滑回 `popupExitOffset`（4 px）。没有锚定边的面（提示框、子菜单、下拉框、对话框）只淡入淡出 | 任务栏弹出层、各类菜单、提示框、下拉框与对话框的显隐〔演进：DDE 原版瞬变，见下方规则〕 | 时长与曲线取自 `motionOsdIn` / `motionOsdOut` 的同一组节拍（`gxde-session-ui/dde-osd/container.cpp:199-218`） |
-| `motionNavZoom` | 300 ms | OutCubic | 启动器分类导航悬停时从 1.0 放大到 1.2 | `gxde-launcher/src/widgets/navigationwidget.cpp:213-230` |
-| `motionSettingsScroll` | 1400 ms | OutQuint | 设置页内定位与页内长滚动 | `gxde-control-center/src/frame/widgets/contentwidget.cpp:51,106-112` |
-| `motionScrollWheel` | 800 ms | OutQuint | 滚轮惯性滚动（列表/网格/滚动视图） | `gxde-launcher/src/view/applistview.cpp:105-112` |
-| `motionProgramScroll` | 300 ms | OutQuad | 程序化滚动定位（点分类跳锚点、滚动到可见） | `gxde-launcher/src/fullscreenframe.cpp:189-204`（未显式设时长，Qt 默认 250，归并到 300 主节拍） |
-| `motionSwing` | 1200 ms | Linear 关键帧（±8°，阻尼衰减回中） | dock 项 attention 摆动，持续期间每 ~2.2 s 重播 | `gxde-dock/frame/item/components/appswingeffectbuilder.h:87-118`；`appitem.cpp:690-732` |
-| `motionPointer` | 80 ms | OutCubic | 按钮类控件的悬停、按下颜色淡变（§0 原则 6） | 〔演进〕DDE 原版瞬变。取 Windows 11 WinUI 指针反馈的量级（`ControlFasterAnimationDuration` 83 ms），曲线并入本节词汇表 |
-| `motionStagger` | 30 ms/项，封顶 5 步 | —（级联延时，非曲线时长） | 同一帧里增删多个行项时按位次错峰，形成从左向右的级联 | 〔演进〕见下方应用条配方 |
-| `motionSwitch` | 150 ms | OutCubic | 开关滑块；数据驱动的状态色（选中、已连接、勿扰开启这类不由指针直接决定的颜色）的过渡 | 派生自 DTK（§3.5.4） |
-| `tooltipDelayDock` | 500 ms | — | 任务栏悬停提示 | `gxde-dock/frame/item/dockitem.cpp:75` |
+**时长档位**〔CDS：`cds-theme.css:218-222`〕。全部经过 `Style._motion()`：`general.animationSpeed` 整体缩放，`animationDisabled` 或性能模式下为 0。
+
+| 档位 | 时长 | 用途 |
+|---|---|---|
+| `durFast` | 60 ms | 按下塌陷、焦点环出现 |
+| `durSnap` | 120 ms | 弹出层退场、分段控件滑块 |
+| `durBase` | 200 ms | 对话框进场、折叠展开、开关、退场的主节拍 |
+| `durSheet` | 300 ms | 侧滑面板、页面推入、气泡与 OSD 进场 |
+| `durSlow` | 450 ms | 松手回弹、主题切换、长距离定位滚动 |
+
+**曲线表**〔CDS：`cds-theme.css:204-213,223`；`ClaudeMotionPresets.ts:79-82`〕。曲线是 `Style.curve*` 令牌，形式是 QML `Easing.BezierSpline` 的控制点列表，由 `Scripts/test/test-motion-curves.py --emit` 生成，lint 检查令牌与参考值一致。组件通过 `NAnim` / `NColorAnim` 的 `curve` 名字引用，不直接写 `easing.type`。
+
+| 名字 | 定义 | 用途 |
+|---|---|---|
+| `swift` | cubic-bezier(.16, 1, .3, 1) | 指针反馈的颜色、阴影、焦点光晕；主题切换；滚轮惯性 |
+| `out` | cubic-bezier(.165, .84, .44, 1) | 标准减速：面板滑入滑出、页面推入、对话框、各类退场 |
+| `enter` | cubic-bezier(.22, 1, .36, 1) | 气泡、吐司、OSD 进场 |
+| `expand` | cubic-bezier(.19, 1, .22, 1) | 尺寸展开与收起、箭头旋转 |
+| `snap` | cubic-bezier(.32, .72, 0, 1) | 分段滑块、页签指示条的吸附 |
+| `overshoot` | cubic-bezier(.34, 1.3, .64, 1)，约 +3% | 开关滑块、分类导航放大 |
+| `pop` | cubic-bezier(.34, 1.56, .64, 1)，约 +10% | 强调型出现（保留，目前无使用方） |
+| `pulse` | cubic-bezier(.4, 0, .2, 1) | 呼吸、脉动等循环 |
+| `rise` / `fall` | cubic-bezier(.3, .7, .4, 1) / (0, 0, .2, 1) | 状态行抬升 / 气泡、OSD 退场 |
+| `cssEaseOut` | CSS `ease-out` = (0, 0, .58, 1) | 按下塌陷、弹出层退场 |
+| `release` | `--cds-btn-spring` 的 15 个关键点，+9% 回弹 | 按钮松手复位 |
+| `snappy` | SPRING_SNAPPY（刚度 320、阻尼 28）的阶跃响应，+1.9% 回弹 | 弹出层进场 |
+
+弹簧不用 QML 的 `SpringAnimation`：它的时长不受令牌和 `animationSpeed` 控制，关闭动画时也不会变成 0。`snappy` 和 `release` 是把弹簧响应离线采样后拟合成的固定时长曲线，误差不超过 0.02。`Linear` 只用于旋转、循环、计时进度和拖拽跟手。`Easing.OutCubic` 等具名缓动、`Back`、`Elastic`、`Bounce`、`SpringAnimation` 一律不用。
+
+**语义令牌**。场景到时长、曲线和变换的对应关系如下，组件只读这些令牌：
+
+| 令牌 | 时长 | 曲线 | 变换 | 用于 | 出处 |
+|---|---|---|---|---|---|
+| `motionPointer` | 150 | swift | 颜色 | 按钮类控件的悬停底色和文字色 | `cds-theme.css:538`（ghost hover） |
+| `motionPress` | 60 | cssEaseOut | 缩放到 `pressScale` 0.975 | 按钮类控件按下 | `cds-theme.css:482-491` |
+| `motionRelease` | 450 | release | 缩放回 1 | 按钮类控件松开 | 同上 |
+| `motionFocus` | 60 | cssEaseOut | 不透明度 | 键盘焦点环出现与消失 | `cds-theme.css:218` |
+| `motionPopupIn` | 300 | snappy | 不透明度；缩放 0.95→1；朝锚点方向位移 `popupEnterOffset` 4 px→0；变换原点在锚点一侧 | 任务栏弹出层、菜单、提示框的出现 | `ClaudeMotionPresets.ts:172-179` |
+| `motionPopupOut` | 120 | cssEaseOut | 不透明度；缩放到 0.96；位移 `popupExitOffset` 2 px | 上述弹出层的消失 | `ClaudeMotionPresets.ts:180-185` |
+| `motionDialogIn` | 200 | out | 不透明度；缩放 0.95→1 | 对话框、下拉列表、居中的选择器 | `ConfirmationDialog.tsx:87-90` |
+| `motionDialogOut` | 150 | out | 不透明度；缩放到 0.95 | 上述面的消失 | `ClaudeMotionPresets.ts:202-205` |
+| `motionScrim` | 150 | cssEaseOut | 不透明度 | 对话框和面板背后的压暗层 | `ConfirmationDialog.tsx:79` |
+| `motionEnter` | 300（无模糊 150） | out | 位移、不透明度 | 控制中心整窗滑入、面板出现、启动器与关机界面淡入 | `cds-theme.css:221`（sheet） |
+| `motionExit` | 200（无模糊 120） | out | 同上 | 上述面板的消失 | 出场短于进场 |
+| `motionPanel` | 300（无模糊 150） | out | 位移 | 任务栏显示隐藏、整条位移、控制中心快捷面板翻页时的高度 | `cds-theme.css:221` |
+| `motionExpand` | 200 | expand | 尺寸、旋转 | 折叠展开、通知组展开、展开箭头旋转、尺寸随内容变化 | `cds-theme.css:205,220` |
+| `motionPage` | 300 | out | 位移、不透明度 | 页签内容切换、控制中心二级页推入推出 | `cds-theme.css:221` |
+| `motionBubbleIn` | 300 | enter | 不透明度；从锚定的屏幕边滑入 12 px；缩放 0.96→1 | 通知、吐司出现 | `cds-theme.css:614-631`（timeline-block-enter） |
+| `motionBubbleOut` | 180 | fall | 不透明度；向锚定的屏幕边滑出 12 px | 通知、吐司消失（超时、关闭、清除都一样） | `cds-theme.css:434-437,582`（status-fall） |
+| `motionOsdIn` / `motionOsdOut` | 300 / 180 | enter / fall | 进场下边距偏移 −12→0、缩放 0.96→1；退场偏移到 −8 | OSD | 同气泡 |
+| `motionSwitch` | 200 | overshoot（滑块）/ swift（颜色） | 位移、颜色 | 开关滑块；数据驱动的状态色（选中、已连接、勿扰开启） | `cds-theme.css:209,220` |
+| `motionSnap` | 120 | snap | 位移 | 分段控件、页签指示条 | `cds-theme.css:208,219` |
+| `motionNavZoom` | 200 | overshoot | 缩放 1.0→1.2 | 启动器分类导航悬停 | `navigationwidget.cpp:213-230` 的缩放幅度 |
+| `motionTheme` | 450 | swift | 颜色 | 切换配色方案和明暗模式时全部颜色交叉淡化 | `cds-theme.css:222` |
+| `motionScrollWheel` | 800 | swift | 位置 | 滚轮惯性滚动 | DDE `applistview.cpp:105-112` 的时长 |
+| `motionProgramScroll` | 300 | out | 位置 | 程序化定位（点分类跳锚点、滚动到可见） | `fullscreenframe.cpp:189-204` |
+| `motionSettingsScroll` | 450 | swift | 位置 | 设置页导航跳转的长距离滚动 | `cds-theme.css:222` |
+| `motionSwing` | 1200 | Linear 关键帧 | ±8° 阻尼摆动 | dock 项 attention 摆动，每 ~2.2 s 重播 | `appswingeffectbuilder.h:87-118` |
+| `motionStagger` | 30 ms/项，封顶 8 项 | — | 延时 | 同一帧里多个行项进出时按位次错峰 | `docs/v2` chip 级联（30 ms × min(i, 8)） |
+| 壁纸过渡 | 1000 | `wallpaper.transitionDuration` | 交叉淡化 | 壁纸切换（用户设置，0.5–10 s） | `fullscreenbackground.cpp:51-74` |
 
 非动画时长不进 Style 令牌，它们是用户可调设置：`osd.autoHideMs`（默认 1000，`dde-osd/manager.cpp:74`）与 `notifications.*UrgencyDuration`（低/普通/紧急 3/5/15 s，`bubble.cpp:514-517`）。
 
 规则：
 
-- **瞬变清单。** DDE 明确不做动画的地方，这里也不补动效：菜单悬停与子菜单内的高亮移动；行类元素（§0 原则 6）的指针态颜色与透明度，包括悬停才显示的行内按钮；禁用态；attention 图标切换；OSD 数值条；密码错误反馈（描边 + 文字，无抖动）；启动器显示模式切换。
-- **颜色过渡标注意图。** 每个 `Behavior on color` / `border.color` 的时长都写成表明意图的令牌：按钮类的指针反馈用 `motionPointer`，状态色用 `motionSwitch`，其他场景按上表取。`Style.animationFast` 这类通用时长和字面量不用于颜色过渡，行类元素的指针态不加 Behavior。主题切换期间颜色一律瞬变（`enabled: !Color.isTransitioning`）。`Scripts/dev/check-color-motion.py` 检查颜色过渡的时长令牌和下一条的曲线词汇表。
-- 有意的偏离：弹出面的显隐〔演进〕。DDE 的菜单、任务栏弹出层和提示框都是瞬显瞬隐（`deepin-menu` 没有动画对象，`dockpopupwindow.cpp:84-148` 直接 show/hide）。本实现统一用 `motionPopupIn` / `motionPopupOut`：瞬显瞬隐在合成器上读作闪烁，短促的淡入加锚定方向的小位移能交代弹出层从哪里来，同时不拖慢操作。弹出面的背景、阴影、内容一起淡化；背后模糊无法渐变，进入时随面一起出现，退出开始时立即撤掉，不让模糊比面多停留。
-- **曲线词汇表。** `OutCubic` = 进入；`InOutCubic` = 位移/尺寸/页面切换；`InCubic` = 快速退场；`OutQuad` = 程序化滚动定位；`OutQuint` = 滚轮长惯性；`Linear` = 旋转/循环/计时/拖拽跟手。其余曲线（`InOutQuad` 等不在表中的 Quad/Sine/Expo 变体，以及 Back、Elastic、Bounce、Spring、自定义 `BezierSpline`）一律禁用。
-- **不对称退场。** 退出比进入短，并使用 ease-in 曲线。OSD 的 160/120 ms、`OutCubic` 进入配 `InCubic` 退出是范例。
+- **瞬变清单。** 以下地方不做动画：菜单行悬停与子菜单内的高亮移动；行类元素（§0 原则 6）的指针态颜色、透明度和缩放，包括悬停才显示的行内按钮；禁用态；attention 图标切换；OSD 数值条；密码错误反馈（描边 + 文字，无抖动）；启动器显示模式切换。
+- **颜色过渡标注意图。** 每个 `Behavior on color` / `border.color` / `fillColor` 都用 `NColorAnim`，时长写成表明意图的令牌：按钮类的指针反馈用 `motionPointer`，状态色用 `motionSwitch`。行类元素的指针态不加 Behavior。主题切换期间颜色一律瞬变（`enabled: !Colors.isTransitioning`），交叉淡化由 `Colors` 统一做。
+- **出场比进场短，且不回弹。** 回弹曲线（`snappy`、`overshoot`、`release`）只用于进场和复位；所有消失都用减速曲线（`out`、`cssEaseOut`、`fall`），时长不超过对应进场的三分之二。用户已经决定关掉的东西，不再让它多停留。
+- **变换原点跟随来源。** 带锚点的弹出层从锚点一侧缩放和位移（任务栏在下方时原点在底边中央、箭头处），对话框从中心缩放，气泡和 OSD 从锚定的屏幕边滑入。
+- **背后模糊不渐变。** 弹出面的背景、阴影、内容一起淡化；背后模糊无法渐变，进入时随面一起出现，退出开始时立即撤掉，不让模糊比面多停留。
 - **合并语义。** 运行中的动画再次被触发时，只改目标值，不打断。QML 的 `Behavior` 本来就这样；手写 `start()` 时先以当前值为起点。
-- **延时不是动画。** tooltip 的 500 ms、预览的 200/300 ms、自动隐藏的 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换前的防抖等待，不换算成缓动。
-- **应用条增删项动画（两模式同一套配方）〔演进〕。** DDE 的应用条增删项瞬变（`Repeater` 直接重建），本实现为数据/生命周期驱动的进出补动效：应用条用带字符串行键的 `ListModel` + 延迟移除——条目消失时行转为 dying、沿长轴塌缩到 0（`animationFast` + `InCubic` 退场曲线）后再从模型里删；新条目在 0 长处长出到正常尺寸（`animationNormal` 300 ms + `InOutCubic`）。槽位塌缩的同时内容本身也动：图标淡出并从 1 缩到 0.5、朝屏边方向滑 ~8 px（进入时反向，缩放回弹到 1、从屏边滑入）——只缩槽位不缩内容会把满尺寸图标挤出槽口、到消失帧才瞬灭，读作被"切掉"而不是退场。同一批同步进出的多行按行序错峰 `motionStagger`（逐项延时写在行角色 `sdelay` 上，各 Behavior 前置 `PauseAnimation`），单项增删延时为 0 不受影响，整批替换（如工作区切换）则呈现为级联波而不是齐刷刷的闪变。兄弟项的滑动由塌缩本身驱动，不用 positioner transition（Layout 容器不支持）。高效 `Taskbar.qml` 的 `itemRows` 与时尚 `Dock.qml` 的 `dockRows` 是同一配方的两份实现，两边的委托视觉保持一致。
+- **减弱动效。** `Style.reduceMotion`（`animationDisabled` 或性能模式）为真时：所有令牌时长为 0；装饰性循环（脉动、着色器时间、忙碌指示器旋转、光标闪烁、attention 摆动）停止在静止帧；缩放和位移不再出现。每个循环动画的 `running` 都要读 `Style.reduceMotion`。
+- **延时不是动画。** tooltip 的 500 ms、预览的 200/300 ms、自动隐藏的 100 ms（`mainwindow.cpp:282-294`；`docksettings.h:78`）这类 `singleShot` 是状态切换前的防抖等待，不换算成曲线，也不随 `animationSpeed` 缩放。
+- **应用条增删项动画（两模式同一套配方）〔演进〕。** DDE 的应用条增删项瞬变（`Repeater` 直接重建），本实现为数据/生命周期驱动的进出补动效：应用条用带字符串行键的 `ListModel` + 延迟移除——条目消失时行转为 dying、沿长轴塌缩到 0（`motionExit` + `out`）后再从模型里删；新条目在 0 长处长出到正常尺寸（`motionExpand` + `expand`）。槽位塌缩的同时内容本身也动：图标淡出并从 1 缩到 0.5、朝屏边方向滑 ~8 px（进入时反向，缩放回弹到 1、从屏边滑入）——只缩槽位不缩内容会把满尺寸图标挤出槽口、到消失帧才瞬灭，读作被"切掉"而不是退场。同一批同步进出的多行按行序错峰 `motionStagger`（逐项延时写在行角色 `sdelay` 上，各 Behavior 前置 `PauseAnimation`），单项增删延时为 0 不受影响，整批替换（如工作区切换）则呈现为级联波而不是齐刷刷的闪变。兄弟项的滑动由塌缩本身驱动，不用 positioner transition（Layout 容器不支持）。高效 `Taskbar.qml` 的 `itemRows` 与时尚 `Dock.qml` 的 `dockRows` 是同一配方的两份实现，两边的委托视觉保持一致。
 - **动态列表的模型安全（崩溃教训）。** 会反复重建的 JS 数组永远不直接喂 `Repeater.model`——整体赋值即 `QQuickRepeater::setModel` → 孵化，孵化期间的 notify 重入模型变更会踩坏 V4 堆（`QV4::Object::insertMember` SIGSEGV）。收敛做法：渲染模型是常驻 `ListModel`，数据侧变化经 `Qt.callLater` 合并后增量同步（`insert`/`remove`/`setProperty`），行只放原始值键（id/序号/tag），payload 由委托侧按键实时解析；ListModel 行角色在首次写入时钉死类型，存对象/数组/`null` 混合值既触发角色类型冲突警告、又会在委托销毁中途返回已失效的 `QObject*`（`QQmlListModel::data` 崩溃类）。
   
   **绑定内读取可变 ListModel 行一律禁止。** `model.<role>`、`modelData.<role>`、`get(i).<role>`、乃至 `get()` 返回的"快照"对象（实为活代理 `QQmlListElement`）都不是 notify 属性——绑定求值时 `getterFallback` → `QQmlPropertyCapture::captureNonBindableProperty`，下一次 `set`/`remove`/`clear`/`setProperty` 后捕获到的行元素已死，GC `MarkStack::drain` 或当即重估即 SIGSEGV。合法读取只有两条路：
@@ -190,9 +241,9 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
   2. **普通 dict 镜像数组**——`property var _rows: []` 由 `Component.onCompleted` + 模型 `Connections`（`onCountChanged`/`onDataChanged`）在 JS handler 里重建（`.get()` 只出现在 handler/函数体内——那里是安全区），绑定只读镜像。用于跨模型查找（`NComboBox._modelRows`/`NSearchableComboBox._modelRows`/`_activeRows`、`NotificationHistoryList._historyRows`、`Workspace._workspaceRows`）、index-key 委托（`Tray`/`NSectionEditor`/`groupedContainer.liveWindows`），以及服务侧"窗口对象"——**ListModel 行代理永不入数据结构**：entry 里存窗口一律快照成普通 dict（`handle` 字段保留真 QObject 供 activate/close），否则下游绑定读到 `entry.window.isFocused` 仍会捕获死代理（`Taskbar` 的教训）。
   
   服务函数同样受限：返回 `.get()` 代理的 helper（`getFocusedWindow`/`getActiveWorkspaces`）只能被函数体调用，绑定要的事实由服务以普通属性维护（`CompositorService.hasFocusedWindow`/`focusedWindowTitle`）。落点：`Bar._initModels`/`Dock.updateDockApps`/`Taskbar.updateCombinedModel`/`DockContent.segmentRows`/`NSectionEditor.widgetRows`/`Workspace.localWorkspaces`/`NotificationService.popupModel`/`NotificationHistoryList`。
-- 有意的偏离：DDE 的启动器开合和关机界面都是零动画瞬显，本实现为这两类全屏毛玻璃面保留 `motionEnter` 短淡入。layer-shell 全屏面瞬间出现时合成器上会闪一下，而且要等模糊壁纸的第一帧。
-- 关闭模糊时，panel/enter 类动画时长改为 150 ms（`framewidget.cpp:172`）。`animationDisabled` 为真时一律为 0。
-- 已有的 `Style.animationFast/Normal/...` 继续留给通用场景（如拖拽跟手、装饰性循环）。上表列出的场景一律用表中的令牌。
+- 有意的偏离：DDE 的启动器开合和关机界面都是零动画瞬显，本实现为这两类全屏毛玻璃面保留 `motionEnter` 淡入、`motionExit` 淡出。layer-shell 全屏面瞬间出现时合成器上会闪一下，而且要等模糊壁纸的第一帧。
+- 关闭模糊时，`motionEnter`、`motionPanel` 改为 150 ms，`motionExit` 改为 120 ms（`framewidget.cpp:172`）：没有模糊时面板是更实的色块，大面积长时间的移动更显眼。
+- 通用时长 `Style.animationFast/Normal/...` 不再新增使用方，只留给尚未迁移的上游代码和拖拽跟手；上表列出的场景一律用表中的令牌。
 
 ### 1.8 背景与模糊壁纸
 
@@ -243,6 +294,14 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 - 按钮写动作（"全部清除""连接"）。开放网络（无密码）的安全性写"开放"，不写成动词"打开"。
 - 空状态写"没有 X"，有下一步可做时补一句提示（"在设置中设置位置以查看天气"）。不留只有占位图、没有文字的空白区域。
 - 同一弹出层或页面里不出现两个同名分区标题；需要区分时写全对象（"输出设备""输入设备"）。
+
+### 1.11 交互反馈与质感〔CDS〕
+
+- **按压微缩。** 按钮类控件（§0 原则 6：`NButton`、`NIconButton`、`NIconButtonHot`、快捷开关格、关机界面按钮、控制中心头部按钮）按下时整体缩放到 `Style.pressScale`（0.975），原点在中心，用 `motionPress`；松开时用 `motionRelease` 带约 9% 的回弹回到 1〔`cds-theme.css:482-491`〕。缩放由公共件 `NPressScale` 实现，控件只声明自己按下与否。行类元素、网格单元、菜单行和禁用的控件不缩放。按压缩放与 §1.3 的按下底色叠加使用，底色仍按原规则变化。
+- **键盘焦点环。** 控件通过键盘（Tab、方向键）获得焦点时，在控件外缘外 1 px 处画一圈 1.5 px 的 `accent` 描边，外面再加 6 px 的 `accent` × 0.25 光晕（暗色模式 8 px、× 0.35）〔`cds-theme.css:130,339`，陶土色换成 DDE 强调色〕。圆角等于控件圆角加 2。鼠标点击获得的焦点不画环。焦点环由公共件 `NFocusRing` 实现，出现和消失用 `motionFocus`。文本输入框获得焦点时已经有 1 px `accent` 描边（§3.5.4），不再叠加焦点环。
+- **单描边。** 有闭合描边的容器（弹出层、对话框、卡片、输入框）里面的按钮、标签和分组不再画自己的闭合描边，需要分隔时只用单边的发丝线（`NDivider`）〔`AGENTS.md:17,232`〕。视线从屏幕走到任何一个控件，最多穿过一道闭合描边。
+- **滚动边缘淡出。** 可滚动区域在还有内容的一侧把边缘 28 px 内的内容淡出，透明度按 7 个停靠点非线性过渡：从内向外依次在 15%、30%、45%、60%、75%、87%、100% 处为 .05、.15、.30、.50、.70、.85、1 的不透明度〔`cds-theme.css:196,820-821`；线性渐变的淡出会在中段显得发灰〕。滚到顶时顶部淡出区收为 0，滚到底时底部收为 0，所以列表在静止的首尾不缺一块。`NScrollView`、`NListView`、`NGridView` 的 `edgeFade` 默认开启；内容不足一屏时没有淡出。
+- **等宽数字。** 会跳动的数值（百分比、时间、计数、温度）用 `NText` 的 `numeric: true`，即界面字体加 `tnum`（§1.5）〔`AGENTS.md` DO #2〕。
 
 ---
 
@@ -421,7 +480,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
     - 11 个分类：网络、社交、音乐、视频、图像、游戏、办公、阅读、编程、系统、其他。
     - 每个按钮高约 42，22 px 图标加文字。文字白 × 0.6 / 0.8（悬停）/ 1.0（选中）。悬停时整列放大到 1.2。
     - 右侧每个分类有一行标题（高 50），文字后面跟一条 1 px 的渐隐线，从白 × 0.3 渐变到透明。滚动时，当前分类的标题吸附在网格顶部。
-- 滚动：`OutQuad` 动画，滚动条隐藏。
+- 滚动：程序化定位用 `motionProgramScroll`，滚轮用 `motionScrollWheel`，滚动条隐藏。
 - 非应用类结果（计算器、剪贴板、表情、命令、窗口、会话、设置搜索）：在网格上方显示成分组列表，行样式同 §3.4.2，宽度与搜索框对齐，最大 600〔派生〕。剪贴板预览放在列表右侧的暗色卡片里。
 
 #### 3.4.2 小窗口模式（mini）
@@ -471,7 +530,7 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
 #### 3.5.1 外框
 
 - 宽 408 px，高度占满屏幕，贴住屏幕右边（`frame.h:53`、`frame.cpp:517-523`），直角。阴影见 §1.6。
-- 背景 `maskDark`。从右侧滑入，`motionEnter`（300 ms OutCubic）。
+- 背景 `maskDark`。从右侧滑入用 `motionEnter`（300 ms，`out`），滑出用 `motionExit`（200 ms，`out`）。
 - 外框左侧只有共享的 dimmer 压暗（`general.dimmerOpacity`，默认 0.35〔演进〕）。透过全屏透明层看到的窗口是正常的桌面内容，不再另加遮罩。
 - 压暗只对占据屏幕的帧类面板生效（控制中心、设置、启动器等）。dock 弹出的小面板（音量、网络、蓝牙、亮度、电池、时钟、媒体、系统监控、托盘抽屉、壁纸、插件槽）设置 `SmartPanel.dimsBackground = false`，打开时不压暗壁纸〔演进：DDE 原版的弹层本来就叠在没有 dimmer 的桌面上〕。
 - 点击外部关闭；按 Esc 时，如果在子页面就先返回上一级，否则关闭。
@@ -491,11 +550,11 @@ DDE 15 的动效很少。`deepin-menu` 整个库没有一个动画对象；dock 
    - **通知页**（默认页）：勿扰开关行 + 通知历史列表。开关行标题是"勿扰模式"（§1.10），开启时铃铛图标换成 `bell-off` 并着 `accent`。列表视口占满中部剩余高度，**内容顶对齐**：通知从列表头顶端向下堆叠，空余视口收在末尾之后〔演进：曾用贴底对齐让通知贴着快捷控制条堆叠，但条高变化（分页、收起）会带动整块通知上下挪动；置顶让通知块的位置与底部控件完全解耦，也与 macOS/Windows 通知从固定锚点生长的惯例一致〕。
      - **列表头**：列表内容的第一行，左侧"通知"（白 × 0.6、字号 S），右侧"清除历史记录"文字按钮（底色 `idle`，悬停 `hover`，内边距 4，`radiusRow`）。它属于列表内容，随内容一起顶对齐，始终紧挨第一条通知。没有通知时隐藏。
      - **日期分段**：按通知时间分成"今天""昨天""更早"三段，每段前一行分段标题（白 × 0.6、字号 XS、行高 24）。只有一段时也显示标题〔演进：取代上游的时间筛选。上游有一排可见的筛选页签；页签在 DDE 化时删掉了，Tab 键却还在切换筛选，界面上看不出当前筛的是哪一段〕。
-     - **按应用分组**〔演进：DDE 15 是平铺列表；macOS、Windows 11 和 GNOME 48 都把同一应用的通知叠成一组〕：同一段里同一应用的通知归为一组。组按组内最新一条的时间排序，组内按时间倒序。只有一条的组就是一条普通通知。多条的组默认折叠，只显示最新一条，卡片下方露出两道错开的底边（每道比上一道左右各缩进 8 px、高 4 px、底色 `overlay("hover")`、`radiusItem`），卡片元信息行显示"还有 N 条"。点击底边、"还有 N 条"或用键盘 Enter 展开；展开后组顶部出现组头：应用名、"收起"文字按钮、清除本组的 × 按钮。展开和收起是数据驱动的尺寸变化，用 `motionPanel`。
+     - **按应用分组**〔演进：DDE 15 是平铺列表；macOS、Windows 11 和 GNOME 48 都把同一应用的通知叠成一组〕：同一段里同一应用的通知归为一组。组按组内最新一条的时间排序，组内按时间倒序。只有一条的组就是一条普通通知。多条的组默认折叠，只显示最新一条，卡片下方露出两道错开的底边（每道比上一道左右各缩进 8 px、高 4 px、底色 `overlay("hover")`、`radiusItem`），卡片元信息行显示"还有 N 条"。点击底边、"还有 N 条"或用键盘 Enter 展开；展开后组顶部出现组头：应用名、"收起"文字按钮、清除本组的 × 按钮。展开和收起是数据驱动的尺寸变化，用 `motionExpand`。
      - **每条通知**是浅色气泡的暗色版本：白字，底色 `strong`，圆角 5。元信息行是应用名和相对时间。
        - 点击正文执行通知的默认动作（`default`）；没有默认动作或执行失败时，聚焦发送方的窗口（`NotificationService.focusSenderWindow`）。两种情况都随后关闭控制中心（上游 `a08ff3619:Modules/Panels/NotificationHistory/NotificationHistoryPanel.qml:795-806`）。
        - 正文或标题被截断时，右上角显示展开按钮（`chevron-down` / `chevron-up`）；展开后显示全文，正文里的链接可点。悬停时右上角另显示删除 ×。
-       - 向左或向右拖动卡片超过上游阈值后松手即删除，不到阈值回弹（上游 swipe-dismiss）。删除时沿拖动方向滑出，`motionPanel`。
+       - 向左或向右拖动卡片超过上游阈值后松手即删除，不到阈值回弹（上游 swipe-dismiss）。删除时沿拖动方向滑出，`motionExit`。
        - 动作按钮：`accentAlt` 文字按钮，悬停 `hover` 底，`radiusRow`。
      - **键盘**：↑ / ↓ 在列表项之间移动（折叠的组算一项），← / → 在动作之间移动，Enter 执行当前动作，没有选中动作时展开折叠组或执行默认动作，Delete 删除当前通知。当前项画 1 px `accent` 描边。
      - 列表为空时"无通知"居中显示在空余视口里。
@@ -522,11 +581,11 @@ Noctalia 卡片的对应关系：
   - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体垂直居中（上下各一段伸缩空白），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标取模块的 Papirus symbolic 图：先在当前主题找 `symbolicIcons` 候选的 `*-symbolic` 变体，找不到用 `Assets/Nav/nav_<id>.svg` 的打包副本（§1.9），统一按 `onShell` 剪影着色，未选中态压到 0.4（亮底 0.6）不透明度。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
   - **右栏**：内容区，宽 352。
 - 导航与滚动联动：
-  - 点导航按钮时，内容区平滑滚动到该模块头，`OutQuint` 1400 ms（`contentwidget.cpp:51,106-112`）。
+  - 点导航按钮时，内容区平滑滚动到该模块头，用 `motionSettingsScroll`（450 ms，`swift`）〔CDS：原版 `contentwidget.cpp:51,106-112` 为 OutQuint 1400 ms，长距离定位在 CDS 里不超过 `durSlow`〕。
   - 滚动过程中导航选中项实时跟随视口中第一个顶部可见的模块（`settingswidget.cpp:342-380`；〔演进〕上游按滚动停下再更新，这里逐帧同步，选中项拖动到哪高亮到哪；当前模块在视口内仍相交时保持选中，避免来回抖动）。
 - 模块头（`modulewidget.cpp`）：左边距 11，24×24 的模块图标（与导航条同一个 `navIconUrl` 来源，§1.9），接大号标题（LargeLabel，白色），上下内边距 5（`modulewidgetheader.cpp`）。模块之间留 1 个分组间距。
 - 内容区顶部：返回按钮（24×24 圆角 4 的方块，底色白 × 0.2），居中标题"所有设置"（14 px / 500），再下面 15 px 是一条分隔线。内容可滚动，滚动条隐藏。
-- 二级页（"下一页"行进入，`NNextPageRow` → `SettingsModuleView.pushPage`）：新页面从右侧推入，旧页面向左推出，`motionPanel`（300 ms InOutCubic）；位移过程中按距离同步淡出。二级页的标题换成该页名称，返回按钮回到上一级。进入方式、转场和返回在所有页面统一，不允许在行内展开大段内容作为替代。
+- 二级页（"下一页"行进入，`NNextPageRow` → `SettingsModuleView.pushPage`）：新页面从右侧推入，旧页面向左推出，`motionPage`（300 ms，`out`）；位移过程中按距离同步淡出。二级页的标题换成该页名称，返回按钮回到上一级。进入方式、转场和返回在所有页面统一，不允许在行内展开大段内容作为替代。
 - 性能：一次展开所有模块代价较大，允许按顺序异步加载（`Loader.asynchronous`）。先加载目标模块和它前后各一个，其余在空闲时补齐。未加载的模块用估计高度占位，加载完成后当前目标模块的头部位置保持不动。
 - 模块顺序与对应（DDE 原有顺序见 `navigationbar.cpp:39-85`）：
 
@@ -567,7 +626,7 @@ Noctalia 卡片的对应关系：
 - **标准行**：高 36，左右内边距 (20, 10)。
   - 下一页行：标题，右侧是数值（白 × 0.8），再右侧是一个 `›` 箭头。
   - 开关行：标题，右侧是开关。
-- **开关**（DSwitchButton）〔派生自 DTK〕：外形 40×22 的胶囊（开关是唯一允许用胶囊形的控件）。关闭时底色白 × 0.2；开启时底色 `accent`；滑块为白色圆点，直径 18。切换动画 150 ms。
+- **开关**（DSwitchButton）〔派生自 DTK〕：外形 40×22 的胶囊（开关是唯一允许用胶囊形的控件）。关闭时底色白 × 0.2；开启时底色 `accent`；滑块为白色圆点，直径 18。滑块位移用 `motionSwitch`（200 ms，`overshoot`，约 3% 回弹），底色用 `motionSwitch` + `swift`。
 - **滑块**（DSlider）：
   - 整个控件高 35，滑槽只有 2 px，已填充部分为 `accent`，未填充部分为白 × 0.2。
   - 滑块按钮是 12 px 的白色圆点〔派生〕，带 1 px `knobBorder` 描边。所有场景（设置页、控制中心、弹出层）同一尺寸，不随滑块高度缩放。按钮背后不画挖空底盘：Noctalia 的 cutout 是一块不透明的 `mSurface` 圆，在半透明面上显成按钮外的一圈黑环，也违反本节的「表面令牌边界」。
@@ -602,7 +661,7 @@ Noctalia 卡片的对应关系：
   - 正文从 x=70 开始，宽 220；有动作按钮时宽 150。
   - 标题 `onTransient`、Medium；正文 `onTransientBody`；超出按行截断。
 - 动作按钮：竖排在右侧，宽 70。文字用 `transientAction`（浅色面上就是 `accentAction`）；悬停时变为白字，底色是原来的按钮文字色。按钮之间用 1 px `overlayTransient("hover")` 分隔线。
-- 动效：出现用 `motionBubbleIn`，消失用 `motionBubbleOut`（向右滑出）。
+- 动效：出现用 `motionBubbleIn`，消失用 `motionBubbleOut`（向锚定的屏幕边滑出）。超时、点关闭、清除和 IPC 的 `dismissOldest` 走同一条退场动画。
 - 时长：普通通知 5000 ms；低优先级沿用 Noctalia 设置；紧急通知不自动消失。
 - 堆叠：默认同一时刻只显示一条，其余排队（DDE 行为）。`notifications.maxVisible`（默认 1）可以调大，调大后多条气泡纵向堆叠，间距 10。
 - 如果新通知的 `replacesId` 与已有通知相同，就原地更新那条气泡的内容。
@@ -669,7 +728,7 @@ Noctalia 卡片的对应关系：
 - 参考仓库中没有 dde-desktop 的壁纸选择器，以下按 DDE 15 的总体规则设计。
 - 一条贴住屏幕底边的横条，背景 `maskDark`，高约 160。
 - 缩略图 16:9、宽 160，间距 10，横向滚动。
-  - 滚动有三条路：纵向滚轮与触摸板横滚都映射到 `contentX`（`animationFast` 过渡）；条两端各叠一枚圆形翻页按钮（`chevron-left/right`，`overlay("field")` 底 + `borderShell` 描边，悬停 `hover` 洗色），只在对应方向还有内容时出现，点击滚动近一屏宽并留下首尾缩略图作参照；直接拖动仍然可用。
+  - 滚动有三条路：纵向滚轮与触摸板横滚都映射到 `contentX`（`motionProgramScroll` 过渡）；条两端各叠一枚圆形翻页按钮（`chevron-left/right`，`overlay("field")` 底 + `borderShell` 描边，悬停 `hover` 洗色），只在对应方向还有内容时出现，点击滚动近一屏宽并留下首尾缩略图作参照；直接拖动仍然可用。
   - 当前壁纸：外圈 2 px `accent` 描边。
   - 悬停的缩略图：底缘内叠出"浅色""深色""两者"三个按钮（胶囊形与尺寸同 §3.5.4，但配色走 §1.5 的壁纸令牌：`veilWallpaper`×0.6 底（悬停 0.8）+ `onWallpaper` 字，因为照片是任意底色，随主题的 `overlay`/`onShell` 在亮色壁纸上会洗没），分别写入亮、暗、两个外观槽位。按钮按固定槽位标注而不是"当前/另一外观"，免得读者先回忆当前是哪种模式；悬停才出现的行不占条带高度（放进缩略图下方会被 `clip` 截断）。原版的三个按钮是"仅桌面""仅锁屏""都设置"。本 shell 没有单独的锁屏壁纸：`LockScreenBackground` 复用桌面壁纸的预模糊缓存，`WallpaperService.changeWallpaper` 只区分 `"light"` 和 `"dark"` 两个外观（`WallpaperService.qml:422-424`），所以三个按钮对应亮、暗两个外观，结构与原版一致。以后加入单独的锁屏壁纸时，再改回原版的三个按钮。
 - 顶部一行（目录、Wallhaven 来源、搜索）按 §3.5.4 的控件样式绘制。
@@ -839,7 +898,9 @@ Noctalia 卡片的对应关系：
 
 以下做法与 DDE 15 冲突，评审时一律退回：
 
-- 胶囊形外观（开关和圆角按钮除外）、超过 10 px 的圆角、Material 风格的彩色表面、水波纹、按压时的缩放、弹簧或回弹动画。
+- 胶囊形外观（开关和圆角按钮除外）、超过 10 px 的圆角、Material 风格的彩色表面、水波纹。
+- §1.7 曲线表之外的缓动：`Easing.OutCubic` 这类具名曲线、`Back`、`Elastic`、`Bounce`、`SpringAnimation`、手写的 `bezierCurve` 数组；出场用回弹曲线；行类元素、网格单元和菜单行的按压缩放（按钮类控件的按压微缩见 §1.11）。
+- 不读 `Style.reduceMotion` 的循环动画。
 - 弹出层和栏融合在一起、反向圆角、外圆角、框架式栏（framed bar）。任务栏和 DDE 表面一律不采用；栏体的 floating/framed 形态与外圆角只作为可选状态栏（§3.13）上的非默认选项保留。
 - 用彩色区分状态（例外：活动项 `accent`、请求注意 `attention`、错误 `alert`、充电态 `positive`）。
 - 加粗（Bold / ExtraBold）；全大写的标题（包括把本地化的月名、星期名 `toUpperCase()`）；字间距不为 0 的正文。
@@ -849,4 +910,4 @@ Noctalia 卡片的对应关系：
 - 在一个界面里同时出现两个强调色；用渐变给表面着色。
 - 复制 `references/` 的素材或代码却不留出处（出处规则见 §1.9）。
 - 用 Tabler 字形或 QML 近似重画参考仓库里已有原件的 DDE 专属素材（见 §1.9）。
-- 在组件里写死颜色、尺寸或时长，绕过令牌。
+- 在组件里写死颜色、尺寸或时长，绕过令牌。动画时长写成数字字面量（`check-motion.py` 检查）。
