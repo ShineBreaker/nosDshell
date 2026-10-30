@@ -297,31 +297,49 @@ Item {
       // rect — until a frame the render loop may starve on arrives.
       visible: arrowSlot0.assignedPanel !== null || arrowSlot1.assignedPanel !== null
 
-      Shape {
+      // One Shape per slot, faded by item opacity. Baking the panel opacity
+      // into the ShapePath colours forced an asynchronous path re-sync on
+      // every animation frame, so the body trailed the content: it lingered
+      // after the content had faded out (visible in motion.sh close bursts).
+      // Item opacity is applied by the scene graph with no re-sync.
+      Item {
         id: arrowPopupShape
         anchors.fill: parent
-        preferredRendererType: Shape.CurveRenderer
-        asynchronous: true
-        enabled: false
 
-        // Slot 0: Currently open/opening panel
-        ArrowPanelBackground {
-          id: arrowSlot0
-          assignedPanel: {
-            var p = PanelService.backgroundSlotAssignments[0];
-            return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
+        Shape {
+          anchors.fill: parent
+          preferredRendererType: Shape.CurveRenderer
+          asynchronous: true
+          enabled: false
+          opacity: arrowSlot0._fade
+
+          // Slot 0: Currently open/opening panel
+          ArrowPanelBackground {
+            id: arrowSlot0
+            assignedPanel: {
+              var p = PanelService.backgroundSlotAssignments[0];
+              return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
+            }
+            shapeContainer: arrowPopupShape
           }
-          shapeContainer: arrowPopupShape
         }
 
-        // Slot 1: Closing panel (during transitions)
-        ArrowPanelBackground {
-          id: arrowSlot1
-          assignedPanel: {
-            var p = PanelService.backgroundSlotAssignments[1];
-            return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
+        Shape {
+          anchors.fill: parent
+          preferredRendererType: Shape.CurveRenderer
+          asynchronous: true
+          enabled: false
+          opacity: arrowSlot1._fade
+
+          // Slot 1: Closing panel (during transitions)
+          ArrowPanelBackground {
+            id: arrowSlot1
+            assignedPanel: {
+              var p = PanelService.backgroundSlotAssignments[1];
+              return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
+            }
+            shapeContainer: arrowPopupShape
           }
-          shapeContainer: arrowPopupShape
         }
       }
 
