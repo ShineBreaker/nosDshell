@@ -58,6 +58,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | `popupDark` | `mSurfaceVariant` × 0.86 × `ui.popupOpacity`（默认 1.0，范围 0.3–1.0；`popupShell` 在应用层再乘这个系数） | 同左，但最终 alpha 不低于 0.9（floor，与瞬时面同一条规则） | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）。RGB 改取方案 `mSurfaceVariant`〔演进〕，Deepin 的 `#2A2A2A` 接近原版 `#242424`。无模糊 floor〔演进：原先两列同为左列，无模糊合成器上低调值可透到不可读〕 |
 | `borderDark` | `mOutline` × 0.10〔演进：原版 0.05 在现代屏幕上几乎看不见，提高到看得见的发丝边。底色改取方案 `mOutline`，Deepin 的 `#3A3A3A` 接近原版 `#2C3238`〕 | `mOutline` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
 | `borderLight` | `mOutline` × 0.08〔演进：原版 0.04。底色改取方案 `mOutline`，Deepin 的 `#D5D5D5` 接近原版 `#E5E5E5`〕 | `mOutline` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
+| `highlightShell` | 暗色外壳：白 × 0.10 × `ui.borderEmphasis`；浅色外壳：透明 | 同左 | §1.6 暗色弹出层的顶边高光〔CDS：`cds-theme.css:330`〕。由 `NArrowRect` 和带箭头弹出层的背景（`ArrowPanelBackground`）画在顶边内侧 1 px 处，箭头在顶边时在箭头底边两侧断开 |
 
 规则：
 
@@ -150,7 +151,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 
 任务栏本身没有阴影（`mainwindow.cpp:104-110`）。阴影统一用 `NDropShadow` 绘制，参数从令牌读取，令牌是 `{contact, key}` 两层，每层 `{blur, x, y, color}`。原有的 `general.shadowDirection` 和 `shadowOffset*` 设置保留给没有指定令牌的旧调用方。`general.shadowStrength`（0–2，默认 1）整体缩放两层阴影的不透明度〔演进〕。
 
-暗色弹出层顶边内侧再画一条白 × 0.10 的 1 px 高光线〔CDS：`cds-theme.css:330` 暗色 popover 的 `inset 0 0 0 1px rgba(255,255,255,.10)`，暗色模式用内高光代替外描边〕，让深色面在深色壁纸上也能分出上沿。这条线与 §1.2 的发丝描边共存：描边定轮廓，高光只在顶边。
+暗色弹出层顶边内侧再画一条白 × 0.10 的 1 px 高光线〔CDS：`cds-theme.css:330` 暗色 popover 的 `inset 0 0 0 1px rgba(255,255,255,.10)`，暗色模式用内高光代替外描边〕，让深色面在深色壁纸上也能分出上沿。这条线与 §1.2 的发丝描边共存：描边定轮廓，高光只在上沿：从左边线与左上圆角的交点起，绕过左上圆角、沿顶边、再绕过右上圆角，止于右边线的起点，相当于 CDS 内描边环的上半段。颜色取令牌 `highlightShell`（§1.2），`ui.borderEmphasis` 为 0 时与描边一起消失。
 
 ### 1.7 动效
 

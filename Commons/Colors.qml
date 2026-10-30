@@ -569,6 +569,10 @@ Singleton {
   readonly property color _borderDarkClassic: "#2C3238"
   readonly property color _borderLightClassic: "#E5E5E5"
   readonly property color borderTransient: transientIsDark ? (shellIsDark ? borderDark : _borderDarkClassic) : (shellIsDark ? _borderLightClassic : borderLight)
+  // Dark popups only: 1 px white line just inside the top edge (DESIGN §1.6,
+  // cds-theme.css:330). Scaled by ui.borderEmphasis like the hairline, so
+  // emphasis 0 removes both.
+  readonly property color highlightShell: shellIsDark ? Qt.rgba(1, 1, 1, Math.min(1, 0.10 * Settings.data.ui.borderEmphasis)) : "transparent"
 
   // Shell foreground = the scheme's mOnSurface (DESIGN §1.3 演进): Deepin is
   // still #FFFFFF/#303030; other schemes tint text and, via the onShell-based

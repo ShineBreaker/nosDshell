@@ -322,6 +322,17 @@ Item {
             }
             shapeContainer: arrowPopupShape
           }
+
+          ShapePath {
+            fillColor: "transparent"
+            strokeColor: Colors.highlightShell
+            strokeWidth: arrowSlot0.highlightPath !== "" ? 1 : -1
+            capStyle: ShapePath.FlatCap
+
+            PathSvg {
+              path: arrowSlot0.highlightPath
+            }
+          }
         }
 
         Shape {
@@ -339,6 +350,17 @@ Item {
               return (p && p.screen?.name === root.windowRoot.screen?.name) ? p : null;
             }
             shapeContainer: arrowPopupShape
+          }
+
+          ShapePath {
+            fillColor: "transparent"
+            strokeColor: Colors.highlightShell
+            strokeWidth: arrowSlot1.highlightPath !== "" ? 1 : -1
+            capStyle: ShapePath.FlatCap
+
+            PathSvg {
+              path: arrowSlot1.highlightPath
+            }
           }
         }
       }

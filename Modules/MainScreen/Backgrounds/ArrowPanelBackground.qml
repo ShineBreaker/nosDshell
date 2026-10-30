@@ -64,6 +64,10 @@ ShapePath {
   startX: 0
   startY: 0
 
+  // Top-edge highlight of dark popups (DESIGN §1.6), stroked by a sibling
+  // ShapePath in AllBackgrounds (one ShapePath has one stroke).
+  readonly property string highlightPath: isRenderable && Colors.highlightShell.a > 0 ? ArrowRect.topHighlightPath(boxWidth, boxHeight, Style.radiusPopup, arrowH > 0 ? arrowEdge : "", arrowTip, arrowW, arrowH, boxX, boxY) : ""
+
   // svgPath emits straight lines for zero radius (no degenerate arcs)
   PathSvg {
     path: root.isRenderable ? ArrowRect.svgPath(root.boxWidth, root.boxHeight, Style.radiusPopup, root.arrowH > 0 ? root.arrowEdge : "", root.arrowTip, root.arrowW, root.arrowH, root.boxX, root.boxY) : ""

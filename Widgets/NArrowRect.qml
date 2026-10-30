@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
-import qs.Commons
 import "../Helpers/ArrowRect.js" as ArrowRect
+import qs.Commons
 
 // Rounded rectangle with an optional triangular arrow on one edge
 // (DArrowRectangle / DockPopupWindow shape, DESIGN §3.2).
@@ -19,8 +19,12 @@ Item {
   property color fillColor: Colors.popupShell
   property color borderColor: Colors.borderShell
   property real borderWidth: 1
+  // Top-edge highlight of dark popups (DESIGN §1.6); transparent in light mode
+  property color highlightColor: Colors.highlightShell
   // A Style.shadow* object ({blur, x, y, color}) or null
   property var shadow: Style.shadowPopup
+
+  readonly property real _tipPos: arrowPosition >= 0 ? arrowPosition : (arrowEdge === "left" || arrowEdge === "right" ? height / 2 : width / 2)
 
   readonly property rect bodyRect: {
     const r = ArrowRect.bodyRect(width, height, arrowEdge, arrowHeight);
@@ -63,10 +67,18 @@ Item {
       joinStyle: ShapePath.MiterJoin
 
       PathSvg {
-        path: {
-          const pos = root.arrowPosition >= 0 ? root.arrowPosition : (root.arrowEdge === "left" || root.arrowEdge === "right" ? root.height / 2 : root.width / 2);
-          return ArrowRect.svgPath(root.width, root.height, root.radius, root.arrowEdge, pos, root.arrowWidth, root.arrowHeight);
-        }
+        path: ArrowRect.svgPath(root.width, root.height, root.radius, root.arrowEdge, root._tipPos, root.arrowWidth, root.arrowHeight)
+      }
+    }
+
+    ShapePath {
+      fillColor: "transparent"
+      strokeColor: root.highlightColor
+      strokeWidth: root.highlightColor.a > 0 ? 1 : -1
+      capStyle: ShapePath.FlatCap
+
+      PathSvg {
+        path: root.highlightColor.a > 0 ? ArrowRect.topHighlightPath(root.width, root.height, root.radius, root.arrowEdge, root._tipPos, root.arrowWidth, root.arrowHeight) : ""
       }
     }
   }
