@@ -4,7 +4,8 @@
 #
 # Usage:
 #   Scripts/dev/lint.sh                 # all repo .qml files
-#   Scripts/dev/lint.sh --changed       # files changed vs HEAD + untracked
+#   Scripts/dev/lint.sh --changed       # files changed vs HEAD + untracked,
+#                                       # plus every file that uses a changed type
 #   Scripts/dev/lint.sh file.qml ...    # explicit files
 #
 # Mirror tree: $NOSD_VERIFY_DIR/qmlimp/qs/... with a generated `qmldir` per
@@ -107,7 +108,16 @@ echo "mirror: $(find "$MIRROR/qs" -name qmldir | wc -l) qmldir files in $MIRROR/
 
 # --- file selection ------------------------------------------------------
 if [ "${1:-}" = "--changed" ]; then
-  mapfile -t FILES < <(cd "$REPO" && { git diff --name-only HEAD -- '*.qml'; git ls-files -o --exclude-standard -- '*.qml'; } | sort -u | grep -v '^references/' | sed "s|^|$REPO/|")
+  mapfile -t CHANGED < <(cd "$REPO" && { git diff --name-only HEAD -- '*.qml'; git ls-files -o --exclude-standard -- '*.qml'; } | sort -u | grep -v '^references/')
+  # A changed component can break the files that instantiate it (a removed
+  # property fails `Foo { bar: 1 }` at load time, and the whole config with
+  # it), so lint every file that uses a changed type name too.
+  USERS=()
+  for f in "${CHANGED[@]}"; do
+    t=$(basename "$f" .qml)
+    mapfile -t -O "${#USERS[@]}" USERS < <(cd "$REPO" && grep -rlE --include='*.qml' "(^|[^A-Za-z0-9_.])$t[[:space:]]*\{" . | sed 's|^\./||' | grep -v '^references/')
+  done
+  mapfile -t FILES < <(printf '%s\n' "${CHANGED[@]}" "${USERS[@]}" | grep -v '^$' | sort -u | sed "s|^|$REPO/|")
 elif [ $# -gt 0 ]; then
   mapfile -t FILES < <(printf "%s\n" "$@" | while read -r f; do
     case "$f" in /*) echo "$f" ;; *) echo "$REPO/$f" ;; esac
@@ -122,10 +132,21 @@ TOTAL=0; ERRFILES=0; ERRN=0
 ERRLOG="$WORK/logs/lint-errors.log"; : > "$ERRLOG"
 for f in "${FILES[@]}"; do
   out=$("$QMLLINT" ${QSQML:+-I "$QSQML"} ${QTQML:+-I "$QTQML"} -I "$MIRROR" "$f" 2>&1)
-  errs=$(grep -cE "^(Error|Critical|Fatal):" <<<"$out" || true)
+  # Assigning a property the type does not have ("Could not find property"
+  # in an object declaration) is only a qmllint warning, but at runtime it
+  # aborts loading the whole configuration. Count it as an error. Member
+  # lookups on dynamic objects share the [missing-property] category and
+  # stay warnings: those are mostly settings JSON reads qmllint cannot type.
+  # qmllint cannot resolve Quickshell's PanelWindow `margins.top/bottom/left/
+  # right` group either, so those four names are left out (blind spot: a
+  # component property literally named top/bottom/left/right).
+  PATTERN='^(Error|Critical|Fatal):|^Warning: .*Could not find property "[^"]*"\. \[missing-property\]'
+  IGNORE='Could not find property "(top|bottom|left|right)"'
+  hits=$(grep -E "$PATTERN" <<<"$out" | grep -vE "$IGNORE" || true)
+  errs=$(grep -c . <<<"$hits" || true)
   if [ "$errs" -gt 0 ]; then
     echo "== ${f#$REPO/} ($errs)"
-    grep -E "^(Error|Critical|Fatal):" <<<"$out" | head -10
+    head -10 <<<"$hits"
     { echo "== $f"; echo "$out"; echo; } >> "$ERRLOG"
     ERRFILES=$((ERRFILES+1)); ERRN=$((ERRN+errs))
   fi
