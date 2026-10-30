@@ -328,6 +328,10 @@ Singleton {
   // light/dark form (§1.2 ui.transientSurface).
   readonly property var shadowBubble: _shadowPair(Colors.transientIsDark, [4, 0, 2, 0.05], [16, 0, 6, 0.08], [4, 0, 2, 0.24], [16, 0, 6, 0.24])
   readonly property var shadowOsd: shadowBubble
+  // Margin a popup window keeps around its body so the popup shadow is not
+  // clipped by the surface edge: the farthest key-layer reach (blur plus
+  // offset, dark values) plus the 2 px NDropShadow adds.
+  readonly property int popupShadowInset: 28 + 8 + 2
 
   // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
   // it -- the first-run wizard is the wide one. The 48 px leading icon and the

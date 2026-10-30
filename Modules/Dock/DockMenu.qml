@@ -58,7 +58,7 @@ PopupWindow {
   readonly property bool splitExtendedLayout: separatorIndex >= 0
   readonly property var scrollItems: splitExtendedLayout ? root.items.slice(0, separatorIndex) : root.items
   readonly property var fixedItems: splitExtendedLayout ? root.items.slice(separatorIndex + 1) : []
-  readonly property real menuInnerHeight: Math.max(0, implicitHeight - Style.margin2M - (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0))
+  readonly property real menuInnerHeight: Math.max(0, bodyHeight - Style.margin2M - (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0))
   readonly property real fixedActionsHeight: listHeight(fixedItems)
   readonly property real separatorBlockHeight: splitExtendedLayout ? separatorCompactHeight : 0
   readonly property real scrollAreaHeight: splitExtendedLayout ? Math.max(0, menuInnerHeight - fixedActionsHeight - separatorBlockHeight) : menuInnerHeight
@@ -70,8 +70,17 @@ PopupWindow {
     return listHeight(root.items);
   }
 
-  implicitWidth: menuContentWidth + Style.margin2M + (arrowEdge === "left" || arrowEdge === "right" ? Style.popupArrowHeight : 0)
-  implicitHeight: Math.min(menuBodyHeight + Style.margin2M, menuMaxHeight) + (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
+  readonly property real bodyWidth: menuContentWidth + Style.margin2M + (arrowEdge === "left" || arrowEdge === "right" ? Style.popupArrowHeight : 0)
+  implicitWidth: bodyWidth + 2 * shadowInset
+  readonly property real bodyHeight: Math.min(menuBodyHeight + Style.margin2M, menuMaxHeight) + (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
+  implicitHeight: bodyHeight + 2 * shadowInset
+
+  // Room around the body for the popup shadow (DESIGN §1.6); the input
+  // region below keeps it click-through.
+  readonly property int shadowInset: Style.popupShadowInset
+  mask: Region {
+    item: reveal
+  }
   color: "transparent"
   visible: false
 
@@ -360,42 +369,49 @@ PopupWindow {
     if (!anchorItem)
       return -1;
     if (arrowEdge === "top" || arrowEdge === "bottom")
-      return anchorItem.width / 2 - anchor.rect.x;
+      return anchorItem.width / 2 - _bodyAnchorX;
     if (arrowEdge === "left" || arrowEdge === "right")
-      return anchorItem.height / 2 - anchor.rect.y;
+      return anchorItem.height / 2 - _bodyAnchorY;
     return -1;
   }
 
   anchor.item: anchorItem
+  // The window carries a shadowInset margin on every side so the §1.6
+  // shadow has room to render; the anchor math above places the body, the
+  // window is offset by the inset, and the compositor must not slide or
+  // flip it (that would move the body by up to the inset).
+  anchor.adjustment: PopupAdjustment.None
   // Position menu on the opposite side of the dock, arrow tip Style.popupGap
   // (2 px) from the item edge
-  anchor.rect.x: {
+  readonly property real _bodyAnchorX: {
     if (!anchorItem)
       return 0;
     switch (dockPosition) {
     case "left":
       return anchorItem.width + Style.popupGap; // Open to right of dock
     case "right":
-      return -implicitWidth - Style.popupGap; // Open to left of dock
+      return -bodyWidth - Style.popupGap; // Open to left of dock
     default:
-      return (anchorItem.width - implicitWidth) / 2; // Center horizontally
+      return (anchorItem.width - bodyWidth) / 2; // Center horizontally
     }
   }
-  anchor.rect.y: {
+  anchor.rect.x: _bodyAnchorX - shadowInset
+  readonly property real _bodyAnchorY: {
     if (!anchorItem)
       return 0;
     switch (dockPosition) {
     case "top":
       return anchorItem.height + Style.popupGap; // Open below dock
     case "bottom":
-      return -implicitHeight - Style.popupGap; // Open above dock (default)
+      return -bodyHeight - Style.popupGap; // Open above dock (default)
     case "left":
     case "right":
-      return (anchorItem.height - implicitHeight) / 2; // Center vertically
+      return (anchorItem.height - bodyHeight) / 2; // Center vertically
     default:
-      return -implicitHeight - Style.popupGap;
+      return -bodyHeight - Style.popupGap;
     }
   }
+  anchor.rect.y: _bodyAnchorY - shadowInset
 
   function show(item, toplevelData, screen, groupModeOverride) {
     if (!item) {
@@ -652,6 +668,7 @@ PopupWindow {
   // slide together along the arrow edge.
   NPopupReveal {
     id: reveal
+    inset: root.shadowInset
 
     active: root.visible
     closing: root._closing

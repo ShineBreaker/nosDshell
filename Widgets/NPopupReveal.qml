@@ -14,6 +14,10 @@ Item {
   id: root
 
   anchors.fill: parent
+  // Margin between the window edge and the visual body: the host window
+  // keeps it free for the shadow (DESIGN §1.6, Style.popupShadowInset).
+  property int inset: 0
+  anchors.margins: inset
 
   // Surface mapped (the window is visible) / exit in progress.
   property bool active: false

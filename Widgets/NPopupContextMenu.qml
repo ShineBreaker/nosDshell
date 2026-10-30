@@ -79,8 +79,17 @@ PopupWindow {
 
   signal triggered(string action, var item)
 
-  implicitWidth: calculatedWidth + (arrowEdge === "left" || arrowEdge === "right" ? Style.popupArrowHeight : 0)
-  implicitHeight: Math.min(600, flickable.contentHeight + Style.margin2S) + (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
+  // Room around the body for the popup shadow (DESIGN §1.6); the input
+  // region below keeps it click-through.
+  readonly property int shadowInset: Style.popupShadowInset
+  mask: Region {
+    item: reveal
+  }
+
+  readonly property real bodyWidth: calculatedWidth + (arrowEdge === "left" || arrowEdge === "right" ? Style.popupArrowHeight : 0)
+  implicitWidth: bodyWidth + 2 * shadowInset
+  readonly property real bodyHeight: Math.min(600, flickable.contentHeight + Style.margin2S) + (arrowEdge === "top" || arrowEdge === "bottom" ? Style.popupArrowHeight : 0)
+  implicitHeight: bodyHeight + 2 * shadowInset
   visible: false
   color: "transparent"
 
@@ -218,8 +227,13 @@ PopupWindow {
   }
 
   anchor.item: anchorItem
+  // The window carries a shadowInset margin on every side so the §1.6
+  // shadow has room to render; the anchor math above places the body, the
+  // window is offset by the inset, and the compositor must not slide or
+  // flip it (that would move the body by up to the inset).
+  anchor.adjustment: PopupAdjustment.None
 
-  anchor.rect.x: {
+  readonly property real _bodyAnchorX: {
     // Submenus anchor beside the parent row, flipping left when they would clip
     // the right screen edge (TrayMenu.qml pattern).
     if (isSubmenu && anchorItem) {
@@ -227,8 +241,8 @@ PopupWindow {
       var parentWindowX = anchorItem.Window ? anchorItem.Window.window : null;
       var windowXOnScreen = (parentWindowX && screen) ? (parentWindowX.x - screen.x) : 0;
       var menuScreenX = windowXOnScreen + posInPopupX.x + submenuAnchorX;
-      if (screen && menuScreenX + implicitWidth > screen.width) {
-        return -implicitWidth + Style.marginS;
+      if (screen && menuScreenX + bodyWidth > screen.width) {
+        return -bodyWidth + Style.marginS;
       }
       if (screen && menuScreenX < 0) {
         return submenuAnchorX - menuScreenX;
@@ -245,14 +259,14 @@ PopupWindow {
       let baseX;
       if (root.hostEdge === "right") {
         // For right bar: position menu to the left of target
-        baseX = targetOffsetX - implicitWidth - Style.marginM;
+        baseX = targetOffsetX - bodyWidth - Style.marginM;
       } else if (root.hostEdge === "left") {
         // For left bar: position menu to the right of target
         baseX = targetOffsetX + effectiveWidth + Style.marginM;
       } else {
         // For top/bottom bar: center horizontally on target
         const targetCenterScreenX = targetGlobalX + (effectiveWidth / 2);
-        baseX = targetCenterScreenX - (implicitWidth / 2) - anchorGlobalPos.x;
+        baseX = targetCenterScreenX - (bodyWidth / 2) - anchorGlobalPos.x;
       }
 
       // Clamp inside the screen, additionally keeping clear of whatever shell
@@ -260,7 +274,7 @@ PopupWindow {
       const leftOcc = root._edgeOccupancy("left");
       const rightOcc = root._edgeOccupancy("right");
       const leftLimit = leftOcc > 0 ? leftOcc + Style.marginS : Style.marginM;
-      const rightLimit = screen.width - (rightOcc > 0 ? rightOcc + Style.marginS : Style.marginM) - implicitWidth;
+      const rightLimit = screen.width - (rightOcc > 0 ? rightOcc + Style.marginS : Style.marginM) - bodyWidth;
       let menuScreenX = anchorGlobalPos.x + baseX;
       if (menuScreenX > rightLimit)
         menuScreenX = rightLimit;
@@ -270,7 +284,8 @@ PopupWindow {
     }
     return 0;
   }
-  anchor.rect.y: {
+  anchor.rect.x: _bodyAnchorX - shadowInset
+  readonly property real _bodyAnchorY: {
     // Submenus align their top with the parent row, shifting up when they would
     // clip the bottom screen edge.
     if (isSubmenu && anchorItem) {
@@ -279,7 +294,7 @@ PopupWindow {
       var windowYOnScreen = (parentWindowY && screen) ? (parentWindowY.y - screen.y) : 0;
       var menuScreenY = windowYOnScreen + posInPopupY.y + submenuAnchorY;
       var screenHeight = screen ? screen.height : 0;
-      var overflowBottom = menuScreenY + implicitHeight - (screenHeight - Style.marginM);
+      var overflowBottom = menuScreenY + bodyHeight - (screenHeight - Style.marginM);
       if (screen && overflowBottom > 0) {
         return submenuAnchorY - overflowBottom;
       }
@@ -295,7 +310,7 @@ PopupWindow {
       if (isAbsolutePosition) {
         const anchorGlobalPos = anchorItem.mapToItem(null, 0, 0);
         const menuTop = anchorGlobalPos.y;
-        const menuBottom = anchorGlobalPos.y + implicitHeight;
+        const menuBottom = anchorGlobalPos.y + bodyHeight;
 
         // Keep the menu out of the strip any shell surface occupies on either
         // horizontal edge — anchoring at the click point alone leaves the menu
@@ -309,10 +324,10 @@ PopupWindow {
         }
         if (menuBottom > absBottomLimit) {
           if (bottomOcc > 0) {
-            return absBottomLimit - implicitHeight - menuTop;
+            return absBottomLimit - bodyHeight - menuTop;
           }
           // Position above the click point instead
-          return -implicitHeight;
+          return -bodyHeight;
         }
         return 0;
       }
@@ -327,7 +342,7 @@ PopupWindow {
       let baseY;
       if (root.hostEdge === "bottom") {
         // For bottom bar: position menu above the bar
-        baseY = -(implicitHeight + Style.marginS);
+        baseY = -(bodyHeight + Style.marginS);
       } else if (root.hostEdge === "top") {
         // For top bar: position menu below bar at consistent height
         // Compensate for anchor's Y position to ensure menu top is always at (hostStrip + margin)
@@ -335,11 +350,11 @@ PopupWindow {
       } else {
         // For left/right bar: vertically center on target item
         const targetCenterY = effectiveOffsetY + (effectiveHeight / 2);
-        baseY = targetCenterY - (implicitHeight / 2);
+        baseY = targetCenterY - (bodyHeight / 2);
       }
 
       const menuScreenY = anchorGlobalPos.y + baseY;
-      const menuBottom = menuScreenY + implicitHeight;
+      const menuBottom = menuScreenY + bodyHeight;
 
       // Define clipping boundaries per edge; the occupied strips cover the
       // status bar and the fashion dock alike
@@ -366,10 +381,11 @@ PopupWindow {
 
     // Fallback if no screen
     if (root.hostEdge === "bottom") {
-      return -implicitHeight - Style.marginS;
+      return -bodyHeight - Style.marginS;
     }
     return hostStrip;
   }
+  anchor.rect.y: _bodyAnchorY - shadowInset
 
   Component.onCompleted: {
     Qt.callLater(calculateWidth);
@@ -428,6 +444,7 @@ PopupWindow {
   // ~1x1 click point, e.g. PopupMenuWindow's dynamic menu) fade only.
   NPopupReveal {
     id: reveal
+    inset: root.shadowInset
 
     active: root.visible
     closing: root._closing
