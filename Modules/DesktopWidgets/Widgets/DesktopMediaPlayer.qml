@@ -152,10 +152,14 @@ DraggableDesktopWidget {
     source: contentLayout
     z: 1
     autoPaddingEnabled: true
-    shadowBlur: 1.0
-    shadowOpacity: 0.9
-    shadowHorizontalOffset: 0
-    shadowVerticalOffset: 0
+    // Legibility halo around the text: one centred layer at the general
+    // blur radius.
+    shadow: ({
+               "blur": Style.shadowBlurMax,
+               "x": 0,
+               "y": 0,
+               "color": Qt.rgba(0, 0, 0, 0.9)
+             })
   }
 
   RowLayout {

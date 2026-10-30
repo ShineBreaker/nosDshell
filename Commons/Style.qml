@@ -295,47 +295,39 @@ Singleton {
   // Capsule radius — only the switch and RoundedButton-style buttons may use it (DESIGN §7)
   readonly property int radiusPill: 15
 
-  // Shadows — feed into NDropShadow; plain {blur, x, y, color} objects (DESIGN §1.6).
-  // Alphas pass through _shadowScale so general.shadowStrength acts globally.
-  readonly property var shadowPopup: ({
-                                        "blur": 32,
-                                        "x": 0,
-                                        "y": 3,
-                                        "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
-                                      })
-  // Control centre frame: shadow cast to the left side only (DESIGN §3.5.1)
-  readonly property var shadowControlCenter: ({
-                                                "blur": 32,
-                                                "x": -16,
-                                                "y": 0,
-                                                "color": Qt.rgba(0, 0, 0, _shadowScale(0.24))
-                                              })
-  readonly property var shadowOsd: ({
-                                      "blur": 24,
-                                      "x": 0,
-                                      "y": 5,
-                                      "color": Qt.rgba(0, 0, 0, _shadowScale(0.14))
-                                    })
-  readonly property var shadowBubble: ({
-                                         "blur": 24,
-                                         "x": 0,
-                                         "y": 4,
-                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
-                                       })
-  readonly property var shadowMenuLight: ({
-                                            "blur": 20,
-                                            "x": 0,
-                                            "y": 8,
-                                            "color": Qt.rgba(0, 0, 0, _shadowScale(0.12))
-                                          })
-  // DDialog (DESIGN §3.11): same soft drop as the control centre frame, but
-  // cast straight down instead of to the left.
-  readonly property var shadowDialog: ({
-                                         "blur": 32,
-                                         "x": 0,
-                                         "y": 0,
-                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
-                                       })
+  // Shadows — feed into NDropShadow (DESIGN §1.6). Two layers per surface:
+  // `contact` hugs the outline, `key` lifts it; drawn outside the silhouette
+  // only. Values {blur, x, y, alpha} from open-claude-ui cds-theme.css:114-119
+  // (light) and :327-331 (dark x 0.6, the backdrop here is a wallpaper, not a
+  // near-black canvas). Alphas pass through _shadowScale so
+  // general.shadowStrength acts globally.
+  function _shadowLayer(l) {
+    return {
+      "blur": l[0],
+      "x": l[1],
+      "y": l[2],
+      "color": Qt.rgba(0, 0, 0, _shadowScale(l[3]))
+    };
+  }
+  function _shadowPair(dark, lightContact, lightKey, darkContact, darkKey) {
+    return {
+      "contact": _shadowLayer(dark ? darkContact : lightContact),
+      "key": _shadowLayer(dark ? darkKey : lightKey)
+    };
+  }
+  // Popover: arrow popups, menus, tooltips, dropdown lists.
+  readonly property var shadowPopup: _shadowPair(Colors.shellIsDark, [6, 0, 2, 0.08], [24, 0, 8, 0.12], [8, 0, 2, 0.27], [28, 0, 8, 0.39])
+  // Light menus are light surfaces whatever the shell mode.
+  readonly property var shadowMenuLight: _shadowPair(false, [6, 0, 2, 0.08], [24, 0, 8, 0.12], [], [])
+  // shadow-lg: dialogs.
+  readonly property var shadowDialog: _shadowPair(Colors.shellIsDark, [8, 0, 4, 0.06], [28, 0, 12, 0.08], [8, 0, 4, 0.30], [36, 0, 16, 0.24])
+  // shadow-lg turned horizontal: the control centre casts to the left only
+  // (DESIGN §3.5.1, frame.cpp:151-154).
+  readonly property var shadowControlCenter: _shadowPair(Colors.shellIsDark, [8, -4, 0, 0.06], [28, -12, 0, 0.08], [8, -4, 0, 0.30], [36, -16, 0, 0.24])
+  // shadow-md: transient surfaces (bubbles, toasts, OSD) follow their own
+  // light/dark form (§1.2 ui.transientSurface).
+  readonly property var shadowBubble: _shadowPair(Colors.transientIsDark, [4, 0, 2, 0.05], [16, 0, 6, 0.08], [4, 0, 2, 0.24], [16, 0, 6, 0.24])
+  readonly property var shadowOsd: shadowBubble
 
   // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
   // it -- the first-run wizard is the wide one. The 48 px leading icon and the

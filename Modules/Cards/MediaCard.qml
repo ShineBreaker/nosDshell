@@ -309,11 +309,14 @@ NBox {
           anchors.fill: main
           source: main
           autoPaddingEnabled: true
-          shadowBlur: 1.0
-          shadowOpacity: 0.9
-          shadowHorizontalOffset: 0
-          shadowVerticalOffset: 0
-          shadowColor: Settings.data.colorSchemes.darkMode ? "black" : "white"
+          // Legibility halo around the text, not an elevation shadow: one
+          // layer, centred, at the general blur radius.
+          shadow: ({
+                     "blur": Style.shadowBlurMax,
+                     "x": 0,
+                     "y": 0,
+                     "color": Settings.data.colorSchemes.darkMode ? Qt.rgba(0, 0, 0, 0.9) : Qt.rgba(1, 1, 1, 0.9)
+                   })
         }
 
         ColumnLayout {
