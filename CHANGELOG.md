@@ -10,6 +10,113 @@
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-10-30
+
+这一版把全部动效换成了一套有出处的设计语言：所有时长收进五档令牌、所有曲线取自一张
+CDS 曲线表——弹出层从锚点长出、带一点回弹，按钮按下微缩、松手弹回，通知和 OSD 沿屏
+幕边滑入滑出，行类元素的指针态依旧瞬变；切主题时全部颜色做一次交叉淡化，关掉动画或
+进入性能模式时这一切同时归零。配套地，弹出层、菜单、对话框的阴影重画成轮廓外侧的双
+层投影，深色弹出层上沿多了一道 1 px 高光，滚动区边缘的内容不再被色块盖住，而是沿曲
+线溶进背景；键盘操作也终于有了焦点环。
+
+顺手修掉一批"看不见的拦截者"：会话菜单关掉后不再以一块透明全屏表面继续吃掉点击和按
+键，滚动区边缘层不再在重建瞬间吞掉偶发的按下，通知超时退场也有了自己的动画而不是瞬
+灭。验证侧新添了逐帧拍动效曲线的取证工具，和一套 Nix 测试环境，云端容器里也能跑完整
+的校验。
+
+---
+
+### 新功能
+
+- debug findAll, and hit-tests that see through wheel layers：[`79a47960a`](https://github.com/ShineBreaker/nosDshell/commit/79a47960a15d0472656d5feccc76e62827d51de7)
+- top-edge highlight on dark popups：[`28b7408d6`](https://github.com/ShineBreaker/nosDshell/commit/28b7408d6316c72d370b44021afe36204f997cef)
+- non-linear CDS edge fade as an alpha mask：[`c46f19be3`](https://github.com/ShineBreaker/nosDshell/commit/c46f19be396f0fea3e32b730fab46a363ebfdaef)
+- NFocusRing for keyboard focus; notification cards use it：[`b64bc6fcc`](https://github.com/ShineBreaker/nosDshell/commit/b64bc6fcc0b66753207b609e9fd42fc30cd1bfd8)
+- theme crossfade on motionTheme with the swift curve：[`5583af7d7`](https://github.com/ShineBreaker/nosDshell/commit/5583af7d779d83a05f9449ad6cc7171aba8f0ae2)
+- finish the migration; every loop honours reduced motion：[`6f299f7d2`](https://github.com/ShineBreaker/nosDshell/commit/6f299f7d22416d69dd1be9a8dd406715432271f2)
+- control-centre page pushes on motionPage：[`87c3c597d`](https://github.com/ShineBreaker/nosDshell/commit/87c3c597d720076e7bee3aa28b226160a448fece)
+- app strips, workspaces and bar pills on §1.7 tokens：[`3bc5075eb`](https://github.com/ShineBreaker/nosDshell/commit/3bc5075eb95fb2eed8b1be3c94c7c2ffcbad966c)
+- NPressScale press squish on button-class controls：[`64d9c533c`](https://github.com/ShineBreaker/nosDshell/commit/64d9c533c0fd5ee9b3984d107a03f2cc76cf0a59)
+- data, reorder and focus colours on tokens; gate loops：[`b975d9d5a`](https://github.com/ShineBreaker/nosDshell/commit/b975d9d5a2c6dfc3fc08ac31a6fe4e4161a9a4a0)
+- scroll views on §1.7 curves; reduced motion covers them：[`3253aa324`](https://github.com/ShineBreaker/nosDshell/commit/3253aa324f20466748c284bc93d205a7b4d75a35)
+- switch, collapsible and page transitions on §1.7 curves：[`fc62a2412`](https://github.com/ShineBreaker/nosDshell/commit/fc62a24120696a1df94b8860dc6d641b07d62c2d)
+- full-screen surfaces on the §1.7 tokens：[`853fc8ecd`](https://github.com/ShineBreaker/nosDshell/commit/853fc8ecda75753a1fbaeb1c2cab0b94d2ad1488)
+- CDS enter/exit on the OSD tile：[`dddd54dae`](https://github.com/ShineBreaker/nosDshell/commit/dddd54daed9196f290269413c9b106611fab1f19)
+- bubble recipe for enter and exit; animate dismissal：[`2acd04b3f`](https://github.com/ShineBreaker/nosDshell/commit/2acd04b3f5de028908476bc10b0c065323c7e27e)
+- CDS enter/exit for bubbles and the history list：[`b89f459fb`](https://github.com/ShineBreaker/nosDshell/commit/b89f459fb82723f8f3593d13d9346a25cc689369)
+- popover motion and room for the shadow：[`d06fe10c1`](https://github.com/ShineBreaker/nosDshell/commit/d06fe10c12d5eb7e0975672cf2d083c5171a0ab9)
+- move panels, dimmer and bar slide onto the §1.7 tokens：[`072756b21`](https://github.com/ShineBreaker/nosDshell/commit/072756b21eff035e4a27ed27df2e5c7774a897b6)
+- draw shadows outside the silhouette only, in two CDS layers：[`31b6af3be`](https://github.com/ShineBreaker/nosDshell/commit/31b6af3becf11c8e77f3e9101aeed72546ebd173)
+- grow popups out of their anchor on the CDS popover recipe：[`7b7a71caa`](https://github.com/ShineBreaker/nosDshell/commit/7b7a71caa93010ee876a5ef3fa6c29b4f03e4b2a)
+- add NAnim/NColorAnim motion primitives：[`2129bf309`](https://github.com/ShineBreaker/nosDshell/commit/2129bf309742df89cf0106664469ed7ce407f21f)
+
+### 修复
+
+- let the anchor group through the missing-property check：[`8c40184d3`](https://github.com/ShineBreaker/nosDshell/commit/8c40184d3aa2477619187692fb03d0d53edd8bf8)
+- run the section editor's drop pulse from a binding：[`2410d6bfb`](https://github.com/ShineBreaker/nosDshell/commit/2410d6bfb4d17e13fa85b44f0cf9dd289bf6c298)
+- unmap the session menu once its close fade is over：[`15b2c2369`](https://github.com/ShineBreaker/nosDshell/commit/15b2c2369e97cf2ae2e1442c9dbf72ed92c08da2)
+- keep a resident virtual pointer so injected clicks are not lost：[`2e6690e7f`](https://github.com/ShineBreaker/nosDshell/commit/2e6690e7f3e6eb0a475610f1ff80d8ddc0367d34)
+- hand the bundled launcher icon over as a file URL：[`05b561c6e`](https://github.com/ShineBreaker/nosDshell/commit/05b561c6e7ab39ea7f08849ecaf0bd0b78ca8eb7)
+- size the section editor title from the editor, not its row：[`27bc89629`](https://github.com/ShineBreaker/nosDshell/commit/27bc89629e766e9dd663a92cf5ce9b6a5a01f492)
+- reserve the scrollbar column one turn after overflow changes：[`26c583fb7`](https://github.com/ShineBreaker/nosDshell/commit/26c583fb7e8e6a50e01a31a9660f14e0e1b17246)
+- declare the tab-ready Connections target as null：[`e960b97e5`](https://github.com/ShineBreaker/nosDshell/commit/e960b97e53a2fbbbfc58cc89cdf6d5a25b1b1cd3)
+- give the module scroll an explicit content size：[`e10743751`](https://github.com/ShineBreaker/nosDshell/commit/e1074375121028c7c7a683c2b935f832f6ef32b2)
+- draw the top highlight with rectangles, not Shape strokes：[`e5f87b4ca`](https://github.com/ShineBreaker/nosDshell/commit/e5f87b4caf2f1fc14a09c925820b2f2561e96dad)
+- draw the focus ring only for keyboard selection：[`51133a04e`](https://github.com/ShineBreaker/nosDshell/commit/51133a04ea82266ddee00578f788941e1874e799)
+- send the pointer motion before every click, not only held ones：[`c3a960203`](https://github.com/ShineBreaker/nosDshell/commit/c3a960203ae6a751691ac99cfd37120769e40a11)
+- keep the edge-fade layer stable so clicks are not lost：[`513d8b6ba`](https://github.com/ShineBreaker/nosDshell/commit/513d8b6baf835f3ac1379384cebe00e66b4e5a80)
+- deliver the press of a held click：[`8d71d27bc`](https://github.com/ShineBreaker/nosDshell/commit/8d71d27bc4bf3c541b60e2cdd7c1a19b6d37a761)
+- let dismissOldest play the bubble exit：[`9dd791c73`](https://github.com/ShineBreaker/nosDshell/commit/9dd791c7380898a502fbf6ee70bb6c1e900755f8)
+- give popup menu windows room for their shadow：[`f1c902ff8`](https://github.com/ShineBreaker/nosDshell/commit/f1c902ff8d9817a3fe9053978e7c44f94d5b8f79)
+- keep fitted curves under the QEasingCurve 11-segment crash：[`ff72a76b3`](https://github.com/ShineBreaker/nosDshell/commit/ff72a76b3b72c1bfa6c123a57960ecd5aa7efdda)
+- repair debug-smoke assertions that drifted from the debug IPC：[`69a2f5d90`](https://github.com/ShineBreaker/nosDshell/commit/69a2f5d90c3d7d4122972fdd07ce5045ca2f7190)
+- replace the `//` comment that broke flake evaluation：[`2aeb9c76b`](https://github.com/ShineBreaker/nosDshell/commit/2aeb9c76bd64d5038085bf41d232ba2332a54851)
+
+### 观感
+
+- run qmlformat over DebugService：[`e2b017ed8`](https://github.com/ShineBreaker/nosDshell/commit/e2b017ed8716d61583997ab13eb31d28025634c4)
+- add CDS duration tiers, curve tokens and reduceMotion：[`c50f30a24`](https://github.com/ShineBreaker/nosDshell/commit/c50f30a24dfa095894d4ad65ea2cfdb056e0e2fa)
+
+### 重构
+
+- converge tabular numerals on NText.numeric：[`e9a854140`](https://github.com/ShineBreaker/nosDshell/commit/e9a8541405e9834e6e9e204e387f6436a628a9ce)
+
+### 性能
+
+- fade arrow-popup backgrounds by item opacity, not path colour：[`a64a6da65`](https://github.com/ShineBreaker/nosDshell/commit/a64a6da652fe06ada1550e423bf31711d355beb8)
+
+### 文档
+
+- how to tell a lost press from a QML bug; known issue：[`4332151e8`](https://github.com/ShineBreaker/nosDshell/commit/4332151e87003bd9aece6ba05f2f2f28a52f301b)
+- record the arrow-panel scale exception and the spline cap：[`163605412`](https://github.com/ShineBreaker/nosDshell/commit/163605412cd3ace74a322b38173d8ea266d0f49e)
+- adopt the CDS motion language and surface finish：[`232877667`](https://github.com/ShineBreaker/nosDshell/commit/2328776670d964bdf17de144e5b6589eba958404)
+
+### 验证
+
+- read settings-tree's contentY directly, not from a tree dump：[`688682864`](https://github.com/ShineBreaker/nosDshell/commit/688682864db29a836f7795311f8b140d27ef980a)
+- move item_centre next to the other scene helpers：[`d05a17198`](https://github.com/ShineBreaker/nosDshell/commit/d05a171985d68e83bbe69398365589c67105a849)
+- make cc-switch find its switch by objectName and assert it：[`260cf95b0`](https://github.com/ShineBreaker/nosDshell/commit/260cf95b0ce79be4f9b2c38873cf8cdbfad29040)
+- run lockscreen last in the default scene set as well：[`742a3ebea`](https://github.com/ShineBreaker/nosDshell/commit/742a3ebea5aa10628e5f5f993594a81162804df5)
+- select the Papirus icon theme in isolated sessions：[`362905c30`](https://github.com/ShineBreaker/nosDshell/commit/362905c30aad140bdd8d2ab55a4fcf0efc3df64f)
+- say so when edge-fade has no scrollable page to test：[`988a1ca47`](https://github.com/ShineBreaker/nosDshell/commit/988a1ca47634bdccf22def55bfe51dc508a5379c)
+- park edge-fade at the middle of the scroll range：[`b88bb5ee6`](https://github.com/ShineBreaker/nosDshell/commit/b88bb5ee67ecc0ab09a32e51fef75e35a15c0b63)
+- make cc-notif-groups run all four steps and assert them：[`18ec80ef4`](https://github.com/ShineBreaker/nosDshell/commit/18ec80ef42ca2f3ffbea222f4136b74e91477630)
+- add an edge-fade scene that asserts the fade widths：[`b9c5a03df`](https://github.com/ShineBreaker/nosDshell/commit/b9c5a03df848b8b1a301321a367a55387353c24f)
+- add cc-notif-focus for the keyboard focus ring：[`8bfa0ddea`](https://github.com/ShineBreaker/nosDshell/commit/8bfa0ddeab0045b4ea1d12ef84c4f5f99c01e2e4)
+- let a burst skip the still-screen wait：[`cf0166dcb`](https://github.com/ShineBreaker/nosDshell/commit/cf0166dcb270a68e24ef414ea5af4cb1d23b2c5f)
+- add a motion-tooltip scene：[`8585a0ab3`](https://github.com/ShineBreaker/nosDshell/commit/8585a0ab3bf35c38212ab28837a4dfafe30f4aa8)
+- assert the menu shadow margin is click-through; fix VINPUT clash：[`e80f38d62`](https://github.com/ShineBreaker/nosDshell/commit/e80f38d62c2ac34a9464ba1aa2e9f3a4a6f6394c)
+- fail runs on config load failures and crashes; add motion-panel：[`68b3b85d6`](https://github.com/ShineBreaker/nosDshell/commit/68b3b85d611057d5c3beafda31e0c282b5677562)
+- wait for lazily painted layers before the first burst：[`c3ecb0047`](https://github.com/ShineBreaker/nosDshell/commit/c3ecb00471c68c7d0feb7ba1557d288fedea1a66)
+- let qmlfmt.sh fall back to the nix test environment：[`2a9c64a85`](https://github.com/ShineBreaker/nosDshell/commit/2a9c64a857e75ec18a348cb487ab75815fd1f330)
+- add frame-burst motion capture with filmstrips and curves：[`fa5d0caf8`](https://github.com/ShineBreaker/nosDshell/commit/fa5d0caf8bdcd5d29d79c350974ec09d52bf228c)
+- add a nix package backend to the test and lint harness：[`893922430`](https://github.com/ShineBreaker/nosDshell/commit/893922430014c58d7808a99b59d07731039baf30)
+
+### 工程
+
+- replace check-color-motion with check-motion：[`53b28d388`](https://github.com/ShineBreaker/nosDshell/commit/53b28d38805d5e3dfac4d05eaea30a5bc795cd2e)
+- catch unknown property assignments and lint a type's users：[`1a9f0eded`](https://github.com/ShineBreaker/nosDshell/commit/1a9f0eded0f0aeb0c6400cfca89c8c8bd56e9b45)
+
 ## [1.6.4] - 2026-10-30
 
 这一版修掉一个困扰已久的"幽灵换肤"：主题总是在计划时间之外自己翻动，一天里能来回
@@ -572,7 +679,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.4...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.4...v1.7.0
 [1.6.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.1...v1.6.2
