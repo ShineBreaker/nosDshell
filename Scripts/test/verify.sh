@@ -516,6 +516,18 @@ sleep 6
 shot() { grim "$OUT/$1.png" && echo "saved $1.png"; }
 call() { local s="${!#}"; set -- "${@:1:$#-1}"; echo "ipc: $*"; qs -p "$REPO" ipc call "$@" 2>&1; sleep "$s"; }
 toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
+# item_centre <root> <objectName> → "cx cy", the centre of a visible item as
+# `debug find` reports it (scene coordinates: screen coordinates on the
+# full-screen roots cc-*, main-*), or nothing when it is hidden or missing.
+# Locate click targets this way instead of hard-coding coordinates, which go
+# stale whenever the layout moves.
+item_centre() {
+  local d w h x y
+  d=$(qs -p "$REPO" ipc call debug find "$1" "$2" 2>/dev/null)
+  case "$d" in "" | *hidden* | *"no item"*) return ;; esac
+  read -r w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+  [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+}
 
 # --- motion capture (motion-* scenes; run them through Scripts/test/motion.sh,
 # which seeds general.animationSpeed so every duration is stretched by
@@ -531,18 +543,6 @@ MOTION_SLOW="${NOSD_MOTION_SLOW:-1}"
 BURST_DIR=""; BURST_PID=""
 # Wait until four quarter-size grabs 0.5 s apart are identical: late work
 # (wallpaper decode, icon loads, a previous exit) must not be read as part
-# item_centre <root> <objectName> → "cx cy", the centre of a visible item as
-# `debug find` reports it (scene coordinates: screen coordinates on the
-# full-screen roots cc-*, main-*), or nothing when it is hidden or missing.
-# Locate click targets this way instead of hard-coding coordinates, which go
-# stale whenever the layout moves.
-item_centre() {
-  local d w h x y
-  d=$(qs -p "$REPO" ipc call debug find "$1" "$2" 2>/dev/null)
-  case "$d" in "" | *hidden* | *"no item"*) return ;; esac
-  read -r w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
-  [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
-}
 # of the animation under test. Two equal grabs were not enough: under
 # software rendering the wallpaper decode can sit idle for over a second
 # before it paints.
