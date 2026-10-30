@@ -47,6 +47,11 @@ for check in check-settings-keys check-translations check-popup-motion check-col
     FAIL=1
   fi
 done
+# Motion curve tokens in Commons/Style.qml must match their CDS references
+# (DESIGN §1.7; the script also generates them with --emit).
+if ! python3 "$REPO/Scripts/test/test-motion-curves.py"; then
+  FAIL=1
+fi
 [ "$FAIL" -gt 0 ] && exit 1
 # The settings search index must match what the current sources generate
 # (lefthook's pre-commit rebuild is not available on this machine).
