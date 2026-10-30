@@ -70,16 +70,16 @@ Item {
         path: ArrowRect.svgPath(root.width, root.height, root.radius, root.arrowEdge, root._tipPos, root.arrowWidth, root.arrowHeight)
       }
     }
+  }
 
-    ShapePath {
-      fillColor: "transparent"
-      strokeColor: root.highlightColor
-      strokeWidth: root.highlightColor.a > 0 ? 1 : -1
-      capStyle: ShapePath.FlatCap
-
-      PathSvg {
-        path: root.highlightColor.a > 0 ? ArrowRect.topHighlightPath(root.width, root.height, root.radius, root.arrowEdge, root._tipPos, root.arrowWidth, root.arrowHeight) : ""
-      }
-    }
+  NTopHighlight {
+    boxWidth: root.width
+    boxHeight: root.height
+    radius: root.radius
+    arrowEdge: root.arrowEdge
+    arrowPosition: root._tipPos
+    arrowWidth: root.arrowWidth
+    arrowHeight: root.arrowHeight
+    color: root.highlightColor
   }
 }

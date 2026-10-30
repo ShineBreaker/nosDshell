@@ -322,17 +322,6 @@ Item {
             }
             shapeContainer: arrowPopupShape
           }
-
-          ShapePath {
-            fillColor: "transparent"
-            strokeColor: Colors.highlightShell
-            strokeWidth: arrowSlot0.highlightPath !== "" ? 1 : -1
-            capStyle: ShapePath.FlatCap
-
-            PathSvg {
-              path: arrowSlot0.highlightPath
-            }
-          }
         }
 
         Shape {
@@ -351,17 +340,34 @@ Item {
             }
             shapeContainer: arrowPopupShape
           }
+        }
 
-          ShapePath {
-            fillColor: "transparent"
-            strokeColor: Colors.highlightShell
-            strokeWidth: arrowSlot1.highlightPath !== "" ? 1 : -1
-            capStyle: ShapePath.FlatCap
+        // Top-edge highlight (DESIGN §1.6), fading with the slot's body
+        NTopHighlight {
+          x: arrowSlot0.boxX + _body.x
+          y: arrowSlot0.boxY + _body.y
+          opacity: arrowSlot0._fade
+          visible: arrowSlot0.isRenderable && color.a > 0
+          boxWidth: arrowSlot0.boxWidth
+          boxHeight: arrowSlot0.boxHeight
+          arrowEdge: arrowSlot0.arrowH > 0 ? arrowSlot0.arrowEdge : ""
+          arrowPosition: arrowSlot0.arrowTip
+          arrowWidth: arrowSlot0.arrowW
+          arrowHeight: arrowSlot0.arrowH
+        }
 
-            PathSvg {
-              path: arrowSlot1.highlightPath
-            }
-          }
+        // Top-edge highlight (DESIGN §1.6), fading with the slot's body
+        NTopHighlight {
+          x: arrowSlot1.boxX + _body.x
+          y: arrowSlot1.boxY + _body.y
+          opacity: arrowSlot1._fade
+          visible: arrowSlot1.isRenderable && color.a > 0
+          boxWidth: arrowSlot1.boxWidth
+          boxHeight: arrowSlot1.boxHeight
+          arrowEdge: arrowSlot1.arrowH > 0 ? arrowSlot1.arrowEdge : ""
+          arrowPosition: arrowSlot1.arrowTip
+          arrowWidth: arrowSlot1.arrowW
+          arrowHeight: arrowSlot1.arrowH
         }
       }
 

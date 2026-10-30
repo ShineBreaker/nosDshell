@@ -58,7 +58,7 @@ DDE 15 的界面安静、扁平、几何感强。表面要么是"模糊加黑色
 | `popupDark` | `mSurfaceVariant` × 0.86 × `ui.popupOpacity`（默认 1.0，范围 0.3–1.0；`popupShell` 在应用层再乘这个系数） | 同左，但最终 alpha 不低于 0.9（floor，与瞬时面同一条规则） | `gxde-dock/frame/util/dockpopupwindow.cpp:50-55`（Wayland 实测值）。RGB 改取方案 `mSurfaceVariant`〔演进〕，Deepin 的 `#2A2A2A` 接近原版 `#242424`。无模糊 floor〔演进：原先两列同为左列，无模糊合成器上低调值可透到不可读〕 |
 | `borderDark` | `mOutline` × 0.10〔演进：原版 0.05 在现代屏幕上几乎看不见，提高到看得见的发丝边。底色改取方案 `mOutline`，Deepin 的 `#3A3A3A` 接近原版 `#2C3238`〕 | `mOutline` | `gxde-dock/frame/util/dockpopupwindow.cpp:207-213` |
 | `borderLight` | `mOutline` × 0.08〔演进：原版 0.04。底色改取方案 `mOutline`，Deepin 的 `#D5D5D5` 接近原版 `#E5E5E5`〕 | `mOutline` | `gxde-session-ui/dde-osd/container.cpp:73-78`；`notification/bubble.cpp:288-296` |
-| `highlightShell` | 暗色外壳：白 × 0.10 × `ui.borderEmphasis`；浅色外壳：透明 | 同左 | §1.6 暗色弹出层的顶边高光〔CDS：`cds-theme.css:330`〕。由 `NArrowRect` 和带箭头弹出层的背景（`ArrowPanelBackground`）画在顶边内侧 1 px 处，箭头在顶边时在箭头底边两侧断开 |
+| `highlightShell` | 暗色外壳：白 × 0.10 × `ui.borderEmphasis`；浅色外壳：透明 | 同左 | §1.6 暗色弹出层的顶边高光〔CDS：`cds-theme.css:330`〕。由公共件 `NTopHighlight` 画在顶边内侧 1 px 处，`NArrowRect` 和带箭头弹出层的背景（`AllBackgrounds`）都用它；箭头在顶边时在箭头底边两侧断开 |
 
 规则：
 

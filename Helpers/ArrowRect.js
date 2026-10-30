@@ -120,33 +120,3 @@ function svgPath(w, h, radius, edge, arrowPos, arrowW, arrowH, ox, oy) {
   return p;
 }
 
-// Returns an open SVG path along the body's top edge, 1 px inside the
-// outline: the dark-popup highlight line (DESIGN §1.6). It runs from where
-// the left side meets the top-left corner, round that corner, along the top
-// and round the top-right corner, i.e. the top half of the CDS inner ring.
-// With the arrow on the top edge the line breaks around the arrow base.
-// Same arguments as svgPath; stroke it 1 px wide, no fill.
-function topHighlightPath(w, h, radius, edge, arrowPos, arrowW, arrowH, ox, oy) {
-  ox = ox || 0;
-  oy = oy || 0;
-  var top = edge === "top" ? arrowH : 0;
-  var left = edge === "left" ? arrowH : 0;
-  var bodyW = (edge === "left" || edge === "right") ? w - arrowH : w;
-  var bodyH = (edge === "top" || edge === "bottom") ? h - arrowH : h;
-  var r = Math.max(0, Math.min(radius, Math.min(bodyW, bodyH) / 2));
-  // 1.5: the 1 px stroke then covers exactly the pixel row (and column)
-  // inside the outline instead of straddling two at half strength.
-  var i = 1.5;
-  function P(x, y) {
-    return (left + x + ox) + " " + (top + y + oy);
-  }
-  var x0 = i, x1 = bodyW - i, yTop = i, yEnd = Math.max(i, r);
-  var leftCorner = r > i ? "M " + P(x0, yEnd) + " Q " + P(x0, yTop) + " " + P(r, yTop) : "M " + P(x0, yTop);
-  var rightCorner = r > i ? " Q " + P(x1, yTop) + " " + P(x1, yEnd) : "";
-  var rightStart = r > i ? bodyW - r : x1;
-  if (edge !== "top")
-    return leftCorner + " H " + (left + rightStart + ox) + rightCorner;
-  var a = _clampTip(arrowPos, w, r, arrowW);
-  var half = arrowW / 2;
-  return leftCorner + " H " + (left + a - half + ox) + " M " + P(a + half, yTop) + " H " + (left + rightStart + ox) + rightCorner;
-}
