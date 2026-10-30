@@ -41,7 +41,7 @@
 #   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
 #   settings-subpage is off the default set (needs its own seed — see the
 #   scene comment): drives the §3.5.3 二级页 rows on the dock tab.
-#   motion-* scenes (motion-popup, motion-cc, motion-panel, motion-launcher, motion-osd,
+#   motion-* scenes (motion-popup, motion-cc, motion-panel, motion-tooltip, motion-launcher, motion-osd,
 #   motion-bubble, motion-toast, motion-press, motion-switch) are off the
 #   default set: run them through Scripts/test/motion.sh, which stretches
 #   the durations and turns each burst into filmstrip/curve/metrics.
@@ -2796,6 +2796,12 @@ PYEOF
                           burst_start motion-panel-close full; burst_mark
                           qs -p "$REPO" ipc call volume togglePanel > /dev/null
                           burst_stop "$(motion_secs 400)" ;;
+    # Tooltip on the dock root (debug tip): arrow popup in its own window.
+    motion-tooltip)       burst_start motion-tooltip-open "560,760 800x320"; burst_mark
+                          qs -p "$REPO" ipc call debug tip dock-HEADLESS-1 "" "Tooltip motion" > /dev/null
+                          burst_stop "$(motion_secs 500)"
+                          shot motion-tooltip-shown
+                          $VIN move 300 300 > /dev/null 2>&1; sleep "$(motion_secs 400)" ;;
     motion-launcher)      burst_start motion-launcher-open full; burst_mark
                           qs -p "$REPO" ipc call launcher toggle > /dev/null
                           burst_stop "$(motion_secs 500)"

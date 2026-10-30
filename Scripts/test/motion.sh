@@ -15,7 +15,7 @@
 # to real speed, so settle_ms is directly comparable with the Style.motion*
 # tokens; capture latency makes it read up to ~one frame interval late.
 #
-# Default scenes: motion-popup motion-cc motion-panel motion-launcher motion-osd
+# Default scenes: motion-popup motion-cc motion-panel motion-tooltip motion-launcher motion-osd
 # motion-bubble motion-toast motion-press motion-switch.
 # NOSD_MOTION_KEEP=1 keeps the raw frames.
 #
@@ -25,7 +25,7 @@
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-OUT_NAME=""; SLOW=10; USER_SETTINGS=""; SCENES="motion-popup,motion-cc,motion-panel,motion-launcher,motion-osd,motion-bubble,motion-toast,motion-press,motion-switch"
+OUT_NAME=""; SLOW=10; USER_SETTINGS=""; SCENES="motion-popup,motion-cc,motion-panel,motion-tooltip,motion-launcher,motion-osd,motion-bubble,motion-toast,motion-press,motion-switch"
 while [ $# -gt 0 ]; do
   case "$1" in
     --slow) SLOW="$2"; shift 2 ;;
