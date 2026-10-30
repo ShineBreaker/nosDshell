@@ -169,7 +169,12 @@ fn data_dirs() -> Vec<PathBuf> {
     }
     let extra = std::env::var("XDG_DATA_DIRS").unwrap_or_else(|_| "/usr/local/share:/usr/share".into());
     for d in extra.split(':').filter(|d| !d.is_empty()) {
-        dirs.push(PathBuf::from(d));
+        // Dedupe: a data_home that also sits in XDG_DATA_DIRS would
+        // otherwise run every hook script twice per transition.
+        let p = PathBuf::from(d);
+        if !dirs.contains(&p) {
+            dirs.push(p);
+        }
     }
     dirs
 }
@@ -297,23 +302,22 @@ fn solar_time<Tz: TimeZone>(
     .map(|cand| cand.with_timezone(tz))
 }
 
-fn expected_mode<Tz: TimeZone>(lat: f64, lng: f64, now: DateTime<Tz>) -> Mode {
+// None = polar day/night (no sunrise/sunset today): callers keep the
+// current mode — the stored state is the best guess until coordinates
+// change or the season brings the sun back.
+fn expected_mode<Tz: TimeZone>(lat: f64, lng: f64, now: DateTime<Tz>) -> Option<Mode> {
     let tz = now.timezone();
     let today = now.date_naive();
     match (
         solar_time(today, lat, lng, true, &tz),
         solar_time(today, lat, lng, false, &tz),
     ) {
-        (Some(rise), Some(set)) => {
-            if now >= rise && now < set {
-                Mode::Light
-            } else {
-                Mode::Dark
-            }
-        }
-        // Polar day/night: keep current mode; the daemon's stored state is
-        // the best guess until coordinates change.
-        _ => Mode::Dark,
+        (Some(rise), Some(set)) => Some(if now >= rise && now < set {
+            Mode::Light
+        } else {
+            Mode::Dark
+        }),
+        _ => None,
     }
 }
 
@@ -602,7 +606,9 @@ async fn scheduler(d: Arc<Daemon>, lat: f64, lng: f64) {
         if scheduler_flag_enabled() {
             let boundary = prev_boundary(lat, lng, now);
             if boundary.is_some() && boundary != last_boundary {
-                d.transition(expected_mode(lat, lng, now)).await;
+                if let Some(m) = expected_mode(lat, lng, now) {
+                    d.transition(m).await;
+                }
                 last_boundary = boundary;
             }
         }
@@ -669,15 +675,44 @@ pub fn run(args: &[String]) -> i32 {
     }
 }
 
-async fn mode_proxy(conn: &zbus::Connection) -> Result<zbus::Proxy<'_>, String> {
-    zbus::Proxy::new(conn, DARKMAN_NAME, DARKMAN_PATH, DARKMAN_IFACE)
+// `dest` selects which owned bus name the object is reached through: the
+// object server answers on every name the connection owns, so clients can
+// reach the darkman object via PORTAL_NAME even when `dbusserver: false`
+// leaves DARKMAN_NAME unowned.
+async fn darkman_proxy<'a>(
+    conn: &'a zbus::Connection,
+    dest: &'static str,
+) -> Result<zbus::Proxy<'a>, String> {
+    zbus::Proxy::new(conn, dest, DARKMAN_PATH, DARKMAN_IFACE)
         .await
         .map_err(|e| e.to_string())
 }
 
+// The daemon may be mid-start when a caller pushes back-to-back with
+// `portal run` (the shell does exactly that on every start): give the bus
+// name a moment to appear instead of dropping the write, which would
+// leave portal and shell state diverged until the next flip.
+async fn daemon_ready<'a>(
+    conn: &'a zbus::Connection,
+    dest: &'static str,
+) -> Result<zbus::Proxy<'a>, String> {
+    let mut last_err = String::new();
+    for _ in 0..30 {
+        match darkman_proxy(conn, dest).await {
+            Ok(p) => match p.get_property::<String>("Mode").await {
+                Ok(_) => return Ok(p),
+                Err(e) => last_err = e.to_string(),
+            },
+            Err(e) => last_err = e,
+        }
+        tokio::time::sleep(std::time::Duration::from_millis(75)).await;
+    }
+    Err(format!("portal daemon not reachable: {last_err}"))
+}
+
 async fn client_get() -> Result<(), String> {
     let conn = zbus::Connection::session().await.map_err(|e| e.to_string())?;
-    let mode: String = mode_proxy(&conn)
+    let mode: String = daemon_ready(&conn, DARKMAN_NAME)
         .await?
         .get_property("Mode")
         .await
@@ -688,7 +723,7 @@ async fn client_get() -> Result<(), String> {
 
 async fn client_set(mode: &str) -> Result<(), String> {
     let conn = zbus::Connection::session().await.map_err(|e| e.to_string())?;
-    mode_proxy(&conn)
+    daemon_ready(&conn, DARKMAN_NAME)
         .await?
         .set_property("Mode", mode)
         .await
@@ -697,7 +732,7 @@ async fn client_set(mode: &str) -> Result<(), String> {
 
 async fn client_toggle() -> Result<(), String> {
     let conn = zbus::Connection::session().await.map_err(|e| e.to_string())?;
-    let proxy = mode_proxy(&conn).await?;
+    let proxy = daemon_ready(&conn, DARKMAN_NAME).await?;
     let cur: String = proxy
         .get_property("Mode")
         .await
@@ -713,10 +748,18 @@ async fn client_scheduler(enabled: bool) -> Result<(), String> {
     write_flag(scheduler_flag_file(), enabled)?;
     // Best effort: the flag file is authoritative, so a missing session bus
     // or a not-yet-running daemon must not fail the command — the daemon
-    // re-reads the flag on its next tick either way.
+    // re-reads the flag on its next tick either way. Alternate between the
+    // darkman name and the portal name: they are the same object, and a
+    // `dbusserver: false` config leaves the compat name unowned.
     if let Ok(conn) = zbus::Connection::session().await {
-        if let Ok(proxy) = mode_proxy(&conn).await {
-            let _ = proxy.call_method("RefreshScheduler", &()).await;
+        for i in 0..30 {
+            let dest = if i % 2 == 0 { DARKMAN_NAME } else { PORTAL_NAME };
+            if let Ok(proxy) = darkman_proxy(&conn, dest).await {
+                if proxy.call_method("RefreshScheduler", &()).await.is_ok() {
+                    break;
+                }
+            }
+            tokio::time::sleep(std::time::Duration::from_millis(75)).await;
         }
     }
     Ok(())
@@ -746,8 +789,17 @@ mod tests {
         let (lat, lng) = (31.2304, 121.4737);
         let noon = Shanghai.with_ymd_and_hms(2026, 6, 21, 12, 0, 0).unwrap();
         let midnight = Shanghai.with_ymd_and_hms(2026, 6, 21, 0, 0, 0).unwrap();
-        assert_eq!(expected_mode(lat, lng, noon), Mode::Light);
-        assert_eq!(expected_mode(lat, lng, midnight), Mode::Dark);
+        assert_eq!(expected_mode(lat, lng, noon), Some(Mode::Light));
+        assert_eq!(expected_mode(lat, lng, midnight), Some(Mode::Dark));
+    }
+
+    #[test]
+    fn expected_mode_polar_returns_none() {
+        // Svalbard mid-winter: no sunrise or sunset — the daemon must keep
+        // whatever mode it has rather than guessing.
+        let (lat, lng) = (78.2232, 15.6267);
+        let noon = Shanghai.with_ymd_and_hms(2026, 1, 15, 12, 0, 0).unwrap();
+        assert_eq!(expected_mode(lat, lng, noon), None);
     }
 
     #[test]
@@ -839,7 +891,7 @@ async fn serve() -> Result<(), String> {
     // configured solar position, then light. No signals are emitted here —
     // subscribers do an initial Read; hooks only fire on real transitions.
     let initial = load_state()
-        .or_else(|| cfg.lat.zip(cfg.lng).map(|(la, ln)| expected_mode(la, ln, Local::now())))
+        .or_else(|| cfg.lat.zip(cfg.lng).and_then(|(la, ln)| expected_mode(la, ln, Local::now())))
         .unwrap_or(Mode::Light);
     persist(initial);
 
