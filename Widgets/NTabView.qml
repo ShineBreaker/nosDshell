@@ -30,7 +30,8 @@ Item {
   property bool animating: false
   property real animatingHeight: 0
   property real transitionGap: Style.marginXL
-  property real transitionTime: Style.animationNormal
+  // Page switch (DESIGN §1.7 motionPage, "out")
+  property real transitionTime: Style.motionPage
   property list<Item> contentItems: []
 
   default property alias content: container.data
@@ -287,11 +288,11 @@ Item {
     }
   }
 
-  NumberAnimation {
+  NAnim {
     id: fromXAnim
     property: "x"
     duration: root.transitionTime
-    easing.type: Easing.OutCubic
+    curve: "out"
     onFinished: {
       if (target && target !== contentItems[currentIndex]) {
         target.visible = false;
@@ -301,27 +302,27 @@ Item {
     }
   }
 
-  NumberAnimation {
+  NAnim {
     id: fromOpacityAnim
     property: "opacity"
     to: 0.25
     duration: root.transitionTime
-    easing.type: Easing.OutCubic
+    curve: "out"
   }
 
-  NumberAnimation {
+  NAnim {
     id: toXAnim
     property: "x"
     to: 0
     duration: root.transitionTime
-    easing.type: Easing.OutCubic
+    curve: "out"
   }
 
-  NumberAnimation {
+  NAnim {
     id: toOpacityAnim
     property: "opacity"
     to: 1.0
     duration: root.transitionTime
-    easing.type: Easing.OutCubic
+    curve: "out"
   }
 }

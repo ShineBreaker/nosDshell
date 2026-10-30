@@ -59,9 +59,9 @@ ColumnLayout {
         rotation: root.expanded ? 90 : 0
         Behavior on rotation {
           enabled: root._userInteracted
-          NumberAnimation {
-            duration: Style.animationNormal
-            easing.type: Easing.OutCubic
+          NAnim {
+            duration: Style.motionExpand
+            curve: "expand"
           }
         }
       }
@@ -111,9 +111,9 @@ ColumnLayout {
     // Smooth height animation
     Behavior on Layout.preferredHeight {
       enabled: root._userInteracted
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
 
@@ -129,9 +129,9 @@ ColumnLayout {
     opacity: root.expanded ? 1.0 : 0.0
     Behavior on opacity {
       enabled: root._userInteracted
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "out"
       }
     }
   }
