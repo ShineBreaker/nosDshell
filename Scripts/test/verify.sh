@@ -1099,14 +1099,20 @@ PYEOF
                             shot "settings-scroll-${tab}-${i}"
                           done
                           call settings toggle 2 ;;
-    # Scroll edge fade (DESIGN §1.11): park the settings content mid-page and
+    # Scroll edge fade (DESIGN §1.11): park the settings content mid-range and
     # assert both edges fade the full Style.scrollFadeSize (28), then back at
     # the top the top edge must not fade. The widths are read off the
     # NScrollEdgeMask in the scroll view's background slot; the crops show the
     # dissolve itself.
     edge-fade)            call settings openTab general 3
                           ef() { qs -p "$REPO" ipc call debug "$@" 2>&1; }
-                          ef set cc-HEADLESS-1 settingsContentScroll contentItem.contentY 600
+                          # Mid-way through the scroll range, whatever the page's
+                          # length: a fixed contentY can already be the bottom.
+                          EFH=$(ef get cc-HEADLESS-1 settingsContentScroll contentItem.contentHeight)
+                          EFV=$(ef get cc-HEADLESS-1 settingsContentScroll contentItem.height)
+                          EFY=$(awk -v c="$EFH" -v v="$EFV" 'BEGIN { printf "%d", (c - v) / 2 }')
+                          echo "edge-fade: content $EFH, viewport $EFV, parking at $EFY"
+                          ef set cc-HEADLESS-1 settingsContentScroll contentItem.contentY "$EFY"
                           sleep 1
                           EFT=$(ef get cc-HEADLESS-1 settingsContentScroll background.children.0.topFade)
                           EFB=$(ef get cc-HEADLESS-1 settingsContentScroll background.children.0.bottomFade)
