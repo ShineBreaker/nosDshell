@@ -107,6 +107,7 @@ NBox {
         }
 
         NText {
+          numeric: true
           text: brightnessMonitor ? Math.round(localBrightness * 100) + "%" : "N/A"
           pointSize: Style.fontSizeXS
           color: Colors.mOnSurfaceVariant

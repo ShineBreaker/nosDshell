@@ -77,9 +77,7 @@ NDccRow {
         visible: root.text !== ""
         text: root.text
         pointSize: root.textSize
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         color: Colors.onShellSecondary
         opacity: root.enabled ? 1.0 : 0.6
         Layout.alignment: Qt.AlignVCenter
@@ -107,9 +105,7 @@ NDccRow {
         visible: !root.dccRow && root.text !== ""
         text: root.text
         pointSize: root.textSize
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         color: Colors.onShellSecondary
         opacity: root.enabled ? 1.0 : 0.6
         Layout.alignment: Qt.AlignVCenter

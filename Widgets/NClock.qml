@@ -297,9 +297,7 @@ Item {
         pointSize: hoursFontSize
         font.weight: hoursFontWeight
         color: clockColor
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         Layout.alignment: Qt.AlignHCenter
       }
 
@@ -308,9 +306,7 @@ Item {
         pointSize: minutesFontSize
         font.weight: minutesFontWeight
         color: clockColor
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         Layout.alignment: Qt.AlignHCenter
       }
     }

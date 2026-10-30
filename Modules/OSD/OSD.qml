@@ -375,9 +375,7 @@ Variants {
         visible: false
         text: root.getDisplayPercentage()
         pointSize: Style.fontSizeS
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         elide: Text.ElideNone
         wrapMode: Text.NoWrap
       }
@@ -667,9 +665,7 @@ Variants {
             text: root.getDisplayPercentage()
             color: Colors.onTransient
             pointSize: Style.fontSizeS
-            features: {
-              "tnum": 1
-            }
+            numeric: true
             elide: Text.ElideNone
             horizontalAlignment: Text.AlignHCenter
           }

@@ -167,9 +167,7 @@ Item {
     opacity: root.showPercentageText && root.ready && (root.charging ? !root.showStateIcon : !root.pluggedIn) ? 1 : 0
     x: batteryBody.x + Style.pixelAlignCenter(bodyBackground.width, width)
     y: batteryBody.y + bodyBackground.y + Style.pixelAlignCenter(bodyBackground.height, height)
-    features: {
-      "tnum": 1
-    }
+    numeric: true
     font.weight: Style.fontWeightMedium
     text: root.vertical ? String(Math.round(root.animatedPercentage)).split('').join('\n') : Math.round(root.animatedPercentage)
     pointSize: root.baseSize * (root.vertical ? 0.82 : 0.82)

@@ -156,6 +156,7 @@ SmartPanel {
             }
 
             NText {
+              numeric: true
               text: panelContent.globalBrightnessCapableMonitors > 0 ? Math.round(panelContent.globalBrightness * 100) + "%" : "N/A"
               Layout.preferredWidth: 40
               horizontalAlignment: Text.AlignRight

@@ -19,6 +19,9 @@ Text {
     return fontScale;
   }
   property var features: ({})
+  // Changing numbers (percentages, times, counts, temperatures) keep their
+  // width as they tick: tabular figures in the UI font (DESIGN §1.5, §1.11).
+  property bool numeric: false
 
   // Leaf dim contract: text dims itself when disabled unless an ancestor
   // composite already dims its whole subtree (autoDim: false) — without the
@@ -29,7 +32,9 @@ Text {
   font.family: root.family
   font.weight: Style.fontWeightMedium
   font.pointSize: Math.max(1, root.pointSize * fontScale)
-  font.features: root.features
+  font.features: root.numeric ? Object.assign({
+                                                "tnum": 1
+                                              }, root.features) : root.features
   color: Colors.onShell
   elide: Text.ElideRight
   wrapMode: Text.NoWrap

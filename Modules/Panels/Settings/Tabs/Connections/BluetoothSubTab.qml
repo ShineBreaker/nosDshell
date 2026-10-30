@@ -380,6 +380,7 @@ Item {
                 color: Colors.onShellTertiary
               }
               NText {
+                numeric: true
                 text: {
                   var b = BluetoothService.getBatteryPercent(entry);
                   return b === null ? "-" : (b + "%");
@@ -525,6 +526,7 @@ Item {
                 color: Colors.onShell
               }
               NText {
+                numeric: true
                 text: {
                   var b = BluetoothService.getBatteryPercent(entry);
                   return b === null ? "-" : (b + "%");

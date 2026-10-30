@@ -130,9 +130,7 @@ Item {
     anchors.verticalCenterOffset: -4 * root.contentScale
     text: `${Math.round(root.animatedRatio * 100)}${root.suffix}`
     pointSize: Style.fontSizeM * root.contentScale * 0.9
-    features: {
-      "tnum": 1
-    }
+    numeric: true
     font.weight: Style.fontWeightMedium
     color: Colors.onShell
     horizontalAlignment: Text.AlignHCenter
