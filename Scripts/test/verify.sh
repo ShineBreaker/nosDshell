@@ -228,7 +228,7 @@ set -uo pipefail
 cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
-control-center cc-switch cc-page cc-slider cc-notifications cc-notif-groups cc-quick-wifi
+control-center cc-switch cc-page cc-slider cc-notifications cc-notif-groups cc-notif-focus cc-quick-wifi
 cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
 cc-collapse cc-geom settings-cc-pages
 settings session-menu notification
@@ -470,7 +470,7 @@ fi
 # several app names). Seed the persistence file the service reads via
 # NOSD_NOTIF_HISTORY_FILE (Services/System/NotificationService.qml) before
 # qs starts, with times relative to launch.
-if [[ " $SELECTED " == *" cc-notif-groups "* ]]; then
+if [[ " $SELECTED " == *" cc-notif-groups "* || " $SELECTED " == *" cc-notif-focus "* ]]; then
   export NOSD_NOTIF_HISTORY_FILE="$WORK/notification-history.json"
   python3 - "$NOSD_NOTIF_HISTORY_FILE" <<'PYEOF'
 import json,sys,time
@@ -855,6 +855,24 @@ run_scene() {
     # swipe-dismiss → clear-all. Anchor items carry objectName markers
     # (notifCard / notifMore / notifClearAll); debug tree prints global
     # coords, so their centres are direct click points.
+    # Keyboard focus ring on a notification card (DESIGN §1.11): the list's
+    # focusIndex is arrow-key driven; set it through `debug set` instead.
+    # Keyboard focus ring on a notification card (DESIGN §1.11): the list's
+    # focusIndex is arrow-key driven; with no key injection, set it through
+    # `debug set` to the first row whose descriptor is a notification.
+    cc-notif-focus)       call controlCenter notifications 1.5
+                          FI=-1
+                          for i in 0 1 2 3 4 5; do
+                            k=$(qs -p "$REPO" ipc call debug get cc-HEADLESS-1 notifHistoryList "descriptors.$i.kind" 2>&1)
+                            case "$k" in *notif*) FI=$i; break ;; esac
+                          done
+                          echo "first notification row: $FI"
+                          qs -p "$REPO" ipc call debug set cc-HEADLESS-1 notifHistoryList focusIndex "$FI"
+                          sleep 1
+                          shot cc-notif-focus
+                          convert "$OUT/cc-notif-focus.png" -crop 420x360+1500+60 +repage "$OUT/cc-notif-focus-crop.png"
+                          [ "$FI" -ge 0 ] || { echo "FAIL cc-notif-focus: no notification row"; SCENE_FAIL=1; }
+                          call controlCenter notifications 0.5 ;;
     cc-notif-groups)      call controlCenter notifications 1.5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
