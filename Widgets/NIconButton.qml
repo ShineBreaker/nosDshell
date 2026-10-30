@@ -68,6 +68,12 @@ Item {
     anchors.centerIn: parent
 
     readonly property bool pressed: mouseArea.pressed
+    scale: press.value
+
+    NPressScale {
+      id: press
+      pressed: visualButton.pressed && root.enabled
+    }
 
     color: {
       if (root.enabled && root.checked)
@@ -80,9 +86,9 @@ Item {
 
     Behavior on color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionPointer
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
 
@@ -114,9 +120,9 @@ Item {
 
       Behavior on color {
         enabled: !Colors.isTransitioning
-        ColorAnimation {
+        NColorAnim {
           duration: Style.motionPointer
-          easing.type: Easing.OutCubic
+          curve: "swift"
         }
       }
     }
@@ -144,6 +150,12 @@ Item {
         TooltipService.hide(root);
       }
       root.exited();
+    }
+    // A press cancels a pending tooltip, like NButton/NIconButtonHot do:
+    // hiding only on click let the delayed tooltip appear mid-press.
+    onPressed: {
+      if (tooltipText && (!Array.isArray(tooltipText) || tooltipText.length > 0))
+        TooltipService.hide(root);
     }
     onClicked: mouse => {
                  if (tooltipText && (!Array.isArray(tooltipText) || tooltipText.length > 0)) {

@@ -20,6 +20,12 @@ Rectangle {
   // Internal properties
   property bool hovering: false
   property bool pressed: false
+  scale: press.value
+
+  NPressScale {
+    id: press
+    pressed: root.pressed && root.enabled
+  }
 
   // Color properties
   property color colorBg: "transparent"
@@ -62,9 +68,9 @@ Rectangle {
 
   Behavior on color {
     enabled: !Colors.isTransitioning
-    ColorAnimation {
+    NColorAnim {
       duration: Style.motionPointer
-      easing.type: Easing.OutCubic
+      curve: "swift"
     }
   }
 
@@ -92,9 +98,9 @@ Rectangle {
 
     Behavior on color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionPointer
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
   }
@@ -133,7 +139,6 @@ Rectangle {
     }
 
     onReleased: function (mouse) {
-      root.scale = 1.0;
       root.pressed = false;
 
       if (!root.enabled && !allowClickWhenDisabled) {
@@ -155,7 +160,6 @@ Rectangle {
     onCanceled: {
       root.hovering = false;
       root.pressed = false;
-      root.scale = 1.0;
       if (tooltipText && (!Array.isArray(tooltipText) || tooltipText.length > 0)) {
         TooltipService.hide();
       }

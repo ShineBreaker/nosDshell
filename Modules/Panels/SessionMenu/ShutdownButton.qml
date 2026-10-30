@@ -38,6 +38,12 @@ Rectangle {
   readonly property string artworkState: pressed ? "press" : (dimmed ? "hover" : "normal")
 
   radius: Style.radiusLarge
+  scale: press.value
+
+  NPressScale {
+    id: press
+    pressed: button.pressed && button.available
+  }
   color: dimmed ? Colors.pressDim : "transparent"
   // rounditembutton.cpp:65-74 — setDisabled() drops the whole widget to 0.5
   opacity: button.available ? 1.0 : 0.5
