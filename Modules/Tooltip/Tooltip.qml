@@ -113,9 +113,24 @@ PopupWindow {
     activeWhen: Colors.blurActive
   }
 
+  // Body size, set by the positioning code; the window adds a shadow
+  // margin on every side (DESIGN §1.6, Style.popupShadowInset) and stays
+  // click-through outside the body.
+  property real bodyWidth: 0
+  property real bodyHeight: 0
+  readonly property int shadowInset: Style.popupShadowInset
+  implicitWidth: bodyWidth + 2 * shadowInset
+  implicitHeight: bodyHeight + 2 * shadowInset
+  mask: Region {
+    item: tooltipContainer
+  }
+
   anchor.item: targetItem
-  anchor.rect.x: anchorX
-  anchor.rect.y: anchorY
+  // anchorX/Y place the body; the compositor must not slide the window
+  // (that would move the body by up to the inset).
+  anchor.rect.x: anchorX - shadowInset
+  anchor.rect.y: anchorY - shadowInset
+  anchor.adjustment: PopupAdjustment.None
 
   // Timer for showing tooltip after delay
   Timer {
@@ -137,31 +152,47 @@ PopupWindow {
     }
   }
 
-  // Show animation
+  // Show / hide (DESIGN §1.7 popover recipe): fade and scale out of the
+  // arrow side on "snappy"; leave faster on "cssEaseOut" without overshoot.
   ParallelAnimation {
     id: showAnimation
 
-    PropertyAnimation {
+    NAnim {
       target: tooltipContainer
       property: "opacity"
       from: 0.0
       to: 1.0
       duration: Style.motionPopupIn
-      easing.type: Easing.OutCubic
+      curve: "snappy"
+    }
+    NAnim {
+      target: tooltipContainer
+      property: "scale"
+      from: Style.popupEnterScale
+      to: 1.0
+      duration: Style.motionPopupIn
+      curve: "snappy"
     }
   }
 
-  // Hide animation
   ParallelAnimation {
     id: hideAnimation
 
-    PropertyAnimation {
+    NAnim {
       target: tooltipContainer
       property: "opacity"
       from: 1.0
       to: 0.0
       duration: Style.motionPopupOut
-      easing.type: Easing.InCubic
+      curve: "cssEaseOut"
+    }
+    NAnim {
+      target: tooltipContainer
+      property: "scale"
+      from: 1.0
+      to: Style.popupExitScale
+      duration: Style.motionPopupOut
+      curve: "cssEaseOut"
     }
 
     onFinished: {
@@ -302,8 +333,8 @@ PopupWindow {
     const tipHeight = Math.ceil(contentHeight + ((padding + extraPad) * 2));
     root._bodyWidth = tipWidth;
     root._bodyHeight = tipHeight;
-    root.implicitWidth = tipWidth;
-    root.implicitHeight = tipHeight;
+    root.bodyWidth = tipWidth;
+    root.bodyHeight = tipHeight;
 
     // Get target's position in screen coordinates
     var targetGlobal = targetScreenRect();
@@ -452,16 +483,16 @@ PopupWindow {
     root._effectiveDirection = effectiveDirection;
     const arrowEdge = root._arrowEdgeFor(effectiveDirection);
     if (arrowEdge === "top" || arrowEdge === "bottom") {
-      root.implicitWidth = tipWidth;
-      root.implicitHeight = tipHeight + Style.popupArrowHeight;
+      root.bodyWidth = tipWidth;
+      root.bodyHeight = tipHeight + Style.popupArrowHeight;
       root._arrowPosition = targetWidth / 2 - newAnchorX;
     } else if (arrowEdge !== "") {
-      root.implicitWidth = tipWidth + Style.popupArrowHeight;
-      root.implicitHeight = tipHeight;
+      root.bodyWidth = tipWidth + Style.popupArrowHeight;
+      root.bodyHeight = tipHeight;
       root._arrowPosition = targetHeight / 2 - newAnchorY;
     } else {
-      root.implicitWidth = tipWidth;
-      root.implicitHeight = tipHeight;
+      root.bodyWidth = tipWidth;
+      root.bodyHeight = tipHeight;
       root._arrowPosition = tipWidth / 2;
     }
 
@@ -562,14 +593,14 @@ PopupWindow {
     root._bodyHeight = tipHeight;
     const aEdge = root._arrowEdgeFor(root._effectiveDirection);
     if (aEdge === "top" || aEdge === "bottom") {
-      root.implicitWidth = tipWidth;
-      root.implicitHeight = tipHeight + Style.popupArrowHeight;
+      root.bodyWidth = tipWidth;
+      root.bodyHeight = tipHeight + Style.popupArrowHeight;
     } else if (aEdge !== "") {
-      root.implicitWidth = tipWidth + Style.popupArrowHeight;
-      root.implicitHeight = tipHeight;
+      root.bodyWidth = tipWidth + Style.popupArrowHeight;
+      root.bodyHeight = tipHeight;
     } else {
-      root.implicitWidth = tipWidth;
-      root.implicitHeight = tipHeight;
+      root.bodyWidth = tipWidth;
+      root.bodyHeight = tipHeight;
     }
 
     // Reposition based on current direction (screen-relative)
@@ -701,11 +732,25 @@ PopupWindow {
   Item {
     id: tooltipContainer
     anchors.fill: parent
+    anchors.margins: root.shadowInset
 
     // Animation properties
     opacity: 1.0
     scale: 1.0
-    transformOrigin: Item.Center
+    // Grow out of the arrow, i.e. the side facing the target.
+    transformOrigin: {
+      switch (root._arrowEdgeFor(root._effectiveDirection)) {
+      case "top":
+        return Item.Top;
+      case "bottom":
+        return Item.Bottom;
+      case "left":
+        return Item.Left;
+      case "right":
+        return Item.Right;
+      }
+      return Item.Center;
+    }
 
     // DDE TipsWidget: arrowed dark popup, white text (DESIGN §3.2)
     NArrowRect {
