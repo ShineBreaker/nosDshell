@@ -183,7 +183,7 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 | `release` | `--cds-btn-spring` 的 15 个关键点，+9% 回弹 | 按钮松手复位 |
 | `snappy` | SPRING_SNAPPY（刚度 320、阻尼 28）的阶跃响应，+1.9% 回弹 | 弹出层进场 |
 
-弹簧不用 QML 的 `SpringAnimation`：它的时长不受令牌和 `animationSpeed` 控制，关闭动画时也不会变成 0。`snappy` 和 `release` 是把弹簧响应离线采样后拟合成的固定时长曲线，误差不超过 0.02。`Linear` 只用于旋转、循环、计时进度和拖拽跟手。`Easing.OutCubic` 等具名缓动、`Back`、`Elastic`、`Bounce`、`SpringAnimation` 一律不用。
+弹簧不用 QML 的 `SpringAnimation`：它的时长不受令牌和 `animationSpeed` 控制，关闭动画时也不会变成 0。`snappy` 和 `release` 是把弹簧响应离线采样后拟合成的固定时长曲线，误差不超过 0.02，且每条不超过 10 段：Qt 6.11 的 `QEasingCurve` 在 `BezierSpline` 达到 11 段时会写坏堆内存，表现为之后随机位置的崩溃（`test-motion-curves.py` 同时做静态检查和运行时检查）。`Linear` 只用于旋转、循环、计时进度和拖拽跟手。`Easing.OutCubic` 等具名缓动、`Back`、`Elastic`、`Bounce`、`SpringAnimation` 一律不用。
 
 **语义令牌**。场景到时长、曲线和变换的对应关系如下，组件只读这些令牌：
 
@@ -225,6 +225,7 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 - **颜色过渡标注意图。** 每个 `Behavior on color` / `border.color` / `fillColor` 都用 `NColorAnim`，时长写成表明意图的令牌：按钮类的指针反馈用 `motionPointer`，状态色用 `motionSwitch`。行类元素的指针态不加 Behavior。主题切换期间颜色一律瞬变（`enabled: !Colors.isTransitioning`），交叉淡化由 `Colors` 统一做。
 - **出场比进场短，且不回弹。** 回弹曲线（`snappy`、`overshoot`、`release`）只用于进场和复位；所有消失都用减速曲线（`out`、`cssEaseOut`、`fall`），时长不超过对应进场的三分之二。用户已经决定关掉的东西，不再让它多停留。
 - **变换原点跟随来源。** 带锚点的弹出层从锚点一侧缩放和位移（任务栏在下方时原点在底边中央、箭头处），对话框从中心缩放，气泡和 OSD 从锚定的屏幕边滑入。
+- 有意的偏离：主屏里的箭头面板（音频、蓝牙、电池等 `SmartPanel` 箭头弹出层）只做淡入淡出加锚定方向位移，不缩放。它们的背景、描边、阴影和模糊区域由 `AllBackgrounds` 的共享层统一绘制，只缩放内容会让内容和背景错位。独立窗口的菜单（`NPopupReveal`）背景和内容在同一个项里，照常缩放。
 - **背后模糊不渐变。** 弹出面的背景、阴影、内容一起淡化；背后模糊无法渐变，进入时随面一起出现，退出开始时立即撤掉，不让模糊比面多停留。
 - **合并语义。** 运行中的动画再次被触发时，只改目标值，不打断。QML 的 `Behavior` 本来就这样；手写 `start()` 时先以当前值为起点。
 - **减弱动效。** `Style.reduceMotion`（`animationDisabled` 或性能模式）为真时：所有令牌时长为 0；装饰性循环（脉动、着色器时间、忙碌指示器旋转、光标闪烁、attention 摆动）停止在静止帧；缩放和位移不再出现。每个循环动画的 `running` 都要读 `Style.reduceMotion`。
