@@ -206,7 +206,7 @@ SmartPanel {
 
       // 2. Middle area: notifications home / all-settings grid / module view.
       // The home content slides out left while the module view slides in from
-      // the right (DESIGN §3.5.3, Style.motionPanel), fading with travel.
+      // the right (DESIGN §3.5.3, Style.motionPage), fading with travel.
       Item {
         id: middleArea
         Layout.fillWidth: true
@@ -238,16 +238,16 @@ SmartPanel {
           // The !Colors.isTransitioning guard elsewhere exists to freeze *color*
           // Behaviors during a theme swap — geometry slides must still run.
           Behavior on x {
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionPage
+              curve: "out"
             }
           }
 
           Behavior on opacity {
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionPage
+              curve: "out"
             }
           }
         }
@@ -266,16 +266,16 @@ SmartPanel {
           onBackRequested: root.activeModule = null
 
           Behavior on x {
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionPage
+              curve: "out"
             }
           }
 
           Behavior on opacity {
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionPage
+              curve: "out"
             }
           }
         }
@@ -293,16 +293,16 @@ SmartPanel {
           x: middleArea.moduleShown ? -middleArea.travel : 0
 
           Behavior on x {
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionPage
+              curve: "out"
             }
           }
 
           Behavior on opacity {
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionPage
+              curve: "out"
             }
           }
         }
