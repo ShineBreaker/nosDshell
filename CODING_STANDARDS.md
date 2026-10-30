@@ -6,9 +6,22 @@
 
 ## 令牌
 
-- 颜色读 `Color.*`，尺寸、圆角、时长读 `Style.*`。DDE 的表面和叠加色用语义令牌，例如 `Color.maskShell`、`Color.popupShell`、`Color.overlay(level)`（定义见 `DESIGN.md` §1.2、§1.3）。组件内部只做布局。
-- 某个界面元素不随全局设置变化（深色模式下仍是浅色、间距不随 `Style` 缩放），说明它没有接入令牌体系。修法是找到它本该读取的令牌或公共件参数（例如菜单的 `variant`、弹层的 `Color.popupShell`），把接入点接回去。组件里另写一份配色或尺寸，本身就是没接入的证据。一个组件没接入时，同类组件往往也没接入，按影响面一起查。
+- 颜色读 `Colors.*`，尺寸、圆角、时长读 `Style.*`。DDE 的表面和叠加色用语义令牌，例如 `Colors.maskShell`、`Colors.popupShell`、`Colors.overlay(level)`（定义见 `DESIGN.md` §1.2、§1.3）。组件内部只做布局。
+- 某个界面元素不随全局设置变化（深色模式下仍是浅色、间距不随 `Style` 缩放），说明它没有接入令牌体系。修法是找到它本该读取的令牌或公共件参数（例如菜单的 `variant`、弹层的 `Colors.popupShell`），把接入点接回去。组件里另写一份配色或尺寸，本身就是没接入的证据。一个组件没接入时，同类组件往往也没接入，按影响面一起查。
 - 新数值先加令牌再使用，来路见 `AGENTS.md`「依据」。引用 `references/` 的格式是 `仓库/路径:行号`。
+
+## 动效
+
+动效的取值和场景表在 `DESIGN.md` §1.7，本节只讲写法。`Scripts/dev/check-motion.py` 在 `lint.sh` 里检查下面前四条。
+
+- 动画一律写成 `NAnim`（数值）或 `NColorAnim`（颜色），用 `curve: "<名字>"` 选 `Style.curves` 里的曲线，循环、计时和拖拽跟手写 `curve: "linear"`。不写 `easing.type`，不直接用 `NumberAnimation`、`ColorAnimation`、`PropertyAnimation`、`SpringAnimation`。只有 `Commons/Colors.qml` 例外：`Commons` 不能导入 `Widgets`，它直接写 `Easing.BezierSpline` 加 `Style.curveSwift`。
+- `duration:` 只写令牌。先在 §1.7 的语义令牌里找对应场景（`motionPopupIn`、`motionExpand`、`motionPage`……），场景表里没有就先在 DESIGN 表里加一行、在 `Style.qml` 加令牌，再使用。延时（`PauseAnimation`、计时器）同样写成令牌，它们不随 `animationSpeed` 缩放，也不经过 `_motion()`。
+- 颜色 `Behavior` 用 `NColorAnim`，时长是 `Style.motion*`：按钮类控件的指针反馈用 `motionPointer`，数据驱动的状态色用 `motionSwitch`。行类元素不加颜色 `Behavior`。
+- `loops: Animation.Infinite` 的动画必须在自己或外层的 `running`（或 `paused`）里读 `Style.reduceMotion`。判断"动画关闭"一律读 `Style.reduceMotion`，不读 `Settings.data.general.animationDisabled`：后者漏掉了性能模式。
+- 进场和出场分开写时长和曲线：出场用 `motionExit`、`motionPopupOut`、`motionBubbleOut` 这类更短的令牌，曲线用减速的 `out`、`cssEaseOut`、`fall`，不用回弹曲线。`Behavior` 里按 `closing`/`isRemoving` 这类状态切换 `duration` 和 `curve`，例子见 `Widgets/NPopupReveal.qml`。
+- 按钮类控件的按压缩放用 `NPressScale`，不要在组件里手写 `scale` 动画。QtQuick.Controls 的 `Popup` 的 `enter:`/`exit:` 只能是 `NPopupEnter {}`/`NPopupExit {}`（`check-popup-motion.py` 检查）。
+- 新曲线要先进 `Scripts/test/test-motion-curves.py` 的参考表，再用 `--emit` 生成 `Style.qml` 里的令牌。拟合曲线不超过 10 段，原因见该脚本里的 `MAX_SEGMENTS`。
+- 弹出窗口（`PopupWindow`）要给阴影留边：窗口每边比主体大 `Style.popupShadowInset`，内容用 `NPopupReveal` 的 `inset` 缩回去，输入区域用 `mask: Region { item: ... }` 只留主体，`anchor.adjustment` 设为 `PopupAdjustment.None`。例子见 `Widgets/NPopupContextMenu.qml`。
 
 ## 设置
 
