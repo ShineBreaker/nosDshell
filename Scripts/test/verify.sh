@@ -240,21 +240,16 @@ settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-icon notification-long notification-resave osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow dark-mode-flag lockscreen settings-tree" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow dark-mode-flag settings-tree lockscreen"
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
   for s in $SCENES_ORDER; do [[ "$WANTED" == *" $s "* ]] && SELECTED="$SELECTED $s"; done
-  # lockscreen always last even if listed earlier. Strip the longer name first:
-  # substituting "lockscreen" inside "lockscreen-error" would leave "-error".
-  SELECTED="${SELECTED// lockscreen-error/}"
-  SELECTED="${SELECTED// lockscreen/}"
-  [[ "$WANTED" == *" lockscreen "* ]] && SELECTED="$SELECTED lockscreen"
   # lockscreen-error is absent from SCENES_ORDER on purpose (it must not run in
   # the default set) and needs its own invocation because the PAM failure is a
   # process-level env var (Quickshell.env, read at shell start):
   #   NOSD_PAM_BAD=1 ./verify.sh <run>-lockerr --scenes lockscreen-error
-  [[ "$WANTED" == *" lockscreen-error "* ]] && SELECTED="$SELECTED lockscreen-error"
+  # It is appended with lockscreen below.
   # settings-<tab>/<sub> names are generated, not listed in SCENES_ORDER —
   # pass any requested ones through in the order given.
   for s in $WANTED; do
@@ -263,8 +258,18 @@ if [ -n "$SCENES_ARG" ]; then
     esac
   done
 else
-  SELECTED="$SCENES_ORDER"
+  # shellcheck disable=SC2086 # word-split on purpose: one space between names
+  SELECTED=" $(echo $SCENES_ORDER)"
+  WANTED="$SELECTED "
 fi
+# lockscreen always runs last, in the default set too: it leaves the session
+# locked, and every scene after it would shoot the lock screen. Strip the
+# longer name first: substituting "lockscreen" inside "lockscreen-error" would
+# leave "-error".
+SELECTED="${SELECTED// lockscreen-error/}"
+SELECTED="${SELECTED// lockscreen/}"
+[[ "$WANTED" == *" lockscreen "* ]] && SELECTED="$SELECTED lockscreen"
+[[ "$WANTED" == *" lockscreen-error "* ]] && SELECTED="$SELECTED lockscreen-error"
 export SELECTED
 echo "scenes:$SELECTED"
 
