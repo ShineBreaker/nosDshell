@@ -139,10 +139,25 @@ for f in "${FILES[@]}"; do
   # stay warnings: those are mostly settings JSON reads qmllint cannot type.
   # qmllint cannot resolve Quickshell's PanelWindow `margins.top/bottom/left/
   # right` group either, so those four names are left out (blind spot: a
-  # component property literally named top/bottom/left/right).
+  # component property literally named top/bottom/left/right). PopupWindow's
+  # `anchor` group is the same class of blind spot: PopupAnchor is opaque in
+  # the qmltypes, so `anchor.item`/`anchor.rect.*`/`anchor.adjustment` all
+  # report missing. The names are too common to ignore globally, so drop
+  # hits whose source line is an `anchor.` group assignment.
   PATTERN='^(Error|Critical|Fatal):|^Warning: .*Could not find property "[^"]*"\. \[missing-property\]'
   IGNORE='Could not find property "(top|bottom|left|right)"'
   hits=$(grep -E "$PATTERN" <<<"$out" | grep -vE "$IGNORE" || true)
+  if grep -qE 'Could not find property' <<<"$hits"; then
+    keep=""
+    while IFS= read -r h; do
+      ln=$(grep -oE ':[0-9]+:' <<<"$h" | head -1 | tr -d ':')
+      if [ -n "$ln" ] && sed -n "${ln}p" "$f" | grep -qE '^[[:space:]]*anchor\.'; then
+        continue
+      fi
+      keep+="$h"$'\n'
+    done <<<"$hits"
+    hits="${keep%$'\n'}"
+  fi
   errs=$(grep -c . <<<"$hits" || true)
   if [ "$errs" -gt 0 ]; then
     echo "== ${f#$REPO/} ($errs)"
