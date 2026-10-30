@@ -193,8 +193,8 @@ Item {
         id: toastMask
         trackedItem: toastItem.bubble
         radius: Style.radiusL
-        slideX: toastItem.swipeOffset
-        slideY: toastItem.swipeOffsetY
+        slideX: toastItem.swipeOffset + (toastItem.useVerticalSwipe ? 0 : toastItem.edgeOffset)
+        slideY: toastItem.swipeOffsetY + (toastItem.useVerticalSwipe ? toastItem.edgeOffset : 0)
         watch: toastItem.scale
       }
 
@@ -206,8 +206,8 @@ Item {
         id: toastBlur
         trackedItem: toastItem.bubble
         radius: Style.radiusL
-        slideX: toastItem.swipeOffset
-        slideY: toastItem.swipeOffsetY
+        slideX: toastItem.swipeOffset + (toastItem.useVerticalSwipe ? 0 : toastItem.edgeOffset)
+        slideY: toastItem.swipeOffsetY + (toastItem.useVerticalSwipe ? toastItem.edgeOffset : 0)
         watch: toastItem.scale
         activeWhen: Colors.blurActive
       }
@@ -216,8 +216,9 @@ Item {
         toastItem.show(title, description, icon, type, duration, actionLabel, actionCallback);
       }
 
+      // Dismiss plays the bubble exit; hidden() fires when it ends.
       function hideToast() {
-        toastItem.hideImmediately();
+        toastItem.hide();
       }
 
       Toast {
