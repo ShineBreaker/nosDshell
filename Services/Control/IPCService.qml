@@ -214,7 +214,7 @@ Singleton {
                                               if (cc.isPanelOpen && !cc.isClosing) {
                                                 cc.allSettingsPage = !cc.allSettingsPage;
                                                 if (!cc.allSettingsPage)
-                                                  cc.activeModule = null;
+                                                cc.activeModule = null;
                                               } else {
                                                 cc.showNotifications();
                                                 cc.open();
@@ -1125,13 +1125,15 @@ Singleton {
       var it = DebugService.findItem(root, objectName);
       if (!it)
         return "no item '" + objectName + "' under " + root + " (roots: " + DebugService.rootNames() + ")";
-      var out = DebugService.describe(it);
-      try {
-        var g = it.mapToGlobal(Qt.point(0, 0));
-        if (g)
-          out += " G@" + Math.round(g.x) + "," + Math.round(g.y);
-      } catch (e) {}
-      return out;
+      return DebugService.describeGlobal(it);
+    }
+
+    // Every match, one describe() line each (hidden ones flagged "hidden").
+    function findAll(root: string, objectName: string): string {
+      var items = DebugService.findAllItems(root, objectName);
+      if (items.length === 0)
+        return "no item '" + objectName + "' under " + root + " (roots: " + DebugService.rootNames() + ")";
+      return items.map(it => DebugService.describeGlobal(it)).join("\n");
     }
 
     // Read a property off an item: find(root, objectName).prop — e.g.

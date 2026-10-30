@@ -140,9 +140,9 @@ Item {
   implicitHeight: collapsed ? Style.pageIndicatorHeight : content.implicitHeight + Style.pageIndicatorHeight
 
   Behavior on implicitHeight {
-    NumberAnimation {
+    NAnim {
       duration: Style.motionPanel
-      easing.type: Easing.InOutCubic
+      curve: "out"
     }
   }
 
@@ -166,28 +166,28 @@ Item {
   }
 
   // Slide-in transition for the incoming page: a directional settle matching
-  // the module-view slide language (Style.motionPanel). Transform-based so the
+  // the module-view slide language (Style.motionPage). Transform-based so the
   // anchored layout never fights the animation.
   onCurrentPageIdChanged: pageSettle.restart()
 
   ParallelAnimation {
     id: pageSettle
 
-    NumberAnimation {
+    NAnim {
       target: pageSlide
       property: "x"
       from: root.navDirection * root.pageEnterOffset
       to: 0
-      duration: Style.motionPanel
-      easing.type: Easing.OutCubic
+      duration: Style.motionPage
+      curve: "out"
     }
-    NumberAnimation {
+    NAnim {
       target: content
       property: "opacity"
       from: 0
       to: 1
-      duration: Style.motionPanel
-      easing.type: Easing.OutCubic
+      duration: Style.motionPage
+      curve: "out"
     }
   }
 
@@ -228,7 +228,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        gradientColor: Colors.maskShell
         ScrollBar.horizontal.visible: false
 
         ColumnLayout {
@@ -407,7 +406,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        gradientColor: Colors.maskShell
         ScrollBar.horizontal.visible: false
 
         ControlCenterDetailPages {

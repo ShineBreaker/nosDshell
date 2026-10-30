@@ -88,17 +88,20 @@ Singleton {
   readonly property real shadowHorizontalOffset: Settings.data.general.shadowOffsetX
   readonly property real shadowVerticalOffset: Settings.data.general.shadowOffsetY
 
-  // Animation duration (ms)
-  readonly property int animationFaster: (Settings.data.general.animationDisabled || PowerProfileService.performanceMode) ? 0 : Math.round(75 / Settings.data.general.animationSpeed)
-  readonly property int animationFast: (Settings.data.general.animationDisabled || PowerProfileService.performanceMode) ? 0 : Math.round(150 / Settings.data.general.animationSpeed)
-  readonly property int animationNormal: (Settings.data.general.animationDisabled || PowerProfileService.performanceMode) ? 0 : Math.round(300 / Settings.data.general.animationSpeed)
-  readonly property int animationSlow: (Settings.data.general.animationDisabled || PowerProfileService.performanceMode) ? 0 : Math.round(450 / Settings.data.general.animationSpeed)
-  readonly property int animationSlowest: (Settings.data.general.animationDisabled || PowerProfileService.performanceMode) ? 0 : Math.round(750 / Settings.data.general.animationSpeed)
+  // Generic durations (ms) — legacy upstream callers and drag-follow only;
+  // new code reads the §1.7 tokens below (DESIGN §1.7).
+  readonly property int animationFaster: _motion(75)
+  readonly property int animationFast: _motion(150)
+  readonly property int animationNormal: _motion(300)
+  readonly property int animationSlow: _motion(450)
+  readonly property int animationSlowest: _motion(750)
 
   // Delays
   readonly property int tooltipDelay: 300
   readonly property int tooltipDelayLong: 1200
   readonly property int pillDelay: 500
+  // How long an auto-hiding bar pill stays expanded before it folds
+  readonly property int pillAutoHideDelay: 2500
 
   // Widgets base size
   readonly property real baseWidgetSize: 33
@@ -294,47 +297,43 @@ Singleton {
   // Capsule radius — only the switch and RoundedButton-style buttons may use it (DESIGN §7)
   readonly property int radiusPill: 15
 
-  // Shadows — feed into NDropShadow; plain {blur, x, y, color} objects (DESIGN §1.6).
-  // Alphas pass through _shadowScale so general.shadowStrength acts globally.
-  readonly property var shadowPopup: ({
-                                        "blur": 32,
-                                        "x": 0,
-                                        "y": 3,
-                                        "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
-                                      })
-  // Control centre frame: shadow cast to the left side only (DESIGN §3.5.1)
-  readonly property var shadowControlCenter: ({
-                                                "blur": 32,
-                                                "x": -16,
-                                                "y": 0,
-                                                "color": Qt.rgba(0, 0, 0, _shadowScale(0.24))
-                                              })
-  readonly property var shadowOsd: ({
-                                      "blur": 24,
-                                      "x": 0,
-                                      "y": 5,
-                                      "color": Qt.rgba(0, 0, 0, _shadowScale(0.14))
-                                    })
-  readonly property var shadowBubble: ({
-                                         "blur": 24,
-                                         "x": 0,
-                                         "y": 4,
-                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
-                                       })
-  readonly property var shadowMenuLight: ({
-                                            "blur": 20,
-                                            "x": 0,
-                                            "y": 8,
-                                            "color": Qt.rgba(0, 0, 0, _shadowScale(0.12))
-                                          })
-  // DDialog (DESIGN §3.11): same soft drop as the control centre frame, but
-  // cast straight down instead of to the left.
-  readonly property var shadowDialog: ({
-                                         "blur": 32,
-                                         "x": 0,
-                                         "y": 0,
-                                         "color": Qt.rgba(0, 0, 0, _shadowScale(0.18))
-                                       })
+  // Shadows — feed into NDropShadow (DESIGN §1.6). Two layers per surface:
+  // `contact` hugs the outline, `key` lifts it; drawn outside the silhouette
+  // only. Values {blur, x, y, alpha} from open-claude-ui cds-theme.css:114-119
+  // (light) and :327-331 (dark x 0.6, the backdrop here is a wallpaper, not a
+  // near-black canvas). Alphas pass through _shadowScale so
+  // general.shadowStrength acts globally.
+  function _shadowLayer(l) {
+    return {
+      "blur": l[0],
+      "x": l[1],
+      "y": l[2],
+      "color": Qt.rgba(0, 0, 0, _shadowScale(l[3]))
+    };
+  }
+  function _shadowPair(dark, lightContact, lightKey, darkContact, darkKey) {
+    return {
+      "contact": _shadowLayer(dark ? darkContact : lightContact),
+      "key": _shadowLayer(dark ? darkKey : lightKey)
+    };
+  }
+  // Popover: arrow popups, menus, tooltips, dropdown lists.
+  readonly property var shadowPopup: _shadowPair(Colors.shellIsDark, [6, 0, 2, 0.08], [24, 0, 8, 0.12], [8, 0, 2, 0.27], [28, 0, 8, 0.39])
+  // Light menus are light surfaces whatever the shell mode.
+  readonly property var shadowMenuLight: _shadowPair(false, [6, 0, 2, 0.08], [24, 0, 8, 0.12], [], [])
+  // shadow-lg: dialogs.
+  readonly property var shadowDialog: _shadowPair(Colors.shellIsDark, [8, 0, 4, 0.06], [28, 0, 12, 0.08], [8, 0, 4, 0.30], [36, 0, 16, 0.24])
+  // shadow-lg turned horizontal: the control centre casts to the left only
+  // (DESIGN §3.5.1, frame.cpp:151-154).
+  readonly property var shadowControlCenter: _shadowPair(Colors.shellIsDark, [8, -4, 0, 0.06], [28, -12, 0, 0.08], [8, -4, 0, 0.30], [36, -16, 0, 0.24])
+  // shadow-md: transient surfaces (bubbles, toasts, OSD) follow their own
+  // light/dark form (§1.2 ui.transientSurface).
+  readonly property var shadowBubble: _shadowPair(Colors.transientIsDark, [4, 0, 2, 0.05], [16, 0, 6, 0.08], [4, 0, 2, 0.24], [16, 0, 6, 0.24])
+  readonly property var shadowOsd: shadowBubble
+  // Margin a popup window keeps around its body so the popup shadow is not
+  // clipped by the surface edge: the farthest key-layer reach (blur plus
+  // offset, dark values) plus the 2 px NDropShadow adds.
+  readonly property int popupShadowInset: 28 + 8 + 2
 
   // DDialog (DESIGN §3.11): 380 wide normally, up to 640 when the content needs
   // it -- the first-run wizard is the wide one. The 48 px leading icon and the
@@ -353,44 +352,141 @@ Singleton {
   // of 36 from gxde-session-ui/global_util/constants.h:40 stands in for it.
   readonly property int dialogButtonHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
 
-  // Motion (ms) — 0 when animations are off or in performance mode;
-  // panel/enter motions fall back to 150 ms when blur is disabled (DESIGN §1.7)
+  // Motion — DESIGN §1.7 (CDS). Every duration goes through _motion(): 0 when
+  // reduceMotion, divided by general.animationSpeed otherwise; panel-class
+  // motions take the shorter noBlurMs when blur is off (framewidget.cpp:172).
+  readonly property bool reduceMotion: Settings.data.general.animationDisabled || PowerProfileService.performanceMode
   function _motion(baseMs, noBlurMs) {
-    if (Settings.data.general.animationDisabled || PowerProfileService.performanceMode)
+    if (reduceMotion)
       return 0;
     const ms = (noBlurMs !== undefined && !Colors.blurActive) ? noBlurMs : baseMs;
     return Math.round(ms / Settings.data.general.animationSpeed);
   }
 
-  readonly property int motionPanel: _motion(300, 150)
-  readonly property int motionEnter: _motion(300, 150)
-  readonly property int motionBubbleIn: _motion(180)
-  readonly property int motionBubbleOut: _motion(300)
-  readonly property int motionOsdIn: _motion(160)
-  readonly property int motionOsdOut: _motion(120)
-  // Popup surfaces (DESIGN §1.7): fade in/out; anchored surfaces also
-  // slide along the anchor edge — enter starts popupEnterOffset toward
-  // the anchor, exit drifts popupExitOffset back toward it. The offsets
-  // are unscaled like the popupArrow*/popupGap geometry tokens.
-  readonly property int motionPopupIn: _motion(160)
-  readonly property int motionPopupOut: _motion(120)
-  readonly property int popupEnterOffset: 8
-  readonly property int popupExitOffset: 4
-  readonly property int motionNavZoom: _motion(300)
-  readonly property int motionSwitch: _motion(150)
-  // gxde-launcher applistview.cpp:105-112 — wheel inertia scroll
-  readonly property int motionScrollWheel: _motion(800)
-  // gxde-launcher fullscreenframe.cpp:189-204 — programmatic scroll-to
-  readonly property int motionProgramScroll: _motion(300)
-  // gxde-dock appswingeffectbuilder.h:87-118 — attention swing cycle
-  readonly property int motionSwing: _motion(1200)
+  // Duration tiers (open-claude-ui/code-examples/cds-theme.css:218-222).
+  // Scripts/test/test-motion-curves.py checks these against CDS.
+  readonly property int durFast: _motion(60)
+  readonly property int durSnap: _motion(120)
+  readonly property int durBase: _motion(200)
+  readonly property int durSheet: _motion(300)
+  readonly property int durSlow: _motion(450)
 
-  // Per-row cascade delay between siblings entering/leaving an app strip or
-  // list in the same sync (DESIGN §1.7 app-strip recipe). A delay, not a
-  // curve: 0 keeps single-item changes instant, mass changes ripple.
+  // Curves: easing.bezierCurve lists for Easing.BezierSpline, generated by
+  // `Scripts/test/test-motion-curves.py --emit` (lint checks they match).
+  // Components never use them directly: NAnim / NColorAnim take a curve
+  // name and resolve it through `curves`.
+  // open-claude-ui/code-examples/cds-theme.css:204
+  readonly property var curveSwift: [0.16, 1, 0.3, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:205
+  readonly property var curveExpand: [0.19, 1, 0.22, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:206
+  readonly property var curveEnter: [0.22, 1, 0.36, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:207
+  readonly property var curveOut: [0.165, 0.84, 0.44, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:208
+  readonly property var curveSnap: [0.32, 0.72, 0, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:209
+  readonly property var curveOvershoot: [0.34, 1.3, 0.64, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:210
+  readonly property var curvePop: [0.34, 1.56, 0.64, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:211
+  readonly property var curvePulse: [0.4, 0, 0.2, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:212
+  readonly property var curveRise: [0.3, 0.7, 0.4, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:213
+  readonly property var curveFall: [0, 0, 0.2, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:490; ClaudeMotionPresets.ts:184
+  readonly property var curveCssEaseOut: [0, 0, 0.58, 1, 1, 1]
+  // open-claude-ui/code-examples/cds-theme.css:223,486
+  readonly property var curveRelease: [0.0238, 0.082, 0.0476, 0.1371, 0.0714, 0.2459, 0.0952, 0.3547, 0.119, 0.5358, 0.1429, 0.6526, 0.1667, 0.7694, 0.1905, 0.8762, 0.2143, 0.9468, 0.2381, 1.0174, 0.2619, 1.0523, 0.2857, 1.0764, 0.3095, 1.1005, 0.3333, 1.0945, 0.3571, 1.0915, 0.381, 1.0885, 0.4048, 1.0701, 0.4286, 1.0585, 0.4524, 1.0469, 0.4762, 1.0294, 0.5,
+    1.0219, 0.5476, 1.007, 0.5952, 0.9958, 0.6429, 0.9914, 0.6905, 0.987, 0.7381, 0.9946, 0.7857, 0.9957, 0.8571, 0.9974, 0.9286, 0.9986, 1, 1]
+  // open-claude-ui/code-examples/ClaudeMotionPresets.ts:79-82,173-178
+  readonly property var curveSnappy: [0.0167, 0.0148, 0.0334, 0.0162, 0.0501, 0.0445, 0.0745, 0.0859, 0.099, 0.1477, 0.1234, 0.2093, 0.152, 0.2812, 0.1805, 0.3712, 0.2091, 0.4448, 0.2407, 0.5263, 0.2723, 0.6098, 0.3039, 0.6746, 0.338, 0.7445, 0.372, 0.8037, 0.4061, 0.849, 0.4423, 0.8972, 0.4785, 0.9297, 0.5148, 0.955, 0.5528, 0.9816, 0.5909, 0.9942, 0.629,
+    1.0046, 0.6687, 1.0154, 0.7085, 1.0169, 0.7482, 1.0189, 0.7895, 1.0209, 0.8307, 1.0198, 0.872, 1.0167, 0.9147, 1.0135, 0.9573, 1.0056, 1, 1]
+  readonly property var curves: ({
+                                   "swift": curveSwift,
+                                   "expand": curveExpand,
+                                   "enter": curveEnter,
+                                   "out": curveOut,
+                                   "snap": curveSnap,
+                                   "overshoot": curveOvershoot,
+                                   "pop": curvePop,
+                                   "pulse": curvePulse,
+                                   "rise": curveRise,
+                                   "fall": curveFall,
+                                   "cssEaseOut": curveCssEaseOut,
+                                   "release": curveRelease,
+                                   "snappy": curveSnappy
+                                 })
+
+  // Semantic motion tokens (DESIGN §1.7 table). Durations only; the curve
+  // and transform for each are in the table and in the shared primitives.
+  readonly property int motionPointer: _motion(150)      // swift, hover colour
+  readonly property int motionPress: durFast             // cssEaseOut, scale to pressScale
+  readonly property int motionRelease: durSlow           // release, back to 1
+  readonly property int motionFocus: durFast             // cssEaseOut, focus ring
+  readonly property int motionPopupIn: durSheet          // snappy
+  readonly property int motionPopupOut: durSnap          // cssEaseOut
+  readonly property int motionDialogIn: durBase          // out
+  readonly property int motionDialogOut: _motion(150)    // out
+  readonly property int motionScrim: _motion(150)        // cssEaseOut
+  readonly property int motionEnter: _motion(300, 150)   // out
+  readonly property int motionExit: _motion(200, 120)    // out
+  readonly property int motionPanel: _motion(300, 150)   // out
+  readonly property int motionExpand: durBase            // expand
+  readonly property int motionPage: durSheet             // out
+  readonly property int motionBubbleIn: durSheet         // enter
+  readonly property int motionBubbleOut: _motion(180)    // fall
+  readonly property int motionOsdIn: durSheet            // enter
+  readonly property int motionOsdOut: _motion(180)       // fall
+  readonly property int motionSwitch: durBase            // overshoot (knob) / swift (colour)
+  readonly property int motionSnap: durSnap              // snap
+  readonly property int motionSnapBack: durSheet         // snappy, drag released short of its threshold
+  readonly property int motionNavZoom: durBase           // overshoot
+  readonly property int motionTheme: durSlow             // swift
+  readonly property int motionScrollWheel: _motion(800)  // swift
+  readonly property int motionProgramScroll: durSheet    // out
+  // gxde-dock appswingeffectbuilder.h:87-118 — attention swing cycle (Linear keyframes)
+  readonly property int motionSwing: _motion(1200)
+  // Half-period of decorative pulses (pulse curve), e.g. a drop-target glow
+  readonly property int motionPulse: durSlow
+  // Half-period of a slow ambient breath (open-claude-ui cds-theme.css:513,
+  // the 3 s clay breathe), e.g. the setup wizard's logo
+  readonly property int motionBreathe: _motion(1500)
+  // Busy spinner revolution (a loop period, not a transition)
+  readonly property int spinPeriod: 1000
+  // Clock period driving ambient shader effects (weather card): a time base
+  // for the shader, not a motion; it stops under reduceMotion.
+  readonly property int ambientShaderPeriod: 300000
+  // Per-row cascade delay between siblings entering/leaving in the same sync
+  // (DESIGN §1.7). A delay, not a curve: single-item changes stay instant.
   readonly property int motionStagger: _motion(30)
-  // DESIGN §1.7 — hover/press colour fade on standalone button-class controls
-  readonly property int motionPointer: _motion(80)
+  readonly property int motionStaggerCap: 8
+
+  // Transform amounts paired with the tokens above (unscaled px, like the
+  // popupArrow*/popupGap geometry). ClaudeMotionPresets.ts:172-205,
+  // ConfirmationDialog.tsx:87-90, cds-theme.css:483-484,614-631.
+  readonly property real pressScale: 0.975
+  readonly property real popupEnterScale: 0.95
+  readonly property real popupExitScale: 0.96
+  readonly property int popupEnterOffset: 4
+  readonly property int popupExitOffset: 2
+  readonly property real dialogEnterScale: 0.95
+  readonly property real bubbleEnterScale: 0.96
+  readonly property int bubbleSlide: 12
+  readonly property int osdEnterOffset: 12
+  readonly property int osdExitOffset: 8
+  // App-strip enter/exit recipe (DESIGN §1.7): the icon shrinks to this and
+  // slides this far toward the screen edge as its slot collapses.
+  readonly property real stripExitScale: 0.5
+  readonly property int stripEdgeSlide: 8
+  // Scroll edge fade zone (DESIGN §1.11, cds-theme.css:196)
+  readonly property int scrollFadeSize: 28
+
+  // Text caret blink half-period (ms): a convention of text fields, not a
+  // motion; it is not stretched by animationSpeed. Smooth blinking stops
+  // under reduceMotion (a plain on/off toggle takes over).
+  readonly property int caretBlinkMs: 530
 
   // Timeouts (ms) — OSD auto-hide lives in Settings.data.osd.autoHideMs and
   // notification duration in Settings.data.notifications.*, both user-facing.
@@ -535,9 +631,9 @@ Singleton {
   readonly property int settingsRailSpacing: Math.round(20 * uiScaleRatio)
   readonly property int settingsModuleContentWidth: Math.round(352 * uiScaleRatio)
   readonly property int settingsWindowContentWidth: Math.round(640 * uiScaleRatio)
-  // All-settings page (DESIGN §3.5.3): nav→content scroll, OutQuint 1400 ms
-  // (contentwidget.cpp:67-69); module headers; lazy tab placeholders.
-  readonly property int motionSettingsScroll: _motion(1400)
+  // All-settings page (DESIGN §3.5.3): nav→content scroll (motionSettingsScroll,
+  // swift — CDS caps long jumps at durSlow); module headers; lazy tab placeholders.
+  readonly property int motionSettingsScroll: durSlow
   readonly property int settingsModuleHeadLeft: Math.round(11 * uiScaleRatio)
   readonly property int settingsModuleHeadIcon: Math.round(24 * uiScaleRatio)
   readonly property int settingsModuleHeadPadV: Math.round(5 * uiScaleRatio)
@@ -560,11 +656,11 @@ Singleton {
   readonly property int settingsRowHeight: detailRowHeight
   readonly property int settingsRowPaddingH: Math.round(20 * uiScaleRatio)
   readonly property int settingsRowPaddingV: Math.round(10 * uiScaleRatio)
-  // DSwitchButton: 40x22 capsule, 18 px knob, 150 ms (only capsule-type control)
+  // DSwitchButton: 40x22 capsule, 18 px knob (only capsule-type control);
+  // knob motion is motionSwitch
   readonly property int switchWidth: Math.round(40 * uiScaleRatio)
   readonly property int switchHeight: Math.round(22 * uiScaleRatio)
   readonly property int switchKnob: Math.round(18 * uiScaleRatio)
-  readonly property int switchDuration: 150
   // Text fields (LineEditWidget / ComboBoxWidget / spin box): 30 high, radiusItem
   readonly property int settingsFieldHeight: Math.round(30 * uiScaleRatio * Settings.data.ui.rowHeightScale)
   readonly property int settingsFieldRadius: radiusItem

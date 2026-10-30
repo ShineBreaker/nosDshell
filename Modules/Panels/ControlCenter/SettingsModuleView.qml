@@ -87,10 +87,12 @@ Item {
     // first and the page would never travel).
     host.x = pageLayer.width;
     host._animateX = true;
-    _pageStack = _pageStack.concat([{
-                                     "title": title,
-                                     "host": host
-                                   }]);
+    _pageStack = _pageStack.concat([
+                                     {
+                                       "title": title,
+                                       "host": host
+                                     }
+                                   ]);
     if (prev !== contentScroll) {
       prev.enabled = false;
       prev.x = -prev.width;
@@ -227,14 +229,14 @@ Item {
   // from mistaking our own writes for user scrolls.
   property bool _snapping: false
 
-  NumberAnimation {
+  NAnim {
     id: scrollAnim
     // target is assigned lazily in _scrollToY: contentScroll is declared
     // later in this file, so a declarative binding here risks evaluating
     // before its contentItem exists.
     property: "contentY"
     duration: Style.motionSettingsScroll
-    easing.type: Easing.OutQuint
+    curve: "swift"
     onFinished: {
       root._programmatic = false;
       root._settleSnap();
@@ -628,7 +630,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        showGradientMasks: false
         ScrollBar.vertical.visible: false
         // The flickable must never grab presses: a real mouse jitters a few
         // pixels during a click, the flickable interprets it as a drag start
@@ -868,6 +869,7 @@ Item {
 
           NScrollView {
             id: contentScroll
+            objectName: "settingsContentScroll"
             // Not anchored: x carries the slide-out (anchors would own it).
             width: pageArea.width
             height: pageArea.height
@@ -877,17 +879,15 @@ Item {
             enabled: !root.subPageOpen
 
             Behavior on x {
-              NumberAnimation {
-                duration: Style.motionPanel
-                easing.type: Easing.InOutCubic
+              NAnim {
+                duration: Style.motionPage
+                curve: "out"
               }
             }
 
             horizontalPolicy: ScrollBar.AlwaysOff
             verticalPolicy: ScrollBar.AsNeeded
             reserveScrollbarSpace: false
-            showGradientMasks: false
-            gradientColor: Colors.maskShell
 
             // User scroll cancels programmatic scroll + pending re-snap and
             // re-syncs the rail highlight on every step so the accent follows
@@ -1302,9 +1302,9 @@ Item {
       property bool _animateX: false
       Behavior on x {
         enabled: pageHost._animateX
-        NumberAnimation {
-          duration: Style.motionPanel
-          easing.type: Easing.InOutCubic
+        NAnim {
+          duration: Style.motionPage
+          curve: "out"
         }
       }
 
@@ -1314,8 +1314,6 @@ Item {
         horizontalPolicy: ScrollBar.AlwaysOff
         verticalPolicy: ScrollBar.AsNeeded
         reserveScrollbarSpace: false
-        showGradientMasks: false
-        gradientColor: Colors.maskShell
       }
 
       Component.onCompleted: {

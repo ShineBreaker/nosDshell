@@ -38,23 +38,29 @@ Rectangle {
   readonly property string artworkState: pressed ? "press" : (dimmed ? "hover" : "normal")
 
   radius: Style.radiusLarge
+  scale: press.value
+
+  NPressScale {
+    id: press
+    pressed: button.pressed && button.available
+  }
   color: dimmed ? Colors.pressDim : "transparent"
   // rounditembutton.cpp:65-74 — setDisabled() drops the whole widget to 0.5
   opacity: button.available ? 1.0 : 0.5
 
+  // Button class (§0 principle 6): pointer colour on motionPointer; the
+  // availability dim is a state change (motionSwitch).
   Behavior on color {
-    enabled: !Settings.data.general.animationDisabled
-    ColorAnimation {
+    enabled: !Colors.isTransitioning
+    NColorAnim {
       duration: Style.motionPointer
-      easing.type: Easing.OutCubic
     }
   }
 
   Behavior on opacity {
-    enabled: !Settings.data.general.animationDisabled
-    NumberAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
+    NAnim {
+      duration: Style.motionSwitch
+      curve: "swift"
     }
   }
 

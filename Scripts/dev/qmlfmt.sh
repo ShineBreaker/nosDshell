@@ -20,6 +20,17 @@ if [ -z "$QMLFORMAT" ] && command -v qmlformat &>/dev/null; then
     QMLFORMAT="qmlformat"
 fi
 
+# No qmlformat on this host: rerun inside the nix test environment
+# (Scripts/test/lib/pkgenv.sh, DEBUGGING.md「运行环境」).
+if [ -z "$QMLFORMAT" ] && [ -z "${NOSD_QMLFMT_IN_ENV:-}" ]; then
+    # shellcheck source=../test/lib/pkgenv.sh
+    . "$(dirname "${BASH_SOURCE[0]}")/../test/lib/pkgenv.sh"
+    if [ "$(nosd_pkg_backend)" = nix ]; then
+        NOSD_QMLFMT_IN_ENV=1 nosd_pkg_run "" "$0" "$@"
+        exit $?
+    fi
+fi
+
 if [ -z "$QMLFORMAT" ]; then
     echo "No 'qmlformat' found in standard locations or PATH." >&2
     echo "To proceed, install it via 'qt6-tools', 'qt6-declarative-tools' or 'qt6-qtdeclarative-devel'" >&2

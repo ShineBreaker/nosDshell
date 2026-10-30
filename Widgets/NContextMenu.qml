@@ -104,7 +104,6 @@ Popup {
 
   contentItem: NListView {
     id: listView
-    gradientColor: "transparent"
     implicitHeight: Math.max(contentHeight, root._rowHeight)
     spacing: 0
     interactive: contentHeight > root.height

@@ -53,10 +53,19 @@ PopupWindow {
   // resolve live entries from this same array (CODING_STANDARDS "QML 规则").
   readonly property var menuEntries: opener.children ? [...opener.children.values] : []
 
-  implicitWidth: menuWidth
+  readonly property real bodyWidth: menuWidth
+  implicitWidth: bodyWidth + 2 * shadowInset
 
   // Use the content height of the Flickable for implicit height
-  implicitHeight: Math.min(screen?.height * 0.9, flickable.contentHeight + Style.margin2S)
+  readonly property real bodyHeight: Math.min(screen?.height * 0.9, flickable.contentHeight + Style.margin2S)
+  implicitHeight: bodyHeight + 2 * shadowInset
+
+  // Room around the body for the popup shadow (DESIGN §1.6); the input
+  // region below keeps it click-through.
+  readonly property int shadowInset: Style.popupShadowInset
+  mask: Region {
+    item: reveal
+  }
 
   // When implicitHeight changes (menu content loads), force anchor recalculation
   onImplicitHeightChanged: {
@@ -85,7 +94,12 @@ PopupWindow {
   }
 
   anchor.item: anchorItem
-  anchor.rect.x: {
+  // The window carries a shadowInset margin on every side so the §1.6
+  // shadow has room to render; the anchor math above places the body, the
+  // window is offset by the inset, and the compositor must not slide or
+  // flip it (that would move the body by up to the inset).
+  anchor.adjustment: PopupAdjustment.None
+  readonly property real _bodyAnchorX: {
     if (anchorItem && screen) {
       let baseX = anchorX;
 
@@ -102,7 +116,7 @@ PopupWindow {
         menuScreenX = anchorScreenX + baseX;
       }
 
-      const menuRight = menuScreenX + implicitWidth;
+      const menuRight = menuScreenX + bodyWidth;
       const screenRight = screen.width;
       const menuLeft = menuScreenX;
 
@@ -121,7 +135,8 @@ PopupWindow {
     }
     return anchorX;
   }
-  anchor.rect.y: {
+  anchor.rect.x: _bodyAnchorX - shadowInset
+  readonly property real _bodyAnchorY: {
     if (anchorItem && screen) {
       const barPosition = root.hostEdge;
 
@@ -135,7 +150,7 @@ PopupWindow {
 
       if (shouldApplyBottomBarLogic) {
         // For bottom bar from the bar itself, position menu above the anchor with margin
-        baseY = -(implicitHeight + Style.marginS);
+        baseY = -(bodyHeight + Style.marginS);
       } else if (barPosition === "top" && !isSubMenu && anchorY >= 0) {
         // For a top host surface: position menu below the occupied strip —
         // the dock item strip for dock plugins, the bar height for bar
@@ -156,16 +171,16 @@ PopupWindow {
       }
 
       // Calculate the screen Y of the menu top
-      // Use a small guess for height if implicitHeight is 0 to avoid covering the bar on the first frame
-      const effectiveHeight = implicitHeight > 0 ? implicitHeight : 200;
+      // Use a small guess for height if bodyHeight is 0 to avoid covering the bar on the first frame
+      const effectiveHeight = bodyHeight > 0 ? bodyHeight : 200;
       const effectiveBaseY = shouldApplyBottomBarLogic ? -(effectiveHeight + Style.marginS) : baseY;
 
       const menuScreenY = windowYOnScreen + posInWindow.y + effectiveBaseY;
-      const menuBottom = menuScreenY + (implicitHeight > 0 ? implicitHeight : effectiveHeight);
+      const menuBottom = menuScreenY + (bodyHeight > 0 ? bodyHeight : effectiveHeight);
       const screenHeight = screen ? screen.height : 1080;
 
       // Adjust the final baseY (the actual value returned to anchor.rect.y)
-      let finalBaseY = shouldApplyBottomBarLogic ? -(implicitHeight + Style.marginS) : baseY;
+      let finalBaseY = shouldApplyBottomBarLogic ? -(bodyHeight + Style.marginS) : baseY;
 
       // Adjust if menu would clip off the bottom
       if (menuBottom > screenHeight) {
@@ -188,8 +203,9 @@ PopupWindow {
     }
     // The offset below the anchor is the host surface's thickness — the dock
     // item strip for dock plugins, the bar height for bar widgets.
-    return anchorY + (root.hostEdge === "bottom" ? -implicitHeight : BarService.edgeStripThickness(root.screen?.name, root.hostEdge));
+    return anchorY + (root.hostEdge === "bottom" ? -bodyHeight : BarService.edgeStripThickness(root.screen?.name, root.hostEdge));
   }
+  anchor.rect.y: _bodyAnchorY - shadowInset
 
   function showAt(item, x, y) {
     if (!item) {
@@ -263,6 +279,7 @@ PopupWindow {
   // slide together along the host surface's edge; submenus fade only.
   NPopupReveal {
     id: reveal
+    inset: root.shadowInset
 
     active: root.visible
     closing: root._closing

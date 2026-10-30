@@ -232,17 +232,17 @@ Rectangle {
             // Click animation
             SequentialAnimation {
               id: clickAnimation
-              PropertyAnimation {
+              NColorAnim {
                 target: tokenDelegate
                 property: "color"
                 to: Qt.alpha(Colors.accent, 0.3)
-                duration: Style.animationFaster
+                duration: Style.motionPointer
               }
-              PropertyAnimation {
+              NColorAnim {
                 target: tokenDelegate
                 property: "color"
                 to: tokenMouseArea.containsMouse ? Colors.overlay("checked") : Colors.overlay("strong")
-                duration: Style.animationFast
+                duration: Style.motionPointer
               }
             }
 

@@ -20,7 +20,7 @@
         ]
       );
 
-      // 发版时只改引号里的主版本号，shortRev 后缀保留（见 docs/RELEASE.md）。
+      # 发版时只改引号里的主版本号，shortRev 后缀保留（见 docs/RELEASE.md）。
       version = "1.6.4_" + (self.shortRev or "dirty");
     in
     {

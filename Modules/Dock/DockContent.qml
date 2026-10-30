@@ -704,7 +704,7 @@ Item {
             // the efficient Taskbar): slot grows/collapses while the content
             // fades, scales 0.5↔1 and slides a few px toward the screen edge;
             // sdelay staggers same-sync changes into a wave.
-            readonly property real _edgeSlide: Math.round(8 * Style.uiScaleRatio)
+            readonly property real _edgeSlide: Math.round(Style.stripEdgeSlide * Style.uiScaleRatio)
             readonly property point _edgeShift: {
               var p = dockRoot.dockPosition;
               if (isVertical)
@@ -718,21 +718,21 @@ Item {
                 PauseAnimation {
                   duration: appButton.sdelay
                 }
-                NumberAnimation {
-                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                NAnim {
+                  duration: appButton.collapsing ? Style.motionExit : Style.motionExpand
+                  curve: appButton.collapsing ? "out" : "expand"
                 }
               }
             }
-            scale: _shrunk ? 0.5 : 1
+            scale: _shrunk ? Style.stripExitScale : 1
             Behavior on scale {
               SequentialAnimation {
                 PauseAnimation {
                   duration: appButton.sdelay
                 }
-                NumberAnimation {
-                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                NAnim {
+                  duration: appButton.collapsing ? Style.motionExit : Style.motionExpand
+                  curve: appButton.collapsing ? "out" : "expand"
                 }
               }
             }
@@ -745,9 +745,9 @@ Item {
                   PauseAnimation {
                     duration: appButton.sdelay
                   }
-                  NumberAnimation {
-                    duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                    easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                  NAnim {
+                    duration: appButton.collapsing ? Style.motionExit : Style.motionExpand
+                    curve: appButton.collapsing ? "out" : "expand"
                   }
                 }
               }
@@ -756,9 +756,9 @@ Item {
                   PauseAnimation {
                     duration: appButton.sdelay
                   }
-                  NumberAnimation {
-                    duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                    easing.type: appButton.collapsing ? Easing.InCubic : Easing.OutCubic
+                  NAnim {
+                    duration: appButton.collapsing ? Style.motionExit : Style.motionExpand
+                    curve: appButton.collapsing ? "out" : "expand"
                   }
                 }
               }
@@ -773,9 +773,9 @@ Item {
                 PauseAnimation {
                   duration: appButton.sdelay
                 }
-                NumberAnimation {
-                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.InOutCubic
+                NAnim {
+                  duration: appButton.collapsing ? Style.motionExit : Style.motionExpand
+                  curve: appButton.collapsing ? "out" : "expand"
                 }
               }
             }
@@ -784,9 +784,9 @@ Item {
                 PauseAnimation {
                   duration: appButton.sdelay
                 }
-                NumberAnimation {
-                  duration: appButton.collapsing ? Style.animationFast : Style.animationNormal
-                  easing.type: appButton.collapsing ? Easing.InCubic : Easing.InOutCubic
+                NAnim {
+                  duration: appButton.collapsing ? Style.motionExit : Style.motionExpand
+                  curve: appButton.collapsing ? "out" : "expand"
                 }
               }
             }
@@ -842,14 +842,14 @@ Item {
               }
             }
 
-            NumberAnimation {
+            NAnim {
               id: swingAnim
               target: iconContainer
               property: "swingPhase"
               from: 0
               to: 1
               duration: Style.motionSwing
-              easing.type: Easing.Linear
+              curve: "linear"
               onStopped: iconContainer.swingPhase = 0
             }
 
@@ -955,15 +955,15 @@ Item {
                 y: dockRoot.isVertical ? iconContainer.shiftOffset : 0
 
                 Behavior on x {
-                  NumberAnimation {
-                    duration: Style.animationFast
-                    easing.type: Easing.InOutCubic
+                  NAnim {
+                    duration: Style.motionPointer
+                    curve: "swift"
                   }
                 }
                 Behavior on y {
-                  NumberAnimation {
-                    duration: Style.animationFast
-                    easing.type: Easing.InOutCubic
+                  NAnim {
+                    duration: Style.motionPointer
+                    curve: "swift"
                   }
                 }
               }
@@ -993,9 +993,9 @@ Item {
                 }
 
                 Behavior on opacity {
-                  NumberAnimation {
-                    duration: Style.animationFast
-                    easing.type: Easing.OutCubic
+                  NAnim {
+                    duration: Style.motionExpand
+                    curve: "out"
                   }
                 }
               }

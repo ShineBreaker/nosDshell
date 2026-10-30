@@ -5,6 +5,7 @@ import qs.Commons
 import qs.Modules.Bar
 import qs.Services.Compositor
 import qs.Services.UI
+import qs.Widgets
 
 /**
 * BarContentWindow - Separate transparent PanelWindow for bar content
@@ -239,15 +240,15 @@ PanelWindow {
       // (bar edge in every mode; the efficient bar IS the taskbar).
       readonly property string hostEdge: barWindow.barPosition
 
-      // Efficient mode slides along the screen edge (DDE spec: motionPanel,
-      // InOutCubic); the legacy path fades out instead
+      // Efficient mode slides along the screen edge (DESIGN §1.7 motionPanel,
+      // "out"); the legacy path fades out instead
       opacity: (!barWindow.efficientMode && barWindow.effectivelyHidden) ? 0 : 1
 
       Behavior on opacity {
         enabled: !barWindow.efficientMode
-        NumberAnimation {
-          duration: Style.animationFast
-          easing.type: Easing.OutCubic
+        NAnim {
+          duration: Style.motionPanel
+          curve: "out"
         }
       }
 
@@ -259,16 +260,16 @@ PanelWindow {
 
         Behavior on x {
           enabled: barWindow.efficientMode
-          NumberAnimation {
+          NAnim {
             duration: Style.motionPanel
-            easing.type: Easing.InOutCubic
+            curve: "out"
           }
         }
         Behavior on y {
           enabled: barWindow.efficientMode
-          NumberAnimation {
+          NAnim {
             duration: Style.motionPanel
-            easing.type: Easing.InOutCubic
+            curve: "out"
           }
         }
       }

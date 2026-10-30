@@ -480,12 +480,12 @@ SmartPanel {
 
       // §3.10: wheel and chevron paging share one animation so a drag or a
       // new scroll request cancels the in-flight one cleanly.
-      NumberAnimation {
+      NAnim {
         id: stripScrollAnim
         target: stripView
         property: "contentX"
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+        duration: Style.motionProgramScroll
+        curve: "out"
       }
 
       function scrollBy(delta) {

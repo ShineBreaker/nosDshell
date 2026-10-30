@@ -37,10 +37,10 @@ Item {
   property real animatedRatio: ratio
 
   Behavior on animatedRatio {
-    enabled: !Settings.data.general.animationDisabled
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+    enabled: !Style.reduceMotion
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
 
@@ -130,9 +130,7 @@ Item {
     anchors.verticalCenterOffset: -4 * root.contentScale
     text: `${Math.round(root.animatedRatio * 100)}${root.suffix}`
     pointSize: Style.fontSizeM * root.contentScale * 0.9
-    features: {
-      "tnum": 1
-    }
+    numeric: true
     font.weight: Style.fontWeightMedium
     color: Colors.onShell
     horizontalAlignment: Text.AlignHCenter

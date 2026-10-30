@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Shapes
-import qs.Commons
 import "../../../Helpers/ArrowRect.js" as ArrowRect
+import qs.Commons
 
 /**
 * ArrowPanelBackground - PathSvg rendering of DDE arrow popups
@@ -50,14 +50,16 @@ ShapePath {
   readonly property bool isRenderable: !!(assignedPanel && assignedPanel.useArrowPopup && panelBg && panelWidth > 0 && panelHeight > 0)
 
   // Body, border and shadow fade with the panel content during the popup
-  // reveal (§1.7): the Shape paints the path at the panel's own opacity,
-  // and NDropShadow takes the same source so the shadow follows.
+  // reveal (§1.7): the hosting Shape (one per slot, AllBackgrounds) takes
+  // this as its item opacity, and NDropShadow samples that Shape, so the
+  // shadow follows. The path colours stay constant so a fade never forces
+  // an asynchronous path re-sync.
   readonly property real _fade: assignedPanel ? assignedPanel.opacity : 0
 
   strokeWidth: 1
-  strokeColor: isRenderable ? Qt.rgba(Colors.borderShell.r, Colors.borderShell.g, Colors.borderShell.b, Colors.borderShell.a * _fade) : "transparent"
+  strokeColor: isRenderable ? Colors.borderShell : "transparent"
   joinStyle: ShapePath.MiterJoin
-  fillColor: isRenderable ? Qt.rgba(Colors.popupShell.r, Colors.popupShell.g, Colors.popupShell.b, Colors.popupShell.a * _fade) : "transparent"
+  fillColor: isRenderable ? Colors.popupShell : "transparent"
 
   startX: 0
   startY: 0

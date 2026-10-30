@@ -20,8 +20,9 @@ Rectangle {
   visible: root.show
 
   Behavior on opacity {
-    NumberAnimation {
-      duration: Style.animationFast
+    NAnim {
+      duration: Style.motionSwitch
+      curve: "swift"
     }
   }
 

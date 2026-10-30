@@ -43,6 +43,8 @@ import qs.Widgets
 */
 Item {
   id: root
+  // Stable anchor for `debug set/get` (verify.sh cc-notif-focus).
+  objectName: "notifHistoryList"
 
   property var screen: null
   property var closeOnAction: null
@@ -53,10 +55,14 @@ Item {
   property string expandedNotification: ""
   property string expandedGroup: ""
 
-  // Keyboard focus: index into the descriptor row space (-1 = none), plus
-  // which action button of the focused row is active (-1 = the body).
+  // Selected row: index into the descriptor row space (-1 = none), plus
+  // which action button of the selected row is active (-1 = the body).
+  // Both the arrow keys and a mouse press move it.
   property int focusIndex: -1
   property int actionIndex: -1
+  // Whether the keyboard moved the selection last. The focus ring shows only
+  // then: focus taken by a mouse press draws no ring (DESIGN §1.11).
+  property bool keyboardFocus: false
 
   readonly property var historyModel: NotificationService.historyModel
 
@@ -379,6 +385,7 @@ Item {
   // actions, Enter activates, Delete removes. Tab no longer filters: the day
   // sections are rows now.
   Keys.onPressed: event => {
+                    root.keyboardFocus = true;
                     if (Keybinds.checkKey(event, 'up', Settings)) {
                       root.moveSelection(-1);
                       event.accepted = true;
@@ -452,7 +459,6 @@ Item {
         // marginS and blow a hole between the day sections.
         spacing: 0
         reuseItems: true
-        gradientColor: "transparent"
         reserveScrollbarSpace: false
         boundsBehavior: Flickable.StopAtBounds
         model: root.descriptors
@@ -523,7 +529,7 @@ Item {
             isRemoving = true;
             interactionArea.isSwiping = false;
             interactionArea.swipeOffset = dir >= 0 ? width + Style.marginL : -width - Style.marginL;
-            if (Settings.data.general.animationDisabled) {
+            if (Style.reduceMotion) {
               NotificationService.removeFromHistory(notificationId);
               return;
             }
@@ -540,10 +546,10 @@ Item {
           opacity: isRemoving ? 0 : 1
 
           Behavior on opacity {
-            enabled: !Settings.data.general.animationDisabled && delegateItem.isRemoving
-            NumberAnimation {
-              duration: Style.motionPanel
-              easing.type: Easing.OutCubic
+            enabled: !Style.reduceMotion && delegateItem.isRemoving
+            NAnim {
+              duration: Style.motionExit
+              curve: "out"
             }
           }
 
@@ -583,9 +589,9 @@ Item {
 
               Behavior on color {
                 enabled: !Colors.isTransitioning
-                ColorAnimation {
+                NColorAnim {
                   duration: Style.motionPointer
-                  easing.type: Easing.OutCubic
+                  curve: "swift"
                 }
               }
 
@@ -638,16 +644,14 @@ Item {
             height: shown ? cardColumn.implicitHeight + Style.margin2S : 0
             radius: Style.radiusItem
             color: Colors.overlay("strong")
-            border.color: delegateItem.isFocused ? Colors.accent : "transparent"
-            border.width: Style.borderS
             visible: shown
 
             // Expand/collapse is a data-driven size change.
             Behavior on height {
-              enabled: !Settings.data.general.animationDisabled
-              NumberAnimation {
-                duration: Style.motionPanel
-                easing.type: Easing.OutCubic
+              enabled: !Style.reduceMotion
+              NAnim {
+                duration: Style.motionExpand
+                curve: "expand"
               }
             }
 
@@ -790,6 +794,7 @@ Item {
                           anchors.fill: parent
                           cursorShape: Qt.PointingHandCursor
                           onClicked: {
+                            root.keyboardFocus = false;
                             root.focusIndex = delegateItem.rowIndex;
                             root.actionIndex = index;
                             root.invokeAndClose(delegateItem.notificationId, modelData.identifier);
@@ -818,6 +823,14 @@ Item {
                   }
                 }
               }
+            }
+            // Keyboard focus: the shared focus ring, on the card edge
+            // because the list clips. Not for a mouse-made selection.
+            NFocusRing {
+              anchors.fill: parent
+              radius: cardSurface.radius
+              outside: false
+              shown: delegateItem.isFocused && root.keyboardFocus
             }
           }
 
@@ -919,12 +932,14 @@ Item {
             readonly property real swipeStartThreshold: Math.round(16 * Style.uiScaleRatio)
             readonly property real swipeDismissThreshold: Math.max(110, width * 0.3)
 
-            // Spring back (motionPanel) unless the swipe dismissed the row.
+            // A released swipe springs back on the CDS drag-release spring
+            // (motionSnapBack, "snappy"); a dismissing swipe slides out on
+            // motionExit (DESIGN §3.5.2).
             Behavior on swipeOffset {
-              enabled: !Settings.data.general.animationDisabled && !interactionArea.isSwiping
-              NumberAnimation {
-                duration: Style.motionPanel
-                easing.type: Easing.OutCubic
+              enabled: !Style.reduceMotion && !interactionArea.isSwiping
+              NAnim {
+                duration: delegateItem.isRemoving ? Style.motionExit : Style.motionSnapBack
+                curve: delegateItem.isRemoving ? "out" : "snappy"
               }
             }
 
@@ -952,6 +967,7 @@ Item {
             }
 
             onPressed: mouse => {
+                         root.keyboardFocus = false;
                          root.focusIndex = delegateItem.rowIndex;
                          root.actionIndex = -1;
                          if (delegateItem.isExpanded)

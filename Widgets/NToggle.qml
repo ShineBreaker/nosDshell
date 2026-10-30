@@ -69,9 +69,9 @@ NDccRow {
 
     Behavior on color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionSwitch
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
 
@@ -87,9 +87,9 @@ NDccRow {
       x: root.checked ? switcher.width - width - 2 : 2
 
       Behavior on x {
-        NumberAnimation {
+        NAnim {
           duration: Style.motionSwitch
-          easing.type: Easing.OutCubic
+          curve: "overshoot"
         }
       }
     }

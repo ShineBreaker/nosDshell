@@ -509,8 +509,8 @@ NBox {
             id: widgetItem
             required property int index
             readonly property var modelData: (root.widgetModel && index >= 0 && index < root.widgetModel.length) ? root.widgetModel[index] : ({
-                                                                                                                                                        "id": ""
-                                                                                                                                                      })
+                                                                                                                                                "id": ""
+                                                                                                                                              })
 
             // id/parent refs dangle while the editor subtree is being
             // destroyed (二级页 pop) — bindings re-evaluate against torn-down
@@ -540,13 +540,15 @@ NBox {
             z: flowDragArea?.draggedIndex === index ? 1000 : 0
 
             Behavior on opacity {
-              NumberAnimation {
-                duration: Style.animationFast
+              NAnim {
+                duration: Style.motionPointer
+                curve: "swift"
               }
             }
             Behavior on scale {
-              NumberAnimation {
-                duration: Style.animationFast
+              NAnim {
+                duration: Style.motionPointer
+                curve: "swift"
               }
             }
 
@@ -743,29 +745,31 @@ NBox {
         SequentialAnimation on opacity {
           id: pulseAnimation
           running: false
+          // Started from the drag handlers; never under reduced motion.
+          paused: Style.reduceMotion
           loops: Animation.Infinite
-          NumberAnimation {
+          NAnim {
             to: 1
-            duration: Style.animationNormal
-            easing.type: Easing.InOutCubic
+            duration: Style.motionPulse
+            curve: "pulse"
           }
-          NumberAnimation {
+          NAnim {
             to: 0.6
-            duration: Style.animationNormal
-            easing.type: Easing.InOutCubic
+            duration: Style.motionPulse
+            curve: "pulse"
           }
         }
 
         Behavior on x {
-          NumberAnimation {
+          NAnim {
             duration: Style.animationFaster
-            easing.type: Easing.OutCubic
+            curve: "out"
           }
         }
         Behavior on y {
-          NumberAnimation {
+          NAnim {
             duration: Style.animationFaster
-            easing.type: Easing.OutCubic
+            curve: "out"
           }
         }
       }

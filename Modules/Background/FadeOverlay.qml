@@ -4,6 +4,7 @@ import Quickshell.Wayland
 import qs.Commons
 import qs.Services.Power
 import qs.Services.UI
+import qs.Widgets
 
 /**
 * IdleFadeOverlay — full-screen fade-to-black shown before each idle action.
@@ -40,12 +41,14 @@ Item {
           right: true
         }
 
-        ColorAnimation on color {
+        // Idle fade to black over the user's fade time; a gentle
+        // ease-in-out (CDS "pulse") so the dim creeps in, then commits.
+        NColorAnim on color {
           running: true
           from: Qt.rgba(0, 0, 0, 0)
           to: Qt.rgba(0, 0, 0, 1)
           duration: IdleService.fadeDuration * 1000
-          easing.type: Easing.InCubic
+          curve: "pulse"
         }
       }
     }

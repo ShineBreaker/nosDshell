@@ -78,22 +78,24 @@ Item {
   property real _pred2: 0
 
   // Frame-accurate scroll animations tied to Qt's render loop
-  NumberAnimation {
+  NAnim {
     id: _scrollAnim1
     target: root
     property: "_t1"
     from: 0
     to: 1
     duration: root.updateInterval
+    curve: "linear"
   }
 
-  NumberAnimation {
+  NAnim {
     id: _scrollAnim2
     target: root
     property: "_t2"
     from: 0
     to: 1
     duration: root.updateInterval
+    curve: "linear"
   }
 
   onValuesChanged: {

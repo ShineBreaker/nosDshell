@@ -271,9 +271,7 @@ Item {
               color: textColor
               wrapMode: Text.WordWrap
               Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-              features: ({
-                           "tnum": 1
-                         })
+              numeric: true
             }
           }
         }
@@ -298,9 +296,7 @@ Item {
               color: textColor
               wrapMode: Text.WordWrap
               Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-              features: ({
-                           "tnum": 1
-                         })
+              numeric: true
             }
           }
         }

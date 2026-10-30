@@ -61,7 +61,7 @@ Singleton {
   // Timer to reset isTransitioning after animation completes
   Timer {
     id: transitionTimer
-    interval: Style.animationSlowest + 50 // Small buffer after animation
+    interval: Style.motionTheme + 50 // Small buffer after animation
     onTriggered: root.isTransitioning = false
   }
 
@@ -110,116 +110,134 @@ Singleton {
   property color mShadow: defaultColors.mShadow
 
   // --- Color transition animations ---
+  // Theme crossfade (DESIGN §1.7 motionTheme on "swift"). Commons cannot
+  // import Widgets, so these spell out what NColorAnim does.
   Behavior on _primaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _onPrimaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _secondaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _onSecondaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _tertiaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _onTertiaryRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mError {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mOnError {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mSurface {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mOnSurface {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mSurfaceVariant {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mOnSurfaceVariant {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mOutline {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on mShadow {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _hoverRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
   Behavior on _onHoverRaw {
     enabled: !root.skipTransition
     ColorAnimation {
-      duration: Style.animationSlowest
-      easing.type: Easing.OutCubic
+      duration: Style.motionTheme
+      easing.type: Easing.BezierSpline
+      easing.bezierCurve: Style.curveSwift
     }
   }
 
@@ -551,6 +569,10 @@ Singleton {
   readonly property color _borderDarkClassic: "#2C3238"
   readonly property color _borderLightClassic: "#E5E5E5"
   readonly property color borderTransient: transientIsDark ? (shellIsDark ? borderDark : _borderDarkClassic) : (shellIsDark ? _borderLightClassic : borderLight)
+  // Dark popups only: 1 px white line just inside the top edge (DESIGN §1.6,
+  // cds-theme.css:330). Scaled by ui.borderEmphasis like the hairline, so
+  // emphasis 0 removes both.
+  readonly property color highlightShell: shellIsDark ? Qt.rgba(1, 1, 1, Math.min(1, 0.10 * Settings.data.ui.borderEmphasis)) : "transparent"
 
   // Shell foreground = the scheme's mOnSurface (DESIGN §1.3 演进): Deepin is
   // still #FFFFFF/#303030; other schemes tint text and, via the onShell-based

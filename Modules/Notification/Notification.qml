@@ -229,8 +229,9 @@ Variants {
             property bool isHovered: false
             property bool isRemoving: false
 
-            readonly property int animationDelay: index * 100
-            readonly property real slideDistance: 12 // motionBubbleIn rise
+            // Bubbles arriving together cascade (DESIGN §1.7 motionStagger)
+            readonly property int animationDelay: Math.min(index, Style.motionStaggerCap) * Style.motionStagger
+            readonly property real slideDistance: Style.bubbleSlide
 
             readonly property var actions: {
               try {
@@ -249,6 +250,8 @@ Variants {
 
             // Animation properties
             property real opacityValue: 0.0
+            // Enter scale (DESIGN §1.7 motionBubbleIn: bubbleEnterScale -> 1)
+            property real scaleValue: 1.0
             property real slideOffset: 0
             // DDE entry slides the bubble in horizontally from the edge it is
             // anchored to (bubble.cpp: waylandEnterOffset -12→0 on rightMargin).
@@ -265,6 +268,9 @@ Variants {
             readonly property real verticalSwipeDismissThreshold: Math.max(70, bubbleBody.height * 0.35)
 
             opacity: opacityValue
+            scale: scaleValue
+            // Grow out of the screen edge the bubble hangs on
+            transformOrigin: notifWindow.isLeft ? Item.Left : Item.Right
             transform: Translate {
               x: card.swipeOffset + card.enterOffset
               y: card.slideOffset + card.swipeOffsetY
@@ -302,12 +308,14 @@ Variants {
               swipeOffsetY = 0;
               slideOffset = 0;
               enterOffset = 0;
-              if (Settings.data.general.animationDisabled) {
+              if (Style.reduceMotion) {
                 opacityValue = 1.0;
+                scaleValue = 1.0;
                 return;
               }
 
               opacityValue = 0.0;
+              scaleValue = Style.bubbleEnterScale;
               animInDelayTimer.interval = animationDelay;
               animInDelayTimer.start();
             }
@@ -322,7 +330,7 @@ Variants {
               intersection: Intersection.Subtract
 
               Region {
-                x: card.slideOffset + card.enterOffset + card.swipeOffset + card.swipeOffsetY
+                x: card.slideOffset + card.enterOffset + card.swipeOffset + card.swipeOffsetY + card.scaleValue
                 width: 0
                 height: 0
               }
@@ -339,7 +347,7 @@ Variants {
               }
 
               Region {
-                x: card.slideOffset + card.enterOffset + card.swipeOffset + card.swipeOffsetY
+                x: card.slideOffset + card.enterOffset + card.swipeOffset + card.swipeOffsetY + card.scaleValue
                 width: 0
                 height: 0
               }
@@ -380,6 +388,7 @@ Variants {
                   enterXAnim.restart();
                 }
                 card.opacityValue = 1.0;
+                card.scaleValue = 1.0;
               }
             }
 
@@ -393,15 +402,16 @@ Variants {
               isRemoving = true;
               isSwiping = false;
               swipeOffsetY = 0;
-              if (!Settings.data.general.animationDisabled) {
-                // DDE exits toward the screen edge the bubble hangs on
-                // (bubble.cpp m_outAnimation: right-edge collapse, OutCubic).
+              if (!Style.reduceMotion) {
+                // Exit toward the screen edge the bubble hangs on: a short
+                // bubbleSlide drift while it fades on "fall" (DESIGN §1.7
+                // motionBubbleOut), not a full-width sweep.
                 if (useVerticalSwipe) {
                   swipeOffset = 0;
                   slideOffset = slideOutOffset;
                 } else {
                   slideOffset = 0;
-                  swipeOffset = notifWindow.isLeft ? -(bubbleBody.width + Style.marginXL) : bubbleBody.width + Style.marginXL;
+                  swipeOffset = notifWindow.isLeft ? -Style.bubbleSlide : Style.bubbleSlide;
                 }
                 opacityValue = 0.0;
               }
@@ -417,7 +427,7 @@ Variants {
               isRemoving = true;
               isSwiping = false;
               swipeOffset = 0;
-              if (!Settings.data.general.animationDisabled) {
+              if (!Style.reduceMotion) {
                 if (useVerticalSwipe) {
                   swipeOffsetY = swipeOffsetY >= 0 ? bubbleBody.height + Style.marginXL : -bubbleBody.height - Style.marginXL;
                 } else {
@@ -454,60 +464,71 @@ Variants {
               }
             }
 
+            // Enter on "enter" over motionBubbleIn, leave on "fall" over the
+            // shorter motionBubbleOut (DESIGN §1.7); a released swipe settles
+            // back on "out".
             Behavior on opacity {
-              enabled: !Settings.data.general.animationDisabled
-              NumberAnimation {
+              enabled: !Style.reduceMotion
+              NAnim {
                 duration: card.isRemoving ? Style.motionBubbleOut : Style.motionBubbleIn
-                easing.type: Easing.OutCubic
+                curve: card.isRemoving ? "fall" : "enter"
+              }
+            }
+
+            Behavior on scaleValue {
+              enabled: !Style.reduceMotion
+              NAnim {
+                duration: Style.motionBubbleIn
+                curve: "enter"
               }
             }
 
             Behavior on slideOffset {
-              enabled: !Settings.data.general.animationDisabled
-              NumberAnimation {
+              enabled: !Style.reduceMotion
+              NAnim {
                 duration: card.isRemoving ? Style.motionBubbleOut : Style.motionBubbleIn
-                easing.type: Easing.OutCubic
+                curve: card.isRemoving ? "fall" : "enter"
               }
             }
 
             Behavior on enterOffset {
-              enabled: !Settings.data.general.animationDisabled
-              NumberAnimation {
+              enabled: !Style.reduceMotion
+              NAnim {
                 duration: Style.motionBubbleIn
-                easing.type: Easing.OutCubic
+                curve: "enter"
               }
             }
 
-            NumberAnimation {
+            NAnim {
               id: enterSlideAnim
               target: card
               property: "slideOffset"
               to: 0
               duration: Style.motionBubbleIn
-              easing.type: Easing.OutCubic
+              curve: "enter"
             }
-            NumberAnimation {
+            NAnim {
               id: enterXAnim
               target: card
               property: "enterOffset"
               to: 0
               duration: Style.motionBubbleIn
-              easing.type: Easing.OutCubic
+              curve: "enter"
             }
 
             Behavior on swipeOffset {
-              enabled: !Settings.data.general.animationDisabled && !card.isSwiping
-              NumberAnimation {
-                duration: card.isRemoving ? Style.motionBubbleOut : Style.animationFast
-                easing.type: Easing.OutCubic
+              enabled: !Style.reduceMotion && !card.isSwiping
+              NAnim {
+                duration: card.isRemoving ? Style.motionBubbleOut : Style.motionExit
+                curve: card.isRemoving ? "fall" : "out"
               }
             }
 
             Behavior on swipeOffsetY {
-              enabled: !Settings.data.general.animationDisabled && !card.isSwiping
-              NumberAnimation {
-                duration: card.isRemoving ? Style.motionBubbleOut : Style.animationFast
-                easing.type: Easing.OutCubic
+              enabled: !Style.reduceMotion && !card.isSwiping
+              NAnim {
+                duration: card.isRemoving ? Style.motionBubbleOut : Style.motionExit
+                curve: card.isRemoving ? "fall" : "out"
               }
             }
 

@@ -154,9 +154,7 @@ SmartPanel {
           text: statRow.value
           pointSize: Style.fontSizeS
           color: Colors.onShellSecondary
-          features: {
-            "tnum": 1
-          }
+          numeric: true
         }
       }
     }

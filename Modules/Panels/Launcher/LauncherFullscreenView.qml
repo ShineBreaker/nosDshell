@@ -1,12 +1,12 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
-import QtQuick.Layouts
 
 // Fullscreen launcher content (DESIGN §3.4.1). Consumes LauncherModel for all
 // non-visual state and only builds UI on top of it.
@@ -429,7 +429,6 @@ Item {
           height: root.browseAsList && root.browsing ? resultsArea.height : Math.min(contentHeight, root.height * 0.5)
           spacing: 0
           clip: true
-          gradientColor: "transparent"
           // Model is the count, entries are read by index: the results carry a
           // provider QObject, and boxing them through a QVariant model turns
           // those refs into raw pointers that lose QPointer tracking
@@ -495,7 +494,7 @@ Item {
           verticalPolicy: ScrollBar.AlwaysOff
           horizontalPolicy: ScrollBar.AlwaysOff
           reserveScrollbarSpace: false
-          showGradientMasks: false
+          edgeFade: false
           boundsBehavior: Flickable.StopAtBounds
 
           // Sits under the inner GridView (z:-1): clicks on empty canvas between

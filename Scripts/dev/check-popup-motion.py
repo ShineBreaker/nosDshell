@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Check that every QtQuick.Controls Popup animates its show/hide.
 
-Popup-type surfaces fade in/out on the popup motion tokens (DESIGN.md
-§1.7 motionPopupIn/motionPopupOut). A bare `Popup {` without enter:/exit:
+Popup-type surfaces enter and leave through the shared NPopupEnter /
+NPopupExit transitions (DESIGN.md §1.7 motionDialogIn/motionDialogOut). A bare `Popup {` without enter:/exit:
 transitions is the exact shape that used to snap open and shut; scan the
 whole corpus so the next menu or dialog can't regress it silently.
 
@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent.parent
 EXCLUDED_DIRS = {"references", "docs", ".git", "target", "node_modules", "__pycache__"}
 
-POPUP_DECL = re.compile(r"\b(Popup|Menu|Dialog|Drawer)\s*\{")
+POPUP_DECL = re.compile(r"(?<![\w.])(Popup|Menu|Dialog|Drawer)\s*\{")
 TRANSITION_PROP = re.compile(r"^\s*(enter|exit)\s*:")
 INLINE_TRANSITION = re.compile(r"(?:^|[{\s;])(enter|exit)\s*:")
 
@@ -62,21 +62,24 @@ def check_file(path):
         have_enter = have_exit = False
         for idx in range(start, end):
             code = strip_code(lines[idx])
+            found = []
             if idx == start:
                 # Properties on the declaration line itself
                 # (`Popup { enter: ... }` one-liners).
-                for m in INLINE_TRANSITION.finditer(code):
-                    if m.group(1) == "enter":
-                        have_enter = True
-                    else:
-                        have_exit = True
+                found = [m.group(1) for m in INLINE_TRANSITION.finditer(code)]
             elif depth == 1:
                 m = TRANSITION_PROP.match(code)
                 if m:
-                    if m.group(1) == "enter":
-                        have_enter = True
-                    else:
-                        have_exit = True
+                    found = [m.group(1)]
+            for which in found:
+                shared = "NPopupEnter" if which == "enter" else "NPopupExit"
+                if shared not in code:
+                    problems.append(f"{path.relative_to(ROOT)}:{idx + 1}: Popup {which}: is not {shared} "
+                                    f"(DESIGN §1.7 motionDialogIn/Out — one shared recipe)")
+                if which == "enter":
+                    have_enter = True
+                else:
+                    have_exit = True
             depth += code.count("{") + code.count("[") - code.count("}") - code.count("]")
         missing = []
         if not have_enter:

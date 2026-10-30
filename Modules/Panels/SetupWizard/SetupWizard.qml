@@ -277,20 +277,21 @@ PanelWindow {
               }
 
               // Subtle pulse animation
+              // (DESIGN §1.7: motionBreathe on "pulse"; still under reduceMotion)
               SequentialAnimation on scale {
-                running: true
+                running: !Style.reduceMotion
                 loops: Animation.Infinite
-                NumberAnimation {
+                NAnim {
                   from: 1.0
                   to: 1.05
-                  duration: 2000
-                  easing.type: Easing.InOutCubic
+                  duration: Style.motionBreathe
+                  curve: "pulse"
                 }
-                NumberAnimation {
+                NAnim {
                   from: 1.05
                   to: 1.0
-                  duration: 2000
-                  easing.type: Easing.InOutCubic
+                  duration: Style.motionBreathe
+                  curve: "pulse"
                 }
               }
             }
@@ -484,9 +485,9 @@ PanelWindow {
 
                   Behavior on color {
                     enabled: !Colors.isTransitioning
-                    ColorAnimation {
+                    NColorAnim {
                       duration: Style.motionPointer
-                      easing.type: Easing.OutCubic
+                      curve: "swift"
                     }
                   }
                 }

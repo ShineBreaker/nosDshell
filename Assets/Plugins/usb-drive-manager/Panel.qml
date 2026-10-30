@@ -80,9 +80,9 @@ Item {
                         onClicked: mainInstance?.refreshDevices()
 
                         RotationAnimation on rotation {
-                            running: mainInstance?.loading ?? false
+                            running: (mainInstance?.loading ?? false) && !Style.reduceMotion
                             from: 0; to: 360
-                            duration: 1000
+                            duration: Style.spinPeriod
                             loops: Animation.Infinite
                         }
                     }

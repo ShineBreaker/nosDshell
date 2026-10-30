@@ -968,10 +968,13 @@ Singleton {
     }
   }
 
+  // Same exit as a timeout: the bubble plays motionBubbleOut and then calls
+  // dismissPopup itself (DESIGN §3.6). Removing the row directly made the
+  // bubble vanish without an exit.
   function dismissOldestPopup() {
     if (popupModel.count > 0) {
       const lastNotif = popupModel.get(popupModel.count - 1);
-      dismissPopup(lastNotif.id);
+      animateAndRemove(lastNotif.id);
     }
   }
 

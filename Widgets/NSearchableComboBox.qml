@@ -289,9 +289,9 @@ NDccRow {
 
       Behavior on border.color {
         enabled: !Colors.isTransitioning
-        ColorAnimation {
+        NColorAnim {
           duration: Style.motionSwitch
-          easing.type: Easing.OutCubic
+          curve: "swift"
         }
       }
     }
@@ -388,7 +388,6 @@ NDccRow {
           id: listView
           Layout.fillWidth: true
           Layout.fillHeight: true
-          gradientColor: "transparent"
           // Plain-dict mirror rows — never the live ListModel: binding-side
           // model.<role>/get() reads capture the row proxy and crash on the
           // next mutation (DESIGN §1.7).

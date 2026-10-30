@@ -45,7 +45,6 @@ Item {
     horizontalPolicy: ScrollBar.AlwaysOff
     verticalPolicy: ScrollBar.AsNeeded
     reserveScrollbarSpace: false
-    gradientColor: Colors.maskShell
     // Scrollbar hidden until hover (DESIGN §3.5.2)
     ScrollBar.horizontal.visible: false
 

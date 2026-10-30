@@ -22,7 +22,6 @@ ColumnLayout {
     NListView {
       id: listView
       anchors.fill: parent
-      gradientColor: "transparent"
       // Sortable entries are one SettingsGroup: 1 px seams, auto head/tail
       // corners come from NDccRow's sibling scan (DESIGN §3.5.4).
       spacing: Style.settingsGroupGap
@@ -129,9 +128,9 @@ ColumnLayout {
 
           Behavior on color {
             enabled: !Colors.isTransitioning
-            ColorAnimation {
+            NColorAnim {
               duration: Style.motionSwitch
-              easing.type: Easing.OutCubic
+              curve: "swift"
             }
           }
 
@@ -221,9 +220,9 @@ ColumnLayout {
 
         Behavior on y {
           enabled: !delegateItem.dragging
-          NumberAnimation {
-            duration: Style.animationNormal
-            easing.type: Easing.OutQuad
+          NAnim {
+            duration: Style.motionExpand
+            curve: "expand"
           }
         }
       }

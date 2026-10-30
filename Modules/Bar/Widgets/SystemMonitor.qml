@@ -534,6 +534,7 @@ Item {
           // Text mode
           NText {
             visible: !compactMode
+            numeric: true
             text: `${SystemStatService.loadAvg1.toFixed(1)}`.padStart(usePadding ? `${SystemStatService.nproc.toFixed(1)}`.length : 0, " ")
             family: fontFamily
             pointSize: barFontSize

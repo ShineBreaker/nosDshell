@@ -4,7 +4,8 @@
 #
 # Usage:
 #   Scripts/dev/lint.sh                 # all repo .qml files
-#   Scripts/dev/lint.sh --changed       # files changed vs HEAD + untracked
+#   Scripts/dev/lint.sh --changed       # files changed vs HEAD + untracked,
+#                                       # plus every file that uses a changed type
 #   Scripts/dev/lint.sh file.qml ...    # explicit files
 #
 # Mirror tree: $NOSD_VERIFY_DIR/qmlimp/qs/... with a generated `qmldir` per
@@ -27,13 +28,31 @@ WORK="${NOSD_VERIFY_DIR:-/tmp/nosd-verify}"
 MIRROR="$WORK/qmlimp"
 mkdir -p "$WORK/logs"
 
+# No qmllint on this host (no guix home, no distro Qt): rerun the whole
+# script inside the nix test environment, which carries qmllint and the
+# quickshell qml modules (Scripts/test/lib/pkgenv.sh).
+if [ -z "${QMLLINT:-}" ] && [ -z "${NOSD_LINT_IN_ENV:-}" ] \
+  && [ ! -x "$HOME/.guix-home/profile/bin/qmllint" ] && ! command -v qmllint > /dev/null; then
+  # shellcheck source=../test/lib/pkgenv.sh
+  . "$REPO/Scripts/test/lib/pkgenv.sh"
+  if [ "$(nosd_pkg_backend)" = nix ]; then
+    NOSD_LINT_IN_ENV=1 nosd_pkg_run "" "$0" "$@"
+    exit $?
+  fi
+fi
+
 # --- repo consistency checks ---------------------------------------------
 FAIL=0
-for check in check-settings-keys check-translations check-popup-motion check-color-motion check-locale-format check-docs-sync check-groove-separators check-launch-path check-layer-namespaces check-wheel-accepted check-migration-registry; do
+for check in check-settings-keys check-translations check-popup-motion check-motion check-locale-format check-docs-sync check-groove-separators check-launch-path check-layer-namespaces check-wheel-accepted check-migration-registry; do
   if ! python3 "$SCRIPT_DIR/$check.py"; then
     FAIL=1
   fi
 done
+# Motion curve tokens in Commons/Style.qml must match their CDS references
+# (DESIGN §1.7; the script also generates them with --emit).
+if ! python3 "$REPO/Scripts/test/test-motion-curves.py"; then
+  FAIL=1
+fi
 [ "$FAIL" -gt 0 ] && exit 1
 # The settings search index must match what the current sources generate
 # (lefthook's pre-commit rebuild is not available on this machine).
@@ -44,14 +63,14 @@ fi
 
 QMLLINT="${QMLLINT:-$HOME/.guix-home/profile/bin/qmllint}"
 [ -x "$QMLLINT" ] || QMLLINT=$(command -v qmllint) || { echo "qmllint not found" >&2; exit 2; }
-QTQML="${QTQML:-$HOME/.guix-home/profile/lib/qt6/qml}"
+QTQML="${QTQML:-${NOSD_QTQML:-$HOME/.guix-home/profile/lib/qt6/qml}}"
 [ -d "$QTQML" ] || QTQML=/usr/lib/qt6/qml   # distro layout fallback (CI containers)
 [ -d "$QTQML" ] || QTQML=""
 
 # upstream quickshell qml dir; noctalia-qs kept as fallback for comparison.
 # QSQML env override wins (CI passes the distro package's lib/qt6/qml);
 # otherwise ask guix only when it exists.
-QSQML="${QSQML:-}"
+QSQML="${QSQML:-${NOSD_QSQML:-}}"
 if [ -z "$QSQML" ] && command -v guix >/dev/null; then
   for pkg in quickshell noctalia-qs; do
     d=$(guix build "$pkg" 2>/dev/null | tail -1)/lib/qt6/qml
@@ -89,7 +108,16 @@ echo "mirror: $(find "$MIRROR/qs" -name qmldir | wc -l) qmldir files in $MIRROR/
 
 # --- file selection ------------------------------------------------------
 if [ "${1:-}" = "--changed" ]; then
-  mapfile -t FILES < <(cd "$REPO" && { git diff --name-only HEAD -- '*.qml'; git ls-files -o --exclude-standard -- '*.qml'; } | sort -u | grep -v '^references/' | sed "s|^|$REPO/|")
+  mapfile -t CHANGED < <(cd "$REPO" && { git diff --name-only HEAD -- '*.qml'; git ls-files -o --exclude-standard -- '*.qml'; } | sort -u | grep -v '^references/')
+  # A changed component can break the files that instantiate it (a removed
+  # property fails `Foo { bar: 1 }` at load time, and the whole config with
+  # it), so lint every file that uses a changed type name too.
+  USERS=()
+  for f in "${CHANGED[@]}"; do
+    t=$(basename "$f" .qml)
+    mapfile -t -O "${#USERS[@]}" USERS < <(cd "$REPO" && grep -rlE --include='*.qml' "(^|[^A-Za-z0-9_.])$t[[:space:]]*\{" . | sed 's|^\./||' | grep -v '^references/')
+  done
+  mapfile -t FILES < <(printf '%s\n' "${CHANGED[@]}" "${USERS[@]}" | grep -v '^$' | sort -u | sed "s|^|$REPO/|")
 elif [ $# -gt 0 ]; then
   mapfile -t FILES < <(printf "%s\n" "$@" | while read -r f; do
     case "$f" in /*) echo "$f" ;; *) echo "$REPO/$f" ;; esac
@@ -104,10 +132,21 @@ TOTAL=0; ERRFILES=0; ERRN=0
 ERRLOG="$WORK/logs/lint-errors.log"; : > "$ERRLOG"
 for f in "${FILES[@]}"; do
   out=$("$QMLLINT" ${QSQML:+-I "$QSQML"} ${QTQML:+-I "$QTQML"} -I "$MIRROR" "$f" 2>&1)
-  errs=$(grep -cE "^(Error|Critical|Fatal):" <<<"$out" || true)
+  # Assigning a property the type does not have ("Could not find property"
+  # in an object declaration) is only a qmllint warning, but at runtime it
+  # aborts loading the whole configuration. Count it as an error. Member
+  # lookups on dynamic objects share the [missing-property] category and
+  # stay warnings: those are mostly settings JSON reads qmllint cannot type.
+  # qmllint cannot resolve Quickshell's PanelWindow `margins.top/bottom/left/
+  # right` group either, so those four names are left out (blind spot: a
+  # component property literally named top/bottom/left/right).
+  PATTERN='^(Error|Critical|Fatal):|^Warning: .*Could not find property "[^"]*"\. \[missing-property\]'
+  IGNORE='Could not find property "(top|bottom|left|right)"'
+  hits=$(grep -E "$PATTERN" <<<"$out" | grep -vE "$IGNORE" || true)
+  errs=$(grep -c . <<<"$hits" || true)
   if [ "$errs" -gt 0 ]; then
     echo "== ${f#$REPO/} ($errs)"
-    grep -E "^(Error|Critical|Fatal):" <<<"$out" | head -10
+    head -10 <<<"$hits"
     { echo "== $f"; echo "$out"; echo; } >> "$ERRLOG"
     ERRFILES=$((ERRFILES+1)); ERRN=$((ERRN+errs))
   fi

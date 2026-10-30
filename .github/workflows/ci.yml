@@ -68,6 +68,21 @@ jobs:
           python3 Scripts/dev/check-settings-keys.py
           python3 Scripts/dev/check-translations.py
 
+  # Nix packaging is only exercised by users of the flake, so a syntax error
+  # there (e.g. a `//` comment, which Nix reads as the update operator)
+  # ships silently. Parse every .nix file and evaluate the package name.
+  nix-eval:
+    name: nix-eval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cachix/install-nix-action@v31
+      - name: Parse and evaluate the flake
+        run: |
+          set -euo pipefail
+          git ls-files '*.nix' | xargs -n1 nix-instantiate --parse > /dev/null
+          nix eval .#packages.x86_64-linux.default.name
+
   # docs/legacy/ is generated — fail if it drifts from the vendored source
   # or the converter itself (catches both hand edits and stale output).
   docs-sync:

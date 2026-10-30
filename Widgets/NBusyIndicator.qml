@@ -9,7 +9,7 @@ Item {
   property color color: Colors.onShell
   property int size: Style.baseWidgetSize
   property int strokeWidth: Style.borderM
-  property int duration: Style.animationSlow * 2
+  property int duration: Style.spinPeriod
 
   implicitWidth: size
   implicitHeight: size
@@ -64,8 +64,10 @@ Item {
     }
 
     // Smooth rotation animation - uses GPU transform, NO canvas repaints!
+    // A decorative loop: still under reduced motion (DESIGN §1.7), which
+    // also keeps a 0 ms duration from spinning an infinite zero-length loop.
     RotationAnimation on rotation {
-      running: root.running
+      running: root.running && !Style.reduceMotion
       from: 0
       to: 360
       duration: root.duration

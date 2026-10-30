@@ -15,7 +15,8 @@ Item {
   property int duration: 3000
   property string actionLabel: ""
   property var actionCallback: null
-  readonly property real initialScale: 0.7
+  // Enter scale of the bubble recipe (DESIGN §1.7 motionBubbleIn)
+  readonly property real initialScale: Style.bubbleEnterScale
 
   // The visible bubble rect, shadow padding excluded. ToastScreen's input
   // mask tracks it via NSurfaceRegion.
@@ -48,9 +49,14 @@ Item {
   readonly property real swipeDismissThreshold: Math.max(110, background.width * 0.32)
   readonly property real verticalSwipeDismissThreshold: Math.max(70, background.height * 0.35)
 
+  // Enter/exit drift along the anchored edge (DESIGN §1.7 bubbleSlide):
+  // sideways for corner locations, vertically for top/bottom centre.
+  property real edgeOffset: 0
+  readonly property real _edgeSign: isRight ? 1 : (isLeft ? -1 : (location.startsWith("bottom") ? 1 : -1))
+
   transform: Translate {
-    x: root.swipeOffset
-    y: root.swipeOffsetY
+    x: root.swipeOffset + (root.useVerticalSwipe ? 0 : root.edgeOffset)
+    y: root.swipeOffsetY + (root.useVerticalSwipe ? root.edgeOffset : 0)
   }
 
   function clampSwipeDelta(deltaX) {
@@ -155,17 +161,18 @@ Item {
   NDropShadow {
     anchors.fill: background
     source: background
-    autoPaddingEnabled: true
+    shadow: Style.shadowBubble
   }
 
-  NumberAnimation {
+  // A countdown, not a motion: linear over the toast's own duration.
+  NAnim {
     id: progressAnimation
     target: root
     property: "progress"
     from: 1.0
     to: 0.0
     duration: root.duration
-    easing.type: Easing.Linear
+    curve: "linear"
     onFinished: {
       if (root.progress === 0.0 && root.visible) {
         root.hide();
@@ -175,36 +182,47 @@ Item {
 
   // Timer: hideTimer removed, using progressAnimation
 
-  // Bubble profile (DESIGN §1.7): 180 ms in, 300 ms out, both OutCubic.
+  // Bubble recipe (DESIGN §1.7): fade, scale 0.96 -> 1 and a bubbleSlide
+  // drift in from the anchored edge on "enter" over motionBubbleIn; fade and
+  // drift back out on "fall" over the shorter motionBubbleOut.
   property bool _hiding: false
 
   Behavior on opacity {
-    NumberAnimation {
+    NAnim {
       duration: root._hiding ? Style.motionBubbleOut : Style.motionBubbleIn
-      easing.type: Easing.OutCubic
+      curve: root._hiding ? "fall" : "enter"
     }
   }
 
   Behavior on scale {
-    NumberAnimation {
+    enabled: root._poseAnimated
+    NAnim {
+      duration: Style.motionBubbleIn
+      curve: "enter"
+    }
+  }
+
+  Behavior on edgeOffset {
+    enabled: root._poseAnimated
+    NAnim {
       duration: root._hiding ? Style.motionBubbleOut : Style.motionBubbleIn
-      easing.type: Easing.OutCubic
+      curve: root._hiding ? "fall" : "enter"
     }
   }
 
   Behavior on swipeOffset {
     enabled: !root.isSwiping
-    NumberAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
+    NAnim {
+      duration: root._hiding ? Style.motionBubbleOut : Style.motionSnapBack
+      curve: root._hiding ? "fall" : "snappy"
     }
   }
 
   Behavior on swipeOffsetY {
     enabled: !root.isSwiping
-    NumberAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
+    NAnim {
+      duration: root._hiding ? Style.motionBubbleOut : Style.motionSnapBack
+      curve: root._hiding ? "fall" : "snappy"
     }
   }
 
@@ -385,8 +403,12 @@ Item {
 
     visible = true;
     _hiding = false;
+    // Start from the enter pose without animating to it, then let the
+    // Behaviors carry the bubble in.
+    _snapToEnterPose();
     opacity = 1.0;
     scale = 1.0;
+    edgeOffset = 0;
     progress = 1.0;
     isHovered = false;
     isSwiping = false;
@@ -400,6 +422,17 @@ Item {
     progressAnimation.restart();
   }
 
+  // Jump to the enter pose (scaled down, shifted toward the edge) with the
+  // pose Behaviors off, so the next writes animate from there. Opacity is
+  // already 0 or mid-fade and animates from wherever it is.
+  property bool _poseAnimated: true
+  function _snapToEnterPose() {
+    _poseAnimated = false;
+    scale = initialScale;
+    edgeOffset = _edgeSign * Style.bubbleSlide;
+    _poseAnimated = true;
+  }
+
   function hide() {
     progressAnimation.stop();
     isSwiping = false;
@@ -407,18 +440,8 @@ Item {
     swipeOffsetY = 0;
     _hiding = true;
     opacity = 0;
-    scale = initialScale;
+    edgeOffset = _edgeSign * Style.bubbleSlide;
     hideAnimation.restart();
   }
 
-  function hideImmediately() {
-    hideAnimation.stop();
-    progressAnimation.stop();
-    isSwiping = false;
-    swipeOffset = 0;
-    swipeOffsetY = 0;
-    opacity = 0;
-    scale = initialScale;
-    root.hidden();
-  }
 }

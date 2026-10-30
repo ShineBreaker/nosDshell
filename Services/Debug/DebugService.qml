@@ -184,10 +184,16 @@ Singleton {
   function dumpBackgroundChain() {
     var lines = [];
     var op = null, cp = null;
-    try { op = PanelService.openedPanel; } catch (e) {}
-    try { cp = PanelService.closingPanel; } catch (e) {}
+    try {
+      op = PanelService.openedPanel;
+    } catch (e) {}
+    try {
+      cp = PanelService.closingPanel;
+    } catch (e) {}
     var slots = [];
-    try { slots = PanelService.backgroundSlotAssignments; } catch (e) {}
+    try {
+      slots = PanelService.backgroundSlotAssignments;
+    } catch (e) {}
     lines.push("openedPanel=" + (op ? (op.objectName || String(op)) : "null"));
     lines.push("closingPanel=" + (cp ? (cp.objectName || String(cp)) : "null"));
     lines.push("backgroundSlotAssignments[0]=" + (slots[0] ? (slots[0].objectName || String(slots[0])) : "null"));
@@ -200,12 +206,16 @@ Singleton {
       lines.push("openedPanel.ownBackgroundAlpha=" + op.ownBackgroundAlpha);
       lines.push("openedPanel.dimsBackground=" + op.dimsBackground);
       var pr = null;
-      try { pr = op.panelRegion; } catch (e) {}
+      try {
+        pr = op.panelRegion;
+      } catch (e) {}
       lines.push("openedPanel.panelRegion=" + (pr ? describe(pr) : "null"));
       if (pr) {
         lines.push("  panelRegion.visible=" + pr.visible);
         var pi = null;
-        try { pi = pr.panelItem; } catch (e) {}
+        try {
+          pi = pr.panelItem;
+        } catch (e) {}
         lines.push("  panelRegion.panelItem=" + (pi ? describe(pi) : "null"));
         if (pi) {
           lines.push("    panelItem.visible=" + pi.visible);
@@ -213,17 +223,24 @@ Singleton {
         }
       }
       // finishOpen gate: the reopen hook needs _contentReady + contentLoader.item.
-      try { lines.push("openedPanel._contentReady=" + op._contentReady); } catch (e) {}
-      try { lines.push("openedPanel.keepContentAlive=" + op.keepContentAlive); } catch (e) {}
+      try {
+        lines.push("openedPanel._contentReady=" + op._contentReady);
+      } catch (e) {}
+      try {
+        lines.push("openedPanel.keepContentAlive=" + op.keepContentAlive);
+      } catch (e) {}
       var cl = null;
-      try { cl = op.contentLoader; } catch (e) {}
+      try {
+        cl = op.contentLoader;
+      } catch (e) {}
       lines.push("openedPanel.contentLoader=" + (cl ? "item=" + (cl.item ? "yes" : "null") + " active=" + cl.active + " status=" + cl.status : "null"));
     }
     // Walk every registered root that is a MainScreen to report isPanelOpen/color
     var names = Object.keys(roots);
     for (var i = 0; i < names.length; i++) {
       var r = roots[names[i]];
-      if (!r) continue;
+      if (!r)
+        continue;
       if (r.isPanelOpen !== undefined) {
         lines.push("root[" + names[i] + "].screen=" + (r.screen ? r.screen.name : "null") + " isPanelOpen=" + r.isPanelOpen + " dimmerOpacity=" + r.dimmerOpacity + " color=" + r.color + " children=" + (r.children ? r.children.length : "?") + " contentItem=" + (r.contentItem ? "yes" : "no"));
       }
@@ -234,19 +251,32 @@ Singleton {
     // exposes them as property aliases (ownAlphaSlot0/1, unifiedSlot0/1).
     for (var i = 0; i < names.length; i++) {
       var r = roots[names[i]];
-      if (!r || r.isPanelOpen === undefined) continue;
+      if (!r || r.isPanelOpen === undefined)
+        continue;
       var ab = null;
       try {
         _walkItems(r, 0, function (it) {
-          if (!ab && it.ownAlphaSlot0 !== undefined) ab = it;
+          if (!ab && it.ownAlphaSlot0 !== undefined)
+            ab = it;
         });
       } catch (e) {}
-      if (!ab) { lines.push("root[" + names[i] + "]: AllBackgrounds not found"); continue; }
+      if (!ab) {
+        lines.push("root[" + names[i] + "]: AllBackgrounds not found");
+        continue;
+      }
       var s0 = null, s1 = null, u0 = null, u1 = null;
-      try { s0 = ab.ownAlphaSlot0; } catch (e) {}
-      try { s1 = ab.ownAlphaSlot1; } catch (e) {}
-      try { u0 = ab.unifiedSlot0; } catch (e) {}
-      try { u1 = ab.unifiedSlot1; } catch (e) {}
+      try {
+        s0 = ab.ownAlphaSlot0;
+      } catch (e) {}
+      try {
+        s1 = ab.ownAlphaSlot1;
+      } catch (e) {}
+      try {
+        u0 = ab.unifiedSlot0;
+      } catch (e) {}
+      try {
+        u1 = ab.unifiedSlot1;
+      } catch (e) {}
       lines.push("root[" + names[i] + "].ownAlphaSlot0.assignedPanel=" + (s0 && s0.assignedPanel ? (s0.assignedPanel.objectName || String(s0.assignedPanel)) : "null") + " isRenderable=" + (s0 ? s0.isRenderable : "?") + " fillColor=" + (s0 ? s0.fillColor : "?"));
       lines.push("root[" + names[i] + "].ownAlphaSlot1.assignedPanel=" + (s1 && s1.assignedPanel ? (s1.assignedPanel.objectName || String(s1.assignedPanel)) : "null") + " isRenderable=" + (s1 ? s1.isRenderable : "?"));
       lines.push("root[" + names[i] + "].unifiedSlot0.assignedPanel=" + (u0 && u0.assignedPanel ? (u0.assignedPanel.objectName || String(u0.assignedPanel)) : "null") + " isRenderable=" + (u0 ? u0.isRenderable : "?"));
@@ -293,18 +323,32 @@ Singleton {
       }
       if (hitKids.length === 0)
         break;
+      // Descend through the topmost child (paint-order last) that can take a
+      // press. A childless MouseArea with acceptedButtons NoButton (a wheel
+      // or hover layer) never does, so the press falls through to what lies
+      // under it; stopping there would hide the real target.
+      var pick = hitKids.length - 1;
+      while (pick > 0 && _passesPresses(hitKids[pick][0]))
+        pick--;
       for (var j = hitKids.length - 1; j >= 0; j--) {
-        var tag = j === hitKids.length - 1 ? "=>" : "  ";
-        lines.push(tag + " " + describe(hitKids[j][0]) + " @" + Math.round(hitKids[j][1].x) + "," + Math.round(hitKids[j][1].y));
+        var tag = j === pick ? "=>" : "  ";
+        var note = _passesPresses(hitKids[j][0]) ? " (no buttons: presses pass through)" : "";
+        lines.push(tag + " " + describe(hitKids[j][0]) + " @" + Math.round(hitKids[j][1].x) + "," + Math.round(hitKids[j][1].y) + note);
       }
-      // Descend through the topmost child (paint-order last)
-      var top = hitKids[hitKids.length - 1][0];
-      p = hitKids[hitKids.length - 1][1];
-      cur = top;
+      p = hitKids[pick][1];
+      cur = hitKids[pick][0];
     }
     var out = lines.join("\n");
     console.info(out);
     return out;
+  }
+
+  function _passesPresses(item) {
+    try {
+      return item.acceptedButtons === Qt.NoButton && item.children.length === 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   function dumpAllRoots(maxDepth) {
@@ -322,24 +366,47 @@ Singleton {
   // Popups/dialogs parent to the window's Overlay, a sibling subtree of the
   // registered root — when the root walk misses, retry over the whole window
   // content item so dialogs are reachable too.
+  // describe() plus " G@x,y" = mapToGlobal() (see IPC `find`).
+  function describeGlobal(item) {
+    var out = describe(item);
+    try {
+      var g = item.mapToGlobal(Qt.point(0, 0));
+      if (g)
+        out += " G@" + Math.round(g.x) + "," + Math.round(g.y);
+    } catch (e) {}
+    return out;
+  }
+
   function findItem(rootName, objectName) {
+    var all = _findItems(rootName, objectName, true);
+    return all.length > 0 ? all[0] : null;
+  }
+
+  // Every item under the root with this objectName, in paint order. Use it
+  // instead of `tree` to locate repeated delegates (cards, rows): a deep
+  // tree dump overflows the IPC socket.
+  function findAllItems(rootName, objectName) {
+    return _findItems(rootName, objectName, false);
+  }
+
+  function _findItems(rootName, objectName, firstOnly) {
     var item = null;
     try {
       item = (rootName === "" || rootName === "opened") ? PanelService.openedPanel : roots[rootName];
     } catch (e) {}
     if (!item)
-      return null;
-    var found = null;
+      return [];
+    var found = [];
     var match = function (it) {
-      if (found)
+      if (firstOnly && found.length > 0)
         return;
       try {
-        if (it.objectName === objectName)
-          found = it;
+        if (it.objectName === objectName && found.indexOf(it) < 0)
+          found.push(it);
       } catch (e) {}
     };
     _walkItems(item, 0, match);
-    if (!found) {
+    if (found.length === 0 || !firstOnly) {
       try {
         var top = item.Window ? item.Window.contentItem : null;
         if (top && top !== item)
@@ -349,14 +416,23 @@ Singleton {
     return found;
   }
 
+  // `prop` may be a dot-separated path like the IPC `get`
+  // ("contentItem.contentY" sets the flickable inside a ScrollView).
   function setProperty(rootName, objectName, prop, value) {
     var it = findItem(rootName, objectName);
     if (!it)
       return "no item '" + objectName + "' under " + rootName + " (roots: " + rootNames() + ")";
     try {
-      if (it[prop] === undefined)
+      var parts = prop.split(".");
+      var last = parts.pop();
+      for (var i = 0; i < parts.length; i++) {
+        it = it[parts[i]];
+        if (it === null || it === undefined)
+          return "null at '" + parts.slice(0, i + 1).join(".") + "'";
+      }
+      if (it[last] === undefined)
         return "no property '" + prop + "' on " + describe(it);
-      it[prop] = value;
+      it[last] = value;
       return "ok " + describe(it) + " " + prop + "=" + value;
     } catch (e) {
       return "set failed on " + describe(it) + ": " + e;

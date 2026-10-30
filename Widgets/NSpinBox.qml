@@ -115,9 +115,9 @@ NDccRow {
 
     Behavior on border.color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionPointer
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
 
@@ -253,9 +253,7 @@ NDccRow {
         // Prefix text (non-editable)
         NText {
           text: root.prefix
-          features: {
-            "tnum": 1
-          }
+          numeric: true
           pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
           color: Qt.alpha(Colors.onShell, root.enabled ? 1.0 : 0.6)
@@ -316,9 +314,7 @@ NDccRow {
         // Suffix text (non-editable)
         NText {
           text: root.suffix
-          features: {
-            "tnum": 1
-          }
+          numeric: true
           pointSize: Style.fontSizeM
           font.weight: Style.fontWeightMedium
           color: Qt.alpha(Colors.onShell, root.enabled ? 1.0 : 0.6)

@@ -96,10 +96,10 @@ Item {
   property real animatedPercentage: percentage
 
   Behavior on animatedPercentage {
-    enabled: !Settings.data.general.animationDisabled
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+    enabled: !Style.reduceMotion
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
 
@@ -167,9 +167,7 @@ Item {
     opacity: root.showPercentageText && root.ready && (root.charging ? !root.showStateIcon : !root.pluggedIn) ? 1 : 0
     x: batteryBody.x + Style.pixelAlignCenter(bodyBackground.width, width)
     y: batteryBody.y + bodyBackground.y + Style.pixelAlignCenter(bodyBackground.height, height)
-    features: {
-      "tnum": 1
-    }
+    numeric: true
     font.weight: Style.fontWeightMedium
     text: root.vertical ? String(Math.round(root.animatedPercentage)).split('').join('\n') : Math.round(root.animatedPercentage)
     pointSize: root.baseSize * (root.vertical ? 0.82 : 0.82)
@@ -180,10 +178,10 @@ Item {
     lineHeightMode: Text.ProportionalHeight
 
     Behavior on opacity {
-      enabled: !Settings.data.general.animationDisabled
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      enabled: !Style.reduceMotion
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "swift"
       }
     }
   }
@@ -200,10 +198,10 @@ Item {
     color: Qt.alpha(root.textColor, 0.75)
 
     Behavior on opacity {
-      enabled: !Settings.data.general.animationDisabled
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      enabled: !Style.reduceMotion
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "swift"
       }
     }
   }

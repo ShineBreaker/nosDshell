@@ -241,9 +241,7 @@ DraggableDesktopWidget {
               text: modelData.text
               color: modelData.color
               pointSize: Style.fontSizeS * root.widgetScale
-              features: {
-                "tnum": 1
-              }
+              numeric: true
               font.weight: modelData.bold ? Style.fontWeightSemiBold : Style.fontWeightRegular
               opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
               elide: modelData.elide ? Text.ElideMiddle : Text.ElideNone
@@ -301,9 +299,7 @@ DraggableDesktopWidget {
               text: modelData.text
               color: modelData.color
               pointSize: Style.fontSizeS * root.widgetScale
-              features: {
-                "tnum": 1
-              }
+              numeric: true
               font.weight: modelData.bold ? Style.fontWeightSemiBold : Style.fontWeightRegular
               opacity: modelData.opacity !== undefined ? modelData.opacity : 1.0
               elide: modelData.elide ? Text.ElideMiddle : Text.ElideNone

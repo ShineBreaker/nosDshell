@@ -1,8 +1,8 @@
 import QtQuick
+import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 import qs.Commons
 import qs.Services.Compositor
 import qs.Widgets
-import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 
 Item {
   id: pillContainer
@@ -66,9 +66,9 @@ Item {
 
     Behavior on color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionSwitch
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
 
@@ -102,9 +102,9 @@ Item {
 
           Behavior on color {
             enabled: !Colors.isTransitioning
-            ColorAnimation {
+            NColorAnim {
               duration: Style.motionSwitch
-              easing.type: Easing.OutCubic
+              curve: "swift"
             }
           }
         }
@@ -113,47 +113,47 @@ Item {
 
     // Material 3-inspired smooth animations
     Behavior on scale {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "overshoot"
       }
     }
     Behavior on opacity {
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.InOutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "out"
       }
     }
     Behavior on radius {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
   }
 
   Behavior on width {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
   Behavior on height {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
   Behavior on pillWidth {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
   Behavior on pillHeight {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
 

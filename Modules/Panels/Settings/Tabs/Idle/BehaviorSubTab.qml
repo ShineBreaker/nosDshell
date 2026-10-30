@@ -44,9 +44,7 @@ ColumnLayout {
       NText {
         Layout.alignment: Qt.AlignVCenter
         text: IdleService.idleSeconds > 0 ? I18n.trp("common.second", IdleService.idleSeconds) : I18n.tr("common.active")
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         pointSize: Style.fontSizeM
         color: IdleService.idleSeconds > 0 ? Colors.accent : Colors.onShellTertiary
       }

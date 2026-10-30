@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Widgets
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
-import QtQuick.Layouts
 
 // Mini launcher content (DESIGN §3.4.2). Left pane: search field, separator,
 // app list, "全部应用 ⇄ 分类" switch. Right bar: avatar, XDG place buttons,
@@ -226,7 +226,6 @@ Item {
             id: appList
             anchors.fill: parent
             clip: true
-            gradientColor: "transparent"
             // The category list reuses this view: rows are the 12 DDE buckets
             // as bare strings while the apps keep their result-entry shape.
             // The bucket filter rides on the provider, so in-category browsing

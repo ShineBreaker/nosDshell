@@ -18,6 +18,11 @@
 //! 销毁时合成器会给悬停面发 leave，hover 状态在截图前就复位了。
 //! 需要 hover 可见的场景在 move 上加这个环境变量，并在截图前并行睡同样的
 //! 时长由 shot 侧控制。
+//!
+//! VINPUT_PRESS_MS: click 系列按下与抬起之间保持这么多毫秒（默认 50）。每次
+//! 点击都先单独送出移动、等 50 ms 再按下，并在按下后立即 flush：sway 会丢掉
+//! 与"移入新表面"同批到达的按下。调大它可以拍按压态的动效（verify.sh 的
+//! motion-press 场景）。
 
 use std::thread::sleep;
 use std::time::Duration;
@@ -139,18 +144,6 @@ fn run_op(args: &[String]) -> Result<(), String> {
         vp.motion_absolute(t, x as u32, y as u32, ew, eh);
         vp.frame();
     };
-    let click_at = |vp: &ZwlrVirtualPointerV1, x: f32, y: f32, btn: u32, ew: u32, eh: u32, t: &mut u32| {
-        vp.motion_absolute(*t, x as u32, y as u32, ew, eh);
-        vp.frame();
-        *t += 30;
-        vp.button(*t, btn, wl_pointer::ButtonState::Pressed);
-        vp.frame();
-        sleep(Duration::from_millis(50));
-        *t += 50;
-        vp.button(*t, btn, wl_pointer::ButtonState::Released);
-        vp.frame();
-    };
-
     match op {
         "move" => {
             let (ew, eh) = extent_at(2);
@@ -164,7 +157,25 @@ fn run_op(args: &[String]) -> Result<(), String> {
                 _ => BTN_LEFT,
             };
             let (ew, eh) = extent_at(2);
-            click_at(&vp, arg_f32(p, 0)?, arg_f32(p, 1)?, btn, ew, eh, &mut t);
+            let (x, y) = (arg_f32(p, 0)?, arg_f32(p, 1)?);
+            let hold = std::env::var("VINPUT_PRESS_MS").ok().and_then(|v| v.parse::<u64>().ok()).unwrap_or(50);
+            // Deliver the motion first and give the compositor a beat: a
+            // press that arrives in the same batch as the motion that hands
+            // the surface pointer focus is dropped by sway (the client sees
+            // enter, then only the release). Every click goes this way, not
+            // just held ones: a sleep between queued requests that are only
+            // flushed at the end does not separate anything.
+            move_to(&vp, x, y, ew, eh, tick());
+            flush(&mut queue);
+            sleep(Duration::from_millis(50));
+            t += 50;
+            vp.button(t, btn, wl_pointer::ButtonState::Pressed);
+            vp.frame();
+            flush(&mut queue);
+            sleep(Duration::from_millis(hold));
+            t += hold as u32;
+            vp.button(t, btn, wl_pointer::ButtonState::Released);
+            vp.frame();
             flush(&mut queue);
         }
         "jclick" => {

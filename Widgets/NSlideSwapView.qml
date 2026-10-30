@@ -6,7 +6,8 @@ Item {
 
   property Component sourceComponent
   property bool animationsEnabled: true
-  property int duration: Style.animationNormal
+  // Page switch (DESIGN §1.7 motionPage, "out")
+  property int duration: Style.motionPage
   property real transitionGap: Style.marginXL
   property real incomingStartOpacity: 0.0
   property real outgoingTargetOpacity: 0.25
@@ -102,33 +103,33 @@ Item {
 
   ParallelAnimation {
     id: transition
-    NumberAnimation {
+    NAnim {
       target: root
       property: "_contentOffset"
       to: 0
       duration: root.duration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
-    NumberAnimation {
+    NAnim {
       target: root
       property: "_contentOpacity"
       to: 1
       duration: root.duration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
-    NumberAnimation {
+    NAnim {
       target: root
       property: "_snapshotOffset"
       to: root._snapshotTargetOffset
       duration: root.duration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
-    NumberAnimation {
+    NAnim {
       target: root
       property: "_snapshotOpacity"
       to: root.outgoingTargetOpacity
       duration: root.duration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
     onFinished: root.resetVisuals()
   }

@@ -65,10 +65,16 @@ Item {
 
   opacity: enabled ? 1.0 : 0.6
 
+  NPressScale {
+    id: press
+    pressed: root.pressed && root.enabled
+  }
+
   Rectangle {
     id: bg
     anchors.fill: parent
     anchors.margins: Style.borderS
+    scale: press.value
 
     implicitWidth: contentRow.implicitWidth + (root.fontSize * 2)
     implicitHeight: contentRow.implicitHeight + (root.fontSize)
@@ -88,9 +94,9 @@ Item {
 
     Behavior on color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionPointer
-        easing.type: Easing.OutCubic
+        curve: "swift"
       }
     }
 
@@ -113,9 +119,9 @@ Item {
 
         Behavior on color {
           enabled: !Colors.isTransitioning
-          ColorAnimation {
+          NColorAnim {
             duration: Style.motionPointer
-            easing.type: Easing.OutCubic
+            curve: "swift"
           }
         }
       }
@@ -132,9 +138,9 @@ Item {
 
         Behavior on color {
           enabled: !Colors.isTransitioning
-          ColorAnimation {
+          NColorAnim {
             duration: Style.motionPointer
-            easing.type: Easing.OutCubic
+            curve: "swift"
           }
         }
       }

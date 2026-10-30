@@ -136,8 +136,9 @@ PanelWindow {
 
     Behavior on border.color {
       enabled: !Colors.isTransitioning
-      ColorAnimation {
+      NColorAnim {
         duration: Style.motionSwitch
+        curve: "swift"
       }
     }
   }

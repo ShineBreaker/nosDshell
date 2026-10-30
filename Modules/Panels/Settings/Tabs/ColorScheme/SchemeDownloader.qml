@@ -840,7 +840,6 @@ Popup {
       visible: hasInitialData && availableSchemes.length > 0
       verticalPolicy: ScrollBar.AsNeeded
       horizontalPolicy: ScrollBar.AlwaysOff
-      gradientColor: Colors.maskShell
 
       ColumnLayout {
         width: schemesScrollView.availableWidth
@@ -865,9 +864,9 @@ Popup {
 
             Behavior on color {
               enabled: !Colors.isTransitioning
-              ColorAnimation {
+              NColorAnim {
                 duration: Style.motionSwitch
-                easing.type: Easing.OutCubic
+                curve: "swift"
               }
             }
 
@@ -911,9 +910,9 @@ Popup {
 
                   Behavior on color {
                     enabled: !Colors.isTransitioning
-                    ColorAnimation {
+                    NColorAnim {
                       duration: Style.motionSwitch
-                      easing.type: Easing.OutCubic
+                      curve: "swift"
                     }
                   }
                 }

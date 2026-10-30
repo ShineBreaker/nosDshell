@@ -375,9 +375,7 @@ Variants {
         visible: false
         text: root.getDisplayPercentage()
         pointSize: Style.fontSizeS
-        features: {
-          "tnum": 1
-        }
+        numeric: true
         elide: Text.ElideNone
         wrapMode: Text.NoWrap
       }
@@ -508,52 +506,61 @@ Variants {
         visible: false
         opacity: 0
 
-        // DDE exit is shorter and eases in: 160/OutCubic in, 120/InCubic out
-        // (dde-osd/container.cpp startWaylandAnimation).
+        // DESIGN §1.7 motionOsdIn / motionOsdOut: rise osdEnterOffset px and
+        // grow from bubbleEnterScale on "enter"; leave faster on "fall",
+        // dropping osdExitOffset px (dde-osd/container.cpp
+        // startWaylandAnimation gives the direction and distances).
         property bool _hiding: false
+        transformOrigin: Item.Bottom
 
         Behavior on opacity {
-          NumberAnimation {
+          NAnim {
             duration: osdItem._hiding ? Style.motionOsdOut : Style.motionOsdIn
-            easing.type: osdItem._hiding ? Easing.InCubic : Easing.OutCubic
+            curve: osdItem._hiding ? "fall" : "enter"
           }
         }
 
-        // DDE slides the tile up from 12 px below on show / 8 px below on
-        // hide while fading (dde-osd/container.cpp startWaylandAnimation:
-        // waylandAnimationOffset on the bottom margin, -12→0 / →-8).
         property real slideOffset: 0
         transform: Translate {
           y: osdItem.slideOffset
         }
         Behavior on slideOffset {
-          NumberAnimation {
+          NAnim {
             duration: osdItem._hiding ? Style.motionOsdOut : Style.motionOsdIn
-            easing.type: osdItem._hiding ? Easing.InCubic : Easing.OutCubic
+            curve: osdItem._hiding ? "fall" : "enter"
           }
         }
 
         // Explicit entry anims: writing slideOffset=12 then 0 inside one JS
         // tick would animate 0→0 (Behavior reads the value at write time), and
         // deferring the "to" write would only travel whatever the first anim
-        // had already covered. from/to give the full DDE 12 px excursion.
-        NumberAnimation {
+        // had already covered. from/to give the full excursion.
+        NAnim {
           id: enterSlideAnim
           target: osdItem
           property: "slideOffset"
-          from: 12
+          from: Style.osdEnterOffset
           to: 0
           duration: Style.motionOsdIn
-          easing.type: Easing.OutCubic
+          curve: "enter"
         }
-        NumberAnimation {
+        NAnim {
           id: enterFadeAnim
           target: osdItem
           property: "opacity"
           from: 0
           to: 1
           duration: Style.motionOsdIn
-          easing.type: Easing.OutCubic
+          curve: "enter"
+        }
+        NAnim {
+          id: enterScaleAnim
+          target: osdItem
+          property: "scale"
+          from: Style.bubbleEnterScale
+          to: 1
+          duration: Style.motionOsdIn
+          curve: "enter"
         }
 
         Timer {
@@ -658,9 +665,7 @@ Variants {
             text: root.getDisplayPercentage()
             color: Colors.onTransient
             pointSize: Style.fontSizeS
-            features: {
-              "tnum": 1
-            }
+            numeric: true
             elide: Text.ElideNone
             horizontalAlignment: Text.AlignHCenter
           }
@@ -703,10 +708,11 @@ Variants {
             // only the hide timer restarts (dde-osd manager.cpp updateUI).
             if (enterFadeAnim.running || osdItem.opacity > 0)
               return;
-            osdItem.slideOffset = 12;
+            osdItem.slideOffset = Style.osdEnterOffset;
             osdItem.opacity = 0;
             enterSlideAnim.restart();
             enterFadeAnim.restart();
+            enterScaleAnim.restart();
           }
         }
 
@@ -721,9 +727,10 @@ Variants {
           visibilityTimer.stop();
           enterSlideAnim.stop();
           enterFadeAnim.stop();
+          enterScaleAnim.stop();
           osdItem._hiding = true;
           osdItem.opacity = 0;
-          osdItem.slideOffset = 8;
+          osdItem.slideOffset = Style.osdExitOffset;
           visibilityTimer.start();
         }
 
@@ -732,6 +739,8 @@ Variants {
           visibilityTimer.stop();
           enterSlideAnim.stop();
           enterFadeAnim.stop();
+          enterScaleAnim.stop();
+          osdItem.scale = 1;
           osdItem.opacity = 0;
           osdItem.visible = false;
           root.currentOSDType = -1;
