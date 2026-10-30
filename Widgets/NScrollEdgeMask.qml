@@ -29,8 +29,11 @@ Item {
   readonly property real bottomFade: (active && !holdBottom) ? Math.max(0, Math.min(Style.scrollFadeSize, _remaining)) : 0
   readonly property real _topFrac: topFade / Math.max(1, height)
   readonly property real _bottomFrac: bottomFade / Math.max(1, height)
-  // Only layer the content while some edge actually fades.
-  readonly property bool needed: topFade > 0.5 || bottomFade > 0.5
+  // Layer the content whenever it can scroll at all, not only while an edge
+  // fades: switching layer.enabled destroys and recreates the effect item
+  // over the view, and a press that lands during such a switch is lost.
+  // At rest at either end the mask is solid there and the layer is idle cost.
+  readonly property bool needed: active && !!flickable && flickable.contentHeight > flickable.height + 0.5
 
   // MultiEffect maps mask alpha through a smoothstep (threshold 0.5, spread
   // 1, which is what makes partial alpha fade at all; the default thresholds
