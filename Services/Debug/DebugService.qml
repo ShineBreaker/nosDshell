@@ -184,10 +184,16 @@ Singleton {
   function dumpBackgroundChain() {
     var lines = [];
     var op = null, cp = null;
-    try { op = PanelService.openedPanel; } catch (e) {}
-    try { cp = PanelService.closingPanel; } catch (e) {}
+    try {
+      op = PanelService.openedPanel;
+    } catch (e) {}
+    try {
+      cp = PanelService.closingPanel;
+    } catch (e) {}
     var slots = [];
-    try { slots = PanelService.backgroundSlotAssignments; } catch (e) {}
+    try {
+      slots = PanelService.backgroundSlotAssignments;
+    } catch (e) {}
     lines.push("openedPanel=" + (op ? (op.objectName || String(op)) : "null"));
     lines.push("closingPanel=" + (cp ? (cp.objectName || String(cp)) : "null"));
     lines.push("backgroundSlotAssignments[0]=" + (slots[0] ? (slots[0].objectName || String(slots[0])) : "null"));
@@ -200,12 +206,16 @@ Singleton {
       lines.push("openedPanel.ownBackgroundAlpha=" + op.ownBackgroundAlpha);
       lines.push("openedPanel.dimsBackground=" + op.dimsBackground);
       var pr = null;
-      try { pr = op.panelRegion; } catch (e) {}
+      try {
+        pr = op.panelRegion;
+      } catch (e) {}
       lines.push("openedPanel.panelRegion=" + (pr ? describe(pr) : "null"));
       if (pr) {
         lines.push("  panelRegion.visible=" + pr.visible);
         var pi = null;
-        try { pi = pr.panelItem; } catch (e) {}
+        try {
+          pi = pr.panelItem;
+        } catch (e) {}
         lines.push("  panelRegion.panelItem=" + (pi ? describe(pi) : "null"));
         if (pi) {
           lines.push("    panelItem.visible=" + pi.visible);
@@ -213,17 +223,24 @@ Singleton {
         }
       }
       // finishOpen gate: the reopen hook needs _contentReady + contentLoader.item.
-      try { lines.push("openedPanel._contentReady=" + op._contentReady); } catch (e) {}
-      try { lines.push("openedPanel.keepContentAlive=" + op.keepContentAlive); } catch (e) {}
+      try {
+        lines.push("openedPanel._contentReady=" + op._contentReady);
+      } catch (e) {}
+      try {
+        lines.push("openedPanel.keepContentAlive=" + op.keepContentAlive);
+      } catch (e) {}
       var cl = null;
-      try { cl = op.contentLoader; } catch (e) {}
+      try {
+        cl = op.contentLoader;
+      } catch (e) {}
       lines.push("openedPanel.contentLoader=" + (cl ? "item=" + (cl.item ? "yes" : "null") + " active=" + cl.active + " status=" + cl.status : "null"));
     }
     // Walk every registered root that is a MainScreen to report isPanelOpen/color
     var names = Object.keys(roots);
     for (var i = 0; i < names.length; i++) {
       var r = roots[names[i]];
-      if (!r) continue;
+      if (!r)
+        continue;
       if (r.isPanelOpen !== undefined) {
         lines.push("root[" + names[i] + "].screen=" + (r.screen ? r.screen.name : "null") + " isPanelOpen=" + r.isPanelOpen + " dimmerOpacity=" + r.dimmerOpacity + " color=" + r.color + " children=" + (r.children ? r.children.length : "?") + " contentItem=" + (r.contentItem ? "yes" : "no"));
       }
@@ -234,19 +251,32 @@ Singleton {
     // exposes them as property aliases (ownAlphaSlot0/1, unifiedSlot0/1).
     for (var i = 0; i < names.length; i++) {
       var r = roots[names[i]];
-      if (!r || r.isPanelOpen === undefined) continue;
+      if (!r || r.isPanelOpen === undefined)
+        continue;
       var ab = null;
       try {
         _walkItems(r, 0, function (it) {
-          if (!ab && it.ownAlphaSlot0 !== undefined) ab = it;
+          if (!ab && it.ownAlphaSlot0 !== undefined)
+            ab = it;
         });
       } catch (e) {}
-      if (!ab) { lines.push("root[" + names[i] + "]: AllBackgrounds not found"); continue; }
+      if (!ab) {
+        lines.push("root[" + names[i] + "]: AllBackgrounds not found");
+        continue;
+      }
       var s0 = null, s1 = null, u0 = null, u1 = null;
-      try { s0 = ab.ownAlphaSlot0; } catch (e) {}
-      try { s1 = ab.ownAlphaSlot1; } catch (e) {}
-      try { u0 = ab.unifiedSlot0; } catch (e) {}
-      try { u1 = ab.unifiedSlot1; } catch (e) {}
+      try {
+        s0 = ab.ownAlphaSlot0;
+      } catch (e) {}
+      try {
+        s1 = ab.ownAlphaSlot1;
+      } catch (e) {}
+      try {
+        u0 = ab.unifiedSlot0;
+      } catch (e) {}
+      try {
+        u1 = ab.unifiedSlot1;
+      } catch (e) {}
       lines.push("root[" + names[i] + "].ownAlphaSlot0.assignedPanel=" + (s0 && s0.assignedPanel ? (s0.assignedPanel.objectName || String(s0.assignedPanel)) : "null") + " isRenderable=" + (s0 ? s0.isRenderable : "?") + " fillColor=" + (s0 ? s0.fillColor : "?"));
       lines.push("root[" + names[i] + "].ownAlphaSlot1.assignedPanel=" + (s1 && s1.assignedPanel ? (s1.assignedPanel.objectName || String(s1.assignedPanel)) : "null") + " isRenderable=" + (s1 ? s1.isRenderable : "?"));
       lines.push("root[" + names[i] + "].unifiedSlot0.assignedPanel=" + (u0 && u0.assignedPanel ? (u0.assignedPanel.objectName || String(u0.assignedPanel)) : "null") + " isRenderable=" + (u0 ? u0.isRenderable : "?"));
