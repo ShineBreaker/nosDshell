@@ -523,14 +523,21 @@ toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
 #   run Scripts/test/motion-report.py (filmstrip.png, curve.png, metrics.json).
 MOTION_SLOW="${NOSD_MOTION_SLOW:-1}"
 BURST_DIR=""; BURST_PID=""
-# Wait until two quarter-size grabs 0.5 s apart are identical: late work
+# Wait until four quarter-size grabs 0.5 s apart are identical: late work
 # (wallpaper decode, icon loads, a previous exit) must not be read as part
-# of the animation under test.
+# of the animation under test. Two equal grabs were not enough: under
+# software rendering the wallpaper decode can sit idle for over a second
+# before it paints.
 motion_settle() {
-  local prev="" cur
-  for _ in $(seq 1 60); do
+  local prev="" cur same=0
+  for _ in $(seq 1 120); do
     cur=$(grim -s 0.25 - 2>/dev/null | md5sum)
-    [ "$cur" = "$prev" ] && return 0
+    if [ "$cur" = "$prev" ]; then
+      same=$((same + 1))
+      [ "$same" -ge 3 ] && return 0
+    else
+      same=0
+    fi
     prev="$cur"; sleep 0.5
   done
   echo "motion_settle: screen never stopped changing" >&2
@@ -2736,6 +2743,11 @@ PYEOF
     # close burst; region coordinates assume the default bottom fashion dock
     # on the 1920x1080 headless output. Burst lengths are in stretched time:
     # MOTION_SLOW x the longest real duration involved, plus margin.
+    # Repaint everything once (launcher open/close) so lazily painted layers
+    # such as the wallpaper are on screen before the first burst.
+    motion-warmup)        qs -p "$REPO" ipc call launcher toggle > /dev/null; sleep "$(motion_secs 400)"
+                          qs -p "$REPO" ipc call launcher toggle > /dev/null; sleep "$(motion_secs 400)"
+                          motion_settle ;;
     motion-popup)         burst_start motion-popup-open "700,640 520x440"; burst_mark
                           qs -p "$REPO" ipc call dock showSettingsMenu > /dev/null
                           burst_stop "$(motion_secs 400)"

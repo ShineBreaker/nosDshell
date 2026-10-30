@@ -59,7 +59,7 @@ if user:
 json.dump(seed, open(out, "w"))
 PYEOF
 
-NOSD_SPAWN_WINDOWS="${NOSD_SPAWN_WINDOWS:-0}" NOSD_MOTION_SLOW="$SLOW" "$SCRIPT_DIR/verify.sh" "$OUT_NAME" --settings "$SEED" --scenes "$SCENES"
+NOSD_SPAWN_WINDOWS="${NOSD_SPAWN_WINDOWS:-0}" NOSD_MOTION_SLOW="$SLOW" "$SCRIPT_DIR/verify.sh" "$OUT_NAME" --settings "$SEED" --scenes "motion-warmup,$SCENES"
 STATUS=$?
 SUMMARY="$WORK/shots/$OUT_NAME/motion-summary.txt"
 : > "$SUMMARY"
