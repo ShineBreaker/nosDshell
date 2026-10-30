@@ -180,9 +180,9 @@ Loader {
                   }
 
                   Behavior on opacity {
-                    NumberAnimation {
-                      duration: Style.animationNormal
-                      easing.type: Easing.OutCubic
+                    NAnim {
+                      duration: Style.motionEnter
+                      curve: "out"
                     }
                   }
                 }
@@ -240,9 +240,9 @@ Loader {
                   }
 
                   Behavior on opacity {
-                    NumberAnimation {
-                      duration: Style.animationNormal
-                      easing.type: Easing.OutCubic
+                    NAnim {
+                      duration: Style.motionEnter
+                      curve: "out"
                     }
                   }
                 }

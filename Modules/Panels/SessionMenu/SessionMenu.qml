@@ -350,11 +350,12 @@ PanelWindow {
 
     // PanelWindow exposes no opacity of its own; fade the content item instead
     opacity: root.contentOpacity
+    // DESIGN §1.7: full-screen frosted surfaces fade in on motionEnter.
     Behavior on opacity {
-      enabled: !Settings.data.general.animationDisabled
-      NumberAnimation {
+      enabled: !Style.reduceMotion
+      NAnim {
         duration: Style.motionEnter
-        easing.type: Easing.OutCubic
+        curve: "out"
       }
     }
 

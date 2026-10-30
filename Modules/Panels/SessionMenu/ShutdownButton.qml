@@ -42,19 +42,19 @@ Rectangle {
   // rounditembutton.cpp:65-74 — setDisabled() drops the whole widget to 0.5
   opacity: button.available ? 1.0 : 0.5
 
+  // Button class (§0 principle 6): pointer colour on motionPointer; the
+  // availability dim is a state change (motionSwitch).
   Behavior on color {
-    enabled: !Settings.data.general.animationDisabled
-    ColorAnimation {
+    enabled: !Colors.isTransitioning
+    NColorAnim {
       duration: Style.motionPointer
-      easing.type: Easing.OutCubic
     }
   }
 
   Behavior on opacity {
-    enabled: !Settings.data.general.animationDisabled
-    NumberAnimation {
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
+    NAnim {
+      duration: Style.motionSwitch
+      curve: "swift"
     }
   }
 

@@ -44,7 +44,7 @@ Variants {
     }
     Timer {
       id: closeTimer
-      interval: Style.animationFast + 30
+      interval: Style.motionExit + 30
     }
 
     // -----------------------------------------------------------
@@ -187,24 +187,24 @@ Variants {
           y: surface.slideY
         }
 
-        // Exit runs on the shorter animationFast window — closeTimer unmaps
+        // Exit runs on the shorter motionExit window — closeTimer unmaps
         // the surface right after it.
         Behavior on opacity {
-          NumberAnimation {
-            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
+          NAnim {
+            duration: screenItem.isActive ? Style.motionEnter : Style.motionExit
+            curve: "out"
           }
         }
         Behavior on slideX {
-          NumberAnimation {
-            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
+          NAnim {
+            duration: screenItem.isActive ? Style.motionEnter : Style.motionExit
+            curve: "out"
           }
         }
         Behavior on slideY {
-          NumberAnimation {
-            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
+          NAnim {
+            duration: screenItem.isActive ? Style.motionEnter : Style.motionExit
+            curve: "out"
           }
         }
 

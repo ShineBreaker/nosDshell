@@ -206,7 +206,7 @@ DDE 15 的动效很少：`deepin-menu` 没有一个动画对象，dock 的弹出
 | `motionBubbleIn` | 300 | enter | 不透明度；从锚定的屏幕边滑入 12 px；缩放 0.96→1 | 通知、吐司出现 | `cds-theme.css:614-631`（timeline-block-enter） |
 | `motionBubbleOut` | 180 | fall | 不透明度；向锚定的屏幕边滑出 12 px | 通知、吐司消失（超时、关闭、清除都一样） | `cds-theme.css:434-437,582`（status-fall） |
 | `motionOsdIn` / `motionOsdOut` | 300 / 180 | enter / fall | 进场下边距偏移 −12→0、缩放 0.96→1；退场偏移到 −8 | OSD | 同气泡 |
-| `motionSwitch` | 200 | overshoot（滑块）/ swift（颜色） | 位移、颜色 | 开关滑块；数据驱动的状态色（选中、已连接、勿扰开启） | `cds-theme.css:209,220` |
+| `motionSwitch` | 200 | overshoot（滑块）/ swift（颜色） | 位移、颜色 | 开关滑块；数据驱动的状态色（选中、已连接、勿扰开启）；锁屏输入密码时圆点弹出（overshoot） | `cds-theme.css:209,220` |
 | `motionSnap` | 120 | snap | 位移 | 分段控件、页签指示条 | `cds-theme.css:208,219` |
 | `motionSnapBack` | 300 | snappy | 位移 | 拖动没过阈值松手后回弹到原位（通知卡片左右滑） | `ClaudeMotionPresets.ts:72-82`（SPRING_SNAPPY 用于拖拽回弹） |
 | `motionNavZoom` | 200 | overshoot | 缩放 1.0→1.2 | 启动器分类导航悬停 | `navigationwidget.cpp:213-230` 的缩放幅度 |

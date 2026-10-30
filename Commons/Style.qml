@@ -465,6 +465,11 @@ Singleton {
   readonly property int osdEnterOffset: 12
   readonly property int osdExitOffset: 8
 
+  // Text caret blink half-period (ms): a convention of text fields, not a
+  // motion; it is not stretched by animationSpeed. Smooth blinking stops
+  // under reduceMotion (a plain on/off toggle takes over).
+  readonly property int caretBlinkMs: 530
+
   // Timeouts (ms) — OSD auto-hide lives in Settings.data.osd.autoHideMs and
   // notification duration in Settings.data.notifications.*, both user-facing.
   readonly property int tooltipDelayDock: 500

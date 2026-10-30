@@ -146,10 +146,10 @@ Item {
         opacity: root.powerRowOpen ? 0 : 1
 
         Behavior on opacity {
-          enabled: !Settings.data.general.animationDisabled
-          NumberAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCubic
+          enabled: !Style.reduceMotion
+          NAnim {
+            duration: Style.motionPage
+            curve: "out"
           }
         }
 
@@ -184,10 +184,10 @@ Item {
         opacity: root.powerRowOpen ? 0 : 1
 
         Behavior on opacity {
-          enabled: !Settings.data.general.animationDisabled
-          NumberAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCubic
+          enabled: !Style.reduceMotion
+          NAnim {
+            duration: Style.motionPage
+            curve: "out"
           }
         }
 
@@ -291,21 +291,23 @@ Item {
                 // Smooth fade animation (when animations enabled)
                 SequentialAnimation on opacity {
                   loops: Animation.Infinite
-                  running: root.animationsEnabled && passwordInput.activeFocus && passwordInput.text.length === 0
-                  NumberAnimation {
+                  running: root.animationsEnabled && !Style.reduceMotion && passwordInput.activeFocus && passwordInput.text.length === 0
+                  NAnim {
                     to: 0
-                    duration: 530
+                    duration: Style.caretBlinkMs
+                    curve: "pulse"
                   }
-                  NumberAnimation {
+                  NAnim {
                     to: 1
-                    duration: 530
+                    duration: Style.caretBlinkMs
+                    curve: "pulse"
                   }
                 }
 
                 // Simple toggle (when animations disabled) — no per-frame repaints
                 Timer {
-                  interval: 530
-                  running: !root.animationsEnabled && passwordInput.activeFocus && passwordInput.text.length === 0
+                  interval: Style.caretBlinkMs
+                  running: !(root.animationsEnabled && !Style.reduceMotion) && passwordInput.activeFocus && passwordInput.text.length === 0
                   repeat: true
                   onTriggered: parent.opacity = parent.opacity > 0.5 ? 0 : 1
                 }
@@ -405,12 +407,13 @@ Item {
                         scale: animationsEnabled ? 0.5 : 1
                         ParallelAnimation {
                           id: iconAnim
-                          NumberAnimation {
+                          // A typed dot pops in (DESIGN §1.7 motionSwitch, "overshoot")
+                          NAnim {
                             target: icon
                             properties: "scale"
                             to: 1
-                            duration: Style.animationFast
-                            easing.type: Easing.OutCubic
+                            duration: Style.motionSwitch
+                            curve: "overshoot"
                           }
                         }
                         Component.onCompleted: {
@@ -506,21 +509,23 @@ Item {
                   // Smooth fade animation (when animations enabled)
                   SequentialAnimation on opacity {
                     loops: Animation.Infinite
-                    running: root.animationsEnabled && passwordInput.activeFocus && passwordInput.text.length > 0 && passwordInput.selectionStart === passwordInput.selectionEnd
-                    NumberAnimation {
+                    running: root.animationsEnabled && !Style.reduceMotion && passwordInput.activeFocus && passwordInput.text.length > 0 && passwordInput.selectionStart === passwordInput.selectionEnd
+                    NAnim {
                       to: 0
-                      duration: 530
+                      duration: Style.caretBlinkMs
+                      curve: "pulse"
                     }
-                    NumberAnimation {
+                    NAnim {
                       to: 1
-                      duration: 530
+                      duration: Style.caretBlinkMs
+                      curve: "pulse"
                     }
                   }
 
                   // Simple toggle (when animations disabled) — no per-frame repaints
                   Timer {
-                    interval: 530
-                    running: !root.animationsEnabled && passwordInput.activeFocus && passwordInput.text.length > 0 && passwordInput.selectionStart === passwordInput.selectionEnd
+                    interval: Style.caretBlinkMs
+                    running: !(root.animationsEnabled && !Style.reduceMotion) && passwordInput.activeFocus && passwordInput.text.length > 0 && passwordInput.selectionStart === passwordInput.selectionEnd
                     repeat: true
                     onTriggered: parent.opacity = parent.opacity > 0.5 ? 0 : 1
                   }
@@ -586,10 +591,10 @@ Item {
         opacity: root.powerRowOpen ? 1 : 0
 
         Behavior on opacity {
-          enabled: !Settings.data.general.animationDisabled
-          NumberAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.OutCubic
+          enabled: !Style.reduceMotion
+          NAnim {
+            duration: Style.motionPage
+            curve: "out"
           }
         }
 

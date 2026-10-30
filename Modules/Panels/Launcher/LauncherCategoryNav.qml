@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Layouts
 import QtQuick.Window
 import Quickshell
 
 import qs.Commons
 import qs.Widgets
-import QtQuick.Layouts
 
 // Category navigation column for the fullscreen launcher (DESIGN §3.4.1,
 // gxde-launcher NavigationWidget / CategoryButton): 11 DDE categories with the
@@ -56,9 +56,9 @@ Item {
   onHoveringChanged: navZoom = hovering ? Style.launcherNavZoom : 1.0
 
   Behavior on navZoom {
-    NumberAnimation {
+    NAnim {
       duration: Style.motionNavZoom
-      easing.type: Easing.OutCubic
+      curve: "overshoot"
     }
   }
 

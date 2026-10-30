@@ -46,7 +46,7 @@ Variants {
     }
     Timer {
       id: closeTimer
-      interval: Style.animationFast + 30
+      interval: Style.motionExit + 30
     }
 
     // Insets follow the taskbar/dock edge, not the optional status bar
@@ -175,9 +175,9 @@ Variants {
         opacity: screenItem.isActive ? 1 : 0
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
+          NAnim {
+            duration: screenItem.isActive ? Style.motionEnter : Style.motionExit
+            curve: "out"
           }
         }
       }
@@ -214,9 +214,9 @@ Variants {
         opacity: screenItem.isActive ? 1 : 0
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: screenItem.isActive ? Style.motionEnter : Style.animationFast
-            easing.type: screenItem.isActive ? Easing.OutCubic : Easing.InCubic
+          NAnim {
+            duration: screenItem.isActive ? Style.motionEnter : Style.motionExit
+            curve: "out"
           }
         }
 
