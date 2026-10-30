@@ -368,11 +368,15 @@ NBox {
           // Reserve space for other elements: count indicator, combo box (~200), button (~50), and margins
           // Use a reasonable maximum that leaves room for controls on the right
           // On smaller screens, use a smaller percentage to ensure controls fit
-          var rowLayout = parent;
-          if (rowLayout && rowLayout.width > 0) {
+          // The row's width is derived from the editor's, not read off the
+          // row: the row resizes while it arranges its children, and a
+          // constraint that follows it re-triggers the arrangement
+          // ("Detected recursive rearrange").
+          var rowWidth = root.width - 2 * Style.marginL - Style.marginS;
+          if (rowWidth > 0) {
             // Use smaller percentage on smaller screens, but ensure minimum space for text
             var minWidth = 150 * Style.uiScaleRatio;
-            var maxWidth = rowLayout.width < 600 ? rowLayout.width * 0.35 : rowLayout.width * 0.4;
+            var maxWidth = rowWidth < 600 ? rowWidth * 0.35 : rowWidth * 0.4;
             return Math.max(minWidth, maxWidth);
           }
           return 250 * Style.uiScaleRatio;
