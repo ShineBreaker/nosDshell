@@ -888,6 +888,10 @@ Item {
             horizontalPolicy: ScrollBar.AlwaysOff
             verticalPolicy: ScrollBar.AsNeeded
             reserveScrollbarSpace: false
+            // Two content children (the column and the wheel overlay below),
+            // so ScrollView cannot infer the content size: say it.
+            contentWidth: availableWidth
+            contentHeight: sectionsColumn.height
 
             // User scroll cancels programmatic scroll + pending re-snap and
             // re-syncs the rail highlight on every step so the accent follows
