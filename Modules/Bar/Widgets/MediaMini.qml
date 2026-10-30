@@ -143,21 +143,21 @@ Item {
   }
 
   Behavior on opacity {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
   Behavior on implicitWidth {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
   Behavior on implicitHeight {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
 
@@ -246,15 +246,15 @@ Item {
     border.width: Style.capsuleBorderWidth
 
     Behavior on width {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
     Behavior on height {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
 

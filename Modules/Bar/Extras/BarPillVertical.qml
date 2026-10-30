@@ -176,23 +176,23 @@ Item {
     }
     Behavior on width {
       enabled: showAnim.running || hideAnim.running
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
     Behavior on height {
       enabled: showAnim.running || hideAnim.running
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
     Behavior on opacity {
       enabled: showAnim.running || hideAnim.running
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "out"
       }
     }
   }
@@ -246,29 +246,29 @@ Item {
   ParallelAnimation {
     id: showAnim
     running: false
-    NumberAnimation {
+    NAnim {
       target: pill
       property: "width"
       from: 1
       to: maxPillWidth
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+      duration: Style.motionExpand
+      curve: "expand"
     }
-    NumberAnimation {
+    NAnim {
       target: pill
       property: "height"
       from: 1
       to: maxPillHeight
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+      duration: Style.motionExpand
+      curve: "expand"
     }
-    NumberAnimation {
+    NAnim {
       target: pill
       property: "opacity"
       from: 0
       to: 1
-      duration: Style.animationFast
-      easing.type: Easing.OutCubic
+      duration: Style.motionExpand
+      curve: "out"
     }
     onStarted: {
       showPill = true;
@@ -282,8 +282,9 @@ Item {
   SequentialAnimation {
     id: delayedHideAnim
     running: false
+    // Auto-hide wait: a delay, not a motion (DESIGN §1.7)
     PauseAnimation {
-      duration: 2500
+      duration: Style.pillAutoHideDelay
     }
     ScriptAction {
       script: if (shouldAnimateHide) {
@@ -295,29 +296,29 @@ Item {
   ParallelAnimation {
     id: hideAnim
     running: false
-    NumberAnimation {
+    NAnim {
       target: pill
       property: "width"
       from: maxPillWidth
       to: 1
-      duration: Style.animationNormal
-      easing.type: Easing.InCubic
+      duration: Style.motionExit
+      curve: "out"
     }
-    NumberAnimation {
+    NAnim {
       target: pill
       property: "height"
       from: maxPillHeight
       to: 1
-      duration: Style.animationNormal
-      easing.type: Easing.InCubic
+      duration: Style.motionExit
+      curve: "out"
     }
-    NumberAnimation {
+    NAnim {
       target: pill
       property: "opacity"
       from: 1
       to: 0
-      duration: Style.animationFast
-      easing.type: Easing.InCubic
+      duration: Style.motionExit
+      curve: "out"
     }
     onStopped: {
       showPill = false;

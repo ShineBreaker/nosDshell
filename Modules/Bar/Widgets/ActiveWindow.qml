@@ -78,23 +78,23 @@ Item {
   visible: (hideMode !== "hidden" || hasFocusedWindow) || opacity > 0
   opacity: ((hideMode !== "hidden" || hasFocusedWindow) && (hideMode !== "transparent" || hasFocusedWindow)) ? 1.0 : 0.0
   Behavior on opacity {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
 
   Behavior on implicitWidth {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
 
   Behavior on implicitHeight {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
 
@@ -216,9 +216,9 @@ Item {
 
     // Smooth width transition
     Behavior on width {
-      NumberAnimation {
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+      NAnim {
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
 

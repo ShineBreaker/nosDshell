@@ -75,15 +75,15 @@ Item {
   opacity: shouldShow ? 1.0 : 0.0
 
   Behavior on implicitWidth {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
   Behavior on implicitHeight {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
 

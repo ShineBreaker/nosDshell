@@ -640,9 +640,9 @@ Item {
   visible: hideMode !== "hidden" || hasWindow
   opacity: ((hideMode !== "hidden" && hideMode !== "transparent") || hasWindow) ? 1.0 : 0.0
   Behavior on opacity {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.OutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "out"
     }
   }
 
@@ -676,15 +676,15 @@ Item {
   }
 
   Behavior on contentWidth {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
   Behavior on contentHeight {
-    NumberAnimation {
-      duration: Style.animationNormal
-      easing.type: Easing.InOutCubic
+    NAnim {
+      duration: Style.motionExpand
+      curve: "expand"
     }
   }
 
@@ -789,7 +789,7 @@ Item {
           // grows/collapses along the long axis while the content fades,
           // scales 0.5↔1 and slides a few px toward the screen edge; sdelay
           // staggers same-sync changes into a wave instead of a snap.
-          readonly property real _edgeSlide: Math.round(8 * Style.uiScaleRatio)
+          readonly property real _edgeSlide: Math.round(Style.stripEdgeSlide * Style.uiScaleRatio)
           readonly property point _edgeShift: {
             var p = root.barPosition;
             if (root.isVerticalBar)
@@ -803,21 +803,21 @@ Item {
               PauseAnimation {
                 duration: taskbarItem.sdelay
               }
-              NumberAnimation {
-                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+              NAnim {
+                duration: taskbarItem.collapsing ? Style.motionExit : Style.motionExpand
+                curve: taskbarItem.collapsing ? "out" : "expand"
               }
             }
           }
-          scale: _shrunk ? 0.5 : 1
+          scale: _shrunk ? Style.stripExitScale : 1
           Behavior on scale {
             SequentialAnimation {
               PauseAnimation {
                 duration: taskbarItem.sdelay
               }
-              NumberAnimation {
-                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+              NAnim {
+                duration: taskbarItem.collapsing ? Style.motionExit : Style.motionExpand
+                curve: taskbarItem.collapsing ? "out" : "expand"
               }
             }
           }
@@ -830,9 +830,9 @@ Item {
                 PauseAnimation {
                   duration: taskbarItem.sdelay
                 }
-                NumberAnimation {
-                  duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-                  easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+                NAnim {
+                  duration: taskbarItem.collapsing ? Style.motionExit : Style.motionExpand
+                  curve: taskbarItem.collapsing ? "out" : "expand"
                 }
               }
             }
@@ -841,9 +841,9 @@ Item {
                 PauseAnimation {
                   duration: taskbarItem.sdelay
                 }
-                NumberAnimation {
-                  duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-                  easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.OutCubic
+                NAnim {
+                  duration: taskbarItem.collapsing ? Style.motionExit : Style.motionExpand
+                  curve: taskbarItem.collapsing ? "out" : "expand"
                 }
               }
             }
@@ -858,9 +858,9 @@ Item {
               PauseAnimation {
                 duration: taskbarItem.sdelay
               }
-              NumberAnimation {
-                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+              NAnim {
+                duration: taskbarItem.collapsing ? Style.motionExit : Style.motionExpand
+                curve: taskbarItem.collapsing ? "out" : "expand"
               }
             }
           }
@@ -869,9 +869,9 @@ Item {
               PauseAnimation {
                 duration: taskbarItem.sdelay
               }
-              NumberAnimation {
-                duration: taskbarItem.collapsing ? Style.animationFast : Style.animationNormal
-                easing.type: taskbarItem.collapsing ? Easing.InCubic : Easing.InOutCubic
+              NAnim {
+                duration: taskbarItem.collapsing ? Style.motionExit : Style.motionExpand
+                curve: taskbarItem.collapsing ? "out" : "expand"
               }
             }
           }
@@ -973,15 +973,15 @@ Item {
               y: root.isVerticalBar ? draggableContent.shiftOffset : 0
 
               Behavior on x {
-                NumberAnimation {
-                  duration: Style.animationFast
-                  easing.type: Easing.InOutCubic
+                NAnim {
+                  duration: Style.motionPointer
+                  curve: "swift"
                 }
               }
               Behavior on y {
-                NumberAnimation {
-                  duration: Style.animationFast
-                  easing.type: Easing.InOutCubic
+                NAnim {
+                  duration: Style.motionPointer
+                  curve: "swift"
                 }
               }
             }
@@ -1015,8 +1015,9 @@ Item {
             z: dragging ? 1000 : 0
             scale: dragging ? 1.05 : 1.0
             Behavior on scale {
-              NumberAnimation {
-                duration: Style.animationFast
+              NAnim {
+                duration: Style.motionSwitch
+                curve: "overshoot"
               }
             }
 
@@ -1069,9 +1070,9 @@ Item {
                     opacity: taskbarItem.isRunning ? 1.0 : (Settings.data.dock.deadOpacity)
 
                     Behavior on opacity {
-                      NumberAnimation {
-                        duration: Style.animationFast
-                        easing.type: Easing.OutCubic
+                      NAnim {
+                        duration: Style.motionExpand
+                        curve: "out"
                       }
                     }
 

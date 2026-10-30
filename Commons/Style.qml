@@ -100,6 +100,8 @@ Singleton {
   readonly property int tooltipDelay: 300
   readonly property int tooltipDelayLong: 1200
   readonly property int pillDelay: 500
+  // How long an auto-hiding bar pill stays expanded before it folds
+  readonly property int pillAutoHideDelay: 2500
 
   // Widgets base size
   readonly property real baseWidgetSize: 33
@@ -466,6 +468,10 @@ Singleton {
   readonly property int bubbleSlide: 12
   readonly property int osdEnterOffset: 12
   readonly property int osdExitOffset: 8
+  // App-strip enter/exit recipe (DESIGN §1.7): the icon shrinks to this and
+  // slides this far toward the screen edge as its slot collapses.
+  readonly property real stripExitScale: 0.5
+  readonly property int stripEdgeSlide: 8
 
   // Text caret blink half-period (ms): a convention of text fields, not a
   // motion; it is not stretched by animationSpeed. Smooth blinking stops

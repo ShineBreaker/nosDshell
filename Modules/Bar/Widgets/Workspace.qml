@@ -6,12 +6,12 @@ import QtQuick.Window
 import Quickshell
 import Quickshell.Io
 import Quickshell.Widgets
+import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 import qs.Commons
 import qs.Modules.Bar.Extras
 import qs.Services.Compositor
 import qs.Services.UI
 import qs.Widgets
-import "../../../Commons/WorkspaceQuery.js" as WorkspaceQuery
 
 Item {
   id: root
@@ -421,13 +421,13 @@ Item {
       property: "effectsActive"
       value: true
     }
-    NumberAnimation {
+    NAnim {
       target: root
       property: "masterProgress"
       from: 0.0
       to: 1.0
       duration: Style.motionPanel
-      easing.type: Easing.InOutCubic
+      curve: "out"
     }
     PropertyAction {
       target: root
@@ -603,9 +603,9 @@ Item {
     visible: !isVertical && !appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "overshoot"
       }
     }
 
@@ -670,9 +670,9 @@ Item {
     visible: isVertical && !appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "overshoot"
       }
     }
 
@@ -803,15 +803,15 @@ Item {
       border.width: Style.borderS
 
       Behavior on width {
-        NumberAnimation {
-          duration: Style.animationFast
-          easing.type: Easing.OutCubic
+        NAnim {
+          duration: Style.motionExpand
+          curve: "expand"
         }
       }
       Behavior on height {
-        NumberAnimation {
-          duration: Style.animationFast
-          easing.type: Easing.OutCubic
+        NAnim {
+          duration: Style.motionExpand
+          curve: "expand"
         }
       }
 
@@ -970,17 +970,17 @@ Item {
           scale: groupedContainer.workspaceModel.isActive ? 1.0 : 0.8
 
           Behavior on scale {
-            NumberAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.OutCubic
+            NAnim {
+              duration: Style.motionSwitch
+              curve: "overshoot"
             }
           }
 
           Behavior on color {
             enabled: !Colors.isTransitioning
-            ColorAnimation {
+            NColorAnim {
               duration: Style.motionSwitch
-              easing.type: Easing.OutCubic
+              curve: "swift"
             }
           }
         }
@@ -1027,17 +1027,17 @@ Item {
           }
 
           Behavior on opacity {
-            NumberAnimation {
-              duration: Style.animationFast
-              easing.type: Easing.InOutCubic
+            NAnim {
+              duration: Style.motionExpand
+              curve: "out"
             }
           }
         }
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
-            easing.type: Easing.InOutCubic
+          NAnim {
+            duration: Style.motionExpand
+            curve: "out"
           }
         }
       }
@@ -1049,9 +1049,9 @@ Item {
     visible: appVisible
     scale: visible ? 1.0 : 0.8
     Behavior on scale {
-      NumberAnimation {
-        duration: Style.animationFast
-        easing.type: Easing.OutCubic
+      NAnim {
+        duration: Style.motionSwitch
+        curve: "overshoot"
       }
     }
 
@@ -1071,5 +1071,4 @@ Item {
     // Anchor to root (stable) but center horizontally on the clicked item
     PanelService.showContextMenu(contextMenu, root, screen, item);
   }
-
 }

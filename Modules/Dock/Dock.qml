@@ -903,15 +903,15 @@ Loader {
               y: dockWindow.slideY
 
               Behavior on x {
-                NumberAnimation {
+                NAnim {
                   duration: Style.motionPanel
-                  easing.type: Easing.InOutCubic
+                  curve: "out"
                 }
               }
               Behavior on y {
-                NumberAnimation {
+                NAnim {
                   duration: Style.motionPanel
-                  easing.type: Easing.InOutCubic
+                  curve: "out"
                 }
               }
             }
