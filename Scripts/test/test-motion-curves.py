@@ -8,8 +8,8 @@ drive, so every curve becomes an `easing.bezierCurve` list for
 
 - a CSS cubic-bezier(x1, y1, x2, y2) is one segment, copied verbatim;
 - a CSS linear() keypoint list and a damped-spring step response become a
-  smooth multi-segment spline through samples of the reference
-  (Catmull-Rom tangents, x evenly spaced, so each segment is monotonic in x).
+  smooth spline of at most MAX_SEGMENTS cubic Hermite segments through
+  samples of the reference (monotonic in x by construction).
 
 Usage:
   test-motion-curves.py           check Style.qml against the references
@@ -17,14 +17,18 @@ Usage:
 
 The check fails when a token drifts from its generated value, when a spline
 strays more than MAX_ERR from its reference, when a spline is malformed for
-QEasingCurve (non-monotonic x, not ending at (1, 1)), or when a duration tier
+QEasingCurve (non-monotonic x, not ending at (1, 1), more than MAX_SEGMENTS
+segments: see the note there), or when a duration tier
 in Style.qml stops matching the CDS value. Lint runs it (Scripts/dev/lint.sh).
 """
 
 import math
 import os
 import re
+import shutil
+import subprocess
 import sys
+import tempfile
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 STYLE = os.path.join(REPO, "Commons", "Style.qml")
@@ -58,8 +62,17 @@ CURVES = {
 # Duration tiers, ms (cds-theme.css:218-222).
 TIERS = {"durFast": 60, "durSnap": 120, "durBase": 200, "durSheet": 300, "durSlow": 450}
 
-SPRING_SAMPLES = 16
+SPRING_SAMPLES = 11
 SPRING_SETTLE = 0.01  # the spline spans the response until it stays within 1 %
+# QEasingCurve's BezierSpline corrupts the heap from 11 segments up (Qt 6.11:
+# a NumberAnimation on an 11-segment spline segfaults or aborts with
+# "corrupted double-linked list" in a bare `qml` file; 10 segments are fine).
+# In the shell the corruption surfaced later as a crash while a popup surface
+# was destroyed. Every generated spline stays at or below this.
+MAX_SEGMENTS = 10
+# linear() stops kept for the release spline: dense through the overshoot,
+# sparse in the settling tail (15 stops would need 14 segments).
+RELEASE_STOPS = (0, 1, 2, 3, 4, 5, 6, 7, 9, 11, 14)
 
 
 def spring_response(k, c, m):
@@ -75,17 +88,25 @@ def spring_response(k, c, m):
     return x, settle
 
 
-def catmull_rom(points):
-    """Points (x, y) with x from 0 to 1 -> flat bezierCurve list."""
-    out = []
+def hermite(points):
+    """Points (x, y), x increasing from 0 to 1 -> flat bezierCurve list.
+
+    Cubic Hermite in x: each segment's control points sit at one and two
+    thirds of its x span, so x(s) is linear and every segment is monotonic in
+    x whatever the spacing; the slopes are centred finite differences
+    (one-sided at the ends).
+    """
     n = len(points)
+
+    def slope(i):
+        a, b = points[max(0, i - 1)], points[min(n - 1, i + 1)]
+        return (b[1] - a[1]) / (b[0] - a[0])
+
+    out = []
     for i in range(n - 1):
-        p0 = points[max(0, i - 1)]
-        p1, p2 = points[i], points[i + 1]
-        p3 = points[min(n - 1, i + 2)]
-        c1 = (p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6)
-        c2 = (p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6)
-        out += [c1[0], c1[1], c2[0], c2[1], p2[0], p2[1]]
+        (x1, y1), (x2, y2) = points[i], points[i + 1]
+        h = x2 - x1
+        out += [x1 + h / 3, y1 + slope(i) * h / 3, x2 - h / 3, y2 - slope(i + 1) * h / 3, x2, y2]
     return out
 
 
@@ -95,12 +116,14 @@ def generate(name):
         return list(data) + [1, 1]
     if kind == "linear":
         n = len(data)
-        return catmull_rom([(i / (n - 1), v) for i, v in enumerate(data)])
+        return hermite([(i / (n - 1), data[i]) for i in RELEASE_STOPS])
     k, c, m = data
     x, settle = spring_response(k, c, m)
-    pts = [(i / (SPRING_SAMPLES - 1), x(settle * i / (SPRING_SAMPLES - 1))) for i in range(SPRING_SAMPLES)]
+    # Denser early (u^1.3): the response bends hardest at the start.
+    us = [(i / (SPRING_SAMPLES - 1)) ** 1.3 for i in range(SPRING_SAMPLES)]
+    pts = [(u, x(settle * u)) for u in us]
     pts[-1] = (1.0, 1.0)
-    return catmull_rom(pts)
+    return hermite(pts)
 
 
 def reference(name):
@@ -154,6 +177,35 @@ def emit():
         print("  readonly property var curve%s: [%s]" % (name, vals))
 
 
+def runtime_check(style):
+    """Animate every curve token once in a bare `qml` process (offscreen).
+    A spline QEasingCurve cannot handle crashes it (see MAX_SEGMENTS), which
+    the static checks above can only approximate. Skipped when no `qml`
+    binary is on PATH (lint.sh runs inside the test environment, which has
+    one)."""
+    qml = shutil.which("qml")
+    if not qml:
+        return []
+    curves = re.findall(r"readonly property var curve(\w+):\s*(\[[^\]]*\])", style, re.S)
+    body = ["import QtQuick", "Item {", "  id: it", "  property real v: 0"]
+    for i, (_, c) in enumerate(curves):
+        body.append('  NumberAnimation { id: a%d; target: it; property: "v"; from: 0; to: 4; duration: 300; '
+                    "easing.type: Easing.BezierSpline; easing.bezierCurve: %s }" % (i, " ".join(c.split())))
+    body.append("  Component.onCompleted: {%s }" % "".join(" a%d.start();" % i for i in range(len(curves))))
+    body.append("  Timer { interval: 600; running: true; onTriggered: Qt.quit() }")
+    body.append("}")
+    with tempfile.NamedTemporaryFile("w", suffix=".qml", delete=False) as fh:
+        fh.write("\n".join(body))
+        path = fh.name
+    try:
+        env = dict(os.environ, QT_QPA_PLATFORM="offscreen")
+        rc = subprocess.run([qml, path], env=env, capture_output=True, timeout=60).returncode
+    finally:
+        os.unlink(path)
+    return [] if rc == 0 else ["runtime: animating the curve tokens in a bare qml process exited %d "
+                               "(QEasingCurve crash; see MAX_SEGMENTS)" % rc]
+
+
 def check():
     errors = []
     style = open(STYLE).read()
@@ -162,6 +214,8 @@ def check():
         # structural checks on the generated spline
         if len(gen) % 6 or gen[-2:] != [1.0, 1.0]:
             errors.append("curve%s: spline must be whole segments ending at (1, 1)" % name)
+        if len(gen) // 6 > MAX_SEGMENTS:
+            errors.append("curve%s: %d segments; QEasingCurve corrupts the heap above %d" % (name, len(gen) // 6, MAX_SEGMENTS))
         xs = [0.0] + [gen[i] for i in range(4, len(gen), 6)]
         if any(b <= a for a, b in zip(xs, xs[1:])):
             errors.append("curve%s: segment end x must increase" % name)
@@ -192,6 +246,7 @@ def check():
             key = name[0].lower() + name[1:]
             if not re.search(r"\"?\b%s\"?:\s*curve%s\b" % (key, name), m.group(1)):
                 errors.append("Style.qml: curves map lacks %s: curve%s" % (key, name))
+    errors += runtime_check(style)
     if errors:
         print("motion curves FAIL:")
         for e in errors:
