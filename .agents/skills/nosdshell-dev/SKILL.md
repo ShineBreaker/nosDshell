@@ -97,7 +97,7 @@ input they need, rather than implying the feature is verified.
 
 - **niri 层规则**：canonical 副本 `Scripts/docs/nosdshell-layer-rules.kdl` ↔ 系统侧 `dotfiles/immutable/nosdshell/.config/niri/settings/special.kdl`。改 Tier 划分或 namespace 集合后两边 diff 一遍（系统侧多出头部装配行，其余应逐条一致）。
 - **主题模板管线**：`activeTemplates` 生成的 `~/.config/{kitty/themes,foot/themes}/nosdshell*` 是终端配色的唯一来源；系统侧 foot.ini / kitty.conf 只 include 该路径。改模板变量集时确认系统侧仍读同一路径。
-- **主题切换后端**：`nosd-helpers portal`（`run|get|set|toggle`）持有 portal 后端名与 darkman 兼容总线名；`~/.config/darkman/`、`~/.local/state/darkman/` 是沿用的兼容路径约定，别按「已废弃」清掉。
+- **主题切换后端**：`nosd-helpers portal`（`run|get|set|toggle|hooks|scheduler`）持有 portal 后端名与 darkman 兼容总线名；调度策略单一所有者规则见 `DESIGN.md` §4.3（shell 只在 `schedulingMode=system` 时经 `portal scheduler on` 把太阳调度交给 daemon，其余模式 `off`，状态落在 `~/.local/state/nosdshell/solar-scheduler`）；`~/.config/darkman/`、`~/.local/state/darkman/` 是沿用的兼容路径约定，别按「已废弃」清掉。
 
 系统侧部署与验证走 `blue home`（本仓库的 verify/lint 不覆盖系统侧文件）。
 

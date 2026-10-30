@@ -125,6 +125,19 @@ export NOSD_CONFIG_DIR="$WORK/config/nosdshell/"
 export NOSD_CACHE_DIR="$WORK/cache/nosdshell/"
 mkdir -p "$NOSD_CONFIG_DIR" "$NOSD_CACHE_DIR"
 
+# Prefer this checkout's helpers over whatever is installed: the shell
+# resolves `nosd-helpers` via PATH first, and verify must exercise the
+# working tree's daemon — an installed binary may predate CLI additions
+# (e.g. `portal scheduler`), which would silently no-op the flag writes
+# dark-mode-flag asserts. Same release-then-debug order as the vinput
+# scenes below.
+for _b in release debug; do
+  if [ -x "$REPO/tools/nosd-helpers/target/$_b/nosd-helpers" ]; then
+    export PATH="$REPO/tools/nosd-helpers/target/$_b:$PATH"
+    break
+  fi
+done
+
 # --- seed test .desktop apps into the isolated XDG_DATA_HOME -----------------
 # The headless image has (almost) no .desktop files, so the launcher grid would
 # be empty. NOSD_SEED_DESKTOP_APPS=1 (default) writes a small set spanning the
@@ -222,7 +235,7 @@ settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-icon notification-long notification-resave osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow lockscreen settings-tree" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow dark-mode-flag lockscreen settings-tree" 
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
@@ -2541,6 +2554,50 @@ PYEOF
                             done
                             grep "color-scheme" "$LOG" || true
                           fi ;;
+    # Single-owner scheduling guardrail (DESIGN.md §4.3): DarkModeService
+    # writes $XDG_STATE_HOME/nosdshell/solar-scheduler — "1" only while
+    # colorSchemes.schedulingMode=system hands solar scheduling to the
+    # portal daemon, "0" for every other mode. Asserts the flag exists and
+    # matches the seeded mode; any seed works:
+    #   ./verify.sh <run> --scenes dark-mode-flag                 # expect 0
+    #   ./verify.sh <run> --settings seed.json --scenes dark-mode-flag
+    # with seed {"colorSchemes":{"schedulingMode":"system"}}      # expect 1
+    # Skips when nosd-helpers is not resolvable (flag never written).
+    dark-mode-flag)       if command -v nosd-helpers >/dev/null 2>&1 \
+                            || [ -x "$REPO/tools/nosd-helpers/target/release/nosd-helpers" ] \
+                            || [ -x "$REPO/tools/nosd-helpers/target/debug/nosd-helpers" ]; then
+                            read DM_MODE < <(python3 - "$USER_SETTINGS" <<'PYEOF'
+import json,os,sys
+base=json.load(open(os.environ["REPO"]+"/Assets/settings-default.json"))
+if sys.argv[1]:
+    def merge(a,b):
+        for k,v in b.items():
+            if isinstance(v,dict) and isinstance(a.get(k),dict): merge(a[k],v)
+            else: a[k]=v
+    merge(base, json.load(open(sys.argv[1])))
+print(base.get("colorSchemes",{}).get("schedulingMode","off"))
+PYEOF
+)
+                            FLAG="$XDG_STATE_HOME/nosdshell/solar-scheduler"
+                            EXPECT=0; [ "$DM_MODE" = "system" ] && EXPECT=1
+                            # the flag is written on init and again once the
+                            # helpers binary resolves — poll instead of racing
+                            for _ in 1 2 3 4 5 6 7 8 9 10; do
+                              [ -f "$FLAG" ] && break; sleep 0.5
+                            done
+                            if [ ! -f "$FLAG" ]; then
+                              echo "FAIL dark-mode-flag: $FLAG missing after 5s"
+                              SCENE_FAIL=1
+                            elif [ "$(cat "$FLAG")" != "$EXPECT" ]; then
+                              echo "FAIL dark-mode-flag: flag=$(cat "$FLAG") want=$EXPECT (schedulingMode=$DM_MODE)"
+                              SCENE_FAIL=1
+                            else
+                              echo "dark-mode-flag: flag=$EXPECT ok (schedulingMode=$DM_MODE)"
+                            fi
+                          else
+                            echo "dark-mode-flag: nosd-helpers not built — SKIP (just tools)"
+                          fi
+                          shot dark-mode-flag ;;
     # Keep Awake vs the shell's own idle actions (upstream #2418): while
     # idleInhibitor is on, "Executing action: screenOff" must never reach the
     # log; after it is released screenOff must fire (positive control — a
