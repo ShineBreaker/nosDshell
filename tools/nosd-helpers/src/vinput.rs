@@ -171,8 +171,14 @@ fn run_op(args: &[String]) -> Result<(), String> {
             let (x, y) = (arg_f32(p, 0)?, arg_f32(p, 1)?);
             match std::env::var("VINPUT_PRESS_MS").ok().and_then(|v| v.parse::<u64>().ok()) {
                 Some(hold) => {
+                    // Deliver the motion first and give the compositor a beat:
+                    // a press that arrives in the same batch as the motion
+                    // that hands the surface pointer focus is dropped by
+                    // sway (the client sees enter, then only the release).
                     move_to(&vp, x, y, ew, eh, tick());
-                    t += 30;
+                    flush(&mut queue);
+                    sleep(Duration::from_millis(50));
+                    t += 50;
                     vp.button(t, btn, wl_pointer::ButtonState::Pressed);
                     vp.frame();
                     flush(&mut queue);
