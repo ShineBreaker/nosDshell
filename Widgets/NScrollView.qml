@@ -66,7 +66,20 @@ ScrollView {
     wheelScrollAnimation.restart();
   }
 
-  rightPadding: userRightPadding + (reserveScrollbarSpace && verticalScrollable ? handleWidth + Style.marginXS : 0)
+  // Whether the right padding holds the scrollbar column. It follows
+  // verticalScrollable one event-loop turn late: the padding narrows the
+  // content, wrapping content grows taller, and the taller content feeds
+  // verticalScrollable again, so a direct binding re-enters itself ("Binding
+  // loop detected for property verticalScrollable"). The late copy settles in
+  // one step either way: reserving only makes overflowing content taller, and
+  // releasing only makes fitting content shorter.
+  property bool _reserveVertical: false
+  function _syncReserveVertical() {
+    root._reserveVertical = root.verticalScrollable;
+  }
+  onVerticalScrollableChanged: Qt.callLater(root._syncReserveVertical)
+
+  rightPadding: userRightPadding + (reserveScrollbarSpace && _reserveVertical ? handleWidth + Style.marginXS : 0)
 
   implicitWidth: Math.max(implicitBackgroundWidth + leftInset + rightInset, contentWidth + leftPadding + rightPadding)
   implicitHeight: Math.max(implicitBackgroundHeight + topInset + bottomInset, contentHeight + topPadding + bottomPadding)
@@ -101,6 +114,7 @@ ScrollView {
   // Configure the internal flickable when it becomes available
   Component.onCompleted: {
     configureFlickable();
+    _syncReserveVertical();
   }
 
   // Reference to the internal Flickable for wheel handling
