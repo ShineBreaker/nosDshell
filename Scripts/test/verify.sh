@@ -1103,9 +1103,13 @@ PYEOF
                             # highlight. Assert both the flickable's real
                             # contentY (describe prints it) and content-region
                             # pixels — the rail column is outside the region.
-                            qs -p "$REPO" ipc call debug opened 16 > "$WORK/logs/cc-tree-after-click.txt" 2>&1 || true
-                            if ! { grep -v hidden "$WORK/logs/cc-tree-after-click.txt" | grep -Eq "interactive:true contentY:[1-9][0-9]{2,}/"; }; then
-                              echo "FAIL settings-tree: rail click did not scroll content (contentY ~0)"
+                            # Read contentY itself: a depth-16 tree dump of a
+                            # settings page with many tabs loaded overflows the
+                            # IPC socket and the grep then saw nothing.
+                            RAIL_CY=$(qs -p "$REPO" ipc call debug get cc-HEADLESS-1 settingsContentScroll contentItem.contentY 2>&1)
+                            echo "settings-tree: contentY after rail click: $RAIL_CY" >> "$WORK/logs/cc-hit.txt"
+                            if ! awk -v y="$RAIL_CY" 'BEGIN { exit !(y + 0 >= 100) }'; then
+                              echo "FAIL settings-tree: rail click did not scroll content (contentY=$RAIL_CY)"
                               SCENE_FAIL=1
                             fi
                             python3 - "$OUT/settings-tree.png" "$OUT/settings-click.png" >> "$WORK/logs/cc-hit.txt" 2>&1 <<'PYEOF' || SCENE_FAIL=1
