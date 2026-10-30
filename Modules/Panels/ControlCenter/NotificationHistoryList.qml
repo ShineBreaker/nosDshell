@@ -55,10 +55,14 @@ Item {
   property string expandedNotification: ""
   property string expandedGroup: ""
 
-  // Keyboard focus: index into the descriptor row space (-1 = none), plus
-  // which action button of the focused row is active (-1 = the body).
+  // Selected row: index into the descriptor row space (-1 = none), plus
+  // which action button of the selected row is active (-1 = the body).
+  // Both the arrow keys and a mouse press move it.
   property int focusIndex: -1
   property int actionIndex: -1
+  // Whether the keyboard moved the selection last. The focus ring shows only
+  // then: focus taken by a mouse press draws no ring (DESIGN §1.11).
+  property bool keyboardFocus: false
 
   readonly property var historyModel: NotificationService.historyModel
 
@@ -381,6 +385,7 @@ Item {
   // actions, Enter activates, Delete removes. Tab no longer filters: the day
   // sections are rows now.
   Keys.onPressed: event => {
+                    root.keyboardFocus = true;
                     if (Keybinds.checkKey(event, 'up', Settings)) {
                       root.moveSelection(-1);
                       event.accepted = true;
@@ -789,6 +794,7 @@ Item {
                           anchors.fill: parent
                           cursorShape: Qt.PointingHandCursor
                           onClicked: {
+                            root.keyboardFocus = false;
                             root.focusIndex = delegateItem.rowIndex;
                             root.actionIndex = index;
                             root.invokeAndClose(delegateItem.notificationId, modelData.identifier);
@@ -818,13 +824,13 @@ Item {
                 }
               }
             }
-            // Keyboard focus (focusIndex is driven by the arrow keys only):
-            // the shared focus ring, on the card edge because the list clips.
+            // Keyboard focus: the shared focus ring, on the card edge
+            // because the list clips. Not for a mouse-made selection.
             NFocusRing {
               anchors.fill: parent
               radius: cardSurface.radius
               outside: false
-              shown: delegateItem.isFocused
+              shown: delegateItem.isFocused && root.keyboardFocus
             }
           }
 
@@ -961,6 +967,7 @@ Item {
             }
 
             onPressed: mouse => {
+                         root.keyboardFocus = false;
                          root.focusIndex = delegateItem.rowIndex;
                          root.actionIndex = -1;
                          if (delegateItem.isExpanded)
