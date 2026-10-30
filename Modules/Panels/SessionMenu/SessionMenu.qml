@@ -9,6 +9,7 @@ import qs.Commons
 import qs.Modules.LockScreen
 import qs.Modules.MainScreen
 import qs.Services.Compositor
+import qs.Services.Debug
 import qs.Services.UI
 import qs.Widgets
 
@@ -59,10 +60,26 @@ PanelWindow {
 
   onIsPanelOpenChanged: {
     if (isPanelOpen) {
+      closeTimer.stop();
       isClosing = false;
       isPanelVisible = true;
     } else {
       isClosing = true;
+      closeTimer.restart();
+    }
+  }
+
+  // Close fade: hold the surface mapped while the content fades out, then
+  // unmap (the LauncherFullscreenWindow pattern). Nothing else ends the
+  // close: the surface used to stay mapped, transparent, full-screen on the
+  // overlay layer with exclusive keyboard focus, taking every click and key
+  // on the screen until the menu was opened again.
+  Timer {
+    id: closeTimer
+    interval: Style.motionEnter + 30
+    onTriggered: {
+      root.isClosing = false;
+      root.isPanelVisible = false;
     }
   }
 
@@ -83,6 +100,7 @@ PanelWindow {
   }
 
   function closeImmediately() {
+    closeTimer.stop();
     isClosing = false;
     isPanelVisible = false;
     isPanelOpen = false;
@@ -97,7 +115,17 @@ PanelWindow {
     }
   }
 
-  Component.onCompleted: PanelService.registerPanel(root)
+  Component.onCompleted: {
+    PanelService.registerPanel(root);
+    // Scene forensics: `debug get session-<screen> "" mapped` (verify.sh
+    // launcher-handoff asserts the surface unmaps after closing).
+    if (root.screen)
+      DebugService.registerRoot("session-" + root.screen.name, content);
+  }
+  Component.onDestruction: {
+    if (root.screen)
+      DebugService.unregisterRoot("session-" + root.screen.name);
+  }
 
   // Timer properties
   readonly property int timerDuration: Settings.data.sessionMenu.countdownDuration
@@ -347,6 +375,7 @@ PanelWindow {
     id: content
     anchors.fill: parent
     focus: true
+    readonly property bool mapped: root.visible
 
     // PanelWindow exposes no opacity of its own; fade the content item instead
     opacity: root.contentOpacity

@@ -531,6 +531,13 @@ sleep 6
 shot() { grim "$OUT/$1.png" && echo "saved $1.png"; }
 call() { local s="${!#}"; set -- "${@:1:$#-1}"; echo "ipc: $*"; qs -p "$REPO" ipc call "$@" 2>&1; sleep "$s"; }
 toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
+# session_unmapped <scene>: fail the scene unless the session menu's overlay
+# surface is unmapped (call it once the close fade is over).
+session_unmapped() {
+  local m
+  m=$(qs -p "$REPO" ipc call debug get session-HEADLESS-1 "" mapped 2>&1)
+  [ "$m" = false ] || { echo "FAIL $1: session menu surface still mapped after closing ($m)"; SCENE_FAIL=1; }
+}
 # item_centre <root> <objectName> → "cx cy", the centre of a visible item as
 # `debug find` reports it (scene coordinates: screen coordinates on the
 # full-screen roots cc-*, main-*), or nothing when it is hidden or missing.
@@ -806,7 +813,8 @@ run_scene() {
                           # power button, top-right (~1877,33)
                           "$VINPUT" vinput click 1877 33 2>>"$WORK/logs/vinput.log" || true
                           sleep 1.2; shot launcher-handoff-session
-                          call sessionMenu toggle 0.5 ;;
+                          call sessionMenu toggle 1
+                          session_unmapped launcher-handoff ;;
     # Live mode swap: switch while the view is open (gxde-launcher
     # launchersys.cpp:238-246). The query must carry across both ways.
     launcher-modeswap)    call launcher switchMode mini 1
@@ -1629,7 +1637,11 @@ PYEOF
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;
-    session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
+    # Closing must unmap the full-screen overlay surface: a closed but mapped
+    # menu is invisible and still takes every click and key on the screen.
+    session-menu)         toggle sessionMenu toggle 1.5 session-menu
+                          sleep 0.5
+                          session_unmapped session-menu ;;
     notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null
                           sleep 0.8; shot notification ;;
