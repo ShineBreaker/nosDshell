@@ -579,10 +579,12 @@ print(sys.argv[3] if v is None else v)
 PYEOF
 }
 # Close whatever popup is open by clicking bare desktop (top-left quadrant).
-motion_dismiss() { $VINPUT click 300 300 > /dev/null 2>&1; }
-VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
-[ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
-VINPUT="$VINPUT vinput"
+motion_dismiss() { $VIN click 300 300 > /dev/null 2>&1; }
+# Pointer injector for the motion and margin-click checks. Named apart from
+# VINPUT, which many scenes reassign to the bare binary path.
+VIN="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+[ -x "$VIN" ] || VIN="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+VIN="$VIN vinput"
 
 # --- real windows so the dock shows running/active apps --------------------
 # NOSD_SPAWN_WINDOWS=1 (default): the headless sway starts with no windows, so
@@ -1668,7 +1670,34 @@ PYEOF
                           wait $VP
                           call wallpaper toggle 1 ;;
     dock)                 call dock toggle 1.5; shot dock; call dock toggle 1.5 ;;
-    dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu ;;
+    dock-menu)            call dock showSettingsMenu 1.5; shot dock-menu
+                          # The menu window carries a transparent shadow
+                          # margin (Style.popupShadowInset) that must stay
+                          # click-through: a click 10 px left of the body has
+                          # to reach the outside-click catcher and close it.
+                          # Left edge of the dark menu body on row y=900:
+                          # first run of 20 dark pixels scanning rightwards.
+                          MX=$(python3 - "$OUT/dock-menu.png" <<'PYEOF2'
+import sys
+from PIL import Image
+im = Image.open(sys.argv[1]).convert("L")
+run = 0
+for x in range(600, 1400):
+    run = run + 1 if im.getpixel((x, 900)) < 70 else 0
+    if run == 20:
+        print(x - 19 - 10)
+        break
+else:
+    print(-1)
+PYEOF2
+)
+                          echo "margin click at x=$MX y=900"
+                          [ "$MX" -gt 0 ] || { echo "FAIL dock-menu: menu body not found in the shot"; SCENE_FAIL=1; }
+                          $VIN click "$MX" 900 > /dev/null 2>&1; sleep 1
+                          shot dock-menu-margin-click
+                          if qs -p "$REPO" ipc call debug list 2>/dev/null | grep -q ctxmenu; then
+                            echo "FAIL dock-menu: click in the shadow margin did not close the menu"; SCENE_FAIL=1
+                          fi ;;
     dock-submenu)         call dock showSettingsSubmenu 1.5; shot dock-submenu ;;
     # Widget context menu on a dock plugin: find the Clock item in the dock
     # scene tree (document roots describe() as Clock_QML_*), rclick it with a
@@ -2797,7 +2826,7 @@ PYEOF
     # release. Needs the control center open first.
     motion-press)         qs -p "$REPO" ipc call controlCenter toggle > /dev/null; sleep "$(motion_secs 400)"
                           burst_start motion-press-down "1740,20 160x100"; burst_mark
-                          VINPUT_PRESS_MS=$(( $(motion_secs 600) * 1000 )) $VINPUT click 1806 64 > /dev/null 2>&1 &
+                          VINPUT_PRESS_MS=$(( $(motion_secs 600) * 1000 )) $VIN click 1806 64 > /dev/null 2>&1 &
                           VP=$!
                           burst_stop "$(motion_secs 500)"
                           wait "$VP"
@@ -2807,10 +2836,10 @@ PYEOF
                           sleep "$(motion_secs 400)" ;;
     motion-switch)        qs -p "$REPO" ipc call controlCenter toggle > /dev/null; sleep "$(motion_secs 400)"
                           burst_start motion-switch-on "1820,130 100x70"; burst_mark
-                          $VINPUT click 1888 164 > /dev/null 2>&1
+                          $VIN click 1888 164 > /dev/null 2>&1
                           burst_stop "$(motion_secs 400)"
                           burst_start motion-switch-off "1820,130 100x70"; burst_mark
-                          $VINPUT click 1888 164 > /dev/null 2>&1
+                          $VIN click 1888 164 > /dev/null 2>&1
                           burst_stop "$(motion_secs 400)"
                           qs -p "$REPO" ipc call controlCenter toggle > /dev/null; sleep "$(motion_secs 400)" ;;
     *)                    echo "unknown scene: $1" ;;
