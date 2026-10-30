@@ -323,18 +323,32 @@ Singleton {
       }
       if (hitKids.length === 0)
         break;
+      // Descend through the topmost child (paint-order last) that can take a
+      // press. A childless MouseArea with acceptedButtons NoButton (a wheel
+      // or hover layer) never does, so the press falls through to what lies
+      // under it; stopping there would hide the real target.
+      var pick = hitKids.length - 1;
+      while (pick > 0 && _passesPresses(hitKids[pick][0]))
+        pick--;
       for (var j = hitKids.length - 1; j >= 0; j--) {
-        var tag = j === hitKids.length - 1 ? "=>" : "  ";
-        lines.push(tag + " " + describe(hitKids[j][0]) + " @" + Math.round(hitKids[j][1].x) + "," + Math.round(hitKids[j][1].y));
+        var tag = j === pick ? "=>" : "  ";
+        var note = _passesPresses(hitKids[j][0]) ? " (no buttons: presses pass through)" : "";
+        lines.push(tag + " " + describe(hitKids[j][0]) + " @" + Math.round(hitKids[j][1].x) + "," + Math.round(hitKids[j][1].y) + note);
       }
-      // Descend through the topmost child (paint-order last)
-      var top = hitKids[hitKids.length - 1][0];
-      p = hitKids[hitKids.length - 1][1];
-      cur = top;
+      p = hitKids[pick][1];
+      cur = hitKids[pick][0];
     }
     var out = lines.join("\n");
     console.info(out);
     return out;
+  }
+
+  function _passesPresses(item) {
+    try {
+      return item.acceptedButtons === Qt.NoButton && item.children.length === 0;
+    } catch (e) {
+      return false;
+    }
   }
 
   function dumpAllRoots(maxDepth) {
@@ -352,24 +366,47 @@ Singleton {
   // Popups/dialogs parent to the window's Overlay, a sibling subtree of the
   // registered root — when the root walk misses, retry over the whole window
   // content item so dialogs are reachable too.
+  // describe() plus " G@x,y" = mapToGlobal() (see IPC `find`).
+  function describeGlobal(item) {
+    var out = describe(item);
+    try {
+      var g = item.mapToGlobal(Qt.point(0, 0));
+      if (g)
+        out += " G@" + Math.round(g.x) + "," + Math.round(g.y);
+    } catch (e) {}
+    return out;
+  }
+
   function findItem(rootName, objectName) {
+    var all = _findItems(rootName, objectName, true);
+    return all.length > 0 ? all[0] : null;
+  }
+
+  // Every item under the root with this objectName, in paint order. Use it
+  // instead of `tree` to locate repeated delegates (cards, rows): a deep
+  // tree dump overflows the IPC socket.
+  function findAllItems(rootName, objectName) {
+    return _findItems(rootName, objectName, false);
+  }
+
+  function _findItems(rootName, objectName, firstOnly) {
     var item = null;
     try {
       item = (rootName === "" || rootName === "opened") ? PanelService.openedPanel : roots[rootName];
     } catch (e) {}
     if (!item)
-      return null;
-    var found = null;
+      return [];
+    var found = [];
     var match = function (it) {
-      if (found)
+      if (firstOnly && found.length > 0)
         return;
       try {
-        if (it.objectName === objectName)
-          found = it;
+        if (it.objectName === objectName && found.indexOf(it) < 0)
+          found.push(it);
       } catch (e) {}
     };
     _walkItems(item, 0, match);
-    if (!found) {
+    if (found.length === 0 || !firstOnly) {
       try {
         var top = item.Window ? item.Window.contentItem : null;
         if (top && top !== item)
