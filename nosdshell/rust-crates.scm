@@ -9,7 +9,7 @@
 ;;; and re-split into this file, deduping against the sets above.
 ;;; The input lists at the end cover every entry of each lockfile.
 
-(define-module (rust-crates)
+(define-module (nosdshell rust-crates)
   #:use-module (guix build-system cargo)
   #:export (nosd-blur-cargo-inputs
             nosd-theme-cargo-inputs

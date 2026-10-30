@@ -9,12 +9,19 @@
 ;;; quickshell-nosd fork (see below); the nosd-blur wallpaper pre-blur tool is built
 ;;; from tools/nosd-blur via cargo-build-system, as are the nosd-helpers
 ;;; and nosd-theme Rust ports.  Their vendored crate sources live in
-;;; packaging/rust-crates.scm.  The source is the
-;;; local checkout (git-tracked files only) so `guix build -f nosdshell.scm'
-;;; always packages the working tree; for a release build switch source
-;;; back to a git-fetch of the tag.
+;;; nosdshell/rust-crates.scm (module (nosdshell rust-crates)).
+;;;
+;;; This repository doubles as a Guix channel (see .guix-channel): the
+;;; package source is always the checkout this file lives in — the working
+;;; tree under `guix build -f nosdshell.scm', the pinned channel commit
+;;; after `guix pull'.  Sources therefore use local-file, never git-fetch.
 
-(add-to-load-path (string-append (dirname (current-filename)) "/packaging"))
+;; `current-filename' is #f while this file is compiled as a channel
+;; module (the compiler puts the channel root on the load path itself);
+;; it resolves to the checkout path when loaded for `guix build -f' or
+;; instantiated from the compiled channel.
+(when (current-filename)
+  (add-to-load-path (dirname (current-filename))))
 
 (define-module (nosdshell)
   #:use-module (guix gexp)
@@ -44,10 +51,32 @@
   ;; deprecated alias.
   #:use-module (gnu packages window-management)
   #:use-module (gnu packages xdisorg)
-  #:use-module (rust-crates))
+  #:use-module (nosdshell rust-crates))
 
+;; Where this file lives: the working tree under `guix build -f', or the
+;; installed channel tree (share/guile/site/3.0, the whole checkout minus
+;; .git) after `guix pull'.  current-filename is #f when this module is
+;; instantiated from the compiled channel, so fall back to a load-path
+;; lookup of our own source file.
 (define %repo-root
-  (dirname (current-filename)))
+  (dirname (or (current-filename)
+               (search-path %load-path "nosdshell.scm")
+               (error "cannot locate the nosdshell channel source"))))
+
+;; A plain `guix build -f' or `guix pull' checkout carries .git (for file://
+;; remotes a worktree .git file), so untracked files can be dropped via
+;; git-predicate.  Channel sources compiled from a stripped tree have no
+;; .git; they already contain only the wanted files, so select everything.
+(define %git-checkout?
+  (file-exists? (string-append %repo-root "/.git")))
+
+(define (package-source subdir)
+  (local-file (string-append %repo-root "/" subdir)
+              #:recursive? #t
+              #:select? (if %git-checkout?
+                            (git-predicate
+                             (string-append %repo-root "/" subdir))
+                            (const #t))))
 
 
 ;;; Our quickshell fork (ShineBreaker/quickshell-nosd): upstream master at
@@ -87,10 +116,7 @@
   (package
     (name "nosd-blur")
     (version "0.1.0")
-    (source (local-file (string-append %repo-root "/tools/nosd-blur")
-                        #:recursive? #t
-                        #:select? (git-predicate
-                                   (string-append %repo-root "/tools/nosd-blur"))))
+    (source (package-source "tools/nosd-blur"))
     (build-system cargo-build-system)
     (arguments (list #:install-source? #f))
     (inputs nosd-blur-cargo-inputs)
@@ -106,10 +132,7 @@ menu) can skip a live blur pass and just draw the cached image.")
   (package
     (name "nosd-helpers")
     (version "0.1.0")
-    (source (local-file (string-append %repo-root "/tools/nosd-helpers")
-                        #:recursive? #t
-                        #:select? (git-predicate
-                                   (string-append %repo-root "/tools/nosd-helpers"))))
+    (source (package-source "tools/nosd-helpers"))
     (build-system cargo-build-system)
     (arguments
      (list #:install-source? #f
@@ -157,10 +180,7 @@ xdg-desktop-portal Settings backend.")
   (package
     (name "nosd-theme")
     (version "0.1.0")
-    (source (local-file (string-append %repo-root "/tools/nosd-theme")
-                        #:recursive? #t
-                        #:select? (git-predicate
-                                   (string-append %repo-root "/tools/nosd-theme"))))
+    (source (package-source "tools/nosd-theme"))
     (build-system cargo-build-system)
     (arguments (list #:install-source? #f))
     (inputs nosd-theme-cargo-inputs)
@@ -179,7 +199,9 @@ and Matugen-compatible template rendering.")
     (version "1.7.0")
     (source (local-file %repo-root
                         #:recursive? #t
-                        #:select? (git-predicate %repo-root)))
+                        #:select? (if %git-checkout?
+                                      (git-predicate %repo-root)
+                                      (const #t))))
     (build-system copy-build-system)
     (arguments
      (list
@@ -226,7 +248,11 @@ and Matugen-compatible template rendering.")
                            (string-append share "/fish/vendor_completions.d/nosdshell.fish")))))
           (add-after 'install 'make-wrapper
             (lambda* (#:key inputs #:allow-other-keys)
-              (let ((script "nosdshell"))
+              ;; Write the wrapper straight into the output: the checkout
+              ;; root holds a nosdshell/ directory (channel module path),
+              ;; so a same-named scratch file here no longer works.
+              (let ((script (in-vicinity #$output "bin/nosdshell")))
+                (mkdir-p (dirname script))
                 ;; --version/-V prints the shell and quickshell versions without
                 ;; starting the shell (lowercase -v is quickshell's verbose flag
                 ;; and must fall through). release.sh bumps the nosdshell version
@@ -277,8 +303,7 @@ exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
                             "bin/wl-paste"
                             "bin/wlsunset"
                             "bin/wtype"))))
-                (chmod script #o555)
-                (install-file script (in-vicinity #$output "bin")))))
+                (chmod script #o555))))
           (add-after 'make-wrapper 'qt-wrap
             (lambda args
               (apply wrap-all-qt-programs
