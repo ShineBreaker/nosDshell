@@ -11,6 +11,11 @@
 # With no GPU render node (/dev/dri/renderD*), both backends switch the
 # compositor to wlroots' pixman renderer and the client to Mesa llvmpipe;
 # the shell then renders shaders (MultiEffect shadows, blur) in software.
+#
+# The isolated session has no platform theme, so Qt would look icons up in
+# hicolor alone and every app icon, fallback included, would fail to load.
+# QS_ICON_THEME (read by quickshell at start) selects Papirus, which both
+# package lists ship; set it yourself to try another theme.
 
 NOSD_PKGENV_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
@@ -45,6 +50,7 @@ nosd_pkg_run() {
   local pkgs="$1"
   shift
   nosd_software_render_env
+  export QS_ICON_THEME="${QS_ICON_THEME:-Papirus}"
   case "$(nosd_pkg_backend)" in
     guix)
       # shellcheck disable=SC2086 # the package list is word-split on purpose

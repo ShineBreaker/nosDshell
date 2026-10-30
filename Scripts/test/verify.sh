@@ -240,21 +240,16 @@ settings-osd settings-about settings-advanced settings-connections
 settings-controlcenter settings-desktopwidgets settings-display settings-hooks
 settings-idle settings-lockscreen settings-plugins settings-sessionmenu
 settings-system settings-systemmonitor notification-actions notification-icon notification-long notification-resave osd-overdrive toast \
-wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow dark-mode-flag lockscreen settings-tree" 
+wallpaper wallpaper-panel dock dock-menu dock-submenu dock-widget-menu bar-widget-menu notification-shadow dark-mode-flag settings-tree lockscreen"
 if [ -n "$SCENES_ARG" ]; then
   WANTED=" ${SCENES_ARG//,/ } "
   SELECTED=""
   for s in $SCENES_ORDER; do [[ "$WANTED" == *" $s "* ]] && SELECTED="$SELECTED $s"; done
-  # lockscreen always last even if listed earlier. Strip the longer name first:
-  # substituting "lockscreen" inside "lockscreen-error" would leave "-error".
-  SELECTED="${SELECTED// lockscreen-error/}"
-  SELECTED="${SELECTED// lockscreen/}"
-  [[ "$WANTED" == *" lockscreen "* ]] && SELECTED="$SELECTED lockscreen"
   # lockscreen-error is absent from SCENES_ORDER on purpose (it must not run in
   # the default set) and needs its own invocation because the PAM failure is a
   # process-level env var (Quickshell.env, read at shell start):
   #   NOSD_PAM_BAD=1 ./verify.sh <run>-lockerr --scenes lockscreen-error
-  [[ "$WANTED" == *" lockscreen-error "* ]] && SELECTED="$SELECTED lockscreen-error"
+  # It is appended with lockscreen below.
   # settings-<tab>/<sub> names are generated, not listed in SCENES_ORDER —
   # pass any requested ones through in the order given.
   for s in $WANTED; do
@@ -263,8 +258,18 @@ if [ -n "$SCENES_ARG" ]; then
     esac
   done
 else
-  SELECTED="$SCENES_ORDER"
+  # shellcheck disable=SC2086 # word-split on purpose: one space between names
+  SELECTED=" $(echo $SCENES_ORDER)"
+  WANTED="$SELECTED "
 fi
+# lockscreen always runs last, in the default set too: it leaves the session
+# locked, and every scene after it would shoot the lock screen. Strip the
+# longer name first: substituting "lockscreen" inside "lockscreen-error" would
+# leave "-error".
+SELECTED="${SELECTED// lockscreen-error/}"
+SELECTED="${SELECTED// lockscreen/}"
+[[ "$WANTED" == *" lockscreen "* ]] && SELECTED="$SELECTED lockscreen"
+[[ "$WANTED" == *" lockscreen-error "* ]] && SELECTED="$SELECTED lockscreen-error"
 export SELECTED
 echo "scenes:$SELECTED"
 
@@ -410,9 +415,10 @@ unset NIRI_SOCKET HYPRLAND_INSTANCE_SIGNATURE LABWC_PID
 export XDG_CURRENT_DESKTOP=sway
 
 SWAY_PID=""; QS_PID=""; PW_PID=""; WP_PID=""
-FOOT_PIDS=""; FPORTAL_PID=""
+FOOT_PIDS=""; FPORTAL_PID=""; VHOLD_PID=""
 cleanup() {
   [ -n "$QS_PID" ]   && { qs -p "$REPO" kill 2>/dev/null; kill "$QS_PID" 2>/dev/null; }
+  [ -n "$VHOLD_PID" ] && kill "$VHOLD_PID" 2>/dev/null
   [ -n "$WP_PID" ]   && kill "$WP_PID" 2>/dev/null
   [ -n "$PW_PID" ]   && kill "$PW_PID" 2>/dev/null
   [ -n "$SWAY_PID" ] && { swaymsg exit 2>/dev/null; kill "$SWAY_PID" 2>/dev/null; }
@@ -440,6 +446,20 @@ for EXTRA_OUT in $(swaymsg -t get_outputs 2>/dev/null | grep -o '"name":[[:space
   echo "disabling extra output: $EXTRA_OUT"
   swaymsg "output $EXTRA_OUT disable" 2>/dev/null
 done
+
+# A resident seat pointer for the whole session (`vinput hold`). The headless
+# backend has no input devices, so without it the seat loses its pointer
+# capability every time a `vinput` process exits; clients then drop their
+# wl_pointer, and the next click races the shell's get_pointer: a shell busy
+# rendering (a panel just opened) binds the new pointer after the press went
+# out and sees only the release, i.e. the click is lost.
+VINPUT_BIN="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+if [ -x "$VINPUT_BIN" ]; then
+  "$VINPUT_BIN" vinput hold 2>>"$WORK/logs/vinput.log" &
+  VHOLD_PID=$!
+else
+  echo "WARN: $VINPUT_BIN missing (just tools): injected clicks can be lost"
+fi
 
 # pipewire on the private bus so AudioService / volume OSD work
 pipewire   > "$WORK/logs/pipewire.log"   2>&1 & PW_PID=$!
@@ -511,6 +531,25 @@ sleep 6
 shot() { grim "$OUT/$1.png" && echo "saved $1.png"; }
 call() { local s="${!#}"; set -- "${@:1:$#-1}"; echo "ipc: $*"; qs -p "$REPO" ipc call "$@" 2>&1; sleep "$s"; }
 toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
+# session_unmapped <scene>: fail the scene unless the session menu's overlay
+# surface is unmapped (call it once the close fade is over).
+session_unmapped() {
+  local m
+  m=$(qs -p "$REPO" ipc call debug get session-HEADLESS-1 "" mapped 2>&1)
+  [ "$m" = false ] || { echo "FAIL $1: session menu surface still mapped after closing ($m)"; SCENE_FAIL=1; }
+}
+# item_centre <root> <objectName> → "cx cy", the centre of a visible item as
+# `debug find` reports it (scene coordinates: screen coordinates on the
+# full-screen roots cc-*, main-*), or nothing when it is hidden or missing.
+# Locate click targets this way instead of hard-coding coordinates, which go
+# stale whenever the layout moves.
+item_centre() {
+  local d w h x y
+  d=$(qs -p "$REPO" ipc call debug find "$1" "$2" 2>/dev/null)
+  case "$d" in "" | *hidden* | *"no item"*) return ;; esac
+  read -r w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
+  [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+}
 
 # --- motion capture (motion-* scenes; run them through Scripts/test/motion.sh,
 # which seeds general.animationSpeed so every duration is stretched by
@@ -774,7 +813,8 @@ run_scene() {
                           # power button, top-right (~1877,33)
                           "$VINPUT" vinput click 1877 33 2>>"$WORK/logs/vinput.log" || true
                           sleep 1.2; shot launcher-handoff-session
-                          call sessionMenu toggle 0.5 ;;
+                          call sessionMenu toggle 1
+                          session_unmapped launcher-handoff ;;
     # Live mode swap: switch while the view is open (gxde-launcher
     # launchersys.cpp:238-246). The query must carry across both ways.
     launcher-modeswap)    call launcher switchMode mini 1
@@ -786,16 +826,33 @@ run_scene() {
                           call launcher toggle 0.5
                           call launcher switchMode fullscreen 0.8 ;;
     control-center)       toggle controlCenter toggle 1.5 control-center ;;
-    # Quick-switch row: inject a real click on the first switch cell
-    # (bottom-left of the quick-control strip) and compare before/after.
-    cc-switch)            call controlCenter toggle 1.5
+    # Quick-switch cell: on the basic page, click the 性能模式 switch, found by
+    # objectName because its cell follows the user's shortcut list, assert it
+    # turned on, then click again to restore. Performance mode is in-memory
+    # state with no hardware behind it, so the click is the only variable.
+    cc-switch)            call controlCenter quickPage basic 1.5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
-                          qs -p "$REPO" ipc call debug hit opened 1610 1015 > "$WORK/logs/cc-switch-hit.txt" 2>&1 || true
-                          shot cc-switch-before
-                          "$VINPUT" vinput click 1610 1015 2>>"$WORK/logs/vinput.log" || true
-                          sleep 1.2
-                          shot cc-switch-after
-                          qs -p "$REPO" ipc call debug opened 1 > "$WORK/logs/cc-switch-opened.txt" 2>&1 || true
+                          SW=quickSwitch-PerformanceMode
+                          swhot() { qs -p "$REPO" ipc call debug get cc-HEADLESS-1 "$SW" hot 2>&1; }
+                          read -r SWX SWY < <(item_centre cc-HEADLESS-1 "$SW")
+                          if [ -z "${SWX:-}" ]; then
+                            echo "FAIL cc-switch: $SW not found on the basic page"
+                            SCENE_FAIL=1
+                          else
+                            qs -p "$REPO" ipc call debug hit opened "$SWX" "$SWY" > "$WORK/logs/cc-switch-hit.txt" 2>&1 || true
+                            SWH0=$(swhot)
+                            shot cc-switch-before
+                            "$VINPUT" vinput click "$SWX" "$SWY" 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            shot cc-switch-after
+                            SWH1=$(swhot)
+                            "$VINPUT" vinput click "$SWX" "$SWY" 2>>"$WORK/logs/vinput.log" || true
+                            sleep 1.2
+                            SWH2=$(swhot)
+                            echo "cc-switch: $SW at $SWX,$SWY hot $SWH0 -> $SWH1 -> $SWH2"
+                            [ "$SWH0" = false ] && [ "$SWH1" = true ] || { echo "FAIL cc-switch: click did not turn $SW on ($SWH0 -> $SWH1)"; SCENE_FAIL=1; }
+                            [ "$SWH2" = false ] || { echo "FAIL cc-switch: second click did not turn $SW off ($SWH2)"; SCENE_FAIL=1; }
+                          fi
                           call controlCenter toggle 0.5 ;;
     # Page-indicator chevron clicks. The dots row (and thus the chevrons'
     # x) shifts with pageCount — probe the indicator row for the actual
@@ -1046,9 +1103,13 @@ PYEOF
                             # highlight. Assert both the flickable's real
                             # contentY (describe prints it) and content-region
                             # pixels — the rail column is outside the region.
-                            qs -p "$REPO" ipc call debug opened 16 > "$WORK/logs/cc-tree-after-click.txt" 2>&1 || true
-                            if ! { grep -v hidden "$WORK/logs/cc-tree-after-click.txt" | grep -Eq "interactive:true contentY:[1-9][0-9]{2,}/"; }; then
-                              echo "FAIL settings-tree: rail click did not scroll content (contentY ~0)"
+                            # Read contentY itself: a depth-16 tree dump of a
+                            # settings page with many tabs loaded overflows the
+                            # IPC socket and the grep then saw nothing.
+                            RAIL_CY=$(qs -p "$REPO" ipc call debug get cc-HEADLESS-1 settingsContentScroll contentItem.contentY 2>&1)
+                            echo "settings-tree: contentY after rail click: $RAIL_CY" >> "$WORK/logs/cc-hit.txt"
+                            if ! awk -v y="$RAIL_CY" 'BEGIN { exit !(y + 0 >= 100) }'; then
+                              echo "FAIL settings-tree: rail click did not scroll content (contentY=$RAIL_CY)"
                               SCENE_FAIL=1
                             fi
                             python3 - "$OUT/settings-tree.png" "$OUT/settings-click.png" >> "$WORK/logs/cc-hit.txt" 2>&1 <<'PYEOF' || SCENE_FAIL=1
@@ -1370,12 +1431,8 @@ PYEOF
                          # describe(): "<type> WxH @x,y" in scene coords — on
                          # the single 1920 output that equals screen coords.
                          fxy() { # <objectName> → "cx cy" screen centre, or ""
-                           local d w h x y
-                           d=$(qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null)
-                           echo "$1 → $d" >> "$WORK/logs/subpage-find.txt"
-                           case "$d" in *hidden*|*"no item"*) return;; esac
-                           read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
-                           [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
+                           qs -p "$REPO" ipc call debug find "$SROOT" "$1" 2>/dev/null | sed "s|^|$1 → |" >> "$WORK/logs/subpage-find.txt"
+                           item_centre "$SROOT" "$1"
                          }
                          read RX RY < <(fxy nextPage-barWidgets)
                          if [ -z "${RX:-}" ]; then
@@ -1451,18 +1508,15 @@ PYEOF
                          SROOT=cc-HEADLESS-1
                          SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
                          fxy() { # <objectName> → "cx cy" screen centre, or ""
-                           local d w h x y
+                           local r c
                            # Dialog buttons live on the popupMenuWindow surface
                            # (dialogs are hosted there for the blur region);
                            # editor tiles live under the cc panel root.
                            for r in "$SROOT" popupMenuWindow-HEADLESS-1; do
-                             d=$(qs -p "$REPO" ipc call debug find "$r" "$1" 2>/dev/null)
-                             echo "$r $1 → $d" >> "$WORK/logs/reset-find.txt"
-                             case "$d" in *hidden*|*"no item"*|"") ;; *) break;; esac
+                             c=$(item_centre "$r" "$1")
+                             echo "$r $1 → ${c:-none}" >> "$WORK/logs/reset-find.txt"
+                             [ -n "$c" ] && { echo "$c"; return; }
                            done
-                           case "$d" in *hidden*|*"no item"*|"") return;; esac
-                           read w h x y < <(echo "$d" | sed -n 's/.* \([0-9][0-9]*\)x\([0-9][0-9]*\) @\([0-9][0-9]*\),\([0-9][0-9]*\).*/\1 \2 \3 \4/p')
-                           [ -n "${x:-}" ] && echo $((x + w / 2)) $((y + h / 2))
                          }
                          # Assert the on-disk Clock entry is back to defaults:
                          # seeded clockColor/lineSpacing must be gone. FileView
@@ -1587,7 +1641,11 @@ PYEOF
     # settings-<tab> or settings-<tab>/<sub>: subtab names go through IPC
     # openTab ("tab/sub"); the shot filename flattens the slash.
     settings-*)           call settings openTab "${1#settings-}" 5; shot "$(echo "$1" | tr '/' '_')"; call settings toggle 2 ;;
-    session-menu)         toggle sessionMenu toggle 1.5 session-menu ;;
+    # Closing must unmap the full-screen overlay surface: a closed but mapped
+    # menu is invisible and still takes every click and key on the screen.
+    session-menu)         toggle sessionMenu toggle 1.5 session-menu
+                          sleep 0.5
+                          session_unmapped session-menu ;;
     notification)         notify-send -a nosdshell-verify "Baseline notification" \
                             "This is the default notification look." 2>/dev/null
                           sleep 0.8; shot notification ;;

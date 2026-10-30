@@ -368,11 +368,15 @@ NBox {
           // Reserve space for other elements: count indicator, combo box (~200), button (~50), and margins
           // Use a reasonable maximum that leaves room for controls on the right
           // On smaller screens, use a smaller percentage to ensure controls fit
-          var rowLayout = parent;
-          if (rowLayout && rowLayout.width > 0) {
+          // The row's width is derived from the editor's, not read off the
+          // row: the row resizes while it arranges its children, and a
+          // constraint that follows it re-triggers the arrangement
+          // ("Detected recursive rearrange").
+          var rowWidth = root.width - 2 * Style.marginL - Style.marginS;
+          if (rowWidth > 0) {
             // Use smaller percentage on smaller screens, but ensure minimum space for text
             var minWidth = 150 * Style.uiScaleRatio;
-            var maxWidth = rowLayout.width < 600 ? rowLayout.width * 0.35 : rowLayout.width * 0.4;
+            var maxWidth = rowWidth < 600 ? rowWidth * 0.35 : rowWidth * 0.4;
             return Math.max(minWidth, maxWidth);
           }
           return 250 * Style.uiScaleRatio;
@@ -741,12 +745,16 @@ NBox {
         opacity: 0
         visible: opacity > 0
         z: 1999
+        // Set by the drag handlers; the pulse runs only while it is set and
+        // motion is not reduced. Under reduced motion the handlers' opacity 1
+        // shows the indicator without the pulse. (Binding `paused` instead
+        // warned "setPaused() cannot be used when animation isn't running"
+        // every time reduced motion turned on outside a drag.)
+        property bool pulsing: false
 
         SequentialAnimation on opacity {
           id: pulseAnimation
-          running: false
-          // Started from the drag handlers; never under reduced motion.
-          paused: Style.reduceMotion
+          running: dropIndicator.pulsing && !Style.reduceMotion
           loops: Animation.Infinite
           NAnim {
             to: 1
@@ -811,7 +819,7 @@ NBox {
         function updateDropIndicator(mouseX, mouseY) {
           if (!dragStarted || draggedIndex === -1) {
             dropIndicator.opacity = 0;
-            pulseAnimation.running = false;
+            dropIndicator.pulsing = false;
             return;
           }
 
@@ -874,7 +882,7 @@ NBox {
             // Don't show if it's the same position
             if (adjustedIndex === draggedIndex) {
               dropIndicator.opacity = 0;
-              pulseAnimation.running = false;
+              dropIndicator.pulsing = false;
               dropTargetIndex = -1;
               return;
             }
@@ -884,13 +892,11 @@ NBox {
               dropIndicator.x = bestPosition.x;
               dropIndicator.y = bestPosition.y;
               dropIndicator.opacity = 1;
-              if (!pulseAnimation.running) {
-                pulseAnimation.running = true;
-              }
+              dropIndicator.pulsing = true;
             }
           } else {
             dropIndicator.opacity = 0;
-            pulseAnimation.running = false;
+            dropIndicator.pulsing = false;
             dropTargetIndex = -1;
           }
         }
@@ -905,7 +911,7 @@ NBox {
           draggedModelData = null;
           isOverButtonArea = false;
           dropIndicator.opacity = 0;
-          pulseAnimation.running = false;
+          dropIndicator.pulsing = false;
           dragGhost.width = 0;
         }
 

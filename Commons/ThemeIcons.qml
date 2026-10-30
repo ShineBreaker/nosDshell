@@ -193,7 +193,9 @@ Singleton {
     const themed = fashionForAny(["deepin-launcher", "start-here"]);
     if (themed !== "")
       return themed;
-    return Quickshell.shellDir + "/Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg";
+    // A URL, not a bare path: Quickshell's IconImage resolves a bare path
+    // against its own qrc: location and fails to open it.
+    return "file://" + Quickshell.shellDir + "/Assets/DDE/deepin-icon-theme/deepin/places/96/deepin-launcher.svg";
   }
 
   // --- Lookup Helpers ---

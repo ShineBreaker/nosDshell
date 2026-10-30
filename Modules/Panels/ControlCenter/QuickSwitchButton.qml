@@ -32,6 +32,10 @@ Item {
 
   readonly property var widgetMeta: ControlCenterWidgetRegistry.widgetMetadata[widgetId] ?? {}
 
+  // Scripted lookup by switch (`debug find cc-<screen> quickSwitch-<id>`):
+  // the cell's place on the page moves with the user's shortcut list.
+  objectName: "quickSwitch-" + widgetId
+
   signal clicked
   signal rightClicked
   signal middleClicked

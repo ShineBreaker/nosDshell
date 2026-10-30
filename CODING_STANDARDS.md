@@ -99,6 +99,11 @@
 - 面板、气泡、菜单、抽屉要避让贴边外壳条带时，不要自己用 `getBarPositionForScreen` + `getBarHeightForScreen` 或 `efficient ? Style.barHeight : Style.dockItemThickness` 拼厚度：时尚模式下无状态栏时 `hasBarOnScreen` 为 false、位置函数又回退到任务栏边，算出来要么为 0 要么只有状态栏密度高，dock 会压住表面。一律用 `BarService` 的四个边距函数，按语义选：`edgeClearance`（要避开的全部占用：条带窗口 + 浮动 margin + 框条模式环带，气泡/菜单/OSD 用这个）、`edgeStripThickness`（只要窗口并集厚度，菜单贴着宿主的偏移用这个）、`edgeBarThickness`（只要栏窗口，dock 允许压上去的面板如 edge sheet 用这个）、`edgeReservedThickness`（栏真正占的工作区）。挂件内部的 `barHeight` 尺寸不在此列，那是组件自身大小，不是避让量。
 - 可交互 item 上的 `layer.enabled` 不要绑到会在交互过程中翻转的状态（滚动位置、悬停、选中项、动画中的尺寸）。开关一次 layer 就会销毁并重建盖在 item 上的 effect item，翻转恰好落在按下与松开之间时，这次点击整个丢失，不报错，只能统计复现。layer 的开关条件只用变化缓慢的结构性状态（例如"内容能否滚动"），随交互变化的部分放进 effect 的参数里。再有，遮罩源不能是被 layer 的 item 自己的后代，否则 layer 会采样自身，第一帧之后不再重绘。例子见 `Widgets/NScrollEdgeMask.qml` 的 `needed`，以及 `NScrollView` 把 layer 放在内层 Flickable 上的做法。
 - `MouseArea` 的 `onWheel` 里"放行"（让下层 item 继续收到滚轮）必须显式写 `event.accepted = false` 再 `return`，只 `return` 或条件不命中让它掉到函数末尾都不算放行：niri 的滚轮事件到达时默认 accepted，事件就此终止，sway 下却会穿透，差异只在 niri 上暴露。所有盖在可滚内容上、只想旁观滚轮的 `NoButton` 覆盖层都遵守这条；消费滚轮时显式 `event.accepted = true`。例子见 `Widgets/NScrollView.qml` 的滚轮覆盖层和 `SettingsModuleView` 的 takeover 层。
+- `ScrollView`（包括 `NScrollView`）里只有一个内容子项时，它按这个子项的隐式尺寸推算 `contentWidth` 和 `contentHeight`。内容子项有两个或更多时（比如内容列旁边再放一个旁观滚轮的覆盖层），推算结果不可靠，可能读出 0，滚动和边缘淡出随之失效且不报错。这种情况下显式写 `contentWidth` 和 `contentHeight`。`lint.sh` 里的 `check-scrollview-content.py` 拦截缺 `contentHeight` 的写法。例子见 `SettingsModuleView` 的 `settingsContentScroll`。
+- `Connections` 的 `target` 要等运行时才赋值时，声明处写 `target: null`。不写时 `target` 默认是父项，父项没有对应信号就会报 `Detected function "onXxx" in Connections element`。
+- 布局约束（`Layout.maximumWidth` 这类附加属性、padding）不要读取它所在布局自己的尺寸：布局排列子项时自身尺寸也在变，约束跟着变就会重新触发排列，Qt 报 `Detected recursive rearrange` 后放弃。从外层固定的尺寸推算，例子见 `NSectionEditor` 标题列的 `maximumWidth`。约束确实要看排列结果时（内容溢出才给滚动条留宽度，而留宽又改变内容高度），用 `Qt.callLater` 推迟一拍再更新，见 `NScrollView` 的 `_reserveVertical`，否则会报 `Binding loop detected`。
+- 不经 `SmartPanel`、自己管理显隐的 `PanelWindow`（全屏启动器、会话菜单这类 overlay 表面），关闭时要在淡出结束后把窗口的 `visible` 置为 false。只把内容淡成透明而窗口仍映射时，这块表面看不见，却继续接收整屏的点击，独占键盘焦点时连按键也一起拿走。做法统一为：关闭时启动一个时长为淡出时长加 30 ms 的计时器，窗口在计时器运行期间保持映射，到点再取消映射。例子见 `LauncherFullscreenWindow` 和 `SessionMenu` 的 `closeTimer`。
+- 交给 Quickshell 组件（`IconImage` 等）的图片地址要写成 `file://` 开头的 URL。裸路径会按组件自己所在的 `qrc:` 位置解析，加载失败。仓库里的 QML 文件自己的 `Image` 不受影响，因为它们按 `file:` 位置解析。
 
 ## 界面文字
 
