@@ -112,7 +112,7 @@ Item {
 
     const step = delta * root.wheelScrollMultiplier;
 
-    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled) {
+    if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion) {
       gridView.contentY = root.clampScrollY(gridView.contentY - step);
       root._wheelTargetY = gridView.contentY;
       return;
@@ -124,14 +124,14 @@ Item {
     root._wheelTargetY = root.clampScrollY(root._wheelTargetY - step);
     wheelScrollAnimation.to = root._wheelTargetY;
     wheelScrollAnimation.duration = Style.motionScrollWheel;
-    wheelScrollAnimation.easing.type = Easing.OutQuint;
+    wheelScrollAnimation.curve = "swift";
     wheelScrollAnimation.restart();
   }
 
   function animateToContentY(targetY) {
     const clampedY = root.clampScrollY(targetY);
 
-    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled || gridView.dragging || gridView.flicking) {
+    if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion || gridView.dragging || gridView.flicking) {
       gridView.contentY = clampedY;
       root._wheelTargetY = clampedY;
       return;
@@ -140,7 +140,7 @@ Item {
     root._wheelTargetY = clampedY;
     wheelScrollAnimation.to = clampedY;
     wheelScrollAnimation.duration = Style.motionProgramScroll;
-    wheelScrollAnimation.easing.type = Easing.OutQuad;
+    wheelScrollAnimation.curve = "out";
     wheelScrollAnimation.restart();
   }
 
@@ -294,7 +294,7 @@ Item {
         visible: root.showGradientMasks && root.contentOverflows
         opacity: (gridView.contentY <= 1 || root.selectionOnFirstVisibleRow) ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
+          NAnim { duration: Style.motionPointer; curve: "swift" }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: root.gradientColor }
@@ -316,7 +316,7 @@ Item {
         visible: root.showGradientMasks && root.contentOverflows
         opacity: ((gridView.contentY + gridView.height >= gridView.contentHeight - 1) || root.selectionOnLastVisibleRow) ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
+          NAnim { duration: Style.motionPointer; curve: "swift" }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: "transparent" }
@@ -385,18 +385,18 @@ Item {
 
     Transition {
       id: moveTransitionImpl
-      NumberAnimation {
+      NAnim {
         properties: "x,y"
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
     Transition {
       id: displacedTransitionImpl
-      NumberAnimation {
+      NAnim {
         properties: "x,y"
-        duration: Style.animationNormal
-        easing.type: Easing.InOutCubic
+        duration: Style.motionExpand
+        curve: "expand"
       }
     }
 
@@ -406,12 +406,12 @@ Item {
     // Enable flickable for smooth scrolling
     boundsBehavior: Flickable.StopAtBounds
 
-    NumberAnimation {
+    NAnim {
       id: wheelScrollAnimation
       target: gridView
       property: "contentY"
       duration: root.smoothWheelAnimationDuration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
 
     onDraggingChanged: {
@@ -457,8 +457,9 @@ Item {
         opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollBarActive ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
+          NAnim {
+            duration: Style.motionPointer
+            curve: "swift"
           }
         }
       }
@@ -471,8 +472,9 @@ Item {
         radius: root.handleRadius / 2
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
+          NAnim {
+            duration: Style.motionPointer
+            curve: "swift"
           }
         }
       }

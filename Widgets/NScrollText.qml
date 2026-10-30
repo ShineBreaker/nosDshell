@@ -38,7 +38,7 @@ Item {
 
   property real waitBeforeScrolling: 1000
   property real scrollCycleDuration: Math.max(4000, root.text.length * 120)
-  property real resettingDuration: 300
+  property real resettingDuration: Style.motionProgramScroll
 
   // Stepped marquee: avoids NumberAnimation.Infinite (~every vsync). ~17ms ≈ 60 updates/s.
   property int scrollTickIntervalMs: 16
@@ -182,11 +182,11 @@ Item {
       }
     }
 
-    NumberAnimation on x {
+    NAnim on x {
       running: root.state === NScrollText.ScrollState.Resetting
       to: 0
       duration: root.resettingDuration
-      easing.type: Easing.OutQuad
+      curve: "out"
       onFinished: {
         root.state = NScrollText.ScrollState.None;
         root.updateState();

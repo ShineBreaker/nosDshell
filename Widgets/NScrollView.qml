@@ -51,7 +51,7 @@ ScrollView {
     const flickable = root._internalFlickable;
     const step = delta * root.wheelScrollMultiplier;
 
-    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled) {
+    if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion) {
       flickable.contentY = root.clampScrollY(flickable.contentY - step);
       root._wheelTargetY = flickable.contentY;
       return;
@@ -63,7 +63,7 @@ ScrollView {
     root._wheelTargetY = root.clampScrollY(root._wheelTargetY - step);
     wheelScrollAnimation.to = root._wheelTargetY;
     wheelScrollAnimation.duration = Style.motionScrollWheel;
-    wheelScrollAnimation.easing.type = Easing.OutQuint;
+    wheelScrollAnimation.curve = "swift";
     wheelScrollAnimation.restart();
   }
 
@@ -95,7 +95,7 @@ ScrollView {
         visible: root.showGradientMasks && root.verticalScrollable
         opacity: root.contentItem.contentY <= 1 ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
+          NAnim { duration: Style.motionPointer; curve: "swift" }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: root.gradientColor }
@@ -116,7 +116,7 @@ ScrollView {
         visible: root.showGradientMasks && root.verticalScrollable
         opacity: (root.contentItem.contentY + root.contentItem.height >= root.contentItem.contentHeight - 1) ? 0 : 1
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
+          NAnim { duration: Style.motionPointer; curve: "swift" }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: "transparent" }
@@ -129,12 +129,12 @@ ScrollView {
   // Reference to the internal Flickable for wheel handling
   property Flickable _internalFlickable: null
 
-  NumberAnimation {
+  NAnim {
     id: wheelScrollAnimation
     target: root._internalFlickable
     property: "contentY"
     duration: root.smoothWheelAnimationDuration
-    easing.type: Easing.OutCubic
+    curve: "out"
   }
 
   Connections {
@@ -241,8 +241,9 @@ ScrollView {
       opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
 
       Behavior on opacity {
-        NumberAnimation {
-          duration: Style.animationFast
+        NAnim {
+          duration: Style.motionPointer
+          curve: "swift"
         }
       }
     }
@@ -255,8 +256,9 @@ ScrollView {
       radius: root.handleRadius / 2
 
       Behavior on opacity {
-        NumberAnimation {
-          duration: Style.animationFast
+        NAnim {
+          duration: Style.motionPointer
+          curve: "swift"
         }
       }
     }
@@ -278,8 +280,9 @@ ScrollView {
       opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.horizontalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
 
       Behavior on opacity {
-        NumberAnimation {
-          duration: Style.animationFast
+        NAnim {
+          duration: Style.motionPointer
+          curve: "swift"
         }
       }
     }
@@ -292,8 +295,9 @@ ScrollView {
       radius: root.handleRadius / 2
 
       Behavior on opacity {
-        NumberAnimation {
-          duration: Style.animationFast
+        NAnim {
+          duration: Style.motionPointer
+          curve: "swift"
         }
       }
     }

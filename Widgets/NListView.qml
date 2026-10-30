@@ -102,7 +102,7 @@ Item {
     if (root.horizontalOverflows) {
       const step = delta * root.wheelScrollMultiplier;
 
-      if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled) {
+      if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion) {
         listView.contentX = root.clampScrollX(listView.contentX - step);
         root._wheelTargetX = listView.contentX;
         return;
@@ -114,7 +114,7 @@ Item {
       root._wheelTargetX = root.clampScrollX(root._wheelTargetX - step);
       wheelScrollAnimationX.to = root._wheelTargetX;
       wheelScrollAnimationX.duration = Style.motionScrollWheel;
-      wheelScrollAnimationX.easing.type = Easing.OutQuint;
+      wheelScrollAnimationX.curve = "swift";
       wheelScrollAnimationX.restart();
       return;
     }
@@ -123,7 +123,7 @@ Item {
 
     const step = delta * root.wheelScrollMultiplier;
 
-    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled) {
+    if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion) {
       listView.contentY = root.clampScrollY(listView.contentY - step);
       root._wheelTargetY = listView.contentY;
       return;
@@ -135,14 +135,14 @@ Item {
     root._wheelTargetY = root.clampScrollY(root._wheelTargetY - step);
     wheelScrollAnimation.to = root._wheelTargetY;
     wheelScrollAnimation.duration = Style.motionScrollWheel;
-    wheelScrollAnimation.easing.type = Easing.OutQuint;
+    wheelScrollAnimation.curve = "swift";
     wheelScrollAnimation.restart();
   }
 
   function animateToContentY(targetY) {
     const clampedY = root.clampScrollY(targetY);
 
-    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled || listView.dragging || listView.flicking) {
+    if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion || listView.dragging || listView.flicking) {
       listView.contentY = clampedY;
       root._wheelTargetY = clampedY;
       return;
@@ -151,7 +151,7 @@ Item {
     root._wheelTargetY = clampedY;
     wheelScrollAnimation.to = clampedY;
     wheelScrollAnimation.duration = Style.motionProgramScroll;
-    wheelScrollAnimation.easing.type = Easing.OutQuad;
+    wheelScrollAnimation.curve = "out";
     wheelScrollAnimation.restart();
   }
 
@@ -198,7 +198,7 @@ Item {
   function animateToContentX(targetX) {
     const clampedX = root.clampScrollX(targetX);
 
-    if (!Settings.data.general.smoothScrollEnabled || Settings.data.general.animationDisabled || listView.dragging || listView.flicking) {
+    if (!Settings.data.general.smoothScrollEnabled || Style.reduceMotion || listView.dragging || listView.flicking) {
       listView.contentX = clampedX;
       root._wheelTargetX = clampedX;
       return;
@@ -207,7 +207,7 @@ Item {
     root._wheelTargetX = clampedX;
     wheelScrollAnimationX.to = clampedX;
     wheelScrollAnimationX.duration = Style.motionProgramScroll;
-    wheelScrollAnimationX.easing.type = Easing.OutQuad;
+    wheelScrollAnimationX.curve = "out";
     wheelScrollAnimationX.restart();
   }
 
@@ -282,7 +282,7 @@ Item {
           return 1;
         }
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
+          NAnim { duration: Style.motionPointer; curve: "swift" }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: root.gradientColor }
@@ -308,7 +308,7 @@ Item {
           return 1;
         }
         Behavior on opacity {
-          NumberAnimation { duration: Style.animationFast; easing.type: Easing.OutCubic }
+          NAnim { duration: Style.motionPointer; curve: "swift" }
         }
         gradient: Gradient {
           GradientStop { position: 0.0; color: "transparent" }
@@ -391,20 +391,20 @@ Item {
     clip: true
     boundsBehavior: Flickable.StopAtBounds
 
-    NumberAnimation {
+    NAnim {
       id: wheelScrollAnimation
       target: listView
       property: "contentY"
       duration: root.smoothWheelAnimationDuration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
 
-    NumberAnimation {
+    NAnim {
       id: wheelScrollAnimationX
       target: listView
       property: "contentX"
       duration: root.smoothWheelAnimationDuration
-      easing.type: Easing.OutCubic
+      curve: "out"
     }
 
     onDraggingChanged: {
@@ -446,8 +446,9 @@ Item {
         opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollBarActive ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
+          NAnim {
+            duration: Style.motionPointer
+            curve: "swift"
           }
         }
       }
@@ -460,8 +461,9 @@ Item {
         radius: root.handleRadius / 2
 
         Behavior on opacity {
-          NumberAnimation {
-            duration: Style.animationFast
+          NAnim {
+            duration: Style.motionPointer
+            curve: "swift"
           }
         }
       }
