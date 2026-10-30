@@ -10,6 +10,25 @@
 
 ## [Unreleased]
 
+## [1.6.4] - 2026-10-30
+
+这一版修掉一个困扰已久的"幽灵换肤"：主题总是在计划时间之外自己翻动，一天里能来回
+好几次。根因是亮暗调度有两个权威——shell 按你设的手动时刻走，portal 守护进程却另
+按经纬度的日出日落各走一套，谁的断言后到谁"赢"，每次覆盖都会连带刷新整套系统主题。
+现在调度权全局只有一个所有者，两个方向的行为也都顺了：跟随系统时由守护进程执掌太
+阳时边界，其余模式由 shell 说了算，手动切换不再被定时复查悄悄踩回去。
+
+---
+
+### 修复
+
+- harden client race, hook dedup, and polar solar mode：[`c3992ecc3`](https://github.com/ShineBreaker/nosDshell/commit/c3992ecc360bd7e89f213c090a5b1e83a04aba8f)
+- gate the daemon's solar timer behind single-owner policy：[`8a2078a75`](https://github.com/ShineBreaker/nosDshell/commit/8a2078a75b3c43b35d38c519084b16b65833e828)
+
+### 验证
+
+- add dark-mode-flag scene and pin in-tree helpers on PATH：[`329b2e6d1`](https://github.com/ShineBreaker/nosDshell/commit/329b2e6d1084ff5bd723cd95e6c32b107770d9c1)
+
 ## [1.6.3] - 2026-10-27
 
 控制中心与设置里的模块图标终于成了一家人：此前 DDE 原版剪影、仓库自绘仿品和
@@ -553,7 +572,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.3...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.4...HEAD
+[1.6.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.2...v1.6.3
 [1.6.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.1...v1.6.2
 [1.6.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.0...v1.6.1
