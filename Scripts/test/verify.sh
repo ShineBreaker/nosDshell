@@ -228,7 +228,7 @@ set -uo pipefail
 cd "$WORK"
 
 SCENES_ORDER="idle taskbar launcher launcher-search launcher-category launcher-mini launcher-dismiss launcher-modeswap launcher-handoff
-control-center cc-switch cc-page cc-slider cc-notifications cc-notif-groups cc-notif-focus cc-quick-wifi
+control-center cc-switch cc-page cc-slider cc-notifications cc-notif-focus cc-notif-groups cc-quick-wifi
 cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
 cc-collapse cc-geom settings-cc-pages
 settings edge-fade session-menu notification
@@ -849,12 +849,6 @@ run_scene() {
                           notify-send -a nosdshell-verify "Notification three" \
                             "Third body with an action" 2>/dev/null
                           sleep 1; toggle controlCenter notifications 1.5 cc-notifications ;;
-    # Multi-app, multi-day grouping exercise. The history file is seeded
-    # before qs launches (see the NOSD_NOTIF_HISTORY_FILE block above), so
-    # this scene only drives the UI: collapsed buckets → expanded group →
-    # swipe-dismiss → clear-all. Anchor items carry objectName markers
-    # (notifCard / notifMore / notifClearAll); debug tree prints global
-    # coords, so their centres are direct click points.
     # Keyboard focus ring on a notification card (DESIGN §1.11): the list's
     # focusIndex is arrow-key driven; with no key injection, set it through
     # `debug set` to the first row whose descriptor is a notification.
@@ -865,52 +859,67 @@ run_scene() {
                             case "$k" in *notif*) FI=$i; break ;; esac
                           done
                           echo "first notification row: $FI"
+                          qs -p "$REPO" ipc call debug set cc-HEADLESS-1 notifHistoryList keyboardFocus true
                           qs -p "$REPO" ipc call debug set cc-HEADLESS-1 notifHistoryList focusIndex "$FI"
                           sleep 1
                           shot cc-notif-focus
                           convert "$OUT/cc-notif-focus.png" -crop 420x360+1500+60 +repage "$OUT/cc-notif-focus-crop.png"
                           [ "$FI" -ge 0 ] || { echo "FAIL cc-notif-focus: no notification row"; SCENE_FAIL=1; }
                           call controlCenter notifications 0.5 ;;
+    # Multi-app, multi-day grouping exercise. The history file is seeded
+    # before qs launches (see the NOSD_NOTIF_HISTORY_FILE block above), so
+    # this scene only drives the UI: collapsed buckets → expanded group →
+    # swipe-dismiss → clear-all. Anchor items carry objectName markers
+    # (notifCard / notifMore / notifClearAll); debug findAll prints global
+    # coords, so their centres are direct click points.
     cc-notif-groups)      call controlCenter notifications 1.5
                           VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
                           [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
                           notif_pos() {
-                            python3 - "$WORK/logs/cc-notif-tree.txt" "$1" <<'PYEOF'
+                            python3 - "$WORK/logs/cc-notif-tree.txt" "$1" "${2:-centre}" <<'PYEOF'
 import re,sys
 name=sys.argv[2]
+# "words": 20 px in from the left edge, where a label's text starts.
+words=sys.argv[3]=="words"
 for line in open(sys.argv[1],encoding="utf-8",errors="replace"):
     if "hidden" in line:
         continue
     m=re.search(r"@(-?\d+),(-?\d+)",line); w=re.search(r" (\d+)x(\d+) ",line)
     if m and w and ('"%s"' % name) in line:
-        print(int(m.group(1))+int(w.group(1))//2, int(m.group(2))+int(w.group(2))//2)
+        print(int(m.group(1))+(20 if words else int(w.group(1))//2), int(m.group(2))+int(w.group(2))//2)
         break
 PYEOF
                           }
                           notif_tree() {
-                            # The anchors sit ~19 levels deep; the IPC call
-                            # occasionally drops its socket mid-write, so give
-                            # it a second try before giving up on the marks.
-                            for try in 1 2; do
-                              qs -p "$REPO" ipc call debug tree cc-HEADLESS-1 20 \
-                                > "$WORK/logs/cc-notif-tree.txt" 2>&1 \
-                                && grep -q notifCard "$WORK/logs/cc-notif-tree.txt" && return 0
-                              sleep 0.5
+                            # findAll, not `debug tree`: a tree deep enough
+                            # to reach the anchors (~19 levels) overflows the
+                            # IPC socket and the call drops (PeerClosedError).
+                            : > "$WORK/logs/cc-notif-tree.txt"
+                            for n in notifMore notifCard notifClearAll; do
+                              qs -p "$REPO" ipc call debug findAll cc-HEADLESS-1 "$n" \
+                                >> "$WORK/logs/cc-notif-tree.txt" 2>&1
+                              echo >> "$WORK/logs/cc-notif-tree.txt"
                             done
-                            return 1
+                            grep -q notifCard "$WORK/logs/cc-notif-tree.txt"
                           }
                           notif_tree
                           shot cc-notif-groups
                           # Expand the first collapsed group via "还有 N 条".
-                          MORE=$(notif_pos notifMore)
+                          # Click the words, not the middle of the full-width
+                          # label: that is where a user clicks.
+                          MORE=$(notif_pos notifMore words)
                           if [ -n "$MORE" ]; then
                             qs -p "$REPO" ipc call debug hit opened $MORE >> "$WORK/logs/cc-notif-hit.txt" 2>&1 || true
                             "$VINPUT" vinput click $MORE 2>>"$WORK/logs/vinput.log" || true
                             sleep 1.2
+                            EG=$(qs -p "$REPO" ipc call debug get cc-HEADLESS-1 notifHistoryList expandedGroup 2>&1)
+                            FX=$(qs -p "$REPO" ipc call debug get cc-HEADLESS-1 notifHistoryList focusIndex 2>&1)
+                            echo "cc-notif-groups: expandedGroup=$EG focusIndex=$FX after clicking $MORE"
+                            [ -n "$EG" ] || { echo "FAIL cc-notif-groups: clicking the more-label did not expand the group"; SCENE_FAIL=1; }
                             notif_tree
                             shot cc-notif-group-open
                           else
-                            echo "cc-notif-groups: no collapsed group found" >> "$WORK/logs/vinput.log"
+                            echo "FAIL cc-notif-groups: no collapsed group found"; SCENE_FAIL=1
                           fi
                           # Swipe-dismiss the first visible card: a horizontal
                           # drag well past max(110, 30% width).
@@ -921,8 +930,11 @@ PYEOF
                               2>>"$WORK/logs/vinput.log" || true
                             sleep 1.2
                             shot cc-notif-swiped
+                            # A mouse-made selection draws no focus ring (§1.11).
+                            KF=$(qs -p "$REPO" ipc call debug get cc-HEADLESS-1 notifHistoryList keyboardFocus 2>&1)
+                            [ "$KF" = false ] || { echo "FAIL cc-notif-groups: keyboardFocus=$KF after a swipe, want false"; SCENE_FAIL=1; }
                           else
-                            echo "cc-notif-groups: no notifCard found" >> "$WORK/logs/vinput.log"
+                            echo "FAIL cc-notif-groups: no notifCard found"; SCENE_FAIL=1
                           fi
                           # Clear-all empties the list; the header row hides.
                           # The list is bottom-anchored, so every removal moves
@@ -935,7 +947,7 @@ PYEOF
                             sleep 1.2
                             shot cc-notif-cleared
                           else
-                            echo "cc-notif-groups: no notifClearAll found" >> "$WORK/logs/vinput.log"
+                            echo "FAIL cc-notif-groups: no notifClearAll found"; SCENE_FAIL=1
                           fi
                           call controlCenter toggle 0.5 ;;
     # quick-control pages: open the frame, select the page, shoot, close
