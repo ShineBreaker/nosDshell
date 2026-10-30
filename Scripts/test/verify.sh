@@ -1112,6 +1112,9 @@ PYEOF
                           EFV=$(ef get cc-HEADLESS-1 settingsContentScroll contentItem.height)
                           EFY=$(awk -v c="$EFH" -v v="$EFV" 'BEGIN { printf "%d", (c - v) / 2 }')
                           echo "edge-fade: content $EFH, viewport $EFV, parking at $EFY"
+                          # Room for both 28 px zones, or the page itself is the
+                          # problem (empty content: see settings-tree), not the fade.
+                          [ "$EFY" -ge 28 ] || { echo "FAIL edge-fade: settings content is not scrollable (contentHeight=$EFH, viewport=$EFV), cannot test the fade"; SCENE_FAIL=1; }
                           ef set cc-HEADLESS-1 settingsContentScroll contentItem.contentY "$EFY"
                           sleep 1
                           EFT=$(ef get cc-HEADLESS-1 settingsContentScroll background.children.0.topFade)
