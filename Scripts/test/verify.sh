@@ -41,7 +41,7 @@
 #   (tab names per IPCService _settingsTabMap; settings openTab <tab>)
 #   settings-subpage is off the default set (needs its own seed — see the
 #   scene comment): drives the §3.5.3 二级页 rows on the dock tab.
-#   motion-* scenes (motion-popup, motion-cc, motion-launcher, motion-osd,
+#   motion-* scenes (motion-popup, motion-cc, motion-panel, motion-launcher, motion-osd,
 #   motion-bubble, motion-toast, motion-press, motion-switch) are off the
 #   default set: run them through Scripts/test/motion.sh, which stretches
 #   the durations and turns each burst into filmstrip/curve/metrics.
@@ -2759,6 +2759,14 @@ PYEOF
                           burst_start motion-cc-close "1440,0 480x1080"; burst_mark
                           qs -p "$REPO" ipc call controlCenter toggle > /dev/null
                           burst_stop "$(motion_secs 400)" ;;
+    # SmartPanel arrow popup opened over IPC (no pointer anchor): fade on
+    # the popover curve; the region covers the screen at half size.
+    motion-panel)         burst_start motion-panel-open full; burst_mark
+                          qs -p "$REPO" ipc call volume togglePanel > /dev/null
+                          burst_stop "$(motion_secs 500)"
+                          burst_start motion-panel-close full; burst_mark
+                          qs -p "$REPO" ipc call volume togglePanel > /dev/null
+                          burst_stop "$(motion_secs 400)" ;;
     motion-launcher)      burst_start motion-launcher-open full; burst_mark
                           qs -p "$REPO" ipc call launcher toggle > /dev/null
                           burst_stop "$(motion_secs 500)"
@@ -2829,5 +2837,18 @@ ls -la "$OUT"
 
 NPNG=$(find "$OUT" -name "*.png" | wc -l)
 [ "$NPNG" -eq 0 ] && { echo "FAIL: no screenshots produced" >&2; exit 1; }
+# A config that fails to load leaves an empty desktop that still screenshots
+# fine, and a crash is silently restarted by quickshell: both must fail the
+# run on their own, whatever the scenes captured.
+if grep -q "Failed to load configuration" "$LOG"; then
+  echo "FAIL: shell configuration failed to load:" >&2
+  grep -A3 "Failed to load configuration" "$LOG" | sed 's/\x1b\[[0-9;]*m//g' | head -20 >&2
+  exit 1
+fi
+if grep -q "Quickshell has crashed" "$LOG"; then
+  echo "FAIL: quickshell crashed during the run (report under \$XDG_CACHE_HOME/quickshell/crashes):" >&2
+  grep "Quickshell has crashed" "$LOG" | sed 's/\x1b\[[0-9;]*m//g' >&2
+  exit 1
+fi
 [ "$STATUS" -ne 0 ] && exit "$STATUS"
 exit 0
