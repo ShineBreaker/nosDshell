@@ -56,6 +56,12 @@ Scripts/test/verify.sh probe --scenes idle,control-center              # 确认�
 
 `tools/nosd-helpers/target/release/nosd-helpers vinput click|jclick|scroll <x> <y> [...]` 通过 `zwlr_virtual_pointer_v1` 注入指针事件，进程存活期间虚拟指针一直有效。`verify.sh` 的隔离 sway 和 `Scripts/test/niri/` 的嵌套 niri 都支持该协议（把 `WAYLAND_DISPLAY` 指向对应 socket 即可）；用户的真实会话不要注入。`verify.sh` 的 `settings-tree` 场景是一个完整示例：先做命中探测，再注入点击，最后点外部关闭面板。
 
+判断"点击丢了"之前，先确认按下有没有进到 Qt：用 `NOSD_QT_LOGGING="qt.quick.pointer.grab=true;qt.quick.mouse.target=true"` 跑场景，按下送达时日志里会出现目标 MouseArea 的 grab 行。只有移动、没有 grab 行，说明按下在合成器或注入这一层就丢了，不是 QML 的问题。
+
+间歇性的问题要统计复现：同一组场景至少跑 3 次再下结论，基线（`git worktree` 取出的改动前提交）也跑同样次数。单次通过或失败都不能说明问题；本仓库里出现过 2/2 碰巧通过、换个时序就 4/4 失败的情况。用 `git bisect run` 二分时，每个提交只跑一次的结果同样会被间歇性问题带偏。
+
+已知问题（未解决）：控制中心关闭再打开以后，第一次注入的点击可能整次丢失。复现方法是 `verify.sh <名字> --scenes cc-switch,cc-notif-groups`：cc-notif-groups 展开分组那一下按下没有送达（上面的日志里没有 grab 行），移动事件却正常送达。改动前的基线提交上同样出现（2 次里 1 次），在点击前先移动指针再等 0.5 s 也不能消除。只开一次控制中心（例如 `cc-notifications,cc-notif-focus,cc-notif-groups`）不出现。默认全集里 cc-notif-groups 排在几个会关闭控制中心的场景之后，所以全集运行时它和随后的 dock-menu 外缘点击断言可能失败，单独运行时通过。根因还没有找到，怀疑在 sway 对 layer-shell 输入区域变化后的指针焦点处理，或者 `zwlr_virtual_pointer_v1` 的新设备上。
+
 ## 输入区域问题
 
 症状是某块区域点不动，或点击落到了别的表面上。
