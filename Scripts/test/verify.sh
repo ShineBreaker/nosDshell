@@ -515,9 +515,10 @@ toggle() { call "$1" "$2" "${3:-1.5}"; shot "$4"; call "$1" "$2" 0.5; }
 # --- motion capture (motion-* scenes; run them through Scripts/test/motion.sh,
 # which seeds general.animationSpeed so every duration is stretched by
 # NOSD_MOTION_SLOW) ----------------------------------------------------------
-# burst_start <name> <geometry>  grab frames of a region back to back until
-#   burst_stop; geometry is grim's "X,Y WxH", or "full" (whole output, half
-#   size). Frames and their capture times land in $OUT/<name>/.
+# burst_start <name> <geometry> [nosettle]  grab frames of a region back to
+#   back until burst_stop; geometry is grim's "X,Y WxH", or "full" (whole
+#   output, half size). Frames and their capture times land in $OUT/<name>/.
+#   It first waits for a still screen (motion_settle) unless told nosettle.
 # burst_mark   record the trigger time; call it right before the action.
 # burst_stop <seconds>  keep capturing that long after the trigger, stop, and
 #   run Scripts/test/motion-report.py (filmstrip.png, curve.png, metrics.json).
@@ -543,7 +544,9 @@ motion_settle() {
   echo "motion_settle: screen never stopped changing" >&2
 }
 burst_start() {
-  motion_settle
+  # Third argument "nosettle": the surface under test animates on its own
+  # (a toast's countdown bar), so the screen never goes still; skip the wait.
+  [ "${3:-}" = nosettle ] || motion_settle
   BURST_DIR="$OUT/$1"
   rm -rf "$BURST_DIR"; mkdir -p "$BURST_DIR"
   local geom=(-g "$2")
@@ -2824,7 +2827,7 @@ PYEOF
     motion-toast)         burst_start motion-toast-open "1380,0 540x220"; burst_mark
                           qs -p "$REPO" ipc call toast send '{"title":"Toast","body":"Toast motion","duration":60000}' > /dev/null
                           burst_stop "$(motion_secs 500)"
-                          burst_start motion-toast-close "1380,0 540x220"; burst_mark
+                          burst_start motion-toast-close "1380,0 540x220" nosettle; burst_mark
                           qs -p "$REPO" ipc call toast dismiss > /dev/null
                           burst_stop "$(motion_secs 400)" ;;
     # Press-and-hold on the control-center header gear (button class, §0
