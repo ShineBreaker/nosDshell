@@ -745,12 +745,16 @@ NBox {
         opacity: 0
         visible: opacity > 0
         z: 1999
+        // Set by the drag handlers; the pulse runs only while it is set and
+        // motion is not reduced. Under reduced motion the handlers' opacity 1
+        // shows the indicator without the pulse. (Binding `paused` instead
+        // warned "setPaused() cannot be used when animation isn't running"
+        // every time reduced motion turned on outside a drag.)
+        property bool pulsing: false
 
         SequentialAnimation on opacity {
           id: pulseAnimation
-          running: false
-          // Started from the drag handlers; never under reduced motion.
-          paused: Style.reduceMotion
+          running: dropIndicator.pulsing && !Style.reduceMotion
           loops: Animation.Infinite
           NAnim {
             to: 1
@@ -815,7 +819,7 @@ NBox {
         function updateDropIndicator(mouseX, mouseY) {
           if (!dragStarted || draggedIndex === -1) {
             dropIndicator.opacity = 0;
-            pulseAnimation.running = false;
+            dropIndicator.pulsing = false;
             return;
           }
 
@@ -878,7 +882,7 @@ NBox {
             // Don't show if it's the same position
             if (adjustedIndex === draggedIndex) {
               dropIndicator.opacity = 0;
-              pulseAnimation.running = false;
+              dropIndicator.pulsing = false;
               dropTargetIndex = -1;
               return;
             }
@@ -888,13 +892,11 @@ NBox {
               dropIndicator.x = bestPosition.x;
               dropIndicator.y = bestPosition.y;
               dropIndicator.opacity = 1;
-              if (!pulseAnimation.running) {
-                pulseAnimation.running = true;
-              }
+              dropIndicator.pulsing = true;
             }
           } else {
             dropIndicator.opacity = 0;
-            pulseAnimation.running = false;
+            dropIndicator.pulsing = false;
             dropTargetIndex = -1;
           }
         }
@@ -909,7 +911,7 @@ NBox {
           draggedModelData = null;
           isOverButtonArea = false;
           dropIndicator.opacity = 0;
-          pulseAnimation.running = false;
+          dropIndicator.pulsing = false;
           dragGhost.width = 0;
         }
 
