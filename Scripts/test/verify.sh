@@ -415,9 +415,10 @@ unset NIRI_SOCKET HYPRLAND_INSTANCE_SIGNATURE LABWC_PID
 export XDG_CURRENT_DESKTOP=sway
 
 SWAY_PID=""; QS_PID=""; PW_PID=""; WP_PID=""
-FOOT_PIDS=""; FPORTAL_PID=""
+FOOT_PIDS=""; FPORTAL_PID=""; VHOLD_PID=""
 cleanup() {
   [ -n "$QS_PID" ]   && { qs -p "$REPO" kill 2>/dev/null; kill "$QS_PID" 2>/dev/null; }
+  [ -n "$VHOLD_PID" ] && kill "$VHOLD_PID" 2>/dev/null
   [ -n "$WP_PID" ]   && kill "$WP_PID" 2>/dev/null
   [ -n "$PW_PID" ]   && kill "$PW_PID" 2>/dev/null
   [ -n "$SWAY_PID" ] && { swaymsg exit 2>/dev/null; kill "$SWAY_PID" 2>/dev/null; }
@@ -445,6 +446,20 @@ for EXTRA_OUT in $(swaymsg -t get_outputs 2>/dev/null | grep -o '"name":[[:space
   echo "disabling extra output: $EXTRA_OUT"
   swaymsg "output $EXTRA_OUT disable" 2>/dev/null
 done
+
+# A resident seat pointer for the whole session (`vinput hold`). The headless
+# backend has no input devices, so without it the seat loses its pointer
+# capability every time a `vinput` process exits; clients then drop their
+# wl_pointer, and the next click races the shell's get_pointer: a shell busy
+# rendering (a panel just opened) binds the new pointer after the press went
+# out and sees only the release, i.e. the click is lost.
+VINPUT_BIN="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+if [ -x "$VINPUT_BIN" ]; then
+  "$VINPUT_BIN" vinput hold 2>>"$WORK/logs/vinput.log" &
+  VHOLD_PID=$!
+else
+  echo "WARN: $VINPUT_BIN missing (just tools): injected clicks can be lost"
+fi
 
 # pipewire on the private bus so AudioService / volume OSD work
 pipewire   > "$WORK/logs/pipewire.log"   2>&1 & PW_PID=$!

@@ -58,11 +58,11 @@ Scripts/test/verify.sh probe --scenes idle,control-center              # 确认�
 
 点击坐标不要写死。`verify.sh` 的 `item_centre <根> <objectName>` 经 `debug find` 取可见 item 的中心，布局一变，写死的坐标就会落到别的控件上（`cc-switch` 曾经因此一直点在媒体卡片上）。要点的控件没有 objectName 就给它加一个，重复的委托用带区分后缀的名字，例如快捷开关格的 `quickSwitch-<widgetId>`。
 
-判断"点击丢了"之前，先确认按下有没有进到 Qt：用 `NOSD_QT_LOGGING="qt.quick.pointer.grab=true;qt.quick.mouse.target=true"` 跑场景，按下送达时日志里会出现目标 MouseArea 的 grab 行。只有移动、没有 grab 行，说明按下在合成器或注入这一层就丢了，不是 QML 的问题。
+无头 sway 没有真实输入设备，seat 的指针能力全靠虚拟指针。`verify.sh` 在会话开始时起一个常驻的 `vinput hold`，让 seat 像真实桌面一样一直有指针。没有它时，每个 `vinput` 进程退出都会让 seat 失去指针能力，所有客户端释放 `wl_pointer`；下一次点击新建设备后，客户端要重新 `get_pointer`，正忙着渲染的 shell（比如面板刚打开）会在按下之后才拿到指针，于是只收到松开，这次点击整个丢失。自己写注入脚本或换合成器时，同样先起一个常驻指针。
+
+判断"点击丢了"之前，先确认按下有没有进到 Qt：用 `NOSD_QT_LOGGING="qt.quick.pointer.grab=true;qt.quick.mouse.target=true"` 跑场景，按下送达时日志里会出现目标 MouseArea 的 grab 行。只有移动、没有 grab 行，就再加 `WAYLAND_DEBUG=1` 跑一次，看协议层：shell 日志（`logs/<名字>.log`）里有没有 `wl_pointer.button(..., 272, 1)`，sway 日志（`logs/sway.log`）里这次按下之前 shell 有没有 `wl_seat.get_pointer`。按下没发给 shell，问题在合成器或注入这一层，不是 QML 的问题。
 
 间歇性的问题要统计复现：同一组场景至少跑 3 次再下结论，基线（`git worktree` 取出的改动前提交）也跑同样次数。单次通过或失败都不能说明问题；本仓库里出现过 2/2 碰巧通过、换个时序就 4/4 失败的情况。用 `git bisect run` 二分时，每个提交只跑一次的结果同样会被间歇性问题带偏。
-
-已知问题（未解决）：控制中心关闭再打开以后，第一次注入的点击可能整次丢失。复现方法是 `verify.sh <名字> --scenes cc-switch,cc-notif-groups`：cc-notif-groups 展开分组那一下按下没有送达（上面的日志里没有 grab 行），移动事件却正常送达。改动前的基线提交上同样出现（2 次里 1 次），在点击前先移动指针再等 0.5 s 也不能消除。只开一次控制中心（例如 `cc-notifications,cc-notif-focus,cc-notif-groups`）不出现。默认全集里 cc-notif-groups 排在几个会关闭控制中心的场景之后，所以全集运行时它和随后的 dock-menu 外缘点击断言可能失败，单独运行时通过。根因还没有找到，怀疑在 sway 对 layer-shell 输入区域变化后的指针焦点处理，或者 `zwlr_virtual_pointer_v1` 的新设备上。
 
 ## 输入区域问题
 
