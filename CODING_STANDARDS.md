@@ -102,6 +102,7 @@
 - `ScrollView`（包括 `NScrollView`）里只有一个内容子项时，它按这个子项的隐式尺寸推算 `contentWidth` 和 `contentHeight`。内容子项有两个或更多时（比如内容列旁边再放一个旁观滚轮的覆盖层），推算结果不可靠，可能读出 0，滚动和边缘淡出随之失效且不报错。这种情况下显式写 `contentWidth` 和 `contentHeight`。`lint.sh` 里的 `check-scrollview-content.py` 拦截缺 `contentHeight` 的写法。例子见 `SettingsModuleView` 的 `settingsContentScroll`。
 - `Connections` 的 `target` 要等运行时才赋值时，声明处写 `target: null`。不写时 `target` 默认是父项，父项没有对应信号就会报 `Detected function "onXxx" in Connections element`。
 - 布局约束（`Layout.maximumWidth` 这类附加属性、padding）不要读取它所在布局自己的尺寸：布局排列子项时自身尺寸也在变，约束跟着变就会重新触发排列，Qt 报 `Detected recursive rearrange` 后放弃。从外层固定的尺寸推算，例子见 `NSectionEditor` 标题列的 `maximumWidth`。约束确实要看排列结果时（内容溢出才给滚动条留宽度，而留宽又改变内容高度），用 `Qt.callLater` 推迟一拍再更新，见 `NScrollView` 的 `_reserveVertical`，否则会报 `Binding loop detected`。
+- 交给 Quickshell 组件（`IconImage` 等）的图片地址要写成 `file://` 开头的 URL。裸路径会按组件自己所在的 `qrc:` 位置解析，加载失败。仓库里的 QML 文件自己的 `Image` 不受影响，因为它们按 `file:` 位置解析。
 
 ## 界面文字
 
