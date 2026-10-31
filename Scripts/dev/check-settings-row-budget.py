@@ -72,6 +72,23 @@ def main():
         if "settingsFieldTitleWidth" in text:
             print(f"{rel}: still floors the title with settingsFieldTitleWidth", file=sys.stderr)
             fail = 1
+    # A 0×0 item inside the keybind row still consumes RowLayout spacing and
+    # shifts the pills off the column. preferredWidth: 1 on the slot collapsed
+    # the first pill (the "Up" key) to nothing.
+    kb = (ROOT / "Widgets/NKeybindRecorder.qml").read_text()
+    if not re.search(r"id:\s*keybindInput[\s\S]{0,120}parent:\s*root", kb):
+        print(
+            "Widgets/NKeybindRecorder.qml: keybindInput must be parented to root "
+            "so it is not a slot in the pill row",
+            file=sys.stderr,
+        )
+        fail = 1
+    if re.search(r"preferredWidth:\s*1\b", kb):
+        print(
+            "Widgets/NKeybindRecorder.qml: preferredWidth 1 collapses the first pill",
+            file=sys.stderr,
+        )
+        fail = 1
     return fail
 
 

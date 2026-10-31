@@ -122,9 +122,13 @@ NDccRow {
         model: root.maxKeybinds
         delegate: MouseArea {
           id: slotArea
-          Layout.fillWidth: true
-          Layout.preferredWidth: 1
-          Layout.minimumWidth: Math.round(root._pillHeight * 2)
+          // Equal slices of the control column. fillWidth + preferredWidth 1
+          // collapsed the first pill of the first row (the "Up" slot) to 0.
+          readonly property real slotWidth: Math.max(1, Math.floor((Style.settingsFieldWidth - Style.marginS * Math.max(0, root.maxKeybinds - 1)) / Math.max(1, root.maxKeybinds)))
+          Layout.fillWidth: false
+          Layout.preferredWidth: slotWidth
+          Layout.minimumWidth: slotWidth
+          Layout.maximumWidth: slotWidth
           height: root._pillHeight
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
@@ -164,13 +168,14 @@ NDccRow {
 
             RowLayout {
               anchors.fill: parent
-              anchors.leftMargin: Style.marginL
-              anchors.rightMargin: Style.marginL
+              anchors.leftMargin: Style.marginS
+              // The clear glyph sits in the right inset. Keep the same
+              // margin on its right, and keep the key name out from under it
+              // so a hover never elides "Return" down to "Ret...".
+              anchors.rightMargin: Style.marginS + clearGlyph.implicitWidth + Style.marginXS
               spacing: Style.marginXS
               visible: slotArea.isOccupied || slotArea.isRecordingThis
 
-              // The icon only marks the recording state; an
-              // occupied slot spends its width on the key name.
               NIcon {
                 icon: root.hasConflict ? "alert-circle" : "circle-dot"
                 color: root.hasConflict ? Colors.alert : Colors.accent
@@ -178,40 +183,40 @@ NDccRow {
                 visible: slotArea.isRecordingThis
               }
 
+              // The key name is never elided. The clear glyph is an overlay
+              // in the right inset, so it does not steal the text's width.
               NText {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 text: slotArea.keybindText
                 color: Colors.onShell
                 family: Settings.data.ui.fontFixed
-                pointSize: Style.fontSizeM
+                pointSize: Style.fontSizeS
                 font.weight: Style.fontWeightMedium
-                elide: Text.ElideRight
+                elide: Text.ElideNone
               }
+            }
 
-              Item {
-                Layout.preferredWidth: Math.round(root._pillHeight * 0.7)
-                Layout.fillHeight: true
-                // Reveal on hover: a permanently reserved ×
-                // slot starves two-bind pills to ~25 px of
-                // text ("Return" elides to "R…").
-                visible: (root.currentKeybinds.length > 1 || root.allowEmpty) && slotArea.containsMouse
+            NIcon {
+              id: clearGlyph
+              anchors.right: parent.right
+              anchors.rightMargin: Style.marginS
+              anchors.verticalCenter: parent.verticalCenter
+              icon: "x"
+              pointSize: Style.fontSizeXS
+              color: clearArea.containsMouse ? Colors.alert : Colors.onShellTertiary
+              visible: (root.currentKeybinds.length > 1 || root.allowEmpty) && slotArea.containsMouse && root.recordingIndex === -1 && (slotArea.isOccupied || slotArea.isRecordingThis)
 
-                NIconButton {
-                  anchors.centerIn: parent
-                  visible: root.recordingIndex === -1
-                  icon: "x"
-                  colorBg: "transparent"
-                  colorBgHover: Qt.alpha(Colors.alert, 0.1)
-                  colorFg: Colors.onShellTertiary
-                  colorFgHover: Colors.alert
-                  border.width: 0
-                  baseSize: Style.baseWidgetSize * 0.7
-                  onClicked: {
-                    var newKeybinds = Array.from(root.currentKeybinds);
-                    newKeybinds.splice(index, 1);
-                    root.keybindsChanged(newKeybinds);
-                  }
+              MouseArea {
+                id: clearArea
+                anchors.fill: parent
+                anchors.margins: -Style.marginXS
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                  var newKeybinds = Array.from(root.currentKeybinds);
+                  newKeybinds.splice(index, 1);
+                  root.keybindsChanged(newKeybinds);
                 }
               }
             }
@@ -219,13 +224,16 @@ NDccRow {
         }
       }
     }
+  }
 
-    // Hidden Item to capture keys
-    Item {
-      id: keybindInput
-      width: 0
-      height: 0
-      focus: true
+  // Key capture must not be a child of the row layout. A 0×0 item there
+  // still consumes the layout spacing and shifts the pills off the column.
+  Item {
+    id: keybindInput
+    parent: root
+    width: 0
+    height: 0
+    focus: true
 
       Keys.onPressed: event => {
                         if (root.recordingIndex === -1 || root.hasConflict)
@@ -267,6 +275,5 @@ NDccRow {
                         }
                         event.accepted = true;
                       }
-    }
   }
 }

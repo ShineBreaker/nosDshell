@@ -107,8 +107,12 @@ Rectangle {
 
       NIcon {
         icon: "color-picker"
+        // Glyph box, not a wider slot. A larger icon centered in the row
+        // left the pencil 2 px further from the right edge than the swatch
+        // is from the left (both sides are marginL).
+        pointSize: Style.fontSizeM
         color: Colors.onShellTertiary
-        Layout.alignment: Qt.AlignVCenter
+        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
       }
     }
   }

@@ -133,6 +133,14 @@ Popup {
   height: 700
   modal: true
   closePolicy: Popup.CloseOnEscape
+  Shortcut {
+    sequences: ["Escape"]
+    // While search is open, Escape only dismisses the search field. The
+    // panel Keys handler does that; this shortcut covers focus sitting on
+    // a file row, which never reached Popup.CloseOnEscape.
+    enabled: root.visible && !filePickerPanel.showSearchBar
+    onActivated: root.close()
+  }
   anchors.centerIn: parent
   // The settings surface does not publish a blur region for dialogs
   // (DESIGN §1.2). Host on the popup-menu window before the popup shows.
@@ -165,11 +173,15 @@ Popup {
                         if (filePickerPanel.showSearchBar)
                         Qt.callLater(() => searchInput.forceActiveFocus());
                         event.accepted = true;
-                      } else if (event.key === Qt.Key_Escape && filePickerPanel.showSearchBar) {
-                        filePickerPanel.showSearchBar = false;
-                        filePickerPanel.searchText = "";
-                        filePickerPanel.filterText = "";
-                        root.updateFilteredModel();
+                      } else if (event.key === Qt.Key_Escape) {
+                        if (filePickerPanel.showSearchBar) {
+                          filePickerPanel.showSearchBar = false;
+                          filePickerPanel.searchText = "";
+                          filePickerPanel.filterText = "";
+                          root.updateFilteredModel();
+                        } else {
+                          root.close();
+                        }
                         event.accepted = true;
                       }
                     }

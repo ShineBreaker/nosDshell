@@ -66,7 +66,7 @@ If you prefer a stationary wallpaper that is visible at all times and does not s
 ```ini
 // Set the regular wallpaper on the backdrop.
 layer-rule {
-  match namespace="^nosdshell-wallpaper*"
+  match namespace="^nosdshell-wallpaper(-.*)?$"
   place-within-backdrop true
 }
 

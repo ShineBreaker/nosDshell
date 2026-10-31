@@ -65,6 +65,15 @@ NDccRow {
   Component.onCompleted: _rebuildRows()
   onModelChanged: _rebuildRows()
 
+  // ListModel rows snapshot translated names. Rebuild after the new catalog
+  // is in (languageChanged fires before that load finishes).
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root._rebuildRows();
+    }
+  }
+
   // The source may be a plain array — Connections needs a QObject target,
   // so only hook mutation signals when the model is a real ListModel.
   Connections {

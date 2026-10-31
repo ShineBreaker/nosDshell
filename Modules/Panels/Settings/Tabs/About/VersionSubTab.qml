@@ -453,15 +453,9 @@ ColumnLayout {
       Layout.fillWidth: true
       spacing: Style.marginS
 
-      NText {
-        text: I18n.tr("panels.about.system-not-installed")
-        color: Colors.onShellTertiary
-      }
-
-      NText {
-        text: I18n.tr("panels.about.system-install-hint")
-        color: Colors.onShellTertiary
-        pointSize: Style.fontSizeXS
+      NHeader {
+        label: I18n.tr("panels.about.system-not-installed")
+        description: I18n.tr("panels.about.system-install-hint")
       }
     }
 
@@ -785,7 +779,7 @@ ColumnLayout {
       Layout.fillWidth: true
       label: I18n.tr("panels.about.debug-minimal-label")
       description: I18n.tr("panels.about.debug-minimal-description")
-      enabled: Settings.data.debug.enabled
+      visible: Settings.data.debug.enabled
       checked: Settings.data.debug.logLevel === "warn"
       onToggled: checked => Settings.data.debug.logLevel = checked ? "warn" : "info"
     }
@@ -793,7 +787,7 @@ ColumnLayout {
       Layout.fillWidth: true
       label: I18n.tr("panels.about.debug-modules-label")
       description: I18n.tr("panels.about.debug-modules-description")
-      enabled: Settings.data.debug.enabled
+      visible: Settings.data.debug.enabled
       placeholderText: I18n.tr("placeholders.debug-modules")
       text: Settings.data.debug.modules
       onTextChanged: Settings.data.debug.modules = text

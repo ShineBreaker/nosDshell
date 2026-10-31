@@ -357,7 +357,11 @@ NBox {
 
     RowLayout {
       Layout.fillWidth: true
-      Layout.rightMargin: Style.marginS
+      // The box is already inset by marginL. A settings control's painted
+      // right edge sits settingsRowPaddingH + borderS in from the plate
+      // (the 170 px column ends at that edge). marginS here left the add
+      // button 2 px past it (1894 vs 1892).
+      Layout.rightMargin: Style.settingsRowPaddingH + Style.borderS - Style.marginL
 
       ColumnLayout {
         spacing: Style.marginXXS

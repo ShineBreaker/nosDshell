@@ -70,7 +70,9 @@ NDccRow {
     Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : root.minimumInputWidth
     Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : -1
     Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
-    Layout.margins: Style.borderS
+    // No layout margin: a 1 px margin on each side put every text field
+    // 2 px off the control column the combos and spin boxes sit on.
+    Layout.margins: 0
     implicitHeight: Style.settingsFieldHeight
 
     // This is important - makes the control accept focus
@@ -226,25 +228,34 @@ NDccRow {
                        }
             }
           }
-          NIconButton {
+          // Glyph-sized clear control. NIconButton's tile is ~33 px with the
+          // glyph centered, which stacked on the field's right inset and
+          // left the ✕ ~10 px further in than the text is from the left.
+          Item {
             id: clearButton
-            icon: "x"
-            tooltipText: (input.text.length > 0 && !root.readOnly && root.enabled) ? I18n.tr("common.clear") : ""
-
-            Layout.alignment: Qt.AlignVCenter
-            border.width: 0
-
-            colorBg: "transparent"
-            colorBgHover: "transparent"
-            colorFg: Colors.onShellSecondary
-            colorFgHover: Colors.alert
-
             visible: root.showClearButton && input.text.length > 0 && !root.readOnly
-            enabled: input.text.length > 0 && !root.readOnly && root.enabled
+            implicitWidth: clearGlyph.implicitWidth
+            implicitHeight: clearGlyph.implicitHeight
+            Layout.alignment: Qt.AlignVCenter
 
-            onClicked: {
-              input.clear();
-              input.forceActiveFocus();
+            NIcon {
+              id: clearGlyph
+              icon: "x"
+              pointSize: Style.fontSizeM
+              color: clearMouse.containsMouse ? Colors.alert : Colors.onShellSecondary
+            }
+
+            MouseArea {
+              id: clearMouse
+              anchors.fill: parent
+              anchors.margins: -Style.marginXS
+              hoverEnabled: true
+              enabled: clearButton.visible && root.enabled
+              cursorShape: Qt.PointingHandCursor
+              onClicked: {
+                input.clear();
+                input.forceActiveFocus();
+              }
             }
           }
         }

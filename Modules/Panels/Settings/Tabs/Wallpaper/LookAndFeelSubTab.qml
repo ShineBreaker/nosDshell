@@ -9,7 +9,7 @@ ColumnLayout {
     id: root
     spacing: 0
     Layout.fillWidth: true
-    enabled: Settings.data.wallpaper.enabled
+    visible: Settings.data.wallpaper.enabled
 
     property var screen
 

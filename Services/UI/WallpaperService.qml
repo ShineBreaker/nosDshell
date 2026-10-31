@@ -207,6 +207,15 @@ Singleton {
     }
   }
 
+  // translateModels snapshots I18n.tr into ListModel rows. languageChanged
+  // fires before the new catalog is parsed; rebuild once it has loaded.
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root.translateModels();
+    }
+  }
+
   // -------------------------------------------------
   function init() {
     Logger.i("Wallpaper", "Service started");
@@ -245,6 +254,8 @@ Singleton {
       return;
     }
 
+    fillModeModel.clear();
+    transitionsModel.clear();
     // Populate fillModeModel with translated names
     fillModeModel.append({
                            "key": "center",

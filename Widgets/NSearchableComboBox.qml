@@ -146,6 +146,12 @@ NDccRow {
     }
   }
   Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root.rebuildRows();
+    }
+  }
+  Connections {
     target: root.activeModel
     function onCountChanged() {
       root.rebuildRows();
@@ -252,7 +258,7 @@ NDccRow {
 
     // Same disabled treatment as NComboBox: full opacity, color swap
     // (textDisabledDark) instead of a blanket alpha that brightens the field.
-    Layout.margins: Style.borderS
+    Layout.margins: root.flexWidth ? 0 : Style.borderS
     // Fixed width trio: minimum/preferred/maximum depend only on the plain
     // root.minimumWidth property and Style tokens. Never read root.width
     // (the RowLayout's own laid-out width) here, and never feed an attached

@@ -144,6 +144,8 @@ def patch_niri_page(text):
     text = text.replace('namespace="^noctalia-', 'namespace="^nosdshell-')
     text = text.replace('namespace="^nosdshell-overview*"',
                         'namespace="^nosdshell-overview(-.*)?$"')
+    text = text.replace('namespace="^nosdshell-wallpaper*"',
+                        'namespace="^nosdshell-wallpaper(-.*)?$"')
     rules = (REPO / "Scripts/docs/nosdshell-layer-rules.kdl").read_text().strip()
     # Upstream has a single layer-rule under this comment. Replacing that one
     # block with the whole kdl is what a from-scratch vendor does; do not
