@@ -246,6 +246,13 @@ Item {
   // ---------------------------------------------------------------
   // Provider id -> instance, keyed by the explicit string passed here so the
   // views can look a provider up by a stable name (appsProvider etc.).
+  // Writing the same object back does not notify. appsProvider is bound
+  // while this map is still empty, and it stayed null, so the fullscreen
+  // grid filtered every result out.
+  function _publishProvidersById() {
+    _providersById = Object.assign({}, _providersById);
+  }
+
   function registerProvider(provider, id) {
     _providers.push(provider);
     provider.launcher = root;
@@ -253,7 +260,7 @@ Item {
       provider.init();
     if (id) {
       _providersById[id] = provider;
-      _providersById = _providersById; // trigger property change
+      _publishProvidersById();
     }
   }
 
@@ -269,7 +276,7 @@ Item {
       _providers.splice(idx, 1);
     if (id && _providersById[id]) {
       delete _providersById[id];
-      _providersById = _providersById;
+      _publishProvidersById();
     }
     if (provider.launcher === root)
       provider.launcher = null;
@@ -325,7 +332,7 @@ Item {
           if (instance.init)
             instance.init();
           _providersById[providerId] = instance;
-          _providersById = _providersById;
+          _publishProvidersById();
           Logger.d("Launcher", "Adopted plugin provider:", providerId);
           changed = true;
         }
