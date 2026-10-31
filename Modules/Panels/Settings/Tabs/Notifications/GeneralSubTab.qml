@@ -26,10 +26,11 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.notifications.enabled
   }
   ColumnLayout {
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.notifications.enabled
+    visible: Settings.data.notifications.enabled
 
     NComboBox {
       label: I18n.tr("panels.notifications.settings-density-label")

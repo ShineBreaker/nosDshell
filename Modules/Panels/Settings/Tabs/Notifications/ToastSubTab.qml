@@ -13,7 +13,7 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.notifications.enabled
+    visible: Settings.data.notifications.enabled
 
     NCheckbox {
       Layout.fillWidth: true

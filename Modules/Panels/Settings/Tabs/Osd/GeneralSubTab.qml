@@ -32,13 +32,14 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.osd.enabled
   }
   // SettingsGroup 2: everything the master switch gates. OSD draws nothing
   // while it is off, so the position choice is gated along with the rest.
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.osd.enabled
+    visible: Settings.data.osd.enabled
     NComboBox {
       label: I18n.tr("common.position")
       description: I18n.tr("panels.osd.location-description")
@@ -107,12 +108,13 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.osd.enabled
   }
   // SettingsGroup 3: monitor selection, gated like the rest while off.
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.osd.enabled
+    visible: Settings.data.osd.enabled
     NHeader {
       description: I18n.tr("panels.osd.monitors-desc")
     }

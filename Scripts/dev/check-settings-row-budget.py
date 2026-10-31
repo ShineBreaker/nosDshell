@@ -98,6 +98,28 @@ def main():
             file=sys.stderr,
         )
         fail = 1
+    # Section-editor chips sized themselves with marginL*2 on top of the
+    # label's own padding, and the row's right margin was a different token
+    # from its left, so the extra width sat only on the right.
+    editor = (ROOT / "Widgets/NSectionEditor.qml").read_text()
+    content = re.search(r"id:\s*widgetContent\b([\s\S]{0,2500})", editor)
+    block = content.group(1) if content else ""
+    left = re.search(r"anchors\.leftMargin:\s*Style\.(\w+)", block)
+    right = re.search(r"anchors\.rightMargin:\s*Style\.(\w+)", block)
+    if not left or not right or left.group(1) != right.group(1):
+        print(
+            "Widgets/NSectionEditor.qml: chip row left and right margins "
+            "must be the same token",
+            file=sys.stderr,
+        )
+        fail = 1
+    if re.search(r"leftPadding:\s*Style\.", block) or re.search(r"rightPadding:\s*Style\.", block):
+        print(
+            "Widgets/NSectionEditor.qml: chip label padding is added again "
+            "by the chip width; keep it 0 and inset the row once",
+            file=sys.stderr,
+        )
+        fail = 1
     return fail
 
 

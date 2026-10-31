@@ -117,6 +117,9 @@ NDccRow {
       id: slotsBox
       implicitWidth: Style.settingsFieldWidth
       implicitHeight: root._pillHeight
+      // Same 1 px margin as NComboBox / NSpinBox. Without it the 170 px
+      // pill group sits at 1724–1893 while those controls sit at 1723–1892.
+      Layout.margins: root.dccRow ? Style.borderS : 0
       Layout.fillWidth: !root.dccRow
       Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
       Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth

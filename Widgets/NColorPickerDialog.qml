@@ -484,6 +484,9 @@ Popup {
               Layout.alignment: Qt.AlignTop
 
               radius: 0
+              // Default Rectangle color is white. A 1 px margin on the clip
+              // item left that white as a line along the bottom of the square.
+              color: "transparent"
               border.color: Colors.borderShell
               border.width: Style.borderS
               // The SV handle is a circle centred on the colour point. Clipping
@@ -492,7 +495,6 @@ Popup {
 
               Item {
                 anchors.fill: parent
-                anchors.margins: 1
                 clip: true
 
               ShaderEffect {

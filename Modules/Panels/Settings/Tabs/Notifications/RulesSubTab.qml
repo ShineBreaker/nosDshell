@@ -10,7 +10,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.notifications.enabled
+  visible: Settings.data.notifications.enabled
 
   function _saveToService() {
     NotificationRulesService.save();
@@ -120,7 +120,7 @@ ColumnLayout {
     NDccRow {
       Layout.fillWidth: true
       clickable: true
-      enabled: Settings.data.notifications.enabled
+      visible: Settings.data.notifications.enabled
       onClicked: root.openEdit(-1, "", "block")
       NIcon {
         icon: "add"

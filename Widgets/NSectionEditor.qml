@@ -508,10 +508,19 @@ NBox {
             // id/parent refs dangle while the editor subtree is being
             // destroyed (二级页 pop) — bindings re-evaluate against torn-down
             // objects, so stay null-tolerant.
+            // implicitWidth already includes the label's own left/right
+            // padding. Adding marginL on top of that, while the row's right
+            // margin was larger than its left, left ~17 px of empty chip on
+            // the right only (Network 11/30).
             width: {
-              var label = widgetLabel.implicitWidth + Style.marginL * 2 + buttonsCount * buttonsWidth;
+              var icons = 0;
+              if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id))
+                icons += Style.baseWidgetSize * 0.5 + Style.marginXXS;
+              if (root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id))
+                icons += Style.baseWidgetSize * 0.5 + Style.marginXXS;
+              var label = widgetLabel.implicitWidth + icons + buttonsCount * buttonsWidth + Style.marginL * 2;
               var limit = widgetFlow.width > 0 ? widgetFlow.width : label;
-              return Math.max(1, Math.min(Math.max(label, Style.settingsFieldHeight * 2), limit));
+              return Math.max(1, Math.min(label, limit));
             }
             height: root.widgetItemHeight
             radius: Style.radiusItem
@@ -628,8 +637,12 @@ NBox {
             RowLayout {
               id: widgetContent
               anchors.fill: parent
-              anchors.margins: Style.marginXS
-              anchors.rightMargin: Style.marginS
+              anchors.topMargin: Style.marginXS
+              anchors.bottomMargin: Style.marginXS
+              // Same horizontal inset on both sides. The label's own
+              // padding is inside implicitWidth and is not added again.
+              anchors.leftMargin: Style.marginL
+              anchors.rightMargin: Style.marginL
               spacing: Style.marginXXS
 
               NText {
@@ -650,8 +663,8 @@ NBox {
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                leftPadding: Style.marginS
-                rightPadding: Style.marginS
+                leftPadding: 0
+                rightPadding: 0
                 Layout.fillWidth: true
                 Layout.fillHeight: true
               }

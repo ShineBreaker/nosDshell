@@ -41,7 +41,7 @@ ColumnLayout {
 
     NToggle {
       Layout.fillWidth: true
-      enabled: Settings.data.desktopWidgets.enabled
+      visible: Settings.data.desktopWidgets.enabled
       label: I18n.tr("panels.desktop-widgets.overview-enabled-label")
       description: I18n.tr("panels.desktop-widgets.overview-enabled-description")
       checked: Settings.data.desktopWidgets.overviewEnabled
@@ -53,9 +53,10 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.desktopWidgets.enabled
   }
   ColumnLayout {
-    enabled: Settings.data.desktopWidgets.enabled
+    visible: Settings.data.desktopWidgets.enabled
 
     NHeader {
       description: I18n.tr("panels.desktop-widgets.cpu-intensive-note")

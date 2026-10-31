@@ -40,11 +40,7 @@ Popup {
       x = Math.round((screen.width - width) / 2 - parentPos.x);
       y = Math.round((screen.height - height) / 2 - parentPos.y);
     }
-    Qt.callLater(() => {
-                   if (resolutionWidthInput.inputItem) {
-                     resolutionWidthInput.inputItem.forceActiveFocus();
-                   }
-                 });
+    focusHold.forceActiveFocus();
   }
 
   function hide() {
@@ -103,6 +99,15 @@ Popup {
     id: contentColumn
     spacing: Style.marginM
 
+    // Esc still reaches the popup. This holds focus so opening the dialog
+    // does not drop the cursor into the width field.
+    Item {
+      id: focusHold
+      width: 0
+      height: 0
+      focus: true
+    }
+
     // Header
     RowLayout {
       Layout.fillWidth: true
@@ -134,44 +139,27 @@ Popup {
       Layout.fillWidth: true
     }
 
-    // API Key
-    ColumnLayout {
+    // API Key. Same plated row as the combos below (label inset, field on
+    // the control column). A bare label sat ~20 px to the left of those.
+    NTextInput {
+      id: apiKeyInput
       Layout.fillWidth: true
-      spacing: Style.marginS
+      label: I18n.tr("wallpaper.panel.apikey-label")
+      description: I18n.tr("wallpaper.panel.apikey-help")
+      enabled: !WallhavenService.apiKeyManagedByEnv
+      placeholderText: WallhavenService.apiKeyManagedByEnv ? I18n.tr("wallpaper.panel.apikey-managed-by-env") : I18n.tr("wallpaper.panel.apikey-placeholder")
+      text: WallhavenService.apiKeyManagedByEnv ? "" : (Settings.data.wallpaper.wallhavenApiKey || "")
 
-      NText {
-        text: I18n.tr("wallpaper.panel.apikey-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-      }
-
-      NTextInput {
-        id: apiKeyInput
-        Layout.fillWidth: true
-        enabled: !WallhavenService.apiKeyManagedByEnv
-        placeholderText: WallhavenService.apiKeyManagedByEnv ? I18n.tr("wallpaper.panel.apikey-managed-by-env") : I18n.tr("wallpaper.panel.apikey-placeholder")
-        text: WallhavenService.apiKeyManagedByEnv ? "" : (Settings.data.wallpaper.wallhavenApiKey || "")
-
-        // Fix for password echo mode
-        Component.onCompleted: {
-          if (apiKeyInput.inputItem) {
-            apiKeyInput.inputItem.echoMode = TextInput.Password;
-          }
-        }
-
-        onEditingFinished: {
-          if (!WallhavenService.apiKeyManagedByEnv) {
-            Settings.data.wallpaper.wallhavenApiKey = text;
-          }
+      Component.onCompleted: {
+        if (apiKeyInput.inputItem) {
+          apiKeyInput.inputItem.echoMode = TextInput.Password;
         }
       }
 
-      NText {
-        text: I18n.tr("wallpaper.panel.apikey-help")
-        color: Colors.mOnSurfaceVariant
-        pointSize: Style.fontSizeS
-        wrapMode: Text.WordWrap
-        Layout.fillWidth: true
+      onEditingFinished: {
+        if (!WallhavenService.apiKeyManagedByEnv) {
+          Settings.data.wallpaper.wallhavenApiKey = text;
+        }
       }
     }
 
@@ -248,18 +236,12 @@ Popup {
     }
 
     // Purity selector
-    RowLayout {
+    NDccRow {
       Layout.fillWidth: true
-      spacing: Style.marginM
 
-      NText {
-        text: I18n.tr("wallpaper.panel.purity-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-        Layout.preferredWidth: implicitWidth
-      }
-
-      Item {
+      NLabel {
+        label: I18n.tr("wallpaper.panel.purity-label")
+        labelWeight: Style.fontWeightRegular
         Layout.fillWidth: true
       }
 
@@ -568,18 +550,12 @@ Popup {
     }
 
     // Categories
-    RowLayout {
+    NDccRow {
       Layout.fillWidth: true
-      spacing: Style.marginM
 
-      NText {
-        text: I18n.tr("wallpaper.panel.categories-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-        Layout.preferredWidth: implicitWidth
-      }
-
-      Item {
+      NLabel {
+        label: I18n.tr("wallpaper.panel.categories-label")
+        labelWeight: Style.fontWeightRegular
         Layout.fillWidth: true
       }
 
@@ -806,13 +782,7 @@ Popup {
     // Resolution filter
     ColumnLayout {
       Layout.fillWidth: true
-      spacing: Style.marginS
-
-      NText {
-        text: I18n.tr("wallpaper.panel.resolution-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-      }
+      spacing: Style.settingsGroupGap
 
       NComboBox {
           id: resolutionModeComboBox
@@ -845,12 +815,18 @@ Popup {
                       }
       }
 
-      RowLayout {
+      NDccRow {
         Layout.fillWidth: true
-        spacing: Style.marginS
+
+        NLabel {
+          label: I18n.tr("wallpaper.panel.resolution-label")
+          labelWeight: Style.fontWeightRegular
+          Layout.fillWidth: true
+        }
 
         NTextInput {
           id: resolutionWidthInput
+          dccRow: false
           Layout.preferredWidth: 80
           placeholderText: I18n.tr("common.width")
           inputMethodHints: Qt.ImhDigitsOnly

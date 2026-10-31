@@ -51,6 +51,10 @@ NDccRow {
   // row padding (avatar picker, folder button, excluded-player "+").
   RowLayout {
     spacing: Style.marginXS
+    // The inner field is plain (no margin of its own). This margin is the
+    // one labelled combos and spin boxes use, so the field starts on the
+    // column (1723) instead of 1 px to the right.
+    Layout.margins: root.dccRow ? Style.borderS : 0
     Layout.fillWidth: !root.dccRow
     Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : 0
     Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : -1
