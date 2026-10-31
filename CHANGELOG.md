@@ -10,6 +10,10 @@
 
 ## [Unreleased]
 
+### 修复
+
+- make gtk-refresh look for nosd.css like the template writes：[`3dcca54f7`](https://github.com/ShineBreaker/nosDshell/commit/3dcca54f712a48d45d9b477e501139b1b996e59d)
+
 ## [1.7.0] - 2026-10-30
 
 这一版把全部动效换成了一套有出处的设计语言：所有时长收进五档令牌、所有曲线取自一张
