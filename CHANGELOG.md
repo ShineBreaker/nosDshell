@@ -10,9 +10,15 @@
 
 ## [Unreleased]
 
+## [1.7.1] - 2026-10-31
+
+GTK 配色接上最后一根线：模板写下的调色板文件和 helper 要找的文件从此同名，设置里勾选 GTK 模板就会真正生效——GTK 应用跟着 shell 的配色方案走，不再被半年前留下的旧导入按在深色。
+
+---
+
 ### 修复
 
-- make gtk-refresh look for nosd.css like the template writes：[`3dcca54f7`](https://github.com/ShineBreaker/nosDshell/commit/3dcca54f712a48d45d9b477e501139b1b996e59d)
+- make gtk-refresh look for nosd.css like the template writes：[`73f978f52`](https://github.com/ShineBreaker/nosDshell/commit/73f978f527e46ca0fd78718a10dfcbb25b216f48)
 
 ## [1.7.0] - 2026-10-30
 
@@ -683,7 +689,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.0...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.1...HEAD
+[1.7.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.4...v1.7.0
 [1.6.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.3...v1.6.4
 [1.6.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.2...v1.6.3
