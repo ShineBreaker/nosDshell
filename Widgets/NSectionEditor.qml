@@ -508,17 +508,26 @@ NBox {
             // id/parent refs dangle while the editor subtree is being
             // destroyed (二级页 pop) — bindings re-evaluate against torn-down
             // objects, so stay null-tolerant.
-            // implicitWidth already includes the label's own left/right
-            // padding. Adding marginL on top of that, while the row's right
-            // margin was larger than its left, left ~17 px of empty chip on
-            // the right only (Network 11/30).
+            // One marginL on each side, plus one marginXXS gap per trailing
+            // item that is actually in the row. A 0-wide gear slot still
+            // took that gap, so the label was ~2 px short of its
+            // implicitWidth and every name elided.
             width: {
-              var icons = 0;
-              if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id))
-                icons += Style.baseWidgetSize * 0.5 + Style.marginXXS;
-              if (root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id))
-                icons += Style.baseWidgetSize * 0.5 + Style.marginXXS;
-              var label = widgetLabel.implicitWidth + icons + buttonsCount * buttonsWidth + Style.marginL * 2;
+              var trailing = 0;
+              var gaps = 0;
+              if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)) {
+                trailing += Style.baseWidgetSize * 0.5;
+                gaps += Style.marginXXS;
+              }
+              if (root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id)) {
+                trailing += Style.baseWidgetSize * 0.5;
+                gaps += Style.marginXXS;
+              }
+              if (buttonsCount > 0) {
+                trailing += buttonsWidth;
+                gaps += Style.marginXXS;
+              }
+              var label = Math.ceil(widgetLabel.implicitWidth) + trailing + gaps + Style.marginL * 2;
               var limit = widgetFlow.width > 0 ? widgetFlow.width : label;
               return Math.max(1, Math.min(label, limit));
             }
@@ -536,7 +545,9 @@ NBox {
 
             // Store the widget index for drag operations
             property int widgetIndex: index
-            readonly property int buttonsWidth: Math.round(20)
+            // The gear's painted tile, not a separate 20 px guess. A shorter
+            // slot let the icon hang 1 px into the right inset.
+            readonly property int buttonsWidth: Style.toOdd(root.miniButtonSize * Style.uiScaleRatio)
             readonly property int buttonsCount: root.widgetHasSettings(modelData.id) ? 1 : 0
 
             // Visual feedback during drag; dim the whole tile when the
@@ -667,6 +678,9 @@ NBox {
                 rightPadding: 0
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                // Do not give the text less than its own width. The elide
+                // above is only for a chip that has hit the row's edge.
+                Layout.minimumWidth: Math.ceil(implicitWidth)
               }
 
               // Plugin indicator icon
@@ -690,8 +704,13 @@ NBox {
               }
 
               RowLayout {
+                // Hidden when empty. A visible 0-wide item still receives
+                // the row spacing (marginXXS) and that gap was taken from
+                // the label.
+                visible: buttonsCount > 0
                 spacing: 0
-                Layout.preferredWidth: buttonsCount * buttonsWidth * Style.uiScaleRatio
+                Layout.preferredWidth: buttonsWidth
+                Layout.maximumWidth: buttonsWidth
                 Layout.preferredHeight: parent.height
 
                 Loader {

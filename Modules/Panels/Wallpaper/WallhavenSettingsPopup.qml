@@ -872,6 +872,10 @@ Popup {
         NTextInput {
           id: resolutionHeightInput
           Layout.preferredWidth: 80
+          // Combos on this popup carry Layout.margins borderS, so their
+          // painted right edge is 1 px inside the row. This field is the
+          // trailing control of the resolution row and had no such margin.
+          Layout.rightMargin: Style.borderS
           placeholderText: I18n.tr("common.height")
           inputMethodHints: Qt.ImhDigitsOnly
           text: Settings.data.wallpaper.wallhavenResolutionHeight || ""

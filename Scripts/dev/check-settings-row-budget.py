@@ -120,6 +120,16 @@ def main():
             file=sys.stderr,
         )
         fail = 1
+    # A 0-wide gear slot that stays visible still consumes RowLayout spacing,
+    # so the label is short of its implicitWidth and elides. The slot sits
+    # well below the row's margin lines, so this is a whole-file check.
+    if not re.search(r"visible:\s*buttonsCount\s*>\s*0", editor):
+        print(
+            "Widgets/NSectionEditor.qml: the gear slot must be visible only "
+            "when buttonsCount > 0, or its spacing steals the label",
+            file=sys.stderr,
+        )
+        fail = 1
     return fail
 
 
