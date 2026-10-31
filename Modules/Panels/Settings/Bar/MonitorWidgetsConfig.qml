@@ -231,10 +231,8 @@ ColumnLayout {
     return screenName === "" ? Settings.data.bar.widgets : Settings.getBarWidgetsForScreen(screenName);
   }
 
-  NText {
-    text: root.taskbarMode ? I18n.tr("settings.taskbar.widgets-description") : I18n.tr("panels.bar.widgets-desc")
-    wrapMode: Text.WordWrap
-    Layout.fillWidth: true
+  NHeader {
+    description: root.taskbarMode ? I18n.tr("settings.taskbar.widgets-description") : I18n.tr("panels.bar.widgets-desc")
   }
 
   // Left Section

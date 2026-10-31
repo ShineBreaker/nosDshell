@@ -25,7 +25,15 @@ ColumnLayout {
 
   Layout.fillWidth: true
   Layout.minimumHeight: Style.settingsHeadHeight
-  Layout.bottomMargin: Style.settingsGroupGap
+  // The 1 px head-to-group seam (DESIGN §3.5.4). ColumnLayout.spacing stacks
+  // with Layout.bottomMargin, so a parent that already spaces would turn
+  // this into a 2 px gap (or 10 px where the column used marginM). Only
+  // contribute the seam when the parent inserts none of its own. Item
+  // parents (the stacked NTabView head layer) are positioned by hand and
+  // never read here — instanceof skips them so a missing `spacing` is not
+  // touched.
+  readonly property bool _parentAddsSpacing: (parent instanceof ColumnLayout || parent instanceof RowLayout) && parent.spacing > 0
+  Layout.bottomMargin: _parentAddsSpacing ? 0 : Style.settingsGroupGap
 
   NText {
     text: root.label

@@ -15,13 +15,16 @@ Rectangle {
   // Dialog lifecycle mirrors NSectionEditor: one live instance, destroyed on close.
   property var _activeDialog: null
 
+  // Same margin and idle border as NSpinBox / NComboBox. An always-on
+  // borderShell stroke sat inside the 170 px box, so the field read as
+  // 1724–1891 while those controls read as 1723–1892.
   Layout.margins: Style.borderS
-  implicitWidth: 150
+  implicitWidth: Style.settingsFieldWidth
   implicitHeight: Math.round(Style.baseWidgetSize * 1.1)
 
   radius: Style.radiusItem
   color: Colors.overlay("field")
-  border.color: Colors.borderShell
+  border.color: "transparent"
   border.width: Style.borderS
 
   // Minimized Look
@@ -107,9 +110,12 @@ Rectangle {
 
       NIcon {
         icon: "color-picker"
+        // Glyph box, not a wider slot. A larger icon centered in the row
+        // left the pencil 2 px further from the right edge than the swatch
+        // is from the left (both sides are marginL).
+        pointSize: Style.fontSizeM
         color: Colors.onShellTertiary
-        Layout.fillWidth: true
-        Layout.alignment: Qt.AlignVCenter
+        Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
       }
     }
   }

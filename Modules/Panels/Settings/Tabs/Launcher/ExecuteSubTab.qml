@@ -35,7 +35,6 @@ ColumnLayout {
     description: I18n.tr("panels.launcher.settings-custom-launch-prefix-description")
     Layout.fillWidth: true
     text: Settings.data.appLauncher.customLaunchPrefix
-    enabled: Settings.data.appLauncher.customLaunchPrefixEnabled
     visible: Settings.data.appLauncher.customLaunchPrefixEnabled
     onTextChanged: Settings.data.appLauncher.customLaunchPrefix = text
   }

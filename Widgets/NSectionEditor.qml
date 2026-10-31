@@ -357,30 +357,18 @@ NBox {
 
     RowLayout {
       Layout.fillWidth: true
-      Layout.rightMargin: Style.marginS
+      // The box is already inset by marginL. A settings control's painted
+      // right edge sits settingsRowPaddingH + borderS in from the plate
+      // (the 170 px column ends at that edge). marginS here left the add
+      // button 2 px past it (1894 vs 1892).
+      Layout.rightMargin: Style.settingsRowPaddingH + Style.borderS - Style.marginL
 
       ColumnLayout {
         spacing: Style.marginXXS
         Layout.alignment: Qt.AlignVCenter
-        Layout.fillWidth: false
+        Layout.fillWidth: true
+        Layout.minimumWidth: 0
         Layout.leftMargin: Style.marginS
-        Layout.maximumWidth: {
-          // Reserve space for other elements: count indicator, combo box (~200), button (~50), and margins
-          // Use a reasonable maximum that leaves room for controls on the right
-          // On smaller screens, use a smaller percentage to ensure controls fit
-          // The row's width is derived from the editor's, not read off the
-          // row: the row resizes while it arranges its children, and a
-          // constraint that follows it re-triggers the arrangement
-          // ("Detected recursive rearrange").
-          var rowWidth = root.width - 2 * Style.marginL - Style.marginS;
-          if (rowWidth > 0) {
-            // Use smaller percentage on smaller screens, but ensure minimum space for text
-            var minWidth = 150 * Style.uiScaleRatio;
-            var maxWidth = rowWidth < 600 ? rowWidth * 0.35 : rowWidth * 0.4;
-            return Math.max(minWidth, maxWidth);
-          }
-          return 250 * Style.uiScaleRatio;
-        }
 
         NText {
           text: sectionName
@@ -415,6 +403,16 @@ NBox {
         Layout.fillWidth: true
       }
 
+      // Combo and add button share one control column so the combo frame
+      // cannot paint underneath the button (the old 200 px minimum plus a
+      // 150 px title floor overflowed the row).
+      RowLayout {
+        spacing: Style.marginXS
+        Layout.alignment: Qt.AlignVCenter
+        Layout.minimumWidth: Style.settingsFieldWidth
+        Layout.preferredWidth: Style.settingsFieldWidth
+        Layout.maximumWidth: Style.settingsFieldWidth
+
       NSearchableComboBox {
         id: comboBox
         model: availableWidgets ?? null
@@ -424,9 +422,11 @@ NBox {
         searchPlaceholder: I18n.tr("bar.section-editor.search-placeholder")
         onSelected: key => comboBox.currentKey = key
         popupHeight: 300 * Style.uiScaleRatio
-        minimumWidth: 200 * Style.uiScaleRatio
+        minimumWidth: 80 * Style.uiScaleRatio
+        flexWidth: true
         enabled: !root.isAtMaxCapacity
 
+        Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
 
         // Re-filter when the model count changes (when widgets are loaded)
@@ -451,13 +451,13 @@ NBox {
         enabled: comboBox.currentKey !== "" && !root.isAtMaxCapacity
         tooltipText: root.isAtMaxCapacity ? I18n.tr("tooltips.max-widgets-reached") : I18n.tr("tooltips.add-widget")
         Layout.alignment: Qt.AlignVCenter
-        Layout.leftMargin: Style.marginS
         onClicked: {
           if (comboBox.currentKey !== "" && !root.isAtMaxCapacity) {
             addWidget(comboBox.currentKey, sectionId);
             comboBox.currentKey = "";
           }
         }
+      }
       }
     }
 
@@ -469,14 +469,7 @@ NBox {
         if (widgetModel.length === 0) {
           return 65 * Style.uiScaleRatio;
         }
-        // Use actual width, fallback to a reasonable default if not yet available
-        var containerWidth = width > 0 ? width : (parent ? parent.width : 400);
-        var rows = Math.ceil(widgetModel.length / root.gridColumns);
-        // Calculate height: (rows * item height) + (row spacing between items) + grid margins
-        var gridTopMargin = Style.marginS;
-        var gridBottomMargin = Style.marginS;
-        var calculatedHeight = gridTopMargin + (rows * root.widgetItemHeight) + ((rows - 1) * Style.marginS) + gridBottomMargin;
-        return calculatedHeight;
+        return widgetFlow.implicitHeight + Style.marginS * 2;
       }
       Layout.minimumHeight: widgetModel.length === 0 ? (65 * Style.uiScaleRatio) : (Style.margin2S + root.widgetItemHeight)
       clip: !flowDragArea?.dragStarted
@@ -491,19 +484,15 @@ NBox {
         z: 1500
       }
 
-      Grid {
-        id: widgetGrid
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.leftMargin: Style.marginS
-        anchors.rightMargin: Style.marginS
-        anchors.topMargin: Style.marginS
-        anchors.bottomMargin: Style.marginS
-        columns: root.gridColumns
-        rowSpacing: Style.marginS
-        columnSpacing: Style.marginM
+      // Content-sized chips in a flow. A 3-column grid gave each English
+      // name ("Wallpaper", "Performance") a slice too narrow to draw, so
+      // the text elided inside the chip.
+      Flow {
+        id: widgetFlow
+        x: Style.marginS
+        y: Style.marginS
+        width: Math.max(0, parent.width - Style.marginS * 2)
+        spacing: Style.marginS
 
         Repeater {
           id: widgetRepeater
@@ -519,7 +508,20 @@ NBox {
             // id/parent refs dangle while the editor subtree is being
             // destroyed (二级页 pop) — bindings re-evaluate against torn-down
             // objects, so stay null-tolerant.
-            width: root ? root.calculateWidgetWidth(parent ? parent.width : 0) : 0
+            // implicitWidth already includes the label's own left/right
+            // padding. Adding marginL on top of that, while the row's right
+            // margin was larger than its left, left ~17 px of empty chip on
+            // the right only (Network 11/30).
+            width: {
+              var icons = 0;
+              if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id))
+                icons += Style.baseWidgetSize * 0.5 + Style.marginXXS;
+              if (root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id))
+                icons += Style.baseWidgetSize * 0.5 + Style.marginXXS;
+              var label = widgetLabel.implicitWidth + icons + buttonsCount * buttonsWidth + Style.marginL * 2;
+              var limit = widgetFlow.width > 0 ? widgetFlow.width : label;
+              return Math.max(1, Math.min(label, limit));
+            }
             height: root.widgetItemHeight
             radius: Style.radiusItem
             // Field-level chip, same ladder step as NComboBox/NTextInput
@@ -635,11 +637,16 @@ NBox {
             RowLayout {
               id: widgetContent
               anchors.fill: parent
-              anchors.margins: Style.marginXS
-              anchors.rightMargin: Style.marginS
+              anchors.topMargin: Style.marginXS
+              anchors.bottomMargin: Style.marginXS
+              // Same horizontal inset on both sides. The label's own
+              // padding is inside implicitWidth and is not added again.
+              anchors.leftMargin: Style.marginL
+              anchors.rightMargin: Style.marginL
               spacing: Style.marginXXS
 
               NText {
+                id: widgetLabel
                 text: {
                   // Localised label from the registry (plugin ids resolve to
                   // the manifest name inside); falls back to the raw id when
@@ -656,8 +663,8 @@ NBox {
                 horizontalAlignment: Text.AlignLeft
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
-                leftPadding: Style.marginS
-                rightPadding: Style.marginS
+                leftPadding: 0
+                rightPadding: 0
                 Layout.fillWidth: true
                 Layout.fillHeight: true
               }
@@ -809,8 +816,8 @@ NBox {
         // Map widget coordinates from grid-local to gridContainer coordinates
         function mapWidgetCoords(widget) {
           return {
-            x: widget.x + widgetGrid.x,
-            y: widget.y + widgetGrid.y,
+            x: widget.x + widgetFlow.x,
+            y: widget.y + widgetFlow.y,
             width: widget.width,
             height: widget.height
           };

@@ -10,7 +10,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.notifications.enabled
+  visible: Settings.data.notifications.enabled
 
   signal openUnifiedPicker
   signal openLowPicker
@@ -63,7 +63,7 @@ ColumnLayout {
 
     // Sound Volume
     NValueSlider {
-      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
+      visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
       Layout.fillWidth: true
       label: I18n.tr("panels.notifications.sounds-volume-label")
       description: I18n.tr("panels.notifications.sounds-volume-description")
@@ -79,7 +79,7 @@ ColumnLayout {
 
     // Separate Sounds Toggle
     NToggle {
-      enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
+      visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
       Layout.fillWidth: true
       label: I18n.tr("panels.notifications.sounds-separate-label")
       description: I18n.tr("panels.notifications.sounds-separate-description")
@@ -89,25 +89,22 @@ ColumnLayout {
     }
   }
 
-  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
+  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4).
+  // Hidden with the group, otherwise a disabled sounds block leaves a stack of empty gaps.
   NDccGap {
     Layout.fillWidth: true
+    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && !(Settings.data.notifications?.sounds?.separateSounds)
   }
   // Unified Sound File (shown when separateSounds is false)
   ColumnLayout {
-    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
-    visible: !(Settings.data.notifications?.sounds?.separateSounds)
-    spacing: Style.marginXXS
+    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && !(Settings.data.notifications?.sounds?.separateSounds)
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
-    NLabel {
+    NTextInputButton {
+      Layout.fillWidth: true
       label: I18n.tr("panels.notifications.sounds-files-unified-label")
       description: I18n.tr("panels.notifications.sounds-files-unified-description")
-    }
-
-    NTextInputButton {
-      enabled: parent.enabled
-      Layout.fillWidth: true
       placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
       text: Settings.data.notifications?.sounds?.normalSoundFile
       buttonIcon: "folder-open"
@@ -131,97 +128,65 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && (Settings.data.notifications?.sounds?.separateSounds)
   }
   // Separate Sound Files (shown when separateSounds is true)
   ColumnLayout {
     visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled) && (Settings.data.notifications?.sounds?.separateSounds)
-    spacing: Style.marginXXS
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
-    // Low Urgency Sound File
-    ColumnLayout {
-      spacing: Style.marginXXS
+    NTextInputButton {
       Layout.fillWidth: true
-
-      NLabel {
-        label: I18n.tr("panels.notifications.sounds-files-low-label")
-        description: I18n.tr("panels.notifications.sounds-files-low-description")
-      }
-
-      NTextInputButton {
-        enabled: parent.enabled
-        Layout.fillWidth: true
-        placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.notifications?.sounds?.lowSoundFile
-        buttonIcon: "folder-open"
-        buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
-        onInputTextChanged: text => Settings.data.notifications.sounds.lowSoundFile = text
-        onButtonClicked: root.openLowPicker()
-      }
+      label: I18n.tr("panels.notifications.sounds-files-low-label")
+      description: I18n.tr("panels.notifications.sounds-files-low-description")
+      placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
+      text: Settings.data.notifications?.sounds?.lowSoundFile
+      buttonIcon: "folder-open"
+      buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
+      onInputTextChanged: text => Settings.data.notifications.sounds.lowSoundFile = text
+      onButtonClicked: root.openLowPicker()
     }
 
-    // Normal Urgency Sound File
-    ColumnLayout {
-      spacing: Style.marginXXS
+    NTextInputButton {
       Layout.fillWidth: true
-
-      NLabel {
-        label: I18n.tr("panels.notifications.sounds-files-normal-label")
-        description: I18n.tr("panels.notifications.sounds-files-normal-description")
-      }
-
-      NTextInputButton {
-        enabled: parent.enabled
-        Layout.fillWidth: true
-        placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.notifications?.sounds?.normalSoundFile
-        buttonIcon: "folder-open"
-        buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
-        onInputTextChanged: text => Settings.data.notifications.sounds.normalSoundFile = text
-        onButtonClicked: root.openNormalPicker()
-      }
+      label: I18n.tr("panels.notifications.sounds-files-normal-label")
+      description: I18n.tr("panels.notifications.sounds-files-normal-description")
+      placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
+      text: Settings.data.notifications?.sounds?.normalSoundFile
+      buttonIcon: "folder-open"
+      buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
+      onInputTextChanged: text => Settings.data.notifications.sounds.normalSoundFile = text
+      onButtonClicked: root.openNormalPicker()
     }
 
-    // Critical Urgency Sound File
-    ColumnLayout {
-      spacing: Style.marginXXS
+    NTextInputButton {
       Layout.fillWidth: true
-
-      NLabel {
-        label: I18n.tr("panels.notifications.sounds-files-critical-label")
-        description: I18n.tr("panels.notifications.sounds-files-critical-description")
-      }
-
-      NTextInputButton {
-        enabled: parent.enabled
-        Layout.fillWidth: true
-        placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.notifications?.sounds?.criticalSoundFile
-        buttonIcon: "folder-open"
-        buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
-        onInputTextChanged: text => Settings.data.notifications.sounds.criticalSoundFile = text
-        onButtonClicked: root.openCriticalPicker()
-      }
+      label: I18n.tr("panels.notifications.sounds-files-critical-label")
+      description: I18n.tr("panels.notifications.sounds-files-critical-description")
+      placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
+      text: Settings.data.notifications?.sounds?.criticalSoundFile
+      buttonIcon: "folder-open"
+      buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
+      onInputTextChanged: text => Settings.data.notifications.sounds.criticalSoundFile = text
+      onButtonClicked: root.openCriticalPicker()
     }
   }
 
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
   }
   // Excluded Apps List
   ColumnLayout {
-    enabled: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
-    spacing: Style.marginXXS
+    visible: SoundService.multimediaAvailable && (Settings.data.notifications?.sounds?.enabled)
+    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
-    NLabel {
+    NTextInput {
       label: I18n.tr("panels.notifications.sounds-excluded-apps-label")
       description: I18n.tr("panels.notifications.sounds-excluded-apps-description")
-    }
-
-    NTextInput {
-      enabled: parent.enabled
       Layout.fillWidth: true
       placeholderText: I18n.tr("panels.notifications.sounds-excluded-apps-placeholder")
       text: Settings.data.notifications?.sounds?.excludedApps

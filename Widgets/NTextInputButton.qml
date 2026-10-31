@@ -43,14 +43,22 @@ NDccRow {
     labelWeight: Style.fontWeightRegular
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
-    Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
-    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
   }
 
-  // Input field with button
+  // Field plus its trailing button share the one control column. The button
+  // used to sit outside settingsFieldWidth and overlap the field or the
+  // row padding (avatar picker, folder button, excluded-player "+").
   RowLayout {
-    Layout.fillWidth: true
-    spacing: Style.marginM
+    spacing: Style.marginXS
+    // The inner field is plain (no margin of its own). This margin is the
+    // one labelled combos and spin boxes use, so the field starts on the
+    // column (1723) instead of 1 px to the right.
+    Layout.margins: root.dccRow ? Style.borderS : 0
+    Layout.fillWidth: !root.dccRow
+    Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : 0
+    Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : -1
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
 
     NTextInput {
       id: input

@@ -27,12 +27,10 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.dock.enabled
+    visible: Settings.data.dock.enabled
 
-    NText {
-      text: I18n.tr("panels.dock.monitors-desc")
-      wrapMode: Text.WordWrap
-      Layout.fillWidth: true
+    NHeader {
+      description: I18n.tr("panels.dock.monitors-desc")
     }
 
     NToggle {

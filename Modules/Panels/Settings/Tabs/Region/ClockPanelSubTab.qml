@@ -13,18 +13,21 @@ ColumnLayout {
   property list<var> cardsDefault: [
     {
       "id": "calendar-header-card",
+      "labelKey": "panels.location.calendar-header-label",
       "text": I18n.tr("panels.location.calendar-header-label"),
       "enabled": true,
       "required": true
     },
     {
       "id": "calendar-month-card",
+      "labelKey": "panels.location.calendar-month-label",
       "text": I18n.tr("panels.location.calendar-month-label"),
       "enabled": true,
       "required": false
     },
     {
       "id": "weather-card",
+      "labelKey": "common.weather",
       "text": I18n.tr("common.weather"),
       "enabled": true,
       "required": false

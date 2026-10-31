@@ -8,7 +8,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.notifications.enabled
+  visible: Settings.data.notifications.enabled
 
   ColumnLayout {
     Layout.fillWidth: true

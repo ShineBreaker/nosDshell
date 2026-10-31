@@ -86,7 +86,7 @@ NDccRow {
   }
 
   plain: !root.dccRow
-  spacing: Style.marginL
+  spacing: root.dccRow ? Style.marginM : Style.marginL
   // A conflicting keybind gets the SettingsItem error border.
   error: root.hasConflict
 
@@ -105,28 +105,41 @@ NDccRow {
       labelWeight: Style.fontWeightRegular
       visible: label !== "" || description !== ""
       Layout.alignment: Qt.AlignVCenter
-      // §3.5.4: the title sits in a fixed column, the slots take the rest.
-      // preferredWidth (not fillWidth) so the slots row is the only filler:
-      // two fillWidth siblings split the row proportionally by preferred
-      // width and the pills' preferredWidth of 1 starves them to ~5 px.
-      Layout.preferredWidth: root.dccRow ? Style.settingsFieldTitleWidth : -1
+      Layout.fillWidth: true
+      Layout.minimumWidth: root.dccRow ? Math.min(labelContainer.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
     }
 
-    RowLayout {
-      id: slotsRow
-      spacing: Style.marginS
-      Layout.fillWidth: true
-      // No Layout.alignment here: setting it makes the layout item size
-      // to preferred width (fillWidth is then ignored) and the pills
-      // collapse to a few px.
+    // Both pills share the standard control column. A RowLayout around the
+    // Repeater gave the first delegate of one row width 0 (first Up, then
+    // after that was pinned, Down). Explicit x/width does not depend on
+    // the layout pass, so every bound key is a real hit target.
+    Item {
+      id: slotsBox
+      implicitWidth: Style.settingsFieldWidth
+      implicitHeight: root._pillHeight
+      // Same 1 px margin as NComboBox / NSpinBox. Without it the 170 px
+      // pill group sits at 1724–1893 while those controls sit at 1723–1892.
+      Layout.margins: root.dccRow ? Style.borderS : 0
+      Layout.fillWidth: !root.dccRow
+      Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
+      Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
+      Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
+      Layout.alignment: Qt.AlignVCenter
+
+      readonly property int slotCount: Math.max(1, root.maxKeybinds)
+      readonly property int slotGap: Style.marginS
+      readonly property int slotInner: Math.max(slotCount, Style.settingsFieldWidth - slotGap * (slotCount - 1))
+      readonly property int slotBase: Math.floor(slotInner / slotCount)
 
       Repeater {
         model: root.maxKeybinds
         delegate: MouseArea {
           id: slotArea
-          Layout.fillWidth: true
-          Layout.preferredWidth: 1
-          Layout.minimumWidth: Math.round(root._pillHeight * 2)
+          required property int index
+          readonly property int slotWidth: index === slotsBox.slotCount - 1 ? (slotsBox.slotInner - slotsBox.slotBase * (slotsBox.slotCount - 1)) : slotsBox.slotBase
+          x: index * (slotsBox.slotBase + slotsBox.slotGap)
+          y: 0
+          width: slotWidth
           height: root._pillHeight
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
@@ -166,13 +179,14 @@ NDccRow {
 
             RowLayout {
               anchors.fill: parent
-              anchors.leftMargin: Style.marginM
+              // Equal insets. The clear glyph is an overlay, so reserving
+              // its width here shoved every key name ~15 px left of centre
+              // even when the glyph was hidden.
+              anchors.leftMargin: Style.marginS
               anchors.rightMargin: Style.marginS
               spacing: Style.marginXS
               visible: slotArea.isOccupied || slotArea.isRecordingThis
 
-              // The icon only marks the recording state; an
-              // occupied slot spends its width on the key name.
               NIcon {
                 icon: root.hasConflict ? "alert-circle" : "circle-dot"
                 color: root.hasConflict ? Colors.alert : Colors.accent
@@ -180,39 +194,41 @@ NDccRow {
                 visible: slotArea.isRecordingThis
               }
 
+              // The key name is never elided. The clear glyph is an overlay
+              // in the right inset, so it does not steal the text's width.
               NText {
                 Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
                 text: slotArea.keybindText
                 color: Colors.onShell
                 family: Settings.data.ui.fontFixed
-                pointSize: Style.fontSizeM
+                pointSize: Style.fontSizeS
                 font.weight: Style.fontWeightMedium
-                elide: Text.ElideRight
+                elide: Text.ElideNone
               }
+            }
 
-              Item {
-                Layout.preferredWidth: Math.round(root._pillHeight * 0.7)
-                Layout.fillHeight: true
-                // Reveal on hover: a permanently reserved ×
-                // slot starves two-bind pills to ~25 px of
-                // text ("Return" elides to "R…").
-                visible: (root.currentKeybinds.length > 1 || root.allowEmpty) && slotArea.containsMouse
+            NIcon {
+              id: clearGlyph
+              z: 2
+              anchors.right: parent.right
+              anchors.rightMargin: Style.marginS
+              anchors.verticalCenter: parent.verticalCenter
+              icon: "x"
+              pointSize: Style.fontSizeXS
+              color: clearArea.containsMouse ? Colors.alert : Colors.onShellTertiary
+              visible: (root.currentKeybinds.length > 1 || root.allowEmpty) && slotArea.containsMouse && root.recordingIndex === -1 && (slotArea.isOccupied || slotArea.isRecordingThis)
 
-                NIconButton {
-                  anchors.centerIn: parent
-                  visible: root.recordingIndex === -1
-                  icon: "x"
-                  colorBg: "transparent"
-                  colorBgHover: Qt.alpha(Colors.alert, 0.1)
-                  colorFg: Colors.onShellTertiary
-                  colorFgHover: Colors.alert
-                  border.width: 0
-                  baseSize: Style.baseWidgetSize * 0.7
-                  onClicked: {
-                    var newKeybinds = Array.from(root.currentKeybinds);
-                    newKeybinds.splice(index, 1);
-                    root.keybindsChanged(newKeybinds);
-                  }
+              MouseArea {
+                id: clearArea
+                anchors.fill: parent
+                anchors.margins: -Style.marginXS
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                  var newKeybinds = Array.from(root.currentKeybinds);
+                  newKeybinds.splice(index, 1);
+                  root.keybindsChanged(newKeybinds);
                 }
               }
             }
@@ -220,13 +236,16 @@ NDccRow {
         }
       }
     }
+  }
 
-    // Hidden Item to capture keys
-    Item {
-      id: keybindInput
-      width: 0
-      height: 0
-      focus: true
+  // Key capture must not be a child of the row layout. A 0×0 item there
+  // still consumes the layout spacing and shifts the pills off the column.
+  Item {
+    id: keybindInput
+    parent: root
+    width: 0
+    height: 0
+    focus: true
 
       Keys.onPressed: event => {
                         if (root.recordingIndex === -1 || root.hasConflict)
@@ -268,6 +287,5 @@ NDccRow {
                         }
                         event.accepted = true;
                       }
-    }
   }
 }

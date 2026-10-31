@@ -36,31 +36,34 @@ ColumnLayout {
         Layout.alignment: Qt.AlignTop
       }
 
-      ColumnLayout {
-        spacing: Style.settingsGroupGap
-        NText {
-          text: HostService.displayName
-          pointSize: Style.fontSizeM
-          color: Colors.accent
-        }
+      NText {
+        text: HostService.displayName
+        pointSize: Style.fontSizeM
+        color: Colors.accent
+        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignVCenter
+      }
+    }
 
-        NTextInputButton {
-          label: I18n.tr("panels.general.profile-picture-label")
-          description: I18n.tr("panels.general.profile-picture-description")
-          // Read-only basename: the raw stored path is an internal detail;
-          // picking a different avatar goes through the file picker button.
-          inputReadOnly: true
-          text: {
-            const path = Settings.data.general.avatarImage;
-            return path ? path.split("/").pop() : "";
-          }
-          placeholderText: '~/.face' // don't translate path
-          buttonIcon: "photo"
-          buttonTooltip: I18n.tr("panels.general.profile-tooltip")
-          onButtonClicked: {
-            avatarPicker.openFilePicker();
-          }
-        }
+    // The field is a normal settings row under the avatar, not beside it.
+    // Beside a 128 px circle the 170 px control column does not fit, and the
+    // picker icon was drawn on top of an 80 px field.
+    NTextInputButton {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.general.profile-picture-label")
+      description: I18n.tr("panels.general.profile-picture-description")
+      // Read-only basename: the raw stored path is an internal detail;
+      // picking a different avatar goes through the file picker button.
+      inputReadOnly: true
+      text: {
+        const path = Settings.data.general.avatarImage;
+        return path ? path.split("/").pop() : "";
+      }
+      placeholderText: '~/.face' // don't translate path
+      buttonIcon: "photo"
+      buttonTooltip: I18n.tr("panels.general.profile-tooltip")
+      onButtonClicked: {
+        avatarPicker.openFilePicker();
       }
     }
 
@@ -186,7 +189,9 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    RowLayout {
+    // Content-sized capsules. fillWidth crushed the three English labels
+    // until the glyph sat 2–4 px from the capsule edge.
+    Flow {
       spacing: Style.marginL
       Layout.fillWidth: true
 
@@ -194,7 +199,6 @@ ColumnLayout {
         icon: "wand"
         text: I18n.tr("panels.general.launch-setup-wizard")
         outlined: true
-        Layout.fillWidth: true
         onClicked: {
           var targetScreen = PanelService.openedPanel ? PanelService.openedPanel.screen : (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
           if (!targetScreen) {
@@ -220,7 +224,6 @@ ColumnLayout {
         icon: "external-link"
         text: I18n.tr("common.documentation")
         outlined: true
-        Layout.fillWidth: true
         onClicked: {
           Qt.openUrlExternally("https://github.com/ShineBreaker/nosDshell");
         }
@@ -230,7 +233,6 @@ ColumnLayout {
         icon: "json"
         text: I18n.tr("panels.general.copy-settings")
         outlined: true
-        Layout.fillWidth: true
         onClicked: {
           var plainData = QtObj2JS.qtObjectToPlainObject(Settings.data);
           var json = JSON.stringify(plainData, null, 2);

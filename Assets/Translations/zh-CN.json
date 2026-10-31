@@ -218,7 +218,7 @@
       "unread-badge-color-label": "角标颜色"
     },
     "section-editor": {
-      "placeholder": "选择要添加的插件...",
+      "placeholder": "添加插件...",
       "search-placeholder": "搜索插件..."
     },
     "spacer": {
@@ -782,6 +782,7 @@
       "devices-input-device-label": "输入设备",
       "devices-output-device-description": "默认音频输出设备（扬声器或耳机）。",
       "devices-output-device-label": "输出设备",
+      "devices-none": "没有设备",
       "external-mixer-placeholder": "pwvucontrol || pavucontrol",
       "fallback-input-device-name": "无输入设备",
       "fallback-output-device-name": "无输出设备",
@@ -1065,6 +1066,7 @@
       "monitors-external-brightness-label": "外部显示器亮度支持",
       "monitors-global-brightness-label": "所有显示器",
       "night-light-auto-schedule-description": "按 <i>{location}</i> 的日出日落时间自动开关。",
+      "night-light-auto-schedule-description-unset": "按日出日落自动开关。设置位置后会显示地名。",
       "night-light-auto-schedule-label": "自动调度",
       "night-light-enable-description": "叠加暖色护眼滤镜，减少屏幕蓝光。",
       "night-light-enable-label": "夜间模式",
@@ -1549,7 +1551,7 @@
       "enable-dgpu-monitoring-description": "注意：采样会唤醒独立显卡（NVIDIA/AMD），在双显卡笔记本上可能明显缩短电池续航。",
       "enable-dgpu-monitoring-label": "独立显卡监控",
       "external-monitor-description": "打开外部系统监视器时执行的命令。",
-      "external-monitor-label": "外部系统监视器命令",
+      "external-monitor-label": "外部监视命令",
       "external-monitor-placeholder": "resources || missioncenter || jdsystemmonitor || corestats || system-monitoring-center || gnome-system-monitor || plasma-systemmonitor || mate-system-monitor || ukui-system-monitor || deepin-system-monitor || pantheon-system-monitor",
       "gpu-section-label": "GPU 温度",
       "threshold-critical": "严重",

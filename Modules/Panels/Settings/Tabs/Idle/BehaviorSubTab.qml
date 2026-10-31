@@ -30,9 +30,8 @@ ColumnLayout {
     // Live idle status
     NDccRow {
       Layout.fillWidth: true
-      enabled: Settings.data.idle.enabled
       interactive: false
-      visible: IdleService.nativeIdleMonitorAvailable
+      visible: Settings.data.idle.enabled && IdleService.nativeIdleMonitorAvailable
 
       NLabel {
         label: I18n.tr("panels.idle.status-label")
@@ -65,6 +64,7 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.idle.enabled
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
@@ -103,7 +103,7 @@ ColumnLayout {
     ColumnLayout {
       Layout.fillWidth: true
       spacing: Style.settingsGroupGap
-      enabled: Settings.data.idle.enabled
+      visible: Settings.data.idle.enabled
 
       NHeader {
         label: I18n.tr("panels.idle.timeouts-label")
@@ -177,10 +177,10 @@ ColumnLayout {
     }
   }
 
-  // A spin row plus its "edit commands" gear — the button drops into the
-  // NSpinBox's own dcc row content (NDccRow forwards children there), so the
-  // gear shares the row chrome instead of floating outside it.
-  component DefaultActionRow: NSpinBox {
+  // A spin row plus its "edit commands" gear. The gear lives inside the
+  // settings control column, not as a sibling past it, so a long title
+  // cannot push the gear off the panel edge.
+  component DefaultActionRow: NDccRow {
     id: rowRoot
     Layout.fillWidth: true
 
@@ -188,24 +188,50 @@ ColumnLayout {
     property string actionDescription
     property string command
     property string resumeCommand
-    property alias timeoutValue: rowRoot.value
+    property int timeoutValue: 0
+    property var defaultValue: undefined
 
     signal actionTimeoutChanged(int newValue)
     signal actionCommandChanged(string newCmd)
     signal actionResumeCommandChanged(string newCmd)
 
-    label: rowRoot.actionName
-    description: rowRoot.actionDescription
-    from: 0
-    to: 86400
-    suffix: "s"
-    onValueChanged: rowRoot.actionTimeoutChanged(value)
+    NLabel {
+      id: actionLabel
+      label: rowRoot.actionName
+      description: rowRoot.actionDescription
+      labelWeight: Style.fontWeightRegular
+      Layout.fillWidth: true
+      Layout.minimumWidth: Math.min(actionLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth)
+    }
 
-    NIconButton {
+    RowLayout {
+      spacing: Style.marginXS
+      Layout.minimumWidth: Style.settingsFieldWidth
+      Layout.preferredWidth: Style.settingsFieldWidth
+      Layout.maximumWidth: Style.settingsFieldWidth
       Layout.alignment: Qt.AlignVCenter
-      icon: "settings"
-      tooltipText: I18n.tr("common.edit")
-      onClicked: root.openEdit(rowRoot.actionName, rowRoot.command, rowRoot.resumeCommand, rowRoot.actionCommandChanged, rowRoot.actionResumeCommandChanged)
+
+      NSpinBox {
+        label: ""
+        description: ""
+        from: 0
+        to: 86400
+        suffix: "s"
+        value: rowRoot.timeoutValue
+        defaultValue: rowRoot.defaultValue
+        Layout.fillWidth: true
+        onValueChanged: {
+          if (value !== rowRoot.timeoutValue)
+            rowRoot.actionTimeoutChanged(value);
+        }
+      }
+
+      NIconButton {
+        Layout.alignment: Qt.AlignVCenter
+        icon: "settings"
+        tooltipText: I18n.tr("common.edit")
+        onClicked: root.openEdit(rowRoot.actionName, rowRoot.command, rowRoot.resumeCommand, rowRoot.actionCommandChanged, rowRoot.actionResumeCommandChanged)
+      }
     }
   }
 }

@@ -9,7 +9,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  enabled: Settings.data.hooks.enabled
+  visible: Settings.data.hooks.enabled
   // Nine hook rows are one SettingsGroup: the 1 px seam, not separate cards
   // (settingsgroup.cpp:46, DESIGN §3.5.4).
   spacing: Style.settingsGroupGap

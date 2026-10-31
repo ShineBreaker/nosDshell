@@ -102,6 +102,7 @@ SmartPanel {
 
         // Player selector (only when more than one player)
         Item {
+          id: playerButton
           Layout.fillWidth: true
           Layout.preferredHeight: 28
           Layout.topMargin: Style.marginS
@@ -137,12 +138,24 @@ SmartPanel {
 
           Popup {
             id: playerContextMenu
-            x: 0
-            y: parent.height
             width: 180
             padding: Style.marginS
             enter: NPopupEnter {}
             exit: NPopupExit {}
+            // Anchored Qt popups are not xdg popups, so niri's popups blur
+            // rule never sees them. Host on the popup-menu surface (which
+            // publishes the dialog plate) and keep the anchor by mapping
+            // the button into that surface.
+            onAboutToShow: {
+              PanelService.hostSettingsPopup(playerContextMenu, root.screen || null);
+              Qt.callLater(function () {
+                if (!playerContextMenu.parent)
+                  return;
+                var origin = playerButton.mapToItem(playerContextMenu.parent, 0, playerButton.height);
+                playerContextMenu.x = Math.round(origin.x);
+                playerContextMenu.y = Math.round(origin.y);
+              });
+            }
 
             background: Rectangle {
               color: Colors.popupShell

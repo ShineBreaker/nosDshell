@@ -49,6 +49,15 @@ ColumnLayout {
                 }
             }
         }
+
+        NText {
+            visible: AudioService.sinks.length === 0
+            text: I18n.tr("panels.audio.devices-none")
+            color: Colors.onShellTertiary
+            Layout.fillWidth: true
+            Layout.leftMargin: Style.settingsRowPaddingH
+            Layout.rightMargin: Style.settingsRowPaddingH
+        }
     }
 
     // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
@@ -92,6 +101,15 @@ ColumnLayout {
                     visible: entry ? AudioService.source?.id === entry.id : false
                 }
             }
+        }
+
+        NText {
+            visible: AudioService.sources.length === 0
+            text: I18n.tr("panels.audio.devices-none")
+            color: Colors.onShellTertiary
+            Layout.fillWidth: true
+            Layout.leftMargin: Style.settingsRowPaddingH
+            Layout.rightMargin: Style.settingsRowPaddingH
         }
     }
 }

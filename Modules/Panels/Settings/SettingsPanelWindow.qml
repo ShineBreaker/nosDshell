@@ -65,7 +65,11 @@ FloatingWindow {
   Shortcut {
     sequence: "Escape"
     enabled: !PanelService.isKeybindRecording
-    onActivated: SettingsPanelService.closeWindow()
+    onActivated: {
+      if (PanelService.closeScreenDialog(PanelService.findFallbackScreen()))
+        return;
+      SettingsPanelService.closeWindow();
+    }
   }
 
   Shortcut {

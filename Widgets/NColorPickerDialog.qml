@@ -47,13 +47,42 @@ Popup {
 
   modal: true
   closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+  // Same centering as NFilePicker. Assigning x/y from the old parent (or
+  // before hostSettingsPopup reparents onto the fullscreen popup window)
+  // left the dialog at screen 0,0. anchors follow the new parent.
+  anchors.centerIn: parent
+  onAboutToShow: PanelService.hostSettingsPopup(root, screen || null)
+  onOpened: forceActiveFocus()
 
-  onOpened: {
-    // Center on screen after popup is opened and parent position is known
-    if (screen && parent) {
-      var parentPos = parent.mapToItem(null, 0, 0);
-      x = Math.round((screen.width - width) / 2 - parentPos.x);
-      y = Math.round((screen.height - height) / 2 - parentPos.y);
+  // Channel letters are not DDE option rows. NRadioButton draws an accent
+  // check that widened only the checked row and pushed its number box out
+  // of line, and the letter itself never fitted beside that check.
+  component ChannelMark: AbstractButton {
+    id: mark
+    property string letter: ""
+    property int mode: 0
+    implicitWidth: Style.settingsFieldHeight
+    implicitHeight: Style.settingsFieldHeight
+    hoverEnabled: true
+    padding: 0
+    checked: root.editMode === mode
+    onClicked: root.editMode = mode
+    Layout.alignment: Qt.AlignVCenter
+    Layout.fillWidth: false
+    Layout.minimumWidth: Style.settingsFieldHeight
+    Layout.preferredWidth: Style.settingsFieldHeight
+    Layout.maximumWidth: Style.settingsFieldHeight
+    background: Rectangle {
+      radius: Style.radiusRow
+      color: mark.checked ? Colors.overlay("checked") : (mark.hovered ? Colors.overlay("hover") : "transparent")
+    }
+    contentItem: NText {
+      text: mark.letter
+      horizontalAlignment: Text.AlignHCenter
+      verticalAlignment: Text.AlignVCenter
+      elide: Text.ElideNone
+      font.weight: Style.fontWeightMedium
+      color: mark.checked ? Colors.accent : Colors.onShell
     }
   }
 
@@ -144,10 +173,6 @@ Popup {
       Layout.fillWidth: true
       Layout.preferredHeight: controlsOutterColumn.implicitHeight + Style.margin2L
 
-      ButtonGroup {
-        id: colorValues
-      }
-
       ColumnLayout {
         id: controlsOutterColumn
         anchors.fill: parent
@@ -169,13 +194,9 @@ Popup {
               Layout.fillWidth: true
               spacing: Style.marginM
 
-              NRadioButton {
-                ButtonGroup.group: colorValues
-                text: "R"
-                font.weight: Style.fontWeightMedium
-                checked: true
-                onClicked: root.editMode = NColorPickerDialog.EditMode.R
-                Layout.fillWidth: false
+              ChannelMark {
+                letter: "R"
+                mode: NColorPickerDialog.EditMode.R
               }
 
               NSpinBox {
@@ -201,12 +222,9 @@ Popup {
               Layout.fillWidth: true
               spacing: Style.marginM
 
-              NRadioButton {
-                ButtonGroup.group: colorValues
-                text: "G"
-                font.weight: Style.fontWeightMedium
-                onClicked: root.editMode = NColorPickerDialog.EditMode.G
-                Layout.fillWidth: false
+              ChannelMark {
+                letter: "G"
+                mode: NColorPickerDialog.EditMode.G
               }
 
               NSpinBox {
@@ -232,12 +250,9 @@ Popup {
               Layout.fillWidth: true
               spacing: Style.marginM
 
-              NRadioButton {
-                ButtonGroup.group: colorValues
-                text: "B"
-                font.weight: Style.fontWeightMedium
-                onClicked: root.editMode = NColorPickerDialog.EditMode.B
-                Layout.fillWidth: false
+              ChannelMark {
+                letter: "B"
+                mode: NColorPickerDialog.EditMode.B
               }
 
               NSpinBox {
@@ -269,13 +284,9 @@ Popup {
               Layout.fillWidth: true
               spacing: Style.marginM
 
-              NRadioButton {
-                ButtonGroup.group: colorValues
-                text: "H"
-                font.weight: Style.fontWeightMedium
-                checked: true
-                onClicked: root.editMode = NColorPickerDialog.EditMode.H
-                Layout.fillWidth: false
+              ChannelMark {
+                letter: "H"
+                mode: NColorPickerDialog.EditMode.H
               }
 
               NSpinBox {
@@ -304,12 +315,9 @@ Popup {
               Layout.fillWidth: true
               spacing: Style.marginM
 
-              NRadioButton {
-                ButtonGroup.group: colorValues
-                text: "S"
-                font.weight: Style.fontWeightMedium
-                onClicked: root.editMode = NColorPickerDialog.EditMode.S
-                Layout.fillWidth: false
+              ChannelMark {
+                letter: "S"
+                mode: NColorPickerDialog.EditMode.S
               }
 
               NSpinBox {
@@ -334,12 +342,9 @@ Popup {
             RowLayout {
               spacing: Style.marginM
 
-              NRadioButton {
-                ButtonGroup.group: colorValues
-                text: "V"
-                font.weight: Style.fontWeightMedium
-                onClicked: root.editMode = NColorPickerDialog.EditMode.V
-                Layout.fillWidth: false
+              ChannelMark {
+                letter: "V"
+                mode: NColorPickerDialog.EditMode.V
               }
 
               NSpinBox {
@@ -479,13 +484,21 @@ Popup {
               Layout.alignment: Qt.AlignTop
 
               radius: 0
+              // Default Rectangle color is white. A 1 px margin on the clip
+              // item left that white as a line along the bottom of the square.
+              color: "transparent"
               border.color: Colors.borderShell
               border.width: Style.borderS
-              clip: true
+              // The SV handle is a circle centred on the colour point. Clipping
+              // the field cut it to a quarter-circle when the point was a corner.
+              clip: false
+
+              Item {
+                anchors.fill: parent
+                clip: true
 
               ShaderEffect {
                 anchors.fill: parent
-                anchors.margins: 1 // Avoid drawing over the border
 
                 fragmentShader: "../Shaders/qsb/color_picker.frag.qsb"
 
@@ -511,6 +524,7 @@ Popup {
 
                 // Send as one vector because GPUs are so damn picky
                 property vector4d params: Qt.vector4d(1.0, fixedVal, root.editMode, 0)
+              }
               }
 
               MouseArea {
@@ -618,8 +632,11 @@ Popup {
         NScrollView {
           id: paletteScrollView
           Layout.fillWidth: true
-          Layout.preferredHeight: Math.min(paletteGrid.implicitHeight, 200)
-          verticalPolicy: paletteGrid.implicitHeight > 200 ? ScrollBar.AsNeeded : ScrollBar.AlwaysOff
+          // The old cap (min(implicit, 200)) clipped the last swatch row
+          // inside the card while Cancel/Apply still fitted below it.
+          // A few extra pixels keep that row's border off the clip edge.
+          Layout.preferredHeight: paletteGrid.implicitHeight + Style.marginXS
+          verticalPolicy: ScrollBar.AlwaysOff
           horizontalPolicy: ScrollBar.AlwaysOff
 
           GridLayout {

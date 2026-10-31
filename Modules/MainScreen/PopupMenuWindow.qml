@@ -37,7 +37,10 @@ PanelWindow {
   // to avoid stealing input from popups while still catching outside clicks.
   // However, when a dialog is open, always use Top so dialogs appear above apps.
   WlrLayershell.layer: (CompositorService.isLabwc && !hasDialog) ? WlrLayer.Bottom : WlrLayer.Top
-  WlrLayershell.keyboardFocus: hasDialog ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  // Exclusive while a dialog is up, and the panel surface yields (see
+  // MainScreen.keyboardFocus). OnDemand lost every key to the panel, so
+  // Esc closed settings and left the picker on this window.
+  WlrLayershell.keyboardFocus: hasDialog ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
   WlrLayershell.namespace: "nosdshell-" + windowType + "-" + (screen?.name || "unknown")
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
@@ -50,21 +53,81 @@ PanelWindow {
 
   // Frosted-glass behind the open dialog: settings popups render inside
   // this surface, so the blur region rides the same BackgroundEffect path
-  // the panels/dock use (DESIGN §1.2).
+  // the panels/dock use (DESIGN §1.2). The tracked rect is the painted
+  // plate, not Popup.contentItem: padding insets the content box, and
+  // following it leaves an unblurred ring around the mask (plugin settings,
+  // widget settings, pickers). See _blurPlate.
   BackgroundEffect.blurRegion: dialogBlurRegion.region
   NSurfaceRegion {
     id: dialogBlurRegion
-    // Dialogs opened here are Qt Quick Popups — QObject, not Item — so the
-    // tracked rect must be their contentItem (Qt Quick renders the popup at
-    // its x/y through that child).
-    trackedItem: {
-      const d = root.dialogItem;
-      if (!d)
-        return null;
-      return (d instanceof Item) ? d : (d.contentItem || null);
-    }
-    radius: Style.radiusWindow
+    trackedItem: root._dialogPlate
+    radius: root._dialogPlateRadius
+    // Popup enter/exit scales the plate (NPopupEnter). mapToScene follows
+    // the transform only when the region rebuilds; watch is that sentinel.
+    watch: root._dialogScale
     activeWhen: Colors.blurActive && root.dialogItem !== null
+  }
+
+  readonly property real _dialogScale: {
+    const d = root.dialogItem;
+    return (d && typeof d.scale === "number") ? d.scale : 1;
+  }
+
+  readonly property Item _dialogPlate: root._blurPlate(root.dialogItem)
+
+  readonly property int _dialogPlateRadius: {
+    // Only Rectangle carries `radius`. Reading it on a plain Item (an arrow
+    // body's bodyItem, a FocusScope content box) warns and returns nothing,
+    // so those fall back to the dialog radius. Hosted dialogs paint a
+    // Rectangle; arrow popups publish their own region on the PopupWindow.
+    const plate = root._dialogPlate;
+    const r = (plate instanceof Rectangle && plate.radius > 0) ? plate.radius : Style.radiusWindow;
+    return Math.round(r * root._dialogScale);
+  }
+
+  // The mask rectangle the compositor should blur. A Popup is not an Item;
+  // its background is the plate (sized to the popup), while contentItem is
+  // inset by padding. A wrapper background (Wallhaven) holds the painted
+  // rect as a fill child. An empty background (hidden-network popup) means
+  // the plate is the fill rect inside the content box — blurring the empty
+  // background would frost the transparent padding outside the card.
+  // Arrow plates expose bodyItem so the arrow's transparent margins stay
+  // sharp (DEBUGGING.md).
+  function _blurPlate(dialog) {
+    if (!dialog)
+      return null;
+    if (dialog instanceof Item)
+      return dialog.bodyItem || dialog;
+    const fromBg = root._paintedPlate(dialog.background);
+    if (fromBg)
+      return fromBg;
+    return root._paintedPlate(dialog.contentItem) || dialog.contentItem || null;
+  }
+
+  function _paintedPlate(item) {
+    if (!item)
+      return null;
+    if (item.bodyItem)
+      return item.bodyItem;
+    if (root._isPainted(item))
+      return item;
+    const kids = item.children || [];
+    for (let i = 0; i < kids.length; i++) {
+      const child = kids[i];
+      if (!child || !child.anchors || child.anchors.fill !== item)
+        continue;
+      if (child.bodyItem)
+        return child.bodyItem;
+      if (root._isPainted(child))
+        return child;
+    }
+    return null;
+  }
+
+  function _isPainted(item) {
+    // `color` exists on Rectangle, not on Item. A missing property read warns
+    // on every rebind, so the type test comes first.
+    return item instanceof Rectangle && item.color.a > 0.01;
   }
 
   // Register with PanelService so widgets can find this window, and as a
@@ -150,10 +213,22 @@ PanelWindow {
   function hostDialog(dialog) {
     dialogItem = dialog;
     open();
+    // The layer focus mode updates with hasDialog. Grab keys on the next
+    // turn, after that mode is committed, or Esc still hits the panel.
+    Qt.callLater(function () {
+      if (dialog && dialog.forceActiveFocus)
+        dialog.forceActiveFocus();
+    });
     dialog.closed.connect(function () {
       if (dialogItem === dialog)
         dialogItem = null;
       close();
+      // Hand the keyboard back to the panel that opened the modal.
+      Qt.callLater(function () {
+        var panel = PanelService.openedPanel;
+        if (panel && panel.forceActiveFocus)
+          panel.forceActiveFocus();
+      });
     });
   }
 

@@ -163,6 +163,23 @@ Singleton {
   property var _hostedPopupParents: new WeakMap()
   property var _hostedPopupRestore: new WeakMap()
 
+  // True when this screen's popup-menu window is showing a hosted modal
+  // (file picker, colour dialog, icon picker, …).
+  function screenHasDialog(screen) {
+    var win = screen ? getPopupMenuWindow(screen) : null;
+    return !!(win && win.hasDialog);
+  }
+
+  // Close that modal and return true. Esc uses this so the panel underneath
+  // stays open. Returns false when there is nothing to close.
+  function closeScreenDialog(screen) {
+    var win = screen ? getPopupMenuWindow(screen) : null;
+    if (!win || !win.dialogItem || !win.dialogItem.close)
+      return false;
+    win.dialogItem.close();
+    return true;
+  }
+
   function hostSettingsPopup(popup, screen) {
     var scr = screen || findFallbackScreen();
     var win = scr ? getPopupMenuWindow(scr) : null;

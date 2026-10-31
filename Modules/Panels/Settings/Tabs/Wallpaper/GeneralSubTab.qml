@@ -32,7 +32,7 @@ ColumnLayout {
         }
 
         ColumnLayout {
-            enabled: Settings.data.wallpaper.enabled
+            visible: Settings.data.wallpaper.enabled
             spacing: Style.settingsGroupGap
             Layout.fillWidth: true
 
@@ -187,6 +187,7 @@ ColumnLayout {
     // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
     NDccGap {
         Layout.fillWidth: true
+        visible: Settings.data.wallpaper.enabled
     }
     // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
     // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
@@ -197,14 +198,14 @@ ColumnLayout {
             label: I18n.tr("panels.wallpaper.settings-use-original-images-label")
             description: I18n.tr("panels.wallpaper.settings-use-original-images-description")
             checked: Settings.data.wallpaper.useOriginalImages
-            enabled: Settings.data.wallpaper.enabled
+            visible: Settings.data.wallpaper.enabled
             onToggled: checked => Settings.data.wallpaper.useOriginalImages = checked
             defaultValue: Settings.getDefaultValue("wallpaper.useOriginalImages")
         }
 
         NDccRow {
             Layout.fillWidth: true
-            enabled: Settings.data.wallpaper.enabled
+            visible: Settings.data.wallpaper.enabled
 
             NLabel {
                 label: I18n.tr("panels.wallpaper.settings-clear-cache-label")
@@ -229,12 +230,13 @@ ColumnLayout {
     // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
     NDccGap {
         Layout.fillWidth: true
+        visible: Settings.data.wallpaper.enabled
     }
     // Library display + apply behaviour: one DDE SettingsGroup -- rows stack
     // with the 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
     ColumnLayout {
         Layout.fillWidth: true
-        enabled: Settings.data.wallpaper.enabled
+        visible: Settings.data.wallpaper.enabled
         spacing: Style.settingsGroupGap
         NToggle {
             label: I18n.tr("panels.wallpaper.settings-show-hidden-files-label")
@@ -291,10 +293,10 @@ ColumnLayout {
     // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
     NDccGap {
         Layout.fillWidth: true
+        visible: CompositorService.isNiri && Settings.data.wallpaper.enabled
     }
     ColumnLayout {
-        visible: CompositorService.isNiri
-        enabled: Settings.data.wallpaper.enabled
+        visible: CompositorService.isNiri && Settings.data.wallpaper.enabled
         spacing: Style.settingsGroupGap
         Layout.fillWidth: true
 

@@ -91,39 +91,35 @@ ColumnLayout {
       }
     }
 
-    // Volume Feedback sound Toggle
+    // Volume Feedback sound Toggle. The file row is a standard control-column
+    // row and hides with the feature (DESIGN §3.5.3); the switch stays.
     ColumnLayout {
-      spacing: Style.marginS
+      spacing: Style.settingsGroupGap
       Layout.fillWidth: true
 
       NToggle {
         label: I18n.tr("panels.audio.volumes-volume-feedback-label")
         description: I18n.tr("panels.audio.volumes-volume-feedback-description")
         checked: Settings.data.audio.volumeFeedback
+        // Same capability gate as the notification-sound switch: without Qt
+        // Multimedia the preference cannot play, so it is not interactive.
+        // The stored value stays for when the backend is present.
+        enabled: SoundService.multimediaAvailable
         defaultValue: Settings.getDefaultValue("audio.volumeFeedback")
         onToggled: checked => Settings.data.audio.volumeFeedback = checked
       }
 
-      ColumnLayout {
-        enabled: SoundService.multimediaAvailable && Settings.data.audio.volumeFeedback
-        spacing: Style.marginXXS
+      NTextInputButton {
+        visible: SoundService.multimediaAvailable && Settings.data.audio.volumeFeedback
         Layout.fillWidth: true
-
-        NHeader {
-          label: I18n.tr("panels.audio.volumes-feedback-sound-file-label")
-          description: I18n.tr("panels.audio.volumes-feedback-sound-file-description")
-        }
-
-        NTextInputButton {
-          enabled: parent.enabled
-          Layout.fillWidth: true
-          placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-          text: Settings.data.audio.volumeFeedbackSoundFile
-          buttonIcon: "folder-open"
-          buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
-          onInputTextChanged: text => Settings.data.audio.volumeFeedbackSoundFile = text
-          onButtonClicked: volumeFeedbackFilePicker.open()
-        }
+        label: I18n.tr("panels.audio.volumes-feedback-sound-file-label")
+        description: I18n.tr("panels.audio.volumes-feedback-sound-file-description")
+        placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
+        text: Settings.data.audio.volumeFeedbackSoundFile
+        buttonIcon: "folder-open"
+        buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
+        onInputTextChanged: text => Settings.data.audio.volumeFeedbackSoundFile = text
+        onButtonClicked: volumeFeedbackFilePicker.open()
       }
     }
   }

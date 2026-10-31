@@ -14,24 +14,23 @@ ColumnLayout {
   property var reorderEntries
   property var openEntrySettingsDialog
 
-  // List of items
+  // Sortable entries are one SettingsGroup: 1 px seams, auto head/tail
+  // corners come from NDccRow's sibling scan (DESIGN §3.5.4). A ListView
+  // plus a y binding that also added spacing measured as a ~4 px gap.
   Item {
+    id: entryList
     Layout.fillWidth: true
-    implicitHeight: listView.contentHeight
+    // childrenRect follows the delegate y bindings, so the block stays as
+    // tall as the last row. A hand-rolled sum misses height changes.
+    implicitHeight: Math.max(0, childrenRect.height)
 
-    NListView {
-      id: listView
-      anchors.fill: parent
-      // Sortable entries are one SettingsGroup: 1 px seams, auto head/tail
-      // corners come from NDccRow's sibling scan (DESIGN §3.5.4).
-      spacing: Style.settingsGroupGap
-      interactive: false
-      reserveScrollbarSpace: false
+    Repeater {
+      id: entryRepeater
       model: root.entriesModel
 
       delegate: NDccRow {
         id: delegateItem
-        width: listView.availableWidth
+        width: entryList.width
         spacing: Style.marginS
         active: dragging
 
@@ -39,6 +38,7 @@ ColumnLayout {
         required property var modelData
 
         property bool dragging: false
+        property real dragY: 0
         property int dragStartY: 0
         property int dragStartIndex: -1
         property int dragTargetIndex: -1
@@ -78,6 +78,7 @@ ColumnLayout {
                          delegateItem.dragStartIndex = delegateItem.index;
                          delegateItem.dragTargetIndex = delegateItem.index;
                          delegateItem.dragStartY = delegateItem.y;
+                         delegateItem.dragY = delegateItem.y;
                          delegateItem.dragging = true;
                          delegateItem.z = 999;
                          preventStealing = true;
@@ -86,11 +87,13 @@ ColumnLayout {
             onPositionChanged: mouse => {
                                  if (delegateItem.dragging) {
                                    var dy = mouse.y - height / 2;
-                                   var newY = delegateItem.y + dy;
-                                   newY = Math.max(0, Math.min(newY, listView.contentHeight - delegateItem.height));
-                                   delegateItem.y = newY;
-                                   var targetIndex = Math.floor((newY + delegateItem.height / 2) / (delegateItem.height + listView.spacing));
-                                   targetIndex = Math.max(0, Math.min(targetIndex, listView.count - 1));
+                                   var stride = delegateItem.height + Style.settingsGroupGap;
+                                   var newY = delegateItem.dragY + dy;
+                                   var limit = Math.max(0, (entryRepeater.count - 1) * stride);
+                                   newY = Math.max(0, Math.min(newY, limit));
+                                   delegateItem.dragY = newY;
+                                   var targetIndex = Math.floor((newY + delegateItem.height / 2) / stride);
+                                   targetIndex = Math.max(0, Math.min(targetIndex, entryRepeater.count - 1));
                                    delegateItem.dragTargetIndex = targetIndex;
                                  }
                                }
@@ -157,7 +160,30 @@ ColumnLayout {
         // Label
         NText {
           Layout.fillWidth: true
-          text: modelData.text
+          // Names are stored once at load. Resolve from the action id so a
+          // live language switch does not leave the previous language.
+          text: {
+            switch (modelData.id) {
+            case "lock":
+              return I18n.tr("common.lock");
+            case "suspend":
+              return I18n.tr("common.suspend");
+            case "hibernate":
+              return I18n.tr("common.hibernate");
+            case "reboot":
+              return I18n.tr("common.reboot");
+            case "userspaceReboot":
+              return I18n.tr("common.userspace-reboot");
+            case "rebootToUefi":
+              return I18n.tr("common.reboot-to-uefi");
+            case "logout":
+              return I18n.tr("common.logout");
+            case "shutdown":
+              return I18n.tr("common.shutdown");
+            default:
+              return modelData.text || "";
+            }
+          }
           color: Colors.onShell
           verticalAlignment: Text.AlignVCenter
           elide: Text.ElideRight
@@ -185,16 +211,17 @@ ColumnLayout {
           onClicked: root.openEntrySettingsDialog(delegateItem.index)
         }
 
-        // Position binding for non-dragging state
+        // Position binding for non-dragging state. dragY is a separate
+        // property so this binding never reads y (that loop disables it
+        // and the row never snaps back into the 1 px seam).
         y: {
-          if (delegateItem.dragging) {
-            return delegateItem.y;
-          }
+          if (delegateItem.dragging)
+            return delegateItem.dragY;
 
           var draggedIndex = -1;
           var targetIndex = -1;
-          for (var i = 0; i < listView.count; i++) {
-            var item = listView.itemAtIndex(i);
+          for (var i = 0; i < entryRepeater.count; i++) {
+            var item = entryRepeater.itemAt(i);
             if (item && item.dragging) {
               draggedIndex = item.dragStartIndex;
               targetIndex = item.dragTargetIndex;
@@ -204,18 +231,19 @@ ColumnLayout {
 
           if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
             var currentIndex = delegateItem.index;
+            var stride = delegateItem.height + Style.settingsGroupGap;
             if (draggedIndex < targetIndex) {
               if (currentIndex > draggedIndex && currentIndex <= targetIndex) {
-                return (currentIndex - 1) * (delegateItem.height + listView.spacing);
+                return (currentIndex - 1) * stride;
               }
             } else {
               if (currentIndex >= targetIndex && currentIndex < draggedIndex) {
-                return (currentIndex + 1) * (delegateItem.height + listView.spacing);
+                return (currentIndex + 1) * stride;
               }
             }
           }
 
-          return delegateItem.index * (delegateItem.height + listView.spacing);
+          return delegateItem.index * (delegateItem.height + Style.settingsGroupGap);
         }
 
         Behavior on y {

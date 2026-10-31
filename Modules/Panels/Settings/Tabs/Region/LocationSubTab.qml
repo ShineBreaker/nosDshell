@@ -135,7 +135,7 @@ ColumnLayout {
             description: I18n.tr("panels.location.weather-fahrenheit-description")
             checked: Settings.data.location.useFahrenheit
             onToggled: checked => Settings.data.location.useFahrenheit = checked
-            enabled: Settings.data.location.weatherEnabled
+            visible: Settings.data.location.weatherEnabled
         }
 
         NToggle {
@@ -143,7 +143,7 @@ ColumnLayout {
             description: I18n.tr("panels.location.weather-show-effects-description")
             checked: Settings.data.location.weatherShowEffects
             onToggled: checked => Settings.data.location.weatherShowEffects = checked
-            enabled: Settings.data.location.weatherEnabled
+            visible: Settings.data.location.weatherEnabled
         }
 
         NToggle {
@@ -151,7 +151,7 @@ ColumnLayout {
             description: I18n.tr("panels.location.weather-hide-city-description")
             checked: Settings.data.location.hideWeatherCityName
             onToggled: checked => Settings.data.location.hideWeatherCityName = checked
-            enabled: Settings.data.location.weatherEnabled
+            visible: Settings.data.location.weatherEnabled
         }
 
         NToggle {
@@ -159,7 +159,7 @@ ColumnLayout {
             description: I18n.tr("panels.location.weather-hide-timezone-description")
             checked: Settings.data.location.hideWeatherTimezone
             onToggled: checked => Settings.data.location.hideWeatherTimezone = checked
-            enabled: Settings.data.location.weatherEnabled
+            visible: Settings.data.location.weatherEnabled
         }
     }
 }
