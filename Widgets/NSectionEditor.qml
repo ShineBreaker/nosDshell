@@ -469,14 +469,7 @@ NBox {
         if (widgetModel.length === 0) {
           return 65 * Style.uiScaleRatio;
         }
-        // Use actual width, fallback to a reasonable default if not yet available
-        var containerWidth = width > 0 ? width : (parent ? parent.width : 400);
-        var rows = Math.ceil(widgetModel.length / root.gridColumns);
-        // Calculate height: (rows * item height) + (row spacing between items) + grid margins
-        var gridTopMargin = Style.marginS;
-        var gridBottomMargin = Style.marginS;
-        var calculatedHeight = gridTopMargin + (rows * root.widgetItemHeight) + ((rows - 1) * Style.marginS) + gridBottomMargin;
-        return calculatedHeight;
+        return widgetFlow.implicitHeight + Style.marginS * 2;
       }
       Layout.minimumHeight: widgetModel.length === 0 ? (65 * Style.uiScaleRatio) : (Style.margin2S + root.widgetItemHeight)
       clip: !flowDragArea?.dragStarted
@@ -491,19 +484,15 @@ NBox {
         z: 1500
       }
 
-      Grid {
-        id: widgetGrid
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.leftMargin: Style.marginS
-        anchors.rightMargin: Style.marginS
-        anchors.topMargin: Style.marginS
-        anchors.bottomMargin: Style.marginS
-        columns: root.gridColumns
-        rowSpacing: Style.marginS
-        columnSpacing: Style.marginM
+      // Content-sized chips in a flow. A 3-column grid gave each English
+      // name ("Wallpaper", "Performance") a slice too narrow to draw, so
+      // the text elided inside the chip.
+      Flow {
+        id: widgetFlow
+        x: Style.marginS
+        y: Style.marginS
+        width: Math.max(0, parent.width - Style.marginS * 2)
+        spacing: Style.marginS
 
         Repeater {
           id: widgetRepeater
@@ -519,7 +508,11 @@ NBox {
             // id/parent refs dangle while the editor subtree is being
             // destroyed (二级页 pop) — bindings re-evaluate against torn-down
             // objects, so stay null-tolerant.
-            width: root ? root.calculateWidgetWidth(parent ? parent.width : 0) : 0
+            width: {
+              var label = widgetLabel.implicitWidth + Style.marginL * 2 + buttonsCount * buttonsWidth;
+              var limit = widgetFlow.width > 0 ? widgetFlow.width : label;
+              return Math.max(1, Math.min(Math.max(label, Style.settingsFieldHeight * 2), limit));
+            }
             height: root.widgetItemHeight
             radius: Style.radiusItem
             // Field-level chip, same ladder step as NComboBox/NTextInput
@@ -640,6 +633,7 @@ NBox {
               spacing: Style.marginXXS
 
               NText {
+                id: widgetLabel
                 text: {
                   // Localised label from the registry (plugin ids resolve to
                   // the manifest name inside); falls back to the raw id when
@@ -809,8 +803,8 @@ NBox {
         // Map widget coordinates from grid-local to gridContainer coordinates
         function mapWidgetCoords(widget) {
           return {
-            x: widget.x + widgetGrid.x,
-            y: widget.y + widgetGrid.y,
+            x: widget.x + widgetFlow.x,
+            y: widget.y + widgetFlow.y,
             width: widget.width,
             height: widget.height
           };

@@ -15,13 +15,16 @@ Rectangle {
   // Dialog lifecycle mirrors NSectionEditor: one live instance, destroyed on close.
   property var _activeDialog: null
 
+  // Same margin and idle border as NSpinBox / NComboBox. An always-on
+  // borderShell stroke sat inside the 170 px box, so the field read as
+  // 1724–1891 while those controls read as 1723–1892.
   Layout.margins: Style.borderS
   implicitWidth: Style.settingsFieldWidth
   implicitHeight: Math.round(Style.baseWidgetSize * 1.1)
 
   radius: Style.radiusItem
   color: Colors.overlay("field")
-  border.color: Colors.borderShell
+  border.color: "transparent"
   border.width: Style.borderS
 
   // Minimized Look

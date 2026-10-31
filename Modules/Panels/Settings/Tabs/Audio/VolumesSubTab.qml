@@ -101,6 +101,10 @@ ColumnLayout {
         label: I18n.tr("panels.audio.volumes-volume-feedback-label")
         description: I18n.tr("panels.audio.volumes-volume-feedback-description")
         checked: Settings.data.audio.volumeFeedback
+        // Same capability gate as the notification-sound switch: without Qt
+        // Multimedia the preference cannot play, so it is not interactive.
+        // The stored value stays for when the backend is present.
+        enabled: SoundService.multimediaAvailable
         defaultValue: Settings.getDefaultValue("audio.volumeFeedback")
         onToggled: checked => Settings.data.audio.volumeFeedback = checked
       }

@@ -66,7 +66,6 @@ ColumnLayout {
           screen: root.screen
           Layout.fillWidth: true
           Layout.preferredHeight: Style.baseWidgetSize
-          enabled: Settings.data.systemMonitor.useCustomColors
           selectedColor: Settings.data.systemMonitor.warningColor || Colors.mTertiary
           onColorSelected: color => Settings.data.systemMonitor.warningColor = color
         }
@@ -85,7 +84,6 @@ ColumnLayout {
           screen: root.screen
           Layout.fillWidth: true
           Layout.preferredHeight: Style.baseWidgetSize
-          enabled: Settings.data.systemMonitor.useCustomColors
           selectedColor: Settings.data.systemMonitor.criticalColor || Colors.alert
           onColorSelected: color => Settings.data.systemMonitor.criticalColor = color
         }

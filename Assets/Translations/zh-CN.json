@@ -218,7 +218,7 @@
       "unread-badge-color-label": "角标颜色"
     },
     "section-editor": {
-      "placeholder": "选择要添加的插件...",
+      "placeholder": "添加插件...",
       "search-placeholder": "搜索插件..."
     },
     "spacer": {

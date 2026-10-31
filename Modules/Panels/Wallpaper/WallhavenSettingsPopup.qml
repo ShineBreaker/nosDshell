@@ -179,22 +179,12 @@ Popup {
       Layout.fillWidth: true
     }
 
-    // Sorting
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginM
-
-      NText {
-        text: I18n.tr("wallpaper.panel.sorting-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-        Layout.preferredWidth: implicitWidth
-      }
-
-      NComboBox {
+    // Sorting. Labelled NComboBox so every popup combo shares one column
+    // instead of starting wherever its label happens to end.
+    NComboBox {
         id: sortingComboBox
+        label: I18n.tr("wallpaper.panel.sorting-label")
         Layout.fillWidth: true
-        Layout.minimumWidth: 200
         model: [
           {
             "key": "date_added",
@@ -229,26 +219,14 @@ Popup {
                         WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", 1);
                       }
                     }
-      }
     }
 
     // Order
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginM
-      visible: sortingComboBox.currentKey !== "random"
-
-      NText {
-        text: I18n.tr("wallpaper.panel.order-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-        Layout.preferredWidth: implicitWidth
-      }
-
-      NComboBox {
+    NComboBox {
         id: orderComboBox
+        label: I18n.tr("wallpaper.panel.order-label")
         Layout.fillWidth: true
-        Layout.minimumWidth: 200
+        visible: sortingComboBox.currentKey !== "random"
         model: [
           {
             "key": "desc",
@@ -267,7 +245,6 @@ Popup {
                         WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", 1);
                       }
                     }
-      }
     }
 
     // Purity selector
@@ -514,21 +491,10 @@ Popup {
     }
 
     // Aspect Ratio
-    RowLayout {
-      Layout.fillWidth: true
-      spacing: Style.marginM
-
-      NText {
-        text: I18n.tr("wallpaper.panel.ratios-label")
-        color: Colors.mOnSurface
-        pointSize: Style.fontSizeM
-        Layout.preferredWidth: implicitWidth
-      }
-
-      NComboBox {
+    NComboBox {
         id: ratioComboBox
+        label: I18n.tr("wallpaper.panel.ratios-label")
         Layout.fillWidth: true
-        Layout.minimumWidth: 200
         model: [
           {
             "key": "",
@@ -599,7 +565,6 @@ Popup {
                         WallhavenService.search(Settings.data.wallpaper.wallhavenQuery || "", 1);
                       }
                     }
-      }
     }
 
     // Categories
@@ -849,21 +814,10 @@ Popup {
         pointSize: Style.fontSizeM
       }
 
-      RowLayout {
-        Layout.fillWidth: true
-        spacing: Style.marginM
-
-        NText {
-          text: I18n.tr("wallpaper.panel.resolution-mode-label")
-          color: Colors.mOnSurface
-          pointSize: Style.fontSizeM
-          Layout.preferredWidth: implicitWidth
-        }
-
-        NComboBox {
+      NComboBox {
           id: resolutionModeComboBox
+          label: I18n.tr("wallpaper.panel.resolution-mode-label")
           Layout.fillWidth: true
-          Layout.minimumWidth: 200
           model: [
             {
               "key": "atleast",
@@ -889,7 +843,6 @@ Popup {
                         Settings.data.wallpaper.wallhavenResolutionMode = key;
                         updateResolution(false);
                       }
-        }
       }
 
       RowLayout {

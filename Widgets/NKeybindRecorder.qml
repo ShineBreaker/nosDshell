@@ -109,26 +109,34 @@ NDccRow {
       Layout.minimumWidth: root.dccRow ? Math.min(labelContainer.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
     }
 
-    // Both pills share the standard control column and sit on its right edge.
-    RowLayout {
-      id: slotsRow
-      spacing: Style.marginS
+    // Both pills share the standard control column. A RowLayout around the
+    // Repeater gave the first delegate of one row width 0 (first Up, then
+    // after that was pinned, Down). Explicit x/width does not depend on
+    // the layout pass, so every bound key is a real hit target.
+    Item {
+      id: slotsBox
+      implicitWidth: Style.settingsFieldWidth
+      implicitHeight: root._pillHeight
       Layout.fillWidth: !root.dccRow
-      Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : 0
-      Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : -1
-      Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
+      Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
+      Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
+      Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : implicitWidth
+      Layout.alignment: Qt.AlignVCenter
+
+      readonly property int slotCount: Math.max(1, root.maxKeybinds)
+      readonly property int slotGap: Style.marginS
+      readonly property int slotInner: Math.max(slotCount, Style.settingsFieldWidth - slotGap * (slotCount - 1))
+      readonly property int slotBase: Math.floor(slotInner / slotCount)
 
       Repeater {
         model: root.maxKeybinds
         delegate: MouseArea {
           id: slotArea
-          // Equal slices of the control column. fillWidth + preferredWidth 1
-          // collapsed the first pill of the first row (the "Up" slot) to 0.
-          readonly property real slotWidth: Math.max(1, Math.floor((Style.settingsFieldWidth - Style.marginS * Math.max(0, root.maxKeybinds - 1)) / Math.max(1, root.maxKeybinds)))
-          Layout.fillWidth: false
-          Layout.preferredWidth: slotWidth
-          Layout.minimumWidth: slotWidth
-          Layout.maximumWidth: slotWidth
+          required property int index
+          readonly property int slotWidth: index === slotsBox.slotCount - 1 ? (slotsBox.slotInner - slotsBox.slotBase * (slotsBox.slotCount - 1)) : slotsBox.slotBase
+          x: index * (slotsBox.slotBase + slotsBox.slotGap)
+          y: 0
+          width: slotWidth
           height: root._pillHeight
           hoverEnabled: true
           cursorShape: Qt.PointingHandCursor
@@ -168,11 +176,11 @@ NDccRow {
 
             RowLayout {
               anchors.fill: parent
+              // Equal insets. The clear glyph is an overlay, so reserving
+              // its width here shoved every key name ~15 px left of centre
+              // even when the glyph was hidden.
               anchors.leftMargin: Style.marginS
-              // The clear glyph sits in the right inset. Keep the same
-              // margin on its right, and keep the key name out from under it
-              // so a hover never elides "Return" down to "Ret...".
-              anchors.rightMargin: Style.marginS + clearGlyph.implicitWidth + Style.marginXS
+              anchors.rightMargin: Style.marginS
               spacing: Style.marginXS
               visible: slotArea.isOccupied || slotArea.isRecordingThis
 
@@ -199,6 +207,7 @@ NDccRow {
 
             NIcon {
               id: clearGlyph
+              z: 2
               anchors.right: parent.right
               anchors.rightMargin: Style.marginS
               anchors.verticalCenter: parent.verticalCenter

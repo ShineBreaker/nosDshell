@@ -145,6 +145,7 @@ Popup {
   // The settings surface does not publish a blur region for dialogs
   // (DESIGN §1.2). Host on the popup-menu window before the popup shows.
   onAboutToShow: PanelService.hostSettingsPopup(root, null)
+  onOpened: filePickerPanel.forceActiveFocus()
 
   background: Rectangle {
     color: Colors.maskShell

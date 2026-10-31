@@ -189,7 +189,9 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    RowLayout {
+    // Content-sized capsules. fillWidth crushed the three English labels
+    // until the glyph sat 2–4 px from the capsule edge.
+    Flow {
       spacing: Style.marginL
       Layout.fillWidth: true
 
@@ -197,7 +199,6 @@ ColumnLayout {
         icon: "wand"
         text: I18n.tr("panels.general.launch-setup-wizard")
         outlined: true
-        Layout.fillWidth: true
         onClicked: {
           var targetScreen = PanelService.openedPanel ? PanelService.openedPanel.screen : (Quickshell.screens.length > 0 ? Quickshell.screens[0] : null);
           if (!targetScreen) {
@@ -223,7 +224,6 @@ ColumnLayout {
         icon: "external-link"
         text: I18n.tr("common.documentation")
         outlined: true
-        Layout.fillWidth: true
         onClicked: {
           Qt.openUrlExternally("https://github.com/ShineBreaker/nosDshell");
         }
@@ -233,7 +233,6 @@ ColumnLayout {
         icon: "json"
         text: I18n.tr("panels.general.copy-settings")
         outlined: true
-        Layout.fillWidth: true
         onClicked: {
           var plainData = QtObj2JS.qtObjectToPlainObject(Settings.data);
           var json = JSON.stringify(plainData, null, 2);

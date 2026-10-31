@@ -89,6 +89,15 @@ def main():
             file=sys.stderr,
         )
         fail = 1
+    # Layout.preferredWidth on a Repeater delegate still collapsed one row's
+    # first pill after the widths were pinned. The slot must set width itself.
+    if not re.search(r"width:\s*slotWidth", kb):
+        print(
+            "Widgets/NKeybindRecorder.qml: each pill must set width: slotWidth "
+            "(a RowLayout width is not enough)",
+            file=sys.stderr,
+        )
+        fail = 1
     return fail
 
 

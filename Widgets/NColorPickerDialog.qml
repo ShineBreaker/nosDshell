@@ -52,6 +52,7 @@ Popup {
   // left the dialog at screen 0,0. anchors follow the new parent.
   anchors.centerIn: parent
   onAboutToShow: PanelService.hostSettingsPopup(root, screen || null)
+  onOpened: forceActiveFocus()
 
   // Channel letters are not DDE option rows. NRadioButton draws an accent
   // check that widened only the checked row and pushed its number box out
@@ -485,11 +486,17 @@ Popup {
               radius: 0
               border.color: Colors.borderShell
               border.width: Style.borderS
-              clip: true
+              // The SV handle is a circle centred on the colour point. Clipping
+              // the field cut it to a quarter-circle when the point was a corner.
+              clip: false
+
+              Item {
+                anchors.fill: parent
+                anchors.margins: 1
+                clip: true
 
               ShaderEffect {
                 anchors.fill: parent
-                anchors.margins: 1 // Avoid drawing over the border
 
                 fragmentShader: "../Shaders/qsb/color_picker.frag.qsb"
 
@@ -515,6 +522,7 @@ Popup {
 
                 // Send as one vector because GPUs are so damn picky
                 property vector4d params: Qt.vector4d(1.0, fixedVal, root.editMode, 0)
+              }
               }
 
               MouseArea {

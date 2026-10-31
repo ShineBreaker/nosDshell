@@ -30,9 +30,8 @@ ColumnLayout {
     // Live idle status
     NDccRow {
       Layout.fillWidth: true
-      enabled: Settings.data.idle.enabled
       interactive: false
-      visible: IdleService.nativeIdleMonitorAvailable
+      visible: Settings.data.idle.enabled && IdleService.nativeIdleMonitorAvailable
 
       NLabel {
         label: I18n.tr("panels.idle.status-label")
@@ -65,6 +64,7 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.idle.enabled
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
@@ -103,7 +103,7 @@ ColumnLayout {
     ColumnLayout {
       Layout.fillWidth: true
       spacing: Style.settingsGroupGap
-      enabled: Settings.data.idle.enabled
+      visible: Settings.data.idle.enabled
 
       NHeader {
         label: I18n.tr("panels.idle.timeouts-label")

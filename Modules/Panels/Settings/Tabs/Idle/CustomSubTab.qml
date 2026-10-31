@@ -10,7 +10,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.idle.enabled
+  visible: Settings.data.idle.enabled
 
   property bool _saving: false
 
@@ -168,7 +168,6 @@ ColumnLayout {
     NDccRow {
       Layout.fillWidth: true
       clickable: true
-      enabled: Settings.data.idle.enabled
       onClicked: root.openEdit(-1, "", 60, "", "")
       NIcon {
         icon: "add"

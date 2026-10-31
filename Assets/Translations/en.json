@@ -218,7 +218,7 @@
       "unread-badge-color-label": "Unread badge color"
     },
     "section-editor": {
-      "placeholder": "Select a widget to add...",
+      "placeholder": "Add widget...",
       "search-placeholder": "Search widget..."
     },
     "spacer": {

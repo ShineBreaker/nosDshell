@@ -37,7 +37,10 @@ PanelWindow {
   // to avoid stealing input from popups while still catching outside clicks.
   // However, when a dialog is open, always use Top so dialogs appear above apps.
   WlrLayershell.layer: (CompositorService.isLabwc && !hasDialog) ? WlrLayer.Bottom : WlrLayer.Top
-  WlrLayershell.keyboardFocus: hasDialog ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+  // Exclusive while a dialog is up, and the panel surface yields (see
+  // MainScreen.keyboardFocus). OnDemand lost every key to the panel, so
+  // Esc closed settings and left the picker on this window.
+  WlrLayershell.keyboardFocus: hasDialog ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
   WlrLayershell.namespace: "nosdshell-" + windowType + "-" + (screen?.name || "unknown")
   WlrLayershell.exclusionMode: ExclusionMode.Ignore
 
@@ -210,10 +213,22 @@ PanelWindow {
   function hostDialog(dialog) {
     dialogItem = dialog;
     open();
+    // The layer focus mode updates with hasDialog. Grab keys on the next
+    // turn, after that mode is committed, or Esc still hits the panel.
+    Qt.callLater(function () {
+      if (dialog && dialog.forceActiveFocus)
+        dialog.forceActiveFocus();
+    });
     dialog.closed.connect(function () {
       if (dialogItem === dialog)
         dialogItem = null;
       close();
+      // Hand the keyboard back to the panel that opened the modal.
+      Qt.callLater(function () {
+        var panel = PanelService.openedPanel;
+        if (panel && panel.forceActiveFocus)
+          panel.forceActiveFocus();
+      });
     });
   }
 

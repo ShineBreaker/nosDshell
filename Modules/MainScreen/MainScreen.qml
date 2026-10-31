@@ -71,6 +71,11 @@ PanelWindow {
     }
     // Panel open on THIS screen: use panel's preferred focus mode
     if (root.isPanelOpen) {
+      // A hosted modal lives on the popup-menu surface. Exclusive here would
+      // keep Esc (and typing) on the panel, which closes the panel and
+      // leaves the modal on screen. Yield so that surface can take the keys.
+      if (PanelService.screenHasDialog(root.screen))
+        return WlrKeyboardFocus.OnDemand;
       // Hyprland's Exclusive captures ALL input globally (including pointer),
       // preventing click-to-close from working on other monitors.
       // Workaround: briefly use Exclusive when panel opens (for text input focus),
@@ -665,7 +670,13 @@ PanelWindow {
     Shortcut {
       sequence: modelData
       enabled: root.isPanelOpen && (PanelService.openedPanel.onEscapePressed !== undefined) && !PanelService.isKeybindRecording
-      onActivated: PanelService.openedPanel.onEscapePressed()
+      onActivated: {
+        // Esc closes the top-most modal only. The key still arrives here
+        // when the popup surface has not taken keyboard focus yet.
+        if (PanelService.closeScreenDialog(root.screen))
+          return;
+        PanelService.openedPanel.onEscapePressed();
+      }
     }
   }
 
