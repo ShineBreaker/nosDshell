@@ -670,6 +670,14 @@ Singleton {
   // it is always full and the label→control gap must be marginM like every
   // other dcc row (NDccRow).
   readonly property int settingsFieldTitleWidth: Math.round(140 * uiScaleRatio)
+  // The DDE 140 px title floor does not fit a settings row:
+  // 140 + marginL + settingsFieldWidth is wider than
+  // settingsRowContentMaxWidth, so a long title pushed the control out of
+  // the row and off the panel edge. This cap is the most the title may
+  // demand; the label wraps inside it and the control stays
+  // settingsFieldWidth (DESIGN §3.5.4). marginL is the wider title→control
+  // gap, so a marginM row still fits.
+  readonly property int settingsFieldTitleMaxWidth: Math.max(0, settingsRowContentMaxWidth - marginL - settingsFieldWidth)
   // Control column width (DESIGN §3.5.4 控件列宽): dropdowns, searchable
   // dropdowns, spin boxes and single-line inputs in a settings row are all
   // this wide — min, preferred and max alike — so their left and right edges

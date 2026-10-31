@@ -18,7 +18,7 @@ These settings are for general window appearance and functionality.
 ```ini
 window-rule {
   // Rounded corners for a modern look.
-  geometry-corner-radius 20
+  geometry-corner-radius 8
 
   // Clips window contents to the rounded corner boundaries.
   clip-to-geometry true
@@ -48,7 +48,7 @@ This minimal configuration allows you to have a blurred and dimmed copy of your 
 ```ini
 // Set the overview wallpaper on the backdrop.
 layer-rule {
-  match namespace="^nosdshell-overview*"
+  match namespace="^nosdshell-overview(-.*)?$"
   place-within-backdrop true
 }
 ```
@@ -110,16 +110,21 @@ overview {
 > Blur support was introduced in Niri version 26.04. Adding these rules to earlier versions of Niri will result in configuration errors.
 
 
-You can enable blur behind windows and Noctalia's bar, panels, and dock.
+nosDshell publishes blur regions itself. The rules below choose xray per surface; they do not blur every application window.
 
 ```ini
-/* Apps: blur them all without xray for a better look */
+/* Do not blur every window. A blanket `blur true; xray false`
+   blurs opaque windows too, and it fights "blur only where a
+   client publishes a region". nosdshell publishes its own.
+   Opt in per translucent app, for example:
 window-rule {
+  match app-id="^(foot|kitty|Alacritty)$"
   background-effect {
     blur true
     xray false
   }
 }
+*/
 
 /*
   nosDshell layer rules for niri ≥ 26.04.
@@ -145,21 +150,24 @@ window-rule {
     Tier 1  xray blur   — wallpaper-sampled blur (xray is niri's default
                           for layer surfaces). Right for surfaces whose
                           only backdrop is the wallpaper anyway.
-    Tier 2  real blur   — `xray false` on the region publishers that float
-                          over arbitrary windows; translucency then shows
-                          the actual window stack, not just the wallpaper.
+    Tier 2  real blur   — `xray false` on the large region publishers that
+                          float over arbitrary windows (background, popupmenu,
+                          polkit, mini launcher). Small or short-lived
+                          publishers (dock, notifications, toast, osd) stay
+                          on xray: the look is nearly the same and non-xray
+                          is the dominant compositor cost, and it flashes
+                          off during niri open/close animations.
 
   Canonical copy: nosDshell repo, Scripts/docs/nosdshell-layer-rules.kdl
   (check-layer-namespaces.py keeps it in sync with emitted namespaces).
 */
 
-// Tier 2 — region publishers floating over windows: the bar strip and every
-// open panel (hosted by nosdshell-background), the fashion dock, the mini
-// launcher, the popupmenu plane while it hosts a dialog (widget/plugin
-// settings, color/file pickers), notification bubbles, toasts, the OSD
-// tile, and the polkit auth dialog. These must blur the real window stack.
+// Tier 2 — real blur for the large publishers that float over arbitrary
+// windows: the bar strip and every open panel (nosdshell-background), the
+// popupmenu plane while it hosts a dialog, the polkit auth dialog, and the
+// mini launcher. These must sample the real window stack.
 layer-rule {
-  match namespace="^nosdshell-(background|dock|popupmenu|notifications|toast|osd)-.*$"
+  match namespace="^nosdshell-(background|popupmenu)-.*$"
   match namespace="^nosdshell-polkit$"
   match namespace="^nosd-launcher-mini-.*$"
   background-effect {
@@ -167,10 +175,22 @@ layer-rule {
   }
 }
 
+// Small or short-lived publishers. xray (niri's default for layer surfaces)
+// samples the wallpaper only; on a dock, toast, OSD or notification that is
+// nearly the same picture as non-xray and much cheaper, and it does not
+// flash off during niri's open/close animations.
+layer-rule {
+  match namespace="^nosdshell-(dock|notifications|toast|osd)-.*$"
+  background-effect {
+    xray true
+  }
+}
+
 // Tier 1 — wallpaper-sampled blur: the fullscreen launcher wants the
 // "blurred wallpaper" look, and desktop widgets at WlrLayer.Bottom only
-// ever float over the wallpaper. xray samples the backdrop only, which is
-// both the right aesthetic and the cheap path.
+// ever float over the wallpaper. xray is niri's default for layer surfaces
+// once a client region is published; the flag is repeated so this namespace
+// is classified (check-layer-namespaces.py) and the choice is documented.
 layer-rule {
   match namespace="^nosd-launcher-full-.*$"
   match namespace="^nosdshell-desktop-widgets-.*$"
@@ -187,14 +207,14 @@ layer-rule {
 // region (NArrowRect.bodyItem + NSurfaceRegion), and niri follows the
 // client region exactly. `blur true` here keeps whole-surface blur as the
 // fallback for popups that don't publish a region; `blur false` would
-// force-disable even client regions.
+// force-disable even client regions. niri popups are already non-xray, so
+// `xray false` here would be a no-op.
 layer-rule {
   match namespace="^nosdshell-"
   match namespace="^nosd-launcher-"
   popups {
     background-effect {
       blur true
-      xray false
     }
   }
 }
@@ -220,8 +240,8 @@ You can also fine-tune the blur effect globally:
 blur {
   passes 2        // more passes = stronger blur (default: 3)
   offset 3.0      // sample distance per pass (default: 3.0)
-  noise 0.03      // grain overlay (default: 0.02)
-  saturation 1.0  // color saturation boost (default: 1.5)
+  noise 0.02      // niri default; 0.03 grains dark glass
+  saturation 1.3  // 1.0 looks muddy; 1.5 is niri's default
 }
 ```
 

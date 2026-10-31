@@ -47,6 +47,7 @@ Popup {
 
   modal: true
   closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+  onAboutToShow: PanelService.hostSettingsPopup(root, screen || null)
 
   onOpened: {
     // Center on screen after popup is opened and parent position is known

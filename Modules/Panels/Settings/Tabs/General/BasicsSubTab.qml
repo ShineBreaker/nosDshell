@@ -36,31 +36,34 @@ ColumnLayout {
         Layout.alignment: Qt.AlignTop
       }
 
-      ColumnLayout {
-        spacing: Style.settingsGroupGap
-        NText {
-          text: HostService.displayName
-          pointSize: Style.fontSizeM
-          color: Colors.accent
-        }
+      NText {
+        text: HostService.displayName
+        pointSize: Style.fontSizeM
+        color: Colors.accent
+        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignVCenter
+      }
+    }
 
-        NTextInputButton {
-          label: I18n.tr("panels.general.profile-picture-label")
-          description: I18n.tr("panels.general.profile-picture-description")
-          // Read-only basename: the raw stored path is an internal detail;
-          // picking a different avatar goes through the file picker button.
-          inputReadOnly: true
-          text: {
-            const path = Settings.data.general.avatarImage;
-            return path ? path.split("/").pop() : "";
-          }
-          placeholderText: '~/.face' // don't translate path
-          buttonIcon: "photo"
-          buttonTooltip: I18n.tr("panels.general.profile-tooltip")
-          onButtonClicked: {
-            avatarPicker.openFilePicker();
-          }
-        }
+    // The field is a normal settings row under the avatar, not beside it.
+    // Beside a 128 px circle the 170 px control column does not fit, and the
+    // picker icon was drawn on top of an 80 px field.
+    NTextInputButton {
+      Layout.fillWidth: true
+      label: I18n.tr("panels.general.profile-picture-label")
+      description: I18n.tr("panels.general.profile-picture-description")
+      // Read-only basename: the raw stored path is an internal detail;
+      // picking a different avatar goes through the file picker button.
+      inputReadOnly: true
+      text: {
+        const path = Settings.data.general.avatarImage;
+        return path ? path.split("/").pop() : "";
+      }
+      placeholderText: '~/.face' // don't translate path
+      buttonIcon: "photo"
+      buttonTooltip: I18n.tr("panels.general.profile-tooltip")
+      onButtonClicked: {
+        avatarPicker.openFilePicker();
       }
     }
 

@@ -27,6 +27,7 @@ Popup {
   modal: true
   dim: false
   closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+  onAboutToShow: PanelService.hostSettingsPopup(root, screen || null)
 
   function showAt(item) {
     open();

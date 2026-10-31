@@ -186,9 +186,9 @@ ColumnLayout {
     }
   }
 
-  // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
+  // The stacked NTabView already draws this group's title. A second head
+  // with the same label read as a double header; keep the description.
   NHeader {
-    label: I18n.tr("panels.color-scheme.templates-header")
     description: I18n.tr("panels.color-scheme.templates-desc")
   }
 

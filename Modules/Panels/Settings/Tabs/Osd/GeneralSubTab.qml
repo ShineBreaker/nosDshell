@@ -113,10 +113,8 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
     enabled: Settings.data.osd.enabled
-    NText {
-      text: I18n.tr("panels.osd.monitors-desc")
-      wrapMode: Text.WordWrap
-      Layout.fillWidth: true
+    NHeader {
+      description: I18n.tr("panels.osd.monitors-desc")
     }
 
     Repeater {

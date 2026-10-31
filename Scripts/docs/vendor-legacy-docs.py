@@ -133,6 +133,68 @@ def json_to_nix(obj, indent=0):
     return "null"
 
 
+def patch_niri_page(text):
+    """Fork adjustments on the vendored niri page.
+
+    The layer-rule block is replaced with Scripts/docs/nosdshell-layer-rules.kdl.
+    The surrounding recommendations (window radius, no blanket app blur, blur
+    tuning, overview namespace) are applied here so a regen does not restore
+    the upstream advice that fights the shell.
+    """
+    text = text.replace('namespace="^noctalia-', 'namespace="^nosdshell-')
+    text = text.replace('namespace="^nosdshell-overview*"',
+                        'namespace="^nosdshell-overview(-.*)?$"')
+    rules = (REPO / "Scripts/docs/nosdshell-layer-rules.kdl").read_text().strip()
+    # Upstream has a single layer-rule under this comment. Replacing that one
+    # block with the whole kdl is what a from-scratch vendor does; do not
+    # widen the match or a second rule's closing brace gets swallowed.
+    text = re.sub(
+        r"/\* Noctalia: blur[^\n]*\*/\nlayer-rule \{[\s\S]*?\n\}",
+        lambda _m: rules, text, count=1)
+    text = text.replace("geometry-corner-radius 20", "geometry-corner-radius 8")
+    # Blanket non-xray behind every window, including opaque ones. The shell
+    # publishes its own regions; this rule was the expensive no-op-for-opaque
+    # recommendation. Leave a commented opt-in for terminals that are
+    # actually translucent.
+    app_blur = (
+        "/* Apps: blur them all without xray for a better look */\n"
+        "window-rule {\n"
+        "  background-effect {\n"
+        "    blur true\n"
+        "    xray false\n"
+        "  }\n"
+        "}"
+    )
+    app_blur_note = (
+        "/* Do not blur every window. A blanket `blur true; xray false`\n"
+        "   blurs opaque windows too, and it fights \"blur only where a\n"
+        "   client publishes a region\". nosdshell publishes its own.\n"
+        "   Opt in per translucent app, for example:\n"
+        "window-rule {\n"
+        "  match app-id=\"^(foot|kitty|Alacritty)$\"\n"
+        "  background-effect {\n"
+        "    blur true\n"
+        "    xray false\n"
+        "  }\n"
+        "}\n"
+        "*/"
+    )
+    text = text.replace(app_blur, app_blur_note)
+    text = text.replace(
+        "noise 0.03      // grain overlay (default: 0.02)",
+        "noise 0.02      // niri default; 0.03 grains dark glass",
+    )
+    text = text.replace(
+        "saturation 1.0  // color saturation boost (default: 1.5)",
+        "saturation 1.3  // 1.0 looks muddy; 1.5 is niri's default",
+    )
+    text = text.replace(
+        "You can enable blur behind windows and Noctalia's bar, panels, and dock.",
+        "nosDshell publishes blur regions itself. The rules below choose xray per surface; they do not blur every application window.",
+    )
+    return text
+
+
 def slug_to_relpath(slug):
     slug = slug.strip("/")
     if slug in LANDING_SLUGS:
@@ -286,11 +348,7 @@ class Converter:
         # Point the page at the canonical rule set (kept in sync with the
         # emitted WlrLayershell.namespace values by check-layer-namespaces.py).
         if out_rel == "getting-started/compositor-settings/niri.md":
-            text = text.replace('namespace="^noctalia-', 'namespace="^nosdshell-')
-            rules = (REPO / "Scripts/docs/nosdshell-layer-rules.kdl").read_text().strip()
-            text = re.sub(
-                r"/\* Noctalia: blur[^\n]*\*/\nlayer-rule \{[\s\S]*?\n\}",
-                lambda _m: rules, text, count=1)
+            text = patch_niri_page(text)
         return text
 
     def conv_admonitions(self, text):

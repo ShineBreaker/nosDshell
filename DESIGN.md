@@ -793,7 +793,7 @@ Noctalia 卡片的对应关系：
 - nosdshell 通过 `ext-background-effect` 自己发布模糊区域（bar 与面板在 `nosdshell-background` 上；`popupmenu` 承载模态对话框时发布对话框矩形；`notifications`/`toast`/`osd`/`polkit`/`desktop-widgets`/`dock`/两个启动器各自发布），niri ≥ 26.04 无需任何规则即按客户端申请的形状精确模糊。layer-rule 只负责两件事：给浮动在窗口上的发布面关掉 xray（否则默认只采样壁纸），和给"永不模糊"的面钉 `blur false`。
 - **同样绝不**给发布会话区域或填充蒙版的表面钉 `blur false`：niri 的 `blur false` 连客户端 `ext-background-effect` 区域一起强制关闭，蒙版下透出的是清晰内容——2026-10 的 popupmenu 对话框事故即此。`blur false` 只许用于不画任何蒙版的表面。
 - **绝不**在 nosdshell 面的 surface 级规则里写 `blur true`：niri 会按整个面（含透明区）施加模糊，而 `nosdshell-background`、`popupmenu`、`notifications`、`toast` 等大多是全屏面，这就是 2026-10 的巨型模糊事故。整面 `blur true` 只许写在 `popups {}` 里（xdg_popup 天然内容尺寸）。
-- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊给浮在窗口上的发布面（`background`、`dock`、`launcher-mini`、`popupmenu`、`notifications`、`toast`、`osd`、`polkit`）；Tier 1 xray 给底下只有壁纸的面（`launcher-full` 要的就是"模糊壁纸"观感，`desktop-widgets` 在 `WlrLayer.Bottom` 同理）；Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、`fade-overlay` 是压暗纱幕不是玻璃、辅助面不可见）。
+- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊（`xray false`）只给大块、会盖住任意窗口的发布面（`background`、`popupmenu`、`polkit`、`launcher-mini`）。`dock`、`notifications`、`toast`、`osd` 面积小或寿命短，用 xray：观感接近，非 xray 是合成器侧的主要开销，而且 niri 在开合动画期间会丢掉非 xray。Tier 1 xray 给底下只有壁纸的面（`launcher-full` 要的就是"模糊壁纸"观感，`desktop-widgets` 在 `WlrLayer.Bottom` 同理；xray 本就是 layer 面的默认，这条规则用来把 namespace 归类）。Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、`fade-overlay` 是压暗纱幕不是玻璃、辅助面不可见）。不要给所有应用窗口写 `blur true`：不透明窗口也付非 xray 的代价，而且和「只糊客户端发布的区域」矛盾。
 - 规则集的仓库内唯一事实源是 `Scripts/docs/nosdshell-layer-rules.kdl`，`check-layer-namespaces.py` 校验全部发射的 namespace 被归类且阻止 surface 级 `blur true` 回归；该文件经 `vendor-legacy-docs.py` 注入 docs 站的 niri 页。
 
 ### 4.3 `nosd-helpers portal`

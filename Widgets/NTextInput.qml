@@ -23,9 +23,6 @@ NDccRow {
   property bool showClearButton: true
   // A labelled input is a settings row; a bare one is not.
   property bool dccRow: label !== "" || description !== ""
-  // LineEditWidget puts the title in a fixed 140 px column (lineeditwidget.cpp:83).
-  property real titleWidth: Style.settingsFieldTitleWidth
-
   property alias text: input.text
   property alias placeholderText: input.placeholderText
   property alias inputMethodHints: input.inputMethodHints
@@ -56,11 +53,8 @@ NDccRow {
     autoDim: false
     visible: root.label !== "" || root.description !== ""
     Layout.fillWidth: true
-    // §3.5.4: the title sits in a fixed column, the field takes the rest —
-    // capped at the title column, floored at the label's own width so the
-    // label never wraps while the field can still yield.
-    Layout.maximumWidth: root.dccRow ? root.titleWidth : Number.POSITIVE_INFINITY
-    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, root.titleWidth) : 0
+    // §3.5.4: wrap past the title budget; the field keeps settingsFieldWidth.
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
   }
@@ -117,7 +111,7 @@ NDccRow {
                      input.forceActiveFocus();
                      var inputPos = mapToItem(inputContainer, mouse.x, mouse.y);
                      if (inputPos.x >= 0 && inputPos.x <= inputContainer.width) {
-                       var textPos = inputPos.x - Style.marginM;
+                       var textPos = inputPos.x - Style.marginL;
                        if (textPos >= 0 && textPos <= input.width) {
                          input.cursorPosition = input.positionAt(textPos, input.height / 2);
                        }
@@ -143,8 +137,8 @@ NDccRow {
       Item {
         id: inputContainer
         anchors.fill: parent
-        anchors.leftMargin: Style.marginM
-        anchors.rightMargin: 0
+        anchors.leftMargin: Style.marginL
+        anchors.rightMargin: Style.marginL
         clip: true
         z: 1
 

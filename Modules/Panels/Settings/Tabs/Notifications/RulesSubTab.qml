@@ -66,7 +66,6 @@ ColumnLayout {
     }
 
     NHeader {
-      label: I18n.tr("panels.notifications.rules-label")
       description: I18n.tr("panels.notifications.rules-description")
     }
   }
@@ -118,11 +117,19 @@ ColumnLayout {
       }
     }
 
-    NButton {
-      text: I18n.tr("panels.notifications.rules-add")
-      icon: "add"
+    NDccRow {
+      Layout.fillWidth: true
+      clickable: true
       enabled: Settings.data.notifications.enabled
       onClicked: root.openEdit(-1, "", "block")
+      NIcon {
+        icon: "add"
+        color: Colors.onShell
+      }
+      NText {
+        text: I18n.tr("panels.notifications.rules-add")
+        Layout.fillWidth: true
+      }
     }
   }
 }

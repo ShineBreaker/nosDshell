@@ -86,7 +86,7 @@ NDccRow {
   }
 
   plain: !root.dccRow
-  spacing: Style.marginL
+  spacing: root.dccRow ? Style.marginM : Style.marginL
   // A conflicting keybind gets the SettingsItem error border.
   error: root.hasConflict
 
@@ -105,20 +105,18 @@ NDccRow {
       labelWeight: Style.fontWeightRegular
       visible: label !== "" || description !== ""
       Layout.alignment: Qt.AlignVCenter
-      // §3.5.4: the title sits in a fixed column, the slots take the rest.
-      // preferredWidth (not fillWidth) so the slots row is the only filler:
-      // two fillWidth siblings split the row proportionally by preferred
-      // width and the pills' preferredWidth of 1 starves them to ~5 px.
-      Layout.preferredWidth: root.dccRow ? Style.settingsFieldTitleWidth : -1
+      Layout.fillWidth: true
+      Layout.minimumWidth: root.dccRow ? Math.min(labelContainer.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
     }
 
+    // Both pills share the standard control column and sit on its right edge.
     RowLayout {
       id: slotsRow
       spacing: Style.marginS
-      Layout.fillWidth: true
-      // No Layout.alignment here: setting it makes the layout item size
-      // to preferred width (fillWidth is then ignored) and the pills
-      // collapse to a few px.
+      Layout.fillWidth: !root.dccRow
+      Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : 0
+      Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : -1
+      Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Number.POSITIVE_INFINITY
 
       Repeater {
         model: root.maxKeybinds
@@ -166,8 +164,8 @@ NDccRow {
 
             RowLayout {
               anchors.fill: parent
-              anchors.leftMargin: Style.marginM
-              anchors.rightMargin: Style.marginS
+              anchors.leftMargin: Style.marginL
+              anchors.rightMargin: Style.marginL
               spacing: Style.marginXS
               visible: slotArea.isOccupied || slotArea.isRecordingThis
 
@@ -182,6 +180,7 @@ NDccRow {
 
               NText {
                 Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
                 text: slotArea.keybindText
                 color: Colors.onShell
                 family: Settings.data.ui.fontFixed

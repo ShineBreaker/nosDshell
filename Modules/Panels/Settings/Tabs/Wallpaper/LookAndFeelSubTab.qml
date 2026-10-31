@@ -32,10 +32,12 @@ ColumnLayout {
             Layout.fillWidth: true
 
             NLabel {
+                id: fillColorLabel
                 label: I18n.tr("bar.audio-visualizer.color-name-label")
                 description: I18n.tr("panels.wallpaper.look-feel-fill-color-description")
                 labelWeight: Style.fontWeightRegular
                 Layout.fillWidth: true
+                Layout.minimumWidth: Math.min(fillColorLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth)
             }
 
             NColorPicker {
@@ -43,6 +45,9 @@ ColumnLayout {
                 selectedColor: Settings.data.wallpaper.fillColor
                 onColorSelected: color => Settings.data.wallpaper.fillColor = color
                 Layout.alignment: Qt.AlignVCenter
+                Layout.minimumWidth: Style.settingsFieldWidth
+                Layout.preferredWidth: Style.settingsFieldWidth
+                Layout.maximumWidth: Style.settingsFieldWidth
             }
         }
     }

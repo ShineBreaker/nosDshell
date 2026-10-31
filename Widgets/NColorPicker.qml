@@ -16,7 +16,7 @@ Rectangle {
   property var _activeDialog: null
 
   Layout.margins: Style.borderS
-  implicitWidth: 150
+  implicitWidth: Style.settingsFieldWidth
   implicitHeight: Math.round(Style.baseWidgetSize * 1.1)
 
   radius: Style.radiusItem
@@ -108,7 +108,6 @@ Rectangle {
       NIcon {
         icon: "color-picker"
         color: Colors.onShellTertiary
-        Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
       }
     }

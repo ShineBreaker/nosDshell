@@ -127,10 +127,8 @@ ColumnLayout {
       Layout.fillWidth: true
     }
 
-    NText {
-      text: I18n.tr("panels.notifications.monitors-desc")
-      wrapMode: Text.WordWrap
-      Layout.fillWidth: true
+    NHeader {
+      description: I18n.tr("panels.notifications.monitors-desc")
     }
 
     Repeater {

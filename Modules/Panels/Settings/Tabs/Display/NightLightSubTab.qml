@@ -39,7 +39,7 @@ ColumnLayout {
   // 1 px seam (settingsgroup.cpp:46, DESIGN §3.5.4). Hidden manual-schedule
   // rows drop out of the sibling scan automatically.
   ColumnLayout {
-    enabled: Settings.data.nightLight.enabled
+    visible: Settings.data.nightLight.enabled
     spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
@@ -97,9 +97,9 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.display.night-light-auto-schedule-label")
-      description: I18n.tr("panels.display.night-light-auto-schedule-description", {
-                             "location": LocationService.stableName
-                           })
+      description: LocationService.stableName ? I18n.tr("panels.display.night-light-auto-schedule-description", {
+                                                                                          "location": LocationService.stableName
+                                                                                        }) : I18n.tr("panels.display.night-light-auto-schedule-description-unset")
       checked: Settings.data.nightLight.autoSchedule
       onToggled: checked => Settings.data.nightLight.autoSchedule = checked
     }

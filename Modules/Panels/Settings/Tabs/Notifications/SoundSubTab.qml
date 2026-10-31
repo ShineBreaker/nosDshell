@@ -100,7 +100,7 @@ ColumnLayout {
     spacing: Style.marginXXS
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.notifications.sounds-files-unified-label")
       description: I18n.tr("panels.notifications.sounds-files-unified-description")
     }
@@ -143,7 +143,7 @@ ColumnLayout {
       spacing: Style.marginXXS
       Layout.fillWidth: true
 
-      NLabel {
+      NHeader {
         label: I18n.tr("panels.notifications.sounds-files-low-label")
         description: I18n.tr("panels.notifications.sounds-files-low-description")
       }
@@ -165,7 +165,7 @@ ColumnLayout {
       spacing: Style.marginXXS
       Layout.fillWidth: true
 
-      NLabel {
+      NHeader {
         label: I18n.tr("panels.notifications.sounds-files-normal-label")
         description: I18n.tr("panels.notifications.sounds-files-normal-description")
       }
@@ -187,7 +187,7 @@ ColumnLayout {
       spacing: Style.marginXXS
       Layout.fillWidth: true
 
-      NLabel {
+      NHeader {
         label: I18n.tr("panels.notifications.sounds-files-critical-label")
         description: I18n.tr("panels.notifications.sounds-files-critical-description")
       }
@@ -215,7 +215,7 @@ ColumnLayout {
     spacing: Style.marginXXS
     Layout.fillWidth: true
 
-    NLabel {
+    NHeader {
       label: I18n.tr("panels.notifications.sounds-excluded-apps-label")
       description: I18n.tr("panels.notifications.sounds-excluded-apps-description")
     }

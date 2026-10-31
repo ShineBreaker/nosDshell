@@ -85,10 +85,8 @@ ColumnLayout {
     return ids;
   }
 
-  NText {
-    text: I18n.tr("panels.control-center.pages-desc")
-    wrapMode: Text.WordWrap
-    Layout.fillWidth: true
+  NHeader {
+    description: I18n.tr("panels.control-center.pages-desc")
   }
 
   NReorderCheckboxes {

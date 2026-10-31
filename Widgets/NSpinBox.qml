@@ -40,7 +40,7 @@ NDccRow {
 
   Layout.fillWidth: true
   plain: !root.dccRow
-  spacing: Style.marginL
+  spacing: root.dccRow ? Style.marginM : Style.marginL
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (value !== defaultValue)
   readonly property string indicatorTooltip: defaultValue !== undefined ? I18n.tr("panels.indicator.default-value", {
@@ -93,8 +93,10 @@ NDccRow {
     labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
-    Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
-    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
+    Layout.fillWidth: true
+    // Same title budget as NComboBox: wrap past settingsFieldTitleMaxWidth,
+    // never push the spin box out of the row.
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
   }
 
   // Main spinbox container
@@ -137,17 +139,21 @@ NDccRow {
         root.exited();
       }
       onWheel: wheel => {
+                 // A spin box under the pointer must not steal the page
+                 // scroll (niri delivers the wheel already accepted). Only a
+                 // focused box changes its value; everything else passes
+                 // through. Clicking a step button focuses the box.
+                 if (!spinBoxContainer.activeFocus) {
+                   wheel.accepted = false;
+                   return;
+                 }
                  if (wheel.angleDelta.y > 0 && root.value < root.to) {
-                   let newValue = Math.min(root.to, root.value + root.stepSize);
-                   root.value = newValue;
+                   root.value = Math.min(root.to, root.value + root.stepSize);
                    wheel.accepted = true;
                  } else if (wheel.angleDelta.y < 0 && root.value > root.from) {
-                   let newValue = Math.max(root.from, root.value - root.stepSize);
-                   root.value = newValue;
+                   root.value = Math.max(root.from, root.value - root.stepSize);
                    wheel.accepted = true;
                  } else {
-                   // Already at the range boundary: let the wheel scroll the
-                   // page underneath instead of swallowing it.
                    wheel.accepted = false;
                  }
                }
@@ -186,6 +192,7 @@ NDccRow {
         cursorShape: Qt.PointingHandCursor
         enabled: root.enabled && root.value > root.from
         onPressed: {
+          spinBoxContainer.forceActiveFocus();
           root._repeatDirection = -1;
           changeValue(root._repeatDirection, root.stepSize);
           repeatTimer.start();
@@ -228,6 +235,7 @@ NDccRow {
         cursorShape: Qt.PointingHandCursor
         enabled: root.enabled && root.value < root.to
         onPressed: {
+          spinBoxContainer.forceActiveFocus();
           root._repeatDirection = 1;
           changeValue(root._repeatDirection, root.stepSize);
           repeatTimer.start();

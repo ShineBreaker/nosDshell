@@ -5,6 +5,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import qs.Commons
+import qs.Services.UI
 import qs.Widgets
 
 Popup {
@@ -132,7 +133,10 @@ Popup {
   height: 700
   modal: true
   closePolicy: Popup.CloseOnEscape
-  anchors.centerIn: Overlay.overlay
+  anchors.centerIn: parent
+  // The settings surface does not publish a blur region for dialogs
+  // (DESIGN §1.2). Host on the popup-menu window before the popup shows.
+  onAboutToShow: PanelService.hostSettingsPopup(root, null)
 
   background: Rectangle {
     color: Colors.maskShell

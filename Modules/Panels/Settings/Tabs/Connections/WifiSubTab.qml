@@ -324,6 +324,7 @@ Item {
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    onAboutToShow: PanelService.hostSettingsPopup(addNetworkPopup, null)
 
     property string customSsid: ""
     property string customPassword: ""
