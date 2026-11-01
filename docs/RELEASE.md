@@ -34,9 +34,9 @@ nav_exclude: true
 自动化入口是 `Scripts/dev/release.sh <X.Y.Z>`（或 `just release <X.Y.Z>`），分两个阶段：
 
 1. `[Unreleased]` 为空时，脚本根据 `v<上一版>..HEAD` 的提交生成带链接的条目草稿，简介段留 TODO，然后停下。
-2. 填好简介后重跑同一命令，脚本完成落版、改版号、校验、提交、打 tag、推送和 reopen。
+2. 填好简介后重跑同一命令，脚本完成落版、改版号、校验、提交、打 tag、推送、reopen，并 bump jeans 频道的 nosdshell pin。
 
-`--no-push` 只在本地提交并打 tag；`--skip-verify` 跳过 lint 和关于页截图。
+`--no-push` 只在本地提交并打 tag（jeans 那侧也只提交不推送）；`--skip-verify` 跳过 lint 和关于页截图。
 
 脚本中途失败时，按下面的手工步骤逐项完成：
 
@@ -47,7 +47,7 @@ nav_exclude: true
 5. 按 Conventional Commits 提交（如 `chore(release): ...`），建附注 tag 并推送：`git tag -a v<版号> -m "v<版号>" && git push origin v<版号>`，同时推送 `main`。
 6. CI 的 Release workflow 自动发布。需要手动重发已存在的 tag 时，运行 `gh workflow run release.yml -f tag=v<版号>`。
 7. reopen：把 `isDevelopment` 改回 `true` 再提交一次，`[Unreleased]` 留空。
-8. Guix 无需额外步骤：本仓库即 Guix channel（`.guix-channel`），包的 `source` 始终是 `local-file` 的当前 checkout——`guix pull` 用户 pin 到 `v<版号>` tag 得到的就是该 tag 的树，`guix build -f nosdshell.scm` 打包的是工作区，两者共用同一份定义。jeans 频道里的固定 pin（`%nosdshell-version` + hash）需要单独 bump。
+8. Guix：本仓库即 Guix channel（`.guix-channel`），包的 `source` 始终是 `local-file` 的当前 checkout——`guix pull` 用户 pin 到 `v<版号>` tag 得到的就是该 tag 的树，`guix build -f nosdshell.scm` 打包的是工作区，两者共用同一份定义，无需改动。jeans 频道的固定 pin（`%nosdshell-version` 加 tag 检出的 hash）是发版的一部分，`release.sh` 在 tag 打好后自动 bump 并提交；仓库路径由 `JEANS_REPO` 指定，默认 `~/Projects/dotfiles/guix/jeans`。没有 checkout、工作区脏或推送被拒时脚本只打提示，这时手工补：改 `modules/jeans/packages/desktop.scm` 的 `%nosdshell-version`；把 `git clone --branch v<版号> --depth 1 <仓库> /tmp/nosdshell-hash && guix hash -rx /tmp/nosdshell-hash` 的输出填进 `%nosdshell-source` 的 `base32`；提交 `chore(desktop): bump nosdshell to <版号>` 并推送，最后 `guix pull` 加 `guix home reconfigure`。
 
 ## tag 约定
 

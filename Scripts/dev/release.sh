@@ -14,7 +14,9 @@
 #      bumps the five version spots (incl. the --version line in nosdshell.scm),
 #      lints, shoots the About page, commits
 #      `chore(release):`, tags -a, pushes main+tag, then reopens development
-#      (isDevelopment=true) with a second commit.
+#      (isDevelopment=true) with a second commit, and bumps the jeans channel
+#      pin (%nosdshell-version + the tag checkout's hash) so the packaged
+#      shell follows the tag on the same day.
 #
 # The GitHub Release itself is published by .github/workflows/release.yml once
 # the tag lands — this script never talks to the API.
@@ -29,7 +31,7 @@ for arg in "$@"; do
   case "$arg" in
     --no-push)     PUSH=0 ;;
     --skip-verify) VERIFY=0 ;;
-    -h|--help)     sed -n '2,20p' "$0"; exit 0 ;;
+    -h|--help)     sed -n '2,22p' "$0"; exit 0 ;;
     v[0-9]*|[0-9]*) VER="${arg#v}" ;;
     *) echo "unknown arg: $arg" >&2; exit 2 ;;
   esac
@@ -144,11 +146,53 @@ fi
 sed -i "s/isDevelopment: false/isDevelopment: true/" Commons/Version.qml
 git add Commons/Version.qml
 git commit -m "chore(release): reopen development after v$VER"
-[ $PUSH -eq 1 ] && git push origin main
+if [ $PUSH -eq 1 ]; then git push origin main; fi
+
+# ---------- jeans channel pin ------------------------------------------------
+# The jeans channel pins nosdshell to the release tag: %nosdshell-version plus
+# the base32 of that tag's checkout.  Bumping it belongs to the release itself,
+# not to a later manual step — the auto-update CI only runs Tue/Thu/Sat 02:00
+# UTC, so the packaged shell would otherwise lag behind the tag for days.
+# A subshell on purpose: when there is no jeans checkout, the tree is dirty or
+# the push is refused, the release stays done and this only prints the reminder.
+JEANS="${JEANS_REPO:-$HOME/Projects/dotfiles/guix/jeans}"
+JEANS_PKG="$JEANS/modules/jeans/packages/desktop.scm"
+bump_jeans() (
+  set -euo pipefail
+  [ -f "$JEANS_PKG" ] || { echo "jeans: $JEANS not found, skipped"; exit 0; }
+  cur=$(sed -n 's/^(define %nosdshell-version "\(.*\)")$/\1/p' "$JEANS_PKG")
+  if [ "$cur" = "$VER" ]; then echo "jeans: already at $VER"; exit 0; fi
+  if [ -n "$(git -C "$JEANS" status --porcelain)" ]; then
+    echo "jeans: working tree dirty — bump %nosdshell-version $cur -> $VER by hand" >&2
+    exit 1
+  fi
+  tmp=$(mktemp -d)
+  trap 'rm -rf "$tmp"' EXIT
+  # The channel's hash is `guix hash -rx` over the tag checkout, so clone the
+  # tag: same file set as a git-fetch, .git as the only VCS directory.
+  git clone -q --branch "v$VER" --depth 1 "file://$REPO" "$tmp/src"
+  hash=$(guix hash -rx "$tmp/src")
+  python3 - "$JEANS_PKG" "$VER" "$hash" <<'PYEOF'
+import re, sys
+path, ver, h = sys.argv[1:4]
+src = open(path, encoding="utf-8").read()
+src, n1 = re.subn(r'\(define %nosdshell-version "[^"]*"\)',
+                  f'(define %nosdshell-version "{ver}")', src)
+head, sep, tail = src.partition("(define %nosdshell-source")
+tail, n2 = re.subn(r'\(base32 "[^"]*"\)', f'(base32 "{h}")', tail, count=1)
+assert n1 == 1 and n2 == 1, f"unexpected match counts: {n1} version, {n2} base32"
+open(path, "w", encoding="utf-8").write(head + sep + tail)
+PYEOF
+  git -C "$JEANS" add modules/jeans/packages/desktop.scm
+  git -C "$JEANS" commit -q -m "chore(desktop): bump nosdshell to $VER"
+  if [ $PUSH -eq 1 ]; then git -C "$JEANS" push -q origin HEAD; fi
+  echo "jeans: bumped %nosdshell-version $cur -> $VER (base32 $hash)"
+)
+bump_jeans || echo "jeans: bump failed — bump %nosdshell-version by hand (docs/RELEASE.md step 8)" >&2
 
 cat <<EOF
 
 done. reminders:
   - gh release view v$VER   (CI refresh: gh workflow run release.yml -f tag=v$VER)
-  - jeans channel pin: bump %nosdshell-commit/%nosdshell-version, guix home reconfigure
+  - jeans: guix pull, then guix home reconfigure to pick up v$VER
 EOF
