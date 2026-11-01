@@ -10,6 +10,29 @@
 
 ## [Unreleased]
 
+## [1.7.2] - 2026-11-01
+
+niri 的模糊这回盖满整块对话框底板，不再只糊中间一圈；启动器学会在应用注册时即时刷新列表，新装的应用不会再从全屏网格里凭空消失。设置页做了一轮版式收敛：列表头接缝统一为 1 px，蓝牙行改用与 Wi-Fi 相同的悬停操作，控件各归其列，芯片标签不再被空齿轮位吃字。截图全部在带模糊的 niri 桌面上重拍。
+
+---
+
+### 修复
+
+- refresh settings search index and drop orphaned translation keys：[`7f5e194df`](https://github.com/ShineBreaker/nosDshell/commit/7f5e194df36ca56d79c61e9cc4a2ada14c5d2c54)
+- publish a new provider map when apps register：[`8c1707c87`](https://github.com/ShineBreaker/nosDshell/commit/8c1707c8770ee47f60c218e055f4cabc7c7d541f)
+- stop empty gear slots from eliding chip labels：[`3316e2e09`](https://github.com/ShineBreaker/nosDshell/commit/3316e2e092c6a681457996e217cd170a4e436e08)
+- equal chip insets and hide disabled pages：[`237c204b9`](https://github.com/ShineBreaker/nosDshell/commit/237c204b9beb099608ce2822d715dfefdece9fb2)
+- stop layout fixes from sliding onto the next row：[`2e6feb2fa`](https://github.com/ShineBreaker/nosDshell/commit/2e6feb2fafcd6402bf6c6306d1b3d497f0e23b1e)
+- put every control back on the column：[`58692609a`](https://github.com/ShineBreaker/nosDshell/commit/58692609a6f9b82a989f431182854303065fab4d)
+- keep the control column inside the row：[`02195c672`](https://github.com/ShineBreaker/nosDshell/commit/02195c67200c87840047189553b55af1467aea64)
+- use one list-head seam and one row action rule：[`b13e01db1`](https://github.com/ShineBreaker/nosDshell/commit/b13e01db1d2c6a69e35ae5b9aa659d2dad00f60a)
+- cover the full dialog plate under niri：[`34cdf8f74`](https://github.com/ShineBreaker/nosDshell/commit/34cdf8f74b2084c746e9d19349bb0a5d26fcf017)
+
+### 文档
+
+- refresh fullscreen launcher screenshot：[`8351f84cd`](https://github.com/ShineBreaker/nosDshell/commit/8351f84cd4a0a097b73f4a7d4848315d979e3948)
+- refresh screenshots on niri with blur：[`f21da1dfa`](https://github.com/ShineBreaker/nosDshell/commit/f21da1dfa6fab66c9a097218dc6ae74f52d7498e)
+
 ## [1.7.1] - 2026-10-31
 
 GTK 配色接上最后一根线：模板写下的调色板文件和 helper 要找的文件从此同名，设置里勾选 GTK 模板就会真正生效——GTK 应用跟着 shell 的配色方案走，不再被半年前留下的旧导入按在深色。
@@ -689,7 +712,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.1...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.2...HEAD
+[1.7.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.4...v1.7.0
 [1.6.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.3...v1.6.4
