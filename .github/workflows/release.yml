@@ -108,3 +108,71 @@ jobs:
             exit 0
           fi
           gh release create "$RELEASE_TAG" --verify-tag --notes-file release_notes.md "${assets[@]}"
+
+  # The tag is the only thing a release needs from a human: everything below is
+  # mechanical bookkeeping that used to sit in Scripts/dev/release.sh and ran on
+  # whichever machine cut the release.  Both jobs are idempotent — re-running
+  # this workflow for an existing tag (workflow_dispatch) is a no-op.
+  reopen:
+    name: Reopen development
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Flip isDevelopment back on
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          if grep -q 'isDevelopment: true' Commons/Version.qml; then
+            echo "isDevelopment already true — nothing to reopen."
+            exit 0
+          fi
+          sed -i 's/isDevelopment: false/isDevelopment: true/' Commons/Version.qml
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Commons/Version.qml
+          git commit -m "chore(release): reopen development after ${RELEASE_TAG}"
+          git push origin main
+
+  # The pin bump itself lives in jeans: its updater already knows the shared
+  # %nosdshell-version / %nosdshell-source layout and how to hash the tag, and
+  # `--only nosdshell` keeps the rest of the channel out of the run.  This job
+  # only asks for that workflow; jeans opens the PR with its own token.
+  jeans-pr:
+    name: Ask jeans to bump the pin
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      # The cross-repo token cannot be referenced from a step `if`, so probe it
+      # once and gate the next step on the value written to GITHUB_ENV.
+      - name: Probe for the cross-repo token
+        env:
+          JEANS_TOKEN: ${{ secrets.JEANS_TOKEN }}
+        run: |
+          if [ -n "$JEANS_TOKEN" ]; then
+            echo "has_token=true" >> "$GITHUB_ENV"
+          else
+            echo "has_token=false" >> "$GITHUB_ENV"
+            echo "::warning title=jeans PR skipped::JEANS_TOKEN is not set, so jeans was not asked to bump the pin. Add the token or bump it by hand (docs/RELEASE.md step 8)."
+          fi
+
+      - name: Dispatch the jeans release-pin workflow
+        if: env.has_token == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.JEANS_TOKEN }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          set -euo pipefail
+          gh workflow run nosdshell-release.yml \
+            --repo ShineBreaker/jeans \
+            -f tag="$RELEASE_TAG"
+          printf 'dispatched ShineBreaker/jeans nosdshell-release.yml for %s\n' "$RELEASE_TAG"
+          echo "follow it with: gh run list --repo ShineBreaker/jeans --workflow=nosdshell-release.yml"
