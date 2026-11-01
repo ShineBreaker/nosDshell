@@ -26,10 +26,11 @@ ColumnLayout {
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
   NDccGap {
     Layout.fillWidth: true
+    visible: Settings.data.notifications.enabled
   }
   ColumnLayout {
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.notifications.enabled
+    visible: Settings.data.notifications.enabled
 
     NComboBox {
       label: I18n.tr("panels.notifications.settings-density-label")
@@ -127,10 +128,8 @@ ColumnLayout {
       Layout.fillWidth: true
     }
 
-    NText {
-      text: I18n.tr("panels.notifications.monitors-desc")
-      wrapMode: Text.WordWrap
-      Layout.fillWidth: true
+    NHeader {
+      description: I18n.tr("panels.notifications.monitors-desc")
     }
 
     Repeater {

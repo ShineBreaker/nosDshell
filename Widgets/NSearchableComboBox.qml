@@ -25,9 +25,10 @@ NDccRow {
   // Set when the combo lives on a translucent shell surface — the popup keeps
   // the blurred popupShell look (see NComboBox.onShellSurface).
   property bool onShellSurface: false
-  // LineEditWidget fixes its title column at 140 px (lineeditwidget.cpp:83).
-  property real titleWidth: Style.settingsFieldTitleWidth
-
+  // Fill the width the parent gives this combo instead of locking to
+  // minimumWidth. Used when the combo shares a fixed control column with a
+  // trailing button (NSectionEditor).
+  property bool flexWidth: false
   readonly property real preferredHeight: 30
 
   signal selected(string key)
@@ -145,6 +146,12 @@ NDccRow {
     }
   }
   Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root.rebuildRows();
+    }
+  }
+  Connections {
     target: root.activeModel
     function onCountChanged() {
       root.rebuildRows();
@@ -242,8 +249,8 @@ NDccRow {
     labelWeight: Style.fontWeightRegular
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
-    Layout.maximumWidth: root.dccRow ? root.titleWidth : Number.POSITIVE_INFINITY
-    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, root.titleWidth) : 0
+    Layout.fillWidth: true
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
   }
 
   ComboBox {
@@ -251,7 +258,7 @@ NDccRow {
 
     // Same disabled treatment as NComboBox: full opacity, color swap
     // (textDisabledDark) instead of a blanket alpha that brightens the field.
-    Layout.margins: Style.borderS
+    Layout.margins: root.flexWidth ? 0 : Style.borderS
     // Fixed width trio: minimum/preferred/maximum depend only on the plain
     // root.minimumWidth property and Style tokens. Never read root.width
     // (the RowLayout's own laid-out width) here, and never feed an attached
@@ -264,9 +271,9 @@ NDccRow {
     // A settings row pins the control column (DESIGN §3.5.4 控件列宽) so the
     // fields of neighbouring rows line up; a bare combo still follows its own
     // minimumWidth so popups and the launcher keep sizing to content.
-    Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(120 * Style.uiScaleRatio)
-    Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
-    Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : Math.round(root.minimumWidth * Style.uiScaleRatio)
+    Layout.minimumWidth: root.dccRow ? Style.settingsFieldWidth : (root.flexWidth ? 0 : Math.round(120 * Style.uiScaleRatio))
+    Layout.preferredWidth: root.dccRow ? Style.settingsFieldWidth : (root.flexWidth ? -1 : Math.round(root.minimumWidth * Style.uiScaleRatio))
+    Layout.maximumWidth: root.dccRow ? Style.settingsFieldWidth : (root.flexWidth ? Number.POSITIVE_INFINITY : Math.round(root.minimumWidth * Style.uiScaleRatio))
     Layout.preferredHeight: Math.round(root.preferredHeight * Style.uiScaleRatio)
     // Plain-dict mirror rows — never the live ListModel (DESIGN §1.7).
     model: root._activeRows

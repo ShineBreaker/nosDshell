@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Window
 import qs.Commons
+import qs.Services.UI
 import qs.Widgets
 
 Popup {
@@ -18,7 +19,8 @@ Popup {
 
   width: Math.round(900 * Style.uiScaleRatio)
   height: Math.round(700 * Style.uiScaleRatio)
-  anchors.centerIn: Overlay.overlay
+  anchors.centerIn: parent
+  onAboutToShow: PanelService.hostSettingsPopup(root, null)
   padding: Style.marginXL
 
   property string query: ""

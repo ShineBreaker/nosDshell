@@ -9,7 +9,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.wallpaper.enabled
+  visible: Settings.data.wallpaper.enabled
 
   NToggle {
     label: I18n.tr("panels.wallpaper.automation-scheduled-change-label")
@@ -23,7 +23,7 @@ ColumnLayout {
     Layout.fillWidth: true
   }
   ColumnLayout {
-    enabled: Settings.data.wallpaper.automationEnabled
+    visible: Settings.data.wallpaper.automationEnabled
     spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 

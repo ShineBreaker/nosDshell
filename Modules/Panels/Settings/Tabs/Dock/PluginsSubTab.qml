@@ -14,7 +14,7 @@ ColumnLayout {
   id: root
   spacing: Style.marginL
   Layout.fillWidth: true
-  enabled: Settings.data.dock.enabled
+  visible: Settings.data.dock.enabled
 
   BarSettings.MonitorWidgetsConfig {
     editMode: "taskbar"

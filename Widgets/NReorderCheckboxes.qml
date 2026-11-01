@@ -76,7 +76,7 @@ Item {
         required property int index
         required property var modelData
 
-        property string text: modelData.text || ""
+        property string text: modelData.labelKey ? I18n.tr(modelData.labelKey) : (modelData.text || "")
         property bool itemEnabled: modelData.enabled || false
         property bool required: modelData.required || false
         readonly property bool isDisabled: (root.disabledIds || []).indexOf(modelData.id) !== -1

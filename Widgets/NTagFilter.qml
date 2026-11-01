@@ -39,6 +39,10 @@ ColumnLayout {
       font.weight: Style.fontWeightSemiBold
       color: Colors.onShell
       wrapMode: Text.WordWrap
+      // Same inset as NHeader, so the filter title lines up with the
+      // section head above it (it was ~13 px to the left).
+      Layout.leftMargin: Style.settingsHeadPaddingH
+      Layout.rightMargin: Style.settingsHeadPaddingRight
     }
 
     NText {

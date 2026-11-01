@@ -74,6 +74,11 @@ Item {
   // Combined visibility check: tab must be visible AND the window must be visible
   readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
 
+  // Settings lists: the column adds no gap of its own so NHeader's 1 px
+  // bottom margin is the head-to-group seam (DESIGN §3.5.4). The dock popup
+  // (flat) keeps a section gap between its label and the rows.
+  readonly property int listHeadSpacing: root.flat ? Style.marginM : 0
+
   onEffectivelyVisibleChanged: {
     if (effectivelyVisible) {
       SystemStatService.registerComponent("wifi-subtab");
@@ -147,7 +152,7 @@ Item {
       id: connectedGroup
       visible: root.connectedNetworks.length > 0 && NetworkService.wifiEnabled
       Layout.fillWidth: true
-      spacing: Style.marginM
+      spacing: root.listHeadSpacing
 
       NHeader {
         visible: !root.flat
@@ -176,7 +181,7 @@ Item {
       id: savedGroup
       visible: root.savedNetworks.length > 0 && NetworkService.wifiEnabled
       Layout.fillWidth: true
-      spacing: Style.marginM
+      spacing: root.listHeadSpacing
 
       NHeader {
         visible: !root.flat
@@ -205,7 +210,7 @@ Item {
       id: availableGroup
       visible: root.availableNetworks.length > 0 && NetworkService.wifiEnabled
       Layout.fillWidth: true
-      spacing: Style.marginM
+      spacing: root.listHeadSpacing
 
       NHeader {
         visible: !root.flat
@@ -272,7 +277,7 @@ Item {
     ColumnLayout {
       visible: !root.showOnlyLists && NetworkService.ethernetAvailable
       Layout.fillWidth: true
-      spacing: Style.marginM
+      spacing: root.listHeadSpacing
 
       NHeader {
         visible: !root.flat
@@ -319,6 +324,7 @@ Item {
     modal: true
     focus: true
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+    onAboutToShow: PanelService.hostSettingsPopup(addNetworkPopup, null)
 
     property string customSsid: ""
     property string customPassword: ""
@@ -690,7 +696,7 @@ Item {
               // Network speed indicators (visible when connected and speed > 0)
               RowLayout {
                 visible: (modelData.connected && NetworkService.networkConnectivity === "full") && (SystemStatService.rxSpeed > 0 || SystemStatService.txSpeed > 0)
-                spacing: 2
+                spacing: Style.marginXXS
                 Layout.leftMargin: Style.marginXS
                 Layout.fillWidth: false
 

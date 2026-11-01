@@ -33,7 +33,7 @@ NDccRow {
   signal selected(string key)
 
   plain: !root.dccRow
-  spacing: Style.marginL
+  spacing: root.dccRow ? Style.marginM : Style.marginL
 
   // Less strict comparison with != (instead of !==) so it can properly compare int vs string (ex for FPS: 30 and "30")
   readonly property bool isValueChanged: (defaultValue !== undefined) && (currentKey != defaultValue)
@@ -64,6 +64,15 @@ NDccRow {
 
   Component.onCompleted: _rebuildRows()
   onModelChanged: _rebuildRows()
+
+  // ListModel rows snapshot translated names. Rebuild after the new catalog
+  // is in (languageChanged fires before that load finishes).
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root._rebuildRows();
+    }
+  }
 
   // The source may be a plain array — Connections needs a QObject target,
   // so only hook mutation signals when the model is a real ListModel.
@@ -125,12 +134,11 @@ NDccRow {
     showIndicator: root.isValueChanged
     indicatorTooltip: root.indicatorTooltip
     Layout.fillWidth: true
-    // §3.5.4: the title sits in a fixed column, the field takes the rest —
-    // without this cap a fixed-width combo starves the label to ~50 px and
-    // mid-length titles wrap ("一周的第一/天"). The floor keeps the label on
-    // one line when the field still has room to give (it shrinks first).
-    Layout.maximumWidth: root.dccRow ? Style.settingsFieldTitleWidth : Number.POSITIVE_INFINITY
-    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleWidth) : 0
+    // §3.5.4: the title wraps in whatever is left after the fixed control
+    // column. The floor is capped at settingsFieldTitleMaxWidth so a long
+    // title cannot push the control out of the row; it is not capped above
+    // that, or a wide page would leave the control short of the right edge.
+    Layout.minimumWidth: root.dccRow ? Math.min(titleLabel.labelImplicitWidth, Style.settingsFieldTitleMaxWidth) : 0
   }
 
   ComboBox {

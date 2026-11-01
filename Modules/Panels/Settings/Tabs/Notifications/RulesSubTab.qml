@@ -10,7 +10,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.notifications.enabled
+  visible: Settings.data.notifications.enabled
 
   function _saveToService() {
     NotificationRulesService.save();
@@ -66,7 +66,6 @@ ColumnLayout {
     }
 
     NHeader {
-      label: I18n.tr("panels.notifications.rules-label")
       description: I18n.tr("panels.notifications.rules-description")
     }
   }
@@ -118,11 +117,19 @@ ColumnLayout {
       }
     }
 
-    NButton {
-      text: I18n.tr("panels.notifications.rules-add")
-      icon: "add"
-      enabled: Settings.data.notifications.enabled
+    NDccRow {
+      Layout.fillWidth: true
+      clickable: true
+      visible: Settings.data.notifications.enabled
       onClicked: root.openEdit(-1, "", "block")
+      NIcon {
+        icon: "add"
+        color: Colors.onShell
+      }
+      NText {
+        text: I18n.tr("panels.notifications.rules-add")
+        Layout.fillWidth: true
+      }
     }
   }
 }

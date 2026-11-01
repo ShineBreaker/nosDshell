@@ -5,7 +5,7 @@ import qs.Widgets
 
 ColumnLayout {
   id: root
-  spacing: Style.marginL
+  spacing: 0
 
   property var pluginApi: null
 
@@ -42,84 +42,89 @@ ColumnLayout {
   }
 
   // ===== UI =====
+  // Same SettingsGroup rhythm as the shell settings pages (DESIGN §3.5.4):
+  // NHeader, 1 px seam, rows, then 15 px before the next group. A marginL
+  // column with ad-hoc titles left this page on a different grid.
 
-  // ── Section: Bar Widget ───────────────────────────────────────────────────
-  NText {
-    text: pluginApi?.tr("settings.section-bar")
-    pointSize: Style.fontSizeM
-    font.weight: Style.fontWeightMedium
-    color: Colors.mOnSurface
-  }
-
-  NToggle {
+  ColumnLayout {
     Layout.fillWidth: true
-    label: pluginApi?.tr("settings.hide-when-empty")
-    description: pluginApi?.tr("settings.hide-when-empty-desc")
-    checked: root.editHideWhenEmpty
-    onToggled: checked => {
-                 root.editHideWhenEmpty = checked;
-                 root.saveSettings();
-               }
+    spacing: Style.settingsGroupGap
+
+    NHeader {
+      label: pluginApi?.tr("settings.section-bar") || ""
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.hide-when-empty")
+      description: pluginApi?.tr("settings.hide-when-empty-desc")
+      checked: root.editHideWhenEmpty
+      onToggled: checked => {
+                   root.editHideWhenEmpty = checked;
+                   root.saveSettings();
+                 }
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.show-badge")
+      description: pluginApi?.tr("settings.show-badge-desc")
+      checked: root.editShowBadge
+      onToggled: checked => {
+                   root.editShowBadge = checked;
+                   root.saveSettings();
+                 }
+    }
   }
 
-  NToggle {
-    Layout.fillWidth: true
-    label: pluginApi?.tr("settings.show-badge")
-    description: pluginApi?.tr("settings.show-badge-desc")
-    checked: root.editShowBadge
-    onToggled: checked => {
-                 root.editShowBadge = checked;
-                 root.saveSettings();
-               }
-  }
-
-  NDivider {
-    Layout.fillWidth: true
-  }
-
-  // ── Section: Behavior ─────────────────────────────────────────────────────
-  NText {
-    text: pluginApi?.tr("settings.section-behavior")
-    pointSize: Style.fontSizeM
-    font.weight: Style.fontWeightMedium
-    color: Colors.mOnSurface
-  }
-
-  NToggle {
-    Layout.fillWidth: true
-    label: pluginApi?.tr("settings.auto-mount")
-    description: pluginApi?.tr("settings.auto-mount-desc")
-    checked: root.editAutoMount
-    onToggled: checked => {
-                 root.editAutoMount = checked;
-                 root.saveSettings();
-               }
-  }
-
-  NToggle {
-    Layout.fillWidth: true
-    label: pluginApi?.tr("settings.notifications")
-    description: pluginApi?.tr("settings.notifications-desc")
-    checked: root.editShowNotifications
-    onToggled: checked => {
-                 root.editShowNotifications = checked;
-                 root.saveSettings();
-               }
-  }
-
-  NDivider {
+  NDccGap {
     Layout.fillWidth: true
   }
 
-  // ── Section: File Browser ─────────────────────────────────────────────────
-  NText {
-    text: pluginApi?.tr("settings.section-browser")
-    pointSize: Style.fontSizeM
-    font.weight: Style.fontWeightMedium
-    color: Colors.mOnSurface
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+
+    NHeader {
+      label: pluginApi?.tr("settings.section-behavior") || ""
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.auto-mount")
+      description: pluginApi?.tr("settings.auto-mount-desc")
+      checked: root.editAutoMount
+      onToggled: checked => {
+                   root.editAutoMount = checked;
+                   root.saveSettings();
+                 }
+    }
+
+    NToggle {
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.notifications")
+      description: pluginApi?.tr("settings.notifications-desc")
+      checked: root.editShowNotifications
+      onToggled: checked => {
+                   root.editShowNotifications = checked;
+                   root.saveSettings();
+                 }
+    }
   }
 
-  NComboBox {
+  NDccGap {
+    Layout.fillWidth: true
+  }
+
+  ColumnLayout {
+    Layout.fillWidth: true
+    spacing: Style.settingsGroupGap
+
+    NHeader {
+      label: pluginApi?.tr("settings.section-browser") || ""
+    }
+
+    NComboBox {
     Layout.fillWidth: true
     label: pluginApi?.tr("settings.file-browser")
     description: pluginApi?.tr("settings.file-browser-desc")
@@ -192,7 +197,9 @@ ColumnLayout {
                   root.saveSettings();
                 }
   }
-  NDivider {
+  }
+
+  NDccGap {
     Layout.fillWidth: true
   }
 

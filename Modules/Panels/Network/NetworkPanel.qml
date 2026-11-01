@@ -483,12 +483,14 @@ SmartPanel {
 
                           ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: 2
+                            spacing: Style.marginXXS
 
                             NText {
                               text: modelData.connectionName || modelData.ifname
                               pointSize: Style.fontSizeM
-                              font.weight: modelData.connected ? Style.fontWeightBold : Style.fontWeightMedium
+                              // Same weight as the Wi-Fi rows in this panel
+                              // (WifiSubTab): connected is DemiBold, not Bold.
+                              font.weight: modelData.connected ? Style.fontWeightSemiBold : Style.fontWeightMedium
                               color: ethItem.getContentColors()[1]
                               elide: Text.ElideRight
                               Layout.fillWidth: true
@@ -521,7 +523,7 @@ SmartPanel {
                               // Network speed indicators (visible when connected and speed > 0)
                               RowLayout {
                                 visible: (modelData.connected && NetworkService.networkConnectivity === "full") && (SystemStatService.rxSpeed > 0 || SystemStatService.txSpeed > 0)
-                                spacing: 2
+                                spacing: Style.marginXXS
                                 Layout.leftMargin: Style.marginXS
                                 Layout.fillWidth: false
 

@@ -247,7 +247,7 @@ ColumnLayout {
       Layout.fillWidth: true
       label: I18n.tr("panels.color-scheme.wallpaper-monitor-source-label")
       description: I18n.tr("panels.color-scheme.wallpaper-monitor-source-description")
-      enabled: Settings.data.colorSchemes.useWallpaperColors
+      visible: Settings.data.colorSchemes.useWallpaperColors
       model: {
         var m = [];
         if (Quickshell.screens) {
@@ -274,7 +274,7 @@ ColumnLayout {
       Layout.fillWidth: true
       label: I18n.tr("panels.color-scheme.wallpaper-method-label")
       description: I18n.tr("panels.color-scheme.wallpaper-method-description")
-      enabled: Settings.data.colorSchemes.useWallpaperColors
+      visible: Settings.data.colorSchemes.useWallpaperColors
       model: TemplateProcessor.schemeTypes
       currentKey: Settings.data.colorSchemes.generationMethod
       onSelected: key => {
@@ -333,7 +333,7 @@ ColumnLayout {
   ColumnLayout {
     spacing: Style.settingsGroupGap
     Layout.fillWidth: true
-    enabled: !Settings.data.colorSchemes.useWallpaperColors
+    visible: !Settings.data.colorSchemes.useWallpaperColors
 
     NHeader {
       label: I18n.tr("panels.color-scheme.predefined-title")

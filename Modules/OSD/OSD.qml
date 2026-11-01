@@ -495,8 +495,12 @@ Variants {
       NSurfaceRegion {
         id: osdBlur
         trackedItem: tile
-        radius: Style.radiusLarge
+        // The tile scales with osdItem (enterScaleAnim). The mapped rect
+        // only rebuilds when watch changes, and the corner radius is in
+        // surface pixels so it scales with the plate.
+        radius: Math.round(Style.radiusLarge * osdItem.scale)
         slideY: osdItem.slideOffset
+        watch: osdItem.scale
         activeWhen: Colors.blurActive && osdItem.visible
       }
 

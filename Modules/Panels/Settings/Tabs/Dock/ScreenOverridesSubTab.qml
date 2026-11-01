@@ -13,10 +13,8 @@ ColumnLayout {
   spacing: Style.settingsGroupSpacing
   Layout.fillWidth: true
 
-  NText {
-    text: I18n.tr("panels.bar.monitors-desc-new")
-    wrapMode: Text.WordWrap
-    Layout.fillWidth: true
+  NHeader {
+    description: I18n.tr("panels.bar.monitors-desc-new")
   }
 
   // §3.5.4 — one SettingsGroup per monitor: an identity row, the override

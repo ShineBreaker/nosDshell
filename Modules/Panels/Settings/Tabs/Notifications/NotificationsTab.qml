@@ -50,18 +50,23 @@ ColumnLayout {
       }
       NSubTabsPane.Title {
         text: I18n.tr("common.duration")
+        shown: Settings.data.notifications.enabled
       }
       NSubTabsPane.Title {
         text: I18n.tr("common.history")
+        shown: Settings.data.notifications.enabled
       }
       NSubTabsPane.Title {
         text: I18n.tr("common.sound")
+        shown: Settings.data.notifications.enabled
       }
       NSubTabsPane.Title {
         text: I18n.tr("common.toast")
+        shown: Settings.data.notifications.enabled
       }
       NSubTabsPane.Title {
         text: I18n.tr("panels.notifications.rules-tab")
+        shown: Settings.data.notifications.enabled
       }
     }
   }
@@ -89,6 +94,14 @@ ColumnLayout {
     }
     ToastSubTab {}
     RulesSubTab {}
+  }
+
+  // Those pages have no switch of their own. When notifications are off,
+  // the tabs hide (DESIGN §3.5.3) and the view returns to the switch.
+  readonly property bool notificationsOn: Settings.data.notifications.enabled !== false
+  onNotificationsOnChanged: {
+    if (!notificationsOn && tabView.currentIndex !== 0)
+      tabView.currentIndex = 0;
   }
 
   // File Pickers for Sound Files

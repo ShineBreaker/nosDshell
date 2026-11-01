@@ -18,7 +18,7 @@ ColumnLayout {
   ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
-    enabled: Settings.data.osd.enabled
+    visible: Settings.data.osd.enabled
 
     Repeater {
       model: [

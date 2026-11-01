@@ -176,6 +176,7 @@ ColumnLayout {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.screen-corners-solid-black-label")
       description: I18n.tr("panels.general.screen-corners-solid-black-description")
+      visible: Settings.data.general.showScreenCorners
       checked: Settings.data.general.forceBlackScreenCorners
       defaultValue: Settings.getDefaultValue("general.forceBlackScreenCorners")
       onToggled: checked => Settings.data.general.forceBlackScreenCorners = checked
@@ -185,7 +186,7 @@ ColumnLayout {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.screen-corners-radius-label")
       description: I18n.tr("panels.general.screen-corners-radius-description")
-      enabled: Settings.data.general.showScreenCorners
+      visible: Settings.data.general.showScreenCorners
       from: 0
       to: 2
       stepSize: 0.01

@@ -109,6 +109,21 @@ Singleton {
     Logger.i("Font", "Loaded", availableFonts.count, "fonts,", monospaceFonts.count, "monospace");
   }
 
+  function _retitleDefaults() {
+    const name = I18n.tr("panels.indicator.system-default");
+    if (availableFonts.count > 0)
+      availableFonts.setProperty(0, "name", name);
+    if (monospaceFonts.count > 0)
+      monospaceFonts.setProperty(0, "name", name);
+  }
+
+  Connections {
+    target: I18n
+    function onTranslationsLoaded() {
+      root._retitleDefaults();
+    }
+  }
+
   // Temporary storage for process outputs
   property string _allFontsOutput: ""
   property string _monoFontsOutput: ""

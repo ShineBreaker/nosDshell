@@ -46,6 +46,7 @@ ColumnLayout {
       }
       NSubTabsPane.Title {
         text: I18n.tr("common.events")
+        shown: Settings.data.osd.enabled
       }
     }
   }
@@ -67,5 +68,13 @@ ColumnLayout {
       addType: root.addType
       removeType: root.removeType
     }
+  }
+
+  // The events page has no switch of its own. When OSD is off, that tab
+  // hides (DESIGN §3.5.3) and the view returns to the switch.
+  readonly property bool osdOn: Settings.data.osd.enabled
+  onOsdOnChanged: {
+    if (!osdOn && tabView.currentIndex !== 0)
+      tabView.currentIndex = 0;
   }
 }

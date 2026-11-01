@@ -218,6 +218,19 @@ Item {
       _layoutStacked();
   }
 
+  // groupTitles() copies button text into a JS array. A live language
+  // switch updates I18n.tr bindings, but not that snapshot, so stacked
+  // section heads stayed in the previous language until a restart.
+  Connections {
+    target: I18n
+    function onLanguageChanged() {
+      root._syncStackTitles();
+    }
+    function onTranslationsLoaded() {
+      root._syncStackTitles();
+    }
+  }
+
   onCurrentIndexChanged: {
     if (stacked)
       _syncStackTitles();

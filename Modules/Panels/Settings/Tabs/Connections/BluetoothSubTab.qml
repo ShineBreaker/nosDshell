@@ -171,7 +171,9 @@ Item {
     ColumnLayout {
       visible: root.connectedDevices.length > 0 && BluetoothService.enabled
       Layout.fillWidth: true
-      spacing: Style.marginM
+      // No column spacing: NHeader.bottomMargin is the 1 px head seam
+      // (DESIGN §3.5.4). marginM here stacked into a ~10 px gap.
+      spacing: 0
 
       NHeader {
         label: I18n.tr("bluetooth.panel.connected-devices")
@@ -197,7 +199,7 @@ Item {
     ColumnLayout {
       visible: root.pairedDevices.length > 0 && BluetoothService.enabled
       Layout.fillWidth: true
-      spacing: Style.marginM
+      spacing: 0
 
       NHeader {
         label: I18n.tr("bluetooth.panel.paired-devices")
@@ -221,7 +223,7 @@ Item {
     ColumnLayout {
       visible: !root.showOnlyLists && root.unnamedAvailableDevices.length > 0 && BluetoothService.enabled
       Layout.fillWidth: true
-      spacing: Style.marginM
+      spacing: 0
 
       NHeader {
         label: I18n.tr("bluetooth.panel.available-devices")
@@ -310,7 +312,6 @@ Item {
       readonly property var entry: device.parent && device.parent.deviceList ? (device.parent.deviceList[device.index] ?? null) : null
 
       readonly property bool canConnect: BluetoothService.canConnect(entry)
-      readonly property bool canDisconnect: BluetoothService.canDisconnect(entry)
       readonly property bool canPair: BluetoothService.canPair(entry)
       readonly property bool isBusy: BluetoothService.isDeviceBusy(entry)
       readonly property bool isExpanded: root.expandedDeviceKey === BluetoothService.deviceKey(entry)
@@ -361,6 +362,8 @@ Item {
                   return I18n.tr("common.connecting");
                 if (k === "disconnecting")
                   return I18n.tr("common.disconnecting");
+                if (entry?.connected)
+                  return I18n.tr("common.connected");
                 return "";
               }
               visible: text !== ""
@@ -413,8 +416,12 @@ Item {
               size: Style.baseWidgetSize * 0.5
             }
 
+            // Secondary actions on the hovered row only, same rule as the
+            // Wi-Fi list (DESIGN §3.2 / §3.5.4). The accent check and the
+            // status line already say "connected"; a Connect pill on every
+            // row repeated that.
             NIconButton {
-              visible: (entry?.connected ?? false) && entry?.state !== BluetoothDeviceState.Disconnecting
+              visible: device.hovered && (entry?.connected ?? false) && entry?.state !== BluetoothDeviceState.Disconnecting
               icon: "info"
               tooltipText: I18n.tr("common.info")
               baseSize: Style.baseWidgetSize * 0.75
@@ -429,7 +436,7 @@ Item {
             }
 
             NIconButton {
-              visible: !root.showOnlyLists && ((entry?.paired ?? false) || (entry?.trusted ?? false)) && !(entry?.connected ?? false) && !isBusy && !(entry?.blocked ?? false)
+              visible: device.hovered && !root.showOnlyLists && ((entry?.paired ?? false) || (entry?.trusted ?? false)) && !(entry?.connected ?? false) && !isBusy && !(entry?.blocked ?? false)
               icon: "trash"
               tooltipText: I18n.tr("common.unpair")
               baseSize: Style.baseWidgetSize * 0.75
@@ -441,35 +448,29 @@ Item {
             }
 
             NButton {
-              id: button
-              visible: entry?.state !== BluetoothDeviceState.Connecting && entry?.state !== BluetoothDeviceState.Disconnecting
-              enabled: (canConnect || canDisconnect || (root.showOnlyLists ? false : canPair)) && !isBusy
+              visible: device.hovered && (entry?.connected ?? false) && entry?.state !== BluetoothDeviceState.Disconnecting
+              text: I18n.tr("common.disconnect")
               fontSize: Style.fontSizeS
-              backgroundColor: entry?.connected ? Colors.overlay("strong") : Colors.accent
-              textColor: entry?.connected ? Colors.onShell : Colors.onAccent
-              text: {
-                if (entry?.pairing)
-                  return I18n.tr("common.pairing");
-                if (entry?.blocked)
-                  return I18n.tr("bluetooth.panel.blocked");
-                if (entry?.connected)
-                  return I18n.tr("common.disconnect");
-                if (!root.showOnlyLists && device.canPair)
-                  return I18n.tr("common.pair");
-                return I18n.tr("common.connect");
-              }
-              onClicked: {
-                if (entry?.connected) {
-                  BluetoothService.disconnectDevice(entry);
-                } else {
-                  if (!root.showOnlyLists && device.canPair) {
-                    BluetoothService.pairDevice(entry);
-                  } else {
-                    BluetoothService.connectDeviceWithTrust(entry);
-                  }
-                }
-              }
+              backgroundColor: Colors.overlay("strong")
+              textColor: Colors.onShell
+              onClicked: BluetoothService.disconnectDevice(entry)
             }
+          }
+        }
+
+        // The row is the connect/pair action. TapHandler leaves the row-end
+        // buttons their own clicks (same shape as WifiSubTab).
+        TapHandler {
+          enabled: !(entry?.connected ?? false) && !device.isBusy && !(entry?.blocked ?? false) && (device.canConnect || (!root.showOnlyLists && device.canPair))
+          acceptedButtons: Qt.LeftButton
+          cursorShape: Qt.PointingHandCursor
+          onTapped: {
+            if (!entry)
+              return;
+            if (!root.showOnlyLists && device.canPair)
+              BluetoothService.pairDevice(entry);
+            else
+              BluetoothService.connectDeviceWithTrust(entry);
           }
         }
 

@@ -79,11 +79,11 @@ ColumnLayout {
     pointSize: Style.fontSizeS
     color: root.descriptionColor
     autoDim: root.autoDim
-    // DDE rows keep a uniform rhythm: at 352 px a 3-line description makes
-    // every row a different height. Cap at two lines, eliding the tail.
+    // The title column is the remainder after the 170 px control, so an
+    // English description does not fit in two lines. Wrap the whole string
+    // instead of eliding it ("Choose how wallpapers are displ…").
     wrapMode: Text.WordWrap
-    maximumLineCount: 2
-    elide: Text.ElideRight
+    elide: Text.ElideNone
     textFormat: Text.StyledText
   }
 }

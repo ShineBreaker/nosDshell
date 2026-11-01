@@ -72,6 +72,8 @@ Wayland 的输入归属只由 `wl_surface.set_input_region` 决定。QML 的 `tr
 
 popup 表面（`PopupWindow`）同理：niri 的 `popups { blur true }` 规则会把整个 surface 矩形都模糊，透明像素也包含在内。形状带箭头（`NArrowRect`）或其他内部透明区的 popup 必须自己通过 `NSurfaceRegion` 发布只覆盖不透明本体的模糊区域（跟踪 `NArrowRect.bodyItem`），否则箭头两侧的透明余量会透出模糊背景，看起来像 popup 下方多出一条模糊带。
 
+寄宿在 `PopupMenuWindow` 上的对话框（插件设置、挂件设置、拾色器等）另有一条：模糊区域跟踪画出蒙版的那一块，不跟踪 `Popup.contentItem`。`contentItem` 被 `Popup.padding` 从色板里缩进一圈，跟它会让色板边缘留下一圈清晰的环（半模糊）。色板是 `background`；background 只是包了一层时跟里面铺满的矩形；background 是空的、色板画在内容盒里时跟那块矩形，不要把透明的 padding 也糊进去。进出场的 `scale` 要交给 `NSurfaceRegion.watch`，否则区域停在未缩放的矩形上。
+
 取证步骤：
 
 1. 用 `WAYLAND_DEBUG=1` 跑 `verify.sh`，协议日志写进 `$NOSD_VERIFY_DIR/logs/<名字>.log`（默认目录是 `/tmp/nosd-verify`）。

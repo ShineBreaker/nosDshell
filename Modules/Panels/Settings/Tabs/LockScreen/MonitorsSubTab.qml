@@ -29,10 +29,8 @@ ColumnLayout {
     Layout.fillWidth: true
     spacing: Style.settingsGroupGap
 
-  NText {
-    text: I18n.tr("panels.lock-screen.monitors-desc")
-    wrapMode: Text.WordWrap
-    Layout.fillWidth: true
+  NHeader {
+    description: I18n.tr("panels.lock-screen.monitors-desc")
   }
 
   Repeater {

@@ -10,7 +10,7 @@ ColumnLayout {
   id: root
   spacing: 0
   Layout.fillWidth: true
-  enabled: Settings.data.idle.enabled
+  visible: Settings.data.idle.enabled
 
   property bool _saving: false
 
@@ -115,7 +115,6 @@ ColumnLayout {
     }
 
     NHeader {
-      label: I18n.tr("panels.idle.custom-label")
       description: I18n.tr("panels.idle.custom-description")
     }
   }
@@ -166,12 +165,17 @@ ColumnLayout {
       }
     }
 
-    NButton {
-      text: I18n.tr("panels.idle.custom-add")
-      icon: "add"
-      enabled: Settings.data.idle.enabled
-      onClicked: {
-        root.openEdit(-1, "", 60, "", "");
+    NDccRow {
+      Layout.fillWidth: true
+      clickable: true
+      onClicked: root.openEdit(-1, "", 60, "", "")
+      NIcon {
+        icon: "add"
+        color: Colors.onShell
+      }
+      NText {
+        text: I18n.tr("panels.idle.custom-add")
+        Layout.fillWidth: true
       }
     }
   }
