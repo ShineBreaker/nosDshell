@@ -344,8 +344,16 @@ Singleton {
     popupModel.setProperty(index, "timestamp", oldTimestamp);
     popupModel.setProperty(index, "progress", oldProgress);
 
-    // Update stored notification object
+    // Update stored notification object. Replacement notifications reuse
+    // this popup entry; disconnect the previous update's close handler
+    // before swapping the object, or every update piles another closure
+    // onto the signal (progress notifications replace many times).
     const notifData = popupState[internalId];
+    if (notifData.onClosed && notifData.notification) {
+      try {
+        notifData.notification.closed.disconnect(notifData.onClosed);
+      } catch (e) {}
+    }
     notifData.notification = notification;
 
     // Deep copy actions to preserve them even if QML object clears list
