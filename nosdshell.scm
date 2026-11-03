@@ -266,6 +266,18 @@ if [ \"$1\" = \"--version\" ] || [ \"$1\" = \"-V\" ]; then
   echo \"nosdshell v1.7.2 (with quickshell v0.3.2 5ff26dc)\"
   exit 0
 fi
+# Long-running shell (60+ threads): glibc hands each thread its own malloc
+# arena by default, and transient allocations (wallpaper decodes are
+# screen-size QImages) leave freed pages stranded in arenas where they sit
+# in RSS/swap for the life of the process — the shell was observed at
+# 1.2 GB RSS + 0.9 GB swap after two days.  Cap the arenas and pin the
+# mmap/trim thresholds so large ranges go straight back to the kernel.
+# Defaults are overridable from the environment (:= only when unset);
+# glibc reads these at startup, hence before exec.
+: \"${MALLOC_ARENA_MAX:=4}\"
+: \"${MALLOC_MMAP_THRESHOLD_:=131072}\"
+: \"${MALLOC_TRIM_THRESHOLD_:=131072}\"
+export MALLOC_ARENA_MAX MALLOC_MMAP_THRESHOLD_ MALLOC_TRIM_THRESHOLD_
 exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
                             (search-input-file inputs "bin/sh")
                             (search-input-file inputs "bin/quickshell")

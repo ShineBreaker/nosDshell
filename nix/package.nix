@@ -96,6 +96,16 @@ if [ "$1" = "--version" ] || [ "$1" = "-V" ]; then
   echo "nosdshell v${version} (with quickshell v${quickshell.version})"
   exit 0
 fi
+# Long-running shell (~60 threads): cap glibc malloc arenas and pin the
+# mmap/trim thresholds so transient large allocations (screen-size
+# wallpaper QImages) go straight back to the kernel instead of stranding
+# freed pages in per-thread arenas (observed 1.2 GB RSS + 0.9 GB swap
+# after two days without these).  Overridable via the environment; glibc
+# reads them at startup, hence before exec.
+: "''${MALLOC_ARENA_MAX:=4}"
+: "''${MALLOC_MMAP_THRESHOLD_:=131072}"
+: "''${MALLOC_TRIM_THRESHOLD_:=131072}"
+export MALLOC_ARENA_MAX MALLOC_MMAP_THRESHOLD_ MALLOC_TRIM_THRESHOLD_
 exec ${quickshell}/bin/qs "$@"
 EOF
     chmod +x $out/bin/nosdshell
