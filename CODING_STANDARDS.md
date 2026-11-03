@@ -104,6 +104,7 @@
 - 布局约束（`Layout.maximumWidth` 这类附加属性、padding）不要读取它所在布局自己的尺寸：布局排列子项时自身尺寸也在变，约束跟着变就会重新触发排列，Qt 报 `Detected recursive rearrange` 后放弃。从外层固定的尺寸推算，例子见 `NSectionEditor` 标题列的 `maximumWidth`。约束确实要看排列结果时（内容溢出才给滚动条留宽度，而留宽又改变内容高度），用 `Qt.callLater` 推迟一拍再更新，见 `NScrollView` 的 `_reserveVertical`，否则会报 `Binding loop detected`。
 - 不经 `SmartPanel`、自己管理显隐的 `PanelWindow`（全屏启动器、会话菜单这类 overlay 表面），关闭时要在淡出结束后把窗口的 `visible` 置为 false。只把内容淡成透明而窗口仍映射时，这块表面看不见，却继续接收整屏的点击，独占键盘焦点时连按键也一起拿走。做法统一为：关闭时启动一个时长为淡出时长加 30 ms 的计时器，窗口在计时器运行期间保持映射，到点再取消映射。例子见 `LauncherFullscreenWindow` 和 `SessionMenu` 的 `closeTimer`。
 - 交给 Quickshell 组件（`IconImage` 等）的图片地址要写成 `file://` 开头的 URL。裸路径会按组件自己所在的 `qrc:` 位置解析，加载失败。仓库里的 QML 文件自己的 `Image` 不受影响，因为它们按 `file:` 位置解析。
+- 壁纸级尺寸的 `Image` 一律 `cache: false`（`Background`、`Overview`、`LockScreenBackground`、`LauncherBackground`）。`cache: true` 的语义是"无人引用后仍驻留纹理缓存"：壁纸自动化下每张显示过的壁纸都留在 QQuickPixmapCache 里不再释放，长期运行内存无界增长。多个表面共享同一张壁纸靠的是 pixmap cache 对同一 URL 的引用计数，与 cache 标志无关；重显示的代价只是一次异步重解码，持久层是 `ImageCacheService` 的磁盘缓存。小图标不受此规则约束（尺寸小、复用频繁，`cache: true` 合理）。
 
 ## 界面文字
 

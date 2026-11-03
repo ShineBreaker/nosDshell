@@ -164,7 +164,13 @@ Variants {
         smooth: true
         mipmap: false
         visible: false
-        cache: true // Cached so Overview can share the same texture
+        // cache:false keeps only the referenced texture alive. Sharing with
+        // Overview works through the pixmap cache's refcounting on the same
+        // URL; cache:true would additionally retain every wallpaper ever
+        // shown (unbounded growth under wallpaper automation). The disk
+        // cache (ImageCacheService) is the retention layer — same rule as
+        // LockScreenBackground/LauncherBackground.
+        cache: false
         asynchronous: true
         onStatusChanged: {
           if (status === Image.Error) {

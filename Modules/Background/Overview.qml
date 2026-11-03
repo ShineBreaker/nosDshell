@@ -98,7 +98,10 @@ Loader {
         source: preprocessedWallpaper || wallpaper
         smooth: true
         mipmap: false
-        cache: true // Shares texture with Background's currentWallpaper
+        // Shares the texture with Background's currentWallpaper through the
+        // pixmap cache's refcounting (same URL), not through retention:
+        // cache:true would keep every wallpaper ever shown cached forever.
+        cache: false
         asynchronous: true
 
         layer.enabled: Settings.data.wallpaper.overviewBlur > 0 && !PowerProfileService.performanceMode
