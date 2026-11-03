@@ -10,6 +10,35 @@
 
 ## [Unreleased]
 
+## [1.7.3] - 2026-11-03
+
+这版专治内存莫名变高：壁纸纹理、通知闭包、JS 堆和 glibc 分配器四条增长路径一起收口，长期挂着的 shell 不再往 1 GB 爬，换出内存也不再只进不出。quickshell fork 一并推进——自带分配器约束、可编 Qt 6.6，构建矩阵 34 项全绿。
+
+---
+
+### 修复
+
+- disconnect replaced close handlers in updatePopup：[`c6089d28a`](https://github.com/ShineBreaker/nosDshell/commit/c6089d28afe9859ad289d2d151e7833bb0a0dc2c)
+- stop retaining every shown wallpaper texture：[`03c5cac47`](https://github.com/ShineBreaker/nosDshell/commit/03c5cac47e8847eb33b0c561d8339b6625123391)
+
+### 观感
+
+- run qmlfmt over Background and NotificationService：[`217a5db30`](https://github.com/ShineBreaker/nosDshell/commit/217a5db30b33c390834dd1bbacac92653a8da0c8)
+
+### 性能
+
+- cap glibc arenas and pin malloc thresholds：[`6205782d1`](https://github.com/ShineBreaker/nosDshell/commit/6205782d140a4cca8e0e1b324bf05cfba6091db0)
+- collect the V4 JS heap on a slow cadence：[`4affd7f6a`](https://github.com/ShineBreaker/nosDshell/commit/4affd7f6a5342da218253c0fdb0d6b2ae79ef089)
+
+### CI
+
+- tag 之后的机械步骤交给 workflow：[`cdff4ca25`](https://github.com/ShineBreaker/nosDshell/commit/cdff4ca25b47154e6063d4e5d39c5336a221352c)
+
+### 工程
+
+- advance quickshell-nosd pin to b0a8a7f：[`5313c0039`](https://github.com/ShineBreaker/nosDshell/commit/5313c0039b36d788fca76070ea6949ea22e33aa0)
+- bump the jeans channel pin during release：[`ff64db80b`](https://github.com/ShineBreaker/nosDshell/commit/ff64db80b316d36897a9a68ccbfdbb36941211be)
+
 ## [1.7.2] - 2026-11-01
 
 niri 的模糊这回盖满整块对话框底板，不再只糊中间一圈；启动器学会在应用注册时即时刷新列表，新装的应用不会再从全屏网格里凭空消失。设置页做了一轮版式收敛：列表头接缝统一为 1 px，蓝牙行改用与 Wi-Fi 相同的悬停操作，控件各归其列，芯片标签不再被空齿轮位吃字。截图全部在带模糊的 niri 桌面上重拍。
@@ -712,7 +741,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.2...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.3...HEAD
+[1.7.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.0...v1.7.1
 [1.7.0]: https://github.com/ShineBreaker/nosDshell/compare/v1.6.4...v1.7.0
