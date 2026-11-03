@@ -79,23 +79,28 @@
                             (const #t))))
 
 
-;;; Our quickshell fork (ShineBreaker/quickshell-nosd): upstream master at
-;;; the version 0.3.2 commit plus the two pipewire use-after-free fixes the
-;;; archived noctalia-qs fork carried and upstream never merged — dangling
-;;; raw PwNode pointers in the default-device tracker (903a70a) and in the
-;;; PwNodeIface-bound volume/peak readers (08e6406).  Both crash the shell
-;;; when a pipewire node (USB audio, headphones) disappears; they are now
-;;; real commits in the fork rather than patches applied here.
+;;; Our quickshell fork (ShineBreaker/quickshell-nosd): upstream master
+;;; kept linear on top of the version 0.3.2 commit by a daily CI sync
+;;; (.github/workflows/sync.yml, baseline cherry-pick via
+;;; scripts/sync-upstream.sh; the baseline sits in
+;;; .github/upstream-sync-base).  Beyond upstream it carries:
 ;;;
-;;; Upstream's adjacent destructor-order fixes (36517a2, 91dcb41, 13fe9b0)
-;;; do not remove the dangling-pointer windows, so both fixes are still
-;;; needed.
-;;;
-;;; 5ff26dc adds one more fix on top: PR_SET_PDEATHSIG for managed child
-;;; processes.  The shell spawns long-lived helpers (wl-paste clipboard
-;;; watchers, niri event-stream, nmcli monitor, udevadm monitor) that must
-;;; not outlive it; without the parent-death signal a crash or SIGTERM
-;;; reparented them to init and they kept running as orphans.
+;;;   - the two pipewire use-after-free fixes the archived noctalia-qs
+;;;     fork carried and upstream never merged — dangling raw PwNode
+;;;     pointers in the default-device tracker (903a70a, plus b0a8a7f
+;;;     making it compile on Qt 6.6) and in the PwNodeIface-bound
+;;;     volume/peak readers (08e6406).  Both crash the shell when a
+;;;     pipewire node (USB audio, headphones) disappears; they are real
+;;;     commits in the fork rather than patches applied here.
+;;;   - PR_SET_PDEATHSIG for managed child processes (5ff26dc): the
+;;;     long-lived helpers (wl-paste watchers, niri event-stream, nmcli
+;;;     monitor, udevadm monitor) must not outlive the shell.
+;;;   - allocator bounds for a long-lived shell (92a7978): mallopt caps
+;;;     glibc arenas and pins mmap/trim thresholds at startup, and a
+;;;     QTimer calls malloc_trim every five minutes — without them the
+;;;     shell was observed at 620 MB RSS + 890 MB swap after two days,
+;;;     mostly freed pages stranded in per-thread arenas.  Explicit
+;;;     MALLOC_* environment (our wrapper sets the same values) wins.
 (define quickshell/nosd
   (package
     (inherit quickshell)
@@ -106,11 +111,11 @@
        (method git-fetch)
        (uri (git-reference
              (url "https://github.com/ShineBreaker/quickshell-nosd")
-             (commit "5ff26dce11ba3a2ce4b9855c269964d6367f718c")))
+             (commit "b0a8a7f77996ec9fee036e200447c07be86d1c44")))
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "1k7sk1qfw7gw4j8dj5adrm1s06qr1ipx4q6fxllka4dfvk8dfm51"))))))
+         "0mz7a2201gk05a9sp0dy1hzd880a6g6212vmj9jgnmgzm3lc6w9h"))))))
 
 (define-public nosd-blur
   (package
@@ -263,7 +268,7 @@ and Matugen-compatible template rendering.")
                     (format #t "~
 #!~a
 if [ \"$1\" = \"--version\" ] || [ \"$1\" = \"-V\" ]; then
-  echo \"nosdshell v1.7.2 (with quickshell v0.3.2 5ff26dc)\"
+  echo \"nosdshell v1.7.2 (with quickshell v0.3.2 b0a8a7f)\"
   exit 0
 fi
 # Long-running shell (60+ threads): glibc hands each thread its own malloc
