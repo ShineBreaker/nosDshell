@@ -91,6 +91,21 @@ ShellRoot {
     }
   }
 
+  // V4's GC only fires under allocation pressure, but a shell idles at low
+  // pressure for days: the JS heap (/memfd:JSGCHeap chunks) accumulates
+  // startup and per-poll garbage and never comes back. Collect on a slow
+  // cadence so long-running sessions don't creep toward the 1 GB the
+  // process peaked at before this timer existed.
+  Timer {
+    interval: 10 * 60 * 1000
+    repeat: true
+    running: true
+    onTriggered: {
+      gc();
+      Logger.d("Shell", "Periodic gc() completed");
+    }
+  }
+
   Loader {
     active: i18nLoaded && settingsLoaded && shellStateLoaded
 
