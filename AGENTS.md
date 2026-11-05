@@ -47,7 +47,7 @@ nosDshell 是 Noctalia v4（基于 Quickshell/QML 的 Wayland shell）的分叉�
 开发机是 Guix，没有 Nix；云端容器里没有 Guix，有 Nix。测试脚本通过 `NOSD_PKG_BACKEND` 在两者之间切换，准备步骤见 `DEBUGGING.md`「运行环境」。`lefthook.yml` 声明的 pre-commit（QML 格式化、重建设置索引）要靠 `nix/shell.nix` 提供 lefthook，在 Guix 开发机上不会执行，这两步要自己跑。
 
 - shell 跑在上游 `quickshell` 上。上游缺少两个 PipeWire 释放后使用（UAF）修复，需要它们时用 `nosdshell.scm` 打包的 `quickshell-nosd`（我们的 fork）。上游 quickshell 也没有内置音频频谱，频谱由 cava 子进程提供（`Services/Media/SpectrumService.qml`）。
-- 常用命令包在 `justfile` 里，运行 `just` 可以列出全部。`just run` 和 `just restore` 会替换用户正在使用的 shell，这两条只在用户要求时运行。发版只需把带正确版号的 release commit 和 `v<版号>` tag 推上去，CI 自动发布、reopen 并通知 jeans，本地不要创建 Release；`just release` 只是把本地准备步骤串起来的辅助脚本。
+- 常用命令包在 `justfile` 里，运行 `just` 可以列出全部。`just run` 和 `just restore` 会替换用户正在使用的 shell，这两条只在用户要求时运行。发版只需把带正确版号的 release commit 和 `v<版号>` tag 推上去，CI 自动发布并 reopen，本地不要创建 Release。jeans 的 pin 发版后在本地更新并用你自己的 GPG 签名提交，不要交给 CI 自动开 PR（bot 提交会破坏签名）；`just release` 只是把本地准备步骤串起来的辅助脚本。
 - 运行验证一律用 `Scripts/test/verify.sh <名字>`。它在隔离的 dbus 会话和无头 sway 里运行，截图与日志的位置写在脚本头部。在用户的 niri 会话里直接起 `qs` 会接管他的通知服务并改写他的配置。
 - 问题依赖真实 niri 行为时（layer-shell、exclusive zone、焦点与输入投递这类 sway 上复现不了的问题），用 `Scripts/test/niri/`，用法见目录内的 README。它会在用户桌面上打开一个窗口，用户在场时先征得同意。
 - 结束进程时只 kill 自己启动时记下的 PID。用户会话里也有同名进程，例如 pipewire 和 wireplumber。

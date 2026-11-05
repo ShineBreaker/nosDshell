@@ -2,11 +2,12 @@
 # release.sh — prepare and tag a nosDshell release (automates docs/RELEASE.md).
 #
 # Publishing is CI's job: pushing the v* tag runs .github/workflows/release.yml,
-# which validates the version spots, creates or refreshes the GitHub release,
-# reopens development (isDevelopment=true) and asks jeans to bump the channel
-# pin.  This script only does the local half — changelog, version bumps, lint,
-# About-page shot, release commit and the annotated tag — and never talks to the
-# API or the jeans checkout.
+# which validates the version spots, creates or refreshes the GitHub release and
+# reopens development (isDevelopment=true).  This script only does the local half
+# — changelog, version bumps, lint, About-page shot, release commit and the
+# annotated tag.  Bumping the jeans pin is a separate manual step after the tag
+# (docs/RELEASE.md): it stays on this machine so the commit carries your own
+# signature instead of a bot's.
 #
 # Usage:
 #   Scripts/dev/release.sh 1.1.2                 # scaffold or finish, then push
@@ -150,12 +151,17 @@ cat <<EOF
 done. the tag is the hand-off — CI (.github/workflows/release.yml) now runs:
   - the GitHub release (notes, archives)
   - the reopen commit (isDevelopment=true)
-  - a PR against ShineBreaker/jeans bumping the nosdshell pin
-      (skipped with a warning when the JEANS_TOKEN secret is unset)
+
+next, bump the jeans pin locally so the commit is signed by you:
+  - cd <jeans checkout>
+  - python3 scripts/check-updates/update_versions.py --only nosdshell
+  - review %nosdshell-version / %nosdshell-source in
+    modules/jeans/packages/desktop.scm
+  - commit and push with your own GPG signature
 
 follow-ups:
   - gh run watch                     (CI refresh: gh workflow run release.yml -f tag=v$VER)
-  - after the jeans PR merges: guix pull, then guix home reconfigure
+  - after the jeans pin lands: guix pull, then guix home reconfigure
 EOF
 if [ $PUSH -eq 0 ]; then
   echo

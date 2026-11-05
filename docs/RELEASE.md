@@ -5,7 +5,7 @@ nav_exclude: true
 
 # 发版流程
 
-**发版由 tag 触发。** 把带正确版号的 release commit 和 `v<版号>` 附注 tag 推到 `main`，`.github/workflows/release.yml` 会完成其余全部工作：校验版号、发布 GitHub Release、把 `isDevelopment` 改回 `true`、通知 jeans 更新 channel pin。本地不需要创建 Release，也不需要手动 reopen。
+**发版由 tag 触发。** 把带正确版号的 release commit 和 `v<版号>` 附注 tag 推到 `main`，`.github/workflows/release.yml` 会完成其余工作：校验版号、发布 GitHub Release、把 `isDevelopment` 改回 `true`。本地不需要创建 Release，也不需要手动 reopen。jeans 的 pin 由人在本地更新（见文末），不走 CI。
 
 人只准备两样东西：`CHANGELOG.md` 的版本条目，以及各处同步的版号。
 
@@ -26,15 +26,22 @@ nav_exclude: true
 
 ## CI 做的事
 
-推 `v*` tag 后，`release.yml` 依次执行三个 job：
+推 `v*` tag 后，`release.yml` 依次执行两个 job：
 
 - **release**：校验 tag 与 `baseVersion`、`isDevelopment=false`、`nosdshell.scm`、`flake.nix`、`nix/package.nix` 和 wrapper 的 `--version` 行全部一致；按 CHANGELOG 对应条目生成正文；打包 `nosdshell-<tag>.tar.gz` 和 `nosdshell-latest.tar.gz`；创建或刷新 GitHub Release。Release 已存在时只刷新正文和附件。
 - **reopen**：在 `main` 上把 `isDevelopment` 改回 `true`，提交 `chore(release): reopen development after v<版号>` 并推送。
-- **jeans-pr**：触发 jeans 的 `nosdshell-release.yml`，由 jeans 侧更新 `%nosdshell-version` 与 `%nosdshell-source` 的 base32 并开 PR。hash 逻辑只有 jeans 一份，本仓库不重复实现。
 
-jeans 那一步需要本仓库的 secret `JEANS_TOKEN`（对 `ShineBreaker/jeans` 有 `Actions: write`）。没配时 job 只打 warning 并跳过，其余发版照常完成；PR 由 jeans 自己的 `GITHUB_TOKEN` 创建。
+需要重发一个已存在的 tag 时，用 `gh workflow run release.yml -f tag=v<版号>`，两个 job 都是幂等的。
 
-需要重发一个已存在的 tag 时，用 `gh workflow run release.yml -f tag=v<版号>`，三个 job 都是幂等的。
+## 更新 jeans pin
+
+jeans 的 `%nosdshell-version` 与 `%nosdshell-source` 由人在本地更新，**不交给 CI 自动开 PR**：自动提交的作者是 bot，签名会出问题。tag 推送、CI 发版完成之后：
+
+1. 在 jeans 检出里跑 `python3 scripts/check-updates/update_versions.py --only nosdshell`（需要 `pip install requests`）。
+2. 检查 `modules/jeans/packages/desktop.scm`：`%nosdshell-version` 变成新版号，`%nosdshell-source` 的 base32 是新 tag 的树哈希。`quickshell-nosd` 的 pin 只在 quickshell fork 有推进时同步；这次 shell 发版没动 fork 就不用改，但要看一眼 `nosdshell.scm` 的 fork commit 与 jeans 里是否一致。
+3. 用你自己的 GPG 签名提交并推送。确认 `commit.gpgsign` 是开着的；不要用 `--no-gpg-sign`。
+
+本地核对 hash：在 nosDshell 仓库 `git worktree add /tmp/nosd-<版号> v<版号>`，在 worktree 里跑 `guix hash -S nar -x .`，输出应当与 `%nosdshell-source` 的 base32 一致。核对完 `git worktree remove /tmp/nosd-<版号>`。
 
 ## 版号位置
 
@@ -67,8 +74,8 @@ jeans 那一步需要本仓库的 secret `JEANS_TOKEN`（对 `ShineBreaker/jeans
 7. CI 没跑成时的兜底：
    - Release：`gh workflow run release.yml -f tag=v<版号>`。
    - reopen：把 `isDevelopment` 改回 `true`，提交 `chore(release): reopen development after v<版号>` 并推送。
-   - jeans：`gh workflow run nosdshell-release.yml --repo ShineBreaker/jeans -f tag=v<版号>`；触发不了时在 jeans 仓库跑 `python3 scripts/check-updates/update_versions.py --only nosdshell`（需要 `pip install requests`），确认只改了 `modules/jeans/packages/desktop.scm` 的两行再提交推送。
-8. Guix：本仓库即 Guix channel（`.guix-channel`），包的 `source` 始终是 `local-file` 的当前 checkout——`guix pull` 用户 pin 到 `v<版号>` tag 得到的就是该 tag 的树，`guix build -f nosdshell.scm` 打包的是工作区，两者共用同一份定义，无需改动。jeans 的 PR merge 之后，`guix pull` 再 `guix home reconfigure` 即可用上该版。
+   - jeans：按上面「更新 jeans pin」一节在本地做；不要 dispatch jeans 的 workflow，那条路会产生 bot 提交。
+8. Guix：本仓库即 Guix channel（`.guix-channel`），包的 `source` 始终是 `local-file` 的当前 checkout——`guix pull` 用户 pin 到 `v<版号>` tag 得到的就是该 tag 的树，`guix build -f nosdshell.scm` 打包的是工作区，两者共用同一份定义，无需改动。jeans 的 pin 更新并推送之后，`guix pull` 再 `guix home reconfigure` 即可用上该版。
 
 ## tag 约定
 
