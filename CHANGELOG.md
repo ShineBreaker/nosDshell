@@ -10,6 +10,16 @@
 
 ## [Unreleased]
 
+## [1.7.4] - 2026-11-05
+
+这版把壁纸解码拦在屏幕尺寸上。一张 9000×6000 的原图以前会被背景、概览、锁屏和启动器各自解一份，现在统一按屏幕解码：长期挂着的 shell 从 1.3 GiB 降到 755 MiB，换出内存直接归零。
+
+---
+
+### 性能
+
+- decode wallpapers at screen size：[`db254bf24`](https://github.com/ShineBreaker/nosDshell/commit/db254bf2438af5f6ccc304bacff9bbacacb98c19)
+
 ## [1.7.3] - 2026-11-03
 
 这版专治内存莫名变高：壁纸纹理、通知闭包、JS 堆和 glibc 分配器四条增长路径一起收口，长期挂着的 shell 不再往 1 GB 爬，换出内存也不再只进不出。quickshell fork 一并推进——自带分配器约束、可编 Qt 6.6，构建矩阵 34 项全绿。
@@ -741,7 +751,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.3...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.4...HEAD
+[1.7.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.1...v1.7.2
 [1.7.1]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.0...v1.7.1
