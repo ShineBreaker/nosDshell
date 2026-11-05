@@ -98,6 +98,7 @@ restore:
 # ---- release -----------------------------------------------------------------
 
 #   Empty [Unreleased] → scaffolds commit links; fill the intro, re-run.
-# Cut a release: just release 1.1.2 [--no-push] [--skip-verify]
+#   Local half only: pushing the v* tag is what makes CI publish the release.
+# Prepare and tag a release: just release 1.1.2 [--no-push] [--skip-verify]
 release ver +args:
     Scripts/dev/release.sh {{ver}} {{args}}

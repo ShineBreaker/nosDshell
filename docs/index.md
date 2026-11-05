@@ -16,7 +16,7 @@ nosDshell brings the classic deepin 15 (DDE 15) frosted-glass interface to Wayla
 
   _Archived mirror of the upstream Noctalia v4 documentation covering installation, configuration, color templates, plugin development, and the IPC reference. nosDshell keeps the v4 backend, so configuration and IPC docs apply directly. For visual design and surface behavior, [`DESIGN.md`](https://github.com/ShineBreaker/nosDshell/blob/main/DESIGN.md) in this repository is authoritative._
 
-- [发版流程 / Release process](RELEASE.md)：版本号位置、自动化发版脚本、Tag 规范与重新开启开发周期。
+- [发版流程 / Release process](RELEASE.md)：推 `v*` tag 即由 CI 自动发版；版本号位置、Tag 规范与回滚兜底。
 
 ## 链接 / Links
 

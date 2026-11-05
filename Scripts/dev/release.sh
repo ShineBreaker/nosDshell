@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
-# release.sh — cut a nosDshell release end to end (automates docs/RELEASE.md).
+# release.sh — prepare and tag a nosDshell release (automates docs/RELEASE.md).
+#
+# Publishing is CI's job: pushing the v* tag runs .github/workflows/release.yml,
+# which validates the version spots, creates or refreshes the GitHub release,
+# reopens development (isDevelopment=true) and asks jeans to bump the channel
+# pin.  This script only does the local half — changelog, version bumps, lint,
+# About-page shot, release commit and the annotated tag — and never talks to the
+# API or the jeans checkout.
 #
 # Usage:
 #   Scripts/dev/release.sh 1.1.2                 # scaffold or finish, then push
-#   Scripts/dev/release.sh v1.1.2 --no-push      # everything local (commit+tag only)
+#   Scripts/dev/release.sh v1.1.2 --no-push      # local only (commit+tag, CI never runs)
 #   Scripts/dev/release.sh 1.1.2 --skip-verify   # skip lint + settings-about shot
 #
 # Two-phase flow:
@@ -13,11 +20,8 @@
 #   2. With a filled [Unreleased] it lands the entry as `## [X.Y.Z] - <date>`,
 #      bumps the five version spots (incl. the --version line in nosdshell.scm),
 #      lints, shoots the About page, commits `chore(release):`, tags -a and
-#      pushes main+tag.  Everything after that is CI
-#      (.github/workflows/release.yml), which publishes the GitHub release,
-#      reopens development (isDevelopment=true) and opens a PR against the
-#      jeans channel bumping the nosdshell pin — this script never talks to the
-#      API and never touches the jeans checkout.
+#      pushes main+tag.  The tag is what starts the release; everything after it
+#      is CI.
 
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -29,7 +33,7 @@ for arg in "$@"; do
   case "$arg" in
     --no-push)     PUSH=0 ;;
     --skip-verify) VERIFY=0 ;;
-    -h|--help)     sed -n '2,22p' "$0"; exit 0 ;;
+    -h|--help)     sed -n '2,24p' "$0"; exit 0 ;;
     v[0-9]*|[0-9]*) VER="${arg#v}" ;;
     *) echo "unknown arg: $arg" >&2; exit 2 ;;
   esac
