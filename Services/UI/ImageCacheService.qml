@@ -6,6 +6,7 @@ import Quickshell.Io
 import Quickshell.Wayland
 import "../../Helpers/sha256.js" as Checksum
 import qs.Commons
+import qs.Services.Compositor
 
 Singleton {
   id: root
@@ -110,6 +111,20 @@ Singleton {
         }
       });
     });
+  }
+
+  // -------------------------------------------------
+  // Wallpaper decode bounds
+  // -------------------------------------------------
+  // Every wallpaper Image must decode at screen resolution, never at the
+  // source file's resolution. A 9310x6074 PNG decodes to ~226 MB, and the
+  // shell keeps the background, overview, lock screen and launcher Images
+  // alive at the same time; three of them cost ~655 MB. The disk cache is
+  // the quality layer, this bound is the memory guard, and it still applies
+  // when useOriginalImages or a missing ImageMagick skips the disk cache.
+  function wallpaperDecodeSize(screenName, logicalWidth, logicalHeight) {
+    const scale = CompositorService.getDisplayScale(screenName);
+    return Qt.size(Math.max(1, Math.round(logicalWidth * scale)), Math.max(1, Math.round(logicalHeight * scale)));
   }
 
   // -------------------------------------------------

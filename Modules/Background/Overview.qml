@@ -96,6 +96,7 @@ Loader {
         visible: !isSolidColor
         fillMode: Image.PreserveAspectCrop
         source: preprocessedWallpaper || wallpaper
+        sourceSize: ImageCacheService.wallpaperDecodeSize(modelData.name, panelWindow.width, panelWindow.height)
         smooth: true
         mipmap: false
         // Shares the texture with Background's currentWallpaper through the

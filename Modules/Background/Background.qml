@@ -161,6 +161,7 @@ Variants {
         id: currentWallpaper
 
         source: ""
+        sourceSize: ImageCacheService.wallpaperDecodeSize(modelData.name, bgLoader.liveScreen.width, bgLoader.liveScreen.height)
         smooth: true
         mipmap: false
         visible: false
@@ -187,6 +188,7 @@ Variants {
         property bool pendingTransition: false
 
         source: ""
+        sourceSize: ImageCacheService.wallpaperDecodeSize(modelData.name, bgLoader.liveScreen.width, bgLoader.liveScreen.height)
         smooth: true
         mipmap: false
         visible: false
@@ -601,7 +603,6 @@ Variants {
 
         // Clear nextWallpaper completely to free texture memory
         nextWallpaper.source = "";
-        nextWallpaper.sourceSize = undefined;
 
         currentWallpaper.source = "";
 

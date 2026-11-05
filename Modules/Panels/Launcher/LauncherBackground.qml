@@ -69,6 +69,7 @@ Item {
     anchors.fill: parent
     fillMode: Image.PreserveAspectCrop
     source: root.resolvedBlurredPath !== "" ? "" : root.resolvedWallpaperPath
+    sourceSize: ImageCacheService.wallpaperDecodeSize(screen.name, width, height)
     cache: false
     asynchronous: true
     smooth: true

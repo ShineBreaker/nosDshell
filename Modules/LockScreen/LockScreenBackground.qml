@@ -138,6 +138,7 @@ Item {
     anchors.fill: parent
     fillMode: Image.PreserveAspectCrop
     source: resolvedWallpaperPath
+    sourceSize: ImageCacheService.wallpaperDecodeSize(screen.name, width, height)
     cache: false
     smooth: true
     mipmap: false

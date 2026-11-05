@@ -103,6 +103,16 @@ core 验尸要设置 `QS_DISABLE_CRASH_HANDLER=1` 并执行 `ulimit -c unlimited
 
 `nosd-helpers vinput click` 加环境变量 `VINPUT_PRESS_MS` 可以按住指定的毫秒数再松开，用来拍按压态。
 
+## 内存取证
+
+shell 的 malloc 由 quickshell-nosd 链接的 jemalloc 接管，glibc 的 `MALLOC_*` 环境变量和 `malloc_trim` 在它身上全部空转。看内存去向要直接问 jemalloc：
+
+- 进程级：`/proc/<pid>/smaps_rollup` 的 `Rss`、`Swap`、`Pss_Anon`。`VmHWM` 远高于当前 RSS 说明是启动峰值，不是持续增长。
+- 分配器：`gdb -p <pid> -batch -iex 'set print thread-events off' -ex 'call (void)malloc_stats_print((void*)fprintf, (void*)fopen("/tmp/je.txt","w"), 0)' -ex detach`，再读 `Allocated`、`active`、`resident` 和 `auto_oversize` arena 的 large 直方图。超过 8 MiB 的分配落在 `auto_oversize`，`curlextents` 就是当前存活的超大块数量。
+- 内容：在 `/proc/<pid>/smaps` 里找超大匿名块，用 ptrace 加 `/proc/<pid>/mem` 采样，区分已释放的零页和仍持有的对象。
+
+壁纸是这套 shell 最大的单点内存来源。原图可以到 9000×6000，RGBA 解码约 216 MiB，每条 `Image` 都可能独立持有一次。**所有加载壁纸的 `Image` 必须绑定 `sourceSize: ImageCacheService.wallpaperDecodeSize(screenName, width, height)`**，不要依赖 `getLarge()` 的磁盘缓存：`wallpaper.useOriginalImages` 为真或缺少 ImageMagick 时它都直接回原图，缓存目录会是空的。`sourceSize` 只限制最终保留的纹理，PNG 解码仍会短暂分配原图，所以启动时 `VmHWM` 高于稳态是正常的。
+
 ## 现成脚本
 
 - `Scripts/test/debug-smoke.sh`：调试功能全链路冒烟测试。
