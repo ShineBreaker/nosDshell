@@ -119,31 +119,31 @@ NDccRow {
         propagateComposedEvents: false
 
         onPressed: mouse => {
-                     mouse.accepted = true;
-                     // Focus the input and position cursor
-                     input.forceActiveFocus();
-                     var inputPos = mapToItem(inputContainer, mouse.x, mouse.y);
-                     if (inputPos.x >= 0 && inputPos.x <= inputContainer.width) {
-                       var textPos = inputPos.x - Style.marginL;
-                       if (textPos >= 0 && textPos <= input.width) {
-                         input.cursorPosition = input.positionAt(textPos, input.height / 2);
-                       }
-                     }
-                   }
+          mouse.accepted = true;
+          // Focus the input and position cursor
+          input.forceActiveFocus();
+          var inputPos = mapToItem(inputContainer, mouse.x, mouse.y);
+          if (inputPos.x >= 0 && inputPos.x <= inputContainer.width) {
+            var textPos = inputPos.x - Style.marginL;
+            if (textPos >= 0 && textPos <= input.width) {
+              input.cursorPosition = input.positionAt(textPos, input.height / 2);
+            }
+          }
+        }
 
         onReleased: mouse => {
-                      mouse.accepted = true;
-                    }
+          mouse.accepted = true;
+        }
         onDoubleClicked: mouse => {
-                           mouse.accepted = true;
-                           input.selectAll();
-                         }
+          mouse.accepted = true;
+          input.selectAll();
+        }
         onPositionChanged: mouse => {
-                             mouse.accepted = true;
-                           }
+          mouse.accepted = true;
+        }
         onWheel: wheel => {
-                   wheel.accepted = false;
-                 }
+          wheel.accepted = false;
+        }
       }
 
       // Container for the actual text field
@@ -190,78 +190,79 @@ NDccRow {
               // path does not scroll under the clip or into the clear glyph.
               color: input.activeFocus ? (enabled ? Colors.onShell : Qt.alpha(Colors.onShell, 0.4)) : "transparent"
 
-            selectByMouse: true
+              selectByMouse: true
 
-            topPadding: 0
-            bottomPadding: 0
-            leftPadding: 0
-            rightPadding: 0
+              topPadding: 0
+              bottomPadding: 0
+              leftPadding: 0
+              rightPadding: 0
 
-            background: null
+              background: null
 
-            font.family: root.fontFamily
-            font.pointSize: root.fontSize * Style.uiScaleRatio
-            font.weight: root.fontWeight
+              font.family: root.fontFamily
+              font.pointSize: root.fontSize * Style.uiScaleRatio
+              font.weight: root.fontWeight
 
-            onEditingFinished: root.editingFinished()
-            onAccepted: root.accepted()
+              onEditingFinished: root.editingFinished()
+              onAccepted: root.accepted()
 
-            // Override mouse handling to prevent propagation
-            MouseArea {
-              id: textFieldMouse
-              anchors.fill: parent
-              acceptedButtons: Qt.AllButtons
-              preventStealing: true
-              propagateComposedEvents: false
-              cursorShape: Qt.IBeamCursor
+              // Override mouse handling to prevent propagation
+              MouseArea {
+                id: textFieldMouse
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                preventStealing: true
+                propagateComposedEvents: false
+                cursorShape: Qt.IBeamCursor
 
-              property int selectionStart: 0
+                property int selectionStart: 0
 
-              onPressed: mouse => {
-                           mouse.accepted = true;
-                           input.forceActiveFocus();
-                           var pos = input.positionAt(mouse.x, mouse.y);
-                           input.cursorPosition = pos;
-                           selectionStart = pos;
-                         }
+                onPressed: mouse => {
+                  mouse.accepted = true;
+                  input.forceActiveFocus();
+                  var pos = input.positionAt(mouse.x, mouse.y);
+                  input.cursorPosition = pos;
+                  selectionStart = pos;
+                }
 
-              onPositionChanged: mouse => {
-                                   if (mouse.buttons & Qt.LeftButton) {
-                                     mouse.accepted = true;
-                                     var pos = input.positionAt(mouse.x, mouse.y);
-                                     input.select(selectionStart, pos);
-                                   }
-                                 }
+                onPositionChanged: mouse => {
+                  if (mouse.buttons & Qt.LeftButton) {
+                    mouse.accepted = true;
+                    var pos = input.positionAt(mouse.x, mouse.y);
+                    input.select(selectionStart, pos);
+                  }
+                }
 
-              onDoubleClicked: mouse => {
-                                 mouse.accepted = true;
-                                 input.selectAll();
-                               }
+                onDoubleClicked: mouse => {
+                  mouse.accepted = true;
+                  input.selectAll();
+                }
 
-              onReleased: mouse => {
-                            mouse.accepted = true;
-                          }
-              onWheel: wheel => {
-                         wheel.accepted = false;
-                       }
+                onReleased: mouse => {
+                  mouse.accepted = true;
+                }
+                onWheel: wheel => {
+                  wheel.accepted = false;
+                }
+              }
+            }
+
+            // Idle display. ElideLeft keeps the tail (paths, commands) and
+            // stops on a glyph boundary, with the same left inset the field
+            // already applies outside this slot.
+            NText {
+              anchors.fill: textSlot
+              visible: !input.activeFocus && input.text.length > 0
+              text: input.text
+              elide: Text.ElideLeft
+              verticalAlignment: Text.AlignVCenter
+              color: enabled ? Colors.onShell : Qt.alpha(Colors.onShell, 0.4)
+              font.family: root.fontFamily
+              font.pointSize: root.fontSize * Style.uiScaleRatio
+              font.weight: root.fontWeight
             }
           }
 
-          // Idle display. ElideLeft keeps the tail (paths, commands) and
-          // stops on a glyph boundary, with the same left inset the field
-          // already applies outside this slot.
-          NText {
-            anchors.fill: textSlot
-            visible: !input.activeFocus && input.text.length > 0
-            text: input.text
-            elide: Text.ElideLeft
-            verticalAlignment: Text.AlignVCenter
-            color: enabled ? Colors.onShell : Qt.alpha(Colors.onShell, 0.4)
-            font.family: root.fontFamily
-            font.pointSize: root.fontSize * Style.uiScaleRatio
-            font.weight: root.fontWeight
-          }
-        }
           // Glyph-sized clear control. The gap in front of it is marginL,
           // the same inset the text has from the left edge of the field.
           // A 0 spacing let the wallpaper path run to ~2 px from the glyph.

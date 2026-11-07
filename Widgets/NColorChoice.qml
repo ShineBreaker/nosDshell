@@ -7,7 +7,7 @@ NDccRow {
   id: root
 
   property string label: I18n.tr("common.select-color")
-  property string description: I18n.tr("common.select-color-description")
+  property string description: ""
   property string tooltip: ""
   property string currentKey: ""
   property var defaultValue: undefined
