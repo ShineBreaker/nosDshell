@@ -39,7 +39,6 @@ ColumnLayout {
   NTabBar {
     id: subTabBar
     Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginM
     distributeEvenly: false // this is too cramped on this tab to split evenly
     currentIndex: tabView.currentIndex
 
@@ -69,11 +68,6 @@ ColumnLayout {
         shown: Settings.data.notifications.enabled
       }
     }
-  }
-
-  Item {
-    Layout.fillWidth: true
-    Layout.preferredHeight: Style.marginL
   }
 
   NTabView {
@@ -112,13 +106,13 @@ ColumnLayout {
     initialPath: Quickshell.env("HOME")
     nameFilters: ["*.wav", "*.mp3", "*.ogg", "*.flac", "*.m4a", "*.aac"]
     onAccepted: paths => {
-                  if (paths.length > 0) {
-                    const soundPath = paths[0];
-                    Settings.data.notifications.sounds.normalSoundFile = soundPath;
-                    Settings.data.notifications.sounds.lowSoundFile = soundPath;
-                    Settings.data.notifications.sounds.criticalSoundFile = soundPath;
-                  }
-                }
+      if (paths.length > 0) {
+        const soundPath = paths[0];
+        Settings.data.notifications.sounds.normalSoundFile = soundPath;
+        Settings.data.notifications.sounds.lowSoundFile = soundPath;
+        Settings.data.notifications.sounds.criticalSoundFile = soundPath;
+      }
+    }
   }
 
   NFilePicker {
@@ -128,10 +122,10 @@ ColumnLayout {
     initialPath: Quickshell.env("HOME")
     nameFilters: ["*.wav", "*.mp3", "*.ogg", "*.flac", "*.m4a", "*.aac"]
     onAccepted: paths => {
-                  if (paths.length > 0) {
-                    Settings.data.notifications.sounds.lowSoundFile = paths[0];
-                  }
-                }
+      if (paths.length > 0) {
+        Settings.data.notifications.sounds.lowSoundFile = paths[0];
+      }
+    }
   }
 
   NFilePicker {
@@ -141,10 +135,10 @@ ColumnLayout {
     initialPath: Quickshell.env("HOME")
     nameFilters: ["*.wav", "*.mp3", "*.ogg", "*.flac", "*.m4a", "*.aac"]
     onAccepted: paths => {
-                  if (paths.length > 0) {
-                    Settings.data.notifications.sounds.normalSoundFile = paths[0];
-                  }
-                }
+      if (paths.length > 0) {
+        Settings.data.notifications.sounds.normalSoundFile = paths[0];
+      }
+    }
   }
 
   NFilePicker {
@@ -154,9 +148,9 @@ ColumnLayout {
     initialPath: Quickshell.env("HOME")
     nameFilters: ["*.wav", "*.mp3", "*.ogg", "*.flac", "*.m4a", "*.aac"]
     onAccepted: paths => {
-                  if (paths.length > 0) {
-                    Settings.data.notifications.sounds.criticalSoundFile = paths[0];
-                  }
-                }
+      if (paths.length > 0) {
+        Settings.data.notifications.sounds.criticalSoundFile = paths[0];
+      }
+    }
   }
 }

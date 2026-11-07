@@ -179,9 +179,8 @@ ColumnLayout {
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     Process {
       id: gitProcess
       command: ["git", "rev-parse", "--short", "HEAD"]
@@ -408,27 +407,21 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    NButton {
-      id: copyBtn
-      icon: "copy"
-      text: I18n.tr("panels.about.copy-info")
-      outlined: true
-      Layout.alignment: Qt.AlignHCenter
-      Layout.topMargin: Style.marginM
-      onClicked: root.copyInfoToClipboard()
-    }
 
-    NText {
+    NDccRow {
       Layout.fillWidth: true
-      Layout.bottomMargin: Style.marginM
-      text: I18n.tr("panels.about.updates-via-package-manager")
-      pointSize: Style.fontSizeXS
-      color: Colors.onShellTertiary
-      horizontalAlignment: Text.AlignHCenter
-      wrapMode: Text.Wrap
+      clickable: true
+      onClicked: root.copyInfoToClipboard()
+      NIcon {
+        icon: "copy"
+        color: Colors.onShell
+      }
+      NText {
+        text: I18n.tr("panels.about.copy-info")
+        Layout.fillWidth: true
+      }
     }
   }
 
@@ -440,23 +433,13 @@ ColumnLayout {
   }
   // SettingsGroup 3: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    NHeader {
-      label: I18n.tr("panels.about.system-title")
-    }
 
     // Error state (fastfetch not installed)
-    ColumnLayout {
+    NHeader {
       visible: !root.systemInfoAvailable
-      Layout.fillWidth: true
-      spacing: Style.marginS
-
-      NHeader {
-        label: I18n.tr("panels.about.system-not-installed")
-        description: I18n.tr("panels.about.system-install-hint")
-      }
+      label: I18n.tr("panels.about.system-not-installed")
     }
 
     // System info grid
@@ -761,16 +744,13 @@ ColumnLayout {
   }
   // Debug group: master switch, module allowlist, minimal logging.
   // Scene forensics live behind `qs ipc call debug …` (DebugService).
-  ColumnLayout {
+  NSettingsGroup {
+    title: I18n.tr("panels.about.debug-title")
+
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    NHeader {
-      label: I18n.tr("panels.about.debug-title")
-    }
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.about.debug-enabled-label")
-      description: I18n.tr("panels.about.debug-enabled-description")
       checked: Settings.data.debug.enabled
       defaultValue: Settings.getDefaultValue("debug.enabled")
       onToggled: checked => Settings.data.debug.enabled = checked
@@ -778,7 +758,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.about.debug-minimal-label")
-      description: I18n.tr("panels.about.debug-minimal-description")
       visible: Settings.data.debug.enabled
       checked: Settings.data.debug.logLevel === "warn"
       onToggled: checked => Settings.data.debug.logLevel = checked ? "warn" : "info"
@@ -786,7 +765,6 @@ ColumnLayout {
     NTextInput {
       Layout.fillWidth: true
       label: I18n.tr("panels.about.debug-modules-label")
-      description: I18n.tr("panels.about.debug-modules-description")
       visible: Settings.data.debug.enabled
       placeholderText: I18n.tr("placeholders.debug-modules")
       text: Settings.data.debug.modules

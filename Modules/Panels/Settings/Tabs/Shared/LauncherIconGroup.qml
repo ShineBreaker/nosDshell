@@ -12,11 +12,10 @@ import qs.Widgets
 // have exactly one implementation while staying discoverable from both
 // places users look. Size 0 = derive per mode (efficient 16px glyph,
 // fashion follows dock.iconSize); the slider's reset returns to auto.
-ColumnLayout {
+NSettingsGroup {
   id: root
 
   Layout.fillWidth: true
-  spacing: Style.settingsGroupGap
 
   readonly property color launcherPreviewColor: Colors.resolveColorKey((Settings.data.dock.launcherIconColor !== undefined) ? Settings.data.dock.launcherIconColor : "none")
   readonly property bool fashionMode: Settings.data.dock.mode === "fashion"
@@ -24,7 +23,6 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.dock.appearance-launcher-use-distro-logo-label")
-    description: I18n.tr("panels.dock.appearance-launcher-use-distro-logo-description")
     checked: Settings.data.dock.launcherUseDistroLogo
     defaultValue: Settings.getDefaultValue("dock.launcherUseDistroLogo")
     onToggled: checked => Settings.data.dock.launcherUseDistroLogo = checked
@@ -37,7 +35,6 @@ ColumnLayout {
     NLabel {
       Layout.fillWidth: true
       label: I18n.tr("panels.dock.appearance-launcher-icon-label")
-      description: I18n.tr("panels.dock.appearance-launcher-icon-description")
       labelWeight: Style.fontWeightRegular
     }
 
@@ -83,9 +80,9 @@ ColumnLayout {
     id: launcherIconPicker
     initialIcon: (Settings.data.dock.launcherIcon && Settings.data.dock.launcherIcon !== "") ? Settings.data.dock.launcherIcon : "search"
     onIconSelected: iconName => {
-                      Settings.data.dock.launcherIcon = iconName;
-                      Settings.saveImmediate();
-                    }
+      Settings.data.dock.launcherIcon = iconName;
+      Settings.saveImmediate();
+    }
   }
 
   NColorChoice {
@@ -99,7 +96,6 @@ ColumnLayout {
   NValueSlider {
     Layout.fillWidth: true
     label: I18n.tr("panels.dock.appearance-launcher-icon-size-label")
-    description: I18n.tr("panels.dock.appearance-launcher-icon-size-description")
     from: 12
     to: 48
     stepSize: 1

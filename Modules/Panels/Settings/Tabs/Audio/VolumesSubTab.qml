@@ -24,9 +24,8 @@ ColumnLayout {
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     Connections {
       target: AudioService
       function onSinkChanged() {
@@ -52,7 +51,6 @@ ColumnLayout {
       NValueSlider {
         Layout.fillWidth: true
         label: I18n.tr("panels.osd.types-volume-label")
-        description: I18n.tr("panels.audio.volumes-output-volume-description")
         from: 0
         to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
         value: localVolume
@@ -85,7 +83,6 @@ ColumnLayout {
 
       NToggle {
         label: I18n.tr("panels.audio.volumes-mute-output-label")
-        description: I18n.tr("panels.audio.volumes-mute-output-description")
         checked: AudioService.muted
         onToggled: checked => AudioService.setOutputMuted(checked)
       }
@@ -93,34 +90,27 @@ ColumnLayout {
 
     // Volume Feedback sound Toggle. The file row is a standard control-column
     // row and hides with the feature (DESIGN §3.5.3); the switch stays.
-    ColumnLayout {
-      spacing: Style.settingsGroupGap
+    NToggle {
+      label: I18n.tr("panels.audio.volumes-volume-feedback-label")
+      checked: Settings.data.audio.volumeFeedback
+      // Same capability gate as the notification-sound switch: without Qt
+      // Multimedia the preference cannot play, so it is not interactive.
+      // The stored value stays for when the backend is present.
+      enabled: SoundService.multimediaAvailable
+      defaultValue: Settings.getDefaultValue("audio.volumeFeedback")
+      onToggled: checked => Settings.data.audio.volumeFeedback = checked
+    }
+
+    NTextInputButton {
+      visible: SoundService.multimediaAvailable && Settings.data.audio.volumeFeedback
       Layout.fillWidth: true
-
-      NToggle {
-        label: I18n.tr("panels.audio.volumes-volume-feedback-label")
-        description: I18n.tr("panels.audio.volumes-volume-feedback-description")
-        checked: Settings.data.audio.volumeFeedback
-        // Same capability gate as the notification-sound switch: without Qt
-        // Multimedia the preference cannot play, so it is not interactive.
-        // The stored value stays for when the backend is present.
-        enabled: SoundService.multimediaAvailable
-        defaultValue: Settings.getDefaultValue("audio.volumeFeedback")
-        onToggled: checked => Settings.data.audio.volumeFeedback = checked
-      }
-
-      NTextInputButton {
-        visible: SoundService.multimediaAvailable && Settings.data.audio.volumeFeedback
-        Layout.fillWidth: true
-        label: I18n.tr("panels.audio.volumes-feedback-sound-file-label")
-        description: I18n.tr("panels.audio.volumes-feedback-sound-file-description")
-        placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
-        text: Settings.data.audio.volumeFeedbackSoundFile
-        buttonIcon: "folder-open"
-        buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
-        onInputTextChanged: text => Settings.data.audio.volumeFeedbackSoundFile = text
-        onButtonClicked: volumeFeedbackFilePicker.open()
-      }
+      label: I18n.tr("panels.audio.volumes-feedback-sound-file-label")
+      placeholderText: I18n.tr("panels.notifications.sounds-files-placeholder")
+      text: Settings.data.audio.volumeFeedbackSoundFile
+      buttonIcon: "folder-open"
+      buttonTooltip: I18n.tr("panels.notifications.sounds-files-select-file")
+      onInputTextChanged: text => Settings.data.audio.volumeFeedbackSoundFile = text
+      onButtonClicked: volumeFeedbackFilePicker.open()
     }
   }
 
@@ -132,9 +122,8 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     ColumnLayout {
       spacing: Style.marginXS
       Layout.fillWidth: true
@@ -142,7 +131,6 @@ ColumnLayout {
       NValueSlider {
         Layout.fillWidth: true
         label: I18n.tr("panels.osd.types-input-volume-label")
-        description: I18n.tr("panels.audio.volumes-input-volume-description")
         from: 0
         to: Settings.data.audio.volumeOverdrive ? 1.5 : 1.0
         value: AudioService.inputVolume
@@ -159,7 +147,6 @@ ColumnLayout {
 
       NToggle {
         label: I18n.tr("panels.audio.volumes-mute-input-label")
-        description: I18n.tr("panels.audio.volumes-mute-input-description")
         checked: AudioService.inputMuted
         onToggled: checked => AudioService.setInputMuted(checked)
       }
@@ -173,7 +160,6 @@ ColumnLayout {
       NSpinBox {
         Layout.fillWidth: true
         label: I18n.tr("panels.audio.volumes-step-size-label")
-        description: I18n.tr("panels.audio.volumes-step-size-description")
         minimum: 1
         maximum: 25
         value: Settings.data.audio.volumeStep
@@ -193,16 +179,14 @@ ColumnLayout {
   }
   // SettingsGroup 3: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     ColumnLayout {
       spacing: Style.marginS
       Layout.fillWidth: true
 
       NToggle {
         label: I18n.tr("panels.audio.volumes-volume-overdrive-label")
-        description: I18n.tr("panels.audio.volumes-volume-overdrive-description")
         checked: Settings.data.audio.volumeOverdrive
         defaultValue: Settings.getDefaultValue("audio.volumeOverdrive")
         onToggled: checked => Settings.data.audio.volumeOverdrive = checked
@@ -216,10 +200,10 @@ ColumnLayout {
       initialPath: Quickshell.env("HOME")
       nameFilters: ["*.wav", "*.mp3", "*.ogg", "*.flac", "*.m4a", "*.aac"]
       onAccepted: paths => {
-                    if (paths.length > 0) {
-                      Settings.data.audio.volumeFeedbackSoundFile = paths[0];
-                    }
-                  }
+        if (paths.length > 0) {
+          Settings.data.audio.volumeFeedbackSoundFile = paths[0];
+        }
+      }
     }
   }
 }

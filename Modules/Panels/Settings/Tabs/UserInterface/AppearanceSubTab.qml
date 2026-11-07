@@ -12,12 +12,10 @@ ColumnLayout {
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       label: I18n.tr("panels.user-interface.tooltips-label")
-      description: I18n.tr("panels.user-interface.tooltips-description")
       checked: Settings.data.ui.tooltipsEnabled
       defaultValue: Settings.getDefaultValue("ui.tooltipsEnabled")
       onToggled: checked => Settings.data.ui.tooltipsEnabled = checked
@@ -25,7 +23,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.user-interface.box-border-label")
-      description: I18n.tr("panels.user-interface.box-border-description")
       checked: Settings.data.ui.boxBorderEnabled
       defaultValue: Settings.getDefaultValue("ui.boxBorderEnabled")
       onToggled: checked => Settings.data.ui.boxBorderEnabled = checked
@@ -33,7 +30,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.user-interface.scrollbar-always-visible-label")
-      description: I18n.tr("panels.user-interface.scrollbar-always-visible-description")
       checked: Settings.data.ui.scrollbarAlwaysVisible
       defaultValue: Settings.getDefaultValue("ui.scrollbarAlwaysVisible")
       onToggled: checked => Settings.data.ui.scrollbarAlwaysVisible = checked
@@ -41,7 +37,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.user-interface.shadows-label")
-      description: I18n.tr("panels.user-interface.shadows-description")
       checked: Settings.data.general.enableShadows
       defaultValue: Settings.getDefaultValue("general.enableShadows")
       onToggled: checked => Settings.data.general.enableShadows = checked
@@ -49,7 +44,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.user-interface.blur-behind-label")
-      description: I18n.tr("panels.user-interface.blur-behind-description")
       checked: Settings.data.general.enableBlurBehind
       defaultValue: Settings.getDefaultValue("general.enableBlurBehind")
       onToggled: checked => Settings.data.general.enableBlurBehind = checked
@@ -57,7 +51,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.user-interface.translucent-widgets-label")
-      description: I18n.tr("panels.user-interface.translucent-widgets-description")
       checked: Settings.data.ui.translucentWidgets
       defaultValue: Settings.getDefaultValue("ui.translucentWidgets")
       onToggled: checked => Settings.data.ui.translucentWidgets = checked
@@ -70,13 +63,11 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.scaling-label")
-      description: I18n.tr("panels.user-interface.scaling-description")
       from: 0.8
       to: 1.2
       stepSize: 0.05
@@ -94,13 +85,11 @@ ColumnLayout {
   }
   // SettingsGroup 3: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.box-border-radius-label")
-      description: I18n.tr("panels.user-interface.box-border-radius-description")
       from: 0
       to: 2
       stepSize: 0.01
@@ -114,7 +103,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.control-border-radius-label")
-      description: I18n.tr("panels.user-interface.control-border-radius-description")
       from: 0
       to: 2
       stepSize: 0.01
@@ -128,7 +116,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.row-height-scale-label")
-      description: I18n.tr("panels.user-interface.row-height-scale-description")
       from: 0.9
       to: 1.2
       stepSize: 0.01
@@ -144,13 +131,11 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  ColumnLayout {
-    spacing: Style.settingsGroupGap
+  NSettingsGroup {
     Layout.fillWidth: true
 
     NToggle {
       label: I18n.tr("panels.user-interface.animation-disable-label")
-      description: I18n.tr("panels.user-interface.animation-disable-description")
       checked: Settings.data.general.animationDisabled
       defaultValue: Settings.getDefaultValue("general.animationDisabled")
       onToggled: checked => Settings.data.general.animationDisabled = checked
@@ -164,7 +149,6 @@ ColumnLayout {
       NValueSlider {
         Layout.fillWidth: true
         label: I18n.tr("panels.user-interface.animation-speed-label")
-        description: I18n.tr("panels.user-interface.animation-speed-description")
         from: 0
         to: 2.0
         stepSize: 0.01

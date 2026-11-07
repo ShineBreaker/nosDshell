@@ -26,14 +26,12 @@ ColumnLayout {
     }
   }
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.desktop-widgets.enabled-label")
-      description: I18n.tr("panels.desktop-widgets.enabled-description")
       checked: Settings.data.desktopWidgets.enabled
       defaultValue: Settings.getDefaultValue("desktopWidgets.enabled")
       onToggled: checked => Settings.data.desktopWidgets.enabled = checked
@@ -43,7 +41,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: Settings.data.desktopWidgets.enabled
       label: I18n.tr("panels.desktop-widgets.overview-enabled-label")
-      description: I18n.tr("panels.desktop-widgets.overview-enabled-description")
       checked: Settings.data.desktopWidgets.overviewEnabled
       defaultValue: Settings.getDefaultValue("desktopWidgets.overviewEnabled")
       onToggled: checked => Settings.data.desktopWidgets.overviewEnabled = checked
@@ -57,10 +54,6 @@ ColumnLayout {
   }
   ColumnLayout {
     visible: Settings.data.desktopWidgets.enabled
-
-    NHeader {
-      description: I18n.tr("panels.desktop-widgets.cpu-intensive-note")
-    }
 
     NButton {
       Layout.fillWidth: true
@@ -120,9 +113,9 @@ ColumnLayout {
         onUpdateWidgetSettings: (section, index, settings) => _updateWidgetSettingsForMonitor(modelData.name, index, settings)
         pluginSettingsEntryPoints: ["desktopWidgetSettings", "settings"]
         onOpenPluginSettingsRequested: (manifest, entryPoint) => {
-                                         PanelService.hostSettingsPopup(pluginSettingsDialog, null);
-                                         pluginSettingsDialog.openPluginSettings(manifest, entryPoint);
-                                       }
+          PanelService.hostSettingsPopup(pluginSettingsDialog, null);
+          pluginSettingsDialog.openPluginSettings(manifest, entryPoint);
+        }
       }
     }
   }

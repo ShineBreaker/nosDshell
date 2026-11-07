@@ -42,26 +42,26 @@ ColumnLayout {
     const declared = Settings.data.controlCenter.quickPageOrder || [];
     var seq = [];
     declared.forEach(id => {
-                       if (root._knownPages.indexOf(id) !== -1 && seq.indexOf(id) === -1)
-                         seq.push(id);
-                     });
+      if (root._knownPages.indexOf(id) !== -1 && seq.indexOf(id) === -1)
+        seq.push(id);
+    });
     root._knownPages.forEach(id => {
-                               if (seq.indexOf(id) === -1)
-                                 seq.push(id);
-                             });
+      if (seq.indexOf(id) === -1)
+        seq.push(id);
+    });
     return seq;
   }
 
   function _rebuildModel() {
     var model = [];
     root._orderedIds().forEach(id => {
-                                 model.push({
-                                              "id": id,
-                                              "text": root._pageText(id),
-                                              "enabled": true,
-                                              "required": true
-                                            });
-                               });
+      model.push({
+                   "id": id,
+                   "text": root._pageText(id),
+                   "enabled": true,
+                   "required": true
+                 });
+    });
     root.pagesModel = model;
   }
 
@@ -83,10 +83,6 @@ ColumnLayout {
     if (!(VPNService.connections && Object.keys(VPNService.connections).length > 0))
       ids.push("vpn");
     return ids;
-  }
-
-  NHeader {
-    description: I18n.tr("panels.control-center.pages-desc")
   }
 
   NReorderCheckboxes {

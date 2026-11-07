@@ -41,7 +41,6 @@ ColumnLayout {
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.hide-mode-label")
-    description: I18n.tr("bar.active-window.hide-mode-description")
     model: [
       {
         "key": "visible",
@@ -58,9 +57,9 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-                  settingsHelper.set("hideMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("hideMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideMode
   }
 
@@ -68,45 +67,42 @@ ColumnLayout {
     label: I18n.tr("common.select-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  settingsHelper.set("textColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("textColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.textColor
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.active-window.show-app-text-label")
-    description: I18n.tr("bar.active-window.show-app-text-description")
     checked: root.valueShowText
     onToggled: checked => {
-                 settingsHelper.set("showText", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showText", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showText
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.active-window.show-app-icon-label")
-    description: I18n.tr("bar.active-window.show-app-icon-description")
     checked: root.valueShowIcon
     onToggled: checked => {
-                 settingsHelper.set("showIcon", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showIcon", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showIcon
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.tray.colorize-icons-label")
-    description: I18n.tr("bar.active-window.colorize-icons-description")
     checked: root.valueColorizeIcons
     onToggled: checked => {
-                 settingsHelper.set("colorizeIcons", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("colorizeIcons", checked);
+      saveSettings();
+    }
     visible: root.valueShowIcon
     defaultValue: widgetMetadata.colorizeIcons
   }
@@ -115,34 +111,31 @@ ColumnLayout {
     id: widthInput
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.max-width-label")
-    description: I18n.tr("bar.media-mini.max-width-description")
     placeholderText: widgetMetadata.maxWidth
     text: String(valueMaxWidth)
     storedValue: valueMaxWidth
     minimum: 1
     maximum: 2000
     onCommitted: value => {
-                   settingsHelper.set("maxWidth", value);
-                   saveSettings();
-                 }
+      settingsHelper.set("maxWidth", value);
+      saveSettings();
+    }
     defaultValue: String(widgetMetadata.maxWidth)
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.media-mini.use-fixed-width-label")
-    description: I18n.tr("bar.media-mini.use-fixed-width-description")
     checked: valueUseFixedWidth
     onToggled: checked => {
-                 settingsHelper.set("useFixedWidth", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("useFixedWidth", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.useFixedWidth
   }
 
   NComboBox {
     label: I18n.tr("bar.media-mini.scrolling-mode-label")
-    description: I18n.tr("bar.active-window.scrolling-mode-description")
     model: [
       {
         "key": "always",
@@ -160,9 +153,9 @@ ColumnLayout {
     currentKey: valueScrollingMode
     defaultValue: widgetMetadata.scrollingMode
     onSelected: key => {
-                  valueScrollingMode = key;
-                  saveSettings();
-                }
+      valueScrollingMode = key;
+      saveSettings();
+    }
     minimumWidth: 200
   }
 }

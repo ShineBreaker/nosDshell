@@ -38,30 +38,27 @@ ColumnLayout {
 
   NToggle {
     label: I18n.tr("bar.control-center.use-distro-logo-label")
-    description: I18n.tr("bar.control-center.use-distro-logo-description")
     checked: valueUseDistroLogo
     onToggled: checked => {
-                 settingsHelper.set("useDistroLogo", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("useDistroLogo", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.useDistroLogo
   }
 
   NToggle {
     label: I18n.tr("bar.custom-button.enable-colorization-label")
-    description: I18n.tr("bar.control-center.enable-colorization-description")
     checked: valueEnableColorization
     onToggled: checked => {
-                 settingsHelper.set("enableColorization", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("enableColorization", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.enableColorization
   }
 
   NColorChoice {
     visible: valueEnableColorization
     label: I18n.tr("common.select-icon-color")
-    description: I18n.tr("bar.control-center.color-selection-description")
     currentKey: valueColorizeSystemIcon
     onSelected: function (key) {
       settingsHelper.set("colorizeSystemIcon", key);
@@ -75,7 +72,6 @@ ColumnLayout {
 
     NLabel {
       label: I18n.tr("common.icon")
-      description: I18n.tr("bar.control-center.icon-description")
     }
 
     NImageRounded {
@@ -115,10 +111,10 @@ ColumnLayout {
     id: iconPicker
     initialIcon: valueIcon
     onIconSelected: iconName => {
-                      settingsHelper.set("icon", iconName);
-                      settingsHelper.set("customIconPath", "");
-                      saveSettings();
-                    }
+      settingsHelper.set("icon", iconName);
+      settingsHelper.set("customIconPath", "");
+      saveSettings();
+    }
   }
 
   NFilePicker {
@@ -128,10 +124,10 @@ ColumnLayout {
     nameFilters: ImageCacheService.basicImageFilters.concat(["*.svg"])
     initialPath: Quickshell.env("HOME")
     onAccepted: paths => {
-                  if (paths.length > 0) {
-                    valueCustomIconPath = paths[0]; // Use first selected file
-                    saveSettings();
-                  }
-                }
+      if (paths.length > 0) {
+        valueCustomIconPath = paths[0]; // Use first selected file
+        saveSettings();
+      }
+    }
   }
 }

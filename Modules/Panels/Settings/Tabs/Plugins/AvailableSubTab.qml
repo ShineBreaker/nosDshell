@@ -48,7 +48,6 @@ ColumnLayout {
     selectedTag: root.selectedTag
     onSelectedTagChanged: root.selectedTag = selectedTag
     label: I18n.tr("panels.plugins.filter-tags-label")
-    description: I18n.tr("panels.plugins.filter-tags-description")
 
     formatTag: function (tag) {
       if (tag === "")
@@ -89,8 +88,7 @@ ColumnLayout {
   }
 
   // Available plugins list
-  ColumnLayout {
-    spacing: Style.settingsGroupGap
+  NSettingsGroup {
     Layout.fillWidth: true
 
     Repeater {
@@ -338,7 +336,6 @@ ColumnLayout {
     NLabel {
       visible: availablePluginsRepeater.count === 0
       label: I18n.tr("panels.plugins.available-no-plugins-label")
-      description: I18n.tr("panels.plugins.available-no-plugins-description")
       Layout.fillWidth: true
     }
   }

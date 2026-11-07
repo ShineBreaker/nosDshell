@@ -25,40 +25,35 @@ ColumnLayout {
     });
   }
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
-  NHeader {
-    description: I18n.tr("panels.lock-screen.monitors-desc")
-  }
-
-  Repeater {
-    model: Quickshell.screens || []
-    delegate: NCheckbox {
-      Layout.fillWidth: true
-      readonly property real compositorScale: {
-        const info = CompositorService.displayScales[modelData.name];
-        return (info && info.scale) ? info.scale : 1.0;
+    Repeater {
+      model: Quickshell.screens || []
+      delegate: NCheckbox {
+        Layout.fillWidth: true
+        readonly property real compositorScale: {
+          const info = CompositorService.displayScales[modelData.name];
+          return (info && info.scale) ? info.scale : 1.0;
+        }
+        label: modelData.name || "Unknown"
+        description: {
+          I18n.tr("system.monitor-description", {
+                    "model": modelData.model,
+                    "width": modelData.width * compositorScale,
+                    "height": modelData.height * compositorScale,
+                    "scale": compositorScale
+                  });
+        }
+        checked: (Settings.data.general.lockScreenMonitors || []).indexOf(modelData.name) !== -1
+        onToggled: checked => {
+          if (checked) {
+            Settings.data.general.lockScreenMonitors = root.addMonitor(Settings.data.general.lockScreenMonitors, modelData.name);
+          } else {
+            Settings.data.general.lockScreenMonitors = root.removeMonitor(Settings.data.general.lockScreenMonitors, modelData.name);
+          }
+        }
       }
-      label: modelData.name || "Unknown"
-      description: {
-        I18n.tr("system.monitor-description", {
-                  "model": modelData.model,
-                  "width": modelData.width * compositorScale,
-                  "height": modelData.height * compositorScale,
-                  "scale": compositorScale
-                });
-      }
-      checked: (Settings.data.general.lockScreenMonitors || []).indexOf(modelData.name) !== -1
-      onToggled: checked => {
-                   if (checked) {
-                     Settings.data.general.lockScreenMonitors = root.addMonitor(Settings.data.general.lockScreenMonitors, modelData.name);
-                   } else {
-                     Settings.data.general.lockScreenMonitors = root.removeMonitor(Settings.data.general.lockScreenMonitors, modelData.name);
-                   }
-                 }
     }
-  }
   }
 }

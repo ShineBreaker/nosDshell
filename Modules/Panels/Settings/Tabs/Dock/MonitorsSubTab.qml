@@ -24,19 +24,13 @@ ColumnLayout {
     });
   }
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: Settings.data.dock.enabled
-
-    NHeader {
-      description: I18n.tr("panels.dock.monitors-desc")
-    }
 
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.dock.monitors-only-same-monitor-label")
-      description: I18n.tr("panels.dock.monitors-only-same-monitor-description")
       checked: Settings.data.dock.onlySameOutput
       defaultValue: Settings.getDefaultValue("dock.onlySameOutput")
       onToggled: checked => Settings.data.dock.onlySameOutput = checked
@@ -61,12 +55,12 @@ ColumnLayout {
         }
         checked: (Settings.data.dock.monitors || []).indexOf(modelData.name) !== -1
         onToggled: checked => {
-                     if (checked) {
-                       Settings.data.dock.monitors = root.addMonitor(Settings.data.dock.monitors, modelData.name);
-                     } else {
-                       Settings.data.dock.monitors = root.removeMonitor(Settings.data.dock.monitors, modelData.name);
-                     }
-                   }
+          if (checked) {
+            Settings.data.dock.monitors = root.addMonitor(Settings.data.dock.monitors, modelData.name);
+          } else {
+            Settings.data.dock.monitors = root.removeMonitor(Settings.data.dock.monitors, modelData.name);
+          }
+        }
       }
     }
   }

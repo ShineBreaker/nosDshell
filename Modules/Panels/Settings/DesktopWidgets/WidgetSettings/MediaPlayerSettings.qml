@@ -37,67 +37,61 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.clock-show-background-label")
-    description: I18n.tr("panels.desktop-widgets.media-player-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 settingsHelper.set("showBackground", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showBackground", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showBackground
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.clock-rounded-corners-label")
-    description: I18n.tr("panels.desktop-widgets.media-player-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 settingsHelper.set("roundedCorners", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("roundedCorners", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.roundedCorners
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.media-player-show-album-art-label")
-    description: I18n.tr("panels.desktop-widgets.media-player-show-album-art-description")
     checked: valueShowAlbumArt
     onToggled: checked => {
-                 settingsHelper.set("showAlbumArt", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showAlbumArt", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showAlbumArt
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.media-mini.show-visualizer-label")
-    description: I18n.tr("panels.desktop-widgets.media-player-show-visualizer-description")
     checked: valueShowVisualizer
     onToggled: checked => {
-                 settingsHelper.set("showVisualizer", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showVisualizer", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showVisualizer
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.media-player-show-buttons-label")
-    description: I18n.tr("panels.desktop-widgets.media-player-show-buttons-description")
     checked: valueShowButtons
     onToggled: checked => {
-                 settingsHelper.set("showButtons", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showButtons", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showButtons
   }
 
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("panels.audio.visualizer-type-label")
-    description: I18n.tr("panels.desktop-widgets.media-player-visualizer-type-description")
     enabled: valueShowVisualizer
     model: [
       {
@@ -115,16 +109,15 @@ ColumnLayout {
     ]
     currentKey: valueVisualizerType
     onSelected: key => {
-                  valueVisualizerType = key;
-                  saveSettings();
-                }
+      valueVisualizerType = key;
+      saveSettings();
+    }
     defaultValue: widgetMetadata.visualizerType
   }
 
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.hide-mode-label")
-    description: I18n.tr("bar.media-mini.hide-mode-description")
     model: [
       {
         "key": "hidden",
@@ -141,9 +134,9 @@ ColumnLayout {
     ]
     currentKey: valueHideMode
     onSelected: key => {
-                  settingsHelper.set("hideMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("hideMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideMode
   }
 }

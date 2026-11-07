@@ -11,29 +11,14 @@ ColumnLayout {
   Layout.fillWidth: true
 
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    NHeader {
-      Layout.fillWidth: true
-      description: I18n.tr("panels.system-monitor.thresholds-section-description")
-    }
-  }
-
-  NDccGap {
-    Layout.fillWidth: true
-  }
 
   // Warning and critical are two SettingsGroups of ordinary rows. A 3-column
   // grid of bare spin boxes had no gutter and the critical column was clipped
   // by the panel edge (DESIGN §3.5.4: one control column, titles wrap).
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
+  NSettingsGroup {
+    title: I18n.tr("panels.system-monitor.threshold-warning")
 
-    NHeader {
-      label: I18n.tr("panels.system-monitor.threshold-warning")
-    }
+    Layout.fillWidth: true
 
     NSpinBox {
       Layout.fillWidth: true
@@ -169,13 +154,10 @@ ColumnLayout {
     Layout.fillWidth: true
   }
 
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
+  NSettingsGroup {
+    title: I18n.tr("panels.system-monitor.threshold-critical")
 
-    NHeader {
-      label: I18n.tr("panels.system-monitor.threshold-critical")
-    }
+    Layout.fillWidth: true
 
     NSpinBox {
       Layout.fillWidth: true

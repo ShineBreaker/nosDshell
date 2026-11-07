@@ -111,7 +111,6 @@ Popup {
         id: commandInput
         Layout.fillWidth: true
         label: I18n.tr("common.command")
-        description: I18n.tr("panels.session-menu.entry-settings-command-description")
         placeholderText: I18n.tr("panels.session-menu.entry-settings-command-placeholder")
         onTextChanged: root.save()
       }
@@ -123,7 +122,6 @@ Popup {
 
         NHeader {
           label: I18n.tr("panels.session-menu.entry-settings-default-info-label")
-          description: I18n.tr("panels.session-menu.entry-settings-default-info-description")
           Layout.fillWidth: true
         }
 
@@ -164,16 +162,15 @@ Popup {
         id: keybindRecorder
         Layout.fillWidth: true
         label: I18n.tr("common.keybind")
-        description: I18n.tr("placeholders.keybind-recording")
         allowEmpty: true
         maxKeybinds: 1
         requireModifierForNormalKeys: false
         currentKeybinds: keybindInputText ? [keybindInputText] : []
         settingsPath: "sessionMenu.powerOptions[" + root.entryIndex + "].keybind"
         onKeybindsChanged: newKeybinds => {
-                             keybindInputText = newKeybinds.length > 0 ? newKeybinds[0] : "";
-                             root.save();
-                           }
+          keybindInputText = newKeybinds.length > 0 ? newKeybinds[0] : "";
+          root.save();
+        }
       }
 
       // Hidden property to store the text since NKeybindRecorder manages its own state

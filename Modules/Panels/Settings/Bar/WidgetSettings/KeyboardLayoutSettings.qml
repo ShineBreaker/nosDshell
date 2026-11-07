@@ -38,20 +38,19 @@ ColumnLayout {
     useForceOpen: true
     currentKey: valueDisplayMode
     onSelected: key => {
-                  settingsHelper.set("displayMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("displayMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.displayMode
   }
 
   NToggle {
     label: I18n.tr("bar.custom-button.show-icon-label")
-    description: I18n.tr("bar.keyboard-layout.show-icon-description")
     checked: valueShowIcon
     onToggled: checked => {
-                 settingsHelper.set("showIcon", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showIcon", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showIcon
   }
 
@@ -59,9 +58,9 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  settingsHelper.set("iconColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("iconColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.iconColor
   }
 
@@ -69,9 +68,9 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  settingsHelper.set("textColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("textColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.textColor
   }
 }

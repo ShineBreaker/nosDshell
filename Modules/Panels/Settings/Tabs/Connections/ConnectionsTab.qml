@@ -12,7 +12,6 @@ ColumnLayout {
   NTabBar {
     id: subTabBar
     Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginM
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
@@ -25,11 +24,6 @@ ColumnLayout {
         text: I18n.tr("common.bluetooth")
       }
     }
-  }
-
-  Item {
-    Layout.fillWidth: true
-    Layout.preferredHeight: Style.marginL
   }
 
   NTabView {

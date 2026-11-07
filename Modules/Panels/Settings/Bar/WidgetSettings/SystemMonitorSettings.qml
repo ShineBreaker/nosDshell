@@ -56,12 +56,11 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.compact-mode-label")
-    description: I18n.tr("bar.system-monitor.compact-mode-description")
     checked: valueCompactMode
     onToggled: checked => {
-                 settingsHelper.set("compactMode", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("compactMode", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.compactMode
   }
 
@@ -69,9 +68,9 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  settingsHelper.set("iconColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("iconColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.iconColor
   }
 
@@ -79,9 +78,9 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  settingsHelper.set("textColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("textColor", key);
+      saveSettings();
+    }
     visible: !valueCompactMode
     defaultValue: widgetMetadata.textColor
   }
@@ -89,12 +88,11 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.use-monospace-font-label")
-    description: I18n.tr("bar.system-monitor.use-monospace-font-description")
     checked: valueUseMonospaceFont
     onToggled: checked => {
-                 settingsHelper.set("useMonospaceFont", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("useMonospaceFont", checked);
+      saveSettings();
+    }
     visible: !valueCompactMode
     defaultValue: widgetMetadata.useMonospaceFont
   }
@@ -102,12 +100,11 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.use-padding-label")
-    description: isVerticalBar ? I18n.tr("bar.system-monitor.use-padding-description-disabled-vertical") : !valueUseMonospaceFont ? I18n.tr("bar.system-monitor.use-padding-description-disabled-monospace-font") : I18n.tr("bar.system-monitor.use-padding-description")
     checked: valueUsePadding && !isVerticalBar && valueUseMonospaceFont
     onToggled: checked => {
-                 settingsHelper.set("usePadding", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("usePadding", checked);
+      saveSettings();
+    }
     visible: !valueCompactMode
     enabled: !isVerticalBar && valueUseMonospaceFont
     defaultValue: widgetMetadata.usePadding
@@ -121,12 +118,11 @@ ColumnLayout {
     id: showCpuUsage
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.cpu-usage-label")
-    description: I18n.tr("bar.system-monitor.cpu-usage-description")
     checked: valueShowCpuUsage
     onToggled: checked => {
-                 settingsHelper.set("showCpuUsage", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showCpuUsage", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showCpuUsage
   }
 
@@ -134,12 +130,11 @@ ColumnLayout {
     id: showCpuCores
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.cpu-cores-label")
-    description: I18n.tr("bar.system-monitor.cpu-cores-description")
     checked: valueShowCpuCores
     onToggled: checked => {
-                 settingsHelper.set("showCpuCores", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showCpuCores", checked);
+      saveSettings();
+    }
     visible: valueCompactMode
   }
 
@@ -147,12 +142,11 @@ ColumnLayout {
     id: showCpuFreq
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.cpu-frequency-label")
-    description: I18n.tr("bar.system-monitor.cpu-frequency-description")
     checked: valueShowCpuFreq
     onToggled: checked => {
-                 settingsHelper.set("showCpuFreq", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showCpuFreq", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showCpuFreq
   }
 
@@ -160,12 +154,11 @@ ColumnLayout {
     id: showCpuTemp
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.cpu-temperature-label")
-    description: I18n.tr("bar.system-monitor.cpu-temperature-description")
     checked: valueShowCpuTemp
     onToggled: checked => {
-                 settingsHelper.set("showCpuTemp", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showCpuTemp", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showCpuTemp
   }
 
@@ -173,12 +166,11 @@ ColumnLayout {
     id: showLoadAverage
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.load-average-label")
-    description: I18n.tr("bar.system-monitor.load-average-description")
     checked: valueShowLoadAverage
     onToggled: checked => {
-                 settingsHelper.set("showLoadAverage", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showLoadAverage", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showLoadAverage
   }
 
@@ -186,12 +178,11 @@ ColumnLayout {
     id: showGpuTemp
     Layout.fillWidth: true
     label: I18n.tr("panels.system-monitor.gpu-section-label")
-    description: I18n.tr("bar.system-monitor.gpu-temperature-description")
     checked: valueShowGpuTemp
     onToggled: checked => {
-                 settingsHelper.set("showGpuTemp", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showGpuTemp", checked);
+      saveSettings();
+    }
     visible: SystemStatService.gpuAvailable
     defaultValue: widgetMetadata.showGpuTemp
   }
@@ -200,12 +191,11 @@ ColumnLayout {
     id: showMemoryUsage
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.memory-usage-label")
-    description: I18n.tr("bar.system-monitor.memory-usage-description")
     checked: valueShowMemoryUsage
     onToggled: checked => {
-                 settingsHelper.set("showMemoryUsage", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showMemoryUsage", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showMemoryUsage
   }
 
@@ -213,12 +203,11 @@ ColumnLayout {
     id: showMemoryAsPercent
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.memory-percentage-label")
-    description: I18n.tr("bar.system-monitor.memory-percentage-description")
     checked: valueShowMemoryAsPercent
     onToggled: checked => {
-                 settingsHelper.set("showMemoryAsPercent", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showMemoryAsPercent", checked);
+      saveSettings();
+    }
     visible: valueShowMemoryUsage
     defaultValue: widgetMetadata.showMemoryAsPercent
   }
@@ -227,12 +216,11 @@ ColumnLayout {
     id: showSwapUsage
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.swap-usage-label")
-    description: I18n.tr("bar.system-monitor.swap-usage-description")
     checked: valueShowSwapUsage
     onToggled: checked => {
-                 settingsHelper.set("showSwapUsage", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showSwapUsage", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showSwapUsage
   }
 
@@ -240,12 +228,11 @@ ColumnLayout {
     id: showNetworkStats
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.network-traffic-label")
-    description: I18n.tr("bar.system-monitor.network-traffic-description")
     checked: valueShowNetworkStats
     onToggled: checked => {
-                 settingsHelper.set("showNetworkStats", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showNetworkStats", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showNetworkStats
   }
 
@@ -257,12 +244,11 @@ ColumnLayout {
     id: showDiskUsage
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.storage-usage-label")
-    description: I18n.tr("bar.system-monitor.storage-usage-description")
     checked: valueShowDiskUsage
     onToggled: checked => {
-                 settingsHelper.set("showDiskUsage", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showDiskUsage", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showDiskUsage
   }
 
@@ -270,12 +256,11 @@ ColumnLayout {
     id: showDiskUsageAsPercent
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.storage-as-percentage-label")
-    description: I18n.tr("bar.system-monitor.storage-as-percentage-description")
     checked: valueShowDiskUsageAsPercent
     onToggled: checked => {
-                 settingsHelper.set("showDiskUsageAsPercent", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showDiskUsageAsPercent", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showDiskUsageAsPercent
   }
 
@@ -283,12 +268,11 @@ ColumnLayout {
     id: showDiskAvailable
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.storage-available-label")
-    description: I18n.tr("bar.system-monitor.storage-available-description")
     checked: valueShowDiskAvailable
     onToggled: checked => {
-                 settingsHelper.set("showDiskAvailable", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showDiskAvailable", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showDiskAvailable
   }
 
@@ -296,19 +280,18 @@ ColumnLayout {
     id: diskPathComboBox
     Layout.fillWidth: true
     label: I18n.tr("bar.system-monitor.disk-path-label")
-    description: I18n.tr("bar.system-monitor.disk-path-description")
     model: {
       const paths = Object.keys(SystemStatService.diskPercents).sort();
       return paths.map(path => ({
-                                  key: path,
-                                  name: path
-                                }));
+        key: path,
+        name: path
+      }));
     }
-    currentKey: valueDiskPath
-    onSelected: key => {
-                  settingsHelper.set("diskPath", key);
-                  saveSettings();
-                }
-    defaultValue: widgetMetadata.diskPath
-  }
-}
+      currentKey: valueDiskPath
+      onSelected: key => {
+      settingsHelper.set("diskPath", key);
+      saveSettings();
+    }
+      defaultValue: widgetMetadata.diskPath
+    }
+    }

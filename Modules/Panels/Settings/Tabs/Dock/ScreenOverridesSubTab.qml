@@ -13,10 +13,6 @@ ColumnLayout {
   spacing: Style.settingsGroupSpacing
   Layout.fillWidth: true
 
-  NHeader {
-    description: I18n.tr("panels.bar.monitors-desc-new")
-  }
-
   // §3.5.4 — one SettingsGroup per monitor: an identity row, the override
   // switch, the override rows and a "下一页" row pushing the widgets editor
   // as a 二级页 (DESIGN §3.5.3).
@@ -30,10 +26,9 @@ ColumnLayout {
 
   Repeater {
     model: Quickshell.screens || []
-    delegate: ColumnLayout {
+    delegate: NSettingsGroup {
       id: monitorGroup
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
 
       required property var modelData
       readonly property string screenName: modelData.name || "Unknown"
@@ -65,19 +60,17 @@ ColumnLayout {
       NToggle {
         Layout.fillWidth: true
         label: I18n.tr("panels.bar.monitor-override-settings")
-        description: I18n.tr("panels.bar.monitor-override-settings-description")
         checked: monitorGroup.overrideEnabled
         onToggled: checked => {
-                     Settings.setScreenOverride(monitorGroup.screenName, "enabled", checked);
-                     BarService.widgetsRevision++;
-                   }
+          Settings.setScreenOverride(monitorGroup.screenName, "enabled", checked);
+          BarService.widgetsRevision++;
+        }
       }
 
       NComboBox {
         Layout.fillWidth: true
         visible: monitorGroup.overrideEnabled
         label: I18n.tr("panels.bar.appearance-position-label")
-        description: I18n.tr("panels.bar.appearance-position-description")
         model: [
           {
             "key": "top",
@@ -104,7 +97,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: monitorGroup.overrideEnabled
         label: I18n.tr("panels.bar.appearance-density-label")
-        description: I18n.tr("panels.bar.appearance-density-description")
         model: [
           {
             "key": "mini",
@@ -135,7 +127,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: monitorGroup.overrideEnabled
         label: I18n.tr("common.display-mode")
-        description: I18n.tr("panels.bar.appearance-display-mode-description")
         model: [
           {
             "key": "always_visible",

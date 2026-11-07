@@ -11,13 +11,11 @@ ColumnLayout {
   Layout.fillWidth: true
 
   // Preferred player
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NTextInput {
       label: I18n.tr("panels.audio.media-primary-player-label")
-      description: I18n.tr("panels.audio.media-primary-player-description")
       placeholderText: I18n.tr("panels.audio.media-primary-player-placeholder")
       text: Settings.data.audio.preferredPlayer
       defaultValue: Settings.getDefaultValue("audio.preferredPlayer")
@@ -40,7 +38,6 @@ ColumnLayout {
     NTextInputButton {
       id: blacklistInput
       label: I18n.tr("panels.audio.media-excluded-player-label")
-      description: I18n.tr("panels.audio.media-excluded-player-description")
       placeholderText: I18n.tr("panels.audio.media-excluded-player-placeholder")
       buttonIcon: "add"
       Layout.fillWidth: true

@@ -72,7 +72,6 @@ ColumnLayout {
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.clock-style-label")
-    description: I18n.tr("panels.desktop-widgets.clock-style-description")
     currentKey: valueClockStyle
     minimumWidth: 260 * Style.uiScaleRatio
     model: [
@@ -94,32 +93,30 @@ ColumnLayout {
       }
     ]
     onSelected: key => {
-                  settingsHelper.set("clockStyle", key);
-                  saveSettings();
-                }
+      settingsHelper.set("clockStyle", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.clockStyle
   }
 
   NColorChoice {
     label: I18n.tr("common.select-color")
-    description: I18n.tr("common.select-color-description")
     currentKey: valueClockColor
     onSelected: key => {
-                  settingsHelper.set("clockColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("clockColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.clockColor
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.clock.use-custom-font-label")
-    description: I18n.tr("bar.clock.use-custom-font-description")
     checked: valueUseCustomFont
     onToggled: checked => {
-                 settingsHelper.set("useCustomFont", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("useCustomFont", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.useCustomFont
   }
 
@@ -127,7 +124,6 @@ ColumnLayout {
     Layout.fillWidth: true
     visible: valueUseCustomFont
     label: I18n.tr("bar.clock.custom-font-label")
-    description: I18n.tr("bar.clock.custom-font-description")
     model: FontService.availableFonts
     currentKey: valueCustomFont
     placeholder: I18n.tr("bar.clock.custom-font-placeholder")
@@ -150,7 +146,6 @@ ColumnLayout {
   NHeader {
     visible: isMinimalMode
     label: I18n.tr("bar.clock.clock-display-label")
-    description: I18n.tr("bar.clock.clock-display-description")
   }
 
   // Format editor - only visible in minimal mode
@@ -171,7 +166,6 @@ ColumnLayout {
         id: formatInput
         Layout.fillWidth: true
         label: I18n.tr("panels.desktop-widgets.clock-format-label")
-        description: I18n.tr("bar.clock.horizontal-bar-description")
         placeholderText: "HH:mm\\nd MMMM yyyy"
         text: valueFormat
         onTextChanged: {
@@ -265,12 +259,11 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.clock-show-background-label")
-    description: I18n.tr("panels.desktop-widgets.clock-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 settingsHelper.set("showBackground", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showBackground", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showBackground
   }
 
@@ -278,12 +271,11 @@ ColumnLayout {
     Layout.fillWidth: true
     visible: valueShowBackground
     label: I18n.tr("panels.desktop-widgets.clock-rounded-corners-label")
-    description: I18n.tr("panels.desktop-widgets.clock-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 settingsHelper.set("roundedCorners", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("roundedCorners", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.roundedCorners
   }
 }

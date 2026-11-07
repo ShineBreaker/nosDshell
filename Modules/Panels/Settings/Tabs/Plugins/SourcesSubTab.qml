@@ -12,8 +12,7 @@ ColumnLayout {
   Layout.fillWidth: true
 
   // List of plugin sources
-  ColumnLayout {
-    spacing: Style.settingsGroupGap
+  NSettingsGroup {
     Layout.fillWidth: true
 
     Repeater {
@@ -69,25 +68,32 @@ ColumnLayout {
             checked: modelData.enabled !== false // Default to true if not set
             baseSize: Style.baseWidgetSize * 0.7
             onToggled: checked => {
-                         PluginRegistry.setSourceEnabled(modelData.url, checked);
-                         PluginService.refreshAvailablePlugins();
-                         ToastService.showNotice(I18n.tr("panels.plugins.title"), I18n.tr("panels.plugins.refresh-refreshing"));
-                       }
+              PluginRegistry.setSourceEnabled(modelData.url, checked);
+              PluginService.refreshAvailablePlugins();
+              ToastService.showNotice(I18n.tr("panels.plugins.title"), I18n.tr("panels.plugins.refresh-refreshing"));
+            }
           }
         }
       }
     }
-  }
 
-  // Add custom repository
-  NButton {
-    text: I18n.tr("panels.plugins.sources-add-custom")
-    icon: "plus"
-    onClicked: {
-      PanelService.hostSettingsPopup(addSourceDialog, null);
-      addSourceDialog.open();
+    // Add custom repository — same clickable add-row as Idle/CustomSubTab
+    NDccRow {
+      Layout.fillWidth: true
+      clickable: true
+      onClicked: {
+        PanelService.hostSettingsPopup(addSourceDialog, null);
+        addSourceDialog.open();
+      }
+      NIcon {
+        icon: "add"
+        color: Colors.onShell
+      }
+      NText {
+        text: I18n.tr("panels.plugins.sources-add-custom")
+        Layout.fillWidth: true
+      }
     }
-    Layout.fillWidth: true
   }
 
   // Add source dialog
@@ -115,7 +121,6 @@ ColumnLayout {
 
       NHeader {
         label: I18n.tr("panels.plugins.sources-add-dialog-title")
-        description: I18n.tr("panels.plugins.sources-add-dialog-description")
       }
 
       NTextInput {

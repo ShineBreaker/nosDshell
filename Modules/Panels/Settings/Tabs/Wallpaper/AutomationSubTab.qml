@@ -13,7 +13,6 @@ ColumnLayout {
 
   NToggle {
     label: I18n.tr("panels.wallpaper.automation-scheduled-change-label")
-    description: I18n.tr("panels.wallpaper.automation-scheduled-change-description")
     checked: Settings.data.wallpaper.automationEnabled
     onToggled: checked => Settings.data.wallpaper.automationEnabled = checked
   }
@@ -22,15 +21,13 @@ ColumnLayout {
   NDccGap {
     Layout.fillWidth: true
   }
-  ColumnLayout {
+  NSettingsGroup {
     visible: Settings.data.wallpaper.automationEnabled
-    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     NComboBox {
 
       label: I18n.tr("panels.wallpaper.automation-change-mode-label")
-      description: I18n.tr("panels.wallpaper.automation-change-mode-description")
       Layout.fillWidth: true
       model: [
         {
@@ -49,7 +46,6 @@ ColumnLayout {
 
     NSpinBox {
       label: I18n.tr("panels.wallpaper.automation-interval-label")
-      description: I18n.tr("panels.wallpaper.automation-interval-description")
       Layout.fillWidth: true
       from: 1
       to: 1440

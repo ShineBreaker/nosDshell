@@ -77,21 +77,20 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueClockColor
     onSelected: key => {
-                  settingsHelper.set("clockColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("clockColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.clockColor
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.clock.use-custom-font-label")
-    description: I18n.tr("bar.clock.use-custom-font-description")
     checked: valueUseCustomFont
     onToggled: checked => {
-                 settingsHelper.set("useCustomFont", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("useCustomFont", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.useCustomFont
   }
 
@@ -99,7 +98,6 @@ ColumnLayout {
     Layout.fillWidth: true
     visible: valueUseCustomFont
     label: I18n.tr("bar.clock.custom-font-label")
-    description: I18n.tr("bar.clock.custom-font-description")
     model: FontService.availableFonts
     currentKey: valueCustomFont
     placeholder: I18n.tr("bar.clock.custom-font-placeholder")
@@ -119,7 +117,6 @@ ColumnLayout {
 
   NHeader {
     label: I18n.tr("bar.clock.clock-display-label")
-    description: I18n.tr("bar.clock.clock-display-description")
   }
 
   RowLayout {
@@ -140,7 +137,6 @@ ColumnLayout {
         id: inputHoriz
         Layout.fillWidth: true
         label: I18n.tr("bar.clock.horizontal-bar-label")
-        description: I18n.tr("bar.clock.horizontal-bar-description")
         placeholderText: "HH:mm ddd, MMM dd"
         text: valueFormatHorizontal
         onTextChanged: {
@@ -167,7 +163,6 @@ ColumnLayout {
         id: inputVert
         Layout.fillWidth: true
         label: I18n.tr("bar.clock.vertical-bar-label")
-        description: I18n.tr("bar.clock.vertical-bar-description")
         // Tokens are Qt format tokens and must not be localized
         placeholderText: "HH mm dd MM"
         text: valueFormatVertical
@@ -191,7 +186,6 @@ ColumnLayout {
         id: inputTooltip
         Layout.fillWidth: true
         label: I18n.tr("bar.clock.tooltip-format-label")
-        description: I18n.tr("bar.clock.tooltip-format-description")
         placeholderText: "HH:mm, ddd MMM dd"
         text: valueTooltipFormat
         onTextChanged: {
@@ -213,7 +207,6 @@ ColumnLayout {
       NSpinBox {
         Layout.fillWidth: true
         label: I18n.tr("bar.clock.line-spacing-label")
-        description: I18n.tr("bar.clock.line-spacing-description")
         from: -10
         to: 20
         value: valueLineSpacing

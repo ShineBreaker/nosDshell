@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "../Shared"
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
-import "../Shared"
 
 // DDE taskbar "常规" page (DESIGN §3.1.1, §3.5.3): everything that configures
 // the dock itself lives under its feature switch — mode/position/size/status,
@@ -22,7 +22,6 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.dock.enabled-label")
-    description: I18n.tr("panels.dock.enabled-description")
     checked: Settings.data.dock.enabled
     defaultValue: Settings.getDefaultValue("dock.enabled")
     onToggled: checked => Settings.data.dock.enabled = checked
@@ -37,14 +36,12 @@ ColumnLayout {
     NDccGap {
       Layout.fillWidth: true
     }
-    ColumnLayout {
+    NSettingsGroup {
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
 
       NComboBox {
         Layout.fillWidth: true
         label: I18n.tr("dock-menu.mode")
-        description: I18n.tr("settings.taskbar.mode-description")
         model: [
           {
             "key": "fashion",
@@ -89,7 +86,6 @@ ColumnLayout {
       NComboBox {
         Layout.fillWidth: true
         label: I18n.tr("dock-menu.size")
-        description: I18n.tr("settings.taskbar.size-description")
         model: [
           {
             "key": "30",
@@ -112,7 +108,6 @@ ColumnLayout {
       NComboBox {
         Layout.fillWidth: true
         label: I18n.tr("dock-menu.state")
-        description: I18n.tr("settings.taskbar.state-description")
         model: [
           {
             "key": "keep-showing",
@@ -139,17 +134,14 @@ ColumnLayout {
     }
 
     // SettingsGroup: dock appearance (fashion/efficient shared keys)
-    ColumnLayout {
+    NSettingsGroup {
+      title: I18n.tr("settings.advanced.dock-appearance")
+
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
-      NHeader {
-        label: I18n.tr("settings.advanced.dock-appearance")
-      }
 
       NValueSlider {
         Layout.fillWidth: true
         label: I18n.tr("panels.dock.appearance-background-opacity-label")
-        description: I18n.tr("panels.dock.appearance-background-opacity-description")
         from: 0.3
         to: 1
         stepSize: 0.01
@@ -163,7 +155,6 @@ ColumnLayout {
       NValueSlider {
         Layout.fillWidth: true
         label: I18n.tr("panels.dock.appearance-dead-opacity-label")
-        description: I18n.tr("panels.dock.appearance-dead-opacity-description")
         from: 0
         to: 1
         stepSize: 0.01
@@ -178,7 +169,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: root.fashionMode
         label: I18n.tr("panels.dock.appearance-plugin-spacing-label")
-        description: I18n.tr("panels.dock.appearance-plugin-spacing-description")
         from: 0
         to: 24
         stepSize: 1
@@ -193,7 +183,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: root.fashionMode
         label: I18n.tr("panels.dock.appearance-fused-plugins-label")
-        description: I18n.tr("panels.dock.appearance-fused-plugins-description")
         checked: Settings.data.dock.fusedPlugins
         defaultValue: Settings.getDefaultValue("dock.fusedPlugins")
         onToggled: checked => Settings.data.dock.fusedPlugins = checked
@@ -202,7 +191,6 @@ ColumnLayout {
       NToggle {
         Layout.fillWidth: true
         label: I18n.tr("panels.dock.appearance-colorize-icons-label")
-        description: I18n.tr("panels.dock.appearance-colorize-icons-description")
         checked: Settings.data.dock.colorizeIcons
         defaultValue: Settings.getDefaultValue("dock.colorizeIcons")
         onToggled: checked => Settings.data.dock.colorizeIcons = checked
@@ -226,16 +214,13 @@ ColumnLayout {
     }
 
     // SettingsGroup: dock window grouping
-    ColumnLayout {
+    NSettingsGroup {
+      title: I18n.tr("settings.advanced.dock-grouping")
+
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
-      NHeader {
-        label: I18n.tr("settings.advanced.dock-grouping")
-      }
 
       NToggle {
         label: I18n.tr("panels.dock.appearance-pinned-static-label")
-        description: I18n.tr("panels.dock.appearance-pinned-static-description")
         checked: Settings.data.dock.pinnedStatic
         defaultValue: Settings.getDefaultValue("dock.pinnedStatic")
         onToggled: checked => Settings.data.dock.pinnedStatic = checked
@@ -243,7 +228,6 @@ ColumnLayout {
 
       NToggle {
         label: I18n.tr("panels.dock.appearance-group-apps-label")
-        description: I18n.tr("panels.dock.appearance-group-apps-description")
         checked: Settings.data.dock.groupApps
         defaultValue: Settings.getDefaultValue("dock.groupApps")
         onToggled: checked => Settings.data.dock.groupApps = checked
@@ -253,7 +237,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: Settings.data.dock.groupApps
         label: I18n.tr("panels.dock.appearance-group-click-action-label")
-        description: I18n.tr("panels.dock.appearance-group-click-action-description")
         model: [
           {
             "key": "cycle",
@@ -273,7 +256,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: Settings.data.dock.groupApps
         label: I18n.tr("panels.dock.appearance-group-context-menu-mode-label")
-        description: I18n.tr("panels.dock.appearance-group-context-menu-mode-description")
         model: [
           {
             "key": "list",
@@ -297,17 +279,14 @@ ColumnLayout {
 
     // SettingsGroup: right-click menu (task-manager command, nosd extension —
     // aligns the menu with the Windows taskbar's Task Manager entry)
-    ColumnLayout {
+    NSettingsGroup {
+      title: I18n.tr("settings.taskbar.menu-group")
+
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
-      NHeader {
-        label: I18n.tr("settings.taskbar.menu-group")
-      }
 
       NTextInput {
         Layout.fillWidth: true
         label: I18n.tr("panels.dock.task-manager-command-label")
-        description: I18n.tr("panels.dock.task-manager-command-description")
         placeholderText: "btop"
         text: Settings.data.dock.taskManagerCommand
         defaultValue: Settings.getDefaultValue("dock.taskManagerCommand")

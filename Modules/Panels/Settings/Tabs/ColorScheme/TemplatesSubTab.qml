@@ -186,12 +186,6 @@ ColumnLayout {
     }
   }
 
-  // The stacked NTabView already draws this group's title. A second head
-  // with the same label read as a double header; keep the description.
-  NHeader {
-    description: I18n.tr("panels.color-scheme.templates-desc")
-  }
-
   // Category filter
   NTagFilter {
     Layout.fillWidth: true
@@ -199,7 +193,6 @@ ColumnLayout {
     selectedTag: root.selectedCategory
     onSelectedTagChanged: root.selectedCategory = selectedTag
     label: I18n.tr("panels.color-scheme.templates-filter-label")
-    description: I18n.tr("panels.color-scheme.templates-filter-description")
   }
 
   ColumnLayout {
@@ -313,20 +306,18 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NCheckbox {
       label: I18n.tr("panels.color-scheme.templates-misc-user-templates-label")
-      description: I18n.tr("panels.color-scheme.templates-misc-user-templates-description")
       checked: Settings.data.templates.enableUserTheming
       onToggled: checked => {
-                   Settings.data.templates.enableUserTheming = checked;
-                   if (checked) {
-                     TemplateRegistry.writeUserTemplatesToml();
-                   }
-                   AppThemeService.generate();
-                 }
+        Settings.data.templates.enableUserTheming = checked;
+        if (checked) {
+          TemplateRegistry.writeUserTemplatesToml();
+        }
+        AppThemeService.generate();
+      }
     }
   }
 }

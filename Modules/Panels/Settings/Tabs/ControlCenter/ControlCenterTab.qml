@@ -67,23 +67,23 @@ ColumnLayout {
     availableWidgets.clear();
     var sortedEntries = ControlCenterWidgetRegistry.getAvailableWidgets().slice().sort();
     sortedEntries.forEach(entry => {
-                            // widgetDisplayName already resolves plugin ids to
-                            // the manifest name.
-                            const isPlugin = ControlCenterWidgetRegistry.isPluginWidget(entry);
-                            let displayName = ControlCenterWidgetRegistry.widgetDisplayName(entry);
-                            let badges = [];
-                            if (isPlugin) {
-                              badges.push({
-                                            "icon": "plugin",
-                                            "color": Colors.accentAlt
-                                          });
-                            }
-                            availableWidgets.append({
-                                                      "key": entry,
-                                                      "name": displayName,
-                                                      "badges": badges
-                                                    });
-                          });
+      // widgetDisplayName already resolves plugin ids to
+      // the manifest name.
+      const isPlugin = ControlCenterWidgetRegistry.isPluginWidget(entry);
+      let displayName = ControlCenterWidgetRegistry.widgetDisplayName(entry);
+      let badges = [];
+      if (isPlugin) {
+        badges.push({
+                      "icon": "plugin",
+                      "color": Colors.accentAlt
+                    });
+      }
+      availableWidgets.append({
+                                "key": entry,
+                                "name": displayName,
+                                "badges": badges
+                              });
+    });
     // Starts empty
     cardsModel = [];
 
@@ -128,7 +128,6 @@ ColumnLayout {
   NTabBar {
     id: subTabBar
     Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginM
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
@@ -144,11 +143,6 @@ ColumnLayout {
         text: I18n.tr("panels.control-center.pages-tab")
       }
     }
-  }
-
-  Item {
-    Layout.fillWidth: true
-    Layout.preferredHeight: Style.marginL
   }
 
   NTabView {
@@ -170,9 +164,9 @@ ColumnLayout {
       onUpdateWidgetSettingsInSection: (section, index, settings) => _updateWidgetSettingsInSection(section, index, settings)
       onMoveWidgetBetweenSections: (fromSection, index, toSection) => _moveWidgetBetweenSections(fromSection, index, toSection)
       onOpenPluginSettingsRequested: manifest => {
-                                       PanelService.hostSettingsPopup(pluginSettingsDialog, null);
-                                       pluginSettingsDialog.openPluginSettings(manifest);
-                                     }
+        PanelService.hostSettingsPopup(pluginSettingsDialog, null);
+        pluginSettingsDialog.openPluginSettings(manifest);
+      }
     }
 
     PagesSubTab {}

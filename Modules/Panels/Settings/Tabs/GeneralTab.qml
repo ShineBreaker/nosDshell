@@ -16,7 +16,6 @@ ColumnLayout {
   NTabBar {
     id: subTabBar
     Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginM
     distributeEvenly: true
     // The sub-tab strip is the SettingsGroup header row of the page now
     // (DESIGN §3.5.3), not a pill strip.
@@ -32,11 +31,6 @@ ColumnLayout {
         text: I18n.tr("panels.general.tab-keybinds")
       }
     }
-  }
-
-  Item {
-    Layout.fillWidth: true
-    Layout.preferredHeight: Style.marginL
   }
 
   NTabView {

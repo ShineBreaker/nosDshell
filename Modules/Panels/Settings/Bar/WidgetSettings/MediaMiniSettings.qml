@@ -43,7 +43,6 @@ ColumnLayout {
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.hide-mode-label")
-    description: I18n.tr("bar.media-mini.hide-mode-description")
     model: [
       {
         "key": "visible",
@@ -64,49 +63,45 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-                  settingsHelper.set("hideMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("hideMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideMode
   }
 
   NToggle {
     label: I18n.tr("bar.media-mini.show-album-art-label")
-    description: I18n.tr("bar.media-mini.show-album-art-description")
     checked: valueShowAlbumArt
     onToggled: checked => {
-                 settingsHelper.set("showAlbumArt", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showAlbumArt", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showAlbumArt
   }
 
   NToggle {
     label: I18n.tr("bar.media-mini.show-artist-first-label")
-    description: I18n.tr("bar.media-mini.show-artist-first-description")
     checked: valueShowArtistFirst
     onToggled: checked => {
-                 settingsHelper.set("showArtistFirst", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showArtistFirst", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showArtistFirst
   }
 
   NToggle {
     label: I18n.tr("bar.media-mini.show-visualizer-label")
-    description: I18n.tr("bar.media-mini.show-visualizer-description")
     checked: valueShowVisualizer
     onToggled: checked => {
-                 settingsHelper.set("showVisualizer", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showVisualizer", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showVisualizer
   }
 
   NComboBox {
     visible: valueShowVisualizer
     label: I18n.tr("bar.media-mini.visualizer-type-label")
-    description: I18n.tr("bar.media-mini.visualizer-type-description")
     model: [
       {
         "key": "linear",
@@ -123,9 +118,9 @@ ColumnLayout {
     ]
     currentKey: valueVisualizerType
     onSelected: key => {
-                  settingsHelper.set("visualizerType", key);
-                  saveSettings();
-                }
+      settingsHelper.set("visualizerType", key);
+      saveSettings();
+    }
     minimumWidth: 200
     defaultValue: widgetMetadata.visualizerType
   }
@@ -134,38 +129,35 @@ ColumnLayout {
     id: widthInput
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.max-width-label")
-    description: I18n.tr("bar.media-mini.max-width-description")
     placeholderText: widgetMetadata.maxWidth
     text: String(valueMaxWidth)
     storedValue: valueMaxWidth
     minimum: 1
     maximum: 2000
     onCommitted: value => {
-                   settingsHelper.set("maxWidth", value);
-                   saveSettings();
-                 }
+      settingsHelper.set("maxWidth", value);
+      saveSettings();
+    }
     defaultValue: String(widgetMetadata.maxWidth)
   }
 
   NToggle {
     label: I18n.tr("bar.media-mini.use-fixed-width-label")
-    description: I18n.tr("bar.media-mini.use-fixed-width-description")
     checked: valueUseFixedWidth
     onToggled: checked => {
-                 settingsHelper.set("useFixedWidth", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("useFixedWidth", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.useFixedWidth
   }
 
   NToggle {
     label: I18n.tr("bar.media-mini.show-progress-ring-label")
-    description: I18n.tr("bar.media-mini.show-progress-ring-description")
     checked: valueShowProgressRing
     onToggled: checked => {
-                 settingsHelper.set("showProgressRing", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showProgressRing", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showProgressRing
   }
 
@@ -173,15 +165,14 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  settingsHelper.set("textColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("textColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.textColor
   }
 
   NComboBox {
     label: I18n.tr("bar.media-mini.scrolling-mode-label")
-    description: I18n.tr("bar.media-mini.scrolling-mode-description")
     model: [
       {
         "key": "always",
@@ -198,9 +189,9 @@ ColumnLayout {
     ]
     currentKey: valueScrollingMode
     onSelected: key => {
-                  settingsHelper.set("scrollingMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("scrollingMode", key);
+      saveSettings();
+    }
     minimumWidth: 200
     defaultValue: widgetMetadata.scrollingMode
   }
@@ -212,18 +203,16 @@ ColumnLayout {
 
   NLabel {
     label: I18n.tr("bar.media-mini.panel-section-label")
-    description: I18n.tr("bar.media-mini.panel-section-description")
     labelColor: Colors.accent
   }
 
   NToggle {
     label: I18n.tr("bar.media-mini.show-album-art-label")
-    description: I18n.tr("bar.media-mini.show-album-art-description")
     checked: valuePanelShowAlbumArt
     onToggled: checked => {
-                 settingsHelper.set("panelShowAlbumArt", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("panelShowAlbumArt", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.panelShowAlbumArt
   }
 }

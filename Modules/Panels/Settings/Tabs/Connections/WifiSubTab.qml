@@ -140,7 +140,6 @@ Item {
       visible: !root.showOnlyLists
       Layout.fillWidth: true
       label: I18n.tr("common.wifi")
-      description: NetworkService.wifiEnabled ? I18n.tr("panels.connections.wifi-header-text") : ""
       icon: NetworkService.wifiEnabled ? "wifi" : "wifi-off"
       checked: NetworkService.wifiEnabled
       enabled: !NetworkService.airplaneModeEnabled && NetworkService.wifiAvailable
@@ -265,7 +264,6 @@ Item {
       visible: !root.showOnlyLists && NetworkService.wifiAvailable && BluetoothService.bluetoothAvailable
       Layout.fillWidth: true
       label: I18n.tr("toast.airplane-mode.title")
-      description: I18n.tr("toast.airplane-mode.description")
       icon: NetworkService.airplaneModeEnabled ? "plane" : "plane-off"
       checked: NetworkService.airplaneModeEnabled
       onToggled: checked => NetworkService.setAirplaneMode(checked)
@@ -284,14 +282,12 @@ Item {
         label: I18n.tr("common.ethernet")
       }
 
-      ColumnLayout {
+      NSettingsGroup {
         Layout.fillWidth: true
-        spacing: Style.settingsGroupGap
 
         NComboBox {
           Layout.fillWidth: true
           label: I18n.tr("panels.connections.ethernet-details-view-label")
-          description: I18n.tr("panels.connections.ethernet-details-view-description")
           model: [
             {
               "key": "grid",
@@ -421,8 +417,8 @@ Item {
         model: NetworkService.supportedSecurityTypes
         currentKey: addNetworkPopup.customSecurityKey
         onSelected: key => {
-                      addNetworkPopup.customSecurityKey = key;
-                    }
+          addNetworkPopup.customSecurityKey = key;
+        }
       }
 
       ColumnLayout {
@@ -1417,13 +1413,13 @@ Item {
     }
 
     onAccepted: paths => {
-                  if (paths.length > 0) {
-                    if (isForAddNetwork) {
-                      addNetworkPopup.customEnterpriseCaCert = paths[0];
-                    } else {
-                      root.enterpriseCaCert = paths[0];
-                    }
-                  }
-                }
+      if (paths.length > 0) {
+        if (isForAddNetwork) {
+          addNetworkPopup.customEnterpriseCaCert = paths[0];
+        } else {
+          root.enterpriseCaCert = paths[0];
+        }
+      }
+    }
   }
 }

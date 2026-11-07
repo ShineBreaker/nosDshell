@@ -31,12 +31,11 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("panels.desktop-widgets.clock-show-background-label")
-    description: I18n.tr("panels.desktop-widgets.weather-show-background-description")
     checked: valueShowBackground
     onToggled: checked => {
-                 settingsHelper.set("showBackground", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showBackground", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showBackground
   }
 
@@ -44,12 +43,11 @@ ColumnLayout {
     Layout.fillWidth: true
     visible: valueShowBackground
     label: I18n.tr("panels.desktop-widgets.clock-rounded-corners-label")
-    description: I18n.tr("panels.desktop-widgets.clock-rounded-corners-description")
     checked: valueRoundedCorners
     onToggled: checked => {
-                 settingsHelper.set("roundedCorners", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("roundedCorners", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.roundedCorners
   }
 }

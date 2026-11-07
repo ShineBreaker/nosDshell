@@ -231,14 +231,9 @@ ColumnLayout {
     return screenName === "" ? Settings.data.bar.widgets : Settings.getBarWidgetsForScreen(screenName);
   }
 
-  NHeader {
-    description: root.taskbarMode ? I18n.tr("settings.taskbar.widgets-description") : I18n.tr("panels.bar.widgets-desc")
-  }
-
   // Left Section
   NSectionEditor {
     sectionName: root.barIsVertical ? I18n.tr("positions.top") : I18n.tr("positions.left")
-    sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-leading-subtitle") : ""
     sectionId: "left"
     barIsVertical: root.barIsVertical
     screen: root.screen
@@ -257,7 +252,6 @@ ColumnLayout {
   // Center Section
   NSectionEditor {
     sectionName: I18n.tr("positions.center")
-    sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-center-subtitle") : ""
     sectionId: "center"
     barIsVertical: root.barIsVertical
     screen: root.screen
@@ -278,7 +272,6 @@ ColumnLayout {
   // dock flattens all three zones into one strip, so any widget is legal there.
   NSectionEditor {
     sectionName: root.taskbarMode ? I18n.tr("settings.taskbar.plugins") : (root.barIsVertical ? I18n.tr("positions.bottom") : I18n.tr("positions.right"))
-    sectionSubtitle: root.taskbarMode ? I18n.tr("settings.taskbar.zone-plugins-subtitle") : ""
     sectionId: "right"
     barIsVertical: root.barIsVertical
     screen: root.screen

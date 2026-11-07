@@ -43,7 +43,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("settings.taskbar.statusbar-enabled-label")
-      description: I18n.tr("settings.taskbar.statusbar-enabled-description")
       checked: Settings.data.bar.enabled
       defaultValue: Settings.getDefaultValue("bar.enabled")
       onToggled: checked => Settings.data.bar.enabled = checked
@@ -55,9 +54,8 @@ ColumnLayout {
       visible: Settings.data.bar.enabled
     }
 
-    ColumnLayout {
+    NSettingsGroup {
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
       visible: Settings.data.bar.enabled
 
       NComboBox {
@@ -111,7 +109,6 @@ ColumnLayout {
       NComboBox {
         Layout.fillWidth: true
         label: I18n.tr("panels.bar.appearance-density-label")
-        description: I18n.tr("panels.bar.appearance-density-description")
         model: [
           {
             "key": "mini",
@@ -142,7 +139,6 @@ ColumnLayout {
       NComboBox {
         Layout.fillWidth: true
         label: I18n.tr("panels.bar.appearance-type-label")
-        description: I18n.tr("panels.bar.appearance-type-description")
         model: [
           {
             "key": "simple",
@@ -161,7 +157,6 @@ ColumnLayout {
       NToggle {
         Layout.fillWidth: true
         label: I18n.tr("options.bar.type-floating")
-        description: I18n.tr("panels.bar.appearance-floating-description")
         checked: Settings.data.bar.floating
         defaultValue: Settings.getDefaultValue("bar.floating")
         onToggled: checked => Settings.data.bar.floating = checked
@@ -170,7 +165,6 @@ ColumnLayout {
       NValueSlider {
         Layout.fillWidth: true
         label: I18n.tr("panels.bar.appearance-font-scale-label")
-        description: I18n.tr("panels.bar.appearance-font-scale-description")
         from: 0.5
         to: 2.0
         stepSize: 0.01
@@ -208,17 +202,17 @@ ColumnLayout {
           }
           checked: (Settings.data.bar.monitors || []).indexOf(modelData.name) !== -1
           onToggled: checked => {
-                       var arr = (Settings.data.bar.monitors || []).slice();
-                       if (checked) {
-                         if (arr.indexOf(modelData.name) === -1)
-                         arr.push(modelData.name);
-                       } else {
-                         arr = arr.filter(function (n) {
-                           return n !== modelData.name;
-                         });
-                       }
-                       Settings.data.bar.monitors = arr;
-                     }
+            var arr = (Settings.data.bar.monitors || []).slice();
+            if (checked) {
+              if (arr.indexOf(modelData.name) === -1)
+                arr.push(modelData.name);
+            } else {
+              arr = arr.filter(function (n) {
+                return n !== modelData.name;
+              });
+            }
+            Settings.data.bar.monitors = arr;
+          }
         }
       }
 
@@ -245,17 +239,14 @@ ColumnLayout {
   readonly property bool anyBarAlive: !fashionMode || Settings.data.bar.enabled
 
   // SettingsGroup: bar appearance (efficient-mode bar still reads these)
-  ColumnLayout {
+  NSettingsGroup {
+    title: I18n.tr("settings.advanced.bar-appearance")
+
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: root.anyBarAlive
-    NHeader {
-      label: I18n.tr("settings.advanced.bar-appearance")
-    }
 
     NToggle {
       label: I18n.tr("panels.bar.appearance-use-separate-opacity-label")
-      description: I18n.tr("panels.bar.appearance-use-separate-opacity-description")
       checked: Settings.data.bar.useSeparateOpacity
       defaultValue: Settings.getDefaultValue("bar.useSeparateOpacity")
       onToggled: checked => Settings.data.bar.useSeparateOpacity = checked
@@ -265,7 +256,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: Settings.data.bar.useSeparateOpacity
       label: I18n.tr("panels.bar.appearance-background-opacity-label")
-      description: I18n.tr("panels.bar.appearance-background-opacity-description")
       from: 0
       to: 1
       stepSize: 0.01
@@ -279,7 +269,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-widget-spacing-label")
-      description: I18n.tr("panels.bar.appearance-widget-spacing-description")
       from: 0
       to: 30
       stepSize: 1
@@ -293,7 +282,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-content-padding-label")
-      description: I18n.tr("panels.bar.appearance-content-padding-description")
       from: 0
       to: 30
       stepSize: 1
@@ -307,7 +295,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-show-outline-label")
-      description: I18n.tr("panels.bar.appearance-show-outline-description")
       checked: Settings.data.bar.showOutline
       defaultValue: Settings.getDefaultValue("bar.showOutline")
       onToggled: checked => Settings.data.bar.showOutline = checked
@@ -316,7 +303,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-show-capsule-label")
-      description: I18n.tr("panels.bar.appearance-show-capsule-description")
       checked: Settings.data.bar.showCapsule
       defaultValue: Settings.getDefaultValue("bar.showCapsule")
       onToggled: checked => Settings.data.bar.showCapsule = checked
@@ -326,7 +312,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: Settings.data.bar.showCapsule
       label: I18n.tr("panels.bar.appearance-capsule-color-label")
-      description: I18n.tr("panels.bar.appearance-capsule-color-description")
       noneColor: Colors.overlay("field")
       noneOnColor: Colors.onShellTertiary
       currentKey: Settings.data.bar.capsuleColorKey
@@ -337,7 +322,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: Settings.data.bar.showCapsule
       label: I18n.tr("panels.bar.appearance-capsule-opacity-label")
-      description: I18n.tr("panels.bar.appearance-capsule-opacity-description")
       from: 0
       to: 1
       stepSize: 0.01
@@ -351,7 +335,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-enable-exclusion-zone-inset-label")
-      description: I18n.tr("panels.bar.appearance-enable-exclusion-zone-inset-description")
       checked: Settings.data.bar.enableExclusionZoneInset
       defaultValue: Settings.getDefaultValue("bar.enableExclusionZoneInset")
       onToggled: checked => Settings.data.bar.enableExclusionZoneInset = checked
@@ -361,7 +344,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: CompositorService.isNiri
       label: I18n.tr("panels.bar.appearance-hide-on-overview-label")
-      description: I18n.tr("panels.bar.appearance-hide-on-overview-description")
       checked: Settings.data.bar.hideOnOverview
       defaultValue: Settings.getDefaultValue("bar.hideOnOverview")
       onToggled: checked => Settings.data.bar.hideOnOverview = checked
@@ -371,7 +353,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: Settings.getEffectiveBarType() === "simple" && !Settings.isBarFloating()
       label: I18n.tr("panels.bar.appearance-outer-corners-label")
-      description: I18n.tr("panels.bar.appearance-outer-corners-description")
       checked: Settings.data.bar.outerCorners
       defaultValue: Settings.getDefaultValue("bar.outerCorners")
       onToggled: checked => Settings.data.bar.outerCorners = checked
@@ -381,7 +362,6 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: Settings.getEffectiveBarType() === "framed"
       label: I18n.tr("panels.bar.appearance-frame-thickness")
-      description: I18n.tr("panels.bar.appearance-frame-settings-description")
       from: 4
       to: 24
       stepSize: 1
@@ -409,7 +389,6 @@ ColumnLayout {
     NSpinBox {
       visible: Settings.isBarFloating()
       label: I18n.tr("panels.bar.appearance-margins-vertical")
-      description: I18n.tr("panels.bar.appearance-margins-description")
       from: 0
       to: 500
       suffix: "px"
@@ -421,7 +400,6 @@ ColumnLayout {
     NSpinBox {
       visible: Settings.isBarFloating()
       label: I18n.tr("panels.bar.appearance-margins-horizontal")
-      description: I18n.tr("panels.bar.appearance-margins-description")
       from: 0
       to: 500
       suffix: "px"
@@ -439,18 +417,15 @@ ColumnLayout {
   // SettingsGroup: bar behavior (wheel + middle click; the right-click trio
   // only applies to the fashion status bar — in efficient mode right-click
   // is the DDE dock settings menu, so its controls hide with the mode)
-  ColumnLayout {
+  NSettingsGroup {
+    title: I18n.tr("settings.advanced.bar-behavior")
+
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: root.anyBarAlive
-    NHeader {
-      label: I18n.tr("settings.advanced.bar-behavior")
-    }
 
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-workspace-scroll-label")
-      description: I18n.tr("panels.bar.behavior-workspace-scroll-description")
       model: {
         var items = [
               {
@@ -482,7 +457,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.reverse-scrolling-label")
-      description: I18n.tr("panels.general.reverse-scrolling-description")
       checked: Settings.data.bar.reverseScroll
       defaultValue: Settings.getDefaultValue("bar.reverseScroll")
       onToggled: checked => Settings.data.bar.reverseScroll = checked
@@ -492,7 +466,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-wheel-wrap-label")
-      description: I18n.tr("panels.bar.behavior-wheel-wrap-description")
       checked: Settings.data.bar.mouseWheelWrap
       defaultValue: Settings.getDefaultValue("bar.mouseWheelWrap")
       onToggled: checked => Settings.data.bar.mouseWheelWrap = checked
@@ -502,7 +475,6 @@ ColumnLayout {
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-middle-click-label")
-      description: I18n.tr("panels.bar.behavior-middle-click-description")
       model: [
         {
           "key": "none",
@@ -533,7 +505,6 @@ ColumnLayout {
     NTextInput {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-middle-click-command-label")
-      description: I18n.tr("panels.bar.behavior-middle-click-command-description")
       placeholderText: I18n.tr("panels.bar.behavior-middle-click-command-placeholder")
       text: Settings.data.bar.middleClickCommand
       fontFamily: Settings.data.ui.fontFixed
@@ -544,7 +515,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-middle-click-follow-mouse-label")
-      description: I18n.tr("panels.bar.behavior-middle-click-follow-mouse-description")
       checked: Settings.data.bar.middleClickFollowMouse
       defaultValue: Settings.getDefaultValue("bar.middleClickFollowMouse")
       onToggled: checked => Settings.data.bar.middleClickFollowMouse = checked
@@ -554,7 +524,6 @@ ColumnLayout {
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-right-click-label")
-      description: I18n.tr("panels.bar.behavior-right-click-description")
       model: [
         {
           "key": "none",
@@ -586,7 +555,6 @@ ColumnLayout {
     NTextInput {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-right-click-command-label")
-      description: I18n.tr("panels.bar.behavior-right-click-command-description")
       placeholderText: I18n.tr("panels.bar.behavior-right-click-command-placeholder")
       text: Settings.data.bar.rightClickCommand
       fontFamily: Settings.data.ui.fontFixed
@@ -597,7 +565,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.behavior-right-click-follow-mouse-label")
-      description: I18n.tr("panels.bar.behavior-right-click-follow-mouse-description")
       checked: Settings.data.bar.rightClickFollowMouse
       defaultValue: Settings.getDefaultValue("bar.rightClickFollowMouse")
       onToggled: checked => Settings.data.bar.rightClickFollowMouse = checked
@@ -607,7 +574,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-show-on-workspace-switch-label")
-      description: I18n.tr("panels.bar.appearance-show-on-workspace-switch-description")
       checked: Settings.data.bar.showOnWorkspaceSwitch
       defaultValue: Settings.getDefaultValue("bar.showOnWorkspaceSwitch")
       onToggled: checked => Settings.data.bar.showOnWorkspaceSwitch = checked
@@ -622,18 +588,15 @@ ColumnLayout {
   // SettingsGroup: auto-hide delays (effective when hideMode hides the bar,
   // or when the fashion status bar auto-hides while the dock stays shown —
   // BarContentWindow feeds the status-bar path from these delays)
-  ColumnLayout {
+  NSettingsGroup {
+    title: I18n.tr("settings.advanced.bar-autohide")
+
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: root.anyBarAlive && (Settings.data.dock.hideMode !== "keep-showing" || (root.fashionMode && Settings.data.bar.enabled && Settings.data.bar.displayMode === "auto_hide"))
-    NHeader {
-      label: I18n.tr("settings.advanced.bar-autohide")
-    }
 
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-auto-hide-delay-label")
-      description: I18n.tr("panels.bar.appearance-auto-hide-delay-description")
       from: 100
       to: 2000
       stepSize: 100
@@ -647,7 +610,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.bar.appearance-auto-show-delay-label")
-      description: I18n.tr("panels.bar.appearance-auto-show-delay-description")
       from: 0
       to: 500
       stepSize: 50

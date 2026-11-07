@@ -36,9 +36,9 @@ ColumnLayout {
   NDisplayModeComboBox {
     currentKey: valueDisplayMode
     onSelected: key => {
-                  settingsHelper.set("displayMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("displayMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.displayMode
   }
 
@@ -46,9 +46,9 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  settingsHelper.set("iconColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("iconColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.iconColor
   }
 
@@ -56,16 +56,15 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  settingsHelper.set("textColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("textColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.textColor
   }
 
   // Middle click command
   NTextInput {
     label: I18n.tr("bar.custom-button.middle-click-label")
-    description: I18n.tr("panels.audio.on-middle-clicked-description")
     placeholderText: I18n.tr("panels.audio.external-mixer-placeholder")
     text: valueMiddleClickCommand
     onTextChanged: {

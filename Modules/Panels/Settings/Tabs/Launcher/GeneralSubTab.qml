@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "../Shared"
 import qs.Commons
 import qs.Services.UI
 import qs.Widgets
-import "../Shared"
 
 ColumnLayout {
   id: root
@@ -13,12 +13,10 @@ ColumnLayout {
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NComboBox {
       label: I18n.tr("panels.launcher.settings-mode-label")
-      description: I18n.tr("panels.launcher.settings-mode-description")
       Layout.fillWidth: true
       model: [
         {
@@ -40,7 +38,6 @@ ColumnLayout {
 
     NComboBox {
       label: I18n.tr("panels.launcher.settings-view-mode-label")
-      description: I18n.tr("panels.launcher.settings-view-mode-description")
       Layout.fillWidth: true
       model: [
         {
@@ -61,7 +58,6 @@ ColumnLayout {
 
     NComboBox {
       label: I18n.tr("panels.launcher.settings-display-mode-label")
-      description: I18n.tr("panels.launcher.settings-display-mode-description")
       Layout.fillWidth: true
       model: [
         {
@@ -82,7 +78,6 @@ ColumnLayout {
 
     NComboBox {
       label: I18n.tr("panels.launcher.settings-density-label")
-      description: I18n.tr("panels.launcher.settings-density-description")
       Layout.fillWidth: true
       model: [
         {
@@ -107,7 +102,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-show-categories-label")
-      description: I18n.tr("panels.launcher.settings-show-categories-description")
       checked: Settings.data.appLauncher.showCategories
       onToggled: checked => Settings.data.appLauncher.showCategories = checked
       defaultValue: Settings.getDefaultValue("appLauncher.showCategories")
@@ -115,7 +109,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-icon-mode-label")
-      description: I18n.tr("panels.launcher.settings-icon-mode-description")
       checked: Settings.data.appLauncher.iconMode === "native"
       onToggled: checked => Settings.data.appLauncher.iconMode = checked ? "native" : "tabler"
       defaultValue: Settings.getDefaultValue("appLauncher.iconMode") === "native"
@@ -123,7 +116,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-show-icon-background-label")
-      description: I18n.tr("panels.launcher.settings-show-icon-background-description")
       checked: Settings.data.appLauncher.showIconBackground
       onToggled: checked => Settings.data.appLauncher.showIconBackground = checked
       defaultValue: Settings.getDefaultValue("appLauncher.showIconBackground")
@@ -149,12 +141,10 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       label: I18n.tr("panels.launcher.settings-sort-by-usage-label")
-      description: I18n.tr("panels.launcher.settings-sort-by-usage-description")
       checked: Settings.data.appLauncher.sortByMostUsed
       onToggled: checked => Settings.data.appLauncher.sortByMostUsed = checked
       defaultValue: Settings.getDefaultValue("appLauncher.sortByMostUsed")
@@ -162,7 +152,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-enable-settings-search-label")
-      description: I18n.tr("panels.launcher.settings-enable-settings-search-description")
       checked: Settings.data.appLauncher.enableSettingsSearch
       onToggled: checked => Settings.data.appLauncher.enableSettingsSearch = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableSettingsSearch")
@@ -170,7 +159,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-enable-windows-search-label")
-      description: I18n.tr("panels.launcher.settings-enable-windows-search-description")
       checked: Settings.data.appLauncher.enableWindowsSearch
       onToggled: checked => Settings.data.appLauncher.enableWindowsSearch = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableWindowsSearch")
@@ -178,7 +166,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-enable-session-search-label")
-      description: I18n.tr("panels.launcher.settings-enable-session-search-description")
       checked: Settings.data.appLauncher.enableSessionSearch
       onToggled: checked => Settings.data.appLauncher.enableSessionSearch = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableSessionSearch")
@@ -186,7 +173,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-clear-search-on-close-label")
-      description: I18n.tr("panels.launcher.settings-clear-search-on-close-description")
       checked: Settings.data.appLauncher.clearSearchOnClose
       onToggled: checked => Settings.data.appLauncher.clearSearchOnClose = checked
       defaultValue: Settings.getDefaultValue("appLauncher.clearSearchOnClose")
@@ -194,7 +180,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-ignore-mouse-input-label")
-      description: I18n.tr("panels.launcher.settings-ignore-mouse-input-description")
       checked: Settings.data.appLauncher.ignoreMouseInput
       onToggled: checked => Settings.data.appLauncher.ignoreMouseInput = checked
       defaultValue: Settings.getDefaultValue("appLauncher.ignoreMouseInput")

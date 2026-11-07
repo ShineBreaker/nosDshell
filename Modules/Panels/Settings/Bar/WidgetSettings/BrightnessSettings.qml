@@ -39,9 +39,9 @@ ColumnLayout {
   NDisplayModeComboBox {
     currentKey: valueDisplayMode
     onSelected: key => {
-                  settingsHelper.set("displayMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("displayMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.displayMode
   }
 
@@ -49,9 +49,9 @@ ColumnLayout {
     label: I18n.tr("common.select-icon-color")
     currentKey: valueIconColor
     onSelected: key => {
-                  settingsHelper.set("iconColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("iconColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.iconColor
   }
 
@@ -59,9 +59,9 @@ ColumnLayout {
     label: I18n.tr("common.select-text-color")
     currentKey: valueTextColor
     onSelected: key => {
-                  settingsHelper.set("textColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("textColor", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.textColor
   }
 
@@ -69,12 +69,11 @@ ColumnLayout {
     visible: hasMultipleMonitors
     Layout.fillWidth: true
     label: I18n.tr("bar.brightness.apply-all-label")
-    description: I18n.tr("bar.brightness.apply-all-description")
     checked: valueApplyToAllMonitors
     onToggled: checked => {
-                 settingsHelper.set("applyToAllMonitors", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("applyToAllMonitors", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.applyToAllMonitors
   }
 }

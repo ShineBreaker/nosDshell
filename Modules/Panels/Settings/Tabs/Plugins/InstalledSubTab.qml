@@ -53,13 +53,11 @@ ColumnLayout {
   }
 
   // Auto-update toggle
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NToggle {
       label: I18n.tr("panels.plugins.auto-update")
-      description: I18n.tr("panels.plugins.auto-update-description")
       checked: Settings.data.plugins.autoUpdate
       onToggled: checked => Settings.data.plugins.autoUpdate = checked
     }
@@ -67,7 +65,6 @@ ColumnLayout {
     // Update notification toggle
     NToggle {
       label: I18n.tr("panels.plugins.notify-updates")
-      description: I18n.tr("panels.plugins.notify-updates-description")
       checked: Settings.data.plugins.notifyUpdates
       onToggled: checked => Settings.data.plugins.notifyUpdates = checked
     }
@@ -137,8 +134,7 @@ ColumnLayout {
     }
 
     // Installed plugins list
-    ColumnLayout {
-      spacing: Style.settingsGroupGap
+    NSettingsGroup {
       Layout.fillWidth: true
 
       Repeater {
@@ -361,12 +357,12 @@ ColumnLayout {
                 checked: modelData.enabled
                 baseSize: Style.baseWidgetSize * 0.7
                 onToggled: checked => {
-                             if (checked) {
-                               PluginService.enablePlugin(modelData.compositeKey);
-                             } else {
-                               PluginService.disablePlugin(modelData.compositeKey);
-                             }
-                           }
+                  if (checked) {
+                    PluginService.enablePlugin(modelData.compositeKey);
+                  } else {
+                    PluginService.disablePlugin(modelData.compositeKey);
+                  }
+                }
               }
             }
 
@@ -484,7 +480,6 @@ ColumnLayout {
       NLabel {
         visible: PluginRegistry.getAllInstalledPluginIds().length === 0
         label: I18n.tr("panels.plugins.installed-no-plugins-label")
-        description: I18n.tr("panels.plugins.installed-no-plugins-description")
         Layout.fillWidth: true
       }
     }

@@ -16,9 +16,8 @@ ColumnLayout {
   // brightness row and, for internal panels, a backlight-device Option row.
   Repeater {
     model: Quickshell.screens || []
-    delegate: ColumnLayout {
+    delegate: NSettingsGroup {
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
 
       property var brightnessMonitor: BrightnessService.getMonitorForScreen(modelData)
       property real localBrightness: 0.5
@@ -145,25 +144,24 @@ ColumnLayout {
         stepSize: 0.01
         enabled: brightnessMonitor ? brightnessMonitor.brightnessControlAvailable : false
         onMoved: value => {
-                   if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                     localBrightness = value;
-                     debounceTimer.restart();
-                   }
-                 }
+          if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
+            localBrightness = value;
+            debounceTimer.restart();
+          }
+        }
         onPressedChanged: (pressed, value) => {
-                            localBrightnessChanging = pressed;
-                            if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
-                              localBrightness = value;
-                              debounceTimer.restart();
-                            }
-                          }
+          localBrightnessChanging = pressed;
+          if (brightnessMonitor && brightnessMonitor.brightnessControlAvailable) {
+            localBrightness = value;
+            debounceTimer.restart();
+          }
+        }
       }
 
       NComboBox {
         Layout.fillWidth: true
         visible: brightnessMonitor && brightnessMonitor.method === "internal"
         label: I18n.tr("panels.display.monitors-backlight-device-label")
-        description: I18n.tr("panels.display.monitors-backlight-device-description")
         model: backlightDeviceOptions
         currentKey: BrightnessService.getMappedBacklightDevice(modelData.name) || ""
         onSelected: key => BrightnessService.setMappedBacklightDevice(modelData.name, key)
@@ -171,14 +169,12 @@ ColumnLayout {
     }
   }
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NSpinBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.display.monitors-brightness-step-label")
-      description: I18n.tr("panels.display.monitors-brightness-step-description")
       minimum: 1
       maximum: 50
       value: Settings.data.brightness.brightnessStep
@@ -191,7 +187,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.display.monitors-enforce-minimum-label")
-      description: I18n.tr("panels.display.monitors-enforce-minimum-description")
       checked: Settings.data.brightness.enforceMinimum
       onToggled: checked => Settings.data.brightness.enforceMinimum = checked
       defaultValue: Settings.getDefaultValue("brightness.enforceMinimum")
@@ -200,11 +195,10 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.display.monitors-external-brightness-label")
-      description: I18n.tr("panels.display.monitors-external-brightness-description")
       checked: Settings.data.brightness.enableDdcSupport
       onToggled: checked => {
-                   Settings.data.brightness.enableDdcSupport = checked;
-                 }
+        Settings.data.brightness.enableDdcSupport = checked;
+      }
       defaultValue: Settings.getDefaultValue("brightness.enableDdcSupport")
     }
   }

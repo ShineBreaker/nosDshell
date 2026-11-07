@@ -55,7 +55,6 @@ ColumnLayout {
   NComboBox {
     id: labelModeCombo
     label: I18n.tr("bar.workspace.label-mode-label")
-    description: I18n.tr("bar.workspace.label-mode-description")
     model: [
       {
         "key": "none",
@@ -76,15 +75,14 @@ ColumnLayout {
     ]
     currentKey: settingsHelper.value("labelMode")
     onSelected: key => {
-                  settingsHelper.set("labelMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("labelMode", key);
+      saveSettings();
+    }
     minimumWidth: 200
   }
 
   NSpinBox {
     label: I18n.tr("bar.workspace.character-count-label")
-    description: I18n.tr("bar.workspace.character-count-description")
     from: 1
     to: 10
     value: valueCharacterCount
@@ -97,7 +95,6 @@ ColumnLayout {
 
   NValueSlider {
     label: I18n.tr("bar.workspace.pill-size-label")
-    description: I18n.tr("bar.workspace.pill-size-description")
     from: 0.4
     to: 1.0
     stepSize: 0.01
@@ -105,9 +102,9 @@ ColumnLayout {
     defaultValue: widgetMetadata.pillSize
     showReset: true
     onMoved: value => {
-               settingsHelper.set("pillSize", value);
-               saveSettings();
-             }
+      settingsHelper.set("pillSize", value);
+      saveSettings();
+    }
     text: Math.round(valuePillSize * 100) + "%"
     visible: !valueShowApplications
   }
@@ -115,7 +112,6 @@ ColumnLayout {
   NComboBox {
     id: fontWeightCombo
     label: I18n.tr("bar.workspace.font-weight-label")
-    description: I18n.tr("bar.workspace.font-weight-description")
     model: [
       {
         "key": "regular",
@@ -136,50 +132,46 @@ ColumnLayout {
     ]
     currentKey: settingsHelper.value("fontWeight")
     onSelected: key => {
-                  settingsHelper.set("fontWeight", key);
-                  saveSettings();
-                }
+      settingsHelper.set("fontWeight", key);
+      saveSettings();
+    }
     minimumWidth: 200
   }
 
   NToggle {
     label: I18n.tr("bar.workspace.hide-unoccupied-label")
-    description: I18n.tr("bar.workspace.hide-unoccupied-description")
     checked: valueHideUnoccupied
     onToggled: checked => {
-                 settingsHelper.set("hideUnoccupied", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("hideUnoccupied", checked);
+      saveSettings();
+    }
   }
 
   NToggle {
     label: I18n.tr("bar.workspace.show-labels-only-when-occupied-label")
-    description: I18n.tr("bar.workspace.show-labels-only-when-occupied-description")
     checked: valueShowLabelsOnlyWhenOccupied
     onToggled: checked => {
-                 settingsHelper.set("showLabelsOnlyWhenOccupied", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showLabelsOnlyWhenOccupied", checked);
+      saveSettings();
+    }
   }
 
   NToggle {
     label: I18n.tr("bar.workspace.follow-focused-screen-label")
-    description: I18n.tr("bar.workspace.follow-focused-screen-description")
     checked: valueFollowFocusedScreen
     onToggled: checked => {
-                 settingsHelper.set("followFocusedScreen", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("followFocusedScreen", checked);
+      saveSettings();
+    }
   }
 
   NToggle {
     label: I18n.tr("bar.workspace.enable-scrollwheel-label")
-    description: I18n.tr("bar.workspace.enable-scrollwheel-description")
     checked: valueEnableScrollWheel
     onToggled: checked => {
-                 settingsHelper.set("enableScrollWheel", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("enableScrollWheel", checked);
+      saveSettings();
+    }
   }
 
   NDivider {
@@ -189,51 +181,46 @@ ColumnLayout {
 
   NToggle {
     label: I18n.tr("bar.workspace.show-applications-label")
-    description: I18n.tr("bar.workspace.show-applications-description")
     checked: valueShowApplications
     onToggled: checked => {
-                 settingsHelper.set("showApplications", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showApplications", checked);
+      saveSettings();
+    }
     visible: !root.groupedUnsupported
   }
 
   NToggle {
     label: I18n.tr("bar.workspace.show-applications-hover-label")
-    description: I18n.tr("bar.workspace.show-applications-hover-description")
     checked: valueShowApplicationsHover
     onToggled: checked => {
-                 settingsHelper.set("showApplicationsHover", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showApplicationsHover", checked);
+      saveSettings();
+    }
     visible: valueShowApplications && !root.groupedUnsupported
   }
 
   NToggle {
     label: I18n.tr("bar.workspace.show-badge-label")
-    description: I18n.tr("bar.workspace.show-badge-description")
     checked: valueShowBadge
     onToggled: checked => {
-                 settingsHelper.set("showBadge", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showBadge", checked);
+      saveSettings();
+    }
     visible: valueShowApplications && !root.groupedUnsupported
   }
 
   NToggle {
     label: I18n.tr("bar.tray.colorize-icons-label")
-    description: I18n.tr("bar.active-window.colorize-icons-description")
     checked: valueColorizeIcons
     onToggled: checked => {
-                 settingsHelper.set("colorizeIcons", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("colorizeIcons", checked);
+      saveSettings();
+    }
     visible: valueShowApplications && !root.groupedUnsupported
   }
 
   NValueSlider {
     label: I18n.tr("bar.workspace.unfocused-icons-opacity-label")
-    description: I18n.tr("bar.workspace.unfocused-icons-opacity-description")
     from: 0
     to: 1
     stepSize: 0.01
@@ -241,16 +228,15 @@ ColumnLayout {
     value: valueUnfocusedIconsOpacity
     defaultValue: widgetMetadata.unfocusedIconsOpacity
     onMoved: value => {
-               settingsHelper.set("unfocusedIconsOpacity", value);
-               saveSettings();
-             }
+      settingsHelper.set("unfocusedIconsOpacity", value);
+      saveSettings();
+    }
     text: Math.floor(valueUnfocusedIconsOpacity * 100) + "%"
     visible: valueShowApplications && !root.groupedUnsupported
   }
 
   NValueSlider {
     label: I18n.tr("bar.workspace.grouped-border-opacity-label")
-    description: I18n.tr("bar.workspace.grouped-border-opacity-description")
     from: 0
     to: 1
     stepSize: 0.01
@@ -258,16 +244,15 @@ ColumnLayout {
     value: valueGroupedBorderOpacity
     defaultValue: widgetMetadata.groupedBorderOpacity
     onMoved: value => {
-               settingsHelper.set("groupedBorderOpacity", value);
-               saveSettings();
-             }
+      settingsHelper.set("groupedBorderOpacity", value);
+      saveSettings();
+    }
     text: Math.floor(valueGroupedBorderOpacity * 100) + "%"
     visible: valueShowApplications && !root.squaresMode
   }
 
   NValueSlider {
     label: I18n.tr("bar.taskbar.icon-scale-label")
-    description: I18n.tr("bar.taskbar.icon-scale-description")
     from: 0.5
     to: 1
     stepSize: 0.01
@@ -275,9 +260,9 @@ ColumnLayout {
     value: valueIconScale
     defaultValue: widgetMetadata.iconScale
     onMoved: value => {
-               settingsHelper.set("iconScale", value);
-               saveSettings();
-             }
+      settingsHelper.set("iconScale", value);
+      saveSettings();
+    }
     text: Math.round(valueIconScale * 100) + "%"
     visible: valueShowApplications && !root.groupedUnsupported
   }
@@ -288,31 +273,28 @@ ColumnLayout {
 
   NColorChoice {
     label: I18n.tr("bar.workspace.focused-color-label")
-    description: I18n.tr("bar.workspace.focused-color-description")
     currentKey: valueFocusedColor
     onSelected: key => {
-                  settingsHelper.set("focusedColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("focusedColor", key);
+      saveSettings();
+    }
   }
 
   NColorChoice {
     label: I18n.tr("bar.workspace.occupied-color-label")
-    description: I18n.tr("bar.workspace.occupied-color-description")
     currentKey: valueOccupiedColor
     onSelected: key => {
-                  settingsHelper.set("occupiedColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("occupiedColor", key);
+      saveSettings();
+    }
   }
 
   NColorChoice {
     label: I18n.tr("bar.workspace.empty-color-label")
-    description: I18n.tr("bar.workspace.empty-color-description")
     currentKey: valueEmptyColor
     onSelected: key => {
-                  settingsHelper.set("emptyColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("emptyColor", key);
+      saveSettings();
+    }
   }
 }

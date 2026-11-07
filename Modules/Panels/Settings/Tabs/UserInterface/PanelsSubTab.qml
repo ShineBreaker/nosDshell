@@ -13,13 +13,11 @@ ColumnLayout {
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.panels-attached-to-bar-label")
-      description: I18n.tr("panels.user-interface.panels-attached-to-bar-description")
       checked: Settings.data.ui.panelsAttachedToBar
       defaultValue: Settings.getDefaultValue("ui.panelsAttachedToBar")
       onToggled: checked => Settings.data.ui.panelsAttachedToBar = checked
@@ -28,7 +26,6 @@ ColumnLayout {
     NToggle {
       visible: (Quickshell.screens.length > 1)
       label: I18n.tr("panels.user-interface.allow-panels-without-bar-label")
-      description: I18n.tr("panels.user-interface.allow-panels-without-bar-description")
       checked: Settings.data.general.allowPanelsOnScreenWithoutBar
       defaultValue: Settings.getDefaultValue("general.allowPanelsOnScreenWithoutBar")
       onToggled: checked => Settings.data.general.allowPanelsOnScreenWithoutBar = checked
@@ -37,7 +34,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.panel-background-opacity-label")
-      description: I18n.tr("panels.user-interface.panel-background-opacity-description")
       from: 0
       to: 1
       stepSize: 0.01
@@ -51,7 +47,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.dimmer-opacity-label")
-      description: I18n.tr("panels.user-interface.dimmer-opacity-description")
       from: 0
       to: 1
       stepSize: 0.01
@@ -65,7 +60,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.popup-opacity-label")
-      description: I18n.tr("panels.user-interface.popup-opacity-description")
       from: 0.3
       to: 1
       stepSize: 0.01
@@ -83,14 +77,12 @@ ColumnLayout {
   }
 
   // Transient tiles + panel borders (DESIGN §1.2)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.transient-surface-label")
-      description: I18n.tr("panels.user-interface.transient-surface-description")
       model: [
         {
           "key": "auto",
@@ -113,7 +105,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.transient-opacity-label")
-      description: I18n.tr("panels.user-interface.transient-opacity-description")
       from: 0.3
       to: 1
       stepSize: 0.01
@@ -127,7 +118,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.border-emphasis-label")
-      description: I18n.tr("panels.user-interface.border-emphasis-description")
       from: 0
       to: 2
       stepSize: 0.01
@@ -141,7 +131,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.user-interface.shadow-strength-label")
-      description: I18n.tr("panels.user-interface.shadow-strength-description")
       from: 0
       to: 2
       stepSize: 0.01
@@ -159,14 +148,12 @@ ColumnLayout {
   }
 
   // Screen corners (the rounded-corner masks at the screen edges)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.screen-corners-show-corners-label")
-      description: I18n.tr("panels.general.screen-corners-show-corners-description")
       checked: Settings.data.general.showScreenCorners
       defaultValue: Settings.getDefaultValue("general.showScreenCorners")
       onToggled: checked => Settings.data.general.showScreenCorners = checked
@@ -175,7 +162,6 @@ ColumnLayout {
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.screen-corners-solid-black-label")
-      description: I18n.tr("panels.general.screen-corners-solid-black-description")
       visible: Settings.data.general.showScreenCorners
       checked: Settings.data.general.forceBlackScreenCorners
       defaultValue: Settings.getDefaultValue("general.forceBlackScreenCorners")
@@ -185,7 +171,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.general.screen-corners-radius-label")
-      description: I18n.tr("panels.general.screen-corners-radius-description")
       visible: Settings.data.general.showScreenCorners
       from: 0
       to: 2

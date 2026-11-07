@@ -13,12 +13,10 @@ ColumnLayout {
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       label: I18n.tr("panels.launcher.settings-clipboard-history-label")
-      description: I18n.tr("panels.launcher.settings-clipboard-history-description")
       checked: Settings.data.appLauncher.enableClipboardHistory
       onToggled: checked => Settings.data.appLauncher.enableClipboardHistory = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableClipboardHistory")
@@ -26,7 +24,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-clip-preview-label")
-      description: I18n.tr("panels.launcher.settings-clip-preview-description")
       checked: Settings.data.appLauncher.enableClipPreview
       onToggled: checked => Settings.data.appLauncher.enableClipPreview = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableClipPreview")
@@ -35,7 +32,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-clip-wrap-text-label")
-      description: I18n.tr("panels.launcher.settings-clip-wrap-text-description")
       checked: Settings.data.appLauncher.clipboardWrapText
       onToggled: checked => Settings.data.appLauncher.clipboardWrapText = checked
       defaultValue: Settings.getDefaultValue("appLauncher.clipboardWrapText")
@@ -44,7 +40,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-auto-paste-label")
-      description: I18n.tr("panels.launcher.settings-auto-paste-description")
       checked: Settings.data.appLauncher.autoPasteClipboard
       onToggled: checked => Settings.data.appLauncher.autoPasteClipboard = checked
       defaultValue: Settings.getDefaultValue("appLauncher.autoPasteClipboard")
@@ -53,7 +48,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-clip-smart-icons-label")
-      description: I18n.tr("panels.launcher.settings-clip-smart-icons-description")
       checked: Settings.data.appLauncher.enableClipboardSmartIcons
       onToggled: checked => Settings.data.appLauncher.enableClipboardSmartIcons = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableClipboardSmartIcons")
@@ -62,7 +56,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.launcher.settings-clip-chips-label")
-      description: I18n.tr("panels.launcher.settings-clip-chips-description")
       checked: Settings.data.appLauncher.enableClipboardChips
       onToggled: checked => Settings.data.appLauncher.enableClipboardChips = checked
       defaultValue: Settings.getDefaultValue("appLauncher.enableClipboardChips")
@@ -77,13 +70,11 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: Settings.data.appLauncher.enableClipboardHistory
     NTextInput {
       label: I18n.tr("panels.launcher.settings-clipboard-watch-text-label")
-      description: I18n.tr("panels.launcher.settings-clipboard-watch-text-description")
       Layout.fillWidth: true
       text: Settings.data.appLauncher.clipboardWatchTextCommand
       onTextChanged: Settings.data.appLauncher.clipboardWatchTextCommand = text
@@ -92,7 +83,6 @@ ColumnLayout {
 
     NTextInput {
       label: I18n.tr("panels.launcher.settings-clipboard-watch-image-label")
-      description: I18n.tr("panels.launcher.settings-clipboard-watch-image-description")
       Layout.fillWidth: true
       text: Settings.data.appLauncher.clipboardWatchImageCommand
       onTextChanged: Settings.data.appLauncher.clipboardWatchImageCommand = text

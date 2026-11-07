@@ -110,7 +110,6 @@ ColumnLayout {
 
     NLabel {
       label: I18n.tr("common.icon")
-      description: I18n.tr("panels.control-center.shortcuts-custom-button-icon-description")
     }
 
     NIcon {
@@ -138,7 +137,6 @@ ColumnLayout {
   NTextInput {
     Layout.fillWidth: true
     label: I18n.tr("bar.custom-button.general-tooltip-text-label")
-    description: I18n.tr("bar.custom-button.general-tooltip-text-description")
     placeholderText: I18n.tr("placeholders.enter-tooltip")
     text: _settings.generalTooltipText
     onTextChanged: {
@@ -151,19 +149,17 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.custom-button.show-exec-tooltip-label")
-    description: I18n.tr("bar.custom-button.show-exec-tooltip-description")
     checked: _settings.showExecTooltip
     onToggled: checked => {
-                 _settings.showExecTooltip = checked;
-                 saveSettings();
-               }
+      _settings.showExecTooltip = checked;
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showExecTooltip
   }
 
   NTextInput {
     Layout.fillWidth: true
     label: I18n.tr("bar.custom-button.left-click-label")
-    description: I18n.tr("bar.custom-button.left-click-description")
     placeholderText: I18n.tr("placeholders.enter-command")
     text: _settings.onClicked
     onTextChanged: {
@@ -176,7 +172,6 @@ ColumnLayout {
   NTextInput {
     Layout.fillWidth: true
     label: I18n.tr("bar.custom-button.right-click-label")
-    description: I18n.tr("bar.custom-button.right-click-description")
     placeholderText: I18n.tr("placeholders.enter-command")
     text: _settings.onRightClicked
     onTextChanged: {
@@ -189,7 +184,6 @@ ColumnLayout {
   NTextInput {
     Layout.fillWidth: true
     label: I18n.tr("bar.custom-button.middle-click-label")
-    description: I18n.tr("bar.custom-button.middle-click-description")
     placeholderText: I18n.tr("placeholders.enter-command")
     text: _settings.onMiddleClicked
     onTextChanged: {
@@ -205,12 +199,11 @@ ColumnLayout {
     id: enableOnStateLogicToggle
     Layout.fillWidth: true
     label: I18n.tr("panels.control-center.shortcuts-custom-button-enable-on-state-logic-label")
-    description: I18n.tr("panels.control-center.shortcuts-custom-button-enable-on-state-logic-description")
     checked: _settings.enableOnStateLogic
     onToggled: checked => {
-                 _settings.enableOnStateLogic = checked;
-                 saveSettings();
-               }
+      _settings.enableOnStateLogic = checked;
+      saveSettings();
+    }
     defaultValue: widgetMetadata.enableOnStateLogic
   }
 

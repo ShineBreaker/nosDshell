@@ -25,9 +25,8 @@ ColumnLayout {
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NotificationRuleEditPopup {
       id: editPopup
       parent: Overlay.overlay
@@ -64,10 +63,6 @@ ColumnLayout {
       PanelService.hostSettingsPopup(editPopup, null);
       editPopup.open();
     }
-
-    NHeader {
-      description: I18n.tr("panels.notifications.rules-description")
-    }
   }
 
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
@@ -76,9 +71,8 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     Repeater {
       model: NotificationRulesService.rules || []
 

@@ -13,31 +13,12 @@ ColumnLayout {
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       label: I18n.tr("panels.hooks.system-hooks-enable-label")
-      description: I18n.tr("panels.hooks.system-hooks-enable-description")
       checked: Settings.data.hooks.enabled
       onToggled: checked => Settings.data.hooks.enabled = checked
-    }
-  }
-
-  // Info section
-
-  // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
-  NDccGap {
-    Layout.fillWidth: true
-  }
-  ColumnLayout {
-    spacing: Style.settingsGroupGap
-    Layout.fillWidth: true
-
-    NHeader {
-      label: I18n.tr("panels.hooks.info-parameters-label")
-      description: I18n.tr("panels.hooks.info-parameters-description")
-      enableDescriptionRichText: true
     }
   }
 }

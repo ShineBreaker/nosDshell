@@ -103,7 +103,6 @@ ColumnLayout {
           id: leftClickExecInput
           Layout.fillWidth: true
           label: I18n.tr("bar.custom-button.left-click-label")
-          description: I18n.tr("bar.custom-button.left-click-description")
           placeholderText: I18n.tr("placeholders.enter-command")
           text: widgetData?.leftClickExec || widgetMetadata.leftClickExec
           onEditingFinished: saveSettings()
@@ -119,9 +118,9 @@ ColumnLayout {
           onExited: TooltipService.hide()
           checked: widgetData?.leftClickUpdateText ?? widgetMetadata.leftClickUpdateText
           onToggled: isChecked => {
-                       checked = isChecked;
-                       saveSettings();
-                     }
+            checked = isChecked;
+            saveSettings();
+          }
           defaultValue: widgetMetadata.leftClickUpdateText
         }
       }
@@ -133,7 +132,6 @@ ColumnLayout {
           id: rightClickExecInput
           Layout.fillWidth: true
           label: I18n.tr("bar.custom-button.right-click-label")
-          description: I18n.tr("bar.custom-button.right-click-description")
           placeholderText: I18n.tr("placeholders.enter-command")
           text: widgetData?.rightClickExec || widgetMetadata.rightClickExec
           onEditingFinished: saveSettings()
@@ -149,9 +147,9 @@ ColumnLayout {
           onExited: TooltipService.hide()
           checked: widgetData?.rightClickUpdateText ?? widgetMetadata.rightClickUpdateText
           onToggled: isChecked => {
-                       checked = isChecked;
-                       saveSettings();
-                     }
+            checked = isChecked;
+            saveSettings();
+          }
           defaultValue: widgetMetadata.rightClickUpdateText
         }
       }
@@ -163,7 +161,6 @@ ColumnLayout {
           id: middleClickExecInput
           Layout.fillWidth: true
           label: I18n.tr("bar.custom-button.middle-click-label")
-          description: I18n.tr("bar.custom-button.middle-click-description")
           placeholderText: I18n.tr("placeholders.enter-command")
           text: widgetData?.middleClickExec || widgetMetadata.middleClickExec
           onEditingFinished: saveSettings()
@@ -179,9 +176,9 @@ ColumnLayout {
           onExited: TooltipService.hide()
           checked: widgetData?.middleClickUpdateText ?? widgetMetadata.middleClickUpdateText
           onToggled: isChecked => {
-                       checked = isChecked;
-                       saveSettings();
-                     }
+            checked = isChecked;
+            saveSettings();
+          }
           defaultValue: widgetMetadata.middleClickUpdateText
         }
       }
@@ -190,13 +187,12 @@ ColumnLayout {
         id: separateWheelToggle
         Layout.fillWidth: true
         label: I18n.tr("bar.custom-button.wheel-mode-separate-label")
-        description: I18n.tr("bar.custom-button.wheel-mode-separate-description")
         property bool internalChecked: (widgetData?.wheelMode || widgetMetadata?.wheelMode) === "separate"
         checked: internalChecked
         onToggled: checked => {
-                     internalChecked = checked;
-                     saveSettings();
-                   }
+          internalChecked = checked;
+          saveSettings();
+        }
         defaultValue: widgetMetadata.wheelMode === "separate"
       }
 
@@ -212,7 +208,6 @@ ColumnLayout {
             id: wheelExecInput
             Layout.fillWidth: true
             label: I18n.tr("bar.custom-button.wheel-label")
-            description: I18n.tr("bar.custom-button.wheel-description")
             placeholderText: I18n.tr("placeholders.enter-command")
             text: widgetData?.wheelExec || widgetMetadata?.wheelExec
             onEditingFinished: saveSettings()
@@ -228,9 +223,9 @@ ColumnLayout {
             onExited: TooltipService.hide()
             checked: widgetData?.wheelUpdateText ?? widgetMetadata?.wheelUpdateText
             onToggled: isChecked => {
-                         checked = isChecked;
-                         saveSettings();
-                       }
+              checked = isChecked;
+              saveSettings();
+            }
             defaultValue: widgetMetadata.wheelUpdateText
           }
         }
@@ -247,10 +242,9 @@ ColumnLayout {
               id: wheelUpExecInput
               Layout.fillWidth: true
               label: I18n.tr("bar.custom-button.wheel-up-label")
-              description: I18n.tr("bar.custom-button.wheel-up-description")
               placeholderText: I18n.tr("placeholders.enter-command")
-            text: widgetData?.wheelUpExec || widgetMetadata?.wheelUpExec
-            onEditingFinished: saveSettings()
+              text: widgetData?.wheelUpExec || widgetMetadata?.wheelUpExec
+              onEditingFinished: saveSettings()
               defaultValue: widgetMetadata.wheelUpExec
             }
 
@@ -263,9 +257,9 @@ ColumnLayout {
               onExited: TooltipService.hide()
               checked: widgetData?.wheelUpUpdateText ?? widgetMetadata?.wheelUpUpdateText
               onToggled: isChecked => {
-                           checked = isChecked;
-                           saveSettings();
-                         }
+                checked = isChecked;
+                saveSettings();
+              }
               defaultValue: widgetMetadata.wheelUpUpdateText
             }
           }
@@ -277,10 +271,9 @@ ColumnLayout {
               id: wheelDownExecInput
               Layout.fillWidth: true
               label: I18n.tr("bar.custom-button.wheel-down-label")
-              description: I18n.tr("bar.custom-button.wheel-down-description")
               placeholderText: I18n.tr("placeholders.enter-command")
-            text: widgetData?.wheelDownExec || widgetMetadata?.wheelDownExec
-            onEditingFinished: saveSettings()
+              text: widgetData?.wheelDownExec || widgetMetadata?.wheelDownExec
+              onEditingFinished: saveSettings()
               defaultValue: widgetMetadata.wheelDownExec
             }
 
@@ -293,9 +286,9 @@ ColumnLayout {
               onExited: TooltipService.hide()
               checked: widgetData?.wheelDownUpdateText ?? widgetMetadata?.wheelDownUpdateText
               onToggled: isChecked => {
-                           checked = isChecked;
-                           saveSettings();
-                         }
+                checked = isChecked;
+                saveSettings();
+              }
               defaultValue: widgetMetadata.wheelDownUpdateText
             }
           }
@@ -310,12 +303,11 @@ ColumnLayout {
       NToggle {
         id: showIconToggle
         label: I18n.tr("bar.custom-button.show-icon-label")
-        description: I18n.tr("bar.custom-button.show-icon-description")
         checked: valueShowIcon
         onToggled: checked => {
-                     settingsHelper.set("showIcon", checked);
-                     saveSettings();
-                   }
+          settingsHelper.set("showIcon", checked);
+          saveSettings();
+        }
         visible: textCommandInput.text !== ""
         defaultValue: widgetMetadata.showIcon
       }
@@ -326,7 +318,6 @@ ColumnLayout {
 
         NLabel {
           label: I18n.tr("common.icon")
-          description: I18n.tr("bar.custom-button.icon-description")
         }
 
         NIcon {
@@ -355,7 +346,6 @@ ColumnLayout {
         id: iconPositionComboBox
         visible: valueShowIcon
         label: I18n.tr("bar.custom-button.icon-position-label")
-        description: I18n.tr("bar.custom-button.icon-position-description")
         model: barIsVertical ? [
                                  {
                                    name: I18n.tr("bar.custom-button.icon-position-top"),
@@ -377,27 +367,25 @@ ColumnLayout {
                                ]
         currentKey: valueIconPosition
         onSelected: key => {
-                      settingsHelper.set("iconPosition", key);
-                      saveSettings();
-                    }
+          settingsHelper.set("iconPosition", key);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.iconPosition
       }
 
       NColorChoice {
         label: I18n.tr("common.select-icon-color")
-        description: I18n.tr("bar.custom-button.icon-color-selection-description")
         currentKey: valueColorizeSystemIcon
         onSelected: key => {
-                      settingsHelper.set("colorizeSystemIcon", key);
-                      saveSettings();
-                    }
+          settingsHelper.set("colorizeSystemIcon", key);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.colorizeSystemIcon
       }
 
       NTextInput {
         Layout.fillWidth: true
         label: I18n.tr("bar.custom-button.general-tooltip-text-label")
-        description: I18n.tr("bar.custom-button.general-tooltip-text-description")
         placeholderText: I18n.tr("placeholders.enter-tooltip")
         text: valueGeneralTooltipText
         onEditingFinished: {
@@ -410,31 +398,28 @@ ColumnLayout {
       NToggle {
         id: showExecTooltipToggle
         label: I18n.tr("bar.custom-button.show-exec-tooltip-label")
-        description: I18n.tr("bar.custom-button.show-exec-tooltip-description")
         checked: valueShowExecTooltip
         onToggled: checked => {
-                     settingsHelper.set("showExecTooltip", checked);
-                     saveSettings();
-                   }
+          settingsHelper.set("showExecTooltip", checked);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.showExecTooltip
       }
 
       NToggle {
         id: showTextTooltipToggle
         label: I18n.tr("bar.custom-button.show-text-tooltip-label")
-        description: I18n.tr("bar.custom-button.show-text-tooltip-description")
         checked: valueShowTextTooltip
         onToggled: checked => {
-                     settingsHelper.set("showTextTooltip", checked);
-                     saveSettings();
-                   }
+          settingsHelper.set("showTextTooltip", checked);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.showTextTooltip
       }
 
       NTextInput {
         Layout.fillWidth: true
         label: I18n.tr("bar.custom-button.ipc-identifier-label")
-        description: I18n.tr("bar.custom-button.ipc-identifier-description")
         placeholderText: I18n.tr("placeholders.enter-ipc-identifier")
         text: valueIpcIdentifier
         onEditingFinished: {
@@ -451,18 +436,16 @@ ColumnLayout {
 
       NColorChoice {
         label: I18n.tr("common.select-text-color")
-        description: I18n.tr("bar.custom-button.text-color-selection-description")
         currentKey: valueColorizeSystemText
         onSelected: key => {
-                      settingsHelper.set("colorizeSystemText", key);
-                      saveSettings();
-                    }
+          settingsHelper.set("colorizeSystemText", key);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.colorizeSystemText
       }
 
       NSpinBox {
         label: I18n.tr("bar.custom-button.max-text-length-horizontal-label")
-        description: I18n.tr("bar.custom-button.max-text-length-horizontal-description")
         from: 0
         to: 100
         value: valueMaxTextLengthHorizontal
@@ -475,7 +458,6 @@ ColumnLayout {
 
       NSpinBox {
         label: I18n.tr("bar.custom-button.max-text-length-vertical-label")
-        description: I18n.tr("bar.custom-button.max-text-length-vertical-description")
         from: 0
         to: 100
         value: valueMaxTextLengthVertical
@@ -489,24 +471,22 @@ ColumnLayout {
       NToggle {
         id: textStreamInput
         label: I18n.tr("bar.custom-button.text-stream-label")
-        description: I18n.tr("bar.custom-button.text-stream-description")
         checked: valueTextStream
         onToggled: checked => {
-                     settingsHelper.set("textStream", checked);
-                     saveSettings();
-                   }
+          settingsHelper.set("textStream", checked);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.textStream
       }
 
       NToggle {
         id: parseJsonInput
         label: I18n.tr("bar.custom-button.parse-json-label")
-        description: I18n.tr("bar.custom-button.parse-json-description")
         checked: valueParseJson
         onToggled: checked => {
-                     settingsHelper.set("parseJson", checked);
-                     saveSettings();
-                   }
+          settingsHelper.set("parseJson", checked);
+          saveSettings();
+        }
         defaultValue: widgetMetadata.parseJson
       }
 
@@ -514,7 +494,6 @@ ColumnLayout {
         id: textCommandInput
         Layout.fillWidth: true
         label: I18n.tr("bar.custom-button.display-command-output-label")
-        description: valueTextStream ? I18n.tr("bar.custom-button.display-command-output-stream-description") : I18n.tr("bar.custom-button.display-command-output-description")
         placeholderText: I18n.tr("placeholders.command-example")
         text: widgetData?.textCommand || widgetMetadata.textCommand
         onEditingFinished: saveSettings()
@@ -526,7 +505,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: valueTextStream
         label: I18n.tr("bar.custom-button.collapse-condition-label")
-        description: I18n.tr("bar.custom-button.collapse-condition-description")
         placeholderText: I18n.tr("placeholders.enter-text-to-collapse")
         text: widgetData?.textCollapse || widgetMetadata.textCollapse
         onEditingFinished: saveSettings()
@@ -538,7 +516,6 @@ ColumnLayout {
         Layout.fillWidth: true
         visible: !valueTextStream
         label: I18n.tr("bar.custom-button.refresh-interval-label")
-        description: I18n.tr("bar.custom-button.refresh-interval-description")
         placeholderText: String(widgetMetadata.textIntervalMs)
         text: widgetData && widgetData.textIntervalMs !== undefined ? String(widgetData.textIntervalMs) : ""
         storedValue: settingsHelper.value("textIntervalMs", widgetMetadata.textIntervalMs)
@@ -547,16 +524,15 @@ ColumnLayout {
         minimum: 250
         maximum: 3600000
         onCommitted: value => {
-                       settingsHelper.set("textIntervalMs", value);
-                       saveSettings();
-                     }
+          settingsHelper.set("textIntervalMs", value);
+          saveSettings();
+        }
         defaultValue: String(widgetMetadata.textIntervalMs)
       }
 
       NComboBox {
         id: hideModeComboBox
         label: I18n.tr("bar.custom-button.hide-mode-label")
-        description: I18n.tr("bar.custom-button.hide-mode-description")
         model: [
           {
             name: I18n.tr("bar.custom-button.hide-mode-always-expanded"),
@@ -573,9 +549,9 @@ ColumnLayout {
         ]
         currentKey: valueHideMode
         onSelected: key => {
-                      settingsHelper.set("hideMode", key);
-                      saveSettings();
-                    }
+          settingsHelper.set("hideMode", key);
+          saveSettings();
+        }
         visible: textCommandInput.text !== "" && valueTextStream == true
         defaultValue: widgetMetadata.hideMode
       }

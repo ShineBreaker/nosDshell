@@ -17,18 +17,17 @@ ColumnLayout {
 
   NToggle {
     label: I18n.tr("panels.display.night-light-enable-label")
-    description: I18n.tr("panels.display.night-light-enable-description")
     checked: Settings.data.nightLight.enabled
     onToggled: checked => {
-                 if (checked) {
-                   root.checkWlsunset();
-                 } else {
-                   Settings.data.nightLight.enabled = false;
-                   Settings.data.nightLight.forced = false;
-                   NightLightService.apply();
-                   ToastService.showNotice(I18n.tr("common.night-light"), I18n.tr("common.disabled"), "nightlight-off");
-                 }
-               }
+      if (checked) {
+        root.checkWlsunset();
+      } else {
+        Settings.data.nightLight.enabled = false;
+        Settings.data.nightLight.forced = false;
+        NightLightService.apply();
+        ToastService.showNotice(I18n.tr("common.night-light"), I18n.tr("common.disabled"), "nightlight-off");
+      }
+    }
   }
 
   // SettingsGroup gap: 15 px between two groups (DESIGN §3.5.4)
@@ -38,16 +37,14 @@ ColumnLayout {
   // Enabled group: labelled slider/combo/toggle rows share one card with the
   // 1 px seam (settingsgroup.cpp:46, DESIGN §3.5.4). Hidden manual-schedule
   // rows drop out of the sibling scan automatically.
-  ColumnLayout {
+  NSettingsGroup {
     visible: Settings.data.nightLight.enabled
-    spacing: Style.settingsGroupGap
     Layout.fillWidth: true
 
     NValueSlider {
       id: nightSlider
       Layout.fillWidth: true
       label: I18n.tr("panels.display.night-light-temperature-night")
-      description: I18n.tr("panels.display.night-light-temperature-night-description")
       from: 1000
       to: 6500
       stepSize: 1
@@ -57,23 +54,22 @@ ColumnLayout {
       text: Math.round(value) + "K"
 
       onMoved: v => {
-                 var dayTemp = parseInt(Settings.data.nightLight.dayTemp);
-                 var x = Math.round(v);
-                 if (!isNaN(dayTemp)) {
-                   var maxNight = dayTemp - 500;
-                   x = Math.min(maxNight, Math.max(1000, x));
-                 } else {
-                   x = Math.max(1000, x);
-                 }
-                 Settings.data.nightLight.nightTemp = x;
-               }
+        var dayTemp = parseInt(Settings.data.nightLight.dayTemp);
+        var x = Math.round(v);
+        if (!isNaN(dayTemp)) {
+          var maxNight = dayTemp - 500;
+          x = Math.min(maxNight, Math.max(1000, x));
+        } else {
+          x = Math.max(1000, x);
+        }
+        Settings.data.nightLight.nightTemp = x;
+      }
     }
 
     NValueSlider {
       id: daySlider
       Layout.fillWidth: true
       label: I18n.tr("panels.display.night-light-temperature-day")
-      description: I18n.tr("panels.display.night-light-temperature-day-description")
       from: 1000
       to: 6500
       stepSize: 1
@@ -83,30 +79,29 @@ ColumnLayout {
       text: Math.round(value) + "K"
 
       onMoved: v => {
-                 var nightTemp = parseInt(Settings.data.nightLight.nightTemp);
-                 var x = Math.round(v);
-                 if (!isNaN(nightTemp)) {
-                   var minDay = nightTemp + 500;
-                   x = Math.max(minDay, Math.min(6500, x));
-                 } else {
-                   x = Math.min(6500, x);
-                 }
-                 Settings.data.nightLight.dayTemp = x;
-               }
+        var nightTemp = parseInt(Settings.data.nightLight.nightTemp);
+        var x = Math.round(v);
+        if (!isNaN(nightTemp)) {
+          var minDay = nightTemp + 500;
+          x = Math.max(minDay, Math.min(6500, x));
+        } else {
+          x = Math.min(6500, x);
+        }
+        Settings.data.nightLight.dayTemp = x;
+      }
     }
 
     NToggle {
       label: I18n.tr("panels.display.night-light-auto-schedule-label")
       description: LocationService.stableName ? I18n.tr("panels.display.night-light-auto-schedule-description", {
-                                                                                          "location": LocationService.stableName
-                                                                                        }) : I18n.tr("panels.display.night-light-auto-schedule-description-unset")
+                                                          "location": LocationService.stableName
+                                                        }) : I18n.tr("panels.display.night-light-auto-schedule-description-unset")
       checked: Settings.data.nightLight.autoSchedule
       onToggled: checked => Settings.data.nightLight.autoSchedule = checked
     }
 
     NHeader {
       label: I18n.tr("panels.display.night-light-manual-schedule-label")
-      description: I18n.tr("panels.display.night-light-manual-schedule-description")
       visible: !Settings.data.nightLight.autoSchedule && !Settings.data.nightLight.forced
     }
 
@@ -130,16 +125,15 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.display.night-light-force-activation-label")
-      description: I18n.tr("panels.display.night-light-force-activation-description")
       checked: Settings.data.nightLight.forced
       onToggled: checked => {
-                   Settings.data.nightLight.forced = checked;
-                   if (checked && !Settings.data.nightLight.enabled) {
-                     root.checkWlsunset();
-                   } else {
-                     NightLightService.apply();
-                   }
-                 }
+        Settings.data.nightLight.forced = checked;
+        if (checked && !Settings.data.nightLight.enabled) {
+          root.checkWlsunset();
+        } else {
+          NightLightService.apply();
+        }
+      }
     }
   }
 }

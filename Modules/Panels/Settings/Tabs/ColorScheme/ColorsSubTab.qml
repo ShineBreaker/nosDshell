@@ -74,9 +74,8 @@ ColumnLayout {
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     Connections {
       target: ColorSchemeService
       function onSchemesChanged() {
@@ -113,31 +112,28 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("tooltips.switch-to-dark-mode")
-      description: I18n.tr("panels.color-scheme.dark-mode-switch-description")
       checked: Settings.data.colorSchemes.darkMode
       onToggled: checked => {
-                   Settings.data.colorSchemes.darkMode = checked;
-                   root.cacheVersion++;
-                 }
+        Settings.data.colorSchemes.darkMode = checked;
+        root.cacheVersion++;
+      }
     }
 
     NToggle {
       label: I18n.tr("panels.color-scheme.sync-gsettings-label")
-      description: I18n.tr("panels.color-scheme.sync-gsettings-description")
       checked: Settings.data.colorSchemes.syncGsettings
       defaultValue: Settings.getDefaultValue("colorSchemes.syncGsettings")
       onToggled: checked => {
-                   Settings.data.colorSchemes.syncGsettings = checked;
-                   if (checked)
-                   ColorSchemeService.pushSystemColorScheme();
-                 }
+        Settings.data.colorSchemes.syncGsettings = checked;
+        if (checked)
+          ColorSchemeService.pushSystemColorScheme();
+      }
     }
 
     // Accent override: a pinned #hex replaces the accent family on the shell
     // (DESIGN §5); invalid input is ignored by Colors.qml
     NTextInput {
       label: I18n.tr("panels.color-scheme.accent-override-label")
-      description: I18n.tr("panels.color-scheme.accent-override-description")
       placeholderText: I18n.tr("panels.color-scheme.accent-override-placeholder")
       text: Settings.data.ui.accentOverride
       defaultValue: Settings.getDefaultValue("ui.accentOverride")
@@ -146,7 +142,6 @@ ColumnLayout {
 
     NComboBox {
       label: I18n.tr("panels.color-scheme.dark-mode-mode-label")
-      description: I18n.tr("panels.color-scheme.dark-mode-mode-description")
 
       model: [
         {
@@ -171,9 +166,9 @@ ColumnLayout {
       defaultValue: Settings.getDefaultValue("colorSchemes.schedulingMode")
 
       onSelected: key => {
-                    Settings.data.colorSchemes.schedulingMode = key;
-                    AppThemeService.generate();
-                  }
+        Settings.data.colorSchemes.schedulingMode = key;
+        AppThemeService.generate();
+      }
     }
 
     // Same section shape as NightLightSubTab's manual schedule — group head
@@ -182,7 +177,6 @@ ColumnLayout {
     // not share labelKeys or the search index dedup merges them.
     NHeader {
       label: I18n.tr("panels.color-scheme.manual-schedule-label")
-      description: I18n.tr("panels.color-scheme.manual-schedule-description")
       visible: Settings.data.colorSchemes.schedulingMode === "manual"
     }
 
@@ -209,7 +203,6 @@ ColumnLayout {
     // this switch is not scoped to the scheduling mode.
     NToggle {
       label: I18n.tr("panels.color-scheme.darkman-hooks-label")
-      description: I18n.tr("panels.color-scheme.darkman-hooks-description")
       checked: Settings.data.colorSchemes.runDarkmanHooks
       defaultValue: Settings.getDefaultValue("colorSchemes.runDarkmanHooks")
       onToggled: checked => Settings.data.colorSchemes.runDarkmanHooks = checked
@@ -222,31 +215,29 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
+
     NToggle {
       label: I18n.tr("panels.color-scheme.color-source-use-wallpaper-colors-label")
-      description: I18n.tr("panels.color-scheme.color-source-use-wallpaper-colors-description")
       checked: Settings.data.colorSchemes.useWallpaperColors
       defaultValue: Settings.getDefaultValue("colorSchemes.useWallpaperColors")
       onToggled: checked => {
-                   Settings.data.colorSchemes.useWallpaperColors = checked;
-                   if (checked) {
-                     AppThemeService.generate();
-                   } else {
-                     ToastService.showNotice(I18n.tr("toast.wallpaper-colors.label"), I18n.tr("toast.wallpaper-colors.disabled"), "settings-color-scheme");
-                     if (Settings.data.colorSchemes.predefinedScheme) {
-                       ColorSchemeService.applyScheme(Settings.data.colorSchemes.predefinedScheme);
-                     }
-                   }
-                 }
+        Settings.data.colorSchemes.useWallpaperColors = checked;
+        if (checked) {
+          AppThemeService.generate();
+        } else {
+          ToastService.showNotice(I18n.tr("toast.wallpaper-colors.label"), I18n.tr("toast.wallpaper-colors.disabled"), "settings-color-scheme");
+          if (Settings.data.colorSchemes.predefinedScheme) {
+            ColorSchemeService.applyScheme(Settings.data.colorSchemes.predefinedScheme);
+          }
+        }
+      }
     }
 
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.color-scheme.wallpaper-monitor-source-label")
-      description: I18n.tr("panels.color-scheme.wallpaper-monitor-source-description")
       visible: Settings.data.colorSchemes.useWallpaperColors
       model: {
         var m = [];
@@ -265,22 +256,21 @@ ColumnLayout {
       }
       currentKey: Settings.data.colorSchemes.monitorForColors || (screen ? screen.name : "")
       onSelected: key => {
-                    Settings.data.colorSchemes.monitorForColors = key;
-                    AppThemeService.generate();
-                  }
+        Settings.data.colorSchemes.monitorForColors = key;
+        AppThemeService.generate();
+      }
     }
 
     NComboBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.color-scheme.wallpaper-method-label")
-      description: I18n.tr("panels.color-scheme.wallpaper-method-description")
       visible: Settings.data.colorSchemes.useWallpaperColors
       model: TemplateProcessor.schemeTypes
       currentKey: Settings.data.colorSchemes.generationMethod
       onSelected: key => {
-                    Settings.data.colorSchemes.generationMethod = key;
-                    AppThemeService.generate();
-                  }
+        Settings.data.colorSchemes.generationMethod = key;
+        AppThemeService.generate();
+      }
     }
 
     NBox {
@@ -337,7 +327,6 @@ ColumnLayout {
 
     NHeader {
       label: I18n.tr("panels.color-scheme.predefined-title")
-      description: I18n.tr("panels.color-scheme.predefined-desc")
       Layout.fillWidth: true
     }
 
@@ -359,11 +348,11 @@ ColumnLayout {
           opacity: enabled ? 1.0 : 0.6
           Layout.fillWidth: true
           Layout.alignment: Qt.AlignHCenter
-          height: 50 * Style.uiScaleRatio
+          height: 64 * Style.uiScaleRatio
           // GridLayout assigns height directly; a transient 0 there once
           // destroyed the height binding and collapsed this card to 165x0.
-          Layout.preferredHeight: 50 * Style.uiScaleRatio
-          Layout.minimumHeight: 50 * Style.uiScaleRatio
+          Layout.preferredHeight: 64 * Style.uiScaleRatio
+          Layout.minimumHeight: 64 * Style.uiScaleRatio
           radius: Style.radiusS
           color: root.getSchemeColor(schemeName, "mSurface")
           border.width: Style.borderL
@@ -393,10 +382,10 @@ ColumnLayout {
               elide: Text.ElideRight
               verticalAlignment: Text.AlignVCenter
               wrapMode: Text.WordWrap
-              maximumLineCount: 1
+              maximumLineCount: 2
             }
 
-            property int diameter: 16 * Style.uiScaleRatio
+            property int diameter: 12 * Style.uiScaleRatio
 
             Rectangle {
               width: scheme.diameter

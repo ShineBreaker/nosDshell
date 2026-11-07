@@ -17,12 +17,10 @@ ColumnLayout {
   // Section head: this sub-tab used to be an NTabButton (DESIGN §3.5.3)
   // SettingsGroup 1: the master switch on its own, so the rows it gates can
   // form one SettingsGroup of their own -- same shape as Dock/GeneralSubTab.
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       label: I18n.tr("panels.osd.enabled-label")
-      description: I18n.tr("panels.osd.enabled-description")
       checked: Settings.data.osd.enabled
       defaultValue: Settings.getDefaultValue("osd.enabled")
       onToggled: checked => Settings.data.osd.enabled = checked
@@ -36,13 +34,11 @@ ColumnLayout {
   }
   // SettingsGroup 2: everything the master switch gates. OSD draws nothing
   // while it is off, so the position choice is gated along with the rest.
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: Settings.data.osd.enabled
     NComboBox {
       label: I18n.tr("common.position")
-      description: I18n.tr("panels.osd.location-description")
       model: [
         {
           "key": "top",
@@ -84,7 +80,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.osd.always-on-top-label")
-      description: I18n.tr("panels.osd.always-on-top-description")
       checked: Settings.data.osd.overlayLayer
       defaultValue: Settings.getDefaultValue("osd.overlayLayer")
       onToggled: checked => Settings.data.osd.overlayLayer = checked
@@ -93,7 +88,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.osd.duration-auto-hide-label")
-      description: I18n.tr("panels.osd.duration-auto-hide-description")
       from: 500
       to: 5000
       stepSize: 100
@@ -111,14 +105,9 @@ ColumnLayout {
     visible: Settings.data.osd.enabled
   }
   // SettingsGroup 3: monitor selection, gated like the rest while off.
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     visible: Settings.data.osd.enabled
-    NHeader {
-      description: I18n.tr("panels.osd.monitors-desc")
-    }
-
     Repeater {
       model: Quickshell.screens || []
       delegate: NCheckbox {
@@ -138,12 +127,12 @@ ColumnLayout {
         }
         checked: (Settings.data.osd.monitors || []).indexOf(modelData.name) !== -1
         onToggled: checked => {
-                     if (checked) {
-                       Settings.data.osd.monitors = root.addMonitor(Settings.data.osd.monitors, modelData.name);
-                     } else {
-                       Settings.data.osd.monitors = root.removeMonitor(Settings.data.osd.monitors, modelData.name);
-                     }
-                   }
+          if (checked) {
+            Settings.data.osd.monitors = root.addMonitor(Settings.data.osd.monitors, modelData.name);
+          } else {
+            Settings.data.osd.monitors = root.removeMonitor(Settings.data.osd.monitors, modelData.name);
+          }
+        }
       }
     }
   }

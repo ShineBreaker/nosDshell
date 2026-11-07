@@ -43,21 +43,19 @@ ColumnLayout {
     id: deviceComboBox
     Layout.fillWidth: true
     label: I18n.tr("bar.battery.device-label")
-    description: I18n.tr("bar.battery.device-description")
     minimumWidth: 240
     model: BatteryService.deviceModel
     currentKey: root.valueDeviceNativePath
     onSelected: key => {
-                  settingsHelper.set("deviceNativePath", key);
-                  saveSettings();
-                }
+      settingsHelper.set("deviceNativePath", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.deviceNativePath
   }
 
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("common.display-mode")
-    description: I18n.tr("bar.battery.display-mode-description")
     minimumWidth: 240
     model: [
       {
@@ -83,31 +81,29 @@ ColumnLayout {
     ]
     currentKey: root.valueDisplayMode
     onSelected: key => {
-                  settingsHelper.set("displayMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("displayMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.displayMode
   }
 
   NToggle {
     label: I18n.tr("bar.battery.hide-if-not-detected-label")
-    description: I18n.tr("bar.battery.hide-if-not-detected-description")
     checked: valueHideIfNotDetected
     onToggled: checked => {
-                 settingsHelper.set("hideIfNotDetected", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("hideIfNotDetected", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideIfNotDetected
   }
 
   NToggle {
     label: I18n.tr("bar.battery.hide-if-idle-label")
-    description: I18n.tr("bar.battery.hide-if-idle-description")
     checked: valueHideIfIdle
     onToggled: checked => {
-                 settingsHelper.set("hideIfIdle", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("hideIfIdle", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideIfIdle
   }
 
@@ -117,23 +113,21 @@ ColumnLayout {
 
   NToggle {
     label: I18n.tr("bar.battery.show-power-profile-label")
-    description: I18n.tr("bar.battery.show-power-profile-description")
     checked: valueShowPowerProfiles
     onToggled: checked => {
-                 settingsHelper.set("showPowerProfiles", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showPowerProfiles", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showPowerProfiles
   }
 
   NToggle {
     label: I18n.tr("bar.battery.show-performance-mode-label")
-    description: I18n.tr("bar.battery.show-performance-mode-description")
     checked: valueShowPerformanceMode
     onToggled: checked => {
-                 settingsHelper.set("showPerformanceMode", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showPerformanceMode", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showPerformanceMode
   }
 }

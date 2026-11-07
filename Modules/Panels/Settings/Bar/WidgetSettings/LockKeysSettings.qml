@@ -44,12 +44,11 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("bar.lock-keys.show-caps-lock-label")
-      description: I18n.tr("bar.lock-keys.show-caps-lock-description")
       checked: valueShowCapsLock
       onToggled: checked => {
-                   settingsHelper.set("showCapsLock", checked);
-                   saveSettings();
-                 }
+        settingsHelper.set("showCapsLock", checked);
+        saveSettings();
+      }
       defaultValue: widgetMetadata.showCapsLock
     }
 
@@ -82,12 +81,11 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("bar.lock-keys.show-num-lock-label")
-      description: I18n.tr("bar.lock-keys.show-num-lock-description")
       checked: valueShowNumLock
       onToggled: checked => {
-                   settingsHelper.set("showNumLock", checked);
-                   saveSettings();
-                 }
+        settingsHelper.set("showNumLock", checked);
+        saveSettings();
+      }
       defaultValue: widgetMetadata.showNumLock
     }
 
@@ -120,12 +118,11 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("bar.lock-keys.show-scroll-lock-label")
-      description: I18n.tr("bar.lock-keys.show-scroll-lock-description")
       checked: valueShowScrollLock
       onToggled: checked => {
-                   settingsHelper.set("showScrollLock", checked);
-                   saveSettings();
-                 }
+        settingsHelper.set("showScrollLock", checked);
+        saveSettings();
+      }
       defaultValue: widgetMetadata.showScrollLock
     }
 
@@ -160,12 +157,11 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.lock-keys.hide-when-off-label")
-    description: I18n.tr("bar.lock-keys.hide-when-off-description")
     checked: valueHideWhenOff
     onToggled: checked => {
-                 valueHideWhenOff = checked;
-                 saveSettings();
-               }
+      valueHideWhenOff = checked;
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideWhenOff
   }
 }

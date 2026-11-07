@@ -154,14 +154,14 @@ ColumnLayout {
         PanelService.hostSettingsPopup(dialog, null);
         root._activeDialog = dialog;
         dialog.updateEntryProperties.connect((idx, properties) => {
-                                               root.updateEntry(idx, properties);
-                                             });
+          root.updateEntry(idx, properties);
+        });
         dialog.closed.connect(() => {
-                                if (root._activeDialog === dialog) {
-                                  root._activeDialog = null;
-                                  dialog.destroy();
-                                }
-                              });
+          if (root._activeDialog === dialog) {
+            root._activeDialog = null;
+            dialog.destroy();
+          }
+        });
         dialog.open();
       } else {
         Logger.e("SessionMenuTab", "Failed to create entry settings dialog");
@@ -231,7 +231,6 @@ ColumnLayout {
   NTabBar {
     id: subTabBar
     Layout.fillWidth: true
-    Layout.bottomMargin: Style.marginM
     distributeEvenly: true
     currentIndex: tabView.currentIndex
 
@@ -244,11 +243,6 @@ ColumnLayout {
         text: I18n.tr("common.actions")
       }
     }
-  }
-
-  Item {
-    Layout.fillWidth: true
-    Layout.preferredHeight: Style.marginL
   }
 
   NTabView {

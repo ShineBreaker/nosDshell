@@ -48,23 +48,21 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.tray.drawer-enabled-label")
-    description: I18n.tr("bar.tray.drawer-enabled-description")
     checked: root.valueDrawerEnabled
     onToggled: checked => {
-                 settingsHelper.set("drawerEnabled", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("drawerEnabled", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.drawerEnabled
   }
 
   NColorChoice {
     label: I18n.tr("bar.tray.chevron-color-label")
-    description: I18n.tr("bar.tray.chevron-color-description")
     currentKey: root.valueChevronColor
     onSelected: key => {
-                  settingsHelper.set("chevronColor", key);
-                  saveSettings();
-                }
+      settingsHelper.set("chevronColor", key);
+      saveSettings();
+    }
     visible: root.valueDrawerEnabled
     defaultValue: widgetMetadata.chevronColor
   }
@@ -72,24 +70,22 @@ ColumnLayout {
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.tray.colorize-icons-label")
-    description: I18n.tr("bar.tray.colorize-icons-description")
     checked: root.valueColorizeIcons
     onToggled: checked => {
-                 settingsHelper.set("colorizeIcons", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("colorizeIcons", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.colorizeIcons
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.tray.hide-passive-label")
-    description: I18n.tr("bar.tray.hide-passive-description")
     checked: root.valueHidePassive
     onToggled: checked => {
-                 settingsHelper.set("hidePassive", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("hidePassive", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hidePassive
   }
 
@@ -99,7 +95,6 @@ ColumnLayout {
 
     NHeader {
       label: I18n.tr("panels.bar.tray-blacklist-label")
-      description: I18n.tr("panels.bar.tray-blacklist-description")
     }
 
     RowLayout {

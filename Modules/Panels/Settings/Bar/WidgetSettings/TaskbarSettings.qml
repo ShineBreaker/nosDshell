@@ -45,7 +45,6 @@ ColumnLayout {
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.hide-mode-label")
-    description: I18n.tr("bar.taskbar.hide-mode-description")
     model: [
       {
         "key": "visible",
@@ -62,64 +61,59 @@ ColumnLayout {
     ]
     currentKey: root.valueHideMode
     onSelected: key => {
-                  settingsHelper.set("hideMode", key);
-                  saveSettings();
-                }
+      settingsHelper.set("hideMode", key);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.hideMode
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.only-same-monitor-label")
-    description: I18n.tr("bar.taskbar.only-same-monitor-description")
     checked: root.valueOnlySameOutput
     onToggled: checked => {
-                 settingsHelper.set("onlySameOutput", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("onlySameOutput", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.onlySameOutput
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.only-active-workspaces-label")
-    description: I18n.tr("bar.taskbar.only-active-workspaces-description")
     checked: root.valueOnlyActiveWorkspaces
     onToggled: checked => {
-                 settingsHelper.set("onlyActiveWorkspaces", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("onlyActiveWorkspaces", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.onlyActiveWorkspaces
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.tray.colorize-icons-label")
-    description: I18n.tr("bar.taskbar.colorize-icons-description")
     checked: root.valueColorizeIcons
     onToggled: checked => {
-                 settingsHelper.set("colorizeIcons", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("colorizeIcons", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.colorizeIcons
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.show-pinned-apps-label")
-    description: I18n.tr("bar.taskbar.show-pinned-apps-description")
     checked: root.valueShowPinnedApps
     onToggled: checked => {
-                 settingsHelper.set("showPinnedApps", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showPinnedApps", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.showPinnedApps
   }
 
   NValueSlider {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.icon-scale-label")
-    description: I18n.tr("bar.taskbar.icon-scale-description")
     from: 0.5
     to: 1
     stepSize: 0.01
@@ -127,21 +121,20 @@ ColumnLayout {
     value: root.valueIconScale
     defaultValue: widgetMetadata.iconScale
     onMoved: value => {
-               settingsHelper.set("iconScale", value);
-               saveSettings();
-             }
+      settingsHelper.set("iconScale", value);
+      saveSettings();
+    }
     text: Math.round(root.valueIconScale * 100) + "%"
   }
 
   NToggle {
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.show-title-label")
-    description: isVerticalBar ? I18n.tr("bar.taskbar.show-title-description-disabled") : I18n.tr("bar.taskbar.show-title-description")
     checked: root.valueShowTitle
     onToggled: checked => {
-                 settingsHelper.set("showTitle", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("showTitle", checked);
+      saveSettings();
+    }
     enabled: !isVerticalBar
     defaultValue: widgetMetadata.showTitle
   }
@@ -151,16 +144,15 @@ ColumnLayout {
     visible: root.valueShowTitle && !isVerticalBar
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.title-width-label")
-    description: I18n.tr("bar.taskbar.title-width-description")
     text: String(settingsHelper.value("titleWidth", ""))
     storedValue: settingsHelper.value("titleWidth", widgetMetadata.titleWidth)
     minimum: 1
     maximum: 2000
     placeholderText: I18n.tr("placeholders.enter-width-pixels")
     onCommitted: value => {
-                   settingsHelper.set("titleWidth", value);
-                   saveSettings();
-                 }
+      settingsHelper.set("titleWidth", value);
+      saveSettings();
+    }
     defaultValue: String(widgetMetadata.titleWidth)
   }
 
@@ -168,12 +160,11 @@ ColumnLayout {
     Layout.fillWidth: true
     visible: !isVerticalBar && root.valueShowTitle
     label: I18n.tr("bar.taskbar.smart-width-label")
-    description: I18n.tr("bar.taskbar.smart-width-description")
     checked: root.valueSmartWidth
     onToggled: checked => {
-                 settingsHelper.set("smartWidth", checked);
-                 saveSettings();
-               }
+      settingsHelper.set("smartWidth", checked);
+      saveSettings();
+    }
     defaultValue: widgetMetadata.smartWidth
   }
 
@@ -181,7 +172,6 @@ ColumnLayout {
     visible: root.valueSmartWidth && !isVerticalBar
     Layout.fillWidth: true
     label: I18n.tr("bar.taskbar.max-width-label")
-    description: I18n.tr("bar.taskbar.max-width-description")
     from: 10
     to: 100
     stepSize: 5
@@ -189,9 +179,9 @@ ColumnLayout {
     value: root.valueMaxTaskbarWidth
     defaultValue: widgetMetadata.maxTaskbarWidth
     onMoved: value => {
-               settingsHelper.set("maxTaskbarWidth", Math.round(value));
-               saveSettings();
-             }
+      settingsHelper.set("maxTaskbarWidth", Math.round(value));
+      saveSettings();
+    }
     text: Math.round(root.valueMaxTaskbarWidth) + "%"
   }
 }

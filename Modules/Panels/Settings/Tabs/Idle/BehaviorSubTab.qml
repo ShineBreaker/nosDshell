@@ -15,13 +15,11 @@ ColumnLayout {
 
   // SettingsGroup 1: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     NToggle {
       Layout.fillWidth: true
       label: I18n.tr("panels.idle.enable-label")
-      description: I18n.tr("panels.idle.enable-description")
       checked: Settings.data.idle.enabled
       defaultValue: Settings.getDefaultValue("idle.enabled")
       onToggled: checked => Settings.data.idle.enabled = checked
@@ -35,7 +33,6 @@ ColumnLayout {
 
       NLabel {
         label: I18n.tr("panels.idle.status-label")
-        description: I18n.tr("panels.idle.status-description")
         labelWeight: Style.fontWeightRegular
         Layout.fillWidth: true
       }
@@ -55,7 +52,6 @@ ColumnLayout {
       visible: !IdleService.nativeIdleMonitorAvailable
 
       NLabel {
-        description: I18n.tr("panels.idle.unavailable")
         Layout.fillWidth: true
       }
     }
@@ -68,9 +64,8 @@ ColumnLayout {
   }
   // SettingsGroup 2: one DDE SettingsGroup -- rows stack with the
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
     IdleCommandEditPopup {
       id: editPopup
       parent: Overlay.overlay
@@ -100,80 +95,69 @@ ColumnLayout {
     }
 
     // Timeout spinboxes and resume commands
-    ColumnLayout {
-      Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
-      visible: Settings.data.idle.enabled
+    NHeader {
+      label: I18n.tr("panels.idle.timeouts-label")
+    }
 
-      NHeader {
-        label: I18n.tr("panels.idle.timeouts-label")
-        description: I18n.tr("panels.idle.timeouts-description")
+    DefaultActionRow {
+      actionName: I18n.tr("panels.idle.screen-off-label")
+      timeoutValue: Settings.data.idle.screenOffTimeout
+      defaultValue: Settings.getDefaultValue("idle.screenOffTimeout")
+      command: Settings.data.idle.screenOffCommand
+      resumeCommand: Settings.data.idle.resumeScreenOffCommand
+      onActionTimeoutChanged: val => Settings.data.idle.screenOffTimeout = val
+      onActionCommandChanged: cmd => {
+        Settings.data.idle.screenOffCommand = cmd;
+        Settings.saveImmediate();
       }
+      onActionResumeCommandChanged: cmd => {
+        Settings.data.idle.resumeScreenOffCommand = cmd;
+        Settings.saveImmediate();
+      }
+    }
 
-      DefaultActionRow {
-        actionName: I18n.tr("panels.idle.screen-off-label")
-        actionDescription: I18n.tr("panels.idle.screen-off-description")
-        timeoutValue: Settings.data.idle.screenOffTimeout
-        defaultValue: Settings.getDefaultValue("idle.screenOffTimeout")
-        command: Settings.data.idle.screenOffCommand
-        resumeCommand: Settings.data.idle.resumeScreenOffCommand
-        onActionTimeoutChanged: val => Settings.data.idle.screenOffTimeout = val
-        onActionCommandChanged: cmd => {
-                                  Settings.data.idle.screenOffCommand = cmd;
-                                  Settings.saveImmediate();
-                                }
-        onActionResumeCommandChanged: cmd => {
-                                        Settings.data.idle.resumeScreenOffCommand = cmd;
-                                        Settings.saveImmediate();
-                                      }
+    DefaultActionRow {
+      actionName: I18n.tr("panels.idle.lock-label")
+      timeoutValue: Settings.data.idle.lockTimeout
+      defaultValue: Settings.getDefaultValue("idle.lockTimeout")
+      command: Settings.data.idle.lockCommand
+      resumeCommand: Settings.data.idle.resumeLockCommand
+      onActionTimeoutChanged: val => Settings.data.idle.lockTimeout = val
+      onActionCommandChanged: cmd => {
+        Settings.data.idle.lockCommand = cmd;
+        Settings.saveImmediate();
       }
+      onActionResumeCommandChanged: cmd => {
+        Settings.data.idle.resumeLockCommand = cmd;
+        Settings.saveImmediate();
+      }
+    }
 
-      DefaultActionRow {
-        actionName: I18n.tr("panels.idle.lock-label")
-        actionDescription: I18n.tr("panels.idle.lock-description")
-        timeoutValue: Settings.data.idle.lockTimeout
-        defaultValue: Settings.getDefaultValue("idle.lockTimeout")
-        command: Settings.data.idle.lockCommand
-        resumeCommand: Settings.data.idle.resumeLockCommand
-        onActionTimeoutChanged: val => Settings.data.idle.lockTimeout = val
-        onActionCommandChanged: cmd => {
-                                  Settings.data.idle.lockCommand = cmd;
-                                  Settings.saveImmediate();
-                                }
-        onActionResumeCommandChanged: cmd => {
-                                        Settings.data.idle.resumeLockCommand = cmd;
-                                        Settings.saveImmediate();
-                                      }
+    DefaultActionRow {
+      actionName: I18n.tr("common.suspend")
+      timeoutValue: Settings.data.idle.suspendTimeout
+      defaultValue: Settings.getDefaultValue("idle.suspendTimeout")
+      command: Settings.data.idle.suspendCommand
+      resumeCommand: Settings.data.idle.resumeSuspendCommand
+      onActionTimeoutChanged: val => Settings.data.idle.suspendTimeout = val
+      onActionCommandChanged: cmd => {
+        Settings.data.idle.suspendCommand = cmd;
+        Settings.saveImmediate();
       }
+      onActionResumeCommandChanged: cmd => {
+        Settings.data.idle.resumeSuspendCommand = cmd;
+        Settings.saveImmediate();
+      }
+    }
 
-      DefaultActionRow {
-        actionName: I18n.tr("common.suspend")
-        actionDescription: I18n.tr("panels.idle.suspend-description")
-        timeoutValue: Settings.data.idle.suspendTimeout
-        defaultValue: Settings.getDefaultValue("idle.suspendTimeout")
-        command: Settings.data.idle.suspendCommand
-        resumeCommand: Settings.data.idle.resumeSuspendCommand
-        onActionTimeoutChanged: val => Settings.data.idle.suspendTimeout = val
-        onActionCommandChanged: cmd => {
-                                  Settings.data.idle.suspendCommand = cmd;
-                                  Settings.saveImmediate();
-                                }
-        onActionResumeCommandChanged: cmd => {
-                                        Settings.data.idle.resumeSuspendCommand = cmd;
-                                        Settings.saveImmediate();
-                                      }
-      }
-
-      NSpinBox {
-        label: I18n.tr("panels.idle.fade-duration-label")
-        description: I18n.tr("panels.idle.fade-duration-description")
-        from: 1
-        to: 60
-        suffix: "s"
-        value: Settings.data.idle.fadeDuration
-        defaultValue: Settings.getDefaultValue("idle.fadeDuration")
-        onValueChanged: Settings.data.idle.fadeDuration = value
-      }
+    NSpinBox {
+      label: I18n.tr("panels.idle.fade-duration-label")
+      from: 1
+      to: 60
+      suffix: "s"
+      value: Settings.data.idle.fadeDuration
+      defaultValue: Settings.getDefaultValue("idle.fadeDuration")
+      onValueChanged: Settings.data.idle.fadeDuration = value
     }
   }
 
@@ -213,7 +197,6 @@ ColumnLayout {
 
       NSpinBox {
         label: ""
-        description: ""
         from: 0
         to: 86400
         suffix: "s"

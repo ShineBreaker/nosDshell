@@ -17,7 +17,6 @@ ColumnLayout {
 
   NToggle {
     label: I18n.tr("panels.notifications.settings-enabled-label")
-    description: I18n.tr("panels.notifications.settings-enabled-description")
     checked: Settings.data.notifications.enabled !== false
     onToggled: checked => Settings.data.notifications.enabled = checked
     defaultValue: Settings.getDefaultValue("notifications.enabled")
@@ -28,13 +27,11 @@ ColumnLayout {
     Layout.fillWidth: true
     visible: Settings.data.notifications.enabled
   }
-  ColumnLayout {
-    spacing: Style.settingsGroupGap
+  NSettingsGroup {
     visible: Settings.data.notifications.enabled
 
     NComboBox {
       label: I18n.tr("panels.notifications.settings-density-label")
-      description: I18n.tr("panels.notifications.settings-density-description")
       model: [
         {
           "key": "default",
@@ -52,14 +49,12 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("tooltips.do-not-disturb-enabled")
-      description: I18n.tr("panels.notifications.settings-do-not-disturb-description")
       checked: Settings.data.notifications.doNotDisturb
       onToggled: checked => Settings.data.notifications.doNotDisturb = checked
     }
 
     NComboBox {
       label: I18n.tr("common.position")
-      description: I18n.tr("panels.notifications.settings-location-description")
       model: [
         {
           "key": "top",
@@ -93,7 +88,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.osd.always-on-top-label")
-      description: I18n.tr("panels.notifications.settings-always-on-top-description")
       checked: Settings.data.notifications.overlayLayer
       onToggled: checked => Settings.data.notifications.overlayLayer = checked
       defaultValue: Settings.getDefaultValue("notifications.overlayLayer")
@@ -102,7 +96,6 @@ ColumnLayout {
     NValueSlider {
       Layout.fillWidth: true
       label: I18n.tr("panels.osd.background-opacity-label")
-      description: I18n.tr("panels.notifications.settings-background-opacity-description")
       from: 0
       to: 1
       stepSize: 0.01
@@ -115,7 +108,6 @@ ColumnLayout {
     NSpinBox {
       Layout.fillWidth: true
       label: I18n.tr("panels.notifications.settings-max-visible-label")
-      description: I18n.tr("panels.notifications.settings-max-visible-description")
       minimum: 1
       maximum: 10
       value: Settings.data.notifications.maxVisible
@@ -126,10 +118,6 @@ ColumnLayout {
 
     NDccGap {
       Layout.fillWidth: true
-    }
-
-    NHeader {
-      description: I18n.tr("panels.notifications.monitors-desc")
     }
 
     Repeater {
@@ -151,12 +139,12 @@ ColumnLayout {
         }
         checked: (Settings.data.notifications.monitors || []).indexOf(modelData.name) !== -1
         onToggled: checked => {
-                     if (checked) {
-                       Settings.data.notifications.monitors = root.addMonitor(Settings.data.notifications.monitors, modelData.name);
-                     } else {
-                       Settings.data.notifications.monitors = root.removeMonitor(Settings.data.notifications.monitors, modelData.name);
-                     }
-                   }
+          if (checked) {
+            Settings.data.notifications.monitors = root.addMonitor(Settings.data.notifications.monitors, modelData.name);
+          } else {
+            Settings.data.notifications.monitors = root.removeMonitor(Settings.data.notifications.monitors, modelData.name);
+          }
+        }
       }
     }
   }

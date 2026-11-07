@@ -179,9 +179,8 @@ Item {
         label: I18n.tr("bluetooth.panel.connected-devices")
       }
 
-      ColumnLayout {
+      NSettingsGroup {
         Layout.fillWidth: true
-        spacing: Style.settingsGroupGap
         property var deviceList: root.connectedDevices
 
         Repeater {
@@ -205,17 +204,13 @@ Item {
         label: I18n.tr("bluetooth.panel.paired-devices")
       }
 
-      ColumnLayout {
-        Layout.fillWidth: true
-        spacing: Style.settingsGroupGap
-        property var deviceList: root.pairedDevices
+      property var deviceList: root.pairedDevices
 
-        Repeater {
-          // Index-key model — see the comment on the connected-devices
-          // Repeater above (CODING_STANDARDS "QML 规则").
-          model: root.pairedDevices.map((_, i) => i)
-          delegate: nboxDelegate
-        }
+      Repeater {
+        // Index-key model — see the comment on the connected-devices
+        // Repeater above (CODING_STANDARDS "QML 规则").
+        model: root.pairedDevices.map((_, i) => i)
+        delegate: nboxDelegate
       }
     }
 
@@ -230,17 +225,13 @@ Item {
         description: BluetoothService.scanningActive ? I18n.tr("bluetooth.panel.scanning") : ""
       }
 
-      ColumnLayout {
-        Layout.fillWidth: true
-        spacing: Style.settingsGroupGap
-        property var deviceList: root.availableDevices
+      property var deviceList: root.availableDevices
 
-        Repeater {
-          // Index-key model — see the comment on the connected-devices
-          // Repeater above (CODING_STANDARDS "QML 规则").
-          model: root.availableDevices.map((_, i) => i)
-          delegate: nboxDelegate
-        }
+      Repeater {
+        // Index-key model — see the comment on the connected-devices
+        // Repeater above (CODING_STANDARDS "QML 规则").
+        model: root.availableDevices.map((_, i) => i)
+        delegate: nboxDelegate
       }
 
       NText {
@@ -254,20 +245,18 @@ Item {
     }
 
     ColumnLayout {
+      spacing: Style.settingsGroupGap
       visible: !root.showOnlyLists && BluetoothService.enabled
       Layout.fillWidth: true
-      spacing: Style.settingsGroupGap
 
       NToggle {
         label: I18n.tr("panels.connections.bluetooth-auto-connect-label")
-        description: I18n.tr("panels.connections.bluetooth-auto-connect-description")
         checked: Settings.data.network.bluetoothAutoConnect
         onToggled: checked => Settings.data.network.bluetoothAutoConnect = checked
       }
 
       NToggle {
         label: I18n.tr("panels.connections.hide-unnamed-devices-label")
-        description: I18n.tr("panels.connections.hide-unnamed-devices-description")
         checked: Settings.data.network.bluetoothHideUnnamedDevices
         onToggled: checked => Settings.data.network.bluetoothHideUnnamedDevices = checked
       }
@@ -275,13 +264,11 @@ Item {
       // RSSI Polling
       NToggle {
         label: I18n.tr("panels.connections.bluetooth-rssi-polling-label")
-        description: I18n.tr("panels.connections.bluetooth-rssi-polling-description")
         checked: Settings.data.network.bluetoothRssiPollingEnabled
         onToggled: checked => Settings.data.network.bluetoothRssiPollingEnabled = checked
       }
       NSpinBox {
         label: I18n.tr("panels.connections.bluetooth-rssi-polling-interval-label")
-        description: I18n.tr("panels.connections.bluetooth-rssi-polling-interval-description")
         from: 10000
         to: 120000
         stepSize: 1000

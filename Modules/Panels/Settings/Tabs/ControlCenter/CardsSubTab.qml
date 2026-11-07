@@ -58,15 +58,11 @@ ColumnLayout {
     var toSave = [];
     for (var i = 0; i < cardsModel.length; i++) {
       toSave.push({
-        "id": cardsModel[i].id,
-        "enabled": cardsModel[i].enabled
-      });
+                    "id": cardsModel[i].id,
+                    "enabled": cardsModel[i].enabled
+                  });
     }
     Settings.data.controlCenter.cards = toSave;
-  }
-
-  NHeader {
-    description: I18n.tr("panels.control-center.cards-desc")
   }
 
   ColumnLayout {
@@ -117,14 +113,11 @@ ColumnLayout {
   // group as the card's enable row (settings placement rule); the whole
   // group hides while the card is off, and the disk-path pick follows the
   // disk gauge.
-  ColumnLayout {
-    Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-    visible: root.mediaSysmonOn
+  NSettingsGroup {
+    title: I18n.tr("panels.control-center.card-media-sysmon")
 
-    NHeader {
-      label: I18n.tr("panels.control-center.card-media-sysmon")
-    }
+    Layout.fillWidth: true
+    visible: root.mediaSysmonOn
 
     NToggle {
       Layout.fillWidth: true
@@ -166,17 +159,16 @@ ColumnLayout {
       Layout.fillWidth: true
       visible: root._metricOn("disk")
       label: I18n.tr("panels.control-center.system-monitor-disk-path-label")
-      description: I18n.tr("panels.control-center.system-monitor-disk-path-description")
       model: {
         const paths = Object.keys(SystemStatService.diskPercents).sort();
         return paths.map(path => ({
-                                    key: path,
-                                    name: path
-                                  }));
+          key: path,
+          name: path
+        }));
       }
-      currentKey: Settings.data.controlCenter.diskPath || "/"
-      onSelected: key => Settings.data.controlCenter.diskPath = key
-      defaultValue: Settings.getDefaultValue("controlCenter.diskPath") || "/"
-    }
-  }
-}
+        currentKey: Settings.data.controlCenter.diskPath || "/"
+        onSelected: key => Settings.data.controlCenter.diskPath = key
+        defaultValue: Settings.getDefaultValue("controlCenter.diskPath") || "/"
+      }
+      }
+      }

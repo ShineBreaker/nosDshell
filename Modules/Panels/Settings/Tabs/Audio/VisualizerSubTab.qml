@@ -9,13 +9,11 @@ ColumnLayout {
   spacing: 0
   Layout.fillWidth: true
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
 
     NComboBox {
       label: I18n.tr("panels.audio.visualizer-type-label")
-      description: I18n.tr("panels.audio.visualizer-type-description")
       model: [
         {
           "key": "none",
@@ -41,7 +39,6 @@ ColumnLayout {
 
     NToggle {
       label: I18n.tr("panels.audio.spectrum-mirrored-label")
-      description: I18n.tr("panels.audio.spectrum-mirrored-description")
       checked: Settings.data.audio.spectrumMirrored
       defaultValue: Settings.getDefaultValue("audio.spectrumMirrored")
       onToggled: Settings.data.audio.spectrumMirrored = checked
@@ -49,7 +46,6 @@ ColumnLayout {
 
     NComboBox {
       label: I18n.tr("panels.audio.media-frame-rate-label")
-      description: I18n.tr("panels.audio.media-frame-rate-description")
       model: [
         {
           "key": "30",
