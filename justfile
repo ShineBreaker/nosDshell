@@ -86,7 +86,29 @@ run:
     # previous manual instance too, not just the shepherd one.
     pkill -f 'quickshell --config /gnu/store/.*nosdshell' 2>/dev/null || true
     sleep 0.5
-    setsid "$store/bin/nosdshell" </dev/null >>/tmp/nosdshell-manual.log 2>&1 &
+    # Spawn with the session's own env, not the caller's: agent/tool shells are
+    # sanitized and lack DBUS_SESSION_BUS_ADDRESS, which silently kills the SNI
+    # tray, notifications and MPRIS in the spawned shell (2026-11-05 incident).
+    # Shepherd's live env was injected by `herd set-environment graphical-session`
+    # at login — the same env `herd start` gives the packaged service. Fall back
+    # to the compositor's env, then to the caller's env if neither is reachable.
+    session_env=()
+    if env_dump=$(herd eval root '(for-each (lambda (e) (display e) (newline)) (environ))' 2>/dev/null); then
+      mapfile -t session_env < <(printf '%s\n' "$env_dump" | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' || true)
+    fi
+    if (( ${#session_env[@]} == 0 )); then
+      compositor=$(pgrep -xu "$USER" niri 2>/dev/null | head -n1 || true)
+      if [[ -n $compositor && -r /proc/$compositor/environ ]]; then
+        mapfile -d '' -t session_env < /proc/$compositor/environ
+      fi
+    fi
+    # Debug/test toggles the caller set explicitly still pass through on top.
+    mapfile -t caller_env < <(env | grep -E '^(QT_LOGGING_RULES|QT_QPA_|QML_IMPORT_TRACE|WAYLAND_DEBUG|NOSD_|VINPUT_)' || true)
+    if (( ${#session_env[@]} > 0 )); then
+      env -i "${session_env[@]}" "${caller_env[@]}" setsid "$store/bin/nosdshell" </dev/null >>/tmp/nosdshell-manual.log 2>&1 &
+    else
+      setsid "$store/bin/nosdshell" </dev/null >>/tmp/nosdshell-manual.log 2>&1 &
+    fi
     echo "running $store/bin/nosdshell (log: /tmp/nosdshell-manual.log)"
     echo "restore the packaged service with: just restore"
 
