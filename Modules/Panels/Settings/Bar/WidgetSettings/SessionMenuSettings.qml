@@ -8,7 +8,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
   spacing: Style.marginM
-  width: 700
+  width: Style.settingsWidgetContentWidth
 
   // Properties to receive data from parent
   property var screen: null

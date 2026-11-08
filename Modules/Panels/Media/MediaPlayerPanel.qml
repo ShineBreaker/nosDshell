@@ -104,7 +104,7 @@ SmartPanel {
         Item {
           id: playerButton
           Layout.fillWidth: true
-          Layout.preferredHeight: 28
+          Layout.preferredHeight: Style.quickPanelCompactRowHeight
           Layout.topMargin: Style.marginS
           visible: playerContent.players.length > 1
 
@@ -138,7 +138,7 @@ SmartPanel {
 
           Popup {
             id: playerContextMenu
-            width: 180
+            width: Style.menuWidth
             padding: Style.marginS
             enter: NPopupEnter {}
             exit: NPopupExit {}
@@ -175,7 +175,7 @@ SmartPanel {
                 delegate: Rectangle {
                   readonly property var entry: playerContent.players[index]
                   Layout.fillWidth: true
-                  Layout.preferredHeight: 30
+                  Layout.preferredHeight: Style.menuItemHeight
                   color: itemMouse.containsMouse ? Colors.overlay("hover") : "transparent"
                   radius: Style.radiusRow
 
@@ -221,7 +221,7 @@ SmartPanel {
         // Track row: 64 px art + title/artist
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 64
+          Layout.preferredHeight: Style.mediaPanelArtSize
           Layout.topMargin: Style.marginS
 
           RowLayout {
@@ -231,8 +231,8 @@ SmartPanel {
             spacing: Style.marginM
 
             NImageRounded {
-              Layout.preferredWidth: 64
-              Layout.preferredHeight: 64
+              Layout.preferredWidth: Style.mediaPanelArtSize
+              Layout.preferredHeight: Style.mediaPanelArtSize
               radius: Style.radiusItem
               imagePath: MediaService.trackArtUrl
               imageFillMode: Image.PreserveAspectCrop
@@ -343,12 +343,12 @@ SmartPanel {
             anchors.top: parent.top
             anchors.leftMargin: Style.marginM
             anchors.rightMargin: Style.marginM
-            spacing: 2
+            spacing: Style.marginXXS
 
             NSlider {
               id: progressSlider
               Layout.fillWidth: true
-              Layout.preferredHeight: 22
+              Layout.preferredHeight: Style.quickPanelSliderHeight
               from: 0
               to: 1
               stepSize: 0
@@ -430,7 +430,7 @@ SmartPanel {
         // Optional visualizer strip
         Loader {
           Layout.fillWidth: true
-          Layout.preferredHeight: 24
+          Layout.preferredHeight: Style.spectrumStripHeight + Style.marginXS
           active: !!root.needsSpectrum
           sourceComponent: playerContent.visualizerSource
         }
@@ -447,7 +447,7 @@ SmartPanel {
     id: linearComponent
     NLinearSpectrum {
       width: parent.width - Style.marginS
-      height: 20
+      height: Style.spectrumStripHeight
       values: SpectrumService.values
       fillColor: Colors.accent
       opacity: 0.4
@@ -459,7 +459,7 @@ SmartPanel {
     id: mirroredComponent
     NMirroredSpectrum {
       width: parent.width - Style.marginS
-      height: 20
+      height: Style.spectrumStripHeight
       values: SpectrumService.values
       fillColor: Colors.accent
       opacity: 0.4
@@ -471,7 +471,7 @@ SmartPanel {
     id: waveComponent
     NWaveSpectrum {
       width: parent.width - Style.marginS
-      height: 20
+      height: Style.spectrumStripHeight
       values: SpectrumService.values
       fillColor: Colors.accent
       opacity: 0.4

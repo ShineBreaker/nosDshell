@@ -158,7 +158,7 @@ Item {
     id: scrollContainer
     height: parent.height
     x: 0
-    spacing: 50
+    spacing: Style.scrollTextGap
 
     Loader {
       id: titleText
@@ -210,11 +210,11 @@ Item {
       }
       GradientStop {
         position: fadeExtent
-        color: "white"
+        color: "white" // nosd:raw-ok fade-mask stop; only the alpha channel is used
       }
       GradientStop {
         position: 1 - fadeExtent
-        color: "white"
+        color: "white" // nosd:raw-ok fade-mask stop; only the alpha channel is used
       }
       GradientStop {
         position: 1.0

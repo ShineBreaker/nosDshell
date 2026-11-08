@@ -520,7 +520,7 @@ Item {
     id: dropIndicator
     x: Style.radiusItem
     width: root.width - Style.radiusItem * 2
-    height: 3
+    height: Style.borderL
     radius: Style.radiusRow
     color: Colors.accent
     opacity: 0

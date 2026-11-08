@@ -34,7 +34,7 @@ Item {
         height: 1
         color: {
           if (index >= root.valuesCount)
-            return Qt.rgba(0, 0, 0, 1);
+            return Qt.rgba(0, 0, 0, 1); // nosd:raw-ok encodes a 0 data point in the spectrum texture, not a paint color
           var v = root.values[index];
           if (v === undefined || v === null || !isFinite(v))
             v = 0;

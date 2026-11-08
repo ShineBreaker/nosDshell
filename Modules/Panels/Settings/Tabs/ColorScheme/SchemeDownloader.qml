@@ -821,8 +821,7 @@ Popup {
       spacing: Style.marginM
 
       NBusyIndicator {
-        Layout.preferredWidth: 20
-        Layout.preferredHeight: 20
+        size: Style.busyIndicatorSize
       }
 
       NText {
@@ -836,7 +835,7 @@ Popup {
     NScrollView {
       id: schemesScrollView
       Layout.fillWidth: true
-      Layout.preferredHeight: 400
+      Layout.preferredHeight: Style.schemeDownloaderListHeight
       visible: hasInitialData && availableSchemes.length > 0
       verticalPolicy: ScrollBar.AsNeeded
       horizontalPolicy: ScrollBar.AlwaysOff

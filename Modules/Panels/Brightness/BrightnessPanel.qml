@@ -151,14 +151,14 @@ SmartPanel {
                                   panelContent.applyGlobalBrightness(value);
                                 }
               Layout.fillWidth: true
-              Layout.preferredHeight: 22
+              Layout.preferredHeight: Style.quickPanelSliderHeight
               text: ""
             }
 
             NText {
               numeric: true
               text: panelContent.globalBrightnessCapableMonitors > 0 ? Math.round(panelContent.globalBrightness * 100) + "%" : "N/A"
-              Layout.preferredWidth: 40
+              Layout.preferredWidth: Style.percentReadoutWidth
               horizontalAlignment: Text.AlignRight
               color: Colors.onShellSecondary
               pointSize: Style.fontSizeS
@@ -246,7 +246,7 @@ SmartPanel {
                                       }
                                     }
                   Layout.fillWidth: true
-                  Layout.preferredHeight: 22
+                  Layout.preferredHeight: Style.quickPanelSliderHeight
                   text: brightnessMonitor ? Math.round(brightnessSlider.value * 100) + "%" : "N/A"
                 }
               }

@@ -43,7 +43,7 @@ ColumnLayout {
     id: deviceComboBox
     Layout.fillWidth: true
     label: I18n.tr("bar.battery.device-label")
-    minimumWidth: 240
+    minimumWidth: Style.settingsPopupFieldWidth
     model: BatteryService.deviceModel
     currentKey: root.valueDeviceNativePath
     onSelected: key => {
@@ -56,7 +56,7 @@ ColumnLayout {
   NComboBox {
     Layout.fillWidth: true
     label: I18n.tr("common.display-mode")
-    minimumWidth: 240
+    minimumWidth: Style.settingsPopupFieldWidth
     model: [
       {
         "key": "graphic",

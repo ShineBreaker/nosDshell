@@ -130,15 +130,15 @@ Item {
       }
 
       Item {
-        Layout.preferredWidth: 32
-        Layout.preferredHeight: 32
+        Layout.preferredWidth: Style.controlCenterBellIconSize
+        Layout.preferredHeight: Style.controlCenterBellIconSize
 
         NSymbolicImage {
           anchors.centerIn: parent
-          width: 32
-          height: 32
-          sourceSize.width: 64
-          sourceSize.height: 64
+          width: Style.controlCenterBellIconSize
+          height: Style.controlCenterBellIconSize
+          sourceSize.width: Style.controlCenterBellIconSize * 2
+          sourceSize.height: Style.controlCenterBellIconSize * 2
           smooth: true
           // The checked artwork is a white disc + accent bell — a flat
           // silhouette would blob into a solid disc, so all states use the

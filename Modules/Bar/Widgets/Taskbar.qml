@@ -1089,11 +1089,11 @@ Item {
                   Rectangle {
                     id: iconBackground
                     visible: !shouldShowTitle && !root.efficientMode
-                    anchors.bottomMargin: -2
+                    anchors.bottomMargin: -height / 2
                     anchors.bottom: parent.bottom
                     anchors.horizontalCenter: parent.horizontalCenter
                     width: Style.toOdd(root.itemSize * 0.25)
-                    height: 4
+                    height: Style.dockIndicatorHeight
                     color: taskbarItem.isFocused ? Colors.mPrimary : (taskbarItem.isHovered ? Colors.mHover : "transparent")
                     radius: Math.min(Style.radiusXXS, width / 2)
                   }

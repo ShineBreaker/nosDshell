@@ -27,8 +27,8 @@ Item {
 
   RowLayout {
     anchors.fill: parent
-    anchors.leftMargin: 25
-    anchors.rightMargin: 20
+    anchors.leftMargin: Style.launcherSearchInsetLeft
+    anchors.rightMargin: Style.launcherSearchInsetRight
     spacing: Style.marginS
 
     NIcon {
@@ -59,7 +59,7 @@ Item {
 
       Text {
         anchors.fill: parent
-        anchors.leftMargin: 2
+        anchors.leftMargin: Style.marginXXS
         verticalAlignment: input.verticalAlignment
         text: root.placeholderText
         color: root.wallpaperSurface ? Colors.onWallpaperTertiary : Colors.onShellTertiary

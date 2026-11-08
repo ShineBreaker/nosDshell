@@ -400,7 +400,7 @@ Item {
     property int value: 0
     property int bits: 4
     property real dotSize: 10
-    property color activeColor: "white"
+    property color activeColor: Colors.onAccent
 
     spacing: dotSize * 0.4
 

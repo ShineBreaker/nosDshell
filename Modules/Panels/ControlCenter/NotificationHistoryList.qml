@@ -564,7 +564,7 @@ Item {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 24
+            height: Style.notifListHeaderHeight
             visible: modelData.kind === "header"
             spacing: Style.marginS
 
@@ -618,7 +618,7 @@ Item {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: 24
+            height: Style.notifListHeaderHeight
             verticalAlignment: Text.AlignVCenter
             visible: modelData.kind === "section"
             text: root.bucketTitle(modelData.bucket)
@@ -843,23 +843,23 @@ Item {
             anchors.topMargin: Style.marginXXS
             anchors.horizontalCenter: parent.horizontalCenter
             width: cardSurface.width
-            height: Style.marginXXS + 8
+            height: Style.marginXXS + Style.notifStackPeekHeight * 2
             visible: delegateItem.shown && delegateItem.isHead && delegateItem.groupSize > 1 && !delegateItem.isGroupExpanded
 
             Rectangle {
               y: 0
               x: 8
               width: cardSurface.width - 16
-              height: 4
+              height: Style.notifStackPeekHeight
               radius: Style.radiusItem
               color: Colors.overlay("hover")
             }
 
             Rectangle {
-              y: Style.marginXXS + 4
+              y: Style.marginXXS + Style.notifStackPeekHeight
               x: 16
               width: cardSurface.width - 32
-              height: 4
+              height: Style.notifStackPeekHeight
               radius: Style.radiusItem
               color: Colors.overlay("hover")
             }

@@ -95,9 +95,9 @@ Item {
         delegate: Rectangle {
           required property int index
           readonly property bool active: root.currentPage === index
-          width: 8
-          height: 8
-          radius: 4
+          width: Style.pageDotSize
+          height: Style.pageDotSize
+          radius: Style.pageDotSize / 2
           // On-shell alphas: DDE spec is white@0.8/0.3 on its always-dark
           // panel; the token flips to dark dots on a light frame.
           color: active ? Qt.alpha(Colors.onShell, Style.pageDotCurrent) : Qt.alpha(Colors.onShell, Style.pageDotOther)

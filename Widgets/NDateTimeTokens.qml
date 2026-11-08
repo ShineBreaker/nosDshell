@@ -255,8 +255,8 @@ Rectangle {
               // Category badge
               Rectangle {
                 Layout.alignment: Qt.AlignVCenter
-                width: 70
-                height: 22
+                width: Style.dateTokenCategoryWidth
+                height: Style.dateTokenChipHeight
                 color: getCategoryColor(modelData.category)[0]
                 radius: Style.radiusItem
                 opacity: tokenMouseArea.containsMouse ? 0.9 : 1.0
@@ -273,8 +273,8 @@ Rectangle {
               Rectangle {
                 id: tokenButton
                 Layout.alignment: Qt.AlignVCenter // Added this line
-                width: 100
-                height: 22
+                width: Style.dateTokenChipWidth
+                height: Style.dateTokenChipHeight
                 color: tokenMouseArea.containsMouse ? Colors.accent : Colors.overlay("checked")
                 radius: Style.radiusItem
 
@@ -300,8 +300,8 @@ Rectangle {
               // Live example
               Rectangle {
                 Layout.alignment: Qt.AlignVCenter // Added this line
-                width: 90
-                height: 22
+                width: Style.dateTokenExampleWidth
+                height: Style.dateTokenChipHeight
                 color: tokenMouseArea.containsMouse ? Colors.accent : Colors.overlay("checked")
                 radius: Style.radiusItem
                 border.color: tokenMouseArea.containsMouse ? Colors.accent : Colors.borderShell

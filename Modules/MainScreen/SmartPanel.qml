@@ -20,8 +20,8 @@ Item {
   property var panelID: null
 
   // Panel size properties
-  property real preferredWidth: 700
-  property real preferredHeight: 900
+  property real preferredWidth: 700 // nosd:raw-ok placeholder default; every panel passes its own size
+  property real preferredHeight: 900 // nosd:raw-ok placeholder default; every panel passes its own size
   // Whether opening this panel dims the desktop behind it (MainScreen shared
   // dimmer). Frame panels (control centre, settings, launcher) dim; quick
   // popups over the dock/taskbar do not — DESIGN §3.5.1 scopes the dimmer

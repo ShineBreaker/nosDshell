@@ -92,7 +92,7 @@ DraggableDesktopWidget {
           width: root.showBackground ? root.width - Math.round(Style.marginXS * widgetScale) * 2 : root.width
           height: root.showBackground ? root.height - Math.round(Style.marginXS * widgetScale) : root.height
           radius: root.roundedCorners ? Math.round(Math.max(0, (Style.radiusL - Style.marginXS) * widgetScale)) : 0
-          color: "white"
+          color: "white" // nosd:raw-ok mask alpha source; only opacity is sampled
         }
       }
     }
@@ -158,7 +158,7 @@ DraggableDesktopWidget {
                "blur": Style.shadowBlurMax,
                "x": 0,
                "y": 0,
-               "color": Qt.rgba(0, 0, 0, 0.9)
+               "color": Qt.alpha(Colors.mShadow, 0.9)
              })
   }
 
@@ -287,7 +287,7 @@ DraggableDesktopWidget {
         enabled: hasPlayer && (MediaService.canPlay || MediaService.canPause)
         colorBg: Colors.mPrimary
         colorFg: Colors.mOnPrimary
-        colorBgHover: Qt.lighter(Colors.mPrimary, 1.1)
+        colorBgHover: Colors.accentHover
         colorFgHover: Colors.mOnPrimary
         customRadius: Math.round(Style.radiusS * widgetScale)
         onClicked: {

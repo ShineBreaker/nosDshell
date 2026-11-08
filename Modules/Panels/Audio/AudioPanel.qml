@@ -132,7 +132,7 @@ SmartPanel {
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginM
           Layout.rightMargin: Style.marginM
-          Layout.preferredHeight: 22
+          Layout.preferredHeight: Style.quickPanelSliderHeight
           from: 0
           to: Settings.data.audio.volumeOverdrive ? 1.5 : 1
           stepSize: panelContent.stepSize
@@ -180,7 +180,7 @@ SmartPanel {
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginM
           Layout.rightMargin: Style.marginM
-          Layout.preferredHeight: 22
+          Layout.preferredHeight: Style.quickPanelSliderHeight
           from: 0
           to: 1
           stepSize: panelContent.stepSize
@@ -289,7 +289,7 @@ SmartPanel {
               Layout.fillWidth: true
               Layout.leftMargin: Style.marginM
               Layout.rightMargin: Style.marginM
-              Layout.preferredHeight: 22
+              Layout.preferredHeight: Style.quickPanelSliderHeight
               visible: !appBox.isCaptureStream
               enabled: !!(appBox.nodeAudio && appBox.entry && appBox.entry.ready === true)
               from: 0

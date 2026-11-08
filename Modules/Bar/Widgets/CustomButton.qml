@@ -193,7 +193,7 @@ Item {
         return null;
       }
     })();
-    return baseColor !== null ? (forHover ? Qt.darker(baseColor, 1.2) : baseColor) : null;
+    return baseColor !== null ? (forHover ? Qt.darker(baseColor, 1.2) : baseColor) : null; // nosd:raw-ok hover transform on a runtime-resolved accent; only the accent token has a canonical hover (Colors.accentHover)
   }
 
   // Resolve icon color with priority: dynamic > static > default

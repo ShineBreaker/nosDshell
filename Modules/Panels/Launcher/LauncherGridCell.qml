@@ -28,7 +28,7 @@ Item {
   // object in the launcher model, then selects and activates it.
   signal activated
 
-  property int iconSize: 85
+  property int iconSize: Math.round(Style.launcherCellBudgetNarrow * Settings.data.appLauncher.iconRatio)
 
   // New until first launch (tracked in ShellState by ApplicationsProvider)
   readonly property bool isNew: modelData?.isNew === true
@@ -61,7 +61,7 @@ Item {
     anchors.right: block.right
     anchors.top: block.top
     anchors.bottom: block.bottom
-    anchors.margins: 2
+    anchors.margins: Style.marginXXS
     spacing: 0
 
     Item {
@@ -127,11 +127,11 @@ Item {
   // (upstream: textRect.topLeft shifted left by the dot width, appitemdelegate.cpp:172)
   Rectangle {
     visible: root.isNew
-    width: 10
-    height: 10
+    width: Style.launcherNewDotSize
+    height: Style.launcherNewDotSize
     radius: width / 2
     color: Colors.accent
-    x: block.x + 2
+    x: block.x + Style.marginXXS
     y: appLabel.mapToItem(root, 0, 0).y - 1
   }
 

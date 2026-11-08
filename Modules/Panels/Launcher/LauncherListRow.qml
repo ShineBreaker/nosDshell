@@ -23,8 +23,9 @@ Item {
 
   property var listView: null
   // Driven by appLauncher.density via the owning view's LauncherModel.
-  property int rowHeight: 36
-  property int iconSize: 24
+  property int rowHeight: Style.detailRowHeight
+  // Placeholder default — the owning view always passes model.listIconSize.
+  property int iconSize: 24 // nosd:raw-ok placeholder default; view always passes model.listIconSize
 
   signal activated
   signal rightClicked(var mouse)

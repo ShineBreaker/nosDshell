@@ -32,10 +32,10 @@ Item {
   property int sidePadding: 200
   property int navWidth: 180
   property int columns: 6
-  property real cellWidth: 170
-  property real cellHeight: 170
+  property real cellWidth: Style.launcherCellBudgetNarrow
+  property real cellHeight: Style.launcherCellBudgetNarrow
   property int cellSpacing: 10
-  property real iconSize: 85
+  property real iconSize: Math.round(Style.launcherCellBudgetNarrow * Settings.data.appLauncher.iconRatio)
   property string barPosition: "bottom"
 
   // Original DDE multi-state artwork (DESIGN §1.9)
@@ -323,7 +323,7 @@ Item {
       LauncherSearchField {
         id: searchField
         Layout.preferredWidth: Style.launcherSearchWidth
-        Layout.preferredHeight: 30
+        Layout.preferredHeight: Style.launcherSearchHeight
         wallpaperSurface: true
         text: model.searchText
         onTextEdited: txt => model.setSearchText(txt)
@@ -453,7 +453,7 @@ Item {
           // Clipboard preview in a dark card to the right of the list
           Loader {
             x: resultsList.width + Style.marginL
-            width: 260
+            width: Style.launcherClipboardPreviewWidth
             anchors.top: resultsList.top
             anchors.bottom: resultsList.bottom
             active: model.activeProvider === model.clipboardProvider && model.clipboardProvider && model.clipboardProvider.hasPreview

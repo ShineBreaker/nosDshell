@@ -400,7 +400,7 @@ SmartPanel {
                         // Event indicator dots
                         Row {
                           visible: Settings.data.location.showCalendarEvents && monthRoot.hasEventsOnDate(modelData.year, modelData.month, modelData.day)
-                          spacing: 2
+                          spacing: Style.marginXXS
                           anchors.horizontalCenter: parent.horizontalCenter
                           anchors.bottom: parent.bottom
                           anchors.bottomMargin: Style.marginXXS
@@ -409,9 +409,9 @@ SmartPanel {
                             model: monthRoot.getEventsForDate(modelData.year, modelData.month, modelData.day)
 
                             Rectangle {
-                              width: 4
+                              width: Style.calendarEventDotSize
                               height: width
-                              radius: 2
+                              radius: Style.calendarEventDotSize / 2
                               color: modelData.today ? Colors.onAccent : Colors.accent
                             }
                           }

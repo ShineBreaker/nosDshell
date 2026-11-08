@@ -128,7 +128,7 @@ Item {
       anchors.top: parent.top
       anchors.left: parent.left
       anchors.right: parent.right
-      height: 2
+      height: Style.progressTrackHeight
       color: "transparent"
 
       Rectangle {

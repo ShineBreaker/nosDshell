@@ -244,8 +244,8 @@ PanelWindow {
 
             Rectangle {
               anchors.centerIn: parent
-              width: 120
-              height: 120
+              width: Style.setupLogoHaloSize
+              height: Style.setupLogoHaloSize
               radius: width / 2
               color: Colors.mPrimary
               opacity: 0.08
@@ -254,8 +254,8 @@ PanelWindow {
 
             Image {
               anchors.centerIn: parent
-              width: 110
-              height: 110
+              width: Style.setupLogoSize
+              height: Style.setupLogoSize
               source: Qt.resolvedUrl(Quickshell.shellDir + "/Assets/nosdshell.svg")
               fillMode: Image.PreserveAspectFit
               smooth: true
@@ -478,8 +478,8 @@ PanelWindow {
                 delegate: Rectangle {
                   required property int index
                   readonly property bool active: panelContent.currentStep === index
-                  width: 8
-                  height: 8
+                  width: Style.pageDotSize
+                  height: Style.pageDotSize
                   radius: width / 2
                   color: active ? Qt.alpha(Colors.onWallpaper, Style.pageDotCurrent) : Qt.alpha(Colors.onWallpaper, Style.pageDotOther)
 

@@ -93,7 +93,7 @@ Popup {
         id: scrollView
         Layout.fillWidth: true
         Layout.fillHeight: true
-        Layout.minimumHeight: 100
+        Layout.minimumHeight: Style.settingsScrollMinHeight
 
         ColumnLayout {
           width: scrollView.availableWidth

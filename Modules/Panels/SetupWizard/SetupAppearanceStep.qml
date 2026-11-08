@@ -65,8 +65,8 @@ ColumnLayout {
         spacing: Style.marginM
 
         Rectangle {
-          width: 28
-          height: 28
+          width: Style.setupIconTileS
+          height: Style.setupIconTileS
           radius: Style.radiusM
           color: Colors.overlay("idle")
 
@@ -80,7 +80,7 @@ ColumnLayout {
 
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          spacing: Style.marginXXS
 
           NText {
             text: I18n.tr("tooltips.switch-to-dark-mode")
@@ -120,8 +120,8 @@ ColumnLayout {
         spacing: Style.marginM
 
         Rectangle {
-          width: 28
-          height: 28
+          width: Style.setupIconTileS
+          height: Style.setupIconTileS
           radius: Style.radiusM
           color: Colors.overlay("idle")
 
@@ -135,7 +135,7 @@ ColumnLayout {
 
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          spacing: Style.marginXXS
 
           NText {
             text: I18n.tr("panels.color-scheme.color-source-use-wallpaper-colors-label")
@@ -191,8 +191,8 @@ ColumnLayout {
           spacing: Style.marginS
 
           Rectangle {
-            width: 28
-            height: 28
+            width: Style.setupIconTileS
+            height: Style.setupIconTileS
             radius: Style.radiusM
             color: Colors.overlay("idle")
 
@@ -206,7 +206,7 @@ ColumnLayout {
 
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: 2
+            spacing: Style.marginXXS
 
             NText {
               text: I18n.tr("panels.color-scheme.predefined-title")
@@ -242,7 +242,7 @@ ColumnLayout {
 
               Layout.fillWidth: true
               Layout.alignment: Qt.AlignHCenter
-              height: 50
+              height: Style.setupSchemeCardHeight
               radius: Style.radiusS
               color: root.cacheVersion >= 0 ? root.getSchemeColor(schemeName, "mSurface") : root.getSchemeColor(schemeName, "mSurface")
               border.width: Style.borderL
@@ -266,8 +266,8 @@ ColumnLayout {
                 }
 
                 Rectangle {
-                  width: 14
-                  height: 14
+                  width: Style.setupSwatchDotSize
+                  height: Style.setupSwatchDotSize
                   radius: width * 0.5
                   color: root.cacheVersion >= 0 ? (function () {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
@@ -276,8 +276,8 @@ ColumnLayout {
                   })() : Colors.mPrimary
                 }
                 Rectangle {
-                  width: 14
-                  height: 14
+                  width: Style.setupSwatchDotSize
+                  height: Style.setupSwatchDotSize
                   radius: width * 0.5
                   color: root.cacheVersion >= 0 ? (function () {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
@@ -286,8 +286,8 @@ ColumnLayout {
                   })() : Colors.mSecondary
                 }
                 Rectangle {
-                  width: 14
-                  height: 14
+                  width: Style.setupSwatchDotSize
+                  height: Style.setupSwatchDotSize
                   radius: width * 0.5
                   color: root.cacheVersion >= 0 ? (function () {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";
@@ -296,8 +296,8 @@ ColumnLayout {
                   })() : Colors.mTertiary
                 }
                 Rectangle {
-                  width: 14
-                  height: 14
+                  width: Style.setupSwatchDotSize
+                  height: Style.setupSwatchDotSize
                   radius: width * 0.5
                   color: root.cacheVersion >= 0 ? (function () {
                     var mode = Settings.data.colorSchemes.darkMode ? "dark" : "light";

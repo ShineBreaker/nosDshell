@@ -105,7 +105,7 @@ ColumnLayout {
     enter: NPopupEnter {}
     exit: NPopupExit {}
     anchors.centerIn: parent
-    width: 500
+    width: Style.settingsPopupWidth
     padding: Style.marginL
 
     background: Rectangle {

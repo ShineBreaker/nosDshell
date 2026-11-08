@@ -85,7 +85,7 @@ Popup {
     return filtered;
   }
 
-  width: 180
+  width: Style.menuWidth
   padding: Style.marginS
   topPadding: Style.marginS + (arrowEdge === "top" ? Style.popupArrowHeight : 0)
   bottomPadding: Style.marginS + (arrowEdge === "bottom" ? Style.popupArrowHeight : 0)

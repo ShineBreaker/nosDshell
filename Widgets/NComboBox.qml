@@ -8,7 +8,7 @@ import qs.Widgets
 NDccRow {
   id: root
 
-  property real minimumWidth: 170
+  property real minimumWidth: Style.settingsFieldWidth
   property real popupHeight: 180
 
   property string label: ""

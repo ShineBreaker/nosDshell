@@ -827,7 +827,7 @@ Popup {
         NTextInput {
           id: resolutionWidthInput
           dccRow: false
-          Layout.preferredWidth: 80
+          Layout.preferredWidth: Style.settingsNumericFieldWidth
           placeholderText: I18n.tr("common.width")
           inputMethodHints: Qt.ImhDigitsOnly
           text: Settings.data.wallpaper.wallhavenResolutionWidth || ""
@@ -871,7 +871,7 @@ Popup {
 
         NTextInput {
           id: resolutionHeightInput
-          Layout.preferredWidth: 80
+          Layout.preferredWidth: Style.settingsNumericFieldWidth
           // Combos on this popup carry Layout.margins borderS, so their
           // painted right edge is 1 px inside the row. This field is the
           // trailing control of the resolution row and had no such margin.

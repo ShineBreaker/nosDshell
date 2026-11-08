@@ -167,7 +167,7 @@ NIconButton {
     active: showUnreadBadge
     sourceComponent: Rectangle {
       id: badge
-      height: 7
+      height: Style.notificationBadgeSize
       width: height
       radius: Style.radiusXS
       color: root.badgeColor || Colors.alert

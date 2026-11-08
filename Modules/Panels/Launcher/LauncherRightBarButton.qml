@@ -21,7 +21,7 @@ Item {
   // follow the panel foreground; set false for multicolor assets.
   property bool recolorIcon: true
   property color iconColor: Colors.onShell
-  property int iconSize: 24
+  property int iconSize: Style.launcherMiniModeToggleSize
   property bool selected: false
   property real rowHeight: Style.launcherMiniButtonRowHeight
 

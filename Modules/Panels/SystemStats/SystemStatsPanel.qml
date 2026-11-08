@@ -135,7 +135,7 @@ SmartPanel {
 
     Item {
       Layout.fillWidth: true
-      Layout.preferredHeight: 28
+      Layout.preferredHeight: Style.quickPanelCompactRowHeight
 
       RowLayout {
         anchors.fill: parent
@@ -164,7 +164,7 @@ SmartPanel {
       Layout.fillWidth: true
       Layout.leftMargin: Style.marginM
       Layout.rightMargin: Style.marginM
-      Layout.preferredHeight: 2
+      Layout.preferredHeight: Style.progressTrackHeight
       orientation: Qt.Horizontal
       ratio: Math.max(0, Math.min(1, statRow.gaugeRatio))
       fillColor: statRow.gaugeColor

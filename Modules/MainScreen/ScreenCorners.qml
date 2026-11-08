@@ -34,7 +34,7 @@ Item {
         id: cornersPath
 
         // Corner configuration
-        readonly property color cornerColor: Settings.data.general.forceBlackScreenCorners ? "black" : Colors.mSurface
+        readonly property color cornerColor: Settings.data.general.forceBlackScreenCorners ? Colors.veilWallpaper : Colors.mSurface
         readonly property real cornerRadius: Style.screenRadius
         readonly property real cornerSize: Style.screenRadius
 

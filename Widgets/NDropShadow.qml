@@ -36,7 +36,7 @@ Item {
                                          "blur": Style.shadowBlur * Style.shadowBlurMax,
                                          "x": Settings.data.general.shadowOffsetX,
                                          "y": Settings.data.general.shadowOffsetY,
-                                         "color": Qt.rgba(0, 0, 0, Style.shadowOpacity)
+                                         "color": Qt.alpha(Colors.mShadow, Style.shadowOpacity)
                                        })
   readonly property var _layers: {
     if (!shadow)

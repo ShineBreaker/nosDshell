@@ -7,7 +7,7 @@ import qs.Widgets
 NDccRow {
   id: root
 
-  property real minimumWidth: 280
+  property real minimumWidth: Style.settingsPopupFieldWidthWide
   property real popupHeight: 180
 
   property bool selectOnNavigation: true
@@ -29,7 +29,7 @@ NDccRow {
   // minimumWidth. For bare combos that share a fixed control column with
   // a trailing control.
   property bool flexWidth: false
-  readonly property real preferredHeight: 30
+  readonly property real preferredHeight: Style.menuItemHeight
 
   signal selected(string key)
 

@@ -293,6 +293,10 @@ Singleton {
 
   // DDE menu row metrics: rows are font-height + 8, padded 20px on each side
   readonly property int menuItemPadding: Math.round(20 * uiScaleRatio)
+  // Context-menu surface metrics — port values (deepin-menu sizes rows from
+  // the font); NContextMenu's width is the canonical menu width.
+  readonly property int menuWidth: 180
+  readonly property int menuItemHeight: 30
 
   // Capsule radius — only the switch and RoundedButton-style buttons may use it (DESIGN §7)
   readonly property int radiusPill: 15
@@ -351,6 +355,25 @@ Singleton {
   // dde-dtk ddialog header, which is not cloned, so the DDE action-button height
   // of 36 from gxde-session-ui/global_util/constants.h:40 stands in for it.
   readonly property int dialogButtonHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
+
+  // First-run setup wizard (Modules/Panels/SetupWizard) — port UI with no DDE
+  // source; metrics sized for the wide DDialog. Section headers get an icon
+  // tile in two weights, option pickers a row and a compact chip row.
+  readonly property int setupIconTileS: 28
+  readonly property int setupIconTileM: 32
+  readonly property int setupOptionRowHeight: 40
+  readonly property int setupOptionChipHeight: 32
+  readonly property int setupSwatchDotSize: 14
+  readonly property int setupSchemeCardHeight: 50
+  // Wallpaper step: preview area, empty-state icon, gallery strip, selection
+  // badge, empty-gallery info card.
+  readonly property int setupWallpaperPreviewHeight: 180
+  readonly property int setupEmptyIconSize: 64
+  readonly property int setupWallpaperStripHeight: 92
+  readonly property int setupInfoCardHeight: 80
+  // Welcome-step logo and its blurred halo.
+  readonly property int setupLogoSize: 110
+  readonly property int setupLogoHaloSize: 120
 
   // Motion — DESIGN §1.7 (CDS). Every duration goes through _motion(): 0 when
   // reduceMotion, divided by general.animationSpeed otherwise; panel-class
@@ -483,6 +506,38 @@ Singleton {
   // Scroll edge fade zone (DESIGN §1.11, cds-theme.css:196)
   readonly property int scrollFadeSize: 28
 
+  // Shared widget metrics (Widgets/*) — fallback implicit sizes so a bare
+  // scrollable view still lays out, the scrollbar handle's minimum extent,
+  // the marquee gap between a scrolling text's two copies, the icon-picker
+  // preview glyph, and the file-picker dialog's own metrics.
+  readonly property int viewImplicitSize: 200
+  readonly property int scrollbarHandleMinSize: 100
+  readonly property int scrollTextGap: 50
+  readonly property int iconPickerPreviewSize: 42
+  readonly property int filePickerWidth: 900
+  readonly property int filePickerHeight: 700
+  readonly property int filePickerToolbarHeight: 45
+  readonly property int filePickerListRowHeight: 40
+  readonly property int filePickerThumbSize: 120
+  readonly property int busyIndicatorSize: 20
+  // Accent circle with a check glyph marking a selected item (setup wizard
+  // wallpaper strip, file-picker thumbnails).
+  readonly property int checkBadgeSize: 24
+  // Notification settings preview (widgets preview the clock text on a
+  // bordered card) and the date-format token picker in clock settings.
+  readonly property int clockPreviewWidth: 320
+  readonly property int clockPreviewHeight: 160
+  readonly property int dateTokenPickerHeight: 300
+  readonly property int dateTokenPickerHeightCompact: 200
+  readonly property int dateTokenChipHeight: 22
+  readonly property int dateTokenCategoryWidth: 70
+  readonly property int dateTokenChipWidth: 100
+  readonly property int dateTokenExampleWidth: 90
+  // Card-level one-offs: the month-grid event dots and the elided city-name
+  // cap in the weather header.
+  readonly property int calendarEventDotSize: 4
+  readonly property int weatherCityNameMaxWidth: 150
+
   // Text caret blink half-period (ms): a convention of text fields, not a
   // motion; it is not stretched by animationSpeed. Smooth blinking stops
   // under reduceMotion (a plain on/off toggle takes over).
@@ -520,6 +575,10 @@ Singleton {
   readonly property int bubbleMaxBodyLines: 3
   // Compact action button inside a toast (§3.6)
   readonly property int toastActionHeight: 24
+  // Notification centre list: the small "Notifications"/"clear" header row
+  // and the stacked-card slivers peeking under a collapsed group.
+  readonly property int notifListHeaderHeight: 24
+  readonly property int notifStackPeekHeight: 4
 
   // ----------------------------------------------------------------
   // §3.7 OSD tile (dde-osd/container.cpp: contentSize 140x140,
@@ -566,6 +625,10 @@ Singleton {
   readonly property int lockClockInset: 48
   readonly property int lockControlSpacing: 26
   readonly property int lockControlTrailing: 60
+  // Info/countdown message pill over the bottom band and its offset from the
+  // screen bottom (port values — both sit above the password area).
+  readonly property int lockMessageHeight: 50
+  readonly property int lockMessageBottomGap: Math.round(360 * uiScaleRatio)
   readonly property int lockAvatarSize: 100
   readonly property int lockNameGap: 25
   readonly property int lockPasswordWidth: 280
@@ -573,6 +636,14 @@ Singleton {
   readonly property int lockPasswordGap: 20
   // DESIGN §3.9: the field is a 6 px rounded rectangle, not a pill
   readonly property int lockPasswordFieldRadius: 6
+  // Field internals — port geometry, no DDE source: the caret, password
+  // dots and spinner share the field's content line height; the embedded
+  // unlock button is a 28 px hit area holding the 18 px unlock_* artwork.
+  readonly property int lockPanelMargin: 14
+  readonly property int lockFieldContentHeight: 20
+  readonly property int lockCaretWidth: 2
+  readonly property int lockUnlockButtonSize: 28
+  readonly property int lockUnlockIconSize: 18
 
   // Control center home (DESIGN §3.5.1–3.5.2)
   // 408 px frame, flush right edge, full screen height (gxde-control-center frame.h:53)
@@ -586,6 +657,9 @@ Singleton {
   readonly property int controlCenterAvatarSize: Math.round(60 * uiScaleRatio)
   // Trailing space after the header's right-side buttons (mainwidget.cpp:146)
   readonly property int controlCenterHeaderMarginRight: Math.round(20 * uiScaleRatio)
+  // Notification-toggle bell in the header — 32 px render of the 64 px
+  // notifications_toggle_*.svg artwork (sourceSize = 2x for sharpness).
+  readonly property int controlCenterBellIconSize: 32
   // Module grid cell inset (navdelegate.cpp:41-57) and icon 24 px
   readonly property int moduleCellInset: Math.round(5 * uiScaleRatio)
   readonly property int moduleCellIcon: Math.round(24 * uiScaleRatio)
@@ -614,6 +688,7 @@ Singleton {
   readonly property int quickSwitchBlockBottomMargin: Math.round(5 * uiScaleRatio)
   // Page indicator: height 40, dot alphas from DESIGN §3.5.2
   readonly property int pageIndicatorHeight: Math.round(40 * uiScaleRatio)
+  readonly property int pageDotSize: 8
   readonly property real pageDotCurrent: 0.8
   readonly property real pageDotOther: 0.3
   // Wheel page switching is debounced by 200 ms (indicatorwidget.cpp:72-74)
@@ -624,6 +699,16 @@ Singleton {
   // Quick-panel (dock popup) rows share the 36 px grid of §3.5.2 lists but
   // are a separate family from the settings detailRowHeight.
   readonly property int quickPanelRowHeight: Math.round(36 * uiScaleRatio * Settings.data.ui.rowHeightScale)
+  // Sub-rows inside quick panels — port values, no DDE source: the thin
+  // NValueSlider strips, the single-line compact rows (battery profile,
+  // player selector, stat lines), the 2 px gauge/progress tracks, the
+  // fixed-width percent readout, the media track art, and the spectrum strip.
+  readonly property int quickPanelSliderHeight: 22
+  readonly property int quickPanelCompactRowHeight: 28
+  readonly property int progressTrackHeight: 2
+  readonly property int percentReadoutWidth: 40
+  readonly property int mediaPanelArtSize: 64
+  readonly property int spectrumStripHeight: 20
 
   // Settings pages inside the control center (DESIGN §3.5.3–3.5.4)
   // 56 px icon rail, spacing 20; content 352 (frame mode) / 640 (window mode)
@@ -730,6 +815,20 @@ Singleton {
   // (dccslider.cpp:44 fixes the whole control at 35 px).
   readonly property int settingsSliderTitleGap: Math.round(6 * uiScaleRatio)
 
+  // Widget-settings popups (bar/CC/desktop-widget settings dialogs — port
+  // UI, not dcc rows): content column width, the wider control column than
+  // settingsFieldWidth their popups use, the scroll area's floor, embedded
+  // list boxes, narrow numeric inputs, and the small in-popup dialogs.
+  readonly property int settingsWidgetContentWidth: 700
+  readonly property int settingsPopupFieldWidth: 200
+  readonly property int settingsPopupFieldWidthWide: 300
+  readonly property int settingsScrollMinHeight: 100
+  readonly property int settingsListHeight: 150
+  readonly property int settingsListRowHeight: 40
+  readonly property int settingsNumericFieldWidth: 80
+  readonly property int settingsPopupWidth: 500
+  readonly property int schemeDownloaderListHeight: 400
+
   // ----------------------------------------------------------------
   // §3.4.1 fullscreen launcher (gxde-launcher fullscreenframe.cpp:1319-1341,
   // searchwidget.cpp:81-103, calculate_util.cpp:47-54,104-145, constants.h)
@@ -739,6 +838,12 @@ Singleton {
   // sits on top (fullscreenframe.cpp:1321-1334)
   readonly property int launcherTopBand: 30
   readonly property int launcherSearchWidth: 290
+  readonly property int launcherSearchHeight: 30
+  // Search field inner insets — port values matching the DDE artwork's look.
+  readonly property int launcherSearchInsetLeft: 25
+  readonly property int launcherSearchInsetRight: 20
+  // Clipboard preview card to the right of the results list (port value).
+  readonly property int launcherClipboardPreviewWidth: 260
   readonly property int launcherSearchButtonSize: 22 // category / unfullscreen
   readonly property int launcherSearchButtonSizeAlt: 24 // settings
   readonly property int launcherSearchButtonGap: 30
@@ -774,6 +879,9 @@ Singleton {
   readonly property int launcherMiniAvatarSize: 60 // avatar.cpp:42
   readonly property int launcherMiniTopBand: 30 // right bar top spacing
   readonly property int launcherMiniModeToggleSize: 24 // fullscreen_normal.png
+  readonly property int launcherMiniEnterIconSize: 20 // enter_details_normal.svg
+  // New-app accent dot on the grid label (appitemdelegate.cpp:172).
+  readonly property int launcherNewDotSize: 10
   readonly property int launcherMiniPaddingLeft: 18 // miniframerightbar.cpp:144
   readonly property int launcherMiniPaddingRight: 12
   readonly property int launcherMiniPaddingBottom: 18
@@ -803,6 +911,16 @@ Singleton {
   // DDE plugin-item sizeHint (DESIGN §3.1.4; gxde-dock plugin widgets all
   // report 26x26, e.g. plugins/shutdown/pluginwidget.cpp:35)
   readonly property int dockPluginSize: 26
+
+  // Running/hover pill under taskbar, tray and workspace icons. DDE draws a
+  // 20x2 bar (appitem.cpp:320-358); the port keeps the thicker pill shape —
+  // one token so the three copies cannot drift.
+  readonly property int dockIndicatorHeight: 4
+  // Fashion-mode icon flow spacing — port geometry (gxde-dock packs items at
+  // setSpacing(0) and bakes air into each item instead).
+  readonly property int dockFashionSpacing: 10
+  // Unread-count dot on the bar notification bell.
+  readonly property int notificationBadgeSize: 7
 
   // Fashion-mode plugin cell metrics. dock.pluginSpacing is the air on each
   // side of the tile — the cell grows from the tile instead of consuming a

@@ -8,7 +8,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
   spacing: Style.marginM
-  width: 700
+  width: Style.settingsWidgetContentWidth
 
   // Properties to receive data from parent
   property var screen: null
@@ -103,7 +103,7 @@ ColumnLayout {
     placeholder: I18n.tr("bar.clock.custom-font-placeholder")
     searchPlaceholder: I18n.tr("bar.clock.custom-font-search-placeholder")
     popupHeight: 420
-    minimumWidth: 300
+    minimumWidth: Style.settingsPopupFieldWidthWide
     onSelected: function (key) {
       settingsHelper.set("customFont", key);
       saveSettings();
@@ -230,8 +230,8 @@ ColumnLayout {
       }
 
       Rectangle {
-        Layout.preferredWidth: 320
-        Layout.preferredHeight: 160 // Fixed height instead of fillHeight
+        Layout.preferredWidth: Style.clockPreviewWidth
+        Layout.preferredHeight: Style.clockPreviewHeight // Fixed height instead of fillHeight
 
         color: Colors.overlay("field")
         radius: Style.radiusItem
@@ -243,7 +243,7 @@ ColumnLayout {
           anchors.centerIn: parent
 
           ColumnLayout {
-            spacing: -2
+            spacing: -2 // nosd:raw-ok optical tightening between stacked vertical clock lines
             Layout.alignment: Qt.AlignHCenter
 
             // Horizontal
@@ -277,7 +277,7 @@ ColumnLayout {
 
           // Vertical
           ColumnLayout {
-            spacing: -2
+            spacing: -2 // nosd:raw-ok optical tightening between stacked vertical clock lines
             Layout.alignment: Qt.AlignHCenter
 
             Repeater {
@@ -315,7 +315,7 @@ ColumnLayout {
 
   NDateTimeTokens {
     Layout.fillWidth: true
-    Layout.preferredHeight: 300
+    Layout.preferredHeight: Style.dateTokenPickerHeight
 
     // Connect to token clicked signal if NDateTimeTokens provides it
     onTokenClicked: token => root.insertToken(token)

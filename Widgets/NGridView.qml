@@ -264,8 +264,8 @@ Item {
   }
 
   // Set reasonable implicit sizes for Layout usage
-  implicitWidth: 200
-  implicitHeight: 200
+  implicitWidth: Style.viewImplicitSize
+  implicitHeight: Style.viewImplicitSize
 
   Component.onCompleted: {
     _wheelTargetY = gridView.contentY;
@@ -360,7 +360,7 @@ Item {
 
       contentItem: Rectangle {
         implicitWidth: root.handleWidth
-        implicitHeight: 100
+        implicitHeight: Style.scrollbarHandleMinSize
         radius: root.handleRadius
         color: parent.pressed ? root.handlePressedColor : parent.hovered ? root.handleHoverColor : root.handleColor
         opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollBarActive ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
@@ -375,7 +375,7 @@ Item {
 
       background: Rectangle {
         implicitWidth: root.handleWidth
-        implicitHeight: 100
+        implicitHeight: Style.scrollbarHandleMinSize
         color: root.trackColor
         opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.verticalScrollBarActive ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 0.3 : 0.0) : 0.0
         radius: root.handleRadius / 2

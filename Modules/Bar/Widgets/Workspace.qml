@@ -843,7 +843,7 @@ Item {
 
         x: Style.pixelAlignCenter(parent.width, width)
         y: Style.pixelAlignCenter(parent.height, height)
-        spacing: 2
+        spacing: Style.marginXXS
         flow: root.isVertical ? Flow.TopToBottom : Flow.LeftToRight
 
         // Model is the count, entries are read by index: a rebuilt snapshot
@@ -884,11 +884,11 @@ Item {
               Rectangle {
                 id: groupedFocusIndicator
                 visible: groupedTaskbarItem.isFocused || windowHoverHandler.hovered
-                anchors.bottomMargin: -2
+                anchors.bottomMargin: -height / 2
                 anchors.bottom: parent.bottom
                 anchors.horizontalCenter: parent.horizontalCenter
                 width: Style.toOdd(root.iconSize * 0.25)
-                height: 4
+                height: Style.dockIndicatorHeight
                 color: groupedTaskbarItem.isFocused ? Colors.mPrimary : Colors.mHover
                 radius: Math.min(Style.radiusXXS, width / 2)
               }

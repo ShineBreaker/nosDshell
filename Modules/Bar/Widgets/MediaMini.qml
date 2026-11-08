@@ -432,7 +432,7 @@ Item {
     id: linearSpectrum
     NLinearSpectrum {
       width: parent.width - Style.marginS
-      height: 20
+      height: Style.spectrumStripHeight
       values: SpectrumService.values
       fillColor: Colors.mPrimary
       opacity: 0.4
@@ -468,7 +468,7 @@ Item {
   // Progress Ring Component
   component ProgressRing: Canvas {
     property real progress: 0
-    property real lineWidth: 2
+    property real lineWidth: Style.borderM
 
     function repaint() {
       if (this.visible && this.opacity > 0)

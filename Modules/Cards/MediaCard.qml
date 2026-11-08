@@ -89,7 +89,7 @@ NBox {
           width: root.width
           height: root.height
           radius: Style.radiusM
-          color: "white"
+          color: "white" // nosd:raw-ok mask alpha source; only opacity is sampled
         }
       }
     }
@@ -250,7 +250,7 @@ NBox {
     NContextMenu {
       id: playerContextMenu
       parent: root
-      width: 200
+      width: 200 // nosd:raw-ok wider than menuWidth so long player names fit
       verticalPolicy: ScrollBar.AlwaysOff
 
       onTriggered: function (action) {
@@ -315,7 +315,7 @@ NBox {
                      "blur": Style.shadowBlurMax,
                      "x": 0,
                      "y": 0,
-                     "color": Settings.data.colorSchemes.darkMode ? Qt.rgba(0, 0, 0, 0.9) : Qt.rgba(1, 1, 1, 0.9)
+                     "color": Settings.data.colorSchemes.darkMode ? Qt.alpha(Colors.mShadow, 0.9) : Qt.alpha(Colors.onWallpaper, 0.9)
                    })
         }
 

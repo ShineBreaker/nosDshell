@@ -510,10 +510,10 @@ Item {
           id: hoverIndicator
           visible: !root.efficientMode && !root.fashionMode
           anchors.bottom: trayIcon.bottom
-          anchors.bottomMargin: -2
+          anchors.bottomMargin: -height / 2
           anchors.horizontalCenter: trayIcon.horizontalCenter
           width: Style.toOdd(iconSize * 0.25)
-          height: 4
+          height: Style.dockIndicatorHeight
           color: trayDelegate.isHovered ? Colors.mHover : "transparent"
           radius: Math.min(Style.radiusXXS, width / 2)
         }
@@ -659,7 +659,7 @@ Item {
     Flow {
       id: fashionIconsFlow
       anchors.centerIn: parent
-      spacing: 10
+      spacing: Style.dockFashionSpacing
       flow: root.isVertical ? Flow.TopToBottom : Flow.LeftToRight
 
       Repeater {

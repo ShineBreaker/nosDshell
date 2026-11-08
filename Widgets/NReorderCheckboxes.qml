@@ -114,7 +114,7 @@ Item {
               model: 3
               Rectangle {
                 Layout.preferredWidth: root.baseSize * 0.4
-                Layout.preferredHeight: 2
+                Layout.preferredHeight: Style.borderM
                 radius: 1
                 color: root.dragHandleColor
               }

@@ -132,7 +132,7 @@ ColumnLayout {
   // List of current blacklist items
   NListView {
     Layout.fillWidth: true
-    Layout.preferredHeight: 150
+    Layout.preferredHeight: Style.settingsListHeight
     Layout.topMargin: Style.marginL // Increased top margin
 
     model: blacklistModel
@@ -141,7 +141,7 @@ ColumnLayout {
       // live row proxy and crashes when the model mutates (DESIGN §1.7).
       required property string rule
       width: ListView.width
-      height: 40
+      height: Style.settingsListRowHeight
 
       Rectangle {
         id: itemBackground

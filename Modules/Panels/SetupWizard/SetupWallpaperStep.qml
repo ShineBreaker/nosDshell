@@ -38,7 +38,7 @@ ColumnLayout {
   Rectangle {
     Layout.fillWidth: true
     Layout.fillHeight: true
-    Layout.minimumHeight: 180
+    Layout.minimumHeight: Style.setupWallpaperPreviewHeight
     color: Colors.overlay("idle")
     radius: Style.radiusL
 
@@ -60,8 +60,8 @@ ColumnLayout {
 
       Rectangle {
         Layout.alignment: Qt.AlignHCenter
-        width: 64
-        height: 64
+        width: Style.setupEmptyIconSize
+        height: Style.setupEmptyIconSize
         radius: width / 2
         color: Colors.mPrimary
 
@@ -86,7 +86,7 @@ ColumnLayout {
   // Wallpaper gallery strip
   Item {
     Layout.fillWidth: true
-    Layout.preferredHeight: 92
+    Layout.preferredHeight: Style.setupWallpaperStripHeight
     visible: filteredWallpapers.length > 0
 
     NScrollView {
@@ -170,9 +170,9 @@ ColumnLayout {
               visible: selectedWallpaper === modelData
               anchors.right: parent.right
               anchors.bottom: parent.bottom
-              anchors.margins: 6
-              width: 24
-              height: 24
+              anchors.margins: Style.marginS
+              width: Style.checkBadgeSize
+              height: Style.checkBadgeSize
               radius: width / 2
               color: Colors.mPrimary
 
@@ -231,7 +231,7 @@ ColumnLayout {
   // Helpful info card
   Rectangle {
     Layout.fillWidth: true
-    Layout.preferredHeight: 80
+    Layout.preferredHeight: Style.setupInfoCardHeight
     color: Colors.overlay("idle")
     radius: Style.radiusM
     opacity: 0.4

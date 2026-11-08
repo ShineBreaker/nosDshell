@@ -37,8 +37,8 @@ ColumnLayout {
           spacing: Style.marginS
 
           Rectangle {
-            width: 28
-            height: 28
+            width: Style.setupIconTileS
+            height: Style.setupIconTileS
             radius: Style.radiusM
             color: Colors.overlay("idle")
 
@@ -52,7 +52,7 @@ ColumnLayout {
 
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: 2
+            spacing: Style.marginXXS
 
             NText {
               text: I18n.tr("panels.bar.appearance-position-label")
@@ -98,7 +98,7 @@ ColumnLayout {
             ]
             delegate: Rectangle {
               Layout.fillWidth: true
-              Layout.preferredHeight: 40
+              Layout.preferredHeight: Style.setupOptionRowHeight
               radius: Style.radiusM
               border.width: Style.borderS
 
@@ -147,8 +147,8 @@ ColumnLayout {
         spacing: Style.marginM
 
         Rectangle {
-          width: 32
-          height: 32
+          width: Style.setupIconTileM
+          height: Style.setupIconTileM
           radius: Style.radiusM
           color: Colors.overlay("idle")
           NIcon {
@@ -161,7 +161,7 @@ ColumnLayout {
 
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          spacing: Style.marginXXS
           NText {
             text: I18n.tr("panels.bar.appearance-density-label")
             pointSize: Style.fontSizeL
@@ -205,7 +205,7 @@ ColumnLayout {
             delegate: Rectangle {
               radius: Style.radiusM
               border.width: Style.borderS
-              Layout.preferredHeight: 32
+              Layout.preferredHeight: Style.setupOptionChipHeight
               Layout.preferredWidth: Math.max(90, densityText.implicitWidth + Style.margin2XL)
 
               property bool isActive: Settings.data.bar.density === modelData.key
@@ -256,8 +256,8 @@ ColumnLayout {
           Layout.fillWidth: true
           spacing: Style.marginS
           Rectangle {
-            width: 32
-            height: 32
+            width: Style.setupIconTileM
+            height: Style.setupIconTileM
             radius: Style.radiusM
             color: Colors.overlay("idle")
             NIcon {
@@ -269,7 +269,7 @@ ColumnLayout {
           }
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: 2
+            spacing: Style.marginXXS
             NText {
               text: I18n.tr("panels.user-interface.scaling-label")
               pointSize: Style.fontSizeL
@@ -318,8 +318,8 @@ ColumnLayout {
           spacing: Style.marginS
 
           Rectangle {
-            width: 28
-            height: 28
+            width: Style.setupIconTileS
+            height: Style.setupIconTileS
             radius: Style.radiusM
             color: Colors.overlay("idle")
 
@@ -333,7 +333,7 @@ ColumnLayout {
 
           ColumnLayout {
             Layout.fillWidth: true
-            spacing: 2
+            spacing: Style.marginXXS
 
             NText {
               text: I18n.tr("panels.bar.appearance-type-label") ?? "Bar Type"
@@ -367,7 +367,7 @@ ColumnLayout {
             ]
             delegate: Rectangle {
               Layout.fillWidth: true
-              Layout.preferredHeight: 40
+              Layout.preferredHeight: Style.setupOptionRowHeight
               radius: Style.radiusM
               border.width: Style.borderS
 
@@ -424,8 +424,8 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Style.marginM
         Rectangle {
-          width: 32
-          height: 32
+          width: Style.setupIconTileM
+          height: Style.setupIconTileM
           radius: Style.radiusM
           color: Colors.overlay("idle")
           NIcon {
@@ -437,7 +437,7 @@ ColumnLayout {
         }
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          spacing: Style.marginXXS
           NText {
             text: I18n.tr("panels.user-interface.dimmer-opacity-label")
             pointSize: Style.fontSizeL
@@ -479,8 +479,8 @@ ColumnLayout {
         Layout.fillWidth: true
         spacing: Style.marginM
         Rectangle {
-          width: 32
-          height: 32
+          width: Style.setupIconTileM
+          height: Style.setupIconTileM
           radius: Style.radiusM
           color: Colors.overlay("idle")
           NIcon {
@@ -492,7 +492,7 @@ ColumnLayout {
         }
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          spacing: Style.marginXXS
           NText {
             text: I18n.tr("panels.user-interface.shadows-label")
             pointSize: Style.fontSizeL

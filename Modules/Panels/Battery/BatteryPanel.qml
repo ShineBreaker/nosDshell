@@ -127,7 +127,7 @@ SmartPanel {
 
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: 28
+          Layout.preferredHeight: Style.quickPanelCompactRowHeight
           visible: panelContent.showPowerProfiles && panelContent.profilesAvailable
 
           RowLayout {
@@ -167,7 +167,7 @@ SmartPanel {
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginM
           Layout.rightMargin: Style.marginM
-          Layout.preferredHeight: 22
+          Layout.preferredHeight: Style.quickPanelSliderHeight
           visible: panelContent.showPowerProfiles && panelContent.profilesAvailable
           from: 0
           to: 2
@@ -279,7 +279,7 @@ SmartPanel {
 
     Item {
       Layout.fillWidth: true
-      Layout.preferredHeight: 22
+      Layout.preferredHeight: Style.quickPanelSliderHeight
 
       RowLayout {
         anchors.fill: parent
@@ -289,7 +289,7 @@ SmartPanel {
 
         NLinearGauge {
           Layout.fillWidth: true
-          Layout.preferredHeight: 2
+          Layout.preferredHeight: Style.progressTrackHeight
           orientation: Qt.Horizontal
           ratio: Math.max(0, Math.min(1, BatteryService.getPercentage(batteryRow.device) / 100))
           fillColor: (BatteryService.isCriticalBattery(batteryRow.device) || BatteryService.isLowBattery(batteryRow.device)) ? Colors.mError : Colors.accent

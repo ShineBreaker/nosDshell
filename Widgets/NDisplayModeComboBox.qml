@@ -11,7 +11,7 @@ NComboBox {
 
   label: I18n.tr("common.display-mode")
   description: I18n.tr("common.display-mode-description")
-  minimumWidth: 200
+  minimumWidth: Style.settingsPopupFieldWidth
   model: [
     {
       "key": "onhover",

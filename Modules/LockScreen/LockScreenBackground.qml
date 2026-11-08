@@ -129,7 +129,7 @@ Item {
   // Background - solid color or black fallback
   Rectangle {
     anchors.fill: parent
-    color: Settings.data.wallpaper.useSolidColor ? Settings.data.wallpaper.solidColor : "#000000"
+    color: Settings.data.wallpaper.useSolidColor ? Settings.data.wallpaper.solidColor : Colors.veilWallpaper
   }
 
   Image {
@@ -209,7 +209,7 @@ Item {
     anchors.fill: parent
     visible: Settings.data.general.showScreenCorners
 
-    property color cornerColor: Settings.data.general.forceBlackScreenCorners ? "black" : Colors.mSurface
+    property color cornerColor: Settings.data.general.forceBlackScreenCorners ? Colors.veilWallpaper : Colors.mSurface
     property real cornerRadius: Style.screenRadius
     property real cornerSize: Style.screenRadius
 
@@ -234,7 +234,7 @@ Item {
         ctx.fillRect(0, 0, width, height);
 
         ctx.globalCompositeOperation = "destination-out";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#ffffff"; // nosd:raw-ok destination-out erase paint; only alpha matters
         ctx.beginPath();
         ctx.arc(width, height, parent.cornerRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -267,7 +267,7 @@ Item {
         ctx.fillRect(0, 0, width, height);
 
         ctx.globalCompositeOperation = "destination-out";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#ffffff"; // nosd:raw-ok destination-out erase paint; only alpha matters
         ctx.beginPath();
         ctx.arc(0, height, parent.cornerRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -300,7 +300,7 @@ Item {
         ctx.fillRect(0, 0, width, height);
 
         ctx.globalCompositeOperation = "destination-out";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#ffffff"; // nosd:raw-ok destination-out erase paint; only alpha matters
         ctx.beginPath();
         ctx.arc(width, 0, parent.cornerRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -333,7 +333,7 @@ Item {
         ctx.fillRect(0, 0, width, height);
 
         ctx.globalCompositeOperation = "destination-out";
-        ctx.fillStyle = "#ffffff";
+        ctx.fillStyle = "#ffffff"; // nosd:raw-ok destination-out erase paint; only alpha matters
         ctx.beginPath();
         ctx.arc(0, 0, parent.cornerRadius, 0, 2 * Math.PI);
         ctx.fill();

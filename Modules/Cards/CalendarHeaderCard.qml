@@ -93,7 +93,7 @@ Rectangle {
             }
             pointSize: Style.fontSizeM
             color: Colors.mOnPrimary
-            Layout.maximumWidth: 150
+            Layout.maximumWidth: Style.weatherCityNameMaxWidth
             elide: Text.ElideRight
           }
 

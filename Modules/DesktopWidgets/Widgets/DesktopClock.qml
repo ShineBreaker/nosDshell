@@ -47,7 +47,7 @@ DraggableDesktopWidget {
   Component {
     id: minimalClockComponent
     ColumnLayout {
-      spacing: -2
+      spacing: -2 // nosd:raw-ok optical tightening between stacked clock lines
       opacity: root.widgetOpacity
 
       Repeater {

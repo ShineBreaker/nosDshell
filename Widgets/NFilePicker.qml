@@ -129,8 +129,8 @@ Popup {
     }
   }
 
-  width: 900
-  height: 700
+  width: Style.filePickerWidth
+  height: Style.filePickerHeight
   modal: true
   closePolicy: Popup.CloseOnEscape
   Shortcut {
@@ -297,7 +297,7 @@ Popup {
       // Navigation toolbar
       Rectangle {
         Layout.fillWidth: true
-        Layout.preferredHeight: 45
+        Layout.preferredHeight: Style.filePickerToolbarHeight
         color: Colors.overlay("field")
         radius: Style.radiusWindow
         border.color: Colors.borderShell
@@ -551,8 +551,8 @@ Popup {
                   smooth: false
                   cache: true
                   asynchronous: true
-                  sourceSize.width: 120
-                  sourceSize.height: 120
+                  sourceSize.width: Style.filePickerThumbSize
+                  sourceSize.height: Style.filePickerThumbSize
                   onStatusChanged: {
                     if (status === Image.Error)
                       visible = false;
@@ -591,8 +591,8 @@ Popup {
                   anchors.top: parent.top
                   anchors.right: parent.right
                   anchors.margins: Style.marginS
-                  width: 24
-                  height: 24
+                  width: Style.checkBadgeSize
+                  height: Style.checkBadgeSize
                   radius: Math.min(Style.radiusRow, width / 2)
                   color: Colors.accent
                   border.color: Colors.borderShell
@@ -685,7 +685,7 @@ Popup {
             required property bool fileIsDir
             required property real fileSize
             width: listView.width
-            height: 40
+            height: Style.filePickerListRowHeight
             color: {
               if (filePickerPanel.currentSelection.includes(filePath))
                 return Colors.accent;

@@ -284,7 +284,7 @@ Item {
         anchors.centerIn: parent // Now this works without layout conflicts
         sourceComponent: ColumnLayout {
           anchors.centerIn: parent
-          spacing: -2
+          spacing: -2 // nosd:raw-ok optical tightening between stacked vertical clock lines
           Repeater {
             model: I18n.locale.toString(now, effectiveFormatVertical).split(" ")
             delegate: NText {

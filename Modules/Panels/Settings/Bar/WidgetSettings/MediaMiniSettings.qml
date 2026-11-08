@@ -121,7 +121,7 @@ ColumnLayout {
       settingsHelper.set("visualizerType", key);
       saveSettings();
     }
-    minimumWidth: 200
+    minimumWidth: Style.settingsPopupFieldWidth
     defaultValue: widgetMetadata.visualizerType
   }
 
@@ -192,7 +192,7 @@ ColumnLayout {
       settingsHelper.set("scrollingMode", key);
       saveSettings();
     }
-    minimumWidth: 200
+    minimumWidth: Style.settingsPopupFieldWidth
     defaultValue: widgetMetadata.scrollingMode
   }
 

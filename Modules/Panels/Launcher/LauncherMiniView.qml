@@ -196,25 +196,25 @@ Item {
           id: searchField
           Layout.fillWidth: true
           Layout.preferredWidth: Style.launcherSearchWidth
-          Layout.preferredHeight: 30
+          Layout.preferredHeight: Style.launcherSearchHeight
           text: model.searchText
           onTextEdited: txt => model.setSearchText(txt)
           onAccepted: model.activate()
         }
 
         Item {
-          Layout.preferredHeight: 10
+          Layout.preferredHeight: Style.marginM
         }
 
         // 1 px separator
         Rectangle {
           Layout.fillWidth: true
-          Layout.preferredHeight: 1
+          Layout.preferredHeight: Style.borderS
           color: Colors.overlay("hover")
         }
 
         Item {
-          Layout.preferredHeight: 4
+          Layout.preferredHeight: Style.marginXS
         }
 
         // App list (or category list, or search results)
@@ -379,8 +379,8 @@ Item {
             spacing: Style.marginS
 
             NSymbolicImage {
-              Layout.preferredWidth: 24
-              Layout.preferredHeight: 24
+              Layout.preferredWidth: Style.launcherMiniModeToggleSize
+              Layout.preferredHeight: Style.launcherMiniModeToggleSize
               source: root.ddeImages + "all.svg"
               color: Colors.onShell
               fillMode: Image.PreserveAspectFit
@@ -402,8 +402,8 @@ Item {
             }
 
             NSymbolicImage {
-              Layout.preferredWidth: 20
-              Layout.preferredHeight: 20
+              Layout.preferredWidth: Style.launcherMiniEnterIconSize
+              Layout.preferredHeight: Style.launcherMiniEnterIconSize
               source: root.ddeImages + "enter_details_normal.svg"
               color: Colors.onShell
               fillMode: Image.PreserveAspectFit
@@ -550,7 +550,7 @@ Item {
         // ---- date and time (datetimewidget.cpp:35) ----
         ColumnLayout {
           Layout.fillWidth: true
-          spacing: 2
+          spacing: Style.marginXXS
 
           NText {
             id: clockLabel

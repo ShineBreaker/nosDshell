@@ -251,7 +251,7 @@ NDccRow {
       anchors.left: decreaseButton.right
       anchors.right: increaseButton.left
       anchors.verticalCenter: parent.verticalCenter
-      anchors.margins: 4
+      anchors.margins: Style.marginXS
       height: parent.height
 
       RowLayout {

@@ -131,7 +131,7 @@ Item {
       anchors.left: parent.left
       anchors.right: parent.right
       anchors.top: parent.top
-      anchors.margins: 14
+      anchors.margins: Style.lockPanelMargin
       spacing: Style.marginL
 
       // DDE centre block (DESIGN §3.9, userinputwidget.cpp): 100 px ringless
@@ -155,9 +155,9 @@ Item {
 
         NImageRounded {
           Layout.alignment: Qt.AlignHCenter
-          Layout.preferredWidth: 100
-          Layout.preferredHeight: 100
-          Layout.bottomMargin: 25
+          Layout.preferredWidth: Style.lockAvatarSize
+          Layout.preferredHeight: Style.lockAvatarSize
+          Layout.bottomMargin: Style.lockNameGap
           radius: width / 2
           imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
           fallbackImagePath: Settings.ddeDefaultAvatar
@@ -167,7 +167,7 @@ Item {
 
         NText {
           Layout.alignment: Qt.AlignHCenter
-          Layout.bottomMargin: 20
+          Layout.bottomMargin: Style.lockPasswordGap
           text: HostService.displayName
           pointSize: Style.fontSizeLockLabel
           color: Colors.onWallpaper
@@ -198,15 +198,15 @@ Item {
         Rectangle {
           id: passwordInputContainer
           Layout.alignment: Qt.AlignHCenter
-          Layout.preferredWidth: 280
-          Layout.preferredHeight: 36
+          Layout.preferredWidth: Style.lockPasswordWidth
+          Layout.preferredHeight: Style.lockPasswordHeight
           // DESIGN §3.9: 280x36, field colour, radius 6 (not a pill).
           // Wallpaper surface: the field level must come from the constant
           // white ladder, not the theme-flipping overlay() one.
           radius: Style.lockPasswordFieldRadius
           color: Colors.overlayWallpaper("field")
           border.color: lockControl.showFailure ? Colors.alert : (passwordInput.activeFocus ? Colors.mPrimary : Qt.alpha(Colors.mOutline, 0.3))
-          border.width: 1
+          border.width: Style.borderS
 
           property bool passwordVisible: false
 
@@ -221,7 +221,7 @@ Item {
             arrowWidth: Style.marginM
             arrowHeight: Style.marginS
             radius: Style.radiusPopup
-            fillColor: "white"
+            fillColor: Colors.popupLight
             borderColor: Colors.alert
             borderWidth: 1
             visible: lockControl.showFailure && (lockControl.errorMessage || "").length > 0
@@ -261,9 +261,9 @@ Item {
 
           Row {
             anchors.left: parent.left
-            anchors.leftMargin: 12
+            anchors.leftMargin: Style.margin2S
             anchors.right: parent.right
-            anchors.rightMargin: 12
+            anchors.rightMargin: Style.margin2S
             anchors.verticalCenter: parent.verticalCenter
             spacing: Style.marginS
 
@@ -282,8 +282,8 @@ Item {
               Layout.alignment: Qt.AlignLeft
 
               Rectangle {
-                width: 2
-                height: 20
+                width: Style.lockCaretWidth
+                height: Style.lockFieldContentHeight
                 color: Colors.mPrimary
                 visible: passwordInput.activeFocus && passwordInput.text.length === 0
                 anchors.verticalCenter: parent.verticalCenter
@@ -318,8 +318,8 @@ Item {
               // renders its frame, so it must be hidden while idle.
               NBusyIndicator {
                 anchors.verticalCenter: parent.verticalCenter
-                width: 20
-                height: 20
+                width: Style.lockFieldContentHeight
+                height: Style.lockFieldContentHeight
                 running: lockControl.unlockInProgress
                 visible: lockControl.unlockInProgress
               }
@@ -330,7 +330,7 @@ Item {
               NText {
                 anchors.verticalCenter: parent.verticalCenter
                 text: lockControl.waitingForPassword ? I18n.tr("authentication.fingerprint-or-password") : I18n.tr("authentication.password")
-                color: Qt.alpha("white", 0.5)
+                color: Colors.onWallpaperTertiary
                 pointSize: Style.fontSizeM
                 visible: passwordInput.text.length === 0 && !passwordInput.activeFocus
               }
@@ -338,7 +338,7 @@ Item {
               // Authenticating hides the dot host so the two never overlap.
               Item {
                 id: passwordVisualHost
-                height: 20
+                height: Style.lockFieldContentHeight
                 width: passwordInputContainer.passwordVisible ? Math.min(visiblePasswordPlainText.implicitWidth, 550) : Math.min(passwordDisplayContent.width, 550)
                 anchors.verticalCenter: parent.verticalCenter
                 visible: !lockControl.unlockInProgress
@@ -360,7 +360,7 @@ Item {
                 // Password dots display with selection support
                 Item {
                   width: Math.min(passwordDisplayContent.width, 550)
-                  height: 20
+                  height: Style.lockFieldContentHeight
                   visible: passwordInput.text.length > 0 && !passwordInputContainer.passwordVisible
                   anchors.left: parent.left
                   anchors.verticalCenter: parent.verticalCenter
@@ -498,8 +498,8 @@ Item {
                 }
 
                 Rectangle {
-                  width: 2
-                  height: 20
+                  width: Style.lockCaretWidth
+                  height: Style.lockFieldContentHeight
                   x: passwordVisualHost.caretVisualX
                   color: Colors.mPrimary
                   // Hide the cursor when text is selected
@@ -541,10 +541,10 @@ Item {
           Item {
             id: unlockButton
             anchors.right: parent.right
-            anchors.rightMargin: 4
+            anchors.rightMargin: Style.marginXS
             anchors.verticalCenter: parent.verticalCenter
-            width: 28
-            height: 28
+            width: Style.lockUnlockButtonSize
+            height: Style.lockUnlockButtonSize
             enabled: !lockControl || !lockControl.unlockInProgress
 
             readonly property bool hovered: unlockArea.containsMouse && !unlockArea.pressed
@@ -552,7 +552,7 @@ Item {
 
             Image {
               anchors.centerIn: parent
-              width: 18
+              width: Style.lockUnlockIconSize
               height: width
               source: "file://" + Quickshell.shellDir + "/Assets/DDE/gxde-session-ui/widgets/img/action_icons/unlock_" + unlockButton.artworkState + ".svg"
               sourceSize.width: width

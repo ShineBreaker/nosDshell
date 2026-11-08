@@ -122,12 +122,12 @@ Popup {
           spacing: Style.marginS
           Item {
             Layout.fillHeight: true
-            Layout.preferredHeight: 4
+            Layout.preferredHeight: Style.marginXS
           }
           NIcon {
             Layout.alignment: Qt.AlignHCenter
             icon: modelData
-            pointSize: 42
+            pointSize: Style.iconPickerPreviewSize
           }
           NText {
             Layout.alignment: Qt.AlignHCenter

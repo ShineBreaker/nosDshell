@@ -8,7 +8,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
   spacing: Style.marginM
-  width: 700
+  width: Style.settingsWidgetContentWidth
 
   property var widgetData: null
   property var widgetMetadata: null
@@ -129,7 +129,7 @@ ColumnLayout {
     placeholder: I18n.tr("bar.clock.custom-font-placeholder")
     searchPlaceholder: I18n.tr("bar.clock.custom-font-search-placeholder")
     popupHeight: 420
-    minimumWidth: 300
+    minimumWidth: Style.settingsPopupFieldWidthWide
     onSelected: function (key) {
       settingsHelper.set("customFont", key);
       saveSettings();
@@ -196,8 +196,8 @@ ColumnLayout {
       }
 
       Rectangle {
-        Layout.preferredWidth: 320
-        Layout.preferredHeight: 160
+        Layout.preferredWidth: Style.clockPreviewWidth
+        Layout.preferredHeight: Style.clockPreviewHeight
         color: Colors.overlay("field")
         radius: Style.radiusItem
         border.color: Colors.accent
@@ -208,7 +208,7 @@ ColumnLayout {
           anchors.centerIn: parent
 
           ColumnLayout {
-            spacing: -2
+            spacing: -2 // nosd:raw-ok optical tightening between stacked vertical clock lines
             Layout.alignment: Qt.AlignHCenter
 
             Repeater {
@@ -247,7 +247,7 @@ ColumnLayout {
 
   NDateTimeTokens {
     Layout.fillWidth: true
-    height: 200
+    height: Style.dateTokenPickerHeightCompact
     visible: isMinimalMode
     onTokenClicked: token => root.insertToken(token)
   }

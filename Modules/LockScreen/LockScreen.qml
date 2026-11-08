@@ -151,10 +151,10 @@ Loader {
                 // Info notification
                 Rectangle {
                   width: infoRowLayout.implicitWidth + Style.marginXL * 1.5
-                  height: 50
+                  height: Style.lockMessageHeight
                   anchors.horizontalCenter: parent.horizontalCenter
                   anchors.bottom: parent.bottom
-                  anchors.bottomMargin: 360 * Style.uiScaleRatio
+                  anchors.bottomMargin: Style.lockMessageBottomGap
                   radius: Style.radiusL
                   color: Colors.mTertiary
                   visible: lockContext.showInfo && lockContext.infoMessage && !panelComponent.timerActive
@@ -190,10 +190,10 @@ Loader {
                 // Countdown notification
                 Rectangle {
                   width: countdownRowLayout.implicitWidth + Style.marginXL * 1.5
-                  height: 50
+                  height: Style.lockMessageHeight
                   anchors.horizontalCenter: parent.horizontalCenter
                   anchors.bottom: parent.bottom
-                  anchors.bottomMargin: 360 * Style.uiScaleRatio
+                  anchors.bottomMargin: Style.lockMessageBottomGap
                   radius: Style.radiusL
                   // Wallpaper surface: constant-white ladder, same family as
                   // the onWallpaper ink and the field-level password box.
@@ -305,7 +305,7 @@ Loader {
             // Black surface for disabled monitors — still captures keyboard for password entry
             Rectangle {
               anchors.fill: parent
-              color: "black"
+              color: Colors.veilWallpaper
 
               TextInput {
                 id: blackScreenPasswordInput

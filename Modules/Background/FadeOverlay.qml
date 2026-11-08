@@ -28,7 +28,7 @@ Item {
         required property ShellScreen modelData
         screen: PanelService.liveScreen(modelData)
 
-        color: Qt.rgba(0, 0, 0, 0)
+        color: Qt.alpha(Colors.veilWallpaper, 0)
 
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "nosdshell-fade-overlay"
@@ -45,8 +45,8 @@ Item {
         // ease-in-out (CDS "pulse") so the dim creeps in, then commits.
         NColorAnim on color {
           running: true
-          from: Qt.rgba(0, 0, 0, 0)
-          to: Qt.rgba(0, 0, 0, 1)
+          from: Qt.alpha(Colors.veilWallpaper, 0)
+          to: Colors.veilWallpaper
           duration: IdleService.fadeDuration * 1000
           curve: "pulse"
         }

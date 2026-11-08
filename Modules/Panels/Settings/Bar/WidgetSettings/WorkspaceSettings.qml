@@ -78,7 +78,7 @@ ColumnLayout {
       settingsHelper.set("labelMode", key);
       saveSettings();
     }
-    minimumWidth: 200
+    minimumWidth: Style.settingsPopupFieldWidth
   }
 
   NSpinBox {
@@ -135,7 +135,7 @@ ColumnLayout {
       settingsHelper.set("fontWeight", key);
       saveSettings();
     }
-    minimumWidth: 200
+    minimumWidth: Style.settingsPopupFieldWidth
   }
 
   NToggle {

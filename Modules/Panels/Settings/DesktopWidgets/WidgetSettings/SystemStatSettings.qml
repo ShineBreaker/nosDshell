@@ -8,7 +8,7 @@ import qs.Widgets
 ColumnLayout {
   id: root
   spacing: Style.marginM
-  width: 700
+  width: Style.settingsWidgetContentWidth
 
   property var widgetData: null
   property var widgetMetadata: null

@@ -343,7 +343,7 @@ NBox {
               // Event indicator dots
               Row {
                 visible: Settings.data.location.showCalendarEvents && parent.parent.parent.parent.hasEventsOnDate(modelData.year, modelData.month, modelData.day)
-                spacing: 2
+                spacing: Style.marginXXS
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.bottom: parent.bottom
                 anchors.bottomMargin: Style.marginXS
@@ -352,9 +352,9 @@ NBox {
                   model: parent.parent.parent.parent.parent.getEventsForDate(modelData.year, modelData.month, modelData.day)
 
                   Rectangle {
-                    width: 4
+                    width: Style.calendarEventDotSize
                     height: width
-                    radius: Style.radiusXXS
+                    radius: Style.calendarEventDotSize / 2
                     color: parent.parent.parent.parent.parent.getEventColor(modelData, modelData.today)
                   }
                 }

@@ -17,7 +17,7 @@ ColumnLayout {
     color: Colors.onShellTertiary
     Layout.fillWidth: true
     Layout.leftMargin: Style.marginM
-    Layout.bottomMargin: 4
+    Layout.bottomMargin: Style.marginXS
     elide: Text.ElideRight
   }
 

@@ -226,7 +226,7 @@ ScrollView {
 
     contentItem: Rectangle {
       implicitWidth: root.handleWidth
-      implicitHeight: 100
+      implicitHeight: Style.scrollbarHandleMinSize
       radius: root.handleRadius
       color: parent.pressed ? root.handlePressedColor : parent.hovered ? root.handleHoverColor : root.handleColor
       opacity: parent.policy === ScrollBar.AlwaysOn ? 1.0 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 1.0 : 0.0) : 0.0
@@ -241,7 +241,7 @@ ScrollView {
 
     background: Rectangle {
       implicitWidth: root.handleWidth
-      implicitHeight: 100
+      implicitHeight: Style.scrollbarHandleMinSize
       color: root.trackColor
       opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.verticalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 0.3 : 0.0) : 0.0
       radius: root.handleRadius / 2
@@ -264,7 +264,7 @@ ScrollView {
     interactive: root.horizontalScrollable
 
     contentItem: Rectangle {
-      implicitWidth: 100
+      implicitWidth: Style.scrollbarHandleMinSize
       implicitHeight: root.handleWidth
       radius: root.handleRadius
       color: parent.pressed ? root.handlePressedColor : parent.hovered ? root.handleHoverColor : root.handleColor
@@ -279,7 +279,7 @@ ScrollView {
     }
 
     background: Rectangle {
-      implicitWidth: 100
+      implicitWidth: Style.scrollbarHandleMinSize
       implicitHeight: root.handleWidth
       color: root.trackColor
       opacity: parent.policy === ScrollBar.AlwaysOn ? 0.3 : root.horizontalScrollable ? ((root.showScrollbarWhenScrollable || parent.active || parent.hovered) ? 0.3 : 0.0) : 0.0

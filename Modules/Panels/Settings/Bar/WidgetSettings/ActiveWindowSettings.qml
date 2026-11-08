@@ -156,6 +156,6 @@ ColumnLayout {
       valueScrollingMode = key;
       saveSettings();
     }
-    minimumWidth: 200
+    minimumWidth: Style.settingsPopupFieldWidth
   }
 }
