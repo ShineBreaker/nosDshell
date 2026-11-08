@@ -40,11 +40,13 @@ Item {
   Layout.fillWidth: true
 
   // A head is only drawn when the bar can name every page one-to-one. The head
-  // is the group's own label: it keeps just the 1 px seam to its rows (its
-  // bottomMargin in a layout), while the 15 px group spacing lands between the
-  // previous group's last row and this head — both handled by _stackedOffset.
+  // is a mid-level section label (sub-tab name — no DDE counterpart): unlike
+  // the group's own NDccHead, which is a row INSIDE its block, this bare label
+  // stands marginS off its rows, while the 15 px group spacing lands between
+  // the previous group's last row and this head — both handled by
+  // _stackedOffset.
   readonly property bool stackHeads: stacked && stackTitles.length === contentItems.length && contentItems.length > 0
-  readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.settingsGroupGap : 0
+  readonly property real stackHeadHeight: stackHeads ? Style.settingsHeadHeight + Style.marginS : 0
 
   // Content-item indices taking part in the stack. With onlyGroup the view
   // owns a single slice; otherwise every page is a group — except pages whose

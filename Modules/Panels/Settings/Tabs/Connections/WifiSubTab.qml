@@ -74,9 +74,9 @@ Item {
   // Combined visibility check: tab must be visible AND the window must be visible
   readonly property bool effectivelyVisible: root.visible && Window.window && Window.window.visible
 
-  // Settings lists: the column adds no gap of its own so NHeader's 1 px
-  // bottom margin is the head-to-group seam (DESIGN §3.5.4). The dock popup
-  // (flat) keeps a section gap between its label and the rows.
+  // Settings lists: the group head is a row INSIDE the block (NDccHead), so
+  // the outer column adds no gap of its own. The dock popup (flat) keeps a
+  // section gap between its label and the rows.
   readonly property int listHeadSpacing: root.flat ? Style.marginM : 0
 
   onEffectivelyVisibleChanged: {
@@ -153,10 +153,6 @@ Item {
       Layout.fillWidth: true
       spacing: root.listHeadSpacing
 
-      NHeader {
-        visible: !root.flat
-        label: I18n.tr("common.connected")
-      }
       NLabel {
         visible: root.flat
         label: I18n.tr("common.connected")
@@ -167,6 +163,12 @@ Item {
       ColumnLayout {
         Layout.fillWidth: true
         spacing: root.flat ? Style.marginM : Style.settingsGroupGap
+
+        NDccHead {
+          visible: !root.flat
+          label: I18n.tr("common.connected")
+          Layout.fillWidth: true
+        }
 
         Repeater {
           model: root.connectedNetworks
@@ -182,10 +184,6 @@ Item {
       Layout.fillWidth: true
       spacing: root.listHeadSpacing
 
-      NHeader {
-        visible: !root.flat
-        label: I18n.tr("wifi.panel.known-networks")
-      }
       NLabel {
         visible: root.flat
         label: I18n.tr("wifi.panel.known-networks")
@@ -196,6 +194,12 @@ Item {
       ColumnLayout {
         Layout.fillWidth: true
         spacing: root.flat ? Style.marginM : Style.settingsGroupGap
+
+        NDccHead {
+          visible: !root.flat
+          label: I18n.tr("wifi.panel.known-networks")
+          Layout.fillWidth: true
+        }
 
         Repeater {
           model: root.savedNetworks
@@ -211,10 +215,6 @@ Item {
       Layout.fillWidth: true
       spacing: root.listHeadSpacing
 
-      NHeader {
-        visible: !root.flat
-        label: I18n.tr("wifi.panel.available-networks")
-      }
       NLabel {
         visible: root.flat
         label: I18n.tr("wifi.panel.available-networks")
@@ -225,6 +225,12 @@ Item {
       ColumnLayout {
         Layout.fillWidth: true
         spacing: root.flat ? Style.marginM : Style.settingsGroupGap
+
+        NDccHead {
+          visible: !root.flat
+          label: I18n.tr("wifi.panel.available-networks")
+          Layout.fillWidth: true
+        }
 
         Repeater {
           model: root.availableNetworks
@@ -272,38 +278,29 @@ Item {
     // Ethernet details layout — the same card lives in the network popup
     // panel (DESIGN §3.2); this row exposes the persisted view mode here
     // because the settings tree has no dedicated Ethernet page.
-    ColumnLayout {
+    NSettingsGroup {
       visible: !root.showOnlyLists && NetworkService.ethernetAvailable
       Layout.fillWidth: true
-      spacing: root.listHeadSpacing
+      title: I18n.tr("common.ethernet")
 
-      NHeader {
-        visible: !root.flat
-        label: I18n.tr("common.ethernet")
-      }
-
-      NSettingsGroup {
+      NComboBox {
         Layout.fillWidth: true
-
-        NComboBox {
-          Layout.fillWidth: true
-          label: I18n.tr("panels.connections.ethernet-details-view-label")
-          model: [
-            {
-              "key": "grid",
-              "name": I18n.tr("options.launcher-view-mode.grid")
-            },
-            {
-              "key": "list",
-              "name": I18n.tr("options.launcher-view-mode.list")
-            }
-          ]
-          currentKey: Settings.data.network.ethernetDetailsViewMode
-          onSelected: function (key) {
-            Settings.data.network.ethernetDetailsViewMode = key;
+        label: I18n.tr("panels.connections.ethernet-details-view-label")
+        model: [
+          {
+            "key": "grid",
+            "name": I18n.tr("options.launcher-view-mode.grid")
+          },
+          {
+            "key": "list",
+            "name": I18n.tr("options.launcher-view-mode.list")
           }
-          defaultValue: Settings.getDefaultValue("network.ethernetDetailsViewMode")
+        ]
+        currentKey: Settings.data.network.ethernetDetailsViewMode
+        onSelected: function (key) {
+          Settings.data.network.ethernetDetailsViewMode = key;
         }
+        defaultValue: Settings.getDefaultValue("network.ethernetDetailsViewMode")
       }
     }
   }

@@ -62,6 +62,13 @@ Rectangle {
   property bool isFirst: false
   property bool isLast: false
 
+  // Row metrics overrides — the standard row reads settingsRowHeight /
+  // settingsRowPaddingH / settingsRowPaddingV; the group's in-block head row
+  // (NDccHead) is 24 high with a 10 px right inset instead.
+  property int minRowHeight: Style.settingsRowHeight
+  property int paddingRight: Style.settingsRowPaddingH
+  property int paddingV: Style.settingsRowPaddingV
+
   signal clicked
 
   // DDE's SettingsGroup is a QVBoxLayout, so every item in it is stretched to
@@ -75,7 +82,7 @@ Rectangle {
   // only a hint. Cap it at one content width: a long description would
   // otherwise widen the enclosing scroll column past the module view and push
   // the row's right-hand control off screen.
-  implicitHeight: plain ? contentRow.implicitHeight : Math.max(Style.settingsRowHeight, contentRow.implicitHeight + Style.settingsRowPaddingV * 2)
+  implicitHeight: plain ? contentRow.implicitHeight : Math.max(root.minRowHeight, contentRow.implicitHeight + root.paddingV * 2)
   implicitWidth: Math.min(contentRow.implicitWidth, Style.settingsRowContentMaxWidth) + (plain ? 0 : Style.settingsRowPaddingH * 2)
 
   color: rowColor
@@ -108,9 +115,9 @@ Rectangle {
     id: contentRow
     anchors.fill: parent
     anchors.leftMargin: root.plain ? 0 : Style.settingsRowPaddingH
-    anchors.rightMargin: root.plain ? 0 : Style.settingsRowPaddingH
-    anchors.topMargin: root.plain ? 0 : Style.settingsRowPaddingV
-    anchors.bottomMargin: root.plain ? 0 : Style.settingsRowPaddingV
+    anchors.rightMargin: root.plain ? 0 : root.paddingRight
+    anchors.topMargin: root.plain ? 0 : root.paddingV
+    anchors.bottomMargin: root.plain ? 0 : root.paddingV
     spacing: Style.marginM
   }
 

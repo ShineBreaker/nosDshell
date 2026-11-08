@@ -583,13 +583,13 @@ Noctalia 卡片的对应关系：
 
 - DDE 15 的设置页是一整页"所有设置"（`settingswidget.cpp:90`），所有模块按顺序纵向排在同一个滚动区里，每个模块以"模块头"开头。从所有设置页的模块网格点某个模块进来，等于打开"所有设置"并滚动到该模块；返回回到模块网格〔演进〕。
 - 进入模块视图后，控制中心外框不动，头部（头像、时钟）和底部快捷控制面板都隐藏，整个外框高度只留给两栏（`frame.cpp:127-137`，参照 `references/1.jpg`）：
-  - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体垂直居中（上下各一段伸缩空白），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标取模块的 Papirus symbolic 图：先在当前主题找 `symbolicIcons` 候选的 `*-symbolic` 变体，找不到用 `Assets/Nav/nav_<id>.svg` 的打包副本（§1.9），统一按 `onShell` 剪影着色，未选中态压到 0.4（亮底 0.6）不透明度。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
-  - **右栏**：内容区，宽 352。
+  - **左栏**：56 px 宽的导航条（`frame.h:54`）。按钮整体垂直居中（上下各一段伸缩空白），按钮间距 20（`navigationbar.cpp:102-110`）。每个按钮左右外边距 10、上下内边距 5、圆角 4；悬停底色白 × 0.2，选中白 × 0.3（`dark.qss` `NavigationBar DImageButton`）。图标取模块的 Papirus symbolic 图：先在当前主题找 `symbolicIcons` 候选的 `*-symbolic` 变体，找不到用 `Assets/Nav/nav_<id>.svg` 的打包副本（§1.9），统一按 `onShell` 剪影着色，未选中态压到 0.2（亮底 0.6）不透明度——DDE 的 `nav_*_normal.svg` 把同样的 0.2 透明度画在图里。悬停时向左弹出暗色箭头提示框（Wayland 下底色黑 × 0.8，`navigationbar.cpp:96-99`）。
+  - **右栏**：内容区，宽 352，内边距 (0, 8, 8, 0)（`contentwidget.cpp:98`）：行与分隔线左缘贴栏目边缘，右缘留出 8 px。
 - 导航与滚动联动：
   - 点导航按钮时，内容区平滑滚动到该模块头，用 `motionSettingsScroll`（450 ms，`swift`）〔CDS：原版 `contentwidget.cpp:51,106-112` 为 OutQuint 1400 ms，长距离定位在 CDS 里不超过 `durSlow`〕。
   - 滚动过程中导航选中项实时跟随视口中第一个顶部可见的模块（`settingswidget.cpp:342-380`；〔演进〕上游按滚动停下再更新，这里逐帧同步，选中项拖动到哪高亮到哪；当前模块在视口内仍相交时保持选中，避免来回抖动）。
-- 模块头（`modulewidget.cpp`）：左边距 11，24×24 的模块图标（与导航条同一个 `navIconUrl` 来源，§1.9），接大号标题（LargeLabel，白色），上下内边距 5（`modulewidgetheader.cpp`）。模块之间留 1 个分组间距。
-- 内容区顶部：返回按钮（24×24 圆角 4 的方块，底色白 × 0.2），居中标题"所有设置"（14 px / 500），再下面 15 px 是一条分隔线。内容可滚动，滚动条隐藏。
+- 模块头（`modulewidget.cpp`）：左边距 11，24×24 的模块图标（与导航条同一个 `navIconUrl` 来源，§1.9），接大号标题（LargeLabel，白色），上下内边距 5（`modulewidgetheader.cpp`）。模块头与其内容之间 10 px（`modulewidget.cpp:145`）；模块堆栈 30 px 间距，首模块上方 10 px 间隔块（加间距共 40 px 顶插），末模块下方 20 px 间隔块（`settingswidget.cpp:82-84`）。
+- 内容区顶部：返回按钮是 24×24 的扁平箭头（`backbutton.cpp`：DImageButton，无底色，按下描成 `accent`），居中标题"所有设置"（14 px / 500，`dark.qss` `ContentTitle`），再下面 15 px 是一条分隔线。内容可滚动，滚动条隐藏。
 - 二级页（"下一页"行进入，`NNextPageRow` → `SettingsModuleView.pushPage`）：新页面从右侧推入，旧页面向左推出，`motionPage`（300 ms，`out`）；位移过程中按距离同步淡出。二级页的标题换成该页名称，返回按钮回到上一级。进入方式、转场和返回在所有页面统一，不允许在行内展开大段内容作为替代。
 - 性能：一次展开所有模块代价较大，允许按顺序异步加载（`Loader.asynchronous`）。先加载目标模块和它前后各一个，其余在空闲时补齐。未加载的模块用估计高度占位，加载完成后当前目标模块的头部位置保持不动。
 - 模块顺序与对应（DDE 原有顺序见 `navigationbar.cpp:39-85`）：
@@ -627,7 +627,7 @@ Noctalia 卡片的对应关系：
 
 - **SettingsGroup**：一组行纵向排列，行与行之间留 1 px 缝隙（透出下面的蒙版，形成分隔效果）。整组外缘：第一行上方两角、最后一行下方两角为圆角 5。公共件 `NSettingsGroup` 是组的唯一实现；行是它的直接子项，不允许再套包装列——包装列一旦重新设定间距就会破坏 1 px 缝。
 - **SettingsItem**：行底色 `strong`（`rgba(238,238,238,0.2)`）。可交互的行悬停时为 `checked`（0.3）。出错时画 2 px 的 `alert` 色描边。
-- **SettingsHead**：高 24，左右内边距 (20, 10)。标题 DemiBold、白色。右侧可放"编辑"文字按钮（`accentAlt`）。组的标题用 `NSettingsGroup.title` 声明，不写 `NHeader` 子项；整页只有一个组时标题由子页头（堆叠子页）承担，组内不再重复。
+- **SettingsHead**：组标题是块内第一行——一个 24 px 高的 SettingsItem，插在组布局里（`settingsgroup.cpp:67-72`），吃组底色、拿首行圆角；标题 NormalLabel 字重 550，左内边距 20、右 10（`settingshead.cpp:78-80`、`settingsheaderitem.cpp`）。右缘可放状态小字（`settingsheaderitem.cpp:52` 的右挂件）。公共件是 `NDccHead`；组的标题用 `NSettingsGroup.title`（右缘小字 `titleNote`）声明，不写 `NHeader` 子项。
 - **标准行**：高 36，左右内边距 (20, 10)。
   - 下一页行：标题，右侧是数值（白 × 0.8），再右侧是一个 `›` 箭头。
   - 开关行：标题，右侧是开关。
@@ -649,7 +649,7 @@ Noctalia 卡片的对应关系：
 - **行高系数**〔演进〕：行高类令牌（`detailRowHeight`、`settingsRowHeight`、`launcherMiniRowHeight`、`dialogButtonHeight`、`sliderBasicHeight`、`settingsFieldHeight`）整体乘以 `ui.rowHeightScale`（0.9–1.2，默认 1）。写死行高的组件不会跟着缩放，所以行高一律读令牌。
 - **表面令牌边界**：设置页里的行、列表和嵌板一律用叠加阶梯（`overlay`）或蒙版（`maskShell`）。配色方案只经由令牌层影响组件。组件不直接用 `mSurface`、`mSurfaceVariant`、`mOutline` 这类 Material 颜色填充行或卡片：方案颜色是不透明的（要供 GTK 和终端模板使用），绕过令牌的透明度处理后会在玻璃面上变成实心色块。`m*` 颜色只在两处直接使用：配色方案预览这类"内容本身就是颜色"的展示，以及徽章、状态点的语义色。
 - **列表页**（Wi-Fi 网络、蓝牙设备、插件、配色模板这类可选多项的清单）：每一项是一个 SettingsItem 行。选中或已连接用右侧的 `accent` ✓ 和状态文字表示，整行底色不变。进行中的操作用行内转圈表示。行内展开区（密码、详情）用 `overlay("field")` 加 `radiusItem` 的嵌板。列表末尾接一个可点击的"添加"或"新建"行。
-- **堆叠子页**：`NTabView.stacked` 时，每个子页是一个 NHeader 加一个 SettingsGroup。组头与它的组之间只有 1 px 缝，组与组之间 15 px。间距全部放在上一组末行与下一组头之间，组头与组之间不再额外留白。
+- **堆叠子页**：`NTabView.stacked` 时，每个子页以一个中层节标签（`NHeader`，裸文本、无行底色——DDE 没有这一层，它是子页名的承担者）开头，下面跟一个或数个 SettingsGroup；标签离下方的组 marginS。组与组之间 15 px，间距全部放在上一组末行与下一组标签之间。
 - **成块的内容不折叠进行内**：设置页不用"点行展开/收起"的形式藏内容，行内不出现控制整段内容显隐的 chevron 行。内容较多时按 §3.5.3 用"下一页"行（`NNextPageRow`）推入二级页；其余情况直接常显。唯一的例外是 §3.5.4 列表页的行内展开区（密码、详情），那是列表项自身的展开行为，不折叠整组内容。
 - **控件必须对齐当前呈现形态**：挂件/插件的设置页只显示当前呈现形态实际消费的控件；形态下没有消费方的控件隐藏而非置灰，键值保留（切回该形态或旧配置上它仍生效）。例：`Workspace` 的分组应用视图在高效模式没有消费方，其相关控件只在高效模式下隐藏（`WorkspaceSettings.qml` 的 `groupedUnsupported` 与 `Workspace.qml` 的 `showApplications` 钳制同一公式）。
 

@@ -116,23 +116,23 @@ Singleton {
   readonly property bool _barEffectiveVertical: _barEffectivePosition === "left" || _barEffectivePosition === "right"
   readonly property real barHeight: {
     if (Settings.data.dock.mode === "efficient")
-    return Math.round(Settings.data.dock.iconSize * 1.2);
+      return Math.round(Settings.data.dock.iconSize * 1.2);
     let h;
     switch (Settings.data.bar.density) {
-      case "mini":
+    case "mini":
       h = _barEffectiveVertical ? 23 : 21;
       break;
-      case "compact":
+    case "compact":
       h = _barEffectiveVertical ? 27 : 25;
       break;
-      case "comfortable":
+    case "comfortable":
       h = _barEffectiveVertical ? 39 : 37;
       break;
-      case "spacious":
+    case "spacious":
       h = _barEffectiveVertical ? 49 : 47;
       break;
-      default:
-      case "default":
+    default:
+    case "default":
       h = _barEffectiveVertical ? 33 : 31;
     }
     return toOdd(h);
@@ -143,22 +143,22 @@ Singleton {
   // Qt Quick Rectangle borders are drawn centered on edges (half inside, half outside)
   readonly property real capsuleHeight: {
     if (Settings.data.dock.mode === "efficient")
-    return Math.round(Settings.data.dock.iconSize);
+      return Math.round(Settings.data.dock.iconSize);
     let h;
     switch (Settings.data.bar.density) {
-      case "mini":
+    case "mini":
       h = Math.round(barHeight * 0.90);
       break;
-      case "compact":
+    case "compact":
       h = Math.round(barHeight * 0.85);
       break;
-      case "comfortable":
+    case "comfortable":
       h = Math.round(barHeight * 0.75);
       break;
-      case "spacious":
+    case "spacious":
       h = Math.round(barHeight * 0.65);
       break;
-      default:
+    default:
       h = Math.round(barHeight * 0.82);
       break;
     }
@@ -639,19 +639,38 @@ Singleton {
   readonly property int settingsModuleHeadPadV: Math.round(5 * uiScaleRatio)
   readonly property int settingsRailButtonMarginH: Math.round(10 * uiScaleRatio)
   readonly property int settingsRailButtonPadV: Math.round(5 * uiScaleRatio)
-  readonly property real settingsRailIconDim: 0.4
+  // Unselected rail glyph alpha: nav_<module>_normal.svg ships its dim in the
+  // artwork itself (group fill-opacity 0.2); the checked nav_<module>.svg is
+  // full-white (navigationbar.cpp:119-120, gxde-control-center).
+  readonly property real settingsRailIconDim: 0.2
   readonly property int settingsTabEstimateHeight: Math.round(480 * uiScaleRatio)
-  // Content header: back button, centred title 14/500, separator 15 px below
-  readonly property int settingsModuleTitleSize: Math.round(14 * uiScaleRatio)
+  // Content column insets (contentwidget.cpp:77, contentsMargins(0, 8, 8, 0)):
+  // rows, separator and search field all stop 8 px short of the frame edge;
+  // the top of the title row sits 8 px below the column top. Title text is
+  // ContentTitle 14 px / weight 500 (dark.qss:92-96) = fontSizeTitle, and the
+  // separator lands 15 px under it (titleLayout spacing, contentwidget.cpp:71-74).
+  readonly property int settingsContentInset: Math.round(8 * uiScaleRatio)
   readonly property int settingsModuleSeparatorGap: Math.round(15 * uiScaleRatio)
-  // SettingsGroup: 1 px row gap, outer corners radiusItem; SettingsHead 24 high
+  // Module stack geometry inside the settings scroll (settingswidget.cpp:82-85):
+  // 30 px between module sections, a 10 px spacer above the first (10+30=40 px
+  // of top inset) and a 20 px spacer after the last. The module head sits
+  // 10 px above its first group (modulewidget.cpp:145 centralLayout spacing).
+  readonly property int settingsModuleSpacing: Math.round(30 * uiScaleRatio)
+  readonly property int settingsModuleTopInset: Math.round(10 * uiScaleRatio)
+  readonly property int settingsModuleBottomInset: Math.round(20 * uiScaleRatio)
+  readonly property int settingsModuleHeadSpacing: Math.round(10 * uiScaleRatio)
+  // SettingsGroup: 1 px row gap, outer corners radiusItem; the head is a 24 px
+  // row INSIDE the block (SettingsHeaderItem/SettingsHead are SettingsItems —
+  // settingsgroup.cpp:67-72 inserts the header into the group layout).
   readonly property int settingsGroupGap: Math.round(1 * uiScaleRatio)
   readonly property int settingsHeadHeight: Math.round(24 * uiScaleRatio)
   // SettingsHead insets its title 20 px from the left and 10 px from the right
   // (settingshead.cpp:78-80, contentsMargins(20, 0, 10, 0)).
   readonly property int settingsHeadPaddingH: Math.round(20 * uiScaleRatio)
   readonly property int settingsHeadPaddingRight: Math.round(10 * uiScaleRatio)
-  readonly property real settingsHeadAlpha: 0.15
+  // Group-head title weight: NormalLabel at font-weight 550
+  // (#SettingsHeadTitle / #SettingsHeaderItemTitle, common.qss:33-38).
+  readonly property int settingsHeadTitleWeight: 550
   // SettingsItem (DESIGN §3.5.4): row 36, padding (20, 10)
   readonly property int settingsRowHeight: detailRowHeight
   readonly property int settingsRowPaddingH: Math.round(20 * uiScaleRatio)
@@ -702,7 +721,7 @@ Singleton {
   // derived from the 15 px separator under the module head in the frame).
   readonly property int settingsGroupSpacing: Math.round(15 * uiScaleRatio)
   // Usable width inside a settings row: the 352 px module content (§3.5.3)
-  // minus the scroll view's 6 px margins and the row's 20 px padding a side.
+  // minus the 8 px content inset and the row's 20 px padding a side.
   // A row is stretched by its container, so this only caps the implicit width
   // it advertises — without the cap a long description would widen the whole
   // scroll column and push the row's right-hand control off screen.

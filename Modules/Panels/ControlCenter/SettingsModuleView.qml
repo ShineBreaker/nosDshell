@@ -183,13 +183,13 @@ Item {
     for (var i = 0; i < modules.length; i++)
       order.push(i);
     order.sort((a, b) => {
-                 const d = Math.abs(a - c) - Math.abs(b - c);
-                 if (d !== 0)
-                 return d;
-                 if ((a > c) !== (b > c))
-                 return (a > c) ? -1 : 1;
-                 return a - b;
-               });
+      const d = Math.abs(a - c) - Math.abs(b - c);
+      if (d !== 0)
+        return d;
+      if ((a > c) !== (b > c))
+        return (a > c) ? -1 : 1;
+      return a - b;
+    });
     root._fillQueue = order;
   }
 
@@ -749,22 +749,29 @@ Item {
         anchors.fill: parent
         spacing: 0
 
-        // Header: back button, centred title, separator 15 px below (DESIGN §3.5.3)
+        // Header: flat back button at the column edge, title centred across
+        // the column (the DDE titleLayout pulls its right edge in by the
+        // back button's width so AlignCenter lands mid-column), separator
+        // 15 px below (contentwidget.cpp:87-98, DESIGN §3.5.3).
         Item {
           Layout.fillWidth: true
-          Layout.preferredHeight: Style.baseWidgetSize + Style.marginS
+          Layout.topMargin: Style.settingsContentInset
+          Layout.rightMargin: Style.settingsContentInset
+          Layout.preferredHeight: Style.settingsModuleHeadIcon
 
           NIconButton {
             id: backButton
             objectName: "settingsBack"
             anchors.left: parent.left
-            anchors.leftMargin: Style.marginS
             anchors.verticalCenter: parent.verticalCenter
             icon: "chevron-left"
-            // 24×24, radius 4, white×0.2 block (DESIGN §3.5.3).
+            // Flat 24×24 arrow — BackButton is a DImageButton with no tile
+            // (backbutton.cpp); a press tints the glyph accent.
             baseSize: 24
-            customRadius: Style.radiusRow
-            colorBg: Colors.overlay("strong")
+            colorBg: "transparent"
+            colorBgHover: "transparent"
+            colorFg: Colors.onShellSecondary
+            colorFgHover: Colors.onShell
             tooltipText: I18n.tr("common.back")
             onClicked: root.subPageOpen ? root.popPage() : root.backRequested()
           }
@@ -772,11 +779,12 @@ Item {
           NText {
             anchors.left: backButton.right
             anchors.right: parent.right
-            anchors.rightMargin: backButton.width + backButton.anchors.leftMargin
+            anchors.rightMargin: backButton.width
             anchors.verticalCenter: parent.verticalCenter
             horizontalAlignment: Text.AlignHCenter
             text: root.title
-            pointSize: Style.settingsModuleTitleSize
+            // ContentTitle: 14 px, weight 500 (dark.qss:92-96).
+            pointSize: Style.fontSizeTitle
             font.weight: Style.fontWeightMedium
             color: Colors.onShell
             elide: Text.ElideRight
@@ -786,9 +794,8 @@ Item {
         Rectangle {
           Layout.fillWidth: true
           Layout.preferredHeight: Style.borderS
-          Layout.leftMargin: Style.settingsRowPaddingH
-          Layout.rightMargin: Style.settingsRowPaddingH
-          Layout.bottomMargin: Style.settingsModuleSeparatorGap
+          Layout.rightMargin: Style.settingsContentInset
+          Layout.topMargin: Style.settingsModuleSeparatorGap
           color: Colors.separator
         }
 
@@ -798,8 +805,8 @@ Item {
         Rectangle {
           id: searchField
           Layout.fillWidth: true
-          Layout.leftMargin: Style.marginS
-          Layout.rightMargin: Style.marginS
+          Layout.rightMargin: Style.settingsContentInset
+          Layout.topMargin: Style.marginS
           Layout.bottomMargin: Style.marginS
           Layout.preferredHeight: Style.settingsFieldHeight
           // The search index only covers the base page — hide it on 二级页.
@@ -862,9 +869,10 @@ Item {
           id: pageArea
           Layout.fillWidth: true
           Layout.fillHeight: true
-          Layout.leftMargin: Style.marginS
-          Layout.rightMargin: Style.marginS
-          Layout.bottomMargin: Style.marginM
+          // Content column insets (0, 8, 8, 0): rows flush with the column's
+          // left edge, 8 px short of the frame edge on the right; the scroll
+          // tail padding lives inside sectionsColumn.
+          Layout.rightMargin: Style.settingsContentInset
           clip: true
 
           NScrollView {
@@ -931,7 +939,15 @@ Item {
             Column {
               id: sectionsColumn
               width: parent.width
-              spacing: Style.settingsGroupSpacing
+              // Module stack (settingswidget.cpp:82-84): 30 px between
+              // sections, a 10 px spacer on top (10+30=40 px top inset) and
+              // a 20 px spacer at the tail.
+              spacing: Style.settingsModuleSpacing
+
+              Item {
+                width: 1
+                height: Style.settingsModuleTopInset
+              }
 
               Repeater {
                 id: sectionsRepeater
@@ -945,7 +961,8 @@ Item {
                   // Theme symbolic / bundled nav art; "" → Tabler.
                   readonly property string headArt: ControlCenterModules.navIconUrl(sectionModule)
                   width: sectionsColumn.width
-                  spacing: Style.marginS
+                  // Head → first group: modulewidget.cpp:145.
+                  spacing: Style.settingsModuleHeadSpacing
 
                   // Y of a tab slot for subTab scrolling.
                   function tabSlotY(j) {
@@ -1093,6 +1110,11 @@ Item {
                   }
                 }
               }
+
+              Item {
+                width: 1
+                height: Style.settingsModuleBottomInset
+              }
             }
 
             // Wheel takeover: NScrollView consumes the event for smooth
@@ -1108,9 +1130,9 @@ Item {
               anchors.fill: parent
               acceptedButtons: Qt.NoButton
               onWheel: wheel => {
-                         root._cancelProgrammatic();
-                         wheel.accepted = false;
-                       }
+                root._cancelProgrammatic();
+                wheel.accepted = false;
+              }
             }
           }
 

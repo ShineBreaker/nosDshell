@@ -43,16 +43,13 @@ ColumnLayout {
 
   // ===== UI =====
   // Same SettingsGroup rhythm as the shell settings pages (DESIGN §3.5.4):
-  // NHeader, 1 px seam, rows, then 15 px before the next group. A marginL
-  // column with ad-hoc titles left this page on a different grid.
+  // a titled NSettingsGroup (head row inside the block), 1 px seams, then
+  // 15 px before the next group. A marginL column with ad-hoc titles left
+  // this page on a different grid.
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-
-    NHeader {
-      label: pluginApi?.tr("settings.section-bar") || ""
-    }
+    title: pluginApi?.tr("settings.section-bar") || ""
 
     NToggle {
       Layout.fillWidth: true
@@ -60,9 +57,9 @@ ColumnLayout {
       description: pluginApi?.tr("settings.hide-when-empty-desc")
       checked: root.editHideWhenEmpty
       onToggled: checked => {
-                   root.editHideWhenEmpty = checked;
-                   root.saveSettings();
-                 }
+        root.editHideWhenEmpty = checked;
+        root.saveSettings();
+      }
     }
 
     NToggle {
@@ -71,9 +68,9 @@ ColumnLayout {
       description: pluginApi?.tr("settings.show-badge-desc")
       checked: root.editShowBadge
       onToggled: checked => {
-                   root.editShowBadge = checked;
-                   root.saveSettings();
-                 }
+        root.editShowBadge = checked;
+        root.saveSettings();
+      }
     }
   }
 
@@ -81,13 +78,9 @@ ColumnLayout {
     Layout.fillWidth: true
   }
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
-
-    NHeader {
-      label: pluginApi?.tr("settings.section-behavior") || ""
-    }
+    title: pluginApi?.tr("settings.section-behavior") || ""
 
     NToggle {
       Layout.fillWidth: true
@@ -95,9 +88,9 @@ ColumnLayout {
       description: pluginApi?.tr("settings.auto-mount-desc")
       checked: root.editAutoMount
       onToggled: checked => {
-                   root.editAutoMount = checked;
-                   root.saveSettings();
-                 }
+        root.editAutoMount = checked;
+        root.saveSettings();
+      }
     }
 
     NToggle {
@@ -106,9 +99,9 @@ ColumnLayout {
       description: pluginApi?.tr("settings.notifications-desc")
       checked: root.editShowNotifications
       onToggled: checked => {
-                   root.editShowNotifications = checked;
-                   root.saveSettings();
-                 }
+        root.editShowNotifications = checked;
+        root.saveSettings();
+      }
     }
   }
 
@@ -116,87 +109,83 @@ ColumnLayout {
     Layout.fillWidth: true
   }
 
-  ColumnLayout {
+  NSettingsGroup {
     Layout.fillWidth: true
-    spacing: Style.settingsGroupGap
+    title: pluginApi?.tr("settings.section-browser") || ""
 
-    NHeader {
-      label: pluginApi?.tr("settings.section-browser") || ""
+    NComboBox {
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.file-browser")
+      description: pluginApi?.tr("settings.file-browser-desc")
+      model: [
+        {
+          key: "yazi",
+          name: "yazi"
+        },
+        {
+          key: "ranger",
+          name: "ranger"
+        },
+        {
+          key: "xdg-open",
+          name: "xdg-open"
+        },
+        {
+          key: "dolphin",
+          name: "dolphin"
+        },
+        {
+          key: "thunar",
+          name: "thunar"
+        },
+        {
+          key: "nautilus",
+          name: "nautilus"
+        }
+      ]
+      currentKey: root.editFileBrowser
+      onSelected: key => {
+        root.editFileBrowser = key;
+        root.saveSettings();
+      }
     }
 
     NComboBox {
-    Layout.fillWidth: true
-    label: pluginApi?.tr("settings.file-browser")
-    description: pluginApi?.tr("settings.file-browser-desc")
-    model: [
-      {
-        key: "yazi",
-        name: "yazi"
-      },
-      {
-        key: "ranger",
-        name: "ranger"
-      },
-      {
-        key: "xdg-open",
-        name: "xdg-open"
-      },
-      {
-        key: "dolphin",
-        name: "dolphin"
-      },
-      {
-        key: "thunar",
-        name: "thunar"
-      },
-      {
-        key: "nautilus",
-        name: "nautilus"
+      Layout.fillWidth: true
+      label: pluginApi?.tr("settings.terminal")
+      description: pluginApi?.tr("settings.terminal-desc")
+      model: [
+        {
+          key: "kitty",
+          name: "kitty"
+        },
+        {
+          key: "foot",
+          name: "foot"
+        },
+        {
+          key: "alacritty",
+          name: "alacritty"
+        },
+        {
+          key: "wezterm",
+          name: "wezterm"
+        },
+        {
+          key: "ghostty",
+          name: "ghostty"
+        },
+        {
+          key: "ptyxis",
+          name: "ptyxis"
+        }
+      ]
+      currentKey: root.editTerminalCommand
+      onSelected: key => {
+        root.editTerminalCommand = key;
+        root.saveSettings();
       }
-    ]
-    currentKey: root.editFileBrowser
-    onSelected: key => {
-                  root.editFileBrowser = key;
-                  root.saveSettings();
-                }
-  }
-
-  NComboBox {
-    Layout.fillWidth: true
-    label: pluginApi?.tr("settings.terminal")
-    description: pluginApi?.tr("settings.terminal-desc")
-    model: [
-      {
-        key: "kitty",
-        name: "kitty"
-      },
-      {
-        key: "foot",
-        name: "foot"
-      },
-      {
-        key: "alacritty",
-        name: "alacritty"
-      },
-      {
-        key: "wezterm",
-        name: "wezterm"
-      },
-      {
-        key: "ghostty",
-        name: "ghostty"
-      },
-      {
-        key: "ptyxis",
-        name: "ptyxis"
-      }
-    ]
-    currentKey: root.editTerminalCommand
-    onSelected: key => {
-                  root.editTerminalCommand = key;
-                  root.saveSettings();
-                }
-  }
+    }
   }
 
   NDccGap {
@@ -208,9 +197,9 @@ ColumnLayout {
     description: pluginApi?.tr("settings.icon-color-desc")
     label: pluginApi?.tr("settings.icon-color")
     onSelected: key => {
-                  root.iconColor = key;
-                  root.saveSettings();
-                }
+      root.iconColor = key;
+      root.saveSettings();
+    }
   }
 
   Item {

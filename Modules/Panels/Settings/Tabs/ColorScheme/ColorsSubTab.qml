@@ -171,13 +171,14 @@ ColumnLayout {
       }
     }
 
-    // Same section shape as NightLightSubTab's manual schedule — group head
-    // + one field-column row per time. Keys are color-scheme-scoped: the two
-    // features are different settings (colorSchemes vs nightLight) and must
-    // not share labelKeys or the search index dedup merges them.
-    NHeader {
+    // Same section shape as NightLightSubTab's manual schedule — an in-block
+    // head row + one field-column row per time. Keys are color-scheme-scoped:
+    // the two features are different settings (colorSchemes vs nightLight) and
+    // must not share labelKeys or the search index dedup merges them.
+    NDccHead {
       label: I18n.tr("panels.color-scheme.manual-schedule-label")
       visible: Settings.data.colorSchemes.schedulingMode === "manual"
+      Layout.fillWidth: true
     }
 
     NComboBox {
@@ -321,7 +322,9 @@ ColumnLayout {
     Layout.fillWidth: true
   }
   ColumnLayout {
-    spacing: Style.settingsGroupGap
+    // Section label over a card grid (not a row block): the bare NHeader
+    // stands marginS off, like the stacked sub-tab heads in NTabView.
+    spacing: Style.marginS
     Layout.fillWidth: true
     visible: !Settings.data.colorSchemes.useWallpaperColors
 

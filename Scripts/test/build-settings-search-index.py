@@ -80,6 +80,11 @@ TAB_LABELS = {
 }
 
 RE_LABEL = re.compile(r'label:\s*I18n\.tr\("([^"]*)"')
+# A group's title is declared as `title:` on NSettingsGroup (the in-block
+# NDccHead); other widgets' `title:` (file pickers, dialogs) is not a
+# searchable row, so this pattern is only honoured when the innermost
+# scope is NSettingsGroup itself.
+RE_GROUP_TITLE = re.compile(r'title:\s*I18n\.tr\("([^"]*)"')
 RE_DESCRIPTION = re.compile(r'description:\s*I18n\.tr\("([^"]*)"')
 RE_VISIBLE = re.compile(r"^\s*visible:\s*(.+?)(?:\s*;)?\s*$")
 RE_TYPE_OPEN = re.compile(r"(\w+)\s*\{")
@@ -264,9 +269,10 @@ def extract_entries(
     entries = []
     for i, raw in enumerate(lines):
         lm = RE_LABEL.search(raw)
-        if not lm:
+        tm = None if lm else RE_GROUP_TITLE.search(raw)
+        if not lm and not tm:
             continue
-        label_key = lm.group(1)
+        label_key = (lm or tm).group(1)
         if label_key.endswith("."):
             continue  # dynamic I18n prefix, not a real key
         stack = lines_scopes[i]
@@ -283,6 +289,9 @@ def extract_entries(
             if m and m.group(1)[:1].isupper():
                 widget = m.group(1)
         if widget is None:
+            continue
+        # title: only counts when it belongs to the group head itself.
+        if tm and widget != "NSettingsGroup":
             continue
         # block range of the innermost scope for description/own-visible lookup
         if inner_id is not None:

@@ -436,10 +436,19 @@ ColumnLayout {
   NSettingsGroup {
     Layout.fillWidth: true
 
-    // Error state (fastfetch not installed)
-    NHeader {
+    // Error state (fastfetch not installed) — a status message, rendered as
+    // a non-interactive row so it keeps the group's chrome.
+    NDccRow {
       visible: !root.systemInfoAvailable
-      label: I18n.tr("panels.about.system-not-installed")
+      interactive: false
+      Layout.fillWidth: true
+
+      NText {
+        text: I18n.tr("panels.about.system-not-installed")
+        color: Colors.onShellTertiary
+        Layout.fillWidth: true
+        Layout.alignment: Qt.AlignVCenter
+      }
     }
 
     // System info grid

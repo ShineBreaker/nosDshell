@@ -100,9 +100,10 @@ ColumnLayout {
       onToggled: checked => Settings.data.nightLight.autoSchedule = checked
     }
 
-    NHeader {
+    NDccHead {
       label: I18n.tr("panels.display.night-light-manual-schedule-label")
       visible: !Settings.data.nightLight.autoSchedule && !Settings.data.nightLight.forced
+      Layout.fillWidth: true
     }
 
     NComboBox {

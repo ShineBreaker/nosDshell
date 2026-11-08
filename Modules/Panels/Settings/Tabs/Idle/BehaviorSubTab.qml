@@ -94,9 +94,10 @@ ColumnLayout {
       editPopup.open();
     }
 
-    // Timeout spinboxes and resume commands
-    NHeader {
+    // Timeout spinboxes and resume commands — in-block section head.
+    NDccHead {
       label: I18n.tr("panels.idle.timeouts-label")
+      Layout.fillWidth: true
     }
 
     DefaultActionRow {

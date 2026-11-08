@@ -168,41 +168,28 @@ Item {
     }
 
     // Device List [1] (Connected)
-    ColumnLayout {
+    NSettingsGroup {
       visible: root.connectedDevices.length > 0 && BluetoothService.enabled
       Layout.fillWidth: true
-      // No column spacing: NHeader.bottomMargin is the 1 px head seam
-      // (DESIGN §3.5.4). marginM here stacked into a ~10 px gap.
-      spacing: 0
+      title: I18n.tr("bluetooth.panel.connected-devices")
 
-      NHeader {
-        label: I18n.tr("bluetooth.panel.connected-devices")
-      }
+      property var deviceList: root.connectedDevices
 
-      NSettingsGroup {
-        Layout.fillWidth: true
-        property var deviceList: root.connectedDevices
-
-        Repeater {
-          // Model is index keys, not the entries: boxing the JS-array model
-          // turns the BluetoothDevice refs into raw pointers (CODING_STANDARDS
-          // "QML 规则"). The delegate resolves the live JS entry via this
-          // column's deviceList.
-          model: root.connectedDevices.map((_, i) => i)
-          delegate: nboxDelegate
-        }
+      Repeater {
+        // Model is index keys, not the entries: boxing the JS-array model
+        // turns the BluetoothDevice refs into raw pointers (CODING_STANDARDS
+        // "QML 规则"). The delegate resolves the live JS entry via this
+        // group's deviceList.
+        model: root.connectedDevices.map((_, i) => i)
+        delegate: nboxDelegate
       }
     }
 
     // Devices List [2] (Paired)
-    ColumnLayout {
+    NSettingsGroup {
       visible: root.pairedDevices.length > 0 && BluetoothService.enabled
       Layout.fillWidth: true
-      spacing: 0
-
-      NHeader {
-        label: I18n.tr("bluetooth.panel.paired-devices")
-      }
+      title: I18n.tr("bluetooth.panel.paired-devices")
 
       property var deviceList: root.pairedDevices
 
@@ -218,20 +205,23 @@ Item {
     ColumnLayout {
       visible: !root.showOnlyLists && root.unnamedAvailableDevices.length > 0 && BluetoothService.enabled
       Layout.fillWidth: true
-      spacing: 0
+      spacing: Style.marginS
 
-      NHeader {
-        label: I18n.tr("bluetooth.panel.available-devices")
-        description: BluetoothService.scanningActive ? I18n.tr("bluetooth.panel.scanning") : ""
-      }
+      NSettingsGroup {
+        Layout.fillWidth: true
+        title: I18n.tr("bluetooth.panel.available-devices")
+        // The head's right-edge note is the scanning indicator — the dcc
+        // header puts a widget there (settingsheaderitem.cpp:52).
+        titleNote: BluetoothService.scanningActive ? I18n.tr("bluetooth.panel.scanning") : ""
 
-      property var deviceList: root.availableDevices
+        property var deviceList: root.availableDevices
 
-      Repeater {
-        // Index-key model — see the comment on the connected-devices
-        // Repeater above (CODING_STANDARDS "QML 规则").
-        model: root.availableDevices.map((_, i) => i)
-        delegate: nboxDelegate
+        Repeater {
+          // Index-key model — see the comment on the connected-devices
+          // Repeater above (CODING_STANDARDS "QML 规则").
+          model: root.availableDevices.map((_, i) => i)
+          delegate: nboxDelegate
+        }
       }
 
       NText {

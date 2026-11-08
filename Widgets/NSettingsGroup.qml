@@ -10,9 +10,11 @@ import qs.Commons
 * rounds the outer corners (NDccRow). Do not wrap rows in extra columns —
 * a wrapper that re-spaces its children breaks the seam.
 *
-* `title` draws the optional SettingsHead inside the group (same 1 px seam
-* to the first row). For the head of a whole stacked sub-tab the NTabView
-* draws the title itself; `title` is for extra sections inside a page.
+* `title` draws the group's head as a 24 px row INSIDE the block — in dcc the
+* SettingsHeaderItem/SettingsHead is a SettingsItem inserted into the group
+* layout (settingsgroup.cpp:67-72, settingshead.cpp), so it shares the fill
+* and takes the head corners. `titleNote` is the dim right-edge text of that
+* head row. A section label for non-row content stays an NHeader.
 *
 * Between two groups put NDccGap (the 15 px group spacing).
 */
@@ -20,12 +22,14 @@ ColumnLayout {
   id: root
 
   property string title: ""
+  property string titleNote: ""
 
   spacing: Style.settingsGroupGap
   Layout.fillWidth: true
 
-  NHeader {
+  NDccHead {
     label: root.title
+    note: root.titleNote
     visible: root.title !== ""
     Layout.fillWidth: true
   }
