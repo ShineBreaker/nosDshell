@@ -9,6 +9,7 @@
 - 颜色读 `Colors.*`，尺寸、圆角、时长读 `Style.*`。DDE 的表面和叠加色用语义令牌，例如 `Colors.maskShell`、`Colors.popupShell`、`Colors.overlay(level)`（定义见 `DESIGN.md` §1.2、§1.3）。组件内部只做布局。
 - 某个界面元素不随全局设置变化（深色模式下仍是浅色、间距不随 `Style` 缩放），说明它没有接入令牌体系。修法是找到它本该读取的令牌或公共件参数（例如菜单的 `variant`、弹层的 `Colors.popupShell`），把接入点接回去。组件里另写一份配色或尺寸，本身就是没接入的证据。一个组件没接入时，同类组件往往也没接入，按影响面一起查。
 - 新数值先加令牌再使用，来路见 `AGENTS.md`「依据」。引用 `references/` 的格式是 `仓库/路径:行号`。
+- `Scripts/dev/check-raw-values.py`（挂在 `lint.sh`）把这条固化成检查：令牌层之外出现命名颜色、`#hex`、字面通道的 `Qt.rgba/hsla/hsva`、手工 `Qt.darker/lighter/tint`，以及 `width`/`height`/`spacing`/边距/圆角/字号上的数字字面值都会报错。确实只能写字面值的地方（Canvas 的 `destination-out` 擦除色、只取 alpha 的蒙版源、占位默认值、有意的光学微调）在同一行写 `// nosd:raw-ok <原因>` 豁免。
 
 - 会跳动的数值读数（百分比、时间、计数、温度）用 `NText` 的 `numeric: true`，不要在组件里写 `features: { "tnum": 1 }`。只有不是 `NText` 的输入控件（`TextInput`）才直接写 `font.features`。
 
