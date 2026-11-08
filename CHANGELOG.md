@@ -10,6 +10,43 @@
 
 ## [Unreleased]
 
+## [1.7.5] - 2026-11-08
+
+这版把设置页的版式逐条对齐到 GXDE：组标题从块外收进内容块内，模块间距、返回箭头和导航条图标全部换成从 GXDE 源码量出来的数值，状态栏与桌面挂件的分区编辑器也从芯片云改成了 DDE 列表页。分组行的节奏收进公共件 `NSettingsGroup`，规格固化在 `DESIGN.md` §3.5.4。
+
+---
+
+### 新功能
+
+- add NSettingsGroup, fix clear button, drop color-choice caption：[`13c1708b6`](https://github.com/ShineBreaker/nosDshell/commit/13c1708b6408b8065e40742bd9455f5a3998683d)
+
+### 修复
+
+- provide correct env to run.：[`bfaf1b9c7`](https://github.com/ShineBreaker/nosDshell/commit/bfaf1b9c739a29535ff23d7728a2bbccf365365d)
+- frame the account identity block in a row：[`40e38ba1e`](https://github.com/ShineBreaker/nosDshell/commit/40e38ba1e1a431b7d4353bec4551a97e1ed22d52)
+
+### 观感
+
+- render widget zone editors as DDE list pages：[`b872efdb2`](https://github.com/ShineBreaker/nosDshell/commit/b872efdb25a3ec1b67b28c184189cf674af9fd61)
+- match GXDE module-view geometry and in-block group heads：[`2483ce7c5`](https://github.com/ShineBreaker/nosDshell/commit/2483ce7c54d6a6e45412f3fe7af5d1a1ab5faf8f)
+
+### 重构
+
+- one group rhythm, no static captions：[`e16a6f977`](https://github.com/ShineBreaker/nosDshell/commit/e16a6f977016a35db2b6eb5cb267c875543975ce)
+
+### 文档
+
+- codify the settings-row rhythm in §3.5.4：[`19cc560ab`](https://github.com/ShineBreaker/nosDshell/commit/19cc560ab4d4f2bb667078bf7ab54831a9f39cba)
+- the tag alone publishes the release：[`84afb01f0`](https://github.com/ShineBreaker/nosDshell/commit/84afb01f067bf6959b8f0ec77e1c02673ffcbcd2)
+
+### CI
+
+- stop asking jeans to bump the pin：[`7925022a3`](https://github.com/ShineBreaker/nosDshell/commit/7925022a3613986eb98d73cd17a637c0b25b5b60)
+
+### 工程
+
+- drop keys orphaned by the settings-caption cleanup：[`7ffeb1cab`](https://github.com/ShineBreaker/nosDshell/commit/7ffeb1cabfe33964085b3e8a7850172ae97389b3)
+
 ## [1.7.4] - 2026-11-05
 
 这版把壁纸解码拦在屏幕尺寸上。一张 9000×6000 的原图以前会被背景、概览、锁屏和启动器各自解一份，现在统一按屏幕解码：长期挂着的 shell 从 1.3 GiB 降到 755 MiB，换出内存直接归零。
@@ -751,7 +788,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.4...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.5...HEAD
+[1.7.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.2...v1.7.3
 [1.7.2]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.1...v1.7.2
