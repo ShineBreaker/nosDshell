@@ -19,13 +19,16 @@ ColumnLayout {
   // 1 px seam of settingsgroup.cpp:46 (DESIGN §3.5.4)
   NSettingsGroup {
     Layout.fillWidth: true
-    RowLayout {
+
+    // Identity hero row: avatar + display name inside the group's first row —
+    // a framed profile card like the Apple-ID row, not text floating on the
+    // panel background.
+    NDccRow {
       Layout.fillWidth: true
       spacing: Style.marginL
 
-      // Avatar preview
       NImageRounded {
-        Layout.preferredWidth: 64 * Style.uiScaleRatio
+        Layout.preferredWidth: 56 * Style.uiScaleRatio
         Layout.preferredHeight: width
         radius: width / 2
         imagePath: Settings.preprocessPath(Settings.data.general.avatarImage)
