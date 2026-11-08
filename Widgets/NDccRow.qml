@@ -169,7 +169,8 @@ Rectangle {
       return 0;
     let h = 0;
     for (let i = 0; i < kids.length; i++)
-      h += (kids[i].visible !== false) ? (i + 1) : 0;
+      if (kids[i])
+        h += (kids[i].visible !== false) ? (i + 1) : 0;
     return h;
   }
 

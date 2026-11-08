@@ -34,12 +34,13 @@ ColumnLayout {
     spacing: Style.marginXXS
     Layout.fillWidth: true
 
-    // Sections
+    // Sections — each zone is one titled SettingsGroup, 15 px between them
+    // (DESIGN §3.5.4 group gap).
     ColumnLayout {
       Layout.fillWidth: true
       Layout.fillHeight: true
       Layout.topMargin: Style.marginM
-      spacing: Style.marginM
+      spacing: Style.settingsGroupSpacing
 
       // Left
       NSectionEditor {

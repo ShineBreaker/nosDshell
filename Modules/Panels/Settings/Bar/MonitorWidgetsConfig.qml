@@ -31,7 +31,9 @@ ColumnLayout {
   readonly property bool barIsVertical: barPosition === "left" || barPosition === "right"
 
   Layout.fillWidth: true
-  spacing: Style.marginM
+  // Each zone editor is one titled SettingsGroup — the 15 px group gap
+  // applies between zones (DESIGN §3.5.4).
+  spacing: Style.settingsGroupSpacing
 
   // Helper to get widgets for this screen (ensures override exists); the
   // global editor works on Settings.data.bar.widgets directly.

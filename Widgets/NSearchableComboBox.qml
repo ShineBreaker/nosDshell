@@ -26,8 +26,8 @@ NDccRow {
   // the blurred popupShell look (see NComboBox.onShellSurface).
   property bool onShellSurface: false
   // Fill the width the parent gives this combo instead of locking to
-  // minimumWidth. Used when the combo shares a fixed control column with a
-  // trailing button (NSectionEditor).
+  // minimumWidth. For bare combos that share a fixed control column with
+  // a trailing control.
   property bool flexWidth: false
   readonly property real preferredHeight: 30
 

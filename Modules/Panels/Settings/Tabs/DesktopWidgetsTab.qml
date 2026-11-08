@@ -54,6 +54,9 @@ ColumnLayout {
   }
   ColumnLayout {
     visible: Settings.data.desktopWidgets.enabled
+    // One titled SettingsGroup per monitor — the 15 px group gap applies
+    // between them (DESIGN §3.5.4).
+    spacing: Style.settingsGroupSpacing
 
     NButton {
       Layout.fillWidth: true

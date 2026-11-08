@@ -1,13 +1,20 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.Effects
 import QtQuick.Layouts
 import qs.Commons
 import qs.Services.Plugins
 import qs.Services.UI
 import qs.Widgets
 
-NBox {
+// Sectioned widget-layout editor — one zone is one titled SettingsGroup
+// (DESIGN §3.5.4 列表页): the zone name is the group's in-block head, every
+// installed widget is a row (name + plugin/cpu badges + settings gear), and
+// the tail row is the "add widget" picker. Rows reorder by left-drag, move
+// across sibling zones by dropping on the target group, and right-click
+// offers move-to/remove. `editMode` hosts: the status bar and taskbar
+// (MonitorWidgetsConfig), control-center shortcuts (ShortcutsSubTab) and
+// per-monitor desktop widgets (DesktopWidgetsTab).
+Item {
   id: root
 
   property string sectionName: ""
@@ -22,7 +29,9 @@ NBox {
   property int maxWidgets: -1 // -1 means unlimited
   property bool draggable: true // Enable/disable drag reordering
   property bool crossSectionDraggable: false
-  property alias dropTargetArea: gridContainer
+  // Cross-zone drops land anywhere on the group — head, rows and the add
+  // row all count (updateCrossSectionHover / findSectionAtGlobalPosition).
+  property alias dropTargetArea: group
 
   // Get display label for a section
   function getSectionLabel(sectionId) {
@@ -46,6 +55,7 @@ NBox {
   property var screen: null // Screen reference for per-screen widget settings
   property var _activeDialog: null
   property bool crossDropHoverActive: false
+  property int _contextIndex: -1
 
   // Render model — widgetModel is a freshly-computed JS array; assigning it to
   // the Repeater wholesale is QQuickRepeater::setModel → incubate, and a notify
@@ -130,44 +140,6 @@ NBox {
     return localPoint.x >= 0 && localPoint.y >= 0 && localPoint.x <= root.width && localPoint.y <= root.height;
   }
 
-  readonly property bool showCrossSectionDropHint: crossDropHoverActive
-
-  Component.onCompleted: _queueWidgetSync()
-  Component.onDestruction: {
-    _destroyed = true;
-    if (_activeDialog && _activeDialog.close) {
-      var dialog = _activeDialog;
-      _activeDialog = null;
-      dialog.close();
-      dialog.destroy();
-    }
-  }
-
-  readonly property int gridColumns: 3
-  readonly property real miniButtonSize: Style.baseWidgetSize * 0.65
-  readonly property bool isAtMaxCapacity: maxWidgets >= 0 && widgetModel.length >= maxWidgets
-  readonly property real widgetItemHeight: Style.baseWidgetSize * 1.3 * Style.uiScaleRatio
-
-  signal addWidget(string widgetId, string section)
-  signal removeWidget(string section, int index)
-  signal reorderWidget(string section, int fromIndex, int toIndex)
-  signal updateWidgetSettings(string section, int index, var settings)
-  signal moveWidget(string fromSection, int index, string toSection)
-  signal dragPotentialStarted
-  signal dragPotentialEnded
-  signal openPluginSettingsRequested(var pluginManifest, string settingsEntryPoint)
-
-  color: Colors.overlay("idle")
-  Layout.fillWidth: true
-  z: flowDragArea?.dragStarted ? 5000 : 0
-
-  // Calculate width to fit gridColumns widgets with spacing
-  function calculateWidgetWidth(gridWidth) {
-    var columnSpacing = (root.gridColumns - 1) * Style.marginM;
-    var widgetWidth = (gridWidth - columnSpacing) / root.gridColumns;
-    return Math.floor(widgetWidth);
-  }
-
   function findSectionAtGlobalPosition(globalX, globalY) {
     var parentItem = root.parent;
     if (!parentItem || !parentItem.children) {
@@ -195,41 +167,45 @@ NBox {
     return "";
   }
 
-  Layout.minimumHeight: {
-    // header + minimal content area
-    var absoluteMin = Style.margin2L + (Style.fontSizeL * 2) + Style.marginM + (65 * Style.uiScaleRatio);
+  readonly property bool showCrossSectionDropHint: crossDropHoverActive
 
-    var widgetCount = widgetModel.length;
-    if (widgetCount === 0) {
-      return absoluteMin;
+  Component.onCompleted: _queueWidgetSync()
+  Component.onDestruction: {
+    _destroyed = true;
+    if (_activeDialog && _activeDialog.close) {
+      var dialog = _activeDialog;
+      _activeDialog = null;
+      dialog.close();
+      dialog.destroy();
     }
-
-    // Calculate rows based on grid layout
-    // Use actual parent width if available, otherwise estimate
-    var availableWidth = (parent && parent.width > 0) ? (parent.width - Style.margin2L) : 400;
-    var rows = Math.ceil(widgetCount / root.gridColumns);
-
-    // Calculate widget width for height calculation
-    var containerWidth = availableWidth;
-    var widgetWidth = calculateWidgetWidth(containerWidth);
-
-    // Header height + spacing + (rows * widget height) + (spacing between rows) + margins
-    var headerHeight = Style.fontSizeL * 2;
-    // Account for grid margins
-    var gridTopMargin = Style.marginS;
-    var gridBottomMargin = Style.marginL;
-    var widgetAreaHeight = gridTopMargin + (rows * widgetItemHeight) + ((rows - 1) * Style.marginL) + gridBottomMargin;
-
-    return Math.max(absoluteMin, Style.margin2L + headerHeight + Style.marginM + widgetAreaHeight);
   }
 
-  // Plugin tiles get an accent-tinted border; the plugin NIcon inside marks
-  // them too (widget tiles otherwise use one field-level chip colour).
-  function tileBorderColor(widget) {
-    if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(widget.id)) {
-      return Qt.alpha(Colors.accent, 0.45);
-    }
-    return "transparent";
+  readonly property real miniButtonSize: Style.baseWidgetSize * 0.65
+  readonly property bool isAtMaxCapacity: maxWidgets >= 0 && widgetModel.length >= maxWidgets
+
+  signal addWidget(string widgetId, string section)
+  signal removeWidget(string section, int index)
+  signal reorderWidget(string section, int fromIndex, int toIndex)
+  signal updateWidgetSettings(string section, int index, var settings)
+  signal moveWidget(string fromSection, int index, string toSection)
+  signal dragPotentialStarted
+  signal dragPotentialEnded
+  signal openPluginSettingsRequested(var pluginManifest, string settingsEntryPoint)
+
+  Layout.fillWidth: true
+  implicitHeight: group.implicitHeight
+  z: flowDragArea?.dragStarted ? 5000 : 0
+
+  // The head's right-edge note: the subtitle (a monitor's resolution on the
+  // desktop-widgets page) and/or the capacity counter — the dcc
+  // SettingsHeaderItem right-widget slot (settingsheaderitem.cpp:52).
+  readonly property string _headNote: {
+    var parts = [];
+    if (root.sectionSubtitle !== "")
+      parts.push(root.sectionSubtitle);
+    if (root.maxWidgets >= 0)
+      parts.push(root.maxWidgets === 0 ? "(LOCKED)" : "(" + widgetModel.length + "/" + root.maxWidgets + ")");
+    return parts.join(" ");
   }
 
   // Check if widget has settings (either core widget with metadata or plugin with settings entry point)
@@ -253,6 +229,15 @@ NBox {
     }
 
     return false;
+  }
+
+  function widgetDisplayName(widgetId) {
+    // Localised label from the registry (plugin ids resolve to the manifest
+    // name inside); falls back to the raw id when no display name exists.
+    if (root.widgetRegistry && typeof root.widgetRegistry.widgetDisplayName === "function") {
+      return root.widgetRegistry.widgetDisplayName(widgetId);
+    }
+    return widgetId;
   }
 
   // Open settings for a widget
@@ -323,11 +308,11 @@ NBox {
           if (popupWin)
             popupWin.hostDialog(dialog);
           dialog.closed.connect(() => {
-                                  if (root._activeDialog === dialog) {
-                                    root._activeDialog = null;
-                                    dialog.destroy();
-                                  }
-                                });
+            if (root._activeDialog === dialog) {
+              root._activeDialog = null;
+              dialog.destroy();
+            }
+          });
           dialog.open();
         } else {
           Logger.e("NSectionEditor", "Failed to create settings dialog instance");
@@ -350,707 +335,506 @@ NBox {
     }
   }
 
-  ColumnLayout {
+  NSettingsGroup {
+    id: group
     anchors.fill: parent
-    anchors.margins: Style.marginL
-    spacing: Style.marginM
+    title: root.sectionName
+    titleNote: root._headNote
 
-    RowLayout {
-      Layout.fillWidth: true
-      // The box is already inset by marginL. A settings control's painted
-      // right edge sits settingsRowPaddingH + borderS in from the plate
-      // (the 170 px column ends at that edge). marginS here left the add
-      // button 2 px past it (1894 vs 1892).
-      Layout.rightMargin: Style.settingsRowPaddingH + Style.borderS - Style.marginL
+    Repeater {
+      id: widgetRepeater
+      model: widgetRows
 
-      ColumnLayout {
-        spacing: Style.marginXXS
-        Layout.alignment: Qt.AlignVCenter
-        Layout.fillWidth: true
-        Layout.minimumWidth: 0
-        Layout.leftMargin: Style.marginS
+      delegate: NDccRow {
+        id: widgetItem
+        required property int index
+        readonly property var modelData: (root.widgetModel && index >= 0 && index < root.widgetModel.length) ? root.widgetModel[index] : ({
+                                                                                                                                            "id": ""
+                                                                                                                                          })
+
+        // Store the widget index for drag operations
+        property int widgetIndex: index
+        // The gear's painted tile, not a separate 20 px guess.
+        readonly property int buttonsWidth: Style.toOdd(root.miniButtonSize * Style.uiScaleRatio)
+        readonly property int buttonsCount: root.widgetHasSettings(modelData.id) ? 1 : 0
+        // x of the gear slot inside the row — the drag and context handlers
+        // treat presses right of this line as button presses, not drags.
+        readonly property real buttonsStartX: width - Style.settingsRowPaddingH - buttonsCount * buttonsWidth
+
+        interactive: enabled
+
+        // Visual feedback during drag; dim the whole row when the editor
+        // subtree is disabled (same 0.6 as NToggle/NComboBox).
+        opacity: flowDragArea?.draggedIndex === index ? 0.5 : (enabled ? 1.0 : 0.6)
+        scale: flowDragArea?.draggedIndex === index ? 0.95 : 1.0
+        z: flowDragArea?.draggedIndex === index ? 1000 : 0
+
+        Behavior on opacity {
+          NAnim {
+            duration: Style.motionPointer
+            curve: "swift"
+          }
+        }
+        Behavior on scale {
+          NAnim {
+            duration: Style.motionPointer
+            curve: "swift"
+          }
+        }
 
         NText {
-          text: sectionName
-          pointSize: Style.fontSizeL
-          font.weight: Style.fontWeightSemiBold
+          id: widgetLabel
+          text: root.widgetDisplayName(modelData.id)
+          // widgetItem already dims the whole row when disabled.
+          autoDim: false
           color: Colors.onShell
           elide: Text.ElideRight
           Layout.fillWidth: true
+          Layout.alignment: Qt.AlignVCenter
         }
 
-        NText {
-          visible: sectionSubtitle !== ""
-          text: sectionSubtitle
-          pointSize: Style.fontSizeS
-          color: Colors.onShellTertiary
-          elide: Text.ElideRight
-          Layout.fillWidth: true
+        // Plugin indicator icon
+        NIcon {
+          visible: root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)
+          icon: "plugin"
+          pointSize: Style.fontSizeXS
+          color: Colors.onShell
+          Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
+          Layout.preferredHeight: Style.baseWidgetSize * 0.5
+          Layout.alignment: Qt.AlignVCenter
         }
-      }
 
-      // Widget count indicator (when max is set)
-      NText {
-        visible: root.maxWidgets >= 0
-        text: root.maxWidgets === 0 ? "(LOCKED)" : "(" + widgetModel.length + "/" + root.maxWidgets + ")"
-        pointSize: Style.fontSizeS
-        color: root.isAtMaxCapacity ? Colors.alert : Colors.onShellTertiary
-        Layout.alignment: Qt.AlignVCenter
-        Layout.leftMargin: Style.marginXS
-      }
+        // CPU intensive indicator icon
+        NIcon {
+          visible: root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id)
+          icon: "cpu-intensive"
+          pointSize: Style.fontSizeXS
+          color: Colors.onShell
+          Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
+          Layout.preferredHeight: Style.baseWidgetSize * 0.5
+          Layout.alignment: Qt.AlignVCenter
+        }
 
-      Item {
-        Layout.fillWidth: true
-      }
-
-      // Combo and add button share one control column so the combo frame
-      // cannot paint underneath the button (the old 200 px minimum plus a
-      // 150 px title floor overflowed the row).
-      RowLayout {
-        spacing: Style.marginXS
-        Layout.alignment: Qt.AlignVCenter
-        Layout.minimumWidth: Style.settingsFieldWidth
-        Layout.preferredWidth: Style.settingsFieldWidth
-        Layout.maximumWidth: Style.settingsFieldWidth
-
-      NSearchableComboBox {
-        id: comboBox
-        model: availableWidgets ?? null
-        label: ""
-        description: ""
-        placeholder: I18n.tr("bar.section-editor.placeholder")
-        searchPlaceholder: I18n.tr("bar.section-editor.search-placeholder")
-        onSelected: key => comboBox.currentKey = key
-        popupHeight: 300 * Style.uiScaleRatio
-        minimumWidth: 80 * Style.uiScaleRatio
-        flexWidth: true
-        enabled: !root.isAtMaxCapacity
-
-        Layout.fillWidth: true
-        Layout.alignment: Qt.AlignVCenter
-
-        // Re-filter when the model count changes (when widgets are loaded)
-        Connections {
-          target: availableWidgets ?? null
-          ignoreUnknownSignals: true
-          function onCountChanged() {
-            // Trigger a re-filter by clearing and re-setting the search text
-            var currentSearch = comboBox.searchText;
-            comboBox.searchText = "";
-            comboBox.searchText = currentSearch;
+        Loader {
+          // Hidden when empty — a visible 0-wide item still receives the
+          // RowLayout spacing and that gap is taken from the label.
+          visible: buttonsCount > 0
+          active: buttonsCount > 0 && root.enabled
+          Layout.preferredWidth: buttonsCount > 0 ? buttonsWidth : 0
+          Layout.preferredHeight: buttonsWidth
+          Layout.alignment: Qt.AlignVCenter
+          sourceComponent: NIconButton {
+            // objectName lets `debug find` locate a widget's gear in verify
+            // scenes (hit-testing can't reach 25-deep rows); sectionId
+            // disambiguates the same widget across editors.
+            objectName: "widgetGear-" + root.sectionId + "-" + (modelData.id || "")
+            icon: "settings"
+            tooltipText: I18n.tr("actions.widget-settings")
+            baseSize: miniButtonSize
+            colorBorder: "transparent"
+            colorBg: Colors.overlay("hover")
+            colorFg: Colors.onShell
+            colorBgHover: Colors.overlay("checked")
+            colorFgHover: Colors.onShell
+            onClicked: {
+              root.openWidgetSettings(index, modelData);
+            }
           }
         }
-      }
-
-      NIconButton {
-        icon: "add"
-        colorBg: Colors.overlay("field")
-        colorFg: Colors.onShell
-        colorBgHover: Colors.overlay("checked")
-        colorFgHover: Colors.onShell
-        enabled: comboBox.currentKey !== "" && !root.isAtMaxCapacity
-        tooltipText: root.isAtMaxCapacity ? I18n.tr("tooltips.max-widgets-reached") : I18n.tr("tooltips.add-widget")
-        Layout.alignment: Qt.AlignVCenter
-        onClicked: {
-          if (comboBox.currentKey !== "" && !root.isAtMaxCapacity) {
-            addWidget(comboBox.currentKey, sectionId);
-            comboBox.currentKey = "";
-          }
-        }
-      }
       }
     }
 
-    // Drag and Drop Widget Area
-    Item {
-      id: gridContainer
+    // Tail row: the add-widget picker. A labelled combo IS a settings row
+    // (§3.5.4 combo row); selecting an entry adds it straight away, so the
+    // row never carries a committed selection (currentKey stays "").
+    NSearchableComboBox {
+      id: comboBox
       Layout.fillWidth: true
-      Layout.preferredHeight: {
-        if (widgetModel.length === 0) {
-          return 65 * Style.uiScaleRatio;
-        }
-        return widgetFlow.implicitHeight + Style.marginS * 2;
-      }
-      Layout.minimumHeight: widgetModel.length === 0 ? (65 * Style.uiScaleRatio) : (Style.margin2S + root.widgetItemHeight)
-      clip: !flowDragArea?.dragStarted
-
-      Rectangle {
-        anchors.fill: parent
-        radius: Style.radiusItem
-        color: Qt.alpha(Colors.accent, 0.12)
-        border.color: Colors.accent
-        border.width: Style.borderM
-        visible: root.showCrossSectionDropHint
-        z: 1500
-      }
-
-      // Content-sized chips in a flow. A 3-column grid gave each English
-      // name ("Wallpaper", "Performance") a slice too narrow to draw, so
-      // the text elided inside the chip.
-      Flow {
-        id: widgetFlow
-        x: Style.marginS
-        y: Style.marginS
-        width: Math.max(0, parent.width - Style.marginS * 2)
-        spacing: Style.marginS
-
-        Repeater {
-          id: widgetRepeater
-          model: widgetRows
-
-          delegate: Rectangle {
-            id: widgetItem
-            required property int index
-            readonly property var modelData: (root.widgetModel && index >= 0 && index < root.widgetModel.length) ? root.widgetModel[index] : ({
-                                                                                                                                                "id": ""
-                                                                                                                                              })
-
-            // id/parent refs dangle while the editor subtree is being
-            // destroyed (二级页 pop) — bindings re-evaluate against torn-down
-            // objects, so stay null-tolerant.
-            // One marginL on each side, plus one marginXXS gap per trailing
-            // item that is actually in the row. A 0-wide gear slot still
-            // took that gap, so the label was ~2 px short of its
-            // implicitWidth and every name elided.
-            width: {
-              var trailing = 0;
-              var gaps = 0;
-              if (root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)) {
-                trailing += Style.baseWidgetSize * 0.5;
-                gaps += Style.marginXXS;
-              }
-              if (root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id)) {
-                trailing += Style.baseWidgetSize * 0.5;
-                gaps += Style.marginXXS;
-              }
-              if (buttonsCount > 0) {
-                trailing += buttonsWidth;
-                gaps += Style.marginXXS;
-              }
-              var label = Math.ceil(widgetLabel.implicitWidth) + trailing + gaps + Style.marginL * 2;
-              var limit = widgetFlow.width > 0 ? widgetFlow.width : label;
-              return Math.max(1, Math.min(label, limit));
-            }
-            height: root.widgetItemHeight
-            radius: Style.radiusItem
-            // Field-level chip, same ladder step as NComboBox/NTextInput
-            // fields (DESIGN §1.3); hover lifts one step.
-            color: widgetItem.enabled ? (tileHover.containsMouse ? Colors.overlay("strong") : Colors.overlay("field")) : Colors.overlay("idle")
-            border.color: root.tileBorderColor(modelData)
-            border.width: Style.borderS
-
-            HoverHandler {
-              id: tileHover
-            }
-
-            // Store the widget index for drag operations
-            property int widgetIndex: index
-            // The gear's painted tile, not a separate 20 px guess. A shorter
-            // slot let the icon hang 1 px into the right inset.
-            readonly property int buttonsWidth: Style.toOdd(root.miniButtonSize * Style.uiScaleRatio)
-            readonly property int buttonsCount: root.widgetHasSettings(modelData.id) ? 1 : 0
-
-            // Visual feedback during drag; dim the whole tile when the
-            // editor subtree is disabled (same 0.6 as NToggle/NComboBox).
-            opacity: flowDragArea?.draggedIndex === index ? 0.5 : (enabled ? 1.0 : 0.6)
-            scale: flowDragArea?.draggedIndex === index ? 0.95 : 1.0
-            z: flowDragArea?.draggedIndex === index ? 1000 : 0
-
-            Behavior on opacity {
-              NAnim {
-                duration: Style.motionPointer
-                curve: "swift"
-              }
-            }
-            Behavior on scale {
-              NAnim {
-                duration: Style.motionPointer
-                curve: "swift"
-              }
-            }
-
-            // Context menu for moving widget to other sections
-            NContextMenu {
-              id: contextMenu
-              parent: Overlay.overlay
-              width: 240 * Style.uiScaleRatio
-              model: {
-                var items = [];
-                // Add move options for each available section (except current)
-                for (var i = 0; i < root.availableSections.length; i++) {
-                  var section = root.availableSections[i];
-                  if (section !== root.sectionId) {
-                    var label = root.getSectionLabel(section);
-                    var displayLabel = '';
-                    // Map section IDs to correct position keys based on bar orientation
-                    var positionKey = section;
-                    if (root.barIsVertical) {
-                      if (section === "left")
-                        positionKey = "top";
-                      else if (section === "right")
-                        positionKey = "bottom";
-                    }
-                    if (I18n.hasTranslation("positions." + positionKey)) {
-                      displayLabel = I18n.tr("positions." + positionKey);
-                    } else {
-                      displayLabel = label.charAt(0).toUpperCase() + label.slice(1);
-                    }
-
-                    items.push({
-                                 "label": I18n.tr("tooltips.move-to-section", {
-                                                    "section": displayLabel
-                                                  }),
-                                 "action": section,
-                                 "icon": root.getSectionIcon(section),
-                                 "visible": true
-                               });
-                  }
-                }
-                // Add remove option
-                items.push({
-                             "label": I18n.tr("tooltips.remove-widget"),
-                             "action": "remove",
-                             "icon": "trash",
-                             "visible": true
-                           });
-                return items;
-              }
-
-              onTriggered: action => {
-                             if (action === "remove") {
-                               root.removeWidget(root.sectionId, widgetItem.index);
-                             } else {
-                               root.moveWidget(root.sectionId, widgetItem.index, action);
-                             }
-                           }
-            }
-
-            // MouseArea for the context menu - only active when not dragging
-            MouseArea {
-              id: contextMouseArea
-              anchors.fill: parent
-              acceptedButtons: Qt.RightButton
-              cursorShape: Qt.PointingHandCursor
-              z: -1 // Below the buttons but above background
-              enabled: !(flowDragArea?.dragStarted || flowDragArea?.potentialDrag)
-
-              onPressed: mouse => {
-                           mouse.accepted = true;
-                           // Check if click is not on the settings button area (if visible)
-                           const localX = mouse.x;
-                           const buttonsStartX = parent.width - (parent.buttonsCount * parent.buttonsWidth);
-                           if (localX < buttonsStartX || parent.buttonsCount === 0) {
-                             contextMenu.openAtItem(widgetItem, mouse.x, mouse.y);
-                           }
-                         }
-            }
-
-            RowLayout {
-              id: widgetContent
-              anchors.fill: parent
-              anchors.topMargin: Style.marginXS
-              anchors.bottomMargin: Style.marginXS
-              // Same horizontal inset on both sides. The label's own
-              // padding is inside implicitWidth and is not added again.
-              anchors.leftMargin: Style.marginL
-              anchors.rightMargin: Style.marginL
-              spacing: Style.marginXXS
-
-              NText {
-                id: widgetLabel
-                text: {
-                  // Localised label from the registry (plugin ids resolve to
-                  // the manifest name inside); falls back to the raw id when
-                  // no widgetDisplayName is available.
-                  if (root.widgetRegistry && typeof root.widgetRegistry.widgetDisplayName === "function") {
-                    return root.widgetRegistry.widgetDisplayName(modelData.id);
-                  }
-                  return modelData.id;
-                }
-                // widgetItem already dims the whole tile when disabled.
-                autoDim: false
-                pointSize: Style.fontSizeXS
-                color: Colors.onShell
-                horizontalAlignment: Text.AlignLeft
-                verticalAlignment: Text.AlignVCenter
-                elide: Text.ElideRight
-                leftPadding: 0
-                rightPadding: 0
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                // Do not give the text less than its own width. The elide
-                // above is only for a chip that has hit the row's edge.
-                Layout.minimumWidth: Math.ceil(implicitWidth)
-              }
-
-              // Plugin indicator icon
-              NIcon {
-                visible: root.widgetRegistry && root.widgetRegistry.isPluginWidget(modelData.id)
-                icon: "plugin"
-                pointSize: Style.fontSizeXXS
-                color: Colors.onShell
-                Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
-                Layout.preferredHeight: Style.baseWidgetSize * 0.5
-              }
-
-              // CPU intensive indicator icon
-              NIcon {
-                visible: root.widgetRegistry && root.widgetRegistry.isCpuIntensive(modelData.id)
-                icon: "cpu-intensive"
-                pointSize: Style.fontSizeXXS
-                color: Colors.onShell
-                Layout.preferredWidth: visible ? Style.baseWidgetSize * 0.5 : 0
-                Layout.preferredHeight: Style.baseWidgetSize * 0.5
-              }
-
-              RowLayout {
-                // Hidden when empty. A visible 0-wide item still receives
-                // the row spacing (marginXXS) and that gap was taken from
-                // the label.
-                visible: buttonsCount > 0
-                spacing: 0
-                Layout.preferredWidth: buttonsWidth
-                Layout.maximumWidth: buttonsWidth
-                Layout.preferredHeight: parent.height
-
-                Loader {
-                  active: root.widgetHasSettings(modelData.id) && root.enabled
-                  sourceComponent: NIconButton {
-                    // objectName lets `debug find` locate a widget's gear in
-                    // verify scenes (hit-testing can't reach 25-deep rows);
-                    // sectionId disambiguates the same widget across editors.
-                    objectName: "widgetGear-" + root.sectionId + "-" + (modelData.id || "")
-                    icon: "settings"
-                    tooltipText: I18n.tr("actions.widget-settings")
-                    baseSize: miniButtonSize
-                    colorBorder: "transparent"
-                    colorBg: Colors.overlay("hover")
-                    colorFg: Colors.onShell
-                    colorBgHover: Colors.overlay("checked")
-                    colorFgHover: Colors.onShell
-                    onClicked: {
-                      root.openWidgetSettings(index, modelData);
-                    }
-                  }
-                }
-              }
-            }
-          }
+      model: availableWidgets ?? null
+      label: I18n.tr("tooltips.add-widget")
+      description: ""
+      placeholder: I18n.tr("bar.section-editor.placeholder")
+      searchPlaceholder: I18n.tr("bar.section-editor.search-placeholder")
+      enabled: root.enabled && !root.isAtMaxCapacity
+      // selectOnNavigation fires `selected` on every up/down in the popup —
+      // here `selected` means "add the widget", so only click/Enter may emit.
+      selectOnNavigation: false
+      onSelected: key => {
+        if (!root.isAtMaxCapacity) {
+          root.addWidget(key, root.sectionId);
+          currentKey = "";
         }
       }
 
-      // Ghost/Clone widget for dragging
-      Rectangle {
-        id: dragGhost
-        width: 0
-        height: Style.baseWidgetSize * 1.15
-        radius: Style.radiusItem
-        color: "transparent"
-        border.color: Colors.borderShell
-        border.width: Style.borderS
-        opacity: 0.7
-        visible: flowDragArea?.dragStarted === true
-        z: 2000
-        clip: false // Ensure ghost isn't clipped
-
-        NText {
-          id: ghostText
-          anchors.centerIn: parent
-          pointSize: Style.fontSizeS
-          color: Colors.onShell
+      // Re-filter when the model count changes (when widgets are loaded)
+      Connections {
+        target: availableWidgets ?? null
+        ignoreUnknownSignals: true
+        function onCountChanged() {
+          // Trigger a re-filter by clearing and re-setting the search text
+          var currentSearch = comboBox.searchText;
+          comboBox.searchText = "";
+          comboBox.searchText = currentSearch;
         }
       }
+    }
+  }
 
-      // Drop indicator - visual feedback for where the widget will be inserted
-      Rectangle {
-        id: dropIndicator
-        width: 3
-        height: Style.baseWidgetSize * 1.15
-        radius: Style.radiusRow
-        color: Colors.accent
-        opacity: 0
-        visible: opacity > 0
-        z: 1999
-        // Set by the drag handlers; the pulse runs only while it is set and
-        // motion is not reduced. Under reduced motion the handlers' opacity 1
-        // shows the indicator without the pulse. (Binding `paused` instead
-        // warned "setPaused() cannot be used when animation isn't running"
-        // every time reduced motion turned on outside a drag.)
-        property bool pulsing: false
+  // Cross-section drop highlight — covers the whole group so a drop anywhere
+  // on the zone reads as landing in it.
+  Rectangle {
+    anchors.fill: parent
+    radius: Style.radiusItem
+    color: Qt.alpha(Colors.accent, 0.12)
+    border.color: Colors.accent
+    border.width: Style.borderM
+    visible: root.showCrossSectionDropHint
+    z: 1500
+  }
 
-        SequentialAnimation on opacity {
-          id: pulseAnimation
-          running: dropIndicator.pulsing && !Style.reduceMotion
-          loops: Animation.Infinite
-          NAnim {
-            to: 1
-            duration: Style.motionPulse
-            curve: "pulse"
-          }
-          NAnim {
-            to: 0.6
-            duration: Style.motionPulse
-            curve: "pulse"
-          }
-        }
+  // Ghost/Clone widget for dragging
+  Rectangle {
+    id: dragGhost
+    width: 0
+    height: Style.settingsRowHeight
+    radius: Style.radiusItem
+    color: "transparent"
+    border.color: Colors.borderShell
+    border.width: Style.borderS
+    opacity: 0.7
+    visible: flowDragArea?.dragStarted === true
+    z: 2000
+    clip: false // Ensure ghost isn't clipped
 
-        Behavior on x {
-          NAnim {
-            duration: Style.animationFaster
-            curve: "out"
-          }
-        }
-        Behavior on y {
-          NAnim {
-            duration: Style.animationFaster
-            curve: "out"
-          }
-        }
+    NText {
+      id: ghostText
+      anchors.centerIn: parent
+      pointSize: Style.fontSizeS
+      color: Colors.onShell
+    }
+  }
+
+  // Drop indicator — a horizontal accent line on the seam where the widget
+  // will be inserted (the rows are a vertical list now).
+  Rectangle {
+    id: dropIndicator
+    x: Style.radiusItem
+    width: root.width - Style.radiusItem * 2
+    height: 3
+    radius: Style.radiusRow
+    color: Colors.accent
+    opacity: 0
+    visible: opacity > 0
+    z: 1999
+    // Set by the drag handlers; the pulse runs only while it is set and
+    // motion is not reduced. Under reduced motion the handlers' opacity 1
+    // shows the indicator without the pulse. (Binding `paused` instead
+    // warned "setPaused() cannot be used when animation isn't running"
+    // every time reduced motion turned on outside a drag.)
+    property bool pulsing: false
+
+    SequentialAnimation on opacity {
+      id: pulseAnimation
+      running: dropIndicator.pulsing && !Style.reduceMotion
+      loops: Animation.Infinite
+      NAnim {
+        to: 1
+        duration: Style.motionPulse
+        curve: "pulse"
       }
+      NAnim {
+        to: 0.6
+        duration: Style.motionPulse
+        curve: "pulse"
+      }
+    }
 
-      // MouseArea for drag and drop
-      MouseArea {
-        id: flowDragArea
-        anchors.fill: parent
-        z: 100 // Above widgets to ensure it captures events first
-        enabled: root.draggable || root.crossSectionDraggable
+    Behavior on y {
+      NAnim {
+        duration: Style.animationFaster
+        curve: "out"
+      }
+    }
+  }
 
-        acceptedButtons: Qt.LeftButton
-        preventStealing: true // Always prevent stealing to ensure we get all events
-        propagateComposedEvents: true // Allow events to propagate when not handled
-        hoverEnabled: potentialDrag || dragStarted // Only track hover during drag operations
-        cursorShape: dragStarted ? Qt.ClosedHandCursor : Qt.ArrowCursor
+  // Right-click context menu — shared by every row (the model only depends
+  // on the sibling sections); _contextIndex remembers which row opened it.
+  MouseArea {
+    id: contextArea
+    anchors.fill: parent
+    acceptedButtons: Qt.RightButton
+    enabled: !(flowDragArea?.dragStarted || flowDragArea?.potentialDrag)
 
-        property point startPos: Qt.point(0, 0)
-        property bool dragStarted: false
-        property bool potentialDrag: false // Track if we're in a potential drag interaction
-        property int draggedIndex: -1
-        property real dragThreshold: 8 // Reduced threshold for more responsive drag
-        property Item draggedWidget: null
-        property int dropTargetIndex: -1
-        property var draggedModelData: null
-        property bool isOverButtonArea: false
-
-        // Drop position calculation
-        // Map widget coordinates from grid-local to gridContainer coordinates
-        function mapWidgetCoords(widget) {
-          return {
-            x: widget.x + widgetFlow.x,
-            y: widget.y + widgetFlow.y,
-            width: widget.width,
-            height: widget.height
-          };
-        }
-
-        function updateDropIndicator(mouseX, mouseY) {
-          if (!dragStarted || draggedIndex === -1) {
-            dropIndicator.opacity = 0;
-            dropIndicator.pulsing = false;
+    onPressed: mouse => {
+      for (var i = 0; i < widgetModel.length; i++) {
+        var row = widgetRepeater.itemAt(i);
+        if (!row || row.widgetIndex === undefined)
+          continue;
+        if (mouse.x >= row.x && mouse.x <= row.x + row.width && mouse.y >= row.y && mouse.y <= row.y + row.height) {
+          // Right-click on the gear area is the gear's business.
+          if (row.buttonsCount > 0 && mouse.x - row.x >= row.buttonsStartX) {
+            mouse.accepted = false;
             return;
           }
-
-          let bestIndex = -1;
-          let bestPosition = null;
-          let minDistance = Infinity;
-
-          // Check position relative to each widget
-          for (var i = 0; i < widgetModel.length; i++) {
-            if (i === draggedIndex)
-              continue;
-            const widget = widgetRepeater.itemAt(i);
-            if (!widget || widget.widgetIndex === undefined)
-              continue;
-
-            const mapped = mapWidgetCoords(widget);
-
-            // Check distance to left edge (insert before)
-            const leftDist = Math.sqrt(Math.pow(mouseX - mapped.x, 2) + Math.pow(mouseY - (mapped.y + mapped.height / 2), 2));
-
-            // Check distance to right edge (insert after)
-            const rightDist = Math.sqrt(Math.pow(mouseX - (mapped.x + mapped.width), 2) + Math.pow(mouseY - (mapped.y + mapped.height / 2), 2));
-
-            if (leftDist < minDistance) {
-              minDistance = leftDist;
-              bestIndex = i;
-              bestPosition = Qt.point(mapped.x - dropIndicator.width / 2 - Style.marginXS, mapped.y);
-            }
-
-            if (rightDist < minDistance) {
-              minDistance = rightDist;
-              bestIndex = i + 1;
-              bestPosition = Qt.point(mapped.x + mapped.width + Style.marginXS - dropIndicator.width / 2, mapped.y);
-            }
-          }
-
-          // Check if we should insert at position 0 (very beginning)
-          if (widgetModel.length > 0 && draggedIndex !== 0) {
-            const firstWidget = widgetRepeater.itemAt(0);
-            if (firstWidget) {
-              const mapped = mapWidgetCoords(firstWidget);
-              const dist = Math.sqrt(Math.pow(mouseX - mapped.x, 2) + Math.pow(mouseY - mapped.y, 2));
-              if (dist < minDistance && mouseX < mapped.x + mapped.width / 2) {
-                minDistance = dist;
-                bestIndex = 0;
-                // Position indicator to the left of the first widget
-                bestPosition = Qt.point(mapped.x - dropIndicator.width / 2 - Style.marginXS, mapped.y);
-              }
-            }
-          }
-
-          // Only show indicator if we're close enough and it's a different position
-          if (minDistance < 80 && bestIndex !== -1) {
-            // Adjust index if we're moving forward
-            let adjustedIndex = bestIndex;
-            if (bestIndex > draggedIndex) {
-              adjustedIndex = bestIndex - 1;
-            }
-
-            // Don't show if it's the same position
-            if (adjustedIndex === draggedIndex) {
-              dropIndicator.opacity = 0;
-              dropIndicator.pulsing = false;
-              dropTargetIndex = -1;
-              return;
-            }
-
-            dropTargetIndex = adjustedIndex;
-            if (bestPosition) {
-              dropIndicator.x = bestPosition.x;
-              dropIndicator.y = bestPosition.y;
-              dropIndicator.opacity = 1;
-              dropIndicator.pulsing = true;
-            }
-          } else {
-            dropIndicator.opacity = 0;
-            dropIndicator.pulsing = false;
-            dropTargetIndex = -1;
-          }
-        }
-
-        function resetDragState() {
-          root.clearCrossSectionHover();
-          dragStarted = false;
-          potentialDrag = false;
-          draggedIndex = -1;
-          draggedWidget = null;
-          dropTargetIndex = -1;
-          draggedModelData = null;
-          isOverButtonArea = false;
-          dropIndicator.opacity = 0;
-          dropIndicator.pulsing = false;
-          dragGhost.width = 0;
-        }
-
-        onPressed: mouse => {
-                     // Reset state
-                     startPos = Qt.point(mouse.x, mouse.y);
-                     dragStarted = false;
-                     potentialDrag = false;
-                     draggedIndex = -1;
-                     draggedWidget = null;
-                     dropTargetIndex = -1;
-                     draggedModelData = null;
-                     isOverButtonArea = false;
-
-                     // Find which widget was clicked
-                     for (var i = 0; i < widgetModel.length; i++) {
-                       const widget = widgetRepeater.itemAt(i);
-                       if (widget && widget.widgetIndex !== undefined) {
-                         if (mouse.x >= widget.x && mouse.x <= widget.x + widget.width && mouse.y >= widget.y && mouse.y <= widget.y + widget.height) {
-                           const localX = mouse.x - widget.x;
-                           const buttonsStartX = widget.width - (widget.buttonsCount * widget.buttonsWidth * Style.uiScaleRatio);
-
-                           if (localX >= buttonsStartX && widget.buttonsCount > 0) {
-                             // Click is on button area - don't start drag, propagate event
-                             isOverButtonArea = true;
-                             mouse.accepted = false;
-                             return;
-                           } else {
-                             // This is a draggable area
-                             draggedIndex = widget.widgetIndex;
-                             draggedWidget = widget;
-                             draggedModelData = widget.modelData;
-                             potentialDrag = true;
-                             mouse.accepted = true;
-
-                             // Signal that interaction started (prevents panel close)
-                             root.dragPotentialStarted();
-                             return;
-                           }
-                         }
-                       }
-                     }
-
-                     // Click was not on any widget
-                     mouse.accepted = false;
-                   }
-
-        onPositionChanged: mouse => {
-                             if (potentialDrag && draggedIndex !== -1) {
-                               const deltaX = mouse.x - startPos.x;
-                               const deltaY = mouse.y - startPos.y;
-                               const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-                               // Start drag if threshold exceeded
-                               if (!dragStarted && distance > dragThreshold) {
-                                 dragStarted = true;
-
-                                 // Setup ghost widget
-                                 if (draggedWidget) {
-                                   dragGhost.width = draggedWidget.width;
-                                   dragGhost.color = Colors.overlay("field");
-                                   ghostText.text = draggedModelData.id;
-                                 }
-
-                                 var startGlobal = flowDragArea.mapToGlobal(mouse.x, mouse.y);
-                                 root.updateCrossSectionHover(startGlobal.x, startGlobal.y);
-                               }
-
-                               if (dragStarted) {
-                                 // Move ghost widget
-                                 dragGhost.x = mouse.x - dragGhost.width / 2;
-                                 dragGhost.y = mouse.y - dragGhost.height / 2;
-
-                                 var moveGlobal = flowDragArea.mapToGlobal(mouse.x, mouse.y);
-                                 root.updateCrossSectionHover(moveGlobal.x, moveGlobal.y);
-
-                                 // Update drop indicator
-                                 updateDropIndicator(mouse.x, mouse.y);
-                               }
-                             }
-                           }
-
-        onReleased: mouse => {
-                      if (root.draggable && dragStarted && dropTargetIndex !== -1 && dropTargetIndex !== draggedIndex) {
-                        // Perform the reorder
-                        reorderWidget(sectionId, draggedIndex, dropTargetIndex);
-                      } else if (dragStarted && draggedIndex !== -1) {
-                        var globalPos = flowDragArea.mapToGlobal(mouse.x, mouse.y);
-                        var targetSectionId = root.findSectionAtGlobalPosition(globalPos.x, globalPos.y);
-                        if (targetSectionId !== "" && targetSectionId !== root.sectionId) {
-                          root.moveWidget(root.sectionId, draggedIndex, targetSectionId);
-                        }
-                      }
-
-                      // Always signal end of interaction if we started one
-                      if (potentialDrag) {
-                        root.dragPotentialEnded();
-                      }
-
-                      // Reset everything
-                      resetDragState();
-                      mouse.accepted = true;
-                    }
-
-        onCanceled: {
-          // Handle cancel (e.g., ESC key pressed during drag)
-          if (potentialDrag) {
-            root.dragPotentialEnded();
-          }
-
-          resetDragState();
+          root._contextIndex = i;
+          var local = row.mapFromItem(contextArea, mouse.x, mouse.y);
+          contextMenu.openAtItem(row, local.x, local.y);
+          mouse.accepted = true;
+          return;
         }
       }
+      mouse.accepted = false;
+    }
+  }
+
+  NContextMenu {
+    id: contextMenu
+    parent: Overlay.overlay
+    width: 240 * Style.uiScaleRatio
+    model: {
+      var items = [];
+      // Add move options for each available section (except current)
+      for (var i = 0; i < root.availableSections.length; i++) {
+        var section = root.availableSections[i];
+        if (section !== root.sectionId) {
+          var label = root.getSectionLabel(section);
+          var displayLabel = '';
+          // Map section IDs to correct position keys based on bar orientation
+          var positionKey = section;
+          if (root.barIsVertical) {
+            if (section === "left")
+              positionKey = "top";
+            else if (section === "right")
+              positionKey = "bottom";
+          }
+          if (I18n.hasTranslation("positions." + positionKey)) {
+            displayLabel = I18n.tr("positions." + positionKey);
+          } else {
+            displayLabel = label.charAt(0).toUpperCase() + label.slice(1);
+          }
+
+          items.push({
+                       "label": I18n.tr("tooltips.move-to-section", {
+                                          "section": displayLabel
+                                        }),
+                       "action": section,
+                       "icon": root.getSectionIcon(section),
+                       "visible": true
+                     });
+        }
+      }
+      // Add remove option
+      items.push({
+                   "label": I18n.tr("tooltips.remove-widget"),
+                   "action": "remove",
+                   "icon": "trash",
+                   "visible": true
+                 });
+      return items;
+    }
+
+    onTriggered: action => {
+      if (root._contextIndex < 0)
+        return;
+      if (action === "remove") {
+        root.removeWidget(root.sectionId, root._contextIndex);
+      } else {
+        root.moveWidget(root.sectionId, root._contextIndex, action);
+      }
+      root._contextIndex = -1;
+    }
+  }
+
+  // MouseArea for drag and drop — sits above the rows but passes through
+  // clicks it does not claim (gear area, add-row combo, head).
+  MouseArea {
+    id: flowDragArea
+    anchors.fill: parent
+    enabled: root.draggable || root.crossSectionDraggable
+
+    acceptedButtons: Qt.LeftButton
+    preventStealing: true // Always prevent stealing to ensure we get all events
+    propagateComposedEvents: true // Allow events to propagate when not handled
+    hoverEnabled: potentialDrag || dragStarted // Only track hover during drag operations
+    cursorShape: dragStarted ? Qt.ClosedHandCursor : Qt.ArrowCursor
+
+    property point startPos: Qt.point(0, 0)
+    property bool dragStarted: false
+    property bool potentialDrag: false // Track if we're in a potential drag interaction
+    property int draggedIndex: -1
+    property real dragThreshold: 8 // Reduced threshold for more responsive drag
+    property Item draggedWidget: null
+    property int dropTargetIndex: -1
+    property var draggedModelData: null
+    property bool isOverButtonArea: false
+
+    // Insertion index for a vertical list: the first row whose vertical
+    // centre sits below the cursor. The indicator is a horizontal line on
+    // that seam (inserting at `count` shows the seam above the add row).
+    function updateDropIndicator(mouseX, mouseY) {
+      if (!dragStarted || draggedIndex === -1 || !root.draggable) {
+        dropIndicator.opacity = 0;
+        dropIndicator.pulsing = false;
+        dropTargetIndex = -1;
+        return;
+      }
+
+      var index = widgetModel.length;
+      for (var i = 0; i < widgetModel.length; i++) {
+        var row = widgetRepeater.itemAt(i);
+        if (!row)
+          continue;
+        if (mouseY < row.y + row.height / 2) {
+          index = i;
+          break;
+        }
+      }
+
+      // Inserting before ourselves or right after ourselves is a no-op.
+      if (index === draggedIndex || index === draggedIndex + 1) {
+        dropIndicator.opacity = 0;
+        dropIndicator.pulsing = false;
+        dropTargetIndex = -1;
+        return;
+      }
+
+      dropTargetIndex = index > draggedIndex ? index - 1 : index;
+
+      var seamY;
+      if (index < widgetModel.length) {
+        var target = widgetRepeater.itemAt(index);
+        seamY = target ? target.y - group.spacing / 2 : 0;
+      } else {
+        var last = widgetRepeater.itemAt(widgetModel.length - 1);
+        seamY = last ? last.y + last.height + group.spacing / 2 : comboBox.y - group.spacing / 2;
+      }
+      dropIndicator.y = seamY - dropIndicator.height / 2;
+      dropIndicator.opacity = 1;
+      dropIndicator.pulsing = true;
+    }
+
+    function resetDragState() {
+      root.clearCrossSectionHover();
+      dragStarted = false;
+      potentialDrag = false;
+      draggedIndex = -1;
+      draggedWidget = null;
+      dropTargetIndex = -1;
+      draggedModelData = null;
+      isOverButtonArea = false;
+      dropIndicator.opacity = 0;
+      dropIndicator.pulsing = false;
+      dragGhost.width = 0;
+    }
+
+    onPressed: mouse => {
+      // Reset state
+      startPos = Qt.point(mouse.x, mouse.y);
+      dragStarted = false;
+      potentialDrag = false;
+      draggedIndex = -1;
+      draggedWidget = null;
+      dropTargetIndex = -1;
+      draggedModelData = null;
+      isOverButtonArea = false;
+
+      // Find which row was clicked
+      for (var i = 0; i < widgetModel.length; i++) {
+        const widget = widgetRepeater.itemAt(i);
+        if (widget && widget.widgetIndex !== undefined) {
+          if (mouse.y >= widget.y && mouse.y <= widget.y + widget.height && mouse.x >= widget.x && mouse.x <= widget.x + widget.width) {
+            const localX = mouse.x - widget.x;
+
+            if (localX >= widget.buttonsStartX && widget.buttonsCount > 0) {
+              // Click is on button area - don't start drag, propagate event
+              isOverButtonArea = true;
+              mouse.accepted = false;
+              return;
+            } else {
+              // This is a draggable area
+              draggedIndex = widget.widgetIndex;
+              draggedWidget = widget;
+              draggedModelData = widget.modelData;
+              potentialDrag = true;
+              mouse.accepted = true;
+
+              // Signal that interaction started (prevents panel close)
+              root.dragPotentialStarted();
+              return;
+            }
+          }
+        }
+      }
+
+      // Click was not on any widget
+      mouse.accepted = false;
+    }
+
+    onPositionChanged: mouse => {
+      if (potentialDrag && draggedIndex !== -1) {
+        const deltaX = mouse.x - startPos.x;
+        const deltaY = mouse.y - startPos.y;
+        const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+        // Start drag if threshold exceeded
+        if (!dragStarted && distance > dragThreshold) {
+          dragStarted = true;
+
+          // Setup ghost widget
+          if (draggedWidget) {
+            dragGhost.width = draggedWidget.width;
+            dragGhost.height = draggedWidget.height;
+            dragGhost.color = Colors.overlay("field");
+            ghostText.text = root.widgetDisplayName(draggedModelData.id);
+          }
+
+          var startGlobal = flowDragArea.mapToGlobal(mouse.x, mouse.y);
+          root.updateCrossSectionHover(startGlobal.x, startGlobal.y);
+        }
+
+        if (dragStarted) {
+          // Move ghost widget
+          dragGhost.x = mouse.x - dragGhost.width / 2;
+          dragGhost.y = mouse.y - dragGhost.height / 2;
+
+          var moveGlobal = flowDragArea.mapToGlobal(mouse.x, mouse.y);
+          root.updateCrossSectionHover(moveGlobal.x, moveGlobal.y);
+
+          // Update drop indicator
+          updateDropIndicator(mouse.x, mouse.y);
+        }
+      }
+    }
+
+    onReleased: mouse => {
+      if (root.draggable && dragStarted && dropTargetIndex !== -1 && dropTargetIndex !== draggedIndex) {
+        // Perform the reorder
+        reorderWidget(sectionId, draggedIndex, dropTargetIndex);
+      } else if (dragStarted && draggedIndex !== -1) {
+        var globalPos = flowDragArea.mapToGlobal(mouse.x, mouse.y);
+        var targetSectionId = root.findSectionAtGlobalPosition(globalPos.x, globalPos.y);
+        if (targetSectionId !== "" && targetSectionId !== root.sectionId) {
+          root.moveWidget(root.sectionId, draggedIndex, targetSectionId);
+        }
+      }
+
+      // Always signal end of interaction if we started one
+      if (potentialDrag) {
+        root.dragPotentialEnded();
+      }
+
+      // Reset everything
+      resetDragState();
+      mouse.accepted = true;
+    }
+
+    onCanceled: {
+      // Handle cancel (e.g., ESC key pressed during drag)
+      if (potentialDrag) {
+        root.dragPotentialEnded();
+      }
+
+      resetDragState();
     }
   }
 }

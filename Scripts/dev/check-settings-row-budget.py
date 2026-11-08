@@ -98,31 +98,21 @@ def main():
             file=sys.stderr,
         )
         fail = 1
-    # Section-editor chips sized themselves with marginL*2 on top of the
-    # label's own padding, and the row's right margin was a different token
-    # from its left, so the extra width sat only on the right.
+    # Section-editor widget rows are NDccRows; the label must fill the row's
+    # flexible span or it would squeeze against the gear. A 0-wide gear slot
+    # that stays visible still consumes RowLayout spacing, so it is only
+    # shown when a gear exists — both checks are whole-file since the row's
+    # padding lives in NDccRow, not the delegate.
     editor = (ROOT / "Widgets/NSectionEditor.qml").read_text()
-    content = re.search(r"id:\s*widgetContent\b([\s\S]{0,2500})", editor)
-    block = content.group(1) if content else ""
-    left = re.search(r"anchors\.leftMargin:\s*Style\.(\w+)", block)
-    right = re.search(r"anchors\.rightMargin:\s*Style\.(\w+)", block)
-    if not left or not right or left.group(1) != right.group(1):
+    label = re.search(r"id:\s*widgetLabel\b([\s\S]{0,800})", editor)
+    block = label.group(1) if label else ""
+    if not re.search(r"Layout\.fillWidth:\s*true", block):
         print(
-            "Widgets/NSectionEditor.qml: chip row left and right margins "
-            "must be the same token",
+            "Widgets/NSectionEditor.qml: widget row label must "
+            "Layout.fillWidth so the gear sits at the row's right edge",
             file=sys.stderr,
         )
         fail = 1
-    if re.search(r"leftPadding:\s*Style\.", block) or re.search(r"rightPadding:\s*Style\.", block):
-        print(
-            "Widgets/NSectionEditor.qml: chip label padding is added again "
-            "by the chip width; keep it 0 and inset the row once",
-            file=sys.stderr,
-        )
-        fail = 1
-    # A 0-wide gear slot that stays visible still consumes RowLayout spacing,
-    # so the label is short of its implicitWidth and elides. The slot sits
-    # well below the row's margin lines, so this is a whole-file check.
     if not re.search(r"visible:\s*buttonsCount\s*>\s*0", editor):
         print(
             "Widgets/NSectionEditor.qml: the gear slot must be visible only "
