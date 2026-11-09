@@ -104,6 +104,38 @@ Item {
   // Core widget URLs: file names match widget IDs exactly
   readonly property string _barWidgetsDir: Quickshell.shellDir + "/Modules/Bar/Widgets/"
 
+  // widgetProps is consumed as data, not a binding: the loaded item holds plain
+  // copies. Sources that keep their delegates alive across a write (DockContent
+  // syncs its run ListModels in place, so a dock.plugins settings write does
+  // NOT recreate the delegate) would otherwise freeze every injected value —
+  // widgetSettings included — at its load-time state. Re-apply on change.
+  function _applyWidgetProps(item) {
+    for (var prop in widgetProps) {
+      if (item.hasOwnProperty(prop)) {
+        item[prop] = widgetProps[prop];
+      }
+    }
+  }
+
+  function _register(item) {
+    root._unregister();
+    BarService.registerWidget(widgetScreen.name, section, widgetId, sectionIndex, item);
+    root._regScreen = widgetScreen.name;
+    root._regSection = section;
+    root._regWidgetId = widgetId;
+    root._regIndex = sectionIndex;
+  }
+
+  onWidgetPropsChanged: {
+    if (!loader.item)
+      return;
+    _applyWidgetProps(loader.item);
+    // Structural props (index after a reorder, section) may have moved: re-key
+    // the BarService registration to the item's effective coordinates.
+    if (section !== _regSection || sectionIndex !== _regIndex || widgetId !== _regWidgetId || (widgetScreen && widgetScreen.name) !== _regScreen)
+      _register(loader.item);
+  }
+
   function _loadWidget() {
     if (!BarWidgetRegistry.hasWidget(root.widgetId))
       return;
@@ -178,21 +210,11 @@ Item {
       }
 
       // Apply remaining widget properties (screen is already set as initial prop)
-      for (var prop in widgetProps) {
-        if (item.hasOwnProperty(prop)) {
-          item[prop] = widgetProps[prop];
-        }
-      }
+      root._applyWidgetProps(item);
 
-      // Unregister any previous registration before registering the new instance
-      root._unregister();
-
-      // Register and store the key for reliable unregistration
-      BarService.registerWidget(widgetScreen.name, section, widgetId, sectionIndex, item);
-      root._regScreen = widgetScreen.name;
-      root._regSection = section;
-      root._regWidgetId = widgetId;
-      root._regIndex = sectionIndex;
+      // Unregister any previous registration, then register and store the key
+      // for reliable unregistration
+      root._register(item);
 
       // Call custom onLoaded if it exists
       if (item.hasOwnProperty("onLoaded")) {
