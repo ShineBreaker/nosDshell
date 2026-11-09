@@ -58,8 +58,12 @@ Item {
   // Edge snapping: if panel is within this distance (in pixels) from a screen edge, snap
   property real edgeSnapDistance: 50
 
-  // Track whether panel is open
-  property bool isPanelOpen: false
+  // Panel lifecycle: closed → loading → revealing → open → closing →
+  // collapsing → closed, owned by `lifecycle` below. The flag surface
+  // MainScreen, PanelService and derived panels read is a projection of
+  // the phase — writers go through open()/close()/finalizeClose(), which
+  // transition() the machine instead of assigning booleans.
+  readonly property bool isPanelOpen: !lifecycle.is("closed")
 
   // Keep the loaded content alive across close/open cycles (settings and
   // control-center frame): reopening skips the full tab re-instantiation
@@ -79,9 +83,11 @@ Item {
   // Shared tail of every open: position, reveal, fade orchestration.
   // Called from the content Loader (first open) and from the reopen hook.
   function finishOpen() {
-    // The reopen hook is deferred a frame; a close/Open race in between
-    // must not reveal a panel that is already closing again.
-    if (!root.isPanelOpen)
+    // The reopen hook is deferred a frame; a close that landed in between
+    // must not reveal the panel again — only the loading phase may reveal
+    // (a close leaves isPanelOpen up until finalize, so the flag alone
+    // cannot guard this).
+    if (!lifecycle.is("loading"))
       return;
     // Calculate position with stable contentPreferredWidth/Height values
     setPosition();
@@ -98,48 +104,100 @@ Item {
     root.cachedShouldAnimateWidth = panelBackground.shouldAnimateWidth;
     root.cachedShouldAnimateHeight = panelBackground.shouldAnimateHeight;
 
-    // Make panel visible, now only the intended dimension will animate
-    root.isPanelVisible = true;
+    // Make panel visible, now only the intended dimension will animate.
+    // The revealing phase carries the timers the opacityTrigger and
+    // openWatchdog used to be.
+    if (!lifecycle.transition("revealing"))
+      return;
 
     if (root.animationsDisabled || root.useArrowPopup || panelBackground.slidesAlongEdge) {
       // Skip delay when animations are disabled; arrow popups and edge
       // sheets have no size animation, so the opacity fade starts at once
-      root.sizeAnimationComplete = true;
-    } else {
-      opacityTrigger.start();
-    }
-
-    // Start the open watchdog only when the fade will actually run: a
-    // zero-duration fade completes synchronously, the Behavior's running
-    // change never fires afterwards, and the armed timer would log a false
-    // timeout on every open. Reading the animation's resolved duration
-    // covers animationsDisabled and performanceMode (both produce 0)
-    // uniformly for arrow popups and panels.
-    if (opacityAnimation.duration > 0) {
-      root.openWatchdogActive = true;
-      openWatchdogTimer.start();
+      lifecycle.transition("open");
     }
 
     opened();
   }
 
   // Track actual visibility (delayed until content is loaded and sized)
-  property bool isPanelVisible: false
+  readonly property bool isPanelVisible: lifecycle.is("revealing", "open", "closing", "collapsing")
 
   // Track size animation completion for sequential opacity animation
-  property bool sizeAnimationComplete: false
+  readonly property bool sizeAnimationComplete: lifecycle.is("open")
 
   // Derived state: track opening transition
-  readonly property bool isOpening: isPanelVisible && !isClosing && !sizeAnimationComplete
+  readonly property bool isOpening: lifecycle.is("revealing")
 
-  // Track close animation state: fade opacity first, then shrink size
-  property bool isClosing: false
-  property bool opacityFadeComplete: false
-  property bool closeFinalized: false // Prevent double-finalization
+  // Track close animation state: fade opacity first (closing), then shrink
+  // size (collapsing — the old opacityFadeComplete flag).
+  readonly property bool isClosing: lifecycle.is("closing", "collapsing")
+  readonly property bool opacityFadeComplete: lifecycle.is("collapsing")
 
-  // Safety: Watchdog timers to prevent stuck states
-  property bool closeWatchdogActive: false
-  property bool openWatchdogActive: false
+  // The one canonical phase. loading = content loader running, surface
+  // unmapped; revealing = mapped, size growing, fade pending; open =
+  // settled; closing = opacity fading out; collapsing = size shrinking.
+  // The "revealing" timeouts are the old opacityTrigger (fade starts at
+  // 50% of the grow) and openWatchdog (stuck reveal); the close-phase
+  // timeouts are the closeWatchdog, now scoped per sub-phase.
+  NStateMachine {
+    id: lifecycle
+    name: "panel:" + (root.objectName || "smart") + "@" + (root.screen?.name || "?")
+    states: ["closed", "loading", "revealing", "open", "closing", "collapsing"]
+    state: "closed"
+    transitions: ({
+                    "closed": ["loading"],
+                    "loading": ["revealing", "closing", "closed"],
+                    "revealing": ["open", "closing", "closed"],
+                    "open": ["closing", "closed"],
+                    "closing": ["collapsing", "open", "closed"],
+                    "collapsing": ["open", "closed"]
+                  })
+    timeouts: ({
+                 "revealing": [
+                   {
+                     "after": function () {
+                       return Style.motionEnter * 0.5;
+                     },
+                     "to": "open"
+                   },
+                   {
+                     "after": function () {
+                       return (Style.motionEnter + Style.motionPopupIn) * 3;
+                     },
+                     "to": "open",
+                     "warn": function () {
+                       return "Open watchdog timeout - forcing panel visible state " + root.objectName;
+                     }
+                   }
+                 ],
+                 "closing": [
+                   {
+                     "after": function () {
+                       return (Style.motionPopupOut + Style.motionExit) * 3;
+                     },
+                     "to": "closed",
+                     "warn": function () {
+                       return "Close watchdog timeout - forcing panel close " + root.objectName;
+                     }
+                   }
+                 ],
+                 "collapsing": [
+                   {
+                     "after": function () {
+                       return (Style.motionPopupOut + Style.motionExit) * 3;
+                     },
+                     "to": "closed",
+                     "warn": function () {
+                       return "Close watchdog timeout - forcing panel close " + root.objectName;
+                     }
+                   }
+                 ]
+               })
+    onEntered: state => {
+      if (state === "closed")
+        root._closedEffects();
+    }
+  }
 
   // Cached animation direction - set when panel opens, doesn't change during animation
   // These are computed once when opening and used for the entire open/close cycle
@@ -361,15 +419,11 @@ Item {
     // close flags back — the opacity/size bindings return to their open
     // targets and the panel animates back open from wherever it was.
     if (root.isClosing) {
-      root.isClosing = false;
-      root.opacityFadeComplete = false;
-      root.closeWatchdogActive = false;
-      closeWatchdogTimer.stop();
-      root.sizeAnimationComplete = true;
-      // finalizeClose may already be queued via Qt.callLater; keep the flag
-      // raised so it early-returns instead of closing the revived panel.
-      // close() clears it again on entry.
-      root.closeFinalized = true;
+      // Cancel the in-flight close: bindings return to their open targets
+      // and the panel animates back open from wherever it was. A stale
+      // finalizeClose queued via Qt.callLater is rejected by its phase
+      // check — that job used to be the closeFinalized sentinel flag.
+      lifecycle.transition("open");
     }
 
     // Reset immediate close flag to ensure animations work properly
@@ -448,8 +502,9 @@ Item {
       root.buttonItem = null;
     }
 
-    // Set isPanelOpen to trigger content loading, but don't show yet
-    isPanelOpen = true;
+    // Enter loading: the flag projection activates content loading, but
+    // the surface stays unmapped until finishOpen() reveals it.
+    beginOpen();
 
     // Notify PanelService
     PanelService.willOpenPanel(root);
@@ -458,58 +513,56 @@ Item {
     // This ensures no flicker from default size to content size
   }
 
+  // Entry point for the closed → loading edge — also called by derived
+  // panels that replicate open() (SettingsPanel's window-mode dispatcher);
+  // the phase flags themselves stay read-only projections.
+  function beginOpen() {
+    if (lifecycle.is("closed"))
+      lifecycle.transition("loading");
+  }
+
   function close() {
+    if (lifecycle.is("closed"))
+      return;
+
     // Reset immediate close flag to ensure animations work properly
     PanelService.closedImmediately = false;
 
-    // Start close sequence: fade opacity first
-    isClosing = true;
-    sizeAnimationComplete = false;
-    closeFinalized = false;
-
-    // Stop the open animation timer if it's still running
-    opacityTrigger.stop();
-    openWatchdogActive = false;
-    openWatchdogTimer.stop();
-
-    // Start close watchdog timer
-    closeWatchdogActive = true;
-    closeWatchdogTimer.restart();
+    // Start close sequence: fade opacity first. Entering "closing" leaves
+    // "revealing"/"loading", which disarms their timeouts — the explicit
+    // opacityTrigger/openWatchdog .stop() calls the flags needed are gone.
+    lifecycle.transition("closing");
 
     // If opacity is already 0 (closed during open animation before fade-in),
-    // skip directly to size animation
-    if (root.opacity === 0.0) {
-      opacityFadeComplete = true;
-    } else {
-      opacityFadeComplete = false;
-    }
+    // skip directly to the shrink phase.
+    if (root.opacity === 0.0)
+      lifecycle.transition("collapsing");
 
     // Opacity will fade out, then size will shrink, then finalizeClose() will complete
     Logger.d("SmartPanel", "Closing panel", objectName);
   }
 
   function closeImmediately() {
-    // Close without any animation, useful for app launches to avoid focus issues
-    opacityTrigger.stop();
-    openWatchdogActive = false;
-    openWatchdogTimer.stop();
-    closeWatchdogActive = false;
-    closeWatchdogTimer.stop();
+    // Close without any animation, useful for app launches to avoid focus
+    // issues. Signal immediate close BEFORE the transition so every binding
+    // the phase flip re-evaluates (dimmer, Behaviors) sees it down. The
+    // "closed" entry effects then run closedPanel()/closed()/flush() —
+    // force keeps a closed→closed self-edge a real close for panels that
+    // were never really opened.
+    PanelService.closedImmediately = true;
+    lifecycle.transition("closed", true);
 
-    // Don't set opacity directly as it breaks the binding
-    root.isPanelVisible = false;
-    root.sizeAnimationComplete = false;
-    root.isClosing = false;
-    root.opacityFadeComplete = false;
-    root.closeFinalized = true;
-    root.isPanelOpen = false;
-    // Keep-alive panels hold their content: the Loader stays active and the
-    // measured dimensions stay valid, so reopening skips the reload.
+    Logger.d("SmartPanel", "Panel closed immediately", objectName);
+  }
+
+  // Runs once on every entry into "closed" — the normal finalize, a
+  // watchdog force-close and closeImmediately() all converge here.
+  function _closedEffects() {
+    // Keep-alive panels hold their content: the Loader stays active and
+    // the measured dimensions stay valid, so reopening skips the reload.
     if (!root.keepContentAlive)
       panelBackground.dimensionsInitialized = false;
 
-    // Signal immediate close so MainScreen can skip dimmer animation
-    PanelService.closedImmediately = true;
     PanelService.closedPanel(root);
     closed();
 
@@ -517,39 +570,29 @@ Item {
     // be committed otherwise — after an app launch the compositor may stop
     // sending frame callbacks, leaving the render loop idle.
     flushSurfaceState();
-
-    Logger.d("SmartPanel", "Panel closed immediately", objectName);
   }
 
   function finalizeClose() {
-    // Prevent double-finalization
-    if (root.closeFinalized) {
-      Logger.w("SmartPanel", "finalizeClose called but already finalized - ignoring", objectName);
+    // Only a live close may finalize: a finalize queued via Qt.callLater
+    // is stale once the phase has moved on (a revive, an immediate close).
+    if (!lifecycle.is("closing", "collapsing")) {
+      Logger.w("SmartPanel", "finalizeClose called outside a close - ignoring", objectName);
       return;
     }
 
-    // Complete the close sequence after animations finish
-    root.closeFinalized = true;
-    root.closeWatchdogActive = false;
-    closeWatchdogTimer.stop();
-
-    root.isPanelVisible = false;
-    root.isPanelOpen = false;
-    root.isClosing = false;
-    root.opacityFadeComplete = false;
-
-    // Reset dimensionsInitialized for next opening (keep-alive panels hold
-    // their content, so the measured dimensions stay valid).
-    if (!root.keepContentAlive)
-      panelBackground.dimensionsInitialized = false;
-
-    PanelService.closedPanel(root);
-    closed();
-
-    // Flush pending double-buffered Wayland state (blur regions).
-    flushSurfaceState();
+    lifecycle.transition("closed");
 
     Logger.d("SmartPanel", "Panel close finalized", objectName);
+  }
+
+  // Opacity fade-out finished: advance to the shrink phase, or finalize at
+  // once when no size animation exists to wait for (centered attached and
+  // arrow panels shrink nothing; detached panels still shrink for real).
+  function _fadeOutDone() {
+    lifecycle.transition("collapsing");
+    var shouldFinalizeNow = panelContent.geometryPlaceholder && !panelContent.geometryPlaceholder.shouldAnimateWidth && !panelContent.geometryPlaceholder.shouldAnimateHeight;
+    if (shouldFinalizeNow)
+      Qt.callLater(root.finalizeClose);
   }
 
   // Push pending double-buffered Wayland state (blur/mask regions) to the
@@ -1076,84 +1119,18 @@ Item {
       curve: root.isClosing ? "cssEaseOut" : (root.useArrowPopup ? "snappy" : "out")
 
       onRunningChanged: {
-        // Safety: If animation didn't run (zero duration), handle immediately
+        // Safety: If animation didn't run (zero duration), handle immediately —
+        // the fade→shrink edge must be taken here or the close stalls, since
+        // no running-change will ever fire afterwards.
         if (!running && duration === 0) {
-          if (root.isClosing && root.opacity === 0.0) {
-            root.opacityFadeComplete = true;
-            var shouldFinalizeNow = panelContent.geometryPlaceholder && !panelContent.geometryPlaceholder.shouldAnimateWidth && !panelContent.geometryPlaceholder.shouldAnimateHeight;
-            if (shouldFinalizeNow) {
-              // Logger.d("SmartPanel", "Zero-duration opacity + no size animation - finalizing", root.objectName);
-              Qt.callLater(root.finalizeClose);
-            }
-          } else if (root.isPanelVisible && root.opacity === 1.0) {
-            // Open completed with zero duration
-            root.openWatchdogActive = false;
-            openWatchdogTimer.stop();
-          }
+          if (root.isClosing && root.opacity === 0.0)
+            root._fadeOutDone();
           return;
         }
 
-        // When opacity fade completes during close, trigger size animation
-        if (!running && root.isClosing && root.opacity === 0.0) {
-          root.opacityFadeComplete = true;
-          // If no size animation will run (centered attached panels only), finalize immediately
-          // Detached panels (allowAttach === false) should always animate from top
-          var shouldFinalizeNow = panelContent.geometryPlaceholder && !panelContent.geometryPlaceholder.shouldAnimateWidth && !panelContent.geometryPlaceholder.shouldAnimateHeight;
-          if (shouldFinalizeNow) {
-            //Logger.d("SmartPanel", "No animation - finalizing immediately", root.objectName);
-            Qt.callLater(root.finalizeClose);
-          } else
-            //Logger.d("SmartPanel", "Animation will run - waiting for size animation", root.objectName, "shouldAnimateHeight:", panelContent.geometryPlaceholder.shouldAnimateHeight, "shouldAnimateWidth:", panelContent.geometryPlaceholder.shouldAnimateWidth);
-          {}
-        } // When opacity fade completes during open, stop watchdog
-        else if (!running && root.isPanelVisible && root.opacity === 1.0) {
-          root.openWatchdogActive = false;
-          openWatchdogTimer.stop();
-        }
-      }
-    }
-  }
-
-  // Timer to trigger opacity fade at 50% of size animation
-  Timer {
-    id: opacityTrigger
-    interval: Style.motionEnter * 0.5
-    repeat: false
-    onTriggered: {
-      if (root.isPanelVisible) {
-        root.sizeAnimationComplete = true;
-      }
-    }
-  }
-
-  // Watchdog timer for open sequence (safety mechanism)
-  Timer {
-    id: openWatchdogTimer
-    interval: (Style.motionEnter + Style.motionPopupIn) * 3 // 3x the open sequence
-    repeat: false
-    onTriggered: {
-      if (root.openWatchdogActive) {
-        Logger.w("SmartPanel", "Open watchdog timeout - forcing panel visible state", root.objectName);
-        root.openWatchdogActive = false;
-        // Force completion of open sequence
-        if (root.isPanelOpen && !root.isPanelVisible) {
-          root.isPanelVisible = true;
-          root.sizeAnimationComplete = true;
-        }
-      }
-    }
-  }
-
-  // Watchdog timer for close sequence (safety mechanism)
-  Timer {
-    id: closeWatchdogTimer
-    interval: (Style.motionPopupOut + Style.motionExit) * 3 // 3x the close sequence
-    repeat: false
-    onTriggered: {
-      if (root.closeWatchdogActive && !root.closeFinalized) {
-        Logger.w("SmartPanel", "Close watchdog timeout - forcing panel close", root.objectName);
-        // Force finalization
-        Qt.callLater(root.finalizeClose);
+        // When opacity fade completes during close, move to the shrink phase.
+        if (!running && root.isClosing && root.opacity === 0.0)
+          root._fadeOutDone();
       }
     }
   }
@@ -1475,7 +1452,7 @@ Item {
           onRunningChanged: {
             // Edge sheets have no size animation to serialize against, so the
             // close sequence finishes once the slide-out completes.
-            if (!running && root.isClosing && !root.closeFinalized && panelBackground.slidesAlongEdge)
+            if (!running && root.isClosing && panelBackground.slidesAlongEdge)
               Qt.callLater(root.finalizeClose);
           }
         }
@@ -1712,8 +1689,8 @@ Item {
         acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
         z: -1 // Behind content, but on the panel background
         onClicked: mouse => {
-                     mouse.accepted = true; // Accept and ignore - prevents propagation to background
-                   }
+          mouse.accepted = true; // Accept and ignore - prevents propagation to background
+        }
       }
     }
 

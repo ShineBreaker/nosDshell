@@ -166,7 +166,7 @@ SmartPanel {
       root.useButtonPosition = false;
     }
 
-    isPanelOpen = true;
+    beginOpen();
     PanelService.willOpenPanel(root);
   }
 
