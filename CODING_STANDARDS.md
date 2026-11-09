@@ -84,6 +84,9 @@
 | `Commons/SessionActions.qml` | 电源动作分发（锁定、关机、重启等） |
 | `Commons/WorkspaceQuery.js` | 筛选属于某块屏幕的工作区 |
 | `Commons/NSurfaceRegion.qml` | 表面输入区域和模糊区域的注册，内含 Quickshell 的平台陷阱处理 |
+| `Commons/NStateMachine.qml` | 逻辑层生命周期的显式状态机（面板开合、OSD 显隐、请求相位），带合法边校验和按相位计时的 timeout |
+| `Commons/StateRegistry.qml` | 各 NStateMachine 实例的活相位登记表，`ShellState.buildStateSnapshot()` 的 `machines` 字段从这里取 |
+| `Commons/ActionCountdown.qml` | "请求 → 倒计时 → 执行"的共用周期（会话菜单、锁屏电源行） |
 
 ## 注册
 
@@ -103,7 +106,8 @@
 - `ScrollView`（包括 `NScrollView`）里只有一个内容子项时，它按这个子项的隐式尺寸推算 `contentWidth` 和 `contentHeight`。内容子项有两个或更多时（比如内容列旁边再放一个旁观滚轮的覆盖层），推算结果不可靠，可能读出 0，滚动和边缘淡出随之失效且不报错。这种情况下显式写 `contentWidth` 和 `contentHeight`。`lint.sh` 里的 `check-scrollview-content.py` 拦截缺 `contentHeight` 的写法。例子见 `SettingsModuleView` 的 `settingsContentScroll`。
 - `Connections` 的 `target` 要等运行时才赋值时，声明处写 `target: null`。不写时 `target` 默认是父项，父项没有对应信号就会报 `Detected function "onXxx" in Connections element`。
 - 布局约束（`Layout.maximumWidth` 这类附加属性、padding）不要读取它所在布局自己的尺寸：布局排列子项时自身尺寸也在变，约束跟着变就会重新触发排列，Qt 报 `Detected recursive rearrange` 后放弃。从外层固定的尺寸推算，例子见 `NSearchableComboBox` 里 combo 的固定宽三件套。约束确实要看排列结果时（内容溢出才给滚动条留宽度，而留宽又改变内容高度），用 `Qt.callLater` 推迟一拍再更新，见 `NScrollView` 的 `_reserveVertical`，否则会报 `Binding loop detected`。
-- 不经 `SmartPanel`、自己管理显隐的 `PanelWindow`（全屏启动器、会话菜单这类 overlay 表面），关闭时要在淡出结束后把窗口的 `visible` 置为 false。只把内容淡成透明而窗口仍映射时，这块表面看不见，却继续接收整屏的点击，独占键盘焦点时连按键也一起拿走。做法统一为：关闭时启动一个时长为淡出时长加 30 ms 的计时器，窗口在计时器运行期间保持映射，到点再取消映射。例子见 `LauncherFullscreenWindow` 和 `SessionMenu` 的 `closeTimer`。
+- 不经 `SmartPanel`、自己管理显隐的 `PanelWindow`（全屏启动器、会话菜单这类 overlay 表面），关闭时要在淡出结束后把窗口的 `visible` 置为 false。只把内容淡成透明而窗口仍映射时，这块表面看不见，却继续接收整屏的点击，独占键盘焦点时连按键也一起拿走。做法统一为：用 `NStateMachine` 建一个 closed → open → closing → closed 的生命周期，closing 态挂一个时长为淡出时长加 30 ms 的 timeout，窗口在 closing 期间保持映射，进 closed 才取消映射。例子见 `SessionMenu` 的 `lifecycle`。
+- 一组互相制约的旗标/计时器/相位字符串构成隐式状态机时，不要再往里面加第三个 bool：收敛成 `Commons/NStateMachine.qml`。规则是"一个相位、单一真源、派生投影"——`state` 是唯一可写的相位，外部要的老旗标写成 `readonly property bool foo: fsm.is("bar")` 投影，写方一律走 `transition()`。状态集只列真实相位，不列事件；`transitions` 声明合法边，非法边被拒绝并记日志而不是悄悄到达；按相位的计时（淡出后取消映射、倒计时、watchdog）写进 `timeouts`，离开相位自动撤防，取代手写的 `.stop()` 对子。`force` 自跃迁表示"重来一次"（重启计时、closeImmediately）。需要时给机器起稳定的名字（含屏幕名，`panel:xxx@eDP-1`），`state all` 快照就能读到活相位。反例同样明确：孤立的悬停/选中这类纯视觉 bool 不构成状态机，不要为它建机器。例子见 `SmartPanel` 的 `lifecycle`、`SessionMenu` 的 `lifecycle` 与 `countdown`、`OSD` 的 `lifecycle`。
 - 交给 Quickshell 组件（`IconImage` 等）的图片地址要写成 `file://` 开头的 URL。裸路径会按组件自己所在的 `qrc:` 位置解析，加载失败。仓库里的 QML 文件自己的 `Image` 不受影响，因为它们按 `file:` 位置解析。
 - 壁纸级尺寸的 `Image` 一律 `cache: false`（`Background`、`Overview`、`LockScreenBackground`、`LauncherBackground`）。`cache: true` 的语义是"无人引用后仍驻留纹理缓存"：壁纸自动化下每张显示过的壁纸都留在 QQuickPixmapCache 里不再释放，长期运行内存无界增长。多个表面共享同一张壁纸靠的是 pixmap cache 对同一 URL 的引用计数，与 cache 标志无关；重显示的代价只是一次异步重解码，持久层是 `ImageCacheService` 的磁盘缓存。小图标不受此规则约束（尺寸小、复用频繁，`cache: true` 合理）。
 
