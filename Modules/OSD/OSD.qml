@@ -201,9 +201,9 @@ Variants {
         root.item.showOSD();
       } else {
         Qt.callLater(() => {
-                       if (root.item)
-                       root.item.showOSD();
-                     });
+          if (root.item)
+            root.item.showOSD();
+        });
       }
     }
 
@@ -261,8 +261,8 @@ Variants {
         // If volume OSD is currently showing, refresh it to show new device's volume
         if (root.currentOSDType === OSD.Type.Volume) {
           Qt.callLater(() => {
-                         showOSD(OSD.Type.Volume);
-                       });
+            showOSD(OSD.Type.Volume);
+          });
         }
       }
 
@@ -270,8 +270,8 @@ Variants {
         // If input volume OSD is currently showing, refresh it to show new device's volume
         if (root.currentOSDType === OSD.Type.InputVolume) {
           Qt.callLater(() => {
-                         showOSD(OSD.Type.InputVolume);
-                       });
+            showOSD(OSD.Type.InputVolume);
+          });
         }
       }
     }
@@ -514,7 +514,16 @@ Variants {
         // grow from bubbleEnterScale on "enter"; leave faster on "fall",
         // dropping osdExitOffset px (dde-osd/container.cpp
         // startWaylandAnimation gives the direction and distances).
-        property bool _hiding: false
+        //
+        // Lifecycle: hidden → pending (show-delay) → shown → hiding →
+        // hidden, owned by `lifecycle` below. _hiding stays as the
+        // in/out anim-curve selector — now a projection of the phase.
+        readonly property bool _hiding: lifecycle.is("hiding")
+        // Set by show() when a re-show interrupts the exit animation:
+        // pending → shown then resumes from the current values instead of
+        // replaying the entry (the "pending" hop hides the hiding origin
+        // from previous, so it is carried here explicitly).
+        property bool _resumePending: false
         transformOrigin: Item.Bottom
 
         Behavior on opacity {
@@ -567,20 +576,53 @@ Variants {
           curve: "enter"
         }
 
-        Timer {
-          id: hideTimer
-          interval: Settings.data.osd.autoHideMs
-          onTriggered: osdItem.hide()
-        }
-
-        Timer {
-          id: visibilityTimer
-          interval: Style.motionOsdOut
-          onTriggered: {
-            osdItem.visible = false;
-            root.currentOSDType = -1;
-            root.lastLockKeyChanged = "";
-            root.active = false;
+        // The timers the lifecycle used to scatter across the item —
+        // autoHide on shown, the outro unmap on hiding, the 30 ms layout
+        // settle delay on pending — are the machine's per-state timeouts
+        // now: leaving a phase disarms them, so a stale showDelayTimer can
+        // no longer resurrect an item that hide() already parked.
+        NStateMachine {
+          id: lifecycle
+          name: "osd@" + (root.liveScreen?.name || "?")
+          states: ["hidden", "pending", "shown", "hiding"]
+          state: "hidden"
+          transitions: ({
+                          "hidden": ["pending"],
+                          "pending": ["shown", "hiding", "hidden"],
+                          "shown": ["hiding", "pending", "hidden"],
+                          "hiding": ["pending", "hidden"]
+                        })
+          timeouts: ({
+                       "pending": [
+                         {
+                           "after": 30,
+                           "to": "shown"
+                         }
+                       ],
+                       "shown": [
+                         {
+                           "after": function () {
+                             return Settings.data.osd.autoHideMs;
+                           },
+                           "to": "hiding"
+                         }
+                       ],
+                       "hiding": [
+                         {
+                           "after": function () {
+                             return Style.motionOsdOut;
+                           },
+                           "to": "hidden"
+                         }
+                       ]
+                     })
+          onEntered: state => {
+            if (state === "shown")
+              osdItem._enterShown();
+            else if (state === "hiding")
+              osdItem._enterHiding();
+            else if (state === "hidden")
+              osdItem._enterHidden();
           }
         }
 
@@ -690,64 +732,64 @@ Variants {
           shadow: Style.shadowOsd
         }
 
-        // Delay showing the OSD to allow the layout to settle after activation.
-        // Without this, the percentage text renders outside the box on first
-        // show.
-        Timer {
-          id: showDelayTimer
-          interval: 30
-          onTriggered: {
-            osdItem.visible = true;
-            hideTimer.start();
-            if (osdItem._hiding) {
-              // Mid-exit: fade/slide back from wherever it is instead of
-              // replaying the entry (upstream: Behavior animates the current
-              // value to 1, so a re-show never re-pops).
-              osdItem._hiding = false;
-              osdItem.opacity = 1;
-              osdItem.slideOffset = 0;
-              return;
-            }
-            // Already visible or mid-entry: values refresh through bindings —
-            // only the hide timer restarts (dde-osd manager.cpp updateUI).
-            if (enterFadeAnim.running || osdItem.opacity > 0)
-              return;
-            osdItem.slideOffset = Style.osdEnterOffset;
-            osdItem.opacity = 0;
-            enterSlideAnim.restart();
-            enterFadeAnim.restart();
-            enterScaleAnim.restart();
-          }
-        }
-
+        // The "pending" state's 30 ms delay exists to let the layout settle
+        // after activation — without it the percentage text renders outside
+        // the box on first show.
         function show() {
-          hideTimer.stop();
-          visibilityTimer.stop();
-          showDelayTimer.start();
+          _resumePending = lifecycle.is("hiding");
+          // force: a re-show during pending re-enters it, restarting the
+          // 30 ms settle delay like showDelayTimer.start() used to.
+          lifecycle.transition("pending", true);
         }
 
         function hide() {
-          hideTimer.stop();
-          visibilityTimer.stop();
-          enterSlideAnim.stop();
-          enterFadeAnim.stop();
-          enterScaleAnim.stop();
-          osdItem._hiding = true;
-          osdItem.opacity = 0;
-          osdItem.slideOffset = Style.osdExitOffset;
-          visibilityTimer.start();
+          lifecycle.transition("hiding");
         }
 
         function hideImmediately() {
-          hideTimer.stop();
-          visibilityTimer.stop();
           enterSlideAnim.stop();
           enterFadeAnim.stop();
           enterScaleAnim.stop();
           osdItem.scale = 1;
           osdItem.opacity = 0;
-          osdItem.visible = false;
+          lifecycle.transition("hidden", true);
+        }
+
+        function _enterShown() {
+          visible = true;
+          if (_resumePending) {
+            // Mid-exit: fade/slide back from wherever it is instead of
+            // replaying the entry (upstream: Behavior animates the current
+            // value to 1, so a re-show never re-pops).
+            _resumePending = false;
+            opacity = 1;
+            slideOffset = 0;
+            return;
+          }
+          // Already visible or mid-entry: values refresh through bindings —
+          // only the auto-hide timeout re-armed (dde-osd manager.cpp updateUI).
+          if (enterFadeAnim.running || opacity > 0)
+            return;
+          slideOffset = Style.osdEnterOffset;
+          opacity = 0;
+          enterSlideAnim.restart();
+          enterFadeAnim.restart();
+          enterScaleAnim.restart();
+        }
+
+        function _enterHiding() {
+          _resumePending = false;
+          enterSlideAnim.stop();
+          enterFadeAnim.stop();
+          enterScaleAnim.stop();
+          opacity = 0;
+          slideOffset = Style.osdExitOffset;
+        }
+
+        function _enterHidden() {
+          visible = false;
           root.currentOSDType = -1;
+          root.lastLockKeyChanged = "";
           root.active = false;
         }
       }
