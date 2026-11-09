@@ -233,7 +233,7 @@ cc-quick-bluetooth cc-quick-vpn cc-quick-basic cc-quick-cards
 cc-collapse cc-geom settings-cc-pages
 settings edge-fade session-menu notification
 osd-volume osd-brightness audio-panel network-panel bluetooth-panel
-battery-panel calendar-panel media-panel system-monitor notification-history
+battery-panel battery-panel-toggles calendar-panel media-panel system-monitor notification-history
 settings-general settings-userinterface settings-audio settings-colorscheme
 settings-dock settings-launcher settings-wallpaper settings-notifications
 settings-osd settings-about settings-advanced settings-connections
@@ -1744,6 +1744,109 @@ PYEOF
                           call network togglePanel 0.5 ;;
     bluetooth-panel)      toggle bluetooth togglePanel 1.5 bluetooth-panel ;;
     battery-panel)        toggle battery togglePanel 1.5 battery-panel ;;
+    # Regression: widget settings on the fashion dock must reach the loaded
+    # widget live. DockContent keeps its delegates across a dock.plugins write
+    # (run ListModels sync in place), and BarWidgetLoader once applied the
+    # injected widgetSettings only at load — toggles saved correctly but the
+    # running widget kept the stale entry until a reload, so the battery
+    # panel's opt-in sections never appeared. Round-trip the two opt-in
+    # toggles through the real settings UI and assert the panel follows.
+    battery-panel-toggles)
+                          VINPUT="$REPO/tools/nosd-helpers/target/release/nosd-helpers"
+                          [ -x "$VINPUT" ] || VINPUT="$REPO/tools/nosd-helpers/target/debug/nosd-helpers"
+                          if [ ! -x "$VINPUT" ]; then echo "battery-panel-toggles: nosd-helpers missing"; SCENE_FAIL=1
+                          else
+                          SF="$(echo "$NOSD_CONFIG_DIR" | sed 's:/$::')/settings.json"
+                          # Widget host root: fashion dock carries plugins under
+                          # dock-*; efficient mode puts the same widget on the
+                          # bar. The dock builds its plugin runs asynchronously —
+                          # poll until the tile exists before probing it.
+                          WROOT=dock-HEADLESS-1
+                          WS_IT=""
+                          for _i in $(seq 1 10); do
+                            WS_IT=$(qs -p "$REPO" ipc call debug find dock-HEADLESS-1 batteryWidget 2>&1 || true)
+                            case "$WS_IT" in *"no item"*|"") sleep 1 ;; *) break ;; esac
+                          done
+                          case "$WS_IT" in *"no item"*|"") WROOT=bar-HEADLESS-1; WS_IT=$(qs -p "$REPO" ipc call debug find bar-HEADLESS-1 batteryWidget 2>&1 || true);; esac
+                          if [ -z "${WS_IT##*no item*}" ] || [ -z "$WS_IT" ]; then echo "FAIL battery-panel-toggles: batteryWidget not found: $WS_IT"; SCENE_FAIL=1
+                          else
+                          # 1. Defaults: both opt-in sections hidden in the open panel.
+                          call battery togglePanel 1.5
+                          PP0=$(qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPowerProfileSlider visible 2>&1)
+                          PM0=$(qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPerformanceModeRow visible 2>&1)
+                          shot battery-toggles-off
+                          call battery togglePanel 0.6
+                          [ "$PP0" = false ] || { echo "FAIL battery-panel-toggles: power-profile section visible by default ($PP0)"; SCENE_FAIL=1; }
+                          [ "$PM0" = false ] || { echo "FAIL battery-panel-toggles: performance-mode row visible by default ($PM0)"; SCENE_FAIL=1; }
+                          # 2. Open the Battery widget's settings dialog through
+                          # the sectioned editor (dock plugins zone = "right",
+                          # same path the settings-reset scene drives). The dock
+                          # ctxmenu route is not usable here: a right-click on
+                          # exposed dock background opens the dock menu, which
+                          # also lands on the shared "ctxmenu" root.
+                          call settings openTab dock/3 5
+                          GX=""; GY=""
+                          for _i in 1 2 3 4 5 6; do
+                            read -r GX GY < <(item_centre cc-HEADLESS-1 widgetGear-right-Battery)
+                            [ -n "${GX:-}" ] && break || sleep 1
+                          done
+                          if [ -z "${GX:-}" ]; then echo "FAIL battery-panel-toggles: widgetGear-right-Battery not found"; SCENE_FAIL=1
+                          else
+                          "$VINPUT" vinput click "$GX" "$GY" 2>>"$WORK/logs/vinput.log" || true
+                          # The dialog compiles lazily on first open — poll for
+                          # its controls instead of a fixed sleep.
+                          RST_IT=""
+                          for _i in 1 2 3 4 5 6 7 8; do
+                            RST_IT=$(qs -p "$REPO" ipc call debug find popupMenuWindow-HEADLESS-1 widgetSettingsReset 2>&1 || true)
+                            case "$RST_IT" in *"no item"*|"") sleep 0.5 ;; *) break ;; esac
+                          done
+                          case "$RST_IT" in *"no item"*|"") echo "FAIL battery-panel-toggles: settings dialog did not open ($RST_IT)"; SCENE_FAIL=1 ;; esac
+                          # 3. Flip both toggles on inside the dialog.
+                          for TG in batterySettingShowPowerProfiles batterySettingShowPerformanceMode; do
+                            TX=""
+                            for _i in 1 2 3 4 5 6; do
+                              read -r TX TY < <(item_centre popupMenuWindow-HEADLESS-1 "$TG")
+                              [ -n "${TX:-}" ] && break || sleep 0.5
+                            done
+                            [ -n "${TX:-}" ] && "$VINPUT" vinput click "$TX" "$TY" 2>>"$WORK/logs/vinput.log" || true
+                            sleep 0.4
+                            CHK=$(qs -p "$REPO" ipc call debug get popupMenuWindow-HEADLESS-1 "$TG" checked 2>&1)
+                            [ "$CHK" = true ] || { echo "FAIL battery-panel-toggles: $TG did not switch on ($CHK)"; SCENE_FAIL=1; }
+                          done
+                          read -r CX CY < <(item_centre popupMenuWindow-HEADLESS-1 widgetSettingsClose)
+                          [ -n "${CX:-}" ] && "$VINPUT" vinput click "$CX" "$CY" 2>>"$WORK/logs/vinput.log" || true
+                          sleep 0.8
+                          call settings toggle 0.5
+                          # 4. Persisted on disk AND applied to the live widget —
+                          #    a stale injected entry reports "null" here.
+                          for _i in 1 2 3 4 5; do sleep 0.6; grep -q '"showPowerProfiles": true' "$SF" 2>/dev/null && break; done
+                          grep -q '"showPowerProfiles": true' "$SF" || { echo "FAIL battery-panel-toggles: showPowerProfiles not persisted"; SCENE_FAIL=1; }
+                          grep -q '"showPerformanceMode": true' "$SF" || { echo "FAIL battery-panel-toggles: showPerformanceMode not persisted"; SCENE_FAIL=1; }
+                          LIVE=$(qs -p "$REPO" ipc call debug get "$WROOT" batteryWidget "widgetSettings.showPerformanceMode" 2>&1)
+                          [ "$LIVE" = true ] || { echo "FAIL battery-panel-toggles: live widgetSettings still stale ($LIVE)"; SCENE_FAIL=1; }
+                          # 5. Reopen the panel: both sections render. panelID is
+                          # the live Battery widget instance, so its
+                          # showPowerProfiles/showPerformanceMode projections are
+                          # the resolved flags. The profile slider also gates on
+                          # PowerProfileService (no power-profiles-daemon in the
+                          # sandbox): enabled=availability, so visible must equal
+                          # enabled once the switch is on.
+                          call battery togglePanel 1.5
+                          PP1=$(qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPowerProfileSlider visible 2>&1)
+                          PM1=$(qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPerformanceModeRow visible 2>&1)
+                          PSP=$(qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPanel-HEADLESS-1 "panelID.showPowerProfiles" 2>&1)
+                          PAVAIL=$(qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPowerProfileSlider enabled 2>&1)
+                          qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPanel-HEADLESS-1 "panelID.showPowerProfiles" > "$WORK/logs/batt-diag.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug get main-HEADLESS-1 batteryPanel-HEADLESS-1 "panelID.showPerformanceMode" >> "$WORK/logs/batt-diag.txt" 2>&1 || true
+                          qs -p "$REPO" ipc call debug get "$WROOT" batteryWidget "section" >> "$WORK/logs/batt-diag.txt" 2>&1 || true
+                          shot battery-toggles-on
+                          call battery togglePanel 0.5
+                          [ "$PSP" = true ] || { echo "FAIL battery-panel-toggles: showPowerProfiles flag not applied ($PSP)"; SCENE_FAIL=1; }
+                          [ "$PP1" = "$PAVAIL" ] || { echo "FAIL battery-panel-toggles: slider visibility wrong (visible=$PP1 profilesAvailable=$PAVAIL)"; SCENE_FAIL=1; }
+                          [ "$PM1" = true ] || { echo "FAIL battery-panel-toggles: performance-mode row still hidden after toggle ($PM1)"; SCENE_FAIL=1; }
+                          fi
+                          fi
+                          fi ;;
     calendar-panel)       toggle calendar toggle 1.5 calendar-panel ;;
     media-panel)          toggle media toggle 1.5 media-panel ;;
     system-monitor)       toggle systemMonitor toggle 1.5 system-monitor ;;
