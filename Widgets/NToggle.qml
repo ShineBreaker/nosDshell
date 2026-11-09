@@ -19,7 +19,9 @@ NDccRow {
   property string description: ""
   property string icon: ""
   property bool checked: false
-  property bool hovering: false
+  // The row HoverHandler covers the whole row, so it also tracks the switch
+  // capsule — one source for hover whether the row or the capsule owns input.
+  property bool hovering: root.hovered
   property int baseSize: Math.round(Style.baseWidgetSize * 0.8 * Style.uiScaleRatio)
   property var defaultValue: undefined
   property string settingsPath: ""
@@ -32,6 +34,13 @@ NDccRow {
 
   plain: !root.dccRow
   spacing: Style.marginM
+  // A labelled toggle is a settings row: DDE's SwitchWidget toggles on a click
+  // anywhere in the row, and the hover tint already advertises it. Bare
+  // switches (dock/panel popups) keep the click on the capsule itself.
+  interactive: root.enabled
+  clickable: root.dccRow
+  onClicked: root.toggled(!root.checked)
+  onHoveringChanged: root.hovering ? root.entered() : root.exited()
 
   readonly property bool isValueChanged: (defaultValue !== undefined) && (checked !== defaultValue)
   readonly property string indicatorTooltip: defaultValue !== undefined ? I18n.tr("panels.indicator.default-value", {
@@ -98,19 +107,6 @@ NDccRow {
       enabled: root.enabled
       anchors.fill: parent
       cursorShape: Qt.PointingHandCursor
-      hoverEnabled: true
-      onEntered: {
-        if (!enabled)
-          return;
-        hovering = true;
-        root.entered();
-      }
-      onExited: {
-        if (!enabled)
-          return;
-        hovering = false;
-        root.exited();
-      }
       onClicked: {
         if (!enabled)
           return;
