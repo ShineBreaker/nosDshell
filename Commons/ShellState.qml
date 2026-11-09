@@ -26,11 +26,11 @@ Singleton {
   Component.onCompleted: {
     // Setup state file path (needs Settings to be available)
     Qt.callLater(() => {
-                   if (typeof Settings !== 'undefined' && Settings.cacheDir) {
-                     stateFile = Settings.cacheDir + "shell-state.json";
-                     stateFileView.path = stateFile;
-                   }
-                 });
+      if (typeof Settings !== 'undefined' && Settings.cacheDir) {
+        stateFile = Settings.cacheDir + "shell-state.json";
+        stateFileView.path = stateFile;
+      }
+    });
   }
 
   // FileView for shell state
@@ -135,13 +135,13 @@ Singleton {
       Quickshell.execDetached(["mkdir", "-p", Settings.cacheDir]);
 
       Qt.callLater(() => {
-                     try {
-                       stateFileView.writeAdapter();
-                       Logger.d("ShellState", "Saved state file");
-                     } catch (writeError) {
-                       Logger.e("ShellState", "Failed to write state file:", writeError);
-                     }
-                   });
+        try {
+          stateFileView.writeAdapter();
+          Logger.d("ShellState", "Saved state file");
+        } catch (writeError) {
+          Logger.e("ShellState", "Failed to write state file:", writeError);
+        }
+      });
     } catch (error) {
       Logger.e("ShellState", "Failed to save state:", error);
     }
@@ -225,6 +225,9 @@ Singleton {
           lockScreenActive: PanelService.lockScreen?.active || false,
           wallpapers: WallpaperService.getWallpapersEffectiveMap(),
           desktopWidgetsEditMode: DesktopWidgetRegistry.editMode || false,
+          // Live NStateMachine phases (panel lifecycles, countdowns) — the
+          // machine-readable counterpart of the flag projections above.
+          machines: StateRegistry.snapshot(),
           // -------------
           display: shellStateData.display || {},
           notificationsState: shellStateData.notificationsState || {},
