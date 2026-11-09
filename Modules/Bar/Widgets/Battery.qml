@@ -13,6 +13,8 @@ import qs.Widgets
 Item {
   id: root
 
+  objectName: "batteryWidget"
+
   property ShellScreen screen
 
   // Widget properties passed from Bar.qml for per-instance settings
@@ -112,6 +114,11 @@ Item {
   // Visibility: show if hideIfNotDetected is false, or if battery is ready
   readonly property bool shouldShow: !hideIfNotDetected || (isReady && (hideIfIdle ? !isPluggedIn : true))
   readonly property string deviceNativePath: widgetSettings.deviceNativePath !== undefined ? widgetSettings.deviceNativePath : widgetMetadata.deviceNativePath
+  // Live projections for the battery panel: the panel reads them off
+  // panelID (= this instance), so they must stay bindings — a value snapshot
+  // freezes at injection time and never follows widgetSettings writes.
+  readonly property bool showPowerProfiles: widgetSettings.showPowerProfiles !== undefined ? widgetSettings.showPowerProfiles : widgetMetadata.showPowerProfiles
+  readonly property bool showPerformanceMode: widgetSettings.showPerformanceMode !== undefined ? widgetSettings.showPerformanceMode : widgetMetadata.showPerformanceMode
   readonly property var selectedDevice: BatteryService.isDevicePresent(BatteryService.findDevice(deviceNativePath)) ? BatteryService.findDevice(deviceNativePath) : null
 
   readonly property var tooltipContent: {
@@ -238,17 +245,17 @@ Item {
       TooltipService.hide();
     }
     onClicked: mouse => {
-                 TooltipService.hide();
-                 if (mouse.button === Qt.RightButton) {
-                   PanelService.showContextMenu(contextMenu, nBattery, screen);
-                 } else {
-                   toggleBatteryPanel();
-                 }
-               }
+      TooltipService.hide();
+      if (mouse.button === Qt.RightButton) {
+        PanelService.showContextMenu(contextMenu, nBattery, screen);
+      } else {
+        toggleBatteryPanel();
+      }
+    }
     onWheel: wheel => {
-               root.adjustBrightness(wheel.angleDelta.y);
-               wheel.accepted = true;
-             }
+      root.adjustBrightness(wheel.angleDelta.y);
+      wheel.accepted = true;
+    }
   }
 
   Timer {
@@ -297,10 +304,9 @@ Item {
   function getBatteryPanel() {
     var panel = PanelService.getPanel("batteryPanel", screen);
     if (panel) {
-      panel.panelID = {
-        showPowerProfiles: widgetSettings.showPowerProfiles !== undefined ? widgetSettings.showPowerProfiles : widgetMetadata.showPowerProfiles,
-        showPerformanceMode: widgetSettings.showPerformanceMode !== undefined ? widgetSettings.showPerformanceMode : widgetMetadata.showPerformanceMode
-      };
+      // Hand the panel the live instance: showPowerProfiles/showPerformanceMode
+      // stay reactive on it, while a plain {key: value} snapshot would freeze.
+      panel.panelID = root;
     }
     return panel;
   }

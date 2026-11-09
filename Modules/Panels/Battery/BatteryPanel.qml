@@ -22,8 +22,6 @@ SmartPanel {
 
     property real contentPreferredHeight: Math.min(mainLayout.implicitHeight + Style.margin2M, (root.screen?.height ?? 1080) * 0.7)
 
-    property var batteryWidgetInstance: BarService.lookupWidget("Battery", screen ? screen.name : null)
-    readonly property var batteryWidgetSettings: batteryWidgetInstance ? batteryWidgetInstance.widgetSettings : null
     readonly property var batteryWidgetMetadata: BarWidgetRegistry.widgetMetadata["Battery"]
     readonly property bool profilesAvailable: PowerProfileService.available
     readonly property var powerProfiles: [PowerProfile.PowerSaver, PowerProfile.Balanced, PowerProfile.Performance]
@@ -45,9 +43,23 @@ SmartPanel {
       PowerProfileService.setProfile(prof);
     }
 
+    // Fallback for a panel opened without a widget (IPC, no instance injected):
+    // resolve the first Battery entry across the effective widget lists — the
+    // same objects the widget reads, so settings writes apply live without
+    // going through the BarService instance registry.
     function resolveWidgetSetting(key, defaultValue) {
-      if (batteryWidgetSettings && batteryWidgetSettings[key] !== undefined)
-        return batteryWidgetSettings[key];
+      var widgets = Settings.getBarWidgetsForScreen(root.screen ? root.screen.name : "");
+      var lists = [widgets.left, widgets.center, widgets.right, widgets.dock];
+      for (var s = 0; s < lists.length; s++) {
+        var list = lists[s];
+        if (!list)
+          continue;
+        for (var i = 0; i < list.length; i++) {
+          var e = list[i];
+          if (e && e.id === "Battery" && e[key] !== undefined)
+            return e[key];
+        }
+      }
       if (batteryWidgetMetadata && batteryWidgetMetadata[key] !== undefined)
         return batteryWidgetMetadata[key];
       return defaultValue;
@@ -57,13 +69,6 @@ SmartPanel {
       target: PowerProfileService
       function onProfileChanged() {
         panelContent.profileIndex = panelContent.profileToIndex(PowerProfileService.profile);
-      }
-    }
-
-    Connections {
-      target: BarService
-      function onActiveWidgetsChanged() {
-        panelContent.batteryWidgetInstance = BarService.lookupWidget("Battery", screen ? screen.name : null);
       }
     }
 
@@ -164,6 +169,7 @@ SmartPanel {
         }
 
         NValueSlider {
+          objectName: "batteryPowerProfileSlider"
           Layout.fillWidth: true
           Layout.leftMargin: Style.marginM
           Layout.rightMargin: Style.marginM
@@ -176,17 +182,18 @@ SmartPanel {
           value: panelContent.profileIndex
           enabled: panelContent.profilesAvailable
           onPressedChanged: (pressed, v) => {
-                              if (!pressed) {
-                                panelContent.setProfileByIndex(v);
-                              }
-                            }
+            if (!pressed) {
+              panelContent.setProfileByIndex(v);
+            }
+          }
           onMoved: v => {
-                     panelContent.profileIndex = v;
-                   }
+            panelContent.profileIndex = v;
+          }
         }
 
         // Performance mode toggle (opt-in)
         Item {
+          objectName: "batteryPerformanceModeRow"
           Layout.fillWidth: true
           Layout.preferredHeight: Style.quickPanelRowHeight
           Layout.topMargin: Style.marginS

@@ -112,6 +112,7 @@ ColumnLayout {
   }
 
   NToggle {
+    objectName: "batterySettingShowPowerProfiles"
     label: I18n.tr("bar.battery.show-power-profile-label")
     checked: valueShowPowerProfiles
     onToggled: checked => {
@@ -122,6 +123,7 @@ ColumnLayout {
   }
 
   NToggle {
+    objectName: "batterySettingShowPerformanceMode"
     label: I18n.tr("bar.battery.show-performance-mode-label")
     checked: valueShowPerformanceMode
     onToggled: checked => {
