@@ -36,11 +36,19 @@ Item {
     }
   }
 
-  // Timer properties
+  // Timer properties — projections of the shared countdown machine
+  // (Commons/ActionCountdown; same cycle the session menu uses).
   readonly property int timerDuration: Settings.data.general.lockScreenCountdownDuration
-  property string pendingAction: ""
-  property bool timerActive: false
-  property int timeRemaining: 0
+  readonly property string pendingAction: countdown.pendingAction
+  readonly property bool timerActive: countdown.timerActive
+  readonly property int timeRemaining: countdown.timeRemaining
+
+  ActionCountdown {
+    id: countdown
+    name: "countdown:lockScreen@" + (root.screen?.name || "?")
+    duration: root.timerDuration
+    onTriggered: action => root.executeAction(action)
+  }
 
   // DESIGN §3.9 — the power button opens the dde-shutdown button row *inside* the
   // lock screen and hides the password area. A session-lock surface sits above
@@ -61,46 +69,18 @@ Item {
       return;
     }
 
-    if (timerActive && pendingAction === action) {
-      // Second click - execute immediately
-      executeAction(action);
-      return;
-    }
-
-    pendingAction = action;
-    timeRemaining = timerDuration;
-    timerActive = true;
-    countdownTimer.start();
+    countdown.start(action);
   }
 
   function cancelTimer() {
-    timerActive = false;
-    pendingAction = "";
-    timeRemaining = 0;
-    countdownTimer.stop();
+    countdown.cancel();
   }
 
   function executeAction(action) {
-    // Stop timer but don't reset other properties yet
-    countdownTimer.stop();
+    countdown.cancel();
     actions.execute(action);
-    // Reset timer state
-    cancelTimer();
     // The power row closes itself once an action has been taken
     powerRowOpen = false;
-  }
-
-  // Countdown timer
-  Timer {
-    id: countdownTimer
-    interval: 100
-    repeat: true
-    onTriggered: {
-      timeRemaining -= interval;
-      if (timeRemaining <= 0) {
-        executeAction(pendingAction);
-      }
-    }
   }
 
   // Bottom container with the DDE centre block: avatar, user name, password

@@ -50,60 +50,61 @@ PanelWindow {
 
   // Window state mirrored from the SmartPanel contract that PanelService and
   // MainScreen expect: isPanelOpen drives the open sequence, isPanelVisible is
-  // what actually maps the surface.
-  property bool isPanelOpen: false
-  property bool isPanelVisible: false
-  property bool isClosing: false
+  // what actually maps the surface. Both are projections of `lifecycle` —
+  // the flags are read-only for consumers; the phase is the write surface.
+  readonly property bool isPanelOpen: lifecycle.is("open")
+  readonly property bool isPanelVisible: lifecycle.is("open", "closing")
+  readonly property bool isClosing: lifecycle.is("closing")
   readonly property real contentOpacity: isPanelVisible && !isClosing ? 1 : 0
 
+  // closed → open → closing → closed; reopening mid-fade is closing → open.
+  NStateMachine {
+    id: lifecycle
+    name: "panel:sessionMenu@" + (root.screen?.name || "?")
+    states: ["closed", "open", "closing"]
+    state: "closed"
+    transitions: ({
+                    "closed": ["open"],
+                    "open": ["closing"],
+                    "closing": ["open", "closed"]
+                  })
+    // Close fade: hold the surface mapped while the content fades out, then
+    // unmap (the LauncherFullscreenWindow pattern). Nothing else ends the
+    // close: the surface used to stay mapped, transparent, full-screen on the
+    // overlay layer with exclusive keyboard focus, taking every click and key
+    // on the screen until the menu was opened again.
+    timeouts: ({
+                 "closing": [
+                   {
+                     "after": function () {
+                       return Style.motionEnter + 30;
+                     },
+                     "to": "closed"
+                   }
+                 ]
+               })
+  }
+
   visible: isPanelVisible || isClosing
-
-  onIsPanelOpenChanged: {
-    if (isPanelOpen) {
-      closeTimer.stop();
-      isClosing = false;
-      isPanelVisible = true;
-    } else {
-      isClosing = true;
-      closeTimer.restart();
-    }
-  }
-
-  // Close fade: hold the surface mapped while the content fades out, then
-  // unmap (the LauncherFullscreenWindow pattern). Nothing else ends the
-  // close: the surface used to stay mapped, transparent, full-screen on the
-  // overlay layer with exclusive keyboard focus, taking every click and key
-  // on the screen until the menu was opened again.
-  Timer {
-    id: closeTimer
-    interval: Style.motionEnter + 30
-    onTriggered: {
-      root.isClosing = false;
-      root.isPanelVisible = false;
-    }
-  }
 
   function open(buttonItem, buttonName) {
     void buttonItem;
     void buttonName;
     if (isPanelOpen)
       return;
-    isPanelOpen = true;
+    lifecycle.transition("open");
     PanelService.willOpenPanel(root);
   }
 
   function close() {
-    if (!isPanelOpen)
+    if (!lifecycle.is("open"))
       return;
-    isPanelOpen = false;
+    lifecycle.transition("closing");
     PanelService.closedPanel(root);
   }
 
   function closeImmediately() {
-    closeTimer.stop();
-    isClosing = false;
-    isPanelVisible = false;
-    isPanelOpen = false;
+    lifecycle.transition("closed", true);
     PanelService.closedPanel(root);
   }
 
@@ -127,11 +128,19 @@ PanelWindow {
       DebugService.unregisterRoot("session-" + root.screen.name);
   }
 
-  // Timer properties
+  // Timer properties — projections of the shared countdown machine
+  // (Commons/ActionCountdown; same cycle the lock-screen power row uses).
   readonly property int timerDuration: Settings.data.sessionMenu.countdownDuration
-  property string pendingAction: ""
-  property bool timerActive: false
-  property int timeRemaining: 0
+  readonly property string pendingAction: countdown.pendingAction
+  readonly property bool timerActive: countdown.timerActive
+  readonly property int timeRemaining: countdown.timeRemaining
+
+  ActionCountdown {
+    id: countdown
+    name: "countdown:sessionMenu@" + (root.screen?.name || "?")
+    duration: root.timerDuration
+    onTriggered: action => root.executeAction(action)
+  }
 
   // Navigation properties
   property int selectedIndex: -1
@@ -195,10 +204,7 @@ PanelWindow {
   }
 
   function cancelTimer() {
-    timerActive = false;
-    pendingAction = "";
-    timeRemaining = 0;
-    countdownTimer.stop();
+    countdown.cancel();
   }
 
   // Hook the visibility transition for preset selection and timer cleanup.
@@ -236,22 +242,12 @@ PanelWindow {
       return;
     }
 
-    if (timerActive && pendingAction === action) {
-      // Second click - execute immediately
-      executeAction(action);
-      return;
-    }
-
-    pendingAction = action;
-    timeRemaining = timerDuration;
-    timerActive = true;
-    countdownTimer.start();
+    countdown.start(action);
   }
 
   function executeAction(action) {
-    countdownTimer.stop();
+    countdown.cancel();
     actions.execute(action);
-    cancelTimer();
     root.close();
   }
 
@@ -344,18 +340,6 @@ PanelWindow {
   }
 
   Timer {
-    id: countdownTimer
-    interval: 100
-    repeat: true
-    onTriggered: {
-      timeRemaining -= interval;
-      if (timeRemaining <= 0) {
-        executeAction(pendingAction);
-      }
-    }
-  }
-
-  Timer {
     id: mouseTrackingDelayTimer
     interval: Style.motionEnter + 50
     repeat: false
@@ -422,57 +406,57 @@ PanelWindow {
     }
 
     Keys.onPressed: event => {
-                      if (root.checkKeybind(event)) {
-                        event.accepted = true;
-                        return;
-                      }
+      if (root.checkKeybind(event)) {
+        event.accepted = true;
+        return;
+      }
 
-                      if (Keybinds.checkKey(event, 'left', Settings)) {
-                        root.selectPreviousWrapped();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'right', Settings)) {
-                        root.selectNextWrapped();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'up', Settings)) {
-                        root.selectPreviousWrapped();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'down', Settings)) {
-                        root.selectNextWrapped();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'home', Settings)) {
-                        root.selectFirst();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'end', Settings)) {
-                        root.selectLast();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'enter', Settings)) {
-                        root.activate();
-                        event.accepted = true;
-                        return;
-                      }
-                      if (Keybinds.checkKey(event, 'escape', Settings)) {
-                        root.onEscapePressed();
-                        event.accepted = true;
-                        return;
-                      }
+      if (Keybinds.checkKey(event, 'left', Settings)) {
+        root.selectPreviousWrapped();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'right', Settings)) {
+        root.selectNextWrapped();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'up', Settings)) {
+        root.selectPreviousWrapped();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'down', Settings)) {
+        root.selectNextWrapped();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'home', Settings)) {
+        root.selectFirst();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'end', Settings)) {
+        root.selectLast();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'enter', Settings)) {
+        root.activate();
+        event.accepted = true;
+        return;
+      }
+      if (Keybinds.checkKey(event, 'escape', Settings)) {
+        root.onEscapePressed();
+        event.accepted = true;
+        return;
+      }
 
-                      // Block defaults so rebinding a direction actually disables it
-                      if (event.key === Qt.Key_Up || event.key === Qt.Key_Down || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
-                        event.accepted = true;
-                      }
-                    }
+      // Block defaults so rebinding a direction actually disables it
+      if (event.key === Qt.Key_Up || event.key === Qt.Key_Down || event.key === Qt.Key_Left || event.key === Qt.Key_Right || event.key === Qt.Key_Return || event.key === Qt.Key_Enter || event.key === Qt.Key_Escape) {
+        event.accepted = true;
+      }
+    }
 
     // One horizontal row, vertically centered (contentwidget.cpp buttonLayout)
     Row {
