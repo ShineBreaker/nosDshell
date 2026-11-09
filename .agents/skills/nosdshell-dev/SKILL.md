@@ -1,7 +1,7 @@
 ---
 name: nosdshell-dev
 description: "把 nosDshell 模块移植到 DDE 15（Noctalia 层的 DDE 化与令牌收敛）。触发：port 一个 Noctalia 模块 / DDE 15 样式与布局对齐 / nosDshell 仓库开发——任一出现即调用。"
-version: 1.0.0
+version: 1.1.0
 metadata:
   hermes:
     tags: [nosdshell, quickshell, dde15, qml, qt]
@@ -90,6 +90,7 @@ input they need, rather than implying the feature is verified.
 - A new setting needs four-place sync: default in `Commons/Settings.qml`, `Assets/settings-default.json`, a new numbered `Commons/Migrations/Migration<N>.qml`, the registry entry — plus the verify seed's `settingsVersion` bumped to match.
 - Translation keys go in `en.json` only; `I18n.qml` falls back to English for the other locales. A missing key renders as `!!key!!`, so check the key exists in `en.json` before relying on it.
 - When a layout stops reading a setting, mark it inert (comment in `Commons/Settings.qml` plus a disabled control in the Settings panel) and delete the reads, rather than leaving branches no path reaches. Configs keep loading because the key still exists.
+- Before deleting anything as "dead", classify it — see `references/settings-dead-keys.md`: truly dead / indirectly live via a singleton reroute / bypass-live through a migration (`dead-but-migratable`) / frontend-gated dead with a consumer nothing opens. `grep data.<key>` alone has already caused live keys to be removed here.
 
 ## Guix-configs 侧的同步点（跨仓库契约）
 

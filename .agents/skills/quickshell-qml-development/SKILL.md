@@ -2,7 +2,7 @@
 name: quickshell-qml-development
 author: Hermes Agent
 description: "开发、调试与操作 Quickshell QML shell：无头运行、shell IPC（noctalia msg）、设置与面板界面的视觉验收。触发：写改 Quickshell QML / 无头跑 shell 排查 / 面板与设置页验收 / IPC 交互——任一出现即调用。"
-version: 1.1.0
+version: 1.2.0
 license: MIT
 metadata:
   hermes:
@@ -28,8 +28,13 @@ metadata:
   not initialized`, `Cannot assign to non-existent property`.
 - A view does not refresh after its data loads asynchronously, or an IPC-driven
   state change never reaches the view.
+- `quickshell` dies with SIGSEGV and no QML error: stack shows
+  `QQmlIncubatorPrivate::incubate` — a re-entrant callback inside an incubation
+  window (see `references/delegates-and-models.md` §7).
 - Needing to prove a QML change actually rendered — headless sway + grim +
-  vision verification.
+  vision verification (`references/headless-verification.md` §4.1 covers the
+  seeded-config traps: stale seed `settingsVersion`, relative `--settings`,
+  `dock toggle` scenes, shared verify dirs).
 
 How to build and debug a Quickshell shell component so it renders on the first
 try, and how to prove it rendered.
