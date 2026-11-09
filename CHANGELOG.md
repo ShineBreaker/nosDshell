@@ -10,6 +10,39 @@
 
 ## [Unreleased]
 
+## [1.7.6] - 2026-11-09
+
+这版把藏在交互层的老毛病一次拔掉：挂件设置在写入后立刻生效、开关整行可点，电池面板的电源模式与性能模式开关终于接通了真正的行为；同时面板的隐式生命周期收进了可机读的显式状态机，智能体可以直接读出每个面板正处于哪一相。
+
+---
+
+### 新功能
+
+- explicit state-machine primitives for shell lifecycles：[`9f11d198`](https://github.com/ShineBreaker/nosDshell/commit/9f11d19838b522ff92635e306f6299ece1e3ef46)
+- add check-raw-values guard, tokenize raw colors and sizes：[`7b3d70b1`](https://github.com/ShineBreaker/nosDshell/commit/7b3d70b1fbcf3984328b667dcb06223aa79967f4)
+- 仓库内 skill 补齐 nosDshell 调试参考并允许 references 入库：[`1d26181c`](https://github.com/ShineBreaker/nosDshell/commit/1d26181c0f539ca238595dcd52719e10e120e669)
+
+### 修复
+
+- labelled NToggle rows toggle on full-row click：[`bb872fca`](https://github.com/ShineBreaker/nosDshell/commit/bb872fca72971bb74f6b6e8fd5c78640be5d4e98)
+- reapply widgetProps when settings writes replace widget entries：[`95f9ae9f`](https://github.com/ShineBreaker/nosDshell/commit/95f9ae9f20067c01a84d23277315f76c8a1dcd56)
+- pass live widget instance to panel instead of a value snapshot：[`0fcca0b8`](https://github.com/ShineBreaker/nosDshell/commit/0fcca0b8288022d126d9eea126f7941dcb8fede9)
+
+### 重构
+
+- converge lifecycle flags onto NStateMachine：[`19b75fcb`](https://github.com/ShineBreaker/nosDshell/commit/19b75fcbc2bb87d0eb17e15fa31a95cfe83dc382)
+- converge session menu + lock screen onto shared machines：[`29a80555`](https://github.com/ShineBreaker/nosDshell/commit/29a80555630c4979aa36618271b6a94a9c834616)
+- converge show/hide lifecycle onto NStateMachine：[`c0ba85b6`](https://github.com/ShineBreaker/nosDshell/commit/c0ba85b61cddedd1b1f3390b23d525620a173beb)
+
+### 文档
+
+- document the raw-values guard and nosd:raw-ok escape：[`63dd5d30`](https://github.com/ShineBreaker/nosDshell/commit/63dd5d30023923f5503db66940977f69a7a12b06)
+- register state-machine primitives + convergence rule：[`af6eaa76`](https://github.com/ShineBreaker/nosDshell/commit/af6eaa76aace5a3522c9b7b860182bb973f44214)
+
+### 测试
+
+- battery-panel-toggles scene for live widget settings：[`c438af97`](https://github.com/ShineBreaker/nosDshell/commit/c438af97d0793d3464b72e0ac5d09d7bc6865eb9)
+
 ## [1.7.5] - 2026-11-08
 
 这版把设置页的版式逐条对齐到 GXDE：组标题从块外收进内容块内，模块间距、返回箭头和导航条图标全部换成从 GXDE 源码量出来的数值，状态栏与桌面挂件的分区编辑器也从芯片云改成了 DDE 列表页。分组行的节奏收进公共件 `NSettingsGroup`，规格固化在 `DESIGN.md` §3.5.4。
@@ -788,7 +821,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.5...HEAD
+[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.6...HEAD
+[1.7.6]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.3...v1.7.4
 [1.7.3]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.2...v1.7.3
