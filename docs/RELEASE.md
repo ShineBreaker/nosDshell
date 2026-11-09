@@ -35,7 +35,14 @@ nav_exclude: true
 
 ## 更新 jeans pin
 
-jeans 的 `%nosdshell-version` 与 `%nosdshell-source` 由人在本地更新，**不交给 CI 自动开 PR**：自动提交的作者是 bot，签名会出问题。tag 推送、CI 发版完成之后：
+jeans 的 `%nosdshell-version` 与 `%nosdshell-source` 由该仓库的
+auto-update CI 自动更新：四个 `nosd-*` 包共享这对模块级变量，
+`update_versions.py` 的 shared-source 路径一次改写全组，bot 提交由
+`.guix-authorizations` 授权的 workflow key 签名，认证通过。tag 推送后
+等下一个 auto-update 周期（周二/四/六 02:00 UTC），或在该 workflow 上
+手动 dispatch。
+
+想立即 bump 或 CI 失败时的手动兜底：
 
 1. 在 jeans 检出里跑 `python3 scripts/check-updates/update_versions.py --only nosdshell`（需要 `pip install requests`）。
 2. 检查 `modules/jeans/packages/desktop.scm`：`%nosdshell-version` 变成新版号，`%nosdshell-source` 的 base32 是新 tag 的树哈希。`quickshell-nosd` 的 pin 只在 quickshell fork 有推进时同步；这次 shell 发版没动 fork 就不用改，但要看一眼 `nosdshell.scm` 的 fork commit 与 jeans 里是否一致。
