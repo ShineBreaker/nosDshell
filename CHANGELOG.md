@@ -175,6 +175,22 @@
 - **release.yml 终审两处必修**（`a5a623e`）：apt 清单补 `debhelper`（debian/control 的 Build-Depends，否则去 `|| true` 后构建直接 unmet）；rpm 版本改为 `sed` 写 spec `Version:` 字面量——`--define "version"` 覆盖不了 spec 内置宏，`VERSION=9.9.9` 本地全链路模拟产出 `nosd-theme-9.9.9-1.noarch.rpm` 验证。
 - **未做（如实记录）**：没有推 tag，所以 GitHub Actions 本体未跑；`dpkg-buildpackage` 原命令因缺 debhelper 未执行（用等价构建替代）。
 
+### 阶段 5 · Kvantum 收敛到 deepin GTK（施工中）
+
+依据 `docs/kvantum-convergence-map.md`（`437ad42`）。目标是同一张脸，不是只对 accent。
+
+- **SVG 全色板化**：`nosd.svg.tpl` 的 47 个六位硬编码 hex 全部换成 M3 占位符（13 类：`surface` / `surface_container` / `surface_container_low` / `on_surface` / `on_surface_variant` / `outline` / `outline_variant` / `primary` / `primary_container` / `error` / `shadow` / `tertiary` / `secondary`），残留 hex 归零。
+- **施工图漏了三位 hex**：tpl 里还有 57 处 `fill:#fff` 与 1 处 `fill:#666`，映射表的统计口径是 `#[0-9a-fA-F]{6}`，三位写法没进表。首次按「字形→`on_surface`」映射时按钮出现黑边（白色高光描边被染成深灰），改为**全部 → `surface`**、`#666` → `on_surface_variant` 后正常。这条已回写进本节，映射表本身未改（属 Researcher 文档，交由下一轮修订）。
+- **三条设计差异已落实**：`#222d32` 深色标题栏 → `surface`（DDE 标题栏是窗口色）；`menuitem-toggled` 的浅灰悬停 → `primary`（DDE 菜单悬停是 accent 底）；`#dee0e1` 灰焦点环 → `primary`。
+- **静态 `nosd.svg`**：用 deepin 浅色调色板（`@window_bg_color #f9fcff`、`@accent_bg_color #2ca7f8`、`@window_fg_color #303030` 等）经模板渲染生成，随包分发时不再是 KvAdapta 配色。
+- **kvconfig 进模板管线**：新增 `nosd.kvconfig.tpl`（39 处颜色占位符），静态版同源渲染；`nosDshell/Assets/Templates/kvantum-nosd.kvconfig` + TemplateRegistry 新增 `kvantum-config` 条目输出 `~/.config/Kvantum/nosd/nosd.kvconfig`——原先 5 处 `text.focus.color=#0c458e` 永远停在旧 accent 的问题消解。
+- **文本色**：`#000000xx` / `#ffffffxx` / `black` / `white` 全部改为 `on_surface`（带原 alpha 后缀）或 `on_primary`；`[MenuItem]` 补 `text.toggle.color={{colors.on_primary...}}`，深色下「浅底白字」的崩点消除。
+- **几何**（映射表已明确项）：`slider_handle_width` 18→15、`tickless_slider_handle_size` 16→15、`splitter_width` 4→1、`[PanelButtonCommand]` frame 4/4/4/4→2/2/6/6 且 text.margin 上下 2/4→0/0、`[LineEdit]` frame 左右 2→8。
+- **未做（如实记录）**：
+  - `slider_width` 未改：映射表给的目标 5px 依据是 `scale trough` 的 `border-radius: 5px`，那是圆角不是厚度（Reviewer 指出），并入待标定组。
+  - 5 项待标定（`progressbar_thickness`、`layout_margin`、`spin_button_width`、`toolbar_interior_spacing`、`frame.expansion`）未量像素，保持原值。
+- **验证**：浅/深两套调色板各渲染一份 SVG+kvconfig，`kvantumpreview` 实测——浅色按钮面 `#e6e8eb`、切换态 `#2ca7f8`、标题栏 `#f9fcff`；深色按钮面 `#2d333a`、切换态 `#106daa`、标题栏 `#1e2329`，深色不再出现浅色控件。`check-tokens` 全部一致、`lint.sh --changed` 通过。
+
 ### 待办 / 开放项
 
 - 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓，用户拍板不做）。
