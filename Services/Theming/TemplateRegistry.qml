@@ -250,6 +250,17 @@ Singleton {
       "postProcess": () => root.shellAccentHook("gnome-shell")
     },
     {
+      "id": "kvantum-config",
+      "name": "Kvantum 配置",
+      "category": "system",
+      "input": "kvantum-nosd.kvconfig",
+      "outputs": [
+        {
+          "path": "~/.config/Kvantum/nosd/nosd.kvconfig"
+        }
+      ]
+    },
+    {
       "id": "kcolorscheme",
       "name": "KColorScheme",
       "category": "system",
