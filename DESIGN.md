@@ -750,6 +750,7 @@ Noctalia 卡片的对应关系：
 - 底部按钮行横跨对话框全宽，按钮之间用 1 px 白 × 0.1 的分隔线隔开；推荐操作按钮的文字为 `accent`。
 - 首次设置向导：模糊壁纸背景，中间是上述对话框（宽 640），底部用分页圆点表示步骤，右下角是"下一步"按钮。
 - Polkit 认证对话框（`Services/Polkit/PolkitService.qml` + `Modules/Polkit/PolkitAuthDialog.qml`）：shell 启动即注册 `PolkitAgent`，认证请求弹出 overlay 对话框。按 `gxde-polkit-agent/AuthDialog.cpp` 实现：48 px 应用图标、有多个身份时显示身份下拉框（`Identity.displayName`）、高 24 的密码框、transient 单元名（`run-PID-*.service`）解析为真实命令；密码错误时输入框显示 `alert` 状态并在其下方给出错误提示（开始输入即消除），服务器未给补充错误时回退到 `authentication.wrong-password`。底部按钮行为全宽条带：取消/确认之间 1 px 分隔线，确认的推荐文字为 `accent`。
+- 钥匙串解锁对话框（`Services/Keyring/KeyringPrompterService.qml` + `Modules/Keyring/KeyringPromptDialog.qml`）：spawn 时持有 `org.gnome.keyring.SystemPrompter` 总线名，libsecret 应用经 oo7 请求解锁锁定的钥匙串时弹出 overlay 对话框。形态与 polkit 对话框相同：380 宽、48 px `dialog-password` 图标、24 高密码框、全宽按钮条。主文案取调用方给的 `message`（缺省回退 `keyring.unlock`），`description` 作次要行；`warning`（上一轮密码错误）显示为输入框的 `alert` 状态加下方错误行，开始输入即消除。`promptType` 为 `confirm` 时（创建钥匙串、改密）不显示输入框，只有取消/继续两个按钮。后端 60 秒无人应答按取消处理，绝不把调用方永久挂住；这一行为不因前端是谁而改变。
 
 ### 3.12 桌面挂件
 
@@ -792,10 +793,10 @@ Noctalia 卡片的对应关系：
 
 ### 4.2 合成器侧规则（niri）
 
-- nosdshell 通过 `ext-background-effect` 自己发布模糊区域（bar 与面板在 `nosdshell-background` 上；`popupmenu` 承载模态对话框时发布对话框矩形；`notifications`/`toast`/`osd`/`polkit`/`desktop-widgets`/`dock`/两个启动器各自发布），niri ≥ 26.04 无需任何规则即按客户端申请的形状精确模糊。layer-rule 只负责两件事：给浮动在窗口上的发布面关掉 xray（否则默认只采样壁纸），和给"永不模糊"的面钉 `blur false`。
+- nosdshell 通过 `ext-background-effect` 自己发布模糊区域（bar 与面板在 `nosdshell-background` 上；`popupmenu` 承载模态对话框时发布对话框矩形；`notifications`/`toast`/`osd`/`polkit`/`keyring`/`desktop-widgets`/`dock`/两个启动器各自发布），niri ≥ 26.04 无需任何规则即按客户端申请的形状精确模糊。layer-rule 只负责两件事：给浮动在窗口上的发布面关掉 xray（否则默认只采样壁纸），和给"永不模糊"的面钉 `blur false`。
 - **同样绝不**给发布会话区域或填充蒙版的表面钉 `blur false`：niri 的 `blur false` 连客户端 `ext-background-effect` 区域一起强制关闭，蒙版下透出的是清晰内容——2026-10 的 popupmenu 对话框事故即此。`blur false` 只许用于不画任何蒙版的表面。
 - **绝不**在 nosdshell 面的 surface 级规则里写 `blur true`：niri 会按整个面（含透明区）施加模糊，而 `nosdshell-background`、`popupmenu`、`notifications`、`toast` 等大多是全屏面，这就是 2026-10 的巨型模糊事故。整面 `blur true` 只许写在 `popups {}` 里（xdg_popup 天然内容尺寸）。
-- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊（`xray false`）只给大块、会盖住任意窗口的发布面（`background`、`popupmenu`、`polkit`、`launcher-mini`）。`dock`、`notifications`、`toast`、`osd` 面积小或寿命短，用 xray：观感接近，非 xray 是合成器侧的主要开销，而且 niri 在开合动画期间会丢掉非 xray。Tier 1 xray 给底下只有壁纸的面（`launcher-full` 要的就是"模糊壁纸"观感，`desktop-widgets` 在 `WlrLayer.Bottom` 同理；xray 本就是 layer 面的默认，这条规则用来把 namespace 归类）。Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、`fade-overlay` 是压暗纱幕不是玻璃、辅助面不可见）。不要给所有应用窗口写 `blur true`：不透明窗口也付非 xray 的代价，而且和「只糊客户端发布的区域」矛盾。
+- 三档取舍（性能由低到高：无模糊 < xray < 真模糊）：Tier 2 真模糊（`xray false`）只给大块、会盖住任意窗口的发布面（`background`、`popupmenu`、`polkit`、`keyring`、`launcher-mini`）。`dock`、`notifications`、`toast`、`osd` 面积小或寿命短，用 xray：观感接近，非 xray 是合成器侧的主要开销，而且 niri 在开合动画期间会丢掉非 xray。Tier 1 xray 给底下只有壁纸的面（`launcher-full` 要的就是"模糊壁纸"观感，`desktop-widgets` 在 `WlrLayer.Bottom` 同理；xray 本就是 layer 面的默认，这条规则用来把 namespace 归类）。Tier 0 给其余（壁纸面是模糊源本身、overview/关机界面/向导自画预模糊、`bar-content` 透传已模糊区域、`fade-overlay` 是压暗纱幕不是玻璃、辅助面不可见）。不要给所有应用窗口写 `blur true`：不透明窗口也付非 xray 的代价，而且和「只糊客户端发布的区域」矛盾。
 - 规则集的仓库内唯一事实源是 `Scripts/docs/nosdshell-layer-rules.kdl`，`check-layer-namespaces.py` 校验全部发射的 namespace 被归类且阻止 surface 级 `blur true` 回归；该文件经 `vendor-legacy-docs.py` 注入 docs 站的 niri 页。
 
 ### 4.3 `nosd-helpers portal`
