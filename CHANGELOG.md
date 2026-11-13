@@ -120,8 +120,10 @@
 - **根因**：`deepin-dark` 把字面值放在 `active_color` 上，`accent_bg_color` 反向引用它（`gtk.css`：`accent_bg_color @active_color`）或同为字面值（`gtk-dark.css`：两者都是 `#14364d`）。覆盖层（`~/.config/gtk-{3,4}/nosd.css`）只重定义 `accent_bg_color`，碰不到 `active_color`，于是 `theme_selected_bg_color`、`selected_bg_color`、`wm_button_active_bg`、`osd_*` 这些挂在 `active_color` 下的全部停在旧蓝。浅色没这问题：`deepin` 里 `active_color @accent_bg_color`，方向是对的。
 - **修法**：4 个文件 `active_color` 改为 `@accent_bg_color`；`gtk.css` 两个文件把字面值挪到 `accent_bg_color`（不挪就成自引用环）。深色原有 accent 值不变（`gtk.css` 仍是 `#106daa`，`gtk-dark.css` 仍是 `#14364d`）。
 - `osd_hover_color` / `osd_active_color` 同样写死（`#639fe5` / `#4189df`），一并改为 `@accent_bg_color`。
+- `theme_selected_bg_color` 在两个 `gtk.css` 里也是字面值 `#106daa`（`gtk-dark.css` 已是 `@active_color`），选中态主色会不跟随，改为 `@accent_bg_color`。
 - `nosDshell` 侧双保险：`Assets/Templates/gtk3.css`、`gtk4.css` 补 `active_color` / `osd_hover_color` / `osd_active_color` 三条别名定义。
 - 验证：`check-tokens.py` 全部一致；`@define-color` 引用图无环、无未定义引用；两份模板渲染后经 GTK3/GTK4 `Gtk.CssProvider` 解析 0 error；`nosDshell` 的 `Scripts/dev/lint.sh --changed` 通过。
+- **运行时验证**（比截图更硬）：加载 `GTK_THEME=deepin-dark` 后在应用层覆盖 `accent_bg_color = #ff00ff`，用 `gtk_style_context_lookup_color` 读实际解析值，`accent_bg_color` / `active_color` / `theme_selected_bg_color` / `selected_bg_color` / `osd_active_color` / `osd_hover_color` / `wm_button_active_bg` 七项在 GTK3 与 GTK4 下全部为 `#ff00ff`（修复前 `theme_selected_bg_color` 仍为 `#106daa`）。
 - 遗留：深色独有的 `accent_*` 阴影家族（`accent_hover_color`、`accent_active_color`、`accent_light_*` 等 9 条）仍是字面值。要跟随需要按 accent 派生明暗，GTK3 用 `shade()`、GTK4 没有等价函数，本轮不动，登记待决。
 
 ### 待办 / 开放项
