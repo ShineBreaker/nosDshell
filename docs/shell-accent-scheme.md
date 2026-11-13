@@ -212,6 +212,36 @@ accent_on_bg_dim_color      shift_hue:+8.3  saturate:-12.3  lighten:+51.6  → #
 
 在 L=50% 的 accent 下 `light_hover` 得 95.4%（不再溢出），L=55% 得 95.7%。校准常数与上表同源，只是把「加性」换成「按余量/比率」。
 
+**可直接照抄的校准常数**（`accent = #106daa` 校准，已验证 9 条逐位复现）：
+
+| 名字 | ΔH | S 比率（S'/S） | L 模式 | L 常数 |
+|---|---|---|---|---|
+| `accent_standalone_color` | −6.43 | 0.73779 | tint | 0.31790 |
+| `accent_hover_color` | −6.46 | 0.73888 | tint | 0.47531 |
+| `accent_active_color` | −6.51 | 0.74091 | tint | 0.16049 |
+| `accent_light_color` | +8.73 | 0.86961 | tint | 0.69136 |
+| `accent_light_hover_color` | +8.96 | 0.88571 | tint | 0.90741 |
+| `accent_light_active_color` | +8.76 | 0.85585 | tint | 0.53395 |
+| `accent_disabled_color` | +8.54 | 0.86271 | tint | 0.71914 |
+| `accent_border_color` | +9.23 | 0.38041 | tint | 0.20988 |
+| `accent_on_bg_dim_color` | +8.33 | 0.85139 | tint | 0.81173 |
+
+- 当前 9 条全部是「变亮」（L 目标 > accent L），所以全走 `tint`；`ratio`（`L' = L · k`）留给将来可能需要变暗的派生色。
+- 计算式：`H' = H + ΔH`；`S' = clamp(S · s_ratio, 0, 1)`；`L' = clamp(L + (1 − L) · t, 0, 1)`。
+- 常数文件：`.agents/workfile/researcher/tmp/accent_consts.json`（本机留档，可复算）。
+
+**跨亮度行为（余量模型，无塌白）**：
+
+| accent | `light_hover` | `on_bg_dim` | `disabled` | `hover` |
+|---|---|---|---|---|
+| `#106daa`（L36%，校准基准） | `#e5effb` | `#cbdff6` | `#b1cff2` | `#76c0de` |
+| `#0c458e`（L30%） | `#e2e9fb` | `#c5d4f6` | `#a9bef1` | `#67a7dc` |
+| `#ff00ff`（L50%） | `#fee9fb` | `#fbd3f6` | `#fabcf1` | `#e38bee` |
+| `#2ca7f8`（L57%） | `#edf4fd` | `#dae9fb` | `#c8def9` | `#9ed6ed` |
+| `#a9caf1`（L80%） | `#f7f9fd` | `#f0f4fb` | `#e8eefa` | `#d7e7f3` |
+
+对比加性模型在 L≥50% 时直接输出 `#ffffff`（塌白），余量模型到 L=80% 仍是可区分的近白色阶——这是选余量模型的实测理由。
+
 ### 实现路径二选一
 
 | 方案 | 做法 | 代价 | 风险 |
