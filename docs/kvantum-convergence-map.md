@@ -10,6 +10,8 @@
 **ready** —— 映射表完整，可直接施工。三条结构性前置（§四）必须先做，否则改了也不生效。
 两处需要 Worker 用 `kvantumpreview` 实测标定，已在表里标「待标定」。
 
+> **2026-11-14 补**：页签栏/菜单栏/工具栏那条不跟随的浅色带子已定性——是 `QPalette::Window`，根因是 kvconfig 缺 `[GeneralColors]`。色路、实证与改法见 **§八**；`respect_DE` 已排除，SVG 补元素也不是解。
+
 ## 一、差距总览
 
 | 层面 | 现状 | 差距 |
@@ -209,3 +211,126 @@ GTK 实测值取自 `deepin/gtk-3.0/gtk.css`（浅色；深色同值）。
 | `progressbar_thickness` / `layout_margin` / `spin_button_width` / `toolbar_interior_spacing` / `frame.expansion` 的 GTK 等效值 | 读 gtk.css 的 progressbar/separator/button/entry 块 | GTK 侧无一对一名，需 `kvantumpreview` 与 GTK 窗口并排量像素 |
 | Kvantum 用户目录对 `nosd.kvconfig` 的优先级 | 依据同目录 SVG 已验证生效（`~/.config/Kvantum/nosd/nosd.svg` 被 Worker A/B 读到） | 未单独验证 kvconfig 文件本身 |
 | 深色模式当前实际渲染（浅色面硬编码在深色下什么样） | 只读了 tpl 的静态色值 | 容器无 Qt 深色会话截图 |
+
+---
+
+## 八、附：页签栏/菜单栏/工具栏那条浅色带子的色路（2026-11-14 补）
+
+> 背景：Worker 的红色判定实验发现——把 SVG 的 `surface` 设成纯红后，内容底与按钮变红，**页签栏那条带子仍是 `(239,239,239)`**。本节从 Kvantum 1.1.9 源码把这条色路钉死，并给出实证。
+
+### 8.1 结论
+
+**那条带子是 `QPalette::Window`，不是 SVG、不是 kvconfig 文本色、也和 `respect_DE` 无关。** 三个 widget 的底色路径：
+
+| Widget | 绘制入口 | Kvantum 干了什么 | 最终颜色来源 |
+|---|---|---|---|
+| 菜单栏 | `PE_PanelMenuBar` | **`break;`——不画** | `QPalette::Window` |
+| 工具栏 | `PE_PanelToolBar` | **`return;`——不画** | `QPalette::Window` |
+| 页签栏背景 | 无人绘制 | 只有 `PE_FrameTabBarBase` 画**基线**，且用的是 `[TabBarFrame] frame.element=tabBarFrame` | `QPalette::Window` |
+| 页签本身 | `CE_TabBarTabShape` | 画（`tab-*` 切片，已占位符化） | SVG |
+
+而 `QPalette::Window` 的来源是**唯一的**：
+
+```
+Style::polish(QApplication*)  →  palette = app->palette(); polish(palette); app->setPalette(palette);
+Style::polish(QPalette&)      →  palette = standardPalette();          // polishing5.cpp:999-1002
+Style::standardPalette()      →  只填 [GeneralColors] 里出现过的角色  // polishing5.cpp:1147+
+ThemeConfig::getColorSpec()   →  读 [GeneralColors] window.color / base.color / …  // ThemeConfig.cpp:1039+
+```
+
+**我们的 kvconfig 里一条 `[GeneralColors]` 都没有**（`grep -c GeneralColors` → 0，tpl 里也是 0），所以 `standardPalette()` 一个角色都没覆盖，`QPalette::Window` 停在 `QPalette` 默认构造时的值。
+
+### 8.2 实证（PyQt6 直接打印 QPalette）
+
+同一份 `nosd.svg`、同一个 `kvantum` style，只改 kvconfig 有无 `[GeneralColors]`：
+
+```
+=== A: 无 [GeneralColors]（当前仓库状态）===
+  Window     #efefef  rgb=(239,239,239)   ← 正是 Worker 量到的那条带子
+  Base       #ffffff  rgb=(255,255,255)
+  Button     #efefef  rgb=(239,239,239)
+  Text       #000000  rgb=(0,0,0)
+  Highlight  #308cc6  rgb=(48,140,198)
+
+=== B: 加 [GeneralColors]（window.color=#1e2329）===
+  Window     #1e2329  rgb=(30,35,41)
+  Base       #1f2326  rgb=(31,35,38)
+  Button     #2a2f36  rgb=(42,47,54)
+  Text       #ffffff  rgb=(255,255,255)
+  Highlight  #106daa  rgb=(16,109,170)
+```
+
+`(239,239,239)` 与 Worker 的像素完全一致——根因确认。探针脚本可复现：`.agents/workfile/researcher/tmp/kvprobe/probe.py`（`XDG_CONFIG_HOME=<临时目录> QT_QPA_PLATFORM=offscreen python3 probe.py`）。
+
+### 8.3 `respect_DE` 的嫌疑排除
+
+`respect_DE` 在 Kvantum 1.1.9 里**只影响这些，一个颜色都不碰**（`style/Kvantum.cpp:237-292`）：
+
+- GNOME/Pantheon：`iconless_pushbutton`、`iconless_menu`、`blurring=false`
+- KDE：从 `kdeglobals` 读 `DialogIcons.Size` / `SmallIcons.Size` / `ScrollbarLeftClickNavigatesByPage`
+
+所以 **`respect_DE=false` 不会让页签栏跟随主题**，这个实验可以不用做了（省一步）。
+
+### 8.4 为什么不选另外两条路
+
+| 备选 | 为什么不解决问题 |
+|---|---|
+| `respect_DE=false` | 见 8.3，不涉及颜色 |
+| SVG 补 `tabBarFrame-*` 元素 | 只能让**基线**被 SVG 绘制；页签栏**背景**没人画，仍是 `QPalette::Window`。而且 `tabBarFrame` 目前只有 `-bottom/-bottomleft/-bottomright` 三个切片（tpl 第 539/826/827 行），顶部页签用不到 |
+| kvconfig 换 `frame.element` | 同上，改的是基线切片，不改变背景归属 |
+
+> 补充：`renderElement()` 在主题 SVG 缺元素时会**回落到 Kvantum 内置默认主题**（`rendering.cpp:43-77`），所以「补元素」还可能意外引入默认主题的外观，不如直接补调色板干净。
+
+### 8.5 正确改法：`nosd.kvconfig.tpl` 增加 `[GeneralColors]`
+
+kvconfig 已经进模板管线（`kvantum-config` 条目），所以这一节可以直接占位符化。推荐值（左=Kvantum 键，右=占位符/理由）：
+
+```ini
+[GeneralColors]
+# 窗口底：菜单栏/工具栏/页签栏背景都由它决定（§8.1）
+window.color={{colors.surface.default.hex}}
+inactive.window.color={{colors.surface.default.hex}}
+# 输入框/列表底：GTK 的 @view_bg_color
+base.color={{colors.surface_container_lowest.default.hex}}
+inactive.base.color={{colors.surface_container_lowest.default.hex}}
+alt.base.color={{colors.surface_container_low.default.hex}}
+inactive.alt.base.color={{colors.surface_container_low.default.hex}}
+# 按钮面：GTK 的 button 也是 @view_bg_color
+button.color={{colors.surface_container_lowest.default.hex}}
+# KvAdapta 的立体斜面色 → 全部拉平成 surface，消除浮雕感
+light.color={{colors.surface.default.hex}}
+mid.light.color={{colors.surface.default.hex}}
+dark.color={{colors.surface.default.hex}}
+mid.color={{colors.surface.default.hex}}
+# 文本
+text.color={{colors.on_surface.default.hex}}
+inactive.text.color={{colors.on_surface.default.hex}}
+window.text.color={{colors.on_surface.default.hex}}
+button.text.color={{colors.on_surface.default.hex}}
+disabled.text.color={{colors.on_surface.default.hex}}61
+# 选中/accent
+highlight.color={{colors.primary.default.hex}}
+inactive.highlight.color={{colors.primary.default.hex}}
+highlight.text.color={{colors.on_primary.default.hex}}
+# 提示框/链接/阴影
+tooltip.base.color={{colors.surface_container.default.hex}}
+tooltip.text.color={{colors.on_surface.default.hex}}
+link.color={{colors.primary.default.hex}}
+link.visited.color={{colors.tertiary.default.hex}}
+shadow.color={{colors.shadow.default.hex}}
+```
+
+要点：
+
+- **必须给全套键**。`standardPalette()` 只覆盖出现过的角色，漏掉的角色会回落到默认构造的 `QPalette`（就是 `#efefef` 那套），出现「一半跟随一半不跟随」的怪相。
+- `disabled.text.color` 用 8 位 hex 拼 alpha（`…61` ≈ 38%，M3 disabled 规范值）。Kvantum 的 8 位 hex 是 `#RRGGBBAA`（alpha 在后），见 §2.3。
+- `light/mid.light/dark/mid` 全拉平是**风格收敛的关键一步**：KvAdapta 靠这四个值画按钮/边框的立体斜面，DDE 是平面设计。不拉平的话，即使颜色全对，Qt 应用看起来还是「有浮雕」的另一套。
+- 这条改动会**推翻 `tokens.toml` 里「kvconfig 省略 `[GeneralColors]` 走 QPalette」的旧决定**。那个决定正是本条 bug 的根因：Kvantum 无论如何都会用 `standardPalette()` 整体替换应用调色板（`polish(QPalette&)` 只有一行赋值），「省略就走 QPalette」这个假设不成立——省略的后果是走**默认** QPalette，而不是走 DE 的。
+
+### 8.6 副作用与验收
+
+- **副作用**：`[GeneralColors]` 一旦存在，Kvantum 完全接管 Qt 应用的调色板，qt6ct/DE 的配色对 Kvantum 应用不再生效。这正是「统一风格」想要的（否则又变成「一半跟 DE 一半跟主题」）。
+- **验收**：
+  1. 探针：`Window` 应等于 `surface` 的 hex，不再是 `#efefef`；
+  2. 红色判定复跑：把 `surface` 设纯红，**页签栏、菜单栏、工具栏三条带子都要变红**（当前只有内容和按钮变）；
+  3. 深色截图：页签栏底色应为深色 `surface`，与内容底同族而非浅灰。
