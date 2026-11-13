@@ -59,6 +59,20 @@ def iter_decls(text: str):
     block_id 用开块 '{' 的偏移标识，用来把同一规则内的声明归到一组
     （派生圆角要看同规则的 outline-offset）。
     """
+    def build(decl: str, start: int):
+        """把一段声明文本变成元组；偏移取首个非空白字符，行号才对得上。"""
+        if ":" not in decl:
+            return None
+        off = start + (len(decl) - len(decl.lstrip()))
+        prop, val = decl.split(":", 1)
+        return (
+            stack[-1] if stack else "",
+            prop.strip(),
+            val.strip(),
+            ids[-1] if ids else -1,
+            off,
+        )
+
     i, n = 0, len(text)
     stack, ids, buf = [], [], []
     start = 0
@@ -70,23 +84,21 @@ def iter_decls(text: str):
             buf = []
             start = i + 1
         elif c == "}":
+            # 收块前先 flush：规则可以写成 `radius: Xpx}` 而不带分号，
+            # 不清一次缓冲就会把最后一条声明整个吞掉。
+            item = build("".join(buf), start)
+            buf = []
+            if item:
+                yield item
             if stack:
                 stack.pop()
                 ids.pop()
-            buf = []
             start = i + 1
         elif c == ";":
-            decl = "".join(buf)
+            item = build("".join(buf), start)
             buf = []
-            if ":" in decl:
-                prop, val = decl.split(":", 1)
-                yield (
-                    stack[-1] if stack else "",
-                    prop.strip(),
-                    val.strip(),
-                    ids[-1] if ids else -1,
-                    start,
-                )
+            if item:
+                yield item
             start = i + 1
         else:
             buf.append(c)
