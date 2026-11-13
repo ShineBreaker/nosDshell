@@ -1030,8 +1030,8 @@ headerbar .linked:not(.vertical):not(.path-bar).stack-switcher > button:first-ch
 .primary-toolbar .linked:not(.vertical).path-bar > button:first-child,
 headerbar .linked:not(.vertical).path-bar > button:first-child,
 .nemo-window .primary-toolbar widget.raised.linked:not(.vertical):not(.path-bar) > button:first-child {
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
 }
 .linked:not(.vertical) > entry:last-child,
 .inline-toolbar button:last-child,
@@ -1048,8 +1048,8 @@ headerbar .linked:not(.vertical):not(.path-bar).stack-switcher > button:last-chi
 .primary-toolbar .linked:not(.vertical).path-bar > button:last-child,
 headerbar .linked:not(.vertical).path-bar > button:last-child,
 .nemo-window .primary-toolbar widget.raised.linked:not(.vertical):not(.path-bar) > button:last-child {
-    border-top-right-radius: 0px;
-    border-bottom-right-radius: 0px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
     border-right-style: solid;
 }
 .linked:not(.vertical) > entry:only-child,
@@ -1087,16 +1087,16 @@ spinbutton.vertical entry,
 spinbutton.vertical button:first-child,
 spinbutton.vertical entry:first-child,
 .linked.vertical > combobox:first-child > box > button.combo {
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 .linked.vertical > entry:last-child,
 .linked.vertical > button:last-child,
 spinbutton.vertical button:last-child,
 spinbutton.vertical entry:last-child,
 .linked.vertical > combobox:last-child > box > button.combo {
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
     border-bottom-style: solid;
 }
 .linked.vertical > entry:only-child,
@@ -3639,8 +3639,8 @@ messagedialog .dialog-action-area button {
     min-height: 0;
 }
 messagedialog.csd.background {
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     border: none;
 }
 messagedialog.csd .dialog-action-area button {
@@ -4030,40 +4030,40 @@ colorswatch:drop(active) {
     border-style: none;
 }
 colorswatch.top {
-    border-top-left-radius: 2.5px;
-    border-top-right-radius: 2.5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
 }
 colorswatch.top overlay {
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 colorswatch.bottom {
-    border-bottom-left-radius: 2.5px;
-    border-bottom-right-radius: 2.5px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 colorswatch.bottom overlay {
-    border-bottom-left-radius: 2px;
-    border-bottom-right-radius: 2px;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 colorswatch.left,
 colorswatch:first-child:not(.top) {
-    border-top-left-radius: 2.5px;
-    border-bottom-left-radius: 2.5px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
 }
 colorswatch.left overlay,
 colorswatch:first-child:not(.top) overlay {
-    border-top-left-radius: 2px;
-    border-bottom-left-radius: 2px;
+    border-top-left-radius: 4px;
+    border-bottom-left-radius: 4px;
 }
 colorswatch.right,
 colorswatch:last-child:not(.bottom) {
-    border-top-right-radius: 2.5px;
-    border-bottom-right-radius: 2.5px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 colorswatch.right overlay,
 colorswatch:last-child:not(.bottom) overlay {
-    border-top-right-radius: 2px;
-    border-bottom-right-radius: 2px;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
 }
 colorswatch.dark overlay {
     color: rgba(255, 255, 255, 0.7);
@@ -4205,7 +4205,7 @@ tooltip.csd decoration {
     box-shadow: 0 1px 3px 1px rgba(0, 0, 0, 0.1);
 }
 messagedialog.csd decoration {
-    border-radius: 4px;
+    border-radius: 8px;
 }
 .solid-csd decoration {
     border-radius: 0;
@@ -5161,7 +5161,6 @@ GraniteWidgetsStaticNotebook .frame {
     border: none;
 }
 .help_button {
-    border-radius: 100px;
     padding: 3px 9px;
 }
 toolbar.secondary-toolbar,
@@ -5331,8 +5330,8 @@ GtkListBox .h4 {
 #content_frame {
     padding-bottom: 14px;
     background-color: @card_bg_color;
-    border-top-left-radius: 2px;
-    border-top-right-radius: 2px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
     border: solid rgba(0, 0, 0, 0.1);
     border-width: 1px 1px 0 1px;
 }
@@ -5368,8 +5367,8 @@ GtkListBox .h4 {
     padding-bottom: 0px;
     border-style: none;
     background-color: rgba(53, 57, 69, 0.95);
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
     border: solid rgba(0, 0, 0, 0.1);
     border-width: 0 1px 1px 1px;
     box-shadow: inset 0 1px rgba(53, 57, 69, 0.95);

@@ -2,13 +2,18 @@
 """tokens.toml 三方一致性检查（nosd-theme）
 
 检查项：
-1. GTK CSS 中 border-radius 字面值必须落在 tokens.toml [radius] 集合内。
-2. GTK CSS 中非 defaults 块不得出现硬编码 hex 颜色（defaults 块由
+1. GTK CSS 的圆角字面值必须落在 tokens.toml [radius] 集合内。
+   覆盖简写 border-radius 与四条长写 border-*-radius；长写按属性逐条判定，
+   不会被简写正则重复计数。
+2. GTK CSS 的 -gtk-outline-radius 是派生值：形状半径 + 焦点环外扩。
+   外扩量取同规则内的 outline-offset，缺省用 [radius.outline].offset。
+   百分比（正圆/胶囊）不参与判定。
+3. GTK CSS 中非 defaults 块不得出现硬编码 hex 颜色（defaults 块由
    '@define-color' 行界定：检查仅对不在 '@define-color' 声明里的颜色值生效）。
-3. Kvantum nosd.kvconfig 不得包含 [GeneralColors] 节（颜色继承 QPalette）。
-4. nosDshell Commons/Style.qml 的 radius 家族与 tokens.toml 一致（若仓库存在）。
+4. Kvantum nosd.kvconfig 不得包含 [GeneralColors] 节（颜色继承 QPalette）。
+5. nosDshell Commons/Style.qml 的 radius 家族与 tokens.toml 一致（若仓库存在）。
 
-用法: scripts/check-tokens.py [nosd-theme 根目录]
+用法: scripts/check-tokens.py [--stats] [nosd-theme 根目录]
 退出码: 0 = 全部通过；1 = 存在漂移（打印每一项）。
 """
 import re
@@ -18,62 +23,206 @@ from pathlib import Path
 
 THEME_DIRS = ("deepin", "deepin-dark")
 GTK_SUBDIRS = ("gtk-3.0", "gtk-4.0")
+LONG_PROPS = (
+    "border-top-left-radius",
+    "border-top-right-radius",
+    "border-bottom-left-radius",
+    "border-bottom-right-radius",
+)
+OUTLINE_PROP = "-gtk-outline-radius"
+
+
+def strip_comments(text: str) -> str:
+    """把 /* ... */ 换成空格，保留换行，使偏移与行号仍可对上原文件。"""
+    out = []
+    i, n, in_comment = 0, len(text), False
+    while i < n:
+        if not in_comment and text.startswith("/*", i):
+            in_comment = True
+            out.append("  ")
+            i += 2
+            continue
+        if in_comment and text.startswith("*/", i):
+            in_comment = False
+            out.append("  ")
+            i += 2
+            continue
+        ch = text[i]
+        out.append(("\n" if ch == "\n" else " ") if in_comment else ch)
+        i += 1
+    return "".join(out)
+
+
+def iter_decls(text: str):
+    """逐个产出 (selector, prop, value, block_id, offset)。
+
+    block_id 用开块 '{' 的偏移标识，用来把同一规则内的声明归到一组
+    （派生圆角要看同规则的 outline-offset）。
+    """
+    i, n = 0, len(text)
+    stack, ids, buf = [], [], []
+    start = 0
+    while i < n:
+        c = text[i]
+        if c == "{":
+            stack.append("".join(buf).strip())
+            ids.append(i)
+            buf = []
+            start = i + 1
+        elif c == "}":
+            if stack:
+                stack.pop()
+                ids.pop()
+            buf = []
+            start = i + 1
+        elif c == ";":
+            decl = "".join(buf)
+            buf = []
+            if ":" in decl:
+                prop, val = decl.split(":", 1)
+                yield (
+                    stack[-1] if stack else "",
+                    prop.strip(),
+                    val.strip(),
+                    ids[-1] if ids else -1,
+                    start,
+                )
+            start = i + 1
+        else:
+            buf.append(c)
+        i += 1
+
+
+def radius_tokens(expr: str):
+    """拆出一个圆角值表达式里的数值：简写可带 1-4 个值。"""
+    for tok in expr.split():
+        tok = tok.strip().rstrip(",")
+        if not tok:
+            continue
+        if tok.endswith("%"):
+            yield tok, None  # 正圆/胶囊，不按 px 判定
+            continue
+        try:
+            yield tok, float(tok.rstrip("px"))
+        except ValueError:
+            continue
+
+
+def selector_parts(selector: str):
+    return [part.strip() for part in selector.split(",")]
 
 
 def main() -> int:
-    root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    want_stats = "--stats" in sys.argv[1:]
+    root = Path(args[0]) if args else Path(__file__).resolve().parent.parent
     tokens = tomllib.loads((root / "tokens.toml").read_text())
-    # [radius] 下除令牌外还有 [radius.exempt] 子表，只取整数项。
+    # [radius] 下除令牌外还有 exempt/outline 子表，只取整数项。
     allowed_radii = {v for v in tokens["radius"].values() if isinstance(v, int)}
     exempt = tokens["radius"].get("exempt", {})
+    outline_offset_default = tokens["radius"].get("outline", {}).get("offset", 0)
     failures = []
+    stats = {"short": 0, "long": 0, "outline": 0, "ok": 0, "zero": 0, "pct": 0, "drift": 0}
 
-    # 1. GTK border-radius 字面值
-    radius_re = re.compile(r"border-radius\s*:\s*([^;]+);")
     hex_re = re.compile(r"(?<![\w-])#[0-9a-fA-F]{3,8}\b")
     for theme in THEME_DIRS:
         for sub in GTK_SUBDIRS:
             css_dir = root / theme / sub
             if not css_dir.is_dir():
                 continue
-            for css in css_dir.rglob("*.css"):
-                in_defaults = False
-                current_selector = ""
-                for lineno, line in enumerate(css.read_text(errors="replace").splitlines(), 1):
+            for css in sorted(css_dir.rglob("*.css")):
+                raw = css.read_text(errors="replace")
+                text = strip_comments(raw)
+                rel = css.relative_to(root)
+                # 先收集本文件的声明，才能按规则取 outline-offset。
+                decls = list(iter_decls(text))
+                def px(expr: str) -> float:
+                    try:
+                        return float(expr.strip().rstrip("px"))
+                    except ValueError:
+                        return 0.0
+
+                offsets = {
+                    block: px(val) for _, prop, val, block, _ in decls if prop == "outline-offset"
+                }
+
+                def lineno(off: int) -> int:
+                    return text.count("\n", 0, off) + 1
+
+                def exempted(selector: str, tok: str) -> bool:
+                    # 精确匹配：选择器列表逐项相等，不做子串匹配，
+                    # 否则 .help_buttonx / .help_button:hover 会被误放行。
+                    parts = selector_parts(selector)
+                    return any(
+                        rule.get("radius") == tok and key in parts
+                        for key, rule in exempt.items()
+                    )
+
+                for selector, prop, val, block, off in decls:
+                    if prop == "border-radius":
+                        stats["short"] += 1
+                        for tok, num in radius_tokens(val):
+                            if num is None:
+                                stats["pct"] += 1
+                            elif num == 0:
+                                stats["zero"] += 1
+                            elif num in allowed_radii or exempted(selector, tok):
+                                stats["ok"] += 1
+                            else:
+                                stats["drift"] += 1
+                                failures.append(
+                                    f"{rel}:{lineno(off)} border-radius {tok} 不在令牌集合 {sorted(allowed_radii)}"
+                                )
+                                break
+                    elif prop in LONG_PROPS:
+                        stats["long"] += 1
+                        for tok, num in radius_tokens(val):
+                            if num is None:
+                                stats["pct"] += 1
+                            elif num == 0:
+                                stats["zero"] += 1
+                            elif num in allowed_radii or exempted(selector, tok):
+                                stats["ok"] += 1
+                            else:
+                                stats["drift"] += 1
+                                failures.append(
+                                    f"{rel}:{lineno(off)} {prop} {tok} 不在令牌集合 {sorted(allowed_radii)}"
+                                )
+                                break
+                    elif prop == OUTLINE_PROP:
+                        stats["outline"] += 1
+                        for tok, num in radius_tokens(val):
+                            if num is None:
+                                stats["pct"] += 1
+                                continue
+                            offset = offsets.get(block, outline_offset_default)
+                            shape = num - offset
+                            if shape == 0 or shape in allowed_radii or exempted(selector, tok):
+                                stats["ok"] += 1
+                            else:
+                                stats["drift"] += 1
+                                failures.append(
+                                    f"{rel}:{lineno(off)} {prop} {tok} 与形状半径不自洽"
+                                    f"（{tok} - outline-offset {offset:g} = {shape:g}，"
+                                    f"应落在 {sorted(allowed_radii)} 或 0）"
+                                )
+                                break
+
+                # 硬编码颜色：@define-color 行允许字面值（默认值声明），其余行不允许。
+                # 跳过 url(...) 内 / url 文件名 里的 hex 片段（如 titlebutton@2x.png）。
+                for lineno_, line in enumerate(raw.splitlines(), 1):
                     stripped = line.strip()
-                    # 选择器跟踪：块内 radius 行要靠它匹配 [radius.exempt] 白名单。
-                    # 只取 "{" 前的选择器文本；多行选择器取最后一行即可。
-                    if "{" in stripped:
-                        head = stripped.split("{")[0].strip()
-                        if head and not head.startswith("@"):
-                            current_selector = head
-                    # 2. 硬编码颜色：@define-color 行允许字面值（默认值声明），其余行不允许。
-                    # 跳过 url(...) 内 / url 文件名 里的 hex 片段（如 titlebutton@2x.png）。
                     if "@define-color" in stripped:
                         continue
                     for m in hex_re.finditer(stripped):
-                        span_line = stripped
-                        if "url(" in span_line:
-                            # 剔除所有 url(...) 参数后再判定
-                            cleaned = re.sub(r"url\([^)]*\)", "", span_line)
+                        if "url(" in stripped:
+                            cleaned = re.sub(r"url\([^)]*\)", "", stripped)
                             if not hex_re.search(cleaned):
                                 continue
-                        failures.append(f"{css.relative_to(root)}:{lineno} 硬编码颜色 {m.group(0)}（须走 @define-color）")
+                        failures.append(
+                            f"{rel}:{lineno_} 硬编码颜色 {m.group(0)}（须走 @define-color）"
+                        )
                         break
-                    for m in radius_re.finditer(stripped):
-                        for tok in m.group(1).split():
-                            tok = tok.rstrip(",")
-                            if not tok or not tok[0].isdigit():
-                                continue
-                            try:
-                                val = float(tok.rstrip("px"))
-                            except ValueError:
-                                continue
-                            if val > 0 and val not in allowed_radii:
-                                if any(key in current_selector and tok == rule["radius"] for key, rule in exempt.items()):
-                                    continue
-                                failures.append(f"{css.relative_to(root)}:{lineno} border-radius {tok} 不在令牌集合 {sorted(allowed_radii)}")
-                                break
 
     # 3. kvconfig 不得声明 [GeneralColors]
     kvcfg = root / "kvantum" / "nosd" / "nosd.kvconfig"
@@ -94,6 +243,16 @@ def main() -> int:
             m = re.search(rf"property int {prop}: Math\.round\((\d+) \*", style)
             if m and int(m.group(1)) != tokens["radius"][token]:
                 failures.append(f"Style.qml {prop}={m.group(1)} 与 {token}={tokens['radius'][token]} 不一致")
+
+    if want_stats:
+        print(
+            "radius 统计："
+            f"简写 {stats['short']} 条 / 长写 {stats['long']} 条 / outline {stats['outline']} 条"
+        )
+        print(
+            f"  合令牌 {stats['ok']} · 零值 {stats['zero']} · 百分比 {stats['pct']}"
+            f" · 漂移 {stats['drift']}"
+        )
 
     if failures:
         print(f"check-tokens: {len(failures)} 处漂移")

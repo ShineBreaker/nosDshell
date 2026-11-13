@@ -55,7 +55,7 @@
 | `spinbutton.vertical button.up` | 4px 3px 0 0 | 4px 4px 0 0 | radiusRow | 同上 |
 | `.inline-toolbar` | 0 0 3px 3px | 0 0 4px 4px | radiusRow | 附着工具栏底角归行控件档 |
 | notebook tab（top/bottom/right/left） | 1px / 0 0 1px 1px / … | 对应角 4px | radiusRow | 附着 tab 取最小非零令牌 |
-| `scale trough` / `highlight` / `fill` | 2.5px | 5px | radiusItem | 与同文件 `scale.fine-tune` 的 5px 对齐；细轨道按高度钳制 |
+| `scale trough` / `highlight` / `fill` | 2.5px | 5px | radiusItem | 细轨道按高度钳制，取控件档 5；`scale.fine-tune` 同轮一起归位，两者不是互为依据 |
 | `.app-notification` | 0 0 2px 2px | 0 0 8px 8px | radiusWindow | 通知=8，与 CSD 窗口底角一致 |
 | `calendar:selected` | 1.5px | 4px | radiusRow | 日格是行式可选单元 |
 | `messagedialog…button`（last/first/only-child） | 3px 角 | 8px 角 | radiusWindow | 对话框 `dtk-window-radius`=8，按钮底角随窗口 |
@@ -69,6 +69,43 @@
 - 反证：把 `.help_button` 的值改成 3px、把 100px 挪到 `.overlay-bar`，checker 均照常报错 → 白名单不是按值放行。
 - 渲染验证：gtk3/gtk4 widget-factory 在 Xvfb :99 加载浅/深四组，无 GTK CSS 解析告警；截图中心像素 `#f9fcff`（浅，`window_bg_color`）/`#1f2326`（深，`base_color`）命中主题令牌，确认主题实际生效而非回退。
 - 遗留：浅/深 widget-factory 截图逐张对照 DESIGN.md 的视觉验收由 Reviewer 出图。
+
+### 步骤 5 续 · checker 盲区修复与长写圆角调和（完成）
+
+前一轮的「0 告警」只覆盖简写 `border-radius:`。本轮把 checker 换成 CSS 块扫描器，补齐盲区后重新归零。
+
+- **checker 扩面**（`scripts/check-tokens.py`）：
+  - 覆盖 `border-top-left-radius` / `border-top-right-radius` / `border-bottom-left-radius` / `border-bottom-right-radius` 四条长写，按属性名逐条判定，不与简写正则重复计数。
+  - 覆盖 `-gtk-outline-radius`：它是派生值（形状半径 + 焦点环外扩），外扩量取同规则的 `outline-offset`，缺省用 `[radius.outline].offset = 2`；`50%` / `100%` 正圆胶囊不参与判定。派生规则能直接抓出「形状改了、焦点环没跟上」的漂移。
+  - 豁免匹配由子串改为「逗号分隔后逐项精确相等」：`.help_buttonx`、`.help_button:hover` 不再被 `.help_button` 前缀放行。
+  - 新增 `--stats` 输出分类计数，便于每轮报数。
+- **起点统计**（扩面后首次运行）：简写 801 条、长写 304 条、`-gtk-outline-radius` 20 条，**220 处漂移**。
+- **归位 260 处**（8 个文件 × 32–33 处），逐条按「选择器首项 + 属性 + 旧值」精确命中，不做全局替换：
+
+| 选择器 | 旧值 | 新值 | 令牌 | 依据 |
+| --- | --- | --- | --- | --- |
+| `#content_frame` | 上角 2px | 8px | radiusWindow | 关机/重启对话框上半帧；对话框=8 |
+| `#buttonbox_frame` | 下角 3px | 8px | radiusWindow | 同一对话框下半帧，上下同半径才成完整圆角卡片 |
+| `messagedialog.csd.background` | 下角 3px | 8px | radiusWindow | 与 decoration、动作区按钮统一，按钮不再戳出框底 |
+| `messagedialog.csd decoration` | 4px | 8px | radiusWindow | 同上；简写值本是令牌，checker 不报，属语义修正 |
+| `colorswatch.{top,bottom,left,right}` | 2.5px | 5px | radiusItem | 色块网格外角按格子档 |
+| `colorswatch.* overlay` | 2px | 4px | radiusRow | overlay 自带 1px 描边，内嵌半径 = 外层 − 1，网格不会「一半圆一半方」 |
+| `.linked.vertical > *:first/last-child` | 3px / 0px | 4px | radiusRow | 3px 就近归位；0px 见下条 |
+| `.linked:not(.vertical) > *:first/last-child` | 0px / 3px | 4px | radiusRow | 同上 |
+| `scale trough` 的 `-gtk-outline-radius` | 4.5px | 7px | 派生 | 形状已 5px，焦点环 = 5 + outline-offset 2；4.5 是 2.5px 时代残留 |
+| `.help_button` | `border-radius: 100px` | 删除 | — | 死代码，见下 |
+
+- **`.help_button` 死代码确认**：8 个文件里均为两段同特异性声明——前段 `border-radius: 100px`，后段无条件 `border-radius: 0`，后者胜出，渲染值一直是 0。删前段声明、保留同块 `padding: 3px 9px`；`tokens.toml` 的 `[radius.exempt]` 随之清空（机制保留，当前无在册条目）。
+- **linked 组 0/3 互换是上游继承的复制错误**：`deepin/gtk-3.0/gtk.css`、`deepin/gtk-4.0/gtk.css` 是「横向 3px / 纵向 0px」，其余 6 个文件正相反；`upstream-dgt` 里同样是这两文件互换。横向 `.linked` 组外角被置 0 会出现突兀直角，故 8 文件统一到 4px。**这是本轮唯一超出「就近令牌」的改动（0 → 4），理由记录于此。**
+- **对话框底角决策**：`decoration` / `background` / 动作区按钮三值原为 4 / 3 / 8，统一到 §1.4 的对话框半径 8；动作区 `first-child` 左下、`last-child` 右下、`only-child` 双下角均为 8。
+- `docs/radius-notes.md`：Researcher 的上游考据（半径历史、DTK 侧 6/8/18、长写盲区）随本轮入库。
+- 验证：
+  - `python3 scripts/check-tokens.py --stats .` → `简写 801 / 长写 304 / outline 20`，`漂移 0`，`check-tokens: 全部一致`；`make check` 同。
+  - 反证（临时夹具）：长写 3px 报错、`-gtk-outline-radius` 4.5px 报错、`.help_buttonx` 与 `.help_button:hover` 均报错、登记过的 `.help_button` 100px 放行、`outline 7px` 与 `50%` 放行。
+  - 8 个 GTK3/GTK4 CSS 经 `Gtk.CssProvider` 解析，0 条 parsing-error（`XDG_DATA_DIRS` 需带 `/usr/share`，否则 GSettings schema 缺失会中断）。
+  - 12 个 CSS 括号平衡；`python3 -m py_compile scripts/check-tokens.py` 通过。
+  - 取色器色块网格渲染：网格外角圆角、内部格保持直角（角像素 `cell1` 抗锯齿混合 vs `cell2` 纯色），嵌套半径生效。
+- 遗留：CSD 对话框圆角在无头 Xvfb 里无法可视化——没有合成器时 GTK3 退化为方角实色框（已试 xfwm4，缺 Xfconf 起不来）。本轮以静态层叠核验代替（`messagedialog.csd` 三处半径按源序均为 8，无后续覆盖），最终视觉确认交 Reviewer 在有合成器的桌面出图。
 
 ### 待办 / 开放项
 
