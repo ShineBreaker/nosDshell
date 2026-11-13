@@ -8,6 +8,12 @@
 @define-color accent_bg_color {{colors.primary.default.hex}};
 @define-color accent_fg_color {{colors.on_primary.default.hex}};
 
+/* DDE 主题的活跃色别名：nosd-theme 里 active_color / osd_* 曾写死字面值，
+   换调色板时不会跟随。这里再兜一层同名定义，与主题内的别名链同值。 */
+@define-color active_color @accent_bg_color;
+@define-color osd_hover_color @accent_bg_color;
+@define-color osd_active_color @accent_bg_color;
+
 @define-color destructive_bg_color {{colors.error.default.hex}};
 @define-color destructive_fg_color {{colors.on_error.default.hex}};
 
