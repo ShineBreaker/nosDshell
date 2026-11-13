@@ -61,6 +61,41 @@ reduce_window_opacity=0
 respect_DE=true
 submenu_delay=250
 
+[GeneralColors]
+# Kvantum 的 polish(QPalette&) 只有一行 palette = standardPalette()，而 standardPalette()
+# 只填这里出现过的角色；漏掉的角色会回落到 QPalette 默认构造值（Window = #efefef），
+# 表现为菜单栏/工具栏/页签栏露出的那条浅灰带。所以这里必须给全套。
+# 四个斜面色（light/mid.light/dark/mid）拉平成 surface：KvAdapta 靠它们画浮雕，
+# DDE 是平面设计，不拉平的话颜色对了看起来仍是另一套。
+window.color={{colors.surface.default.hex}}
+window.text.color={{colors.on_surface.default.hex}}
+base.color={{colors.surface_container_lowest.default.hex}}
+alt.base.color={{colors.surface_container_low.default.hex}}
+button.color={{colors.surface_container_low.default.hex}}
+button.text.color={{colors.on_surface.default.hex}}
+text.color={{colors.on_surface.default.hex}}
+light.color={{colors.surface.default.hex}}
+mid.light.color={{colors.surface.default.hex}}
+dark.color={{colors.surface.default.hex}}
+mid.color={{colors.surface.default.hex}}
+highlight.color={{colors.primary.default.hex}}
+highlight.text.color={{colors.on_primary.default.hex}}
+disabled.text.color={{colors.on_surface.default.hex}}61
+shadow.color={{colors.shadow.default.hex}}
+link.color={{colors.primary.default.hex}}
+link.visited.color={{colors.primary.default.hex}}
+tooltip.base.color={{colors.surface_container.default.hex}}
+tooltip.text.color={{colors.on_surface.default.hex}}
+progress.indicator.text.color={{colors.on_primary.default.hex}}
+progress.inactive.indicator.text.color={{colors.on_surface.default.hex}}
+inactive.window.color={{colors.surface.default.hex}}
+inactive.window.text.color={{colors.on_surface_variant.default.hex}}
+inactive.base.color={{colors.surface_container_lowest.default.hex}}
+inactive.alt.base.color={{colors.surface_container_low.default.hex}}
+inactive.text.color={{colors.on_surface_variant.default.hex}}
+inactive.highlight.color={{colors.primary.default.hex}}
+inactive.highlight.text.color={{colors.on_primary.default.hex}}
+
 [Hacks]
 transparent_ktitle_label=true
 transparent_dolphin_view=false
