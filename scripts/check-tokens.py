@@ -12,7 +12,10 @@
    只有 at-rule 合法）。
 4. GTK CSS 中非 defaults 块不得出现硬编码 hex 颜色（defaults 块由
    '@define-color' 行界定：检查仅对不在 '@define-color' 声明里的颜色值生效）。
-4. Kvantum nosd.kvconfig 不得包含 [GeneralColors] 节（颜色继承 QPalette）。
+4. Kvantum nosd.kvconfig 必须给出 [GeneralColors] 全套角色。Kvantum 的
+   polish(QPalette&) 只做 standardPalette()，而 standardPalette() 只填这里
+   出现过的角色；漏掉的角色回落到 QPalette 默认构造值（Window = #efefef），
+   表现为菜单栏/工具栏/页签栏露出的浅灰带。
 5. nosDshell Commons/Style.qml 的 radius 家族与 tokens.toml 一致（若仓库存在）。
 
 用法: scripts/check-tokens.py [--stats] [nosd-theme 根目录]
@@ -25,6 +28,39 @@ from pathlib import Path
 
 THEME_DIRS = ("deepin", "deepin-dark")
 GTK_SUBDIRS = ("gtk-3.0", "gtk-4.0")
+
+# Kvantum 的 QPalette 角色全集。standardPalette() 只填充在 [GeneralColors]
+# 里出现过的角色，其余保持 QPalette 默认构造值，所以必须全部给出。
+GENERAL_COLOR_ROLES = {
+    "window",
+    "window.text",
+    "base",
+    "alt.base",
+    "button",
+    "button.text",
+    "text",
+    "light",
+    "mid.light",
+    "dark",
+    "mid",
+    "highlight",
+    "highlight.text",
+    "disabled.text",
+    "shadow",
+    "link",
+    "link.visited",
+    "tooltip.base",
+    "tooltip.text",
+    "progress.indicator.text",
+    "progress.inactive.indicator.text",
+    "inactive.window",
+    "inactive.window.text",
+    "inactive.base",
+    "inactive.alt.base",
+    "inactive.text",
+    "inactive.highlight",
+    "inactive.highlight.text",
+}
 LONG_PROPS = (
     "border-top-left-radius",
     "border-top-right-radius",
@@ -267,10 +303,24 @@ def main() -> int:
                         )
                         break
 
-    # 4. kvconfig 不得声明 [GeneralColors]
+    # 4. kvconfig 必须给出 [GeneralColors] 全套角色
     kvcfg = root / "kvantum" / "nosd" / "nosd.kvconfig"
-    if kvcfg.exists() and "[GeneralColors]" in kvcfg.read_text():
-        failures.append(f"{kvcfg.relative_to(root)} 含 [GeneralColors]（应省略以继承 QPalette）")
+    if kvcfg.exists():
+        text = kvcfg.read_text()
+        rel = kvcfg.relative_to(root)
+        if "[GeneralColors]" not in text:
+            failures.append(
+                f"{rel} 缺少 [GeneralColors] 节：Kvantum 只填出现过的角色，"
+                f"缺失项回落到 Qt 默认调色板（Window #efefef）"
+            )
+        else:
+            block = text.split("[GeneralColors]", 1)[1].split("\n[", 1)[0]
+            present = set(re.findall(r"^([a-z.]+)\.color\s*=", block, re.M))
+            missing = GENERAL_COLOR_ROLES - present
+            if missing:
+                failures.append(
+                    f"{rel} 的 [GeneralColors] 缺角色：" + ", ".join(sorted(missing))
+                )
 
     # 4. nosDshell Style.qml 半径
     style_qml = root.parent / "nosDshell" / "Commons" / "Style.qml"

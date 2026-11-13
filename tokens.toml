@@ -48,6 +48,10 @@ tooltip = 6
 [color]
 # 硬编码颜色白名单之外的例外说明：
 # - GTK：所有颜色必须走 @define-color，仅允许在文件头部的 defaults 块出现字面值。
-# - Kvantum：kvconfig 省略 [GeneralColors] 走 QPalette；SVG 的 accent 色值在
-#   nosDshell 侧由模板渲染（nosd.svg.tpl），仓库里的 nosd.svg 使用默认 accent。
+# - Kvantum：kvconfig 必须给 [GeneralColors] 全套角色。Kvantum 的
+#   polish(QPalette&) 只做 palette = standardPalette()，而 standardPalette()
+#   只填这里出现过的角色；漏掉的角色回落到 QPalette 默认构造值（Window
+#   #efefef），表现为菜单栏/工具栏/页签栏露出浅灰带。SVG 与 kvconfig 的
+#   颜色在 nosDshell 侧由模板渲染（nosd.svg.tpl / nosd.kvconfig.tpl），
+#   仓库里的静态版使用默认 accent。
 default_accent = "#0c458e"   # 与 nosdshell.conf highlight 的静态值一致

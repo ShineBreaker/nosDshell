@@ -6,3 +6,6 @@ DeepinV2/
 
 # 本地截图脚手架（XDG_DATA_DIRS 探针用，不入库）
 themes/
+
+# Python 编译缓存
+__pycache__/
