@@ -1,13 +1,17 @@
-Source: deepin-gtk-theme
+Source: nosd-theme
 Section: gnome
 Priority: optional
-Maintainer: Deepin Packages Builder <packages@deepin.com>
+Maintainer: nosDshell Theme Maintainers <noreply@nosdshell.org>
 Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 9),
 
-Package: deepin-gtk-theme
+Package: nosd-theme
 Architecture: all
+Provides: deepin-gtk-theme
+Replaces: deepin-gtk-theme
+Conflicts: deepin-gtk-theme
 Depends: ${misc:Depends}
 Breaks: libgtk-3-0 ( <= 3.5.0 )
-Description: Deepin Gtk Themes
- This package contains GTK+ themes for Deepin Desktop Environment.
+Description: nosDshell GTK and Kvantum themes
+ Deepin-style GTK+ 2/3/4 themes (deepin light and deepin-dark) plus the
+ nosd Kvantum Qt widget theme, for the nosDshell desktop environment.

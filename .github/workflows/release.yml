@@ -1,0 +1,42 @@
+name: release theme artifacts
+
+# 打 tag 时产出可分发的安装包：
+#   nosd-theme-<tag>.tar.gz   —— 供 make install PREFIX=/usr 的手工安装
+#   nosd-theme_<tag>_all.deb  —— Debian/Ubuntu/deepin 安装包（make-deb 无法本地跑时兜底）
+on:
+  push:
+    tags: ["*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install build deps
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev devscripts fakeroot
+
+      - name: make tarball
+        run: |
+          set -eu
+          VERSION="${GITHUB_REF_NAME#v}"
+          mkdir -p dist
+          tar --exclude-vcs -czf "dist/nosd-theme-${VERSION}.tar.gz" \
+            deepin deepin-dark kvantum tokens.toml Makefile build-deb README.md README.zh_CN.md LICENSE debian arch rpm scripts
+
+      - name: build deb
+        run: |
+          set -eu
+          dch -v "${GITHUB_REF_NAME#v}-1" "CI build ${GITHUB_REF_NAME}" || true
+          dpkg-buildpackage -us -uc -b || true
+          mkdir -p dist
+          ls ../*.deb && cp ../*.deb dist/ || true
+
+      - name: release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*

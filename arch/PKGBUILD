@@ -1,19 +1,20 @@
-# Maintainer: CharOfString <root@charofstring.cc>
-pkgname=deepin-gtk-theme-git
-pkgver=26.0.0
+# Maintainer: nosDshell Theme Maintainers
+pkgname=nosd-theme-git
+pkgver=0.1.0
 pkgrel=1
-pkgdesc='GTK theme for GXDE (deepin and deepin-dark)'
+pkgdesc='nosDshell GTK and Kvantum themes (deepin light/dark + nosd Kvantum)'
 arch=('any')
-url="https://github.com/GXDE-OS/deepin-gtk-theme"
+url="https://github.com/nosDshell/nosd-theme"
 license=('GPL-3.0-or-later')
-optdepends=('gtk-engine-murrine: for the GTK2 theme')
+optdepends=('kvantum: for the nosd Qt widget theme'
+            'gtk-engine-murrine: for the GTK2 theme')
 makedepends=('git')
-provides=('deepin-gtk-theme')
-conflicts=('deepin-gtk-theme')
+provides=('nosd-theme' 'deepin-gtk-theme')
+conflicts=('nosd-theme' 'deepin-gtk-theme')
 source=()
 sha512sums=()
 
-# 直接使用 PKGBUILD 所在的 git 仓库作为源码 ・ Build from the git checkout this PKGBUILD lives in.
+# 直接使用 PKGBUILD 所在的 git 仓库作为源码
 _srcroot() {
   git -C "$startdir" rev-parse --show-toplevel
 }
