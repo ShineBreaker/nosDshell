@@ -172,13 +172,13 @@
   - 补 `build rpm` 步骤（原工作流只产 tar.gz + deb，缺 rpm）。
   - tar 步骤改用 `git archive`：原来 `tar` 整个目录会把 `arch/pkg/` 等本地构建产物打进发布包（本地实测发现），`git archive` 只取受版本控制的文件。
   - 去掉 `dpkg-buildpackage` 后面的 `|| true`：原来构建失败也会继续发布，可能发一个空 dist。
+- **release.yml 终审两处必修**（`a5a623e`）：apt 清单补 `debhelper`（debian/control 的 Build-Depends，否则去 `|| true` 后构建直接 unmet）；rpm 版本改为 `sed` 写 spec `Version:` 字面量——`--define "version"` 覆盖不了 spec 内置宏，`VERSION=9.9.9` 本地全链路模拟产出 `nosd-theme-9.9.9-1.noarch.rpm` 验证。
 - **未做（如实记录）**：没有推 tag，所以 GitHub Actions 本体未跑；`dpkg-buildpackage` 原命令因缺 debhelper 未执行（用等价构建替代）。
 
 ### 待办 / 开放项
 
-- 步骤 3：SVG 圆角改造（子任务进行中）。
-- 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓）。
-- 步骤 8：上游 PR 暂缓。
+- 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓，用户拍板不做）。
+- 步骤 8：上游 PR 暂缓（用户拍板不做）。
 - 图标主题：`icon_theme=Papirus-Dark` 未动。
-- 视觉验收：kv + gtk3/gtk4 截图对照 DESIGN.md。
-- Cinnamon/GNOME Shell 取色管线方案（生成时注入 vs 保持静态）。
+- 真机待验：Cinnamon/GNOME Shell `@import` 末尾层叠与换色渲染截图、CSD messagedialog 底角 8px 合成器截图、`TemplateRegistry` QML 条目运行时验证、`install-user` 真机全链路——均为容器无桌面会话的环境阻塞项，到真机窗口补。
+- PKGBUILD 建议加 `pkgver()`（`git describe`），版本号三处（debian/spec/PKGBUILD）现靠人工同步。
