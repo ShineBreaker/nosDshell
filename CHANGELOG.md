@@ -25,11 +25,29 @@
 - `git remote add upstream https://github.com/GXDE-OS/deepin-gtk-theme.git`。
 - kvconfig：`[GeneralColors]` 全删（继承 QPalette）；focus/press accent 文本色静态 `#0c458e`（palette 无法驱动 text.*.color，且与 SVG 静态 accent 对齐）；`scroll_width` 9→8；author/comment 换 nosd 名。
 
+### 步骤 4 · Kvantum SVG 颜色静态化 + 模板（完成颜色，圆角进行中）
+
+- `nosd.svg` 静态 accent：`#00bcd4/#007e8c/#005a64/#00c867 → #0c458e`（41 处），`#4db6ac → #a9caf1`（8 处）；中性色不动。
+- `nosd.svg.tpl`：同文件占位符版（`{{colors.primary.default.hex}}` ×41、`{{colors.primary_container.default.hex}}` ×8），已复制进 `nosDshell/Assets/Templates/kvantum-nosd.svg`。
+- `nosDshell/Services/Theming/TemplateRegistry.qml`：新增 `kvantum` entry，输出 `~/.config/Kvantum/nosd/nosd.svg`；`activeTemplates` 默认空 = 不主动写，需要 nosDshell 用户开。
+- 遗留：圆角改造（步骤 3）在子任务进行；`b74aff` 菜单阴影紫暂留（视觉验证后定去留）。
+
+### 步骤 5 · GTK 变量化（完成，待视觉验收）
+
+- `deepin/` + `deepin-dark/`：gtk3/gtk4 四变体 + window-controls×2 + gtk4-compat×2 全部收敛到 `@define-color`。
+  - 定义块结构：基元字面值 → `/* nosd 颜色默认值 */` 34+ 语义变量（与 `nosd.css` 同名）→ `/* 兼容旧变量名 */` 全量旧名链式别名（0 删除）。
+  - 修复存量 typo 引用：`@base_Color → @base_color`、`@hightlight_color → @borders`、`@border → @borders`。
+  - 补 `theme_unfocused_selected_bg/fg_color` 别名对齐 nosd.css（deepin/ 4 文件 + deepin-dark/ 4 文件 + gtk4-compat×2）。
+- `deepin/cinnamon/cinnamon.css` + `deepin/gnome-shell/gnome-shell.css`：**跳过**。St/Cinnamon 解析器不支持 `@define-color`，要统一走生成时注入（阶段 B 决策项）。
+- checker 结果：`check-tokens.py` 非 border-radius 告警 **0**；160 条 border-radius 漂移遗留（DDE 1–3px 微圆角 vs DESIGN 4/5/6/8/10 令牌，待 radius 调和步骤统一处理）。
+- 语义近似点（视觉验收时复核）：accent 蓝色谱系摊平为 accent_bg/fg（hover/active 层次消）；`#BAC3CF` 当 borders 也当 disabled 文字底（`alpha(@borders,0.55)`）；`rgba(92,97,108)` → `alpha(@window_fg_color,*)`。
+- 残留清理（用户手动）：`git stash` 里 `pre-retransform`、`dark-var-migrate-broken`、`v2` 三个中间版备份，确认成品后可 `git stash drop`；`../_dark_var_migrate.py` 工作区脚本可删。
+
 ### 待办 / 开放项
 
-- 步骤 2/3：kvconfig 更多几何参数 + SVG 圆角改造（进行中，子任务）。
-- 步骤 4：SVG accent → `nosd.svg.tpl` 模板 + nosDshell `TemplateRegistry` 注册（渲染到 `~/.config/Kvantum/nosd/nosd.svg`）。
-- 步骤 5：GTK 变量化（进行中，两个子任务分别做 deepin / deepin-dark）。
-- 步骤 7：GTK 变量化完成后 `build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓）。
-- 步骤 8：上游 PR 暂缓（等本机跑稳定再谈）。
-- 图标主题：`qt6ct.conf icon_theme=Papirus-Dark` 未动；`deepin-icon-theme` 并入后切 `deepin`。
+- 步骤 3：SVG 圆角改造（子任务进行中）。
+- 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓）。
+- 步骤 8：上游 PR 暂缓。
+- 图标主题：`icon_theme=Papirus-Dark` 未动。
+- 视觉验收：kv + gtk3/gtk4 截图对照 DESIGN.md。
+- Cinnamon/GNOME Shell 取色管线方案（生成时注入 vs 保持静态）。

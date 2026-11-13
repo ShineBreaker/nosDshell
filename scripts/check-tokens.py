@@ -28,7 +28,7 @@ def main() -> int:
 
     # 1. GTK border-radius 字面值
     radius_re = re.compile(r"border-radius\s*:\s*([^;]+);")
-    hex_re = re.compile(r"#[0-9a-fA-F]{3,8}\b")
+    hex_re = re.compile(r"(?<![\w-])#[0-9a-fA-F]{3,8}\b")
     for theme in THEME_DIRS:
         for sub in GTK_SUBDIRS:
             css_dir = root / theme / sub
