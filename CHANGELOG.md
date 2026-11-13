@@ -135,6 +135,16 @@
 - **截图**（`screenshots/`，未入库，与 Reviewer 的验收图同样处理）：`kvantum-<页签>-light-{baseline,accent-magenta}.png` 共 12 张，并排对比 `kvantum-accent-ab-{buttons,inputs,radios}.png` 3 张。
 - **遗留**：容器内新装的 `kvantum`/`qt6ct` 属环境补充，不进仓库依赖；`accent_*` 阴影家族仍字面值（见上一节）。
 
+### 步骤 5 续 · St 回归止血：深色 cinnamon/gnome-shell 回滚为字面值（完成）
+
+- **根因**：`1a7cc23` 把 `deepin-dark/cinnamon/cinnamon.css`（341 行）与 `deepin-dark/gnome-shell/gnome-shell.css`（470 行）也转成了 `@define-color` + `@accent_bg_color` 引用，但 St（Cinnamon / GNOME Shell 的 CSS 引擎）不认 `@define-color`：`background-color: @x` 整条声明被丢弃，`border: 1px solid @x` 保留宽度、丢掉颜色，边框变透明。该提交说明里写的是「cinnamon/gnome-shell 跳过」，实际 diff 里改了，属说明与改动不一致。
+- **处理**：两个文件恢复到 `1a7cc23^`（`git checkout 1a7cc23^ -- <两文件>`）。后续没有任何提交动过这两个文件，且该提交对它们几乎全是颜色转换（非颜色改动只有空行和一处 `box-shadow`），整文件恢复不会带回别的回退。
+- **现状**：`@define-color` 0 处、`@` 颜色引用 0 处，字面值恢复（cinnamon 145 个 hex、gnome-shell 201 个）。
+- **浅色未受影响**：`deepin/cinnamon/cinnamon.css`、`deepin/gnome-shell/gnome-shell.css` 在 `1a7cc23` 里 numstat 为空（没被改），一直是字面值，0 处 `@` 引用。
+- **护栏**：回滚后全仓 `@define-color` 只出现在 `gtk-3.0/` 与 `gtk-4.0/` 下（12 个文件），St 消费的 `cinnamon/`、`gnome-shell/` 目录为 0 —— 这条可以直接作为以后改色的检查项。
+- **计数口径**：我按每个 `@name` token 数，回滚前是 cinnamon 186 处、gnome-shell 251 处；Researcher 报的是 152 / 217，口径不同（可能只数特定属性），结论一致：改完之后是 0。
+- **待阶段 3**：生成时注入方案（St 支持 `@import`，后声明胜出）。
+
 ### 待办 / 开放项
 
 - 步骤 3：SVG 圆角改造（子任务进行中）。
