@@ -460,6 +460,11 @@
     "transparent": "Transparent when empty",
     "visible": "Always visible"
   },
+  "keyring": {
+    "new-password": "New password",
+    "password": "Password",
+    "unlock": "Unlock keyring"
+  },
   "launcher": {
     "categories": {
       "all": "All",

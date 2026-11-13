@@ -20,6 +20,7 @@ import qs.Modules.Background
 import qs.Modules.Bar
 import qs.Modules.DesktopWidgets
 import qs.Modules.Dock
+import qs.Modules.Keyring
 import qs.Modules.LockScreen
 import qs.Modules.MainScreen
 import qs.Modules.Notification
@@ -32,6 +33,7 @@ import qs.Modules.Toast
 import qs.Services.Control
 import qs.Services.Hardware
 import qs.Services.Keyboard
+import qs.Services.Keyring
 import qs.Services.Location
 import qs.Services.Networking
 import qs.Services.Plugins
@@ -125,6 +127,7 @@ ShellRoot {
           LocationService.init();
           NightLightService.apply();
           PolkitService.init();
+          KeyringPrompterService.init();
           IdleInhibitorService.init();
           IdleService.init();
           PowerProfileService.init();
@@ -163,6 +166,10 @@ ShellRoot {
       // Polkit auth dialog (DESIGN §3.11): hidden layer surface, shows when
       // PolkitService.isActive flips on an auth request.
       PolkitAuthDialog {}
+
+      // Keyring unlock dialog (DESIGN §3.11): hidden layer surface, shows when
+      // KeyringPrompterService.isActive flips on an oo7 unlock request.
+      KeyringPromptDialog {}
 
       // Settings window mode (single window across all monitors).
       // Loader-gated: Migration72 pins ui.settingsPanelMode to controlCenter

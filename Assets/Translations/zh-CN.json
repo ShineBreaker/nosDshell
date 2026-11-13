@@ -460,6 +460,11 @@
     "transparent": "为空时透明",
     "visible": "始终显示"
   },
+  "keyring": {
+    "new-password": "新密码",
+    "password": "密码",
+    "unlock": "解锁钥匙串"
+  },
   "launcher": {
     "categories": {
       "all": "全部",
