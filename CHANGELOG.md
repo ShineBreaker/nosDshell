@@ -158,6 +158,22 @@
 - **模板与注册表**：`Assets/Templates/gtk{3,4}.css` 补 9 条 `accent_*` 引用；`TemplateRegistry` 新增 `shell-cinnamon`、`shell-gnome` 两条目，`post_hook` 调用生成器写两个主题目录。
 - **未验证（环境阻塞，如实记录）**：`TemplateRegistry` 的 QML 条目没有运行时验证（容器无 shell 会话）；`@import` 放文件末尾在真机 St 上的层叠行为是源码推断，非契约。
 
+### 阶段 4 · 打包与发布链路验证（完成，含两处环境替代）
+
+- **deb**：`dpkg-buildpackage` 在 Arch 容器里被 `debhelper` 挡住（`dpkg-checkbuilddeps: unmet build dependencies: debhelper`，Arch 无该包）。改用等价构建：`make install DESTDIR=<stage>`（即 `dh_auto_install` 会做的事）+ `dpkg-deb --build`，control 字段按 `dh_gencontrol` 的规则补齐（`${misc:Depends}` 展开为空、Version 取 changelog、Maintainer 取源段）。产物 270 KB / 1917 文件。
+- **rpm**：`rpmbuild -bb`（本地造 `nosd-theme-0.1.0.tar.gz` 源包）出包 567 KB / 1996 文件。
+- **arch**：`makepkg -f --nodeps` 出 `nosd-theme-git-0.1.0-1-any.pkg.tar.zst` 652 KB；用 `pacman -U --root /tmp/archroot` 装进干净 root（不是装进当前系统），1917 文件落位 `/usr/share/themes/{deepin,deepin-dark}` 与 `/usr/share/Kvantum/nosd`，pacman DB 有记录。
+- **落位与生效验证**：
+  - 三个包内都有 4 个 `nosd-accent.css` 占位；包内 `deepin/cinnamon/cinnamon.css` 末尾 `@import url("nosd-accent.css");` 在。
+  - 从 deb 解出的树直接当 `XDG_DATA_DIRS` 跑 gtk3-widget-factory：浅色中心像素 `#f9fcff`、深色 `#1f2326`，无 CSS 解析告警。
+  - 同一棵树作为 Kvantum 主题跑 kvantumpreview：切换按钮边缘 `#0c458e`，主题真实生效。
+- **`make install-user`**：`HOME=/tmp/fakehome` 实跑，落 `~/.local/share/themes/{deepin,deepin-dark}/{cinnamon,gnome-shell,...}` 与 `~/.local/share/Kvantum/nosd/`，4 个占位齐全——这是 St 取色注入唯一可写的安装形态。
+- **release.yml 修整**（对照 PLAN §6.5「deb / rpm / tar.gz 三样」）：
+  - 补 `build rpm` 步骤（原工作流只产 tar.gz + deb，缺 rpm）。
+  - tar 步骤改用 `git archive`：原来 `tar` 整个目录会把 `arch/pkg/` 等本地构建产物打进发布包（本地实测发现），`git archive` 只取受版本控制的文件。
+  - 去掉 `dpkg-buildpackage` 后面的 `|| true`：原来构建失败也会继续发布，可能发一个空 dist。
+- **未做（如实记录）**：没有推 tag，所以 GitHub Actions 本体未跑；`dpkg-buildpackage` 原命令因缺 debhelper 未执行（用等价构建替代）。
+
 ### 待办 / 开放项
 
 - 步骤 3：SVG 圆角改造（子任务进行中）。

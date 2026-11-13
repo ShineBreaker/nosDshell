@@ -1,8 +1,9 @@
 name: release theme artifacts
 
-# 打 tag 时产出可分发的安装包：
-#   nosd-theme-<tag>.tar.gz   —— 供 make install PREFIX=/usr 的手工安装
-#   nosd-theme_<tag>_all.deb  —— Debian/Ubuntu/deepin 安装包（make-deb 无法本地跑时兜底）
+# 打 tag 时产出可分发的安装包（PLAN §6.5：deb / rpm / tar.gz 三样）：
+#   nosd-theme-<tag>.tar.gz          —— 供 make install PREFIX=/usr 的手工安装
+#   nosd-theme_<tag>-1_all.deb       —— Debian/Ubuntu/deepin
+#   nosd-theme-<tag>-1.noarch.rpm    —— Fedora/openSUSE 系
 on:
   push:
     tags: ["*"]
@@ -18,23 +19,44 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: install build deps
-        run: sudo apt-get update && sudo apt-get install -y dpkg-dev devscripts fakeroot
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev devscripts fakeroot rpm
 
       - name: make tarball
         run: |
           set -eu
           VERSION="${GITHUB_REF_NAME#v}"
           mkdir -p dist
-          tar --exclude-vcs -czf "dist/nosd-theme-${VERSION}.tar.gz" \
-            deepin deepin-dark kvantum tokens.toml Makefile build-deb README.md README.zh_CN.md LICENSE debian arch rpm scripts
+          # 用 git archive 而不是 tar 目录：只取受版本控制的文件，
+          # 避免把 arch/pkg/ 之类的本地构建产物打进发布包。
+          git archive --format=tar.gz -o "dist/nosd-theme-${VERSION}.tar.gz" HEAD
 
       - name: build deb
         run: |
           set -eu
-          dch -v "${GITHUB_REF_NAME#v}-1" "CI build ${GITHUB_REF_NAME}" || true
-          dpkg-buildpackage -us -uc -b || true
+          VERSION="${GITHUB_REF_NAME#v}"
+          # changelog 里已有条目时 dch 会失败，忽略即可；版本以 tag 为准。
+          dch -v "${VERSION}-1" "CI build ${GITHUB_REF_NAME}" || true
+          dpkg-buildpackage -us -uc -b
           mkdir -p dist
-          ls ../*.deb && cp ../*.deb dist/ || true
+          cp ../nosd-theme_*.deb dist/
+
+      - name: build rpm
+        run: |
+          set -eu
+          VERSION="${GITHUB_REF_NAME#v}"
+          TOP="$PWD/dist/rpmbuild"
+          mkdir -p "$TOP/SOURCES"
+          git archive --format=tar.gz --prefix="nosd-theme-${VERSION}/" \
+            -o "$TOP/SOURCES/nosd-theme-${VERSION}.tar.gz" HEAD
+          rpmbuild -bb \
+            --define "_topdir $TOP" \
+            --define "_sourcedir $TOP/SOURCES" \
+            --define "version ${VERSION}" \
+            rpm/nosd-theme.spec
+          cp "$TOP"/RPMS/noarch/*.rpm dist/
+
+      - name: list artifacts
+        run: ls -l dist/
 
       - name: release
         uses: softprops/action-gh-release@v2
