@@ -15,6 +15,12 @@ radiusPopup   = 6   # 带箭头弹出层、密码框、快捷开关选中块、�
 radiusWindow  = 8   # 通知气泡、对话框（dtk-window-radius）、浅色菜单
 radiusLarge   = 10  # OSD、关机按钮选中块、启动器网格悬停、托盘胶囊
 
+[radius.exempt]
+# 不在令牌集合内、但语义上不应归位的圆角。键是选择器片段（子串匹配），
+# 值是该选择器允许保留的圆角与理由；scripts/check-tokens.py 逐条读取，
+# 匹配不到就仍报漂移。只在确实不该归位时新增，且必须写理由。
+".help_button" = { radius = "100px", reason = "帮助按钮的胶囊形；属 DESIGN §1.4「正圆除外」的圆点/胶囊类，令牌集合无此档" }
+
 [border]
 # DESIGN.md §1.2 发丝描边：全部控件描边 1px；焦点环额外一圈。
 hairline      = 1   # 全部边框的统一宽度

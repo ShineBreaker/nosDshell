@@ -43,6 +43,33 @@
 - 语义近似点（视觉验收时复核）：accent 蓝色谱系摊平为 accent_bg/fg（hover/active 层次消）；`#BAC3CF` 当 borders 也当 disabled 文字底（`alpha(@borders,0.55)`）；`rgba(92,97,108)` → `alpha(@window_fg_color,*)`。
 - 残留清理（用户手动）：`git stash` 里 `pre-retransform`、`dark-var-migrate-broken`、`v2` 三个中间版备份，确认成品后可 `git stash drop`；`../_dark_var_migrate.py` 工作区脚本可删。
 
+### 步骤 5 续 · GTK border-radius 调和（完成）
+
+- 152 处 DDE 1–3px 微圆角归位到令牌集合，覆盖 8 个文件（`deepin/`、`deepin-dark/` × `gtk-3.0`、`gtk-4.0` × `gtk.css`、`gtk-dark.css`），每文件 19 处；逐处按选择器块定位替换，不是全局字符串替换。
+- 归位依据（DESIGN.md §1.4 语义，非机械就近）：
+
+| 选择器 | 旧值 | 新值 | 令牌 | 依据 |
+| --- | --- | --- | --- | --- |
+| `entry.search` | 20px | 5px | radiusItem | 搜索框=5；20px 胶囊违反「不要胶囊形」 |
+| `spinbutton:not(.vertical):dir(rtl) button.up` | 4px 0 0 3px | 4px 0 0 4px | radiusRow | 外角已 4，接缝角 3→4 统一 |
+| `spinbutton.vertical button.up` | 4px 3px 0 0 | 4px 4px 0 0 | radiusRow | 同上 |
+| `.inline-toolbar` | 0 0 3px 3px | 0 0 4px 4px | radiusRow | 附着工具栏底角归行控件档 |
+| notebook tab（top/bottom/right/left） | 1px / 0 0 1px 1px / … | 对应角 4px | radiusRow | 附着 tab 取最小非零令牌 |
+| `scale trough` / `highlight` / `fill` | 2.5px | 5px | radiusItem | 与同文件 `scale.fine-tune` 的 5px 对齐；细轨道按高度钳制 |
+| `.app-notification` | 0 0 2px 2px | 0 0 8px 8px | radiusWindow | 通知=8，与 CSD 窗口底角一致 |
+| `calendar:selected` | 1.5px | 4px | radiusRow | 日格是行式可选单元 |
+| `messagedialog…button`（last/first/only-child） | 3px 角 | 8px 角 | radiusWindow | 对话框 `dtk-window-radius`=8，按钮底角随窗口 |
+| `.keycap` | 2.5px | 4px | radiusRow | 行内小徽标 |
+| `.gedit-search-slider` | 0 0 2px 2px | 0 0 5px 5px | radiusItem | 搜索语义=5 |
+| `.nautilus-window .floating-bar` | 4px 2px 0 0 | 4px 4px 0 0 | radiusRow | 统一 4；贴边角由 `.bottom.*` 置 0 |
+
+- 豁免（`tokens.toml` 新增 `[radius.exempt]`，checker 按「选择器 + 值」双匹配跳过，每条必带理由）：
+  - `.help_button` 100px ×8（gtk3/gtk4 × 浅/深）：帮助按钮的胶囊形，属 DESIGN §1.4「正圆除外」类，令牌集合无此档。
+- checker：160 → 0（`python3 scripts/check-tokens.py .` → `全部一致`）。
+- 反证：把 `.help_button` 的值改成 3px、把 100px 挪到 `.overlay-bar`，checker 均照常报错 → 白名单不是按值放行。
+- 渲染验证：gtk3/gtk4 widget-factory 在 Xvfb :99 加载浅/深四组，无 GTK CSS 解析告警；截图中心像素 `#f9fcff`（浅，`window_bg_color`）/`#1f2326`（深，`base_color`）命中主题令牌，确认主题实际生效而非回退。
+- 遗留：浅/深 widget-factory 截图逐张对照 DESIGN.md 的视觉验收由 Reviewer 出图。
+
 ### 待办 / 开放项
 
 - 步骤 3：SVG 圆角改造（子任务进行中）。

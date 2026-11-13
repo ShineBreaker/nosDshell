@@ -23,7 +23,9 @@ GTK_SUBDIRS = ("gtk-3.0", "gtk-4.0")
 def main() -> int:
     root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parent.parent
     tokens = tomllib.loads((root / "tokens.toml").read_text())
-    allowed_radii = set(tokens["radius"].values())
+    # [radius] 下除令牌外还有 [radius.exempt] 子表，只取整数项。
+    allowed_radii = {v for v in tokens["radius"].values() if isinstance(v, int)}
+    exempt = tokens["radius"].get("exempt", {})
     failures = []
 
     # 1. GTK border-radius 字面值
@@ -36,8 +38,15 @@ def main() -> int:
                 continue
             for css in css_dir.rglob("*.css"):
                 in_defaults = False
+                current_selector = ""
                 for lineno, line in enumerate(css.read_text(errors="replace").splitlines(), 1):
                     stripped = line.strip()
+                    # 选择器跟踪：块内 radius 行要靠它匹配 [radius.exempt] 白名单。
+                    # 只取 "{" 前的选择器文本；多行选择器取最后一行即可。
+                    if "{" in stripped:
+                        head = stripped.split("{")[0].strip()
+                        if head and not head.startswith("@"):
+                            current_selector = head
                     # 2. 硬编码颜色：@define-color 行允许字面值（默认值声明），其余行不允许。
                     # 跳过 url(...) 内 / url 文件名 里的 hex 片段（如 titlebutton@2x.png）。
                     if "@define-color" in stripped:
@@ -61,6 +70,8 @@ def main() -> int:
                             except ValueError:
                                 continue
                             if val > 0 and val not in allowed_radii:
+                                if any(key in current_selector and tok == rule["radius"] for key, rule in exempt.items()):
+                                    continue
                                 failures.append(f"{css.relative_to(root)}:{lineno} border-radius {tok} 不在令牌集合 {sorted(allowed_radii)}")
                                 break
 

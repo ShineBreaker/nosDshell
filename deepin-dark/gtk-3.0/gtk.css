@@ -310,7 +310,7 @@ entry {
     box-shadow: 0 1px @borders;
 }
 entry.search {
-    border-radius: 20px;
+    border-radius: 5px;
 }
 entry image {
     color: @entry_icon_color;
@@ -1261,7 +1261,7 @@ spinbutton:not(.vertical) entry {
 }
 spinbutton:not(.vertical):dir(ltr) entry,
 spinbutton:not(.vertical):dir(rtl) button.up {
-    border-radius: 4px 0 0 3px;
+    border-radius: 4px 0 0 4px;
 }
 spinbutton:not(.vertical) > button + button {
     border-left-style: none;
@@ -1300,7 +1300,7 @@ spinbutton.vertical entry {
     min-width: 0;
 }
 spinbutton.vertical button.up {
-    border-radius: 4px 3px 0 0;
+    border-radius: 4px 4px 0 0;
 }
 spinbutton.vertical > entry:focus + button {
     border-top-color: @active_color;
@@ -1407,7 +1407,7 @@ toolbar:not(.inline-toolbar) .linked > entry,
     border-color: @borders;
     border-width: 0 1px 1px;
     padding: 3px;
-    border-radius: 0 0 3px 3px;
+    border-radius: 0 0 4px 4px;
 }
 searchbar {
     background-color: @base_color;
@@ -2615,7 +2615,7 @@ notebook > header.top > tabs > tab {
     min-height: 20px;
     outline-offset: -4px;
     border: 1px solid shade(@base_color, 0.8);
-    border-radius: 1px 1px 0 0;
+    border-radius: 4px 4px 0 0;
     box-shadow: inset 0 1px @hightlight_line;
 }
 notebook > header.top > tabs > tab + tab {
@@ -2631,7 +2631,7 @@ notebook > header.bottom > tabs > tab {
     outline-offset: -4px;
     border: 1px solid transparent;
     border-top: none;
-    border-radius: 0 0 1px 1px;
+    border-radius: 0 0 4px 4px;
 }
 notebook > header.bottom > tabs > tab + tab {
     margin-left: -1px;
@@ -2646,7 +2646,7 @@ notebook > header.right > tabs > tab {
     outline-offset: -4px;
     border: 1px solid transparent;
     border-left: none;
-    border-radius: 0 1px 1px 0;
+    border-radius: 0 4px 4px 0;
 }
 notebook > header.right > tabs > tab + tab {
     margin-top: -1px;
@@ -2661,7 +2661,7 @@ notebook > header.left > tabs > tab {
     outline-offset: -4px;
     border: 1px solid transparent;
     border-right: none;
-    border-radius: 1px 0 0 1px;
+    border-radius: 4px 0 0 4px;
 }
 notebook > header.left > tabs > tab + tab {
     margin-top: -1px;
@@ -3191,7 +3191,7 @@ scale.fine-tune trough {
 scale trough {
     outline-offset: 2px;
     -gtk-outline-radius: 4.5px;
-    border-radius: 2.5px;
+    border-radius: 5px;
     background-color: rgba(0, 0, 0, 0.4);
     box-shadow: 0 1px @borders;
 }
@@ -3225,7 +3225,7 @@ infobar scale trough:disabled {
     background-color: rgba(0, 0, 0, 0.1);
 }
 scale highlight {
-    border-radius: 2.5px;
+    border-radius: 5px;
     background-color: @active_color;
     box-shadow: inset 0 1px rgba(255, 255, 255, 0.05);
 }
@@ -3234,7 +3234,7 @@ scale highlight:disabled {
     box-shadow: none;
 }
 scale fill {
-    border-radius: 2.5px;
+    border-radius: 5px;
     background-color: rgba(82, 148, 226, 0.5);
 }
 scale fill:disabled {
@@ -3571,7 +3571,7 @@ row.activatable:selected:hover {
     color: @view_fg_color;
     background-color: rgba(53, 57, 69, 0.95);
     background-clip: border-box;
-    border-radius: 0 0 2px 2px;
+    border-radius: 0 0 8px 8px;
     border-width: 0 1px 1px 1px;
     border-style: solid;
     border-color: rgba(31, 33, 40, 0.95);
@@ -3631,7 +3631,7 @@ calendar {
 calendar:selected {
     background-color: @active_color;
     color: @accent_fg_color;
-    border-radius: 1.5px;
+    border-radius: 4px;
 }
 calendar.header {
     color: @window_fg_color;
@@ -3686,15 +3686,15 @@ messagedialog.csd .dialog-action-area button {
     border-right-style: none;
 }
 messagedialog.csd .dialog-action-area button:last-child {
-    border-radius: 0 0 3px 0;
+    border-radius: 0 0 8px 0;
     border-right-style: none;
 }
 messagedialog.csd .dialog-action-area button:first-child {
-    border-radius: 0 0 0 3px;
+    border-radius: 0 0 0 8px;
     border-left-style: none;
 }
 messagedialog.csd .dialog-action-area button:only-child {
-    border-radius: 0 0 3px 3px;
+    border-radius: 0 0 8px 8px;
     border-left-style: none;
     border-right-style: none;
 }
@@ -4193,7 +4193,7 @@ button.circular-button label {
     color: @window_fg_color;
     background-color: @base_color;
     border: 1px solid @borders;
-    border-radius: 2.5px;
+    border-radius: 4px;
     box-shadow: inset 0px -2px 0px rgba(0, 0, 0, 0.05);
 }
 stackswitcher button.text-button {
@@ -4717,7 +4717,7 @@ iconview.open-document-selector-treeview:hover:selected {
     background-color: shade(@base_color, 0.8);
     padding: 6px;
     border-color: @borders;
-    border-radius: 0 0 2px 2px;
+    border-radius: 0 0 5px 5px;
     border-width: 0 1px 1px 1px;
     border-style: solid;
 }
@@ -4950,7 +4950,7 @@ button.documents-favorite:active:hover {
     padding: 1px;
     background-color: @active_color;
     color: @accent_fg_color;
-    border-radius: 4px 2px 0 0;
+    border-radius: 4px 4px 0 0;
 }
 .nautilus-window .floating-bar.bottom.left {
     border-top-left-radius: 0;
