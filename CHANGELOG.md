@@ -113,6 +113,17 @@
 - 声明偏移改为取首个非空白字符，报出的行号与实际行对齐。
 - 反证（无分号夹具）：旧版 4 条只抓到 1 条（带分号那条），新版 4 条全抓到，行号 3/4/5/7 与 `grep -n` 一致；真实仓库仍 0 告警，统计数字不变（简写 801 / 长写 304 / outline 20）。
 
+### 步骤 5 续 · 深色 accent 跟随修复（完成）
+
+阶段 2 视觉验收挖出的真 bug：深色主题换调色板后 accent 不跟随。
+
+- **根因**：`deepin-dark` 把字面值放在 `active_color` 上，`accent_bg_color` 反向引用它（`gtk.css`：`accent_bg_color @active_color`）或同为字面值（`gtk-dark.css`：两者都是 `#14364d`）。覆盖层（`~/.config/gtk-{3,4}/nosd.css`）只重定义 `accent_bg_color`，碰不到 `active_color`，于是 `theme_selected_bg_color`、`selected_bg_color`、`wm_button_active_bg`、`osd_*` 这些挂在 `active_color` 下的全部停在旧蓝。浅色没这问题：`deepin` 里 `active_color @accent_bg_color`，方向是对的。
+- **修法**：4 个文件 `active_color` 改为 `@accent_bg_color`；`gtk.css` 两个文件把字面值挪到 `accent_bg_color`（不挪就成自引用环）。深色原有 accent 值不变（`gtk.css` 仍是 `#106daa`，`gtk-dark.css` 仍是 `#14364d`）。
+- `osd_hover_color` / `osd_active_color` 同样写死（`#639fe5` / `#4189df`），一并改为 `@accent_bg_color`。
+- `nosDshell` 侧双保险：`Assets/Templates/gtk3.css`、`gtk4.css` 补 `active_color` / `osd_hover_color` / `osd_active_color` 三条别名定义。
+- 验证：`check-tokens.py` 全部一致；`@define-color` 引用图无环、无未定义引用；两份模板渲染后经 GTK3/GTK4 `Gtk.CssProvider` 解析 0 error；`nosDshell` 的 `Scripts/dev/lint.sh --changed` 通过。
+- 遗留：深色独有的 `accent_*` 阴影家族（`accent_hover_color`、`accent_active_color`、`accent_light_*` 等 9 条）仍是字面值。要跟随需要按 accent 派生明暗，GTK3 用 `shade()`、GTK4 没有等价函数，本轮不动，登记待决。
+
 ### 待办 / 开放项
 
 - 步骤 3：SVG 圆角改造（子任务进行中）。

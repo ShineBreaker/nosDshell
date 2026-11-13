@@ -1,6 +1,6 @@
 /* nosd 覆盖层默认值：~/.config/gtk-3.0/nosd.css 或 gtk-4.0/nosd.css 中可用同名 @define-color 覆盖。 */
 
-@define-color active_color #106daa;
+@define-color active_color @accent_bg_color;
 @define-color fg_color #303030;
 @define-color bg_color #1e2329;
 @define-color base_color #1f2326;
@@ -10,7 +10,7 @@
 @define-color window_fg_color #5c616c;
 @define-color view_fg_color #BAC3CF;
 @define-color osd_fg_color #BAC3CF;
-@define-color accent_bg_color @active_color;
+@define-color accent_bg_color #106daa;
 @define-color accent_fg_color #ffffff;
 @define-color accent_standalone_color #4DADD4;
 @define-color accent_hover_color #76c0de;
@@ -21,8 +21,8 @@
 @define-color accent_disabled_color #b1cff2;
 @define-color accent_border_color #577ba7;
 @define-color accent_on_bg_dim_color #cbdff6;
-@define-color osd_hover_color #639fe5;
-@define-color osd_active_color #4189df;
+@define-color osd_hover_color @accent_bg_color;
+@define-color osd_active_color @accent_bg_color;
 @define-color error_color #FC4138;
 @define-color error_bg_color #F04A50;
 @define-color error_hover_bg_color #f4797e;
