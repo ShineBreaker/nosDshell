@@ -3,3 +3,6 @@
 Deepin-blared/
 Ceti-theme/
 DeepinV2/
+
+# 本地截图脚手架（XDG_DATA_DIRS 探针用，不入库）
+themes/
