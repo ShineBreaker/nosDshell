@@ -189,6 +189,17 @@ Singleton {
       ]
     },
     {
+      "id": "kvantum",
+      "name": "Kvantum",
+      "category": "system",
+      "input": "kvantum-nosd.svg",
+      "outputs": [
+        {
+          "path": "~/.config/Kvantum/nosd/nosd.svg"
+        }
+      ]
+    },
+    {
       "id": "kcolorscheme",
       "name": "KColorScheme",
       "category": "system",
