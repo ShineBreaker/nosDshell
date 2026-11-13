@@ -19,7 +19,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: install build deps
-        run: sudo apt-get update && sudo apt-get install -y dpkg-dev devscripts fakeroot rpm
+        # debhelper 是 debian/control 的 Build-Depends，缺它 dpkg-buildpackage 直接 unmet。
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev devscripts debhelper fakeroot rpm
 
       - name: make tarball
         run: |
@@ -34,7 +35,7 @@ jobs:
         run: |
           set -eu
           VERSION="${GITHUB_REF_NAME#v}"
-          # changelog 里已有条目时 dch 会失败，忽略即可；版本以 tag 为准。
+          # changelog 里已有该版本条目时 dch 会失败，跳过即可；版本以 tag 为准。
           dch -v "${VERSION}-1" "CI build ${GITHUB_REF_NAME}" || true
           dpkg-buildpackage -us -uc -b
           mkdir -p dist
@@ -46,12 +47,14 @@ jobs:
           VERSION="${GITHUB_REF_NAME#v}"
           TOP="$PWD/dist/rpmbuild"
           mkdir -p "$TOP/SOURCES"
+          # spec 的 Version: 是字面量，--define "version" 覆盖不了（实测仍走
+          # BUILD/nosd-theme-0.1.0-build 并找 0.1.0 的源包），必须改文件本身。
+          sed -i "s/^Version:.*/Version: ${VERSION}/" rpm/nosd-theme.spec
           git archive --format=tar.gz --prefix="nosd-theme-${VERSION}/" \
             -o "$TOP/SOURCES/nosd-theme-${VERSION}.tar.gz" HEAD
           rpmbuild -bb \
             --define "_topdir $TOP" \
             --define "_sourcedir $TOP/SOURCES" \
-            --define "version ${VERSION}" \
             rpm/nosd-theme.spec
           cp "$TOP"/RPMS/noarch/*.rpm dist/
 
