@@ -191,6 +191,16 @@
   - 5 项待标定（`progressbar_thickness`、`layout_margin`、`spin_button_width`、`toolbar_interior_spacing`、`frame.expansion`）未量像素，保持原值。
 - **验证**：浅/深两套调色板各渲染一份 SVG+kvconfig，`kvantumpreview` 实测——浅色按钮面 `#e6e8eb`、切换态 `#2ca7f8`、标题栏 `#f9fcff`；深色按钮面 `#2d333a`、切换态 `#106daa`、标题栏 `#1e2329`，深色不再出现浅色控件。`check-tokens` 全部一致、`lint.sh --changed` 通过。
 
+### 阶段 5 续 · 页签栏/菜单栏/工具栏浅色带的根因与修复（完成）
+
+深色截图里页签栏那条浅灰带，先后排除了两个岔路，最后落到 QPalette。
+
+- **根因**（Researcher 源码 + PyQt6 实证）：`Style::polish(QPalette&)` 只有一行 `palette = standardPalette()`，而 `standardPalette()` 只填 `[GeneralColors]` 里出现过的角色。我们的 kvconfig 与 tpl 里 `GeneralColors` 计数是 0，于是 `Window` 停在 QPalette 默认构造值 `#efefef`——正好是量到的那条带子。`PE_PanelMenuBar` 在 Kvantum 里是 `break;`、`PE_PanelToolBar` 是 `return;`，两者根本不画底，露出的就是 `QPalette::Window`。
+- **排除的两个岔路**：`respect_DE` 在 1.1.9 里只影响图标尺寸、`iconless_*`、`blurring` 与 KDE 滚轮翻页，不碰颜色；补 SVG `tabBarFrame-*` 切片只影响基线，背景仍无人画，且缺元素会回落 Kvantum 内置默认主题。
+- **修复**：`nosd.kvconfig.tpl` 新增 `[GeneralColors]` 全套 27 个角色（`window`/`base`/`alt.base`/`button`/`light`/`mid.light`/`dark`/`mid`/`highlight`/`highlight.text`/`text`/`window.text`/`button.text`/`disabled.text`/`shadow`/`link`/`link.visited`/`tooltip.*`/`progress.*`/`inactive.*`），全部走占位符。四个斜面色 `light`/`mid.light`/`dark`/`mid` 拉平成 `surface`——KvAdapta 靠它们画浮雕，DDE 是平面设计，不拉平颜色对了看起来仍是另一套。
+- **旧假设作废**：`tokens.toml` 里「kvconfig 省略 `[GeneralColors]` 走 QPalette」不成立——省略得到的是 Qt 默认调色板，不是 DE 的。给了 `[GeneralColors]` 之后 Kvantum 完全接管 Qt 配色，这正是统一风格要的。
+- **验证**（同一份 SVG、同一个 style，只差 kvconfig）：深色 `页签栏/菜单栏/工具栏/内容底` 全部 `(30,35,41)`、按钮 `(45,51,58)`、切换态 `(16,109,170)`；浅色对应 `(249,252,255)` / `(230,232,235)` / `(44,167,248)`。修复前深色页签栏是 `(239,239,239)`。
+
 ### 待办 / 开放项
 
 - 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓，用户拍板不做）。

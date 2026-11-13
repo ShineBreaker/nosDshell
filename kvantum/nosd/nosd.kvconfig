@@ -61,6 +61,41 @@ reduce_window_opacity=0
 respect_DE=true
 submenu_delay=250
 
+[GeneralColors]
+# Kvantum 的 polish(QPalette&) 只有一行 palette = standardPalette()，而 standardPalette()
+# 只填这里出现过的角色；漏掉的角色会回落到 QPalette 默认构造值（Window = #efefef），
+# 表现为菜单栏/工具栏/页签栏露出的那条浅灰带。所以这里必须给全套。
+# 四个斜面色（light/mid.light/dark/mid）拉平成 surface：KvAdapta 靠它们画浮雕，
+# DDE 是平面设计，不拉平的话颜色对了看起来仍是另一套。
+window.color=#f9fcff
+window.text.color=#303030
+base.color=#ffffff
+alt.base.color=#f5f8fb
+button.color=#f5f8fb
+button.text.color=#303030
+text.color=#303030
+light.color=#f9fcff
+mid.light.color=#f9fcff
+dark.color=#f9fcff
+mid.color=#f9fcff
+highlight.color=#2ca7f8
+highlight.text.color=#ffffff
+disabled.text.color=#30303061
+shadow.color=#000000
+link.color=#2ca7f8
+link.visited.color=#2ca7f8
+tooltip.base.color=#f1f5f8
+tooltip.text.color=#303030
+progress.indicator.text.color=#ffffff
+progress.inactive.indicator.text.color=#303030
+inactive.window.color=#f9fcff
+inactive.window.text.color=#5c616c
+inactive.base.color=#ffffff
+inactive.alt.base.color=#f5f8fb
+inactive.text.color=#5c616c
+inactive.highlight.color=#2ca7f8
+inactive.highlight.text.color=#ffffff
+
 [Hacks]
 transparent_ktitle_label=true
 transparent_dolphin_view=false
