@@ -126,7 +126,7 @@ EOF
 
   meta = {
     description = "Wayland desktop shell in the DDE 15 visual language, built with Quickshell.";
-    homepage = "https://github.com/ShineBreaker/nosDshell";
+    homepage = "https://github.com/nosDshell/nosDshell";
     license = lib.licenses.gpl3Plus;
     mainProgram = "nosdshell";
   };

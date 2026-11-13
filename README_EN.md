@@ -6,13 +6,13 @@
 
 ### The classic deepin 15 glass desktop for Wayland, powered by the full Noctalia v4 engine
 
-[中文](README.md) · [Wiki](https://shinebreaker.github.io/nosDshell/) · [Design spec](DESIGN.md) · [Changelog](CHANGELOG.md)
+[中文](README.md) · [Wiki](https://nosdshell.github.io/nosDshell/) · [Design spec](DESIGN.md) · [Changelog](CHANGELOG.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/ShineBreaker/nosDshell?style=for-the-badge&label=release&color=0081ff)](https://github.com/ShineBreaker/nosDshell/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosDshell?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosDshell/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 [![Wayland](https://img.shields.io/badge/wayland-native-blueviolet?style=for-the-badge)](https://wayland.freedesktop.org)
 [![Quickshell](https://img.shields.io/badge/built%20on-quickshell-green?style=for-the-badge)](https://quickshell.outfoxxed.me)
-[![Docs](https://img.shields.io/badge/wiki-noctalia%20v4%20mirror-orange?style=for-the-badge)](https://shinebreaker.github.io/nosDshell/)
+[![Docs](https://img.shields.io/badge/wiki-noctalia%20v4%20mirror-orange?style=for-the-badge)](https://nosdshell.github.io/nosDshell/)
 
 <img src="Assets/Screenshots/nosdshell-desktop-light.jpg" alt="nosDshell desktop (light theme)" />
 
@@ -98,7 +98,7 @@ Run `nosdshell --version` to print the shell and Quickshell versions. Shell comp
 
 ## Documentation
 
-- **[Wiki](https://shinebreaker.github.io/nosDshell/)**: complete archive of the upstream Noctalia v4 documentation (installation, configuration, theming, plugin development, and IPC reference).
+- **[Wiki](https://nosdshell.github.io/nosDshell/)**: complete archive of the upstream Noctalia v4 documentation (installation, configuration, theming, plugin development, and IPC reference).
 - **[`DESIGN.md`](DESIGN.md)**: the DDE 15 visual and interaction specification. Every surface follows it.
 - **[`AGENTS.md`](AGENTS.md)**: architecture and maintenance rules, linking to [`CODING_STANDARDS.md`](CODING_STANDARDS.md), [`DEBUGGING.md`](DEBUGGING.md), and [`TOOLS.md`](TOOLS.md) by task type.
 - **[`CHANGELOG.md`](CHANGELOG.md)** and **[`docs/RELEASE.md`](docs/RELEASE.md)**: release notes and release workflow.

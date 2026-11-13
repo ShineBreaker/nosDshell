@@ -81,7 +81,7 @@ for line in log:
     mm = re.match(r"(\w+)(?:\(.+?\))?!?:\s*(.*)", subject)
     typ, text = (mm.group(1), mm.group(2)) if mm else ("other", subject)
     groups.setdefault(typ if typ in order else "other", []).append(
-        f"- {text}：[`{sha[:9]}`](https://github.com/ShineBreaker/nosDshell/commit/{sha})")
+        f"- {text}：[`{sha[:9]}`](https://github.com/nosDshell/nosDshell/commit/{sha})")
 
 parts = ["", "TODO: 一段偏营销的简介，一两句话覆盖本次全部改动。", "", "---", ""]
 for typ in order + ["other"]:

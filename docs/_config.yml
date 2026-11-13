@@ -1,6 +1,6 @@
 # GitHub Pages site config — 在 repo Settings → Pages 里把 Source 设为
 # "Deploy from a branch" → main /docs 即可生效。
-# 站点地址: https://shinebreaker.github.io/nosDshell/
+# 站点地址: https://nosdshell.github.io/nosDshell/
 
 title: nosDshell Docs
 description: nosDshell 文档与 Noctalia v4 wiki 存档镜像 / nosDshell docs & archived Noctalia v4 wiki
@@ -8,7 +8,7 @@ description: nosDshell 文档与 Noctalia v4 wiki 存档镜像 / nosDshell docs 
 remote_theme: just-the-docs/just-the-docs@v0.12.0
 
 aux_links:
-  "nosDshell on GitHub": "https://github.com/ShineBreaker/nosDshell"
+  "nosDshell on GitHub": "https://github.com/nosDshell/nosDshell"
   "Upstream Noctalia docs": "https://docs.noctalia.dev"
 aux_links_new_tab: true
 

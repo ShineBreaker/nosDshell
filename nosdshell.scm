@@ -79,7 +79,7 @@
                             (const #t))))
 
 
-;;; Our quickshell fork (ShineBreaker/quickshell-nosd): upstream master
+;;; Our quickshell fork (nosDshell/quickshell-nosd): upstream master
 ;;; kept linear on top of the version 0.3.2 commit by a daily CI sync
 ;;; (.github/workflows/sync.yml, baseline cherry-pick via
 ;;; scripts/sync-upstream.sh; the baseline sits in
@@ -110,7 +110,7 @@
      (origin
        (method git-fetch)
        (uri (git-reference
-             (url "https://github.com/ShineBreaker/quickshell-nosd")
+             (url "https://github.com/nosDshell/quickshell-nosd")
              (commit "b0a8a7f77996ec9fee036e200447c07be86d1c44")))
        (file-name (git-file-name name version))
        (sha256
@@ -125,7 +125,7 @@
     (build-system cargo-build-system)
     (arguments (list #:install-source? #f))
     (inputs nosd-blur-cargo-inputs)
-    (home-page "https://github.com/ShineBreaker/nosDshell")
+    (home-page "https://github.com/nosDshell/nosDshell")
     (synopsis "Pre-blur wallpapers for nosDshell")
     (description
      "nosd-blur produces a cover-resized, blurred variant of a wallpaper at
@@ -169,7 +169,7 @@ DBusName=org.freedesktop.impl.portal.desktop.nosdshell~%\
 Interfaces=org.freedesktop.impl.portal.Settings~%\
 UseIn=niri;sway;Hyprland;labwc;scroll;mangowc;~%")))))))))
     (inputs nosd-helpers-cargo-inputs)
-    (home-page "https://github.com/ShineBreaker/nosDshell")
+    (home-page "https://github.com/nosDshell/nosDshell")
     (synopsis "Small helper tools for nosDshell")
     (description
      "nosd-helpers is the single Rust binary behind nosDshell's helper
@@ -189,7 +189,7 @@ xdg-desktop-portal Settings backend.")
     (build-system cargo-build-system)
     (arguments (list #:install-source? #f))
     (inputs nosd-theme-cargo-inputs)
-    (home-page "https://github.com/ShineBreaker/nosDshell")
+    (home-page "https://github.com/nosDshell/nosDshell")
     (synopsis "Material theme processor for nosDshell")
     (description
      "nosd-theme is the Rust port of the former
@@ -361,7 +361,7 @@ exec ~a --config ~a/etc/xdg/quickshell/nosdshell \"$@\"~%"
            wl-clipboard
            wlsunset
            wtype))
-    (home-page "https://github.com/ShineBreaker/nosDshell")
+    (home-page "https://github.com/nosDshell/nosDshell")
     (synopsis "Wayland desktop shell in the DDE 15 visual language")
     (description
      "nosDshell is a desktop shell for Wayland built on the @code{quickshell}

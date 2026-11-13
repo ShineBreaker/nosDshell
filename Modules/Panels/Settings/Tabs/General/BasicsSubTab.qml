@@ -215,7 +215,7 @@ ColumnLayout {
       Layout.fillWidth: true
       clickable: true
       onClicked: {
-        Qt.openUrlExternally("https://github.com/ShineBreaker/nosDshell");
+        Qt.openUrlExternally("https://github.com/nosDshell/nosDshell");
       }
       NIcon {
         icon: "external-link"

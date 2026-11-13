@@ -6,13 +6,13 @@
 
 ### 经典 deepin 15 毛玻璃美学 × Noctalia v4 全套桌面能力，开箱即用的 Wayland 桌面外壳
 
-[English](README_EN.md) · [Wiki 文档](https://shinebreaker.github.io/nosDshell/) · [设计规范](DESIGN.md) · [更新日志](CHANGELOG.md)
+[English](README_EN.md) · [Wiki 文档](https://nosdshell.github.io/nosDshell/) · [设计规范](DESIGN.md) · [更新日志](CHANGELOG.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/ShineBreaker/nosDshell?style=for-the-badge&label=release&color=0081ff)](https://github.com/ShineBreaker/nosDshell/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosDshell?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosDshell/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 [![Wayland](https://img.shields.io/badge/wayland-native-blueviolet?style=for-the-badge)](https://wayland.freedesktop.org)
 [![Quickshell](https://img.shields.io/badge/built%20on-quickshell-green?style=for-the-badge)](https://quickshell.outfoxxed.me)
-[![Docs](https://img.shields.io/badge/wiki-noctalia%20v4%20mirror-orange?style=for-the-badge)](https://shinebreaker.github.io/nosDshell/)
+[![Docs](https://img.shields.io/badge/wiki-noctalia%20v4%20mirror-orange?style=for-the-badge)](https://nosdshell.github.io/nosDshell/)
 
 <img src="Assets/Screenshots/nosdshell-desktop-light.jpg" alt="nosDshell 桌面（亮色主题）" />
 
@@ -93,7 +93,7 @@ Wayland 平铺与滚动合成器（Niri、Hyprland、Sway 等）轻快高效，�
 ```scheme
 (cons* (channel
         (name 'nosdshell)
-        (url "https://github.com/ShineBreaker/nosDshell")
+        (url "https://github.com/nosDshell/nosDshell")
         ;; 跟踪 main；要装某个发行版可改为 (branch "v1.7.0")
         (branch "main"))
        %default-channels)
@@ -111,7 +111,7 @@ NixOS（在你的 flake 里）：
 
 ```nix
 {
-  inputs.nosdshell.url = "github:ShineBreaker/nosDshell";
+  inputs.nosdshell.url = "github:nosDshell/nosDshell";
 
   outputs = { nixpkgs, nosdshell, ... }: {
     nixosConfigurations.<主机名> = nixpkgs.lib.nixosSystem {
@@ -128,7 +128,7 @@ Home Manager：
 
 ```nix
 {
-  inputs.nosdshell.url = "github:ShineBreaker/nosDshell";
+  inputs.nosdshell.url = "github:nosDshell/nosDshell";
 
   outputs = { home-manager, nosdshell, ... }: {
     homeConfigurations.<用户名> = home-manager.lib.homeManagerConfiguration {
@@ -141,7 +141,7 @@ Home Manager：
 }
 ```
 
-临时试用不改配置：`nix run github:ShineBreaker/nosDshell`。
+临时试用不改配置：`nix run github:nosDshell/nosDshell`。
 
 #### 其他发行版
 
@@ -153,7 +153,7 @@ Home Manager：
 
 ## 文档导航
 
-- **[Wiki 文档站](https://shinebreaker.github.io/nosDshell/)**：完整托管上游 Noctalia v4 文档存档（安装配置、主题模板、插件开发、IPC 接口参考）。
+- **[Wiki 文档站](https://nosdshell.github.io/nosDshell/)**：完整托管上游 Noctalia v4 文档存档（安装配置、主题模板、插件开发、IPC 接口参考）。
 - **[`DESIGN.md`](DESIGN.md)**：DDE 15 视觉与交互设计规范，所有界面表现以该规范为准。
 - **[`AGENTS.md`](AGENTS.md)**：工程架构与维护规范，按任务类型关联 [`CODING_STANDARDS.md`](CODING_STANDARDS.md)、[`DEBUGGING.md`](DEBUGGING.md) 与 [`TOOLS.md`](TOOLS.md)。
 - **[`CHANGELOG.md`](CHANGELOG.md)** 与 **[`docs/RELEASE.md`](docs/RELEASE.md)**：版本演进记录与发版流程。
