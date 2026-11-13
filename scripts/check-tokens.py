@@ -8,7 +8,9 @@
 2. GTK CSS 的 -gtk-outline-radius 是派生值：形状半径 + 焦点环外扩。
    外扩量取同规则内的 outline-offset，缺省用 [radius.outline].offset。
    百分比（正圆/胶囊）不参与判定。
-3. GTK CSS 中非 defaults 块不得出现硬编码 hex 颜色（defaults 块由
+3. cinnamon/ 与 gnome-shell/ 下不得出现 @xxx 颜色引用或 @define-color（St 不认，
+   只有 at-rule 合法）。
+4. GTK CSS 中非 defaults 块不得出现硬编码 hex 颜色（defaults 块由
    '@define-color' 行界定：检查仅对不在 '@define-color' 声明里的颜色值生效）。
 4. Kvantum nosd.kvconfig 不得包含 [GeneralColors] 节（颜色继承 QPalette）。
 5. nosDshell Commons/Style.qml 的 radius 家族与 tokens.toml 一致（若仓库存在）。
@@ -30,6 +32,13 @@ LONG_PROPS = (
     "border-bottom-right-radius",
 )
 OUTLINE_PROP = "-gtk-outline-radius"
+# St（Cinnamon / GNOME Shell）不认 @define-color 与任何 @xxx 颜色引用，
+# 只有 at-rule 本身合法；这两类目录下的 @ 引用会让整条规则退化。
+ST_SUBDIRS = ("cinnamon", "gnome-shell")
+AT_RULE_ALLOW = {
+    "import", "charset", "keyframes", "-webkit-keyframes", "font-face",
+    "media", "supports", "namespace", "page",
+}
 
 
 def strip_comments(text: str) -> str:
@@ -236,7 +245,29 @@ def main() -> int:
                         )
                         break
 
-    # 3. kvconfig 不得声明 [GeneralColors]
+    # 3. St 目录（cinnamon / gnome-shell）不得出现 @xxx 颜色引用
+    at_re = re.compile(r"@([\w-]+)")
+    for theme in THEME_DIRS:
+        for sub in ST_SUBDIRS:
+            css_dir = root / theme / sub
+            if not css_dir.is_dir():
+                continue
+            for css in sorted(css_dir.rglob("*.css")):
+                raw = css.read_text(errors="replace")
+                # 注释里提到 @define-color 是说明文字，不算引用。
+                for lineno_, line in enumerate(strip_comments(raw).splitlines(), 1):
+                    cleaned = re.sub(r"url\([^)]*\)", "", line)
+                    for m in at_re.finditer(cleaned):
+                        name = m.group(1).lower()
+                        if name in AT_RULE_ALLOW:
+                            continue
+                        failures.append(
+                            f"{css.relative_to(root)}:{lineno_} St 不支持 @{m.group(1)}"
+                            f"（只能用 at-rule；accent 走 @import 注入）"
+                        )
+                        break
+
+    # 4. kvconfig 不得声明 [GeneralColors]
     kvcfg = root / "kvantum" / "nosd" / "nosd.kvconfig"
     if kvcfg.exists() and "[GeneralColors]" in kvcfg.read_text():
         failures.append(f"{kvcfg.relative_to(root)} 含 [GeneralColors]（应省略以继承 QPalette）")

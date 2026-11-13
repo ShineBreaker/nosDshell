@@ -145,6 +145,19 @@
 - **计数口径**：我按每个 `@name` token 数，回滚前是 cinnamon 186 处、gnome-shell 251 处；Researcher 报的是 152 / 217，口径不同（可能只数特定属性），结论一致：改完之后是 0。
 - **待阶段 3**：生成时注入方案（St 支持 `@import`，后声明胜出）。
 
+### 阶段 3 · Cinnamon / GNOME Shell 取色注入（实施完成，真机待验）
+
+决策见 `docs/shell-accent-decision.md`、依据见 `docs/shell-accent-scheme.md`。
+
+- **注入点**：`deepin{,-dark}/{cinnamon,gnome-shell}/*.css` 四个文件末尾各加 `@import url("nosd-accent.css");` 与说明注释；同目录各放一份只含注释的占位 `nosd-accent.css`（随包分发，没有 nosDshell 时主题保持静态 accent）。
+- **安装**：`Makefile` 新增 `install-user`（`PREFIX=$(HOME)/.local`）。覆盖文件只有装在用户主题目录才写得进去；`PREFIX=/usr` 时生成器无权限，St 侧退化为静态。
+- **checker**：新增规则——`cinnamon/`、`gnome-shell/` 下出现任何 `@xxx`（`@import`/`@keyframes`/`@media` 等 at-rule 白名单之外）即报错，注释里的提及不算。反证：把 `1a7cc23` 的两个文件放进夹具 → **435 处漂移**，正是当时漏网的形态。
+- **生成器**：`nosDshell/tools/nosd-theme` 新增 `shell_accent` 模块与 `--shell-accent-out/--theme-css/--accent` 三个参数。扫描主题 css，把含 `#5294E2`/`#5294e2`/`#2679db` 的规则**原样重声明**，值换成当前 accent 与 `L−10%` 派生色；选择器由扫描得出，不手抄。
+  - 实测（accent 覆盖为 `#ff00ff`）：gnome-shell 51 条规则、cinnamon 31 条，选择器集合与主题 css 完全一致，输出残留原字面值 0，括号平衡。
+- **深色 accent 阴影族**：`scheme.rs` 新增 `derive_accent_family(primary)`（色相偏移 + 饱和比率 + 亮度余量），9 条在 `#106daa` 下逐位复现原值；`inject_accent_family` 在 main 出口统一注入，predefined scheme 与图片取色两条路径共用。单测另覆盖 `#ff00ff`/`#2ca7f8`/`#7fb069` 不塌白。
+- **模板与注册表**：`Assets/Templates/gtk{3,4}.css` 补 9 条 `accent_*` 引用；`TemplateRegistry` 新增 `shell-cinnamon`、`shell-gnome` 两条目，`post_hook` 调用生成器写两个主题目录。
+- **未验证（环境阻塞，如实记录）**：`TemplateRegistry` 的 QML 条目没有运行时验证（容器无 shell 会话）；`@import` 放文件末尾在真机 St 上的层叠行为是源码推断，非契约。
+
 ### 待办 / 开放项
 
 - 步骤 3：SVG 圆角改造（子任务进行中）。

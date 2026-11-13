@@ -2011,3 +2011,11 @@ StScrollBar {
   border: 1px solid grey;
   border-radius: 2px;
   padding: 6px; }
+
+
+/* nosd 取色注入点。St（Cinnamon / GNOME Shell）不支持 @define-color，accent 只能靠
+   后声明覆盖：nosDshell 把同一批 accent 字面值的声明重新声明到同目录的
+   nosd-accent.css，再由这里的 @import 合进来（St 从属性数组末尾往前查找，后声明胜出）。
+   文件缺失时 St 静默跳过，退化为静态取色。生成器只在用户目录安装下可写，
+   系统级安装（PREFIX=/usr）不生成，同样是静态退化为准。 */
+@import url("nosd-accent.css");
