@@ -126,6 +126,15 @@
 - **运行时验证**（比截图更硬）：加载 `GTK_THEME=deepin-dark` 后在应用层覆盖 `accent_bg_color = #ff00ff`，用 `gtk_style_context_lookup_color` 读实际解析值，`accent_bg_color` / `active_color` / `theme_selected_bg_color` / `selected_bg_color` / `osd_active_color` / `osd_hover_color` / `wm_button_active_bg` 七项在 GTK3 与 GTK4 下全部为 `#ff00ff`（修复前 `theme_selected_bg_color` 仍为 `#106daa`）。
 - 遗留：深色独有的 `accent_*` 阴影家族（`accent_hover_color`、`accent_active_color`、`accent_light_*` 等 9 条）仍是字面值。要跟随需要按 accent 派生明暗，GTK3 用 `shade()`、GTK4 没有等价函数，本轮不动，登记待决。
 
+### 步骤 2 · Kvantum 侧取色跟随验收（完成）
+
+- **环境**：容器内原本没有 Kvantum（`/gnu/store` 未挂载为空、pacman 也没有），补装 `kvantum` + `qt6ct`。验收用隔离的 `XDG_CONFIG_HOME`，主题目录取仓库 `kvantum/nosd` 的副本，不写仓库本体。
+- **链路**：调色板 `primary` → `nosd.svg.tpl` 的 41 个 `{{colors.primary.default.hex}}` 与 8 个 `{{colors.primary_container.default.hex}}` → `~/.config/Kvantum/nosd/nosd.svg` → Kvantum 绘制控件。
+- **A/B**：同一套控件，只改调色板 `primary`。基线 `#0c458e`（与仓库静态 SVG 同值），覆盖 `#ff00ff`。切换态按钮边缘像素 `(12,69,142)` = `#0c458e` → `(255,0,255)` = `#ff00ff`；六个页签（按压式按钮 / 工具按钮 / 单选复选 / 下拉调节输入 / 滑块滚动条进度 / 容器）的整图差异区域均非空，按钮组、单选复选组变化最明显。
+- **说明**：模板渲染由脚本按 `TemplateRegistry` 的同名占位符替换完成，没有跑 nosDshell 的 QML 渲染器（容器里没有 shell 会话）。替换的占位符、输出路径与 `TemplateRegistry` 的 kvantum 条目一致，所以验证的是链路本身，不是渲染器实现。
+- **截图**（`screenshots/`，未入库，与 Reviewer 的验收图同样处理）：`kvantum-<页签>-light-{baseline,accent-magenta}.png` 共 12 张，并排对比 `kvantum-accent-ab-{buttons,inputs,radios}.png` 3 张。
+- **遗留**：容器内新装的 `kvantum`/`qt6ct` 属环境补充，不进仓库依赖；`accent_*` 阴影家族仍字面值（见上一节）。
+
 ### 待办 / 开放项
 
 - 步骤 3：SVG 圆角改造（子任务进行中）。
