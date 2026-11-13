@@ -115,7 +115,13 @@
        (file-name (git-file-name name version))
        (sha256
         (base32
-         "0mz7a2201gk05a9sp0dy1hzd880a6g6212vmj9jgnmgzm3lc6w9h"))))))
+         "0mz7a2201gk05a9sp0dy1hzd880a6g6212vmj9jgnmgzm3lc6w9h"))))
+    ;; The keyring prompter builds the org.gnome.keyring.SystemPrompter side of
+    ;; oo7's unlock flow on libgcr's GcrSystemPrompter, which is in gcr 4.
+    ;; Guix's gcr is 4.2.1; gcr 3.41.2 is only reachable as gcr@3.41.2.
+    (inputs
+     (modify-inputs (package-inputs quickshell)
+       (prepend gcr)))))
 
 (define-public nosd-blur
   (package
