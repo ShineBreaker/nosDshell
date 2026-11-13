@@ -1,11 +1,11 @@
-Source: nosd-theme
+Source: nosd-app-themes
 Section: gnome
 Priority: optional
 Maintainer: nosDshell Theme Maintainers <noreply@nosdshell.org>
 Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 9),
 
-Package: nosd-theme
+Package: nosd-app-themes
 Architecture: all
 Provides: deepin-gtk-theme
 Replaces: deepin-gtk-theme

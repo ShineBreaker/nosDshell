@@ -1,6 +1,6 @@
 # 更新日志
 
-本文件记录 nosd-theme 面向使用者的变更。逐步实施过程、验证数据与当时的判断见
+本文件记录 nosd-app-themes 面向使用者的变更。逐步实施过程、验证数据与当时的判断见
 
 [docs/implementation-log.md](docs/implementation-log.md)。
 
@@ -10,7 +10,7 @@
 
 ## [0.1.0] - 2026-11-13
 
-首个以 `nosd-theme` 名义发布的版本，替代 `deepin-gtk-theme`。
+首个以 `nosd-app-themes` 名义发布的版本，替代 `deepin-gtk-theme`。
 
 ### 新增
 
@@ -32,7 +32,7 @@
 
 ### 变更
 
-- 品牌与包名从 `deepin-gtk-theme` 重定为 `nosd-theme`，通过
+- 品牌与包名从 `deepin-gtk-theme` 重定为 `nosd-app-themes`，通过
   `Provides/Replaces/Conflicts` 平滑替换原包。
 -  *GTK 主题颜色全量收敛* ：`deepin/` 与 `deepin-dark/` 的 GTK 3/4 皮肤中，所有颜色
   字面量改为 `@define-color` 引用。定义块分三层——基元字面值、与 nosDshell

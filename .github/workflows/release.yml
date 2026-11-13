@@ -1,9 +1,9 @@
 name: release theme artifacts
 
 # 打 tag 时产出可分发的安装包（PLAN §6.5：deb / rpm / tar.gz 三样）：
-#   nosd-theme-<tag>.tar.gz          —— 供 make install PREFIX=/usr 的手工安装
-#   nosd-theme_<tag>-1_all.deb       —— Debian/Ubuntu/deepin
-#   nosd-theme-<tag>-1.noarch.rpm    —— Fedora/openSUSE 系
+#   nosd-app-themes-<tag>.tar.gz          —— 供 make install PREFIX=/usr 的手工安装
+#   nosd-app-themes_<tag>-1_all.deb       —— Debian/Ubuntu/deepin
+#   nosd-app-themes-<tag>-1.noarch.rpm    —— Fedora/openSUSE 系
 on:
   push:
     tags: ["*"]
@@ -29,7 +29,7 @@ jobs:
           mkdir -p dist
           # 用 git archive 而不是 tar 目录：只取受版本控制的文件，
           # 避免把 arch/pkg/ 之类的本地构建产物打进发布包。
-          git archive --format=tar.gz -o "dist/nosd-theme-${VERSION}.tar.gz" HEAD
+          git archive --format=tar.gz -o "dist/nosd-app-themes-${VERSION}.tar.gz" HEAD
 
       - name: build deb
         run: |
@@ -39,7 +39,7 @@ jobs:
           dch -v "${VERSION}-1" "CI build ${GITHUB_REF_NAME}" || true
           dpkg-buildpackage -us -uc -b
           mkdir -p dist
-          cp ../nosd-theme_*.deb dist/
+          cp ../nosd-app-themes_*.deb dist/
 
       - name: build rpm
         run: |
@@ -48,14 +48,14 @@ jobs:
           TOP="$PWD/dist/rpmbuild"
           mkdir -p "$TOP/SOURCES"
           # spec 的 Version: 是字面量，--define "version" 覆盖不了（实测仍走
-          # BUILD/nosd-theme-0.1.0-build 并找 0.1.0 的源包），必须改文件本身。
-          sed -i "s/^Version:.*/Version: ${VERSION}/" rpm/nosd-theme.spec
-          git archive --format=tar.gz --prefix="nosd-theme-${VERSION}/" \
-            -o "$TOP/SOURCES/nosd-theme-${VERSION}.tar.gz" HEAD
+          # BUILD/nosd-app-themes-0.1.0-build 并找 0.1.0 的源包），必须改文件本身。
+          sed -i "s/^Version:.*/Version: ${VERSION}/" rpm/nosd-app-themes.spec
+          git archive --format=tar.gz --prefix="nosd-app-themes-${VERSION}/" \
+            -o "$TOP/SOURCES/nosd-app-themes-${VERSION}.tar.gz" HEAD
           rpmbuild -bb \
             --define "_topdir $TOP" \
             --define "_sourcedir $TOP/SOURCES" \
-            rpm/nosd-theme.spec
+            rpm/nosd-app-themes.spec
           cp "$TOP"/RPMS/noarch/*.rpm dist/
 
       - name: list artifacts

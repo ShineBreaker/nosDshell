@@ -1,4 +1,4 @@
-# nosd-theme 形状令牌（规范声明）
+# nosd-app-themes 形状令牌（规范声明）
 #
 # 三方消费方：GTK CSS（deepin/、deepin-dark/）、Kvantum SVG/kvconfig、
 # nosDshell 的 Commons/Style.qml。数值的唯一权威来源是

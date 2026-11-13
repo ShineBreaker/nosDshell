@@ -3,7 +3,7 @@
 > 用途：把 `kvantum/nosd/`（KvAdapta 底子）收敛到 `deepin/`+`deepin-dark/`（DDE 视觉）的同一张脸。
 > 读者：Worker（照表改 `nosd.svg.tpl` 与 `nosd.kvconfig`）。
 > 依据：`nosDshell/DESIGN.md` §1.1–§1.6（令牌权威）、`tokens.toml`（形状/几何机器可读值）、`deepin/gtk-3.0/gtk.css`（GTK 实测值）、`tools/nosd-theme/src/theme.rs`（可用占位符全集）。
-> 作者：Researcher｜日期：2026-11-13｜基线：`nosd-theme` HEAD `c97d13b`
+> 作者：Researcher｜日期：2026-11-13｜基线：`nosd-app-themes` HEAD `c97d13b`
 
 ## 状态
 

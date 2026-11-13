@@ -2,7 +2,7 @@
 
 > 范围：`deepin/{cinnamon,gnome-shell}` 与 `deepin-dark/{cinnamon,gnome-shell}` 四个主题文件如何跟随 nosd 调色板。
 > 附带：GTK 侧深色 `accent_*` 阴影族 9 条字面值的派生方案（Chief 阶段 3 前置调研项）。
-> 作者：Researcher｜日期：2026-11-13｜基线：`nosd-theme` HEAD `8fb2990`（已回滚 `1a7cc23` 对两个深色 shell 文件的改动；回滚后两文件 `@` 引用计数 **0**，字面值集合与浅色完全一致）
+> 作者：Researcher｜日期：2026-11-13｜基线：`nosd-app-themes` HEAD `8fb2990`（已回滚 `1a7cc23` 对两个深色 shell 文件的改动；回滚后两文件 `@` 引用计数 **0**，字面值集合与浅色完全一致）
 
 ## 状态
 
@@ -106,7 +106,7 @@
 | 维度 | 方案 A：保持静态（现状/回滚后） | 方案 B：生成时注入（覆盖文件 + `@import`） |
 |---|---|---|
 | 换调色板后 accent 是否跟随 | **否**（永远是 `#5294E2`） | **是** |
-| 需要改 nosd-theme 的文件 | 0（回滚即可） | 4 个 css 各加 1 行 `@import` + 1 个随包分发的空 `nosd-accent.css` |
+| 需要改 nosd-app-themes 的文件 | 0（回滚即可） | 4 个 css 各加 1 行 `@import` + 1 个随包分发的空 `nosd-accent.css` |
 | 需要改 nosDshell | 0 | 2 个模板条目（cinnamon / gnome-shell 覆盖文件） |
 | 写文件的位置 | — | 主题目录同级的 `nosd-accent.css`，**必须用户可写** |
 | 系统级安装（`PREFIX=/usr`）下能否工作 | 能（但完全不跟随） | **不能**，除非走 root/helper 提权 |
@@ -122,7 +122,7 @@
 
 ## 推荐实现路径（方案 B）
 
-### B1. nosd-theme 侧（一次性，静态）
+### B1. nosd-app-themes 侧（一次性，静态）
 
 四个文件末尾各加一行（幂等、缺文件安全）：
 

@@ -1,6 +1,6 @@
 # 打包与发布链路核对清单（阶段 4 Reviewer 审查产物）
 
-> 审查日期：2026-11-13｜审查人：Reviewer｜审查基线：`nosd-theme` @ `e7bfcc0`、`nosDshell` @ `6c0b4ba55`
+> 审查日期：2026-11-13｜审查人：Reviewer｜审查基线：`nosd-app-themes` @ `e7bfcc0`、`nosDshell` @ `6c0b4ba55`
 > 对照：PLAN-app-theme-unification.md §6.5「打包与发布」+ 群任务书增量项
 
 ## 一、PLAN §6.5 逐条对照
@@ -9,9 +9,9 @@
 |---|---|---|---|
 | GitHub Release：tag 触发 CI | `.github/workflows/release.yml` `on.push.tags: ["*"]` + `workflow_dispatch` | release.yml:9-12 | ✅ |
 | 产出 deb | `dpkg-buildpackage -b`（job `build`） | release.yml:31-36 | ⚠️ `|| true` 吞失败 |
-| 产出 rpm | **无 CI 步骤**；`rpm/nosd-theme.spec` 存在但未被任何流程调用 | `ls rpm/` + release.yml 无 rpmbuild | 🔴 缺项 |
-| 产出 tar.gz | `tar --exclude-vcs -czf dist/nosd-theme-$VERSION.tar.gz` | release.yml:24-28 | ✅ |
-| AUR：复用 `arch/PKGBUILD`，包名 `nosd-theme-git` | `pkgname=nosd-theme-git`、`url=github.com/nosDshell/nosd-theme` | PKGBUILD:2,6 | ✅ |
+| 产出 rpm | **无 CI 步骤**；`rpm/nosd-app-themes.spec` 存在但未被任何流程调用 | `ls rpm/` + release.yml 无 rpmbuild | 🔴 缺项 |
+| 产出 tar.gz | `tar --exclude-vcs -czf dist/nosd-app-themes-$VERSION.tar.gz` | release.yml:24-28 | ✅ |
+| AUR：复用 `arch/PKGBUILD`，包名 `nosd-app-themes-git` | `pkgname=nosd-app-themes-git`、`url=github.com/nosDshell/nosd-app-themes` | PKGBUILD:2,6 | ✅ |
 | 包内容：GTK + Kvantum 各一目录 | Makefile `install-gtk`（deepin + deepin-dark → share/themes）、`install-kvantum`（nosd → share/Kvantum） | Makefile:6-13 | ✅ |
 | 安装路径：GTK→/usr/share/themes/、Kvantum→/usr/share/Kvantum/ | `PREFIX=/usr` 默认，两处 cp 落位正确 | Makefile:1,8,12 | ✅ |
 | 图标拆成子包（可选） | 无 `icons/`、无子包拆分——范围外（步骤 9 已排除），PLAN 原文即「可选」 | 群范围钉死 | ✅ N/A |
@@ -30,7 +30,7 @@
 ### 🔴 必修
 
 1. **rpm 产物 PLAN 要求、CI 未产出**
-   - PLAN §6.5 明文「tag 触发 CI，产出 deb / rpm / tar.gz」；`release.yml` 只有 deb + tar.gz，`rpm/nosd-theme.spec` 从未被 CI 调用。
+   - PLAN §6.5 明文「tag 触发 CI，产出 deb / rpm / tar.gz」；`release.yml` 只有 deb + tar.gz，`rpm/nosd-app-themes.spec` 从未被 CI 调用。
    - 修法：加 `rpmbuild` 步骤（`sudo apt-get install -y rpm` 或换 fedora 容器镜像跑 `rpmbuild -ba`），产物 `*.rpm` 进 `dist/`；或在 PLAN 里把 rpm 删掉——**别让 PLAN 与 CI 不一致**。
 
 2. **`dpkg-buildpackage ... || true` 会静默放行构建失败**
@@ -53,7 +53,7 @@
 ### 🟢 记录
 
 6. 占位 `nosd-accent.css` 的注释说「不要手工加规则」——checker 的 St 规则会真拦（`@xxx` 在 cinnamon/gnome-shell 报错），闭环成立。
-7. `nosd-theme.spec` `%make_install PREFIX=%{_prefix}` 与 Makefile `DESTDIR=$(DESTDIR)$(PREFIX)` 组合正确（DESTDIR 前缀 + /usr），`%files` 三段与 install 目标对应。
+7. `nosd-app-themes.spec` `%make_install PREFIX=%{_prefix}` 与 Makefile `DESTDIR=$(DESTDIR)$(PREFIX)` 组合正确（DESTDIR 前缀 + /usr），`%files` 三段与 install 目标对应。
 
 ## 四、结论
 
@@ -78,7 +78,7 @@ Worker 修了 rpm 缺项、`|| true`、tar 污染三处。复核后剩余：
 
 两处 🔴 已修：
 - `debhelper` 进 apt 清单（release.yml:22）——`dpkg-buildpackage` 不再 unmet；
-- rpm 步骤 `sed -i "s/^Version:.*/Version: ${VERSION}/"` + 弃用无效的 `--define version`——Worker 本地模拟 `VERSION=9.9.9` 产出 `nosd-theme-9.9.9-1.noarch.rpm`，spec 已还原 `0.1.0`。
+- rpm 步骤 `sed -i "s/^Version:.*/Version: ${VERSION}/"` + 弃用无效的 `--define version`——Worker 本地模拟 `VERSION=9.9.9` 产出 `nosd-app-themes-9.9.9-1.noarch.rpm`，spec 已还原 `0.1.0`。
 
 YAML 解析通过；PLAN §6.5「tag 触发 CI，产出 deb / rpm / tar.gz」口径现已与 release.yml 一致。
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""tokens.toml 三方一致性检查（nosd-theme）
+"""tokens.toml 三方一致性检查（nosd-app-themes）
 
 检查项：
 1. GTK CSS 的圆角字面值必须落在 tokens.toml [radius] 集合内。
@@ -18,7 +18,7 @@
    表现为菜单栏/工具栏/页签栏露出的浅灰带。
 5. nosDshell Commons/Style.qml 的 radius 家族与 tokens.toml 一致（若仓库存在）。
 
-用法: scripts/check-tokens.py [--stats] [nosd-theme 根目录]
+用法: scripts/check-tokens.py [--stats] [nosd-app-themes 根目录]
 退出码: 0 = 全部通过；1 = 存在漂移（打印每一项）。
 """
 import re

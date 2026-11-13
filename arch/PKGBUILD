@@ -1,16 +1,16 @@
 # Maintainer: nosDshell Theme Maintainers
-pkgname=nosd-theme-git
+pkgname=nosd-app-themes-git
 pkgver=0.1.0
 pkgrel=1
 pkgdesc='nosDshell GTK and Kvantum themes (deepin light/dark + nosd Kvantum)'
 arch=('any')
-url="https://github.com/nosDshell/nosd-theme"
+url="https://github.com/nosDshell/nosd-app-themes"
 license=('GPL-3.0-or-later')
 optdepends=('kvantum: for the nosd Qt widget theme'
             'gtk-engine-murrine: for the GTK2 theme')
 makedepends=('git')
-provides=('nosd-theme' 'deepin-gtk-theme')
-conflicts=('nosd-theme' 'deepin-gtk-theme')
+provides=('nosd-app-themes' 'deepin-gtk-theme')
+conflicts=('nosd-app-themes' 'deepin-gtk-theme')
 source=()
 sha512sums=()
 

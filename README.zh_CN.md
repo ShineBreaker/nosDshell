@@ -2,12 +2,12 @@
 
 ![header](./docs/img/header.png)
 
-# nosd-theme
+# nosd-app-themes
 ### DDE 15 视觉的 GTK 2/3/4 与 Kvantum 主题包，与 nosDshell 共用同一套形状令牌
 
 [English](README.md) · [更新日志](CHANGELOG.md) · [设计规范](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd-theme?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd-theme/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd-app-themes?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd-app-themes/releases)
 
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 
@@ -21,7 +21,7 @@
 
 ## 简介
 
- *nosd-theme* 是 [nosDshell](https://github.com/nosDshell/nosDshell) 生态的外观包。它把 deepin 15（DDE 15）的视觉语言同时带到 GTK 与 Qt 两侧：一套 GTK 2/3/4 主题（`deepin` 浅色、`deepin-dark` 深色），加一套 Kvantum Qt 控件主题（`kvantum/nosd`）。
+ *nosd-app-themes* 是 [nosDshell](https://github.com/nosDshell/nosDshell) 生态的外观包。它把 deepin 15（DDE 15）的视觉语言同时带到 GTK 与 Qt 两侧：一套 GTK 2/3/4 主题（`deepin` 浅色、`deepin-dark` 深色），加一套 Kvantum Qt 控件主题（`kvantum/nosd`）。
 
 主题源自 [GXDE-OS/deepin-gtk-theme](https://github.com/GXDE-OS/deepin-gtk-theme)。在此基础上做了三件事：把全部颜色字面量收敛为 GTK 的 `@define-color` 与 Kvantum 的模板占位符、按 nosDshell 的 [`DESIGN.md`](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md) 校准圆角与描边、补齐 deb/rpm/Arch 三套打包。
 
@@ -47,13 +47,13 @@
 Debian/Ubuntu：
 
 ```bash
-sudo apt install ./nosd-theme_0.1.0-1_all.deb
+sudo apt install ./nosd-app-themes_0.1.0-1_all.deb
 ```
 
 Fedora/RHEL：
 
 ```bash
-sudo rpm -i nosd-theme-0.1.0-1.noarch.rpm
+sudo rpm -i nosd-app-themes-0.1.0-1.noarch.rpm
 ```
 
 Arch：
@@ -67,8 +67,8 @@ makepkg -si   # 在 arch/ 目录中执行
 ### 从源码安装
 
 ```bash
-git clone https://github.com/nosDshell/nosd-theme
-cd nosd-theme
+git clone https://github.com/nosDshell/nosd-app-themes
+cd nosd-app-themes
 sudo make install        # 装到 /usr
 ```
 

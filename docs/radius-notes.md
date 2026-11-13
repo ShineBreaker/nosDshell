@@ -1,6 +1,6 @@
 # DDE 1–3px 微圆角考据（radius-notes）
 
-- 对象：`nosd-theme` 的 GTK 3/4 主题（`deepin/`、`deepin-dark/`）里那 160 条 `border-radius` 漂移
+- 对象：`nosd-app-themes` 的 GTK 3/4 主题（`deepin/`、`deepin-dark/`）里那 160 条 `border-radius` 漂移
 - 上游：https://github.com/GXDE-OS/deepin-gtk-theme ，本次核对版本 `b7eef58`（2026-10-12 "add: Arch build"）
 - 本仓基线：`e1e223b`（radius 调和前）
 - 日期：2026-11-13

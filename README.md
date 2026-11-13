@@ -2,13 +2,13 @@
 
 ![header](./docs/img/header.png)
 
-# nosd-theme
+# nosd-app-themes
 
 ### GTK 2/3/4 and Kvantum themes in the DDE 15 visual language, sharing one shape-token source with nosDshell
 
 [简体中文](README.zh_CN.md) · [Changelog](CHANGELOG.md) · [Design spec](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd-theme?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd-theme/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd-app-themes?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd-app-themes/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 [![GTK](https://img.shields.io/badge/GTK-2%20%7C%203%20%7C%204-blue?style=for-the-badge)](https://www.gtk.org)
 [![Kvantum](https://img.shields.io/badge/Qt-Kvantum-purple?style=for-the-badge)](https://github.com/tsujan/Kvantum)
@@ -19,7 +19,7 @@
 
 ## Overview
 
-**nosd-theme** is the appearance package for the [nosDshell](https://github.com/nosDshell/nosDshell) desktop. It brings the deepin 15 (DDE 15) visual language to both toolkit families at once: a set of GTK 2/3/4 themes (`deepin` light, `deepin-dark` dark) plus a Kvantum Qt widget theme (`kvantum/nosd`).
+**nosd-app-themes** is the appearance package for the [nosDshell](https://github.com/nosDshell/nosDshell) desktop. It brings the deepin 15 (DDE 15) visual language to both toolkit families at once: a set of GTK 2/3/4 themes (`deepin` light, `deepin-dark` dark) plus a Kvantum Qt widget theme (`kvantum/nosd`).
 
 The theme is derived from [GXDE-OS/deepin-gtk-theme](https://github.com/GXDE-OS/deepin-gtk-theme). On top of that base it does three things: converts every hard-coded colour into either GTK's `@define-color` or a Kvantum template placeholder, calibrates radii and hairlines against nosDshell's [`DESIGN.md`](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md), and adds deb/rpm/Arch packaging.
 
@@ -46,13 +46,13 @@ The package carries no colour-extraction logic of its own. Light/dark switching 
 Debian/Ubuntu:
 
 ```bash
-sudo apt install ./nosd-theme_0.1.0-1_all.deb
+sudo apt install ./nosd-app-themes_0.1.0-1_all.deb
 ```
 
 Fedora/RHEL:
 
 ```bash
-sudo rpm -i nosd-theme-0.1.0-1.noarch.rpm
+sudo rpm -i nosd-app-themes-0.1.0-1.noarch.rpm
 ```
 
 Arch:
@@ -66,8 +66,8 @@ All three packages provide `deepin-gtk-theme`, so they replace the original pack
 ### From source
 
 ```bash
-git clone https://github.com/nosDshell/nosd-theme
-cd nosd-theme
+git clone https://github.com/nosDshell/nosd-app-themes
+cd nosd-app-themes
 sudo make install        # installs to /usr
 ```
 
