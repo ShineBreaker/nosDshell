@@ -1,0 +1,9 @@
+/* nosd-accent.css —— 占位模板。
+ *
+ * 模板管线只负责把本文件写到主题目录，真正的内容由 post_hook 调用
+ * `nosd-theme --shell-accent-out ... --theme-css ... --accent ...` 覆盖生成：
+ * 扫描主题 css 里含 accent 字面值的规则，原样重声明、值换成当前调色板的 accent。
+ *
+ * 之所以不在模板里写规则：St 不认 @define-color，覆盖文件必须按选择器重声明，
+ * 而选择器来自主题本体。手抄会随主题升级静默漂移，所以每次应用主题时重新扫描。
+ */

@@ -30,6 +30,9 @@ struct Args {
     config: Option<PathBuf>,
     scheme: Option<PathBuf>,
     default_mode: String,
+    shell_accent_out: Option<PathBuf>,
+    theme_css: Option<PathBuf>,
+    accent: Option<String>,
 }
 
 fn usage_error(msg: &str) -> ! {
@@ -48,6 +51,9 @@ fn parse_args() -> Args {
         config: None,
         scheme: None,
         default_mode: "dark".to_string(),
+        shell_accent_out: None,
+        theme_css: None,
+        accent: None,
     };
     let mut mode_flag: Option<String> = None;
     let mut dark = false;
@@ -75,6 +81,9 @@ fn parse_args() -> Args {
             argv[*i].clone()
         };
         match s {
+            "--shell-accent-out" => a.shell_accent_out = Some(PathBuf::from(next(&mut i))),
+            "--theme-css" => a.theme_css = Some(PathBuf::from(next(&mut i))),
+            "--accent" => a.accent = Some(next(&mut i)),
             "--scheme-type" => {
                 let v = next(&mut i);
                 if !VALID_SCHEME_TYPES.contains(&v.as_str()) {
@@ -154,8 +163,44 @@ fn theme_to_json(theme: &ThemeData) -> serde_json::Value {
     serde_json::Value::Object(top)
 }
 
+/// St 侧 accent 覆盖文件：扫描主题 css，把含 accent 字面值的规则重声明一遍。
+fn run_shell_accent(out: &Path, theme_css: &Path, accent: &str) -> i32 {
+    let Some(color) = Color::from_hex(accent) else {
+        eprintln!("Error: invalid accent color: {accent}");
+        return 2;
+    };
+    let css = match std::fs::read_to_string(theme_css) {
+        Ok(c) => c,
+        Err(e) => {
+            eprintln!("Error reading theme css: {e}");
+            return 1;
+        }
+    };
+    let body = nosd_theme::shell_accent::generate(&css, color);
+    if let Some(dir) = out.parent() {
+        if let Err(e) = std::fs::create_dir_all(dir) {
+            eprintln!("Error creating output dir: {e}");
+            return 1;
+        }
+    }
+    match std::fs::write(out, body) {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("Error writing shell accent: {e}");
+            1
+        }
+    }
+}
+
 fn run() -> i32 {
     let args = parse_args();
+    if let Some(out) = &args.shell_accent_out {
+        let (Some(css), Some(accent)) = (&args.theme_css, &args.accent) else {
+            eprintln!("Error: --shell-accent-out requires --theme-css and --accent");
+            return 2;
+        };
+        return run_shell_accent(out, css, accent);
+    }
     let mut result: ThemeData = Vec::new();
 
     if let Some(scheme_path) = &args.scheme {
@@ -284,6 +329,11 @@ fn run() -> i32 {
                 result.push((mode.clone(), theme::generate_theme(&palette, mode, &args.scheme_type)));
             }
         }
+    }
+
+    // accent 阴影族统一在出口派生，predefined scheme 与图片取色两条路径共用。
+    for (_, scheme) in result.iter_mut() {
+        scheme::inject_accent_family(scheme);
     }
 
     let json_output = serde_json::to_string_pretty(&theme_to_json(&result)).unwrap_or_default();

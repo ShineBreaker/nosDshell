@@ -58,6 +58,24 @@ Singleton {
   function gtkRefreshHook(mode) {
     return `${root.helpersBin} gtk-refresh ${mode}`;
   }
+  // QML color -> "#rrggbb"，供 shell accent 生成器使用。
+  function colorToHex(c) {
+    const f = v => Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16).padStart(2, "0");
+    return `#${f(c.r)}${f(c.g)}${f(c.b)}`;
+  }
+  // St（Cinnamon / GNOME Shell）取色注入：扫描已安装主题的 css，把含 accent
+  // 字面值的规则重声明到同目录的 nosd-accent.css，主题 css 末尾 @import 它。
+  // 只在用户目录安装下有意义（系统级 /usr 不可写），写不进去就保持静态。
+  function shellAccentHook(component) {
+    if (!root.themeBin)
+      return "true";
+    const home = Quickshell.env("HOME");
+    const accent = root.colorToHex(Colors.mPrimary);
+    return ["deepin", "deepin-dark"].map(theme => {
+      const dir = `${home}/.local/share/themes/${theme}/${component}`;
+      return `${root.themeBin} --shell-accent-out ${dir}/nosd-accent.css --theme-css ${dir}/${component}.css --accent ${accent}`;
+    }).join(" && ");
+  }
   function kdeApplyHook(scheme) {
     return `${root.helpersBin} kde-apply-scheme ${scheme}`;
   }
@@ -198,6 +216,38 @@ Singleton {
           "path": "~/.config/Kvantum/nosd/nosd.svg"
         }
       ]
+    },
+    {
+      "id": "shell-cinnamon",
+      "name": "Cinnamon 取色",
+      "category": "system",
+      "input": "shell-accent.css",
+      "outputs": [
+        {
+          "path": "~/.local/share/themes/deepin/cinnamon/nosd-accent.css"
+        },
+        {
+          "path": "~/.local/share/themes/deepin-dark/cinnamon/nosd-accent.css",
+          "postProcess": false
+        }
+      ],
+      "postProcess": () => root.shellAccentHook("cinnamon")
+    },
+    {
+      "id": "shell-gnome",
+      "name": "GNOME Shell 取色",
+      "category": "system",
+      "input": "shell-accent.css",
+      "outputs": [
+        {
+          "path": "~/.local/share/themes/deepin/gnome-shell/nosd-accent.css"
+        },
+        {
+          "path": "~/.local/share/themes/deepin-dark/gnome-shell/nosd-accent.css",
+          "postProcess": false
+        }
+      ],
+      "postProcess": () => root.shellAccentHook("gnome-shell")
     },
     {
       "id": "kcolorscheme",

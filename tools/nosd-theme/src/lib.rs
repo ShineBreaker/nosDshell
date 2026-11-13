@@ -12,4 +12,5 @@ pub mod palette;
 pub mod quantizer;
 pub mod renderer;
 pub mod scheme;
+pub mod shell_accent;
 pub mod theme;

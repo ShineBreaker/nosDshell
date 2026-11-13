@@ -14,6 +14,19 @@
 @define-color osd_hover_color @accent_bg_color;
 @define-color osd_active_color @accent_bg_color;
 
+/* 深色主题的 accent 阴影族。9 条原值是 2016 年移植 Adwaita 3.20 带进来的字面值，
+   由 tools/nosd-theme 的 derive_accent_family() 按当前 primary 重新派生
+   （色相偏移 + 饱和比率 + 亮度余量），在 primary=#106daa 下逐位复现原值。 */
+@define-color accent_standalone_color {{colors.accent_standalone_color.default.hex}};
+@define-color accent_hover_color {{colors.accent_hover_color.default.hex}};
+@define-color accent_active_color {{colors.accent_active_color.default.hex}};
+@define-color accent_light_color {{colors.accent_light_color.default.hex}};
+@define-color accent_light_hover_color {{colors.accent_light_hover_color.default.hex}};
+@define-color accent_light_active_color {{colors.accent_light_active_color.default.hex}};
+@define-color accent_disabled_color {{colors.accent_disabled_color.default.hex}};
+@define-color accent_border_color {{colors.accent_border_color.default.hex}};
+@define-color accent_on_bg_dim_color {{colors.accent_on_bg_dim_color.default.hex}};
+
 @define-color destructive_bg_color {{colors.error.default.hex}};
 @define-color destructive_fg_color {{colors.on_error.default.hex}};
 
