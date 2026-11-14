@@ -129,25 +129,42 @@ fn append_import(gtk_css: &Path, target: &Path, content: &str, label: &str) {
     println!("Appended {label} nosd.css import to gtk.css");
 }
 
-/// The GTK theme name for a mode comes from darkman's config.json, which is
-/// also what set-theme.sh and theme-common.sh read. Keeping one source means
-/// switching themes never requires touching this file. Falls back to the
-/// nosd-app-themes defaults when the file is missing or malformed, so a bare
-/// system without darkman still gets a sensible theme.
+/// The GTK theme name is read from the standard GTK settings file
+/// (`gtk-theme-name` in ~/.config/gtk-{3,4}.0/settings.ini). That file is
+/// written by whatever actually manages the desktop theme — darkman's
+/// set-theme.sh, a desktop's appearance panel, or the user by hand — so this
+/// works for people who do not use darkman at all, unlike reading darkman's
+/// own config.json. Falls back to the nosd-app-themes defaults when the key is
+/// missing, so a bare system still gets a sensible theme.
 fn theme_for_mode(mode: &str) -> String {
-    let path = config_dir().join("darkman").join("script").join("config.json");
-    if let Ok(text) = fs::read_to_string(&path) {
-        if let Ok(root) = serde_json::from_str::<serde_json::Value>(&text) {
-            if let Some(name) = root
-                .get(mode)
-                .and_then(|m| m.get("theme"))
-                .and_then(|v| v.as_str())
-            {
-                return name.to_string();
+    for version in ["gtk-3.0", "gtk-4.0"] {
+        let path = config_dir().join(version).join("settings.ini");
+        if let Ok(text) = fs::read_to_string(&path) {
+            if let Some(name) = read_gtk_theme_name(&text) {
+                return name;
             }
         }
     }
     if mode == "light" { "deepin".to_string() } else { "deepin-dark".to_string() }
+}
+
+/// Pull `gtk-theme-name` out of a GTK settings.ini body.
+fn read_gtk_theme_name(ini: &str) -> Option<String> {
+    for line in ini.lines() {
+        let line = line.trim();
+        if line.starts_with('#') || line.starts_with(';') {
+            continue;
+        }
+        if let Some((key, value)) = line.split_once('=') {
+            if key.trim() == "gtk-theme-name" {
+                let name = value.trim().trim_matches(|c| c == '"' || c == '\'');
+                if !name.is_empty() {
+                    return Some(name.to_string());
+                }
+            }
+        }
+    }
+    None
 }
 
 fn sync_system_appearance(mode: &str, update_gtk_theme: bool) {
@@ -295,5 +312,48 @@ mod tests {
         assert!(content.contains("body { color: red; }"));
         assert!(content.contains(GTK_IMPORT));
         let _ = fs::remove_dir_all(&d);
+    }
+
+    #[test]
+    fn reads_gtk_theme_name_from_settings_ini() {
+        let ini = "# comment\n[Settings]\ngtk-icon-theme-name=Papirus\ngtk-theme-name=deepin-dark\n";
+        assert_eq!(read_gtk_theme_name(ini).as_deref(), Some("deepin-dark"));
+    }
+
+    #[test]
+    fn tolerates_quoted_theme_name() {
+        assert_eq!(read_gtk_theme_name("gtk-theme-name = \"deepin\"\n").as_deref(), Some("deepin"));
+    }
+
+    #[test]
+    fn ignores_missing_or_empty_theme_name() {
+        assert_eq!(read_gtk_theme_name("[Settings]\ngtk-icon-theme-name=Papirus\n"), None);
+        assert_eq!(read_gtk_theme_name("[Settings]\ngtk-theme-name=\n"), None);
+    }
+
+    // Runs alone (env vars are process-global) with the temp dir as
+    // XDG_CONFIG_HOME so it never touches the real user config.
+    #[test]
+    fn theme_for_mode_reads_settings_ini_and_falls_back() {
+        let base = tmpdir("theme_mode");
+        let gtk = base.join("gtk-3.0");
+        fs::create_dir_all(&gtk).unwrap();
+        fs::write(gtk.join("settings.ini"), "[Settings]\ngtk-theme-name=deepin-dark\n").unwrap();
+
+        let old = env::var_os("XDG_CONFIG_HOME");
+        env::set_var("XDG_CONFIG_HOME", &base);
+        let from_ini = theme_for_mode("light"); // literal value, mode only affects fallback
+        fs::remove_file(gtk.join("settings.ini")).unwrap();
+        let dark_fallback = theme_for_mode("dark");
+        let light_fallback = theme_for_mode("light");
+        match old {
+            Some(v) => env::set_var("XDG_CONFIG_HOME", v),
+            None => env::remove_var("XDG_CONFIG_HOME"),
+        }
+
+        assert_eq!(from_ini, "deepin-dark");
+        assert_eq!(dark_fallback, "deepin-dark");
+        assert_eq!(light_fallback, "deepin");
+        let _ = fs::remove_dir_all(&base);
     }
 }
