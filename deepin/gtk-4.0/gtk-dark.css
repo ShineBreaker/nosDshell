@@ -1376,14 +1376,14 @@ headerbar,
     padding: 0 7px;
     border-width: 0 0 1px;
     border-style: solid;
-    border-color: blue;
+    border-color: @borders;
     color: @text_color;
-    background-color: @toolbar_color;
+    background-color: @headerbar_bg_color;
     box-shadow: inset 0 1px @hightlight_line;
 }
 .csd headerbar,
 .csd .titlebar:not(headerbar) {
-    background-color: @toolbar_color;
+    background-color: @headerbar_bg_color;
     border-color: shade(@wm_bg, 0.7);
     box-shadow: inset 0 1px @hightlight_line;
 }
@@ -1391,12 +1391,12 @@ headerbar:backdrop,
 .titlebar:backdrop:not(headerbar) {
     transition: 200ms ease-out;
     color: rgba(82, 93, 118, 0.5);
-    background-color: @wm_bg_unfocused;
+    background-color: @headerbar_backdrop_color;
     box-shadow: inset 0 1px @hightlight_line;
 }
 .csd headerbar:backdrop,
 .csd .titlebar:backdrop:not(headerbar) {
-    background-color: @wm_bg_unfocused;
+    background-color: @headerbar_backdrop_color;
     box-shadow: inset 0 1px @hightlight_line;
 }
 headerbar .title,
@@ -2458,7 +2458,7 @@ popover.background {
     padding: 2px;
     border-radius: 4px;
     background-clip: border-box;
-    background-color: shade(@base_color, 0.8);
+    background-color: @popover_bg_color;
     box-shadow: 0 2px 6px 1px alpha(@_static_black,0.07);
 }
 .csd popover,

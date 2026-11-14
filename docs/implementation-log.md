@@ -241,6 +241,53 @@ GTK 的 `checkbox-*`/`radio-*`/`switch-*` PNG 把旧默认蓝 `#2ca7f8` 烘死�
   旧蓝无法跟随，属平台限制；gtk-3.0/4.0 资产目录里旧 PNG 已无 CSS 引用，暂留
   文件未删（包内 1.2M，去留另行决定）。
 
+### 阶段 7 · 语义变量别名方向翻转 + 弹层/标题栏契约化（完成）
+
+阶段 6 之后的真机复验（niri + nosDshell 实层、`pcmanfm-qt`、gtk3/4-widget-factory、
+全屏截图 + 像素采样）又暴露了三类模板契约漂移，本阶段一并收口：
+
+- **根因一（别名方向反了）**：深色皮肤默认值块里旧变量名先持字面值、语义名反向
+  引用旧名（`base_color #0c0e0f` → `view_bg_color @base_color`）。`nosd.css` 注入
+  语义名后，消费方仍走旧名字面量，取色覆盖被旁路。修复：`deepin-dark/` 四文件的
+  默认值块重写为「语义名持字面值 → 旧名（`fg_color`/`bg_color`/`base_color`/
+  `active_color`/`theme_*`/`wm_*`/`text_color`/`selected_*`）全部别名到语义名」，
+  外部按旧名覆盖的行为不变（别名是引用不是拷贝，GTK `@define-color` 链在定义时
+  解析为最终值，方向反了才有效——已用部署副本实测验证）。
+- **根因二（选择器用了契约外的旧变量）**：`headerbar`/`titlebar` 走
+  `@toolbar_color`（旧名、且有一条 `border-color: blue` 字面量），`popover.background`
+  走 `shade(@base_color,0.8)`。修复：标题栏改 `@headerbar_bg_color` /
+  `@headerbar_backdrop_color`，边框改 `@borders`；popover 底改
+  `@popover_bg_color`。deepin/ 与 deepin-dark/ 的 gtk-3.0、gtk-4.0 各两份文件统一应用。
+- **根因三（Qt 弹层面与 shell 语义不同级）**：`menu-normal` 用 `surface`，而 shell
+  弹出层与 GTK `popover_bg_color` 都取 `surface_container`。`nosd.svg.tpl` 与静态
+  `nosd.svg` 改为 `{{colors.surface_container.default.hex}}`；部署文件实测菜单底
+  `#2a2a37`，与 GTK4 `GtkPopover`（自编译探针 `.popup()` 截屏采样）完全相同。
+- **顺修（静态回退缺陷）**：`deepin-dark/` 的 `card_bg_color #fbfbfc`/
+  `card_fg_color #303030` 是从浅色文件带下来的白底卡——`nosd.css` 不在场时深色
+  主题会出现白卡。改为 `@view_bg_color`/`@view_fg_color`（对齐
+  `deepin/gtk-3.0/gtk-dark.css` 同位定义）。
+- **模板同步**：`nosd-app-themes` 的 `nosd.svg.tpl`（含阶段 6 的指示器收敛与本次
+  `menu-normal`）回灌 `nosDshell/Assets/Templates/kvantum-nosd.svg`，两份模板现
+  逐字节一致（diff rc=0）；`kvantum-nosd.kvconfig` 本就一致。
+- **验证（r4 轮，全屏截图）**：
+  - GTK4/GTK3 factory：暗底 `#1f1f28`、accent `#76946a` 全控件落位、headerbar 与
+    窗口同色无边线；对勾/圆点 = 描边框 + accent 字形。
+  - `pcmanfm-qt`：主窗 `#1f1f28`、视图底 `#21212b`、菜单底 `#2a2a37`、悬停
+    `#76946a`；偏好设置对话框复选框 = 描边框 + accent 对勾（与 GTK 同形态）。
+  - GTK4 `GtkPopover` 探针：底 `#2a2a37` = `popover_bg_color` = Kvantum 菜单底。
+  - `GTK_THEME=deepin`（浅色变体）同程序实测同样服从 `nosd.css` 注入——契约对
+    两个变体同时成立。
+  - `make`（无需构建）+ `python3 scripts/check-tokens.py .`：全部一致。
+- **误报两条（如实记录）**：gtk4/gtk3 factory「Sans Regular 12」下方的蓝条是
+  `GtkColorButton` 的应用数据（`红 19%，绿 41%，蓝 63%`），非主题；`link button`
+  的静态蓝是两侧一致的约定——`nosd.css` 契约不含 `link_color`，qt6ct 调色板同为
+  静态蓝。
+- **遗留（如实记录）**：`gtk-4.0/assets/window-menu-press*.svg` 按压态图标烘了
+  `#2ca7f8`，以 `background-image: url()` 引用，CSS 变量与 symbolic recolor 均
+  管不到（静态 deepin 蓝，忠实上游，仅按压瞬间出现）；`metacity-1/`、`xfwm4/`、
+  `cinnamon/`、`gnome-shell/` 内若干 `#2ca7f8`/`#fbfbfc` 为其他桌面环境的静态
+  皮肤资产，不在本契约范围。
+
 ### 待办 / 开放项
 
 - 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓，用户拍板不做）。

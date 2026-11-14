@@ -29,6 +29,24 @@
   accent 字形」，与 GTK 侧（及 deepin 原素材的深色版）一致；`item-checkbox` 等
   菜单指示器保持「面底 + accent 字形」不变。
 
+### 修复
+
+- *GTK 取色覆盖被旁路*：`deepin-dark/` 默认值块中旧变量名持字面值、语义名反向
+  引用，导致 `nosd.css` 注入的语义变量到不了选择器。默认值块重写为语义名持值、
+  旧名（`fg_color`/`bg_color`/`base_color`/`theme_*`/`wm_*` 等）全部别名化，
+  动态取色对 GTK 3/4 各皮肤全链路生效。
+- *标题栏颜色脱离契约*：`headerbar`/`titlebar` 原走契约外的 `@toolbar_color`
+  并残留 `border-color: blue` 字面量，深色下出现异色条与蓝边；改为
+  `@headerbar_bg_color`/`@headerbar_backdrop_color`/`@borders`。
+- *弹出层语义与 shell 不对齐*：GTK `popover.background` 由
+  `shade(@base_color,0.8)` 改为 `@popover_bg_color`；Kvantum `menu-normal` 由
+  `surface` 改为 `surface_container`。GTK/Qt 菜单与弹出层现在取同一语义色
+  （shell `surface_container` 层级）。
+- *`deepin-dark` 静态白卡*：`card_bg_color`/`card_fg_color` 残留浅色值，无
+  `nosd.css` 时深色主题出现白卡；改为 `@view_bg_color`/`@view_fg_color`。
+- *模板漂移*：仓库 Kvantum 模板与 `nosDshell/Assets/Templates/` 中副本恢复
+  逐字节一致（含指示器收敛与 `menu-normal` 变更）。
+
 ## [0.1.0] - 2026-11-13
 
 首个以 `nosd-app-themes` 名义发布的版本，替代 `deepin-gtk-theme`。

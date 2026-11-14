@@ -1,15 +1,11 @@
 /* nosd 覆盖层默认值：~/.config/gtk-3.0/nosd.css 或 gtk-4.0/nosd.css 中可用同名 @define-color 覆盖。 */
 
-@define-color fg_color #303030;
-@define-color bg_color #1e2329;
-@define-color base_color #0c0e0f;
-@define-color active_color @accent_bg_color;
-
-@define-color window_bg_color @bg_color;
-@define-color view_bg_color @base_color;
+/* ====== nosd 颜色默认值（取色层可覆盖的 @define-color） ====== */
+@define-color window_bg_color #1e2329;
 @define-color window_fg_color #5c616c;
+@define-color view_bg_color #0c0e0f;
 @define-color view_fg_color #BAC3CF;
-@define-color osd_fg_color #BAC3CF;
+@define-color accent_color @accent_bg_color;
 @define-color accent_bg_color #14364d;
 @define-color accent_fg_color #ffffff;
 @define-color accent_standalone_color #4DADD4;
@@ -21,14 +17,31 @@
 @define-color accent_disabled_color #b1cff2;
 @define-color accent_border_color #577ba7;
 @define-color accent_on_bg_dim_color #cbdff6;
-@define-color osd_hover_color @accent_bg_color;
-@define-color osd_active_color @accent_bg_color;
+@define-color headerbar_bg_color @window_bg_color;
+@define-color headerbar_fg_color @window_fg_color;
+@define-color headerbar_backdrop_color @window_bg_color;
+@define-color popover_bg_color @window_bg_color;
+@define-color popover_fg_color @view_fg_color;
+@define-color card_bg_color @view_bg_color;
+@define-color card_fg_color @view_fg_color;
+@define-color dialog_bg_color @window_bg_color;
+@define-color dialog_fg_color @view_fg_color;
+@define-color overview_bg_color @window_bg_color;
+@define-color overview_fg_color @view_fg_color;
+@define-color sidebar_bg_color @window_bg_color;
+@define-color sidebar_fg_color @view_fg_color;
+@define-color sidebar_backdrop_color @window_bg_color;
+@define-color sidebar_border_color @borders;
+@define-color secondary_sidebar_bg_color @view_bg_color;
+@define-color secondary_sidebar_fg_color @view_fg_color;
+@define-color destructive_bg_color @error_bg_color;
+@define-color destructive_fg_color @error_fg_color;
 @define-color error_color #FC4138;
 @define-color error_bg_color #F04A50;
+@define-color error_fg_color #ffffff;
 @define-color error_hover_bg_color #f4797e;
 @define-color error_active_bg_color #ec1b22;
 @define-color error_light_color #fd8d88;
-@define-color error_fg_color #ffffff;
 @define-color error_hover_fg_color #ff4d4d;
 @define-color error_active_fg_color #ff6666;
 @define-color error_warning_border_color #f75d37;
@@ -41,8 +54,8 @@
 @define-color link_visited_color #1e61b0;
 @define-color link_hover_color #bad4f3;
 @define-color placeholder_text_color #A8A8A8;
-@define-color card_bg_color #fbfbfc;
 @define-color separator_color #efeff0;
+@define-color scrollbar_slider_color #8a8e96;
 @define-color panel_bg_color #353945;
 @define-color panel_border_color #2a2d37;
 @define-color panel_fg_color #f6f7f9;
@@ -53,58 +66,49 @@
 @define-color muted_fg_color #92959d;
 @define-color caption_fg_color #aaaeb7;
 @define-color insensitive_bg_text_color #aeb0b6;
-@define-color keyboard_selection_fg_color #97bfee;
-@define-color backdrop_fg_color #d8dde4;
+@define-color keyboard_selection_fg_color @accent_fg_color;
+@define-color backdrop_fg_color @theme_unfocused_fg_color;
 @define-color entry_icon_color #7d8189;
-@define-color scrollbar_slider_color #8a8e96;
 @define-color tray_hint_color #eef4fc;
-@define-color selection_fg_color #dceaf9;
+@define-color selection_fg_color @accent_fg_color;
+@define-color osd_fg_color @view_fg_color;
+@define-color osd_hover_color @accent_bg_color;
+@define-color osd_active_color @accent_bg_color;
+
+/* ====== 旧变量名别名（保持外部样式表按旧名覆盖的行为不变） ====== */
+@define-color active_color @accent_bg_color;
 @define-color theme_fg_color @window_fg_color;
-@define-color theme_text_color #89919a;
-@define-color theme_bg_color @base_color;
-@define-color theme_base_color @base_color;
-@define-color theme_selected_bg_color @active_color;
+@define-color theme_text_color @view_fg_color;
+@define-color theme_bg_color @view_bg_color;
+@define-color theme_base_color @view_bg_color;
+@define-color theme_selected_bg_color @accent_bg_color;
 @define-color theme_selected_fg_color @accent_fg_color;
-@define-color text_color @theme_text_color;
-@define-color selected_bg_color @active_color;
+@define-color fg_color @window_fg_color;
+@define-color text_color @view_fg_color;
+@define-color bg_color @window_bg_color;
+@define-color base_color @view_bg_color;
+@define-color selected_bg_color @accent_bg_color;
 @define-color selected_fg_color @accent_fg_color;
-@define-color insensitive_bg_color shade(@base_color,
-0.9);
-@define-color insensitive_fg_color alpha(@window_fg_color,
-0.5);
-@define-color insensitive_base_color shade(@base_color,
-0.9);
+@define-color insensitive_bg_color shade(@base_color, 0.9);
+@define-color insensitive_fg_color alpha(@window_fg_color, 0.5);
+@define-color insensitive_base_color shade(@base_color, 0.9);
 @define-color theme_unfocused_fg_color @window_fg_color;
-@define-color theme_unfocused_text_color @window_fg_color;
-@define-color theme_unfocused_bg_color shade(@base_color,
-0.9);
-@define-color theme_unfocused_base_color shade(@base_color,
-0.9);
+@define-color theme_unfocused_text_color @view_fg_color;
+@define-color theme_unfocused_bg_color shade(@base_color, 0.9);
+@define-color theme_unfocused_base_color shade(@base_color, 0.9);
 @define-color theme_unfocused_selected_bg_color @accent_bg_color;
 @define-color theme_unfocused_selected_fg_color @accent_fg_color;
-
-@define-color borders shade(@base_color,
-0.7);
+@define-color borders shade(@base_color, 0.7);
 @define-color switch_trough_color #4d5364;
 @define-color switch_knob_color #0e0e0e;
-@define-color unfocused_borders shade(@base_color,
-0.8);
-@define-color warning_color @warning_color;
-@define-color error_color @error_color;
-@define-color success_color @success_color;
-@define-color placeholder_text_color @placeholder_text_color;
-@define-color link_color @link_color;
+@define-color unfocused_borders shade(@base_color, 0.8);
 @define-color content_view_bg @view_bg_color;
-@define-color wm_title alpha(#525d76,
-0.8);
-@define-color wm_unfocused_title alpha(#525d76,
-0.5);
-@define-color wm_bg @base_color;
-@define-color wm_bg_unfocused shade(@base_color,
-0.9);
+@define-color wm_title alpha(#525d76, 0.8);
+@define-color wm_unfocused_title alpha(#525d76, 0.5);
+@define-color wm_bg @window_bg_color;
+@define-color wm_bg_unfocused shade(@base_color, 0.9);
 @define-color wm_highlight #eff0f2;
-@define-color wm_shadow alpha(black,
-0.35);
+@define-color wm_shadow alpha(black, 0.35);
 @define-color wm_button_close_bg #f46067;
 @define-color wm_button_close_hover_bg #f68086;
 @define-color wm_button_close_active_bg #f13039;
@@ -116,15 +120,10 @@
 @define-color wm_icon_unfocused_bg #B6B8C0;
 @define-color wm_icon_hover_bg #7A7F8B;
 @define-color wm_icon_active_bg @accent_fg_color;
-@define-color border_color alpha(#000000,
-0.1);
-@define-color toolbar_color shade(@base_color,
-0.8);
+@define-color border_color alpha(#000000, 0.1);
+@define-color toolbar_color shade(@base_color, 0.8);
 @define-color toolbar_icon_color @theme_text_color;
-@define-color hightlight_line rgba(255,
-255,
-255,
-0.02);
+@define-color hightlight_line rgba(255, 255, 255, 0.02);
 
 @import url("gtk4-compat.css");
 @import url("window-controls-dark.css");
@@ -1408,14 +1407,14 @@ headerbar,
     padding: 0 7px;
     border-width: 0 0 1px;
     border-style: solid;
-    border-color: blue;
+    border-color: @borders;
     color: @text_color;
-    background-color: @toolbar_color;
+    background-color: @headerbar_bg_color;
     box-shadow: inset 0 1px @hightlight_line;
 }
 .csd headerbar,
 .csd .titlebar:not(headerbar) {
-    background-color: @toolbar_color;
+    background-color: @headerbar_bg_color;
     border-color: shade(@wm_bg, 0.7);
     box-shadow: inset 0 1px @hightlight_line;
 }
@@ -1423,12 +1422,12 @@ headerbar:backdrop,
 .titlebar:backdrop:not(headerbar) {
     transition: 200ms ease-out;
     color: alpha(@text_color, 0.5);
-    background-color: @wm_bg_unfocused;
+    background-color: @headerbar_backdrop_color;
     box-shadow: inset 0 1px @hightlight_line;
 }
 .csd headerbar:backdrop,
 .csd .titlebar:backdrop:not(headerbar) {
-    background-color: @wm_bg_unfocused;
+    background-color: @headerbar_backdrop_color;
     box-shadow: inset 0 1px @hightlight_line;
 }
 headerbar .title,
@@ -2491,7 +2490,7 @@ popover.background {
     padding: 2px;
     border-radius: 4px;
     background-clip: border-box;
-    background-color: shade(@base_color, 0.8);
+    background-color: @popover_bg_color;
     box-shadow: 0 2px 6px 1px rgba(0, 0, 0, 0.07);
 }
 .csd popover,

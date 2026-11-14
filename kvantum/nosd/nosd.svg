@@ -426,7 +426,7 @@
 <path id="menu-normal-bottom" d="m 112.50015,855 3e-4,-5 48,0 0,5 z"/>
 <path id="menu-normal-bottomleft" d="m 107.4998,850 .0003,4.9989 5,.001 0,-5 z "/>
 </g>
-<rect width="48" x="112.49935" y="802" height="48" style="fill:#f9fcff" id="menu-normal"/>
+<rect width="48" x="112.49935" y="802" height="48" style="fill:#f1f5f8" id="menu-normal"/>
 </g>
 <g id="splitter-grip-focused" transform="matrix(1.1428571,0,0,1,-10.285716,0)">
 <path style="fill-opacity:0" id="rect4841" d="m 275,1039 h 7 v 32 h -7 z"/>

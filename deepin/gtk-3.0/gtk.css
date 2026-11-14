@@ -1395,7 +1395,7 @@ headerbar,
 }
 .csd headerbar,
 .csd .titlebar:not(headerbar) {
-    background-color: @toolbar_color;
+    background-color: @headerbar_bg_color;
     border-color: alpha(@borders,0.95);
 }
 headerbar:backdrop,
@@ -2465,7 +2465,7 @@ popover.background {
     padding: 2px;
     border-radius: 4px;
     background-clip: border-box;
-    background-color: @view_bg_color;
+    background-color: @popover_bg_color;
     box-shadow: 0 2px 6px 1px alpha(@_static_black,0.07);
 }
 .csd popover,
