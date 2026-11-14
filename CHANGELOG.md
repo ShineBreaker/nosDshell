@@ -10,6 +10,16 @@
 
 ## [Unreleased]
 
+## [1.7.6.1] - 2026-11-14
+
+修掉 gtk-refresh 取 GTK 主题名时对 darkman 配置的依赖：改用标准的 GTK settings.ini，不用 darkman 的系统也能正确同步明暗主题。
+
+---
+
+### 修复
+
+- gtk-refresh 主题名改读 settings.ini，不再依赖 darkman 配置：[`93af58a460`](https://github.com/nosDshell/nosDshell/commit/93af58a46904a699dc8a5562411595954c071da1)
+
 ## [1.7.6] - 2026-11-09
 
 这版把藏在交互层的老毛病一次拔掉：挂件设置在写入后立刻生效、开关整行可点，电池面板的电源模式与性能模式开关终于接通了真正的行为；同时面板的隐式生命周期收进了可机读的显式状态机，智能体可以直接读出每个面板正处于哪一相。
@@ -821,7 +831,8 @@ nosDshell 基于 Noctalia v4（Quickshell/QML），保留其全部功能，以 D
 - Guix 打包（`nosdshell.scm`）与 Nix flake（含 home-manager / NixOS 模块）。
 - 运行在上游 Quickshell 0.3.1，另带两个 pipewire UAF 补丁（`packaging/patches/`）。
 
-[Unreleased]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.6...HEAD
+[Unreleased]: https://github.com/nosDshell/nosDshell/compare/v1.7.6.1...HEAD
+[1.7.6.1]: https://github.com/nosDshell/nosDshell/compare/v1.7.6...v1.7.6.1
 [1.7.6]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.5...v1.7.6
 [1.7.5]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.4...v1.7.5
 [1.7.4]: https://github.com/ShineBreaker/nosDshell/compare/v1.7.3...v1.7.4
