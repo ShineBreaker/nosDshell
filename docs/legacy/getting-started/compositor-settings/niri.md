@@ -164,11 +164,13 @@ window-rule {
 
 // Tier 2 — real blur for the large publishers that float over arbitrary
 // windows: the bar strip and every open panel (nosdshell-background), the
-// popupmenu plane while it hosts a dialog, the polkit auth dialog, and the
-// mini launcher. These must sample the real window stack.
+// popupmenu plane while it hosts a dialog, the polkit auth dialog, the keyring
+// unlock dialog, and the mini launcher. These must sample the real window
+// stack.
 layer-rule {
   match namespace="^nosdshell-(background|popupmenu)-.*$"
   match namespace="^nosdshell-polkit$"
+  match namespace="^nosdshell-keyring$"
   match namespace="^nosd-launcher-mini-.*$"
   background-effect {
     xray false
