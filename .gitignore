@@ -10,11 +10,5 @@ build
 /debian/
 .direnv/
 .envrc
-references/
-tools/*/target/
-.agents/*
-!.agents/skills/
-# 仓库内自建 skill 的 references/ 必须随仓库走，否则协作者只拿到 SKILL.md。
-!.agents/skills/**/references/
-!.agents/skills/**/references/**
+dist/
 .mimosa/
