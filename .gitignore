@@ -1,14 +1,22 @@
+# 编辑工具
 .qmlls.ini
 .zed
 .idea
 .vscode
 *.code-workspace
-/RELEASE.md
+
+# 构建产物
 __pycache__
 result
 build
-/debian/
-.direnv/
-.envrc
 dist/
 .mimosa/
+
+# 各组件的 debian 打包临时目录（打包物料本身在 packages/*/debian 跟踪）
+/packages/*/debian/.debhelper/
+/packages/*/debian/files
+/packages/*/debian/*-theme/
+
+# envrc / 本地覆盖
+.direnv/
+.envrc

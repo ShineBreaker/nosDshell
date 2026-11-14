@@ -1,6 +1,8 @@
 # 更新日志
 
-本文件记录 nosd-app-themes 面向使用者的变更。逐步实施过程、验证数据与当时的判断见
+本文件记录 nosd-gtk-theme 组件面向使用者的变更（nosd monorepo 的
+`packages/nosd-gtk-theme/`；历史条目继承自 nosd-app-themes 仓）。
+逐步实施过程、验证数据与当时的判断见
 
 [docs/implementation-log.md](docs/implementation-log.md)。
 

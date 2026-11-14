@@ -1,143 +1,156 @@
 name: Release
 
+# monorepo 组件独立发版（docs/adr/0001）：tag 前缀即组件名，一个提交可
+# 携带多个 tag，每个 tag 只触发自己组件的流水线。
+#
+#   nosdshell-v1.7.7         → nosdshell-<v>.tar.gz + GitHub Release
+#   nosd-gtk-theme-v0.3.0    → tar.gz + deb/rpm/pkg + GitHub Release
+#   nosd-kvantum-theme-v0.1.0 → tar.gz + GitHub Release
+#   fcitx5-theme-nosd-v1.2.0 → tar.gz + deb/pkg + GitHub Release
+#
+# ⚠️ 历史 `v*` tag（v1.7.5…v1.7.6.1，旧 nosDshell 布局）仍有效可引用，
+#    但**新发版一律用 `<component>-v*`**；`v*` 不再触发本流水线。
+# ⚠️ 一次 push 最多 3 个 tag，超出则全部 workflow 不触发——多组件同发
+#    分批推或逐个推。
 on:
   push:
     tags:
-      - 'v*'
+      - "nosdshell-v*"
+      - "nosd-gtk-theme-v*"
+      - "nosd-kvantum-theme-v*"
+      - "fcitx5-theme-nosd-v*"
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Existing tag to (re-)publish, e.g. v1.1.0'
+        description: "回填的 tag（须已存在于远端，形如 <component>-v<version>）"
         required: true
-        type: string
 
 permissions:
   contents: write
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
+env:
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
-  release:
+  # ── 1. 判定组件 + 构建产物 ─────────────────────────────────
+  build:
     runs-on: ubuntu-latest
-
+    outputs:
+      component: ${{ steps.sel.outputs.component }}
     steps:
-      - name: Check out release tag
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
-          ref: ${{ inputs.tag || github.ref }}
-          fetch-depth: 0 # release notes need full history and tags
+          ref: ${{ env.TAG }}
+          fetch-depth: 0 # release notes 需要完整历史
 
-      - name: Validate release tag
-        env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      # tag 前缀即组件名。唯一的映射点在 tools/release/build.py 的
+      # COMPONENTS——新增组件只改那里，本 job 无需改动。
+      - name: 由 tag 前缀判定组件
+        id: sel
         run: |
           set -euo pipefail
-          base=$(grep -oP 'baseVersion:\s*"\K[^"]+' Commons/Version.qml)
-          dev=$(grep -oP 'isDevelopment:\s*\K\w+' Commons/Version.qml)
-          scm=$(sed -n '/name "nosdshell"/,/version/p' nosdshell.scm | grep -oP 'version "\K[^"]+' | head -1)
-          flake=$(grep -oP 'version = "\K[^"]+(?=_" \+)' flake.nix)
-          nixpkg=$(grep -oP 'version \? "\K[^"]+' nix/package.nix | head -1)
-          wrap=$(grep -oP 'nosdshell v\K[0-9.]+' nosdshell.scm | head -1)
-          printf 'base=%s dev=%s scm=%s flake=%s nix=%s wrap=%s\n' "$base" "$dev" "$scm" "$flake" "$nixpkg" "$wrap"
-          [ "$RELEASE_TAG" = "v$base" ] || { echo "tag $RELEASE_TAG != v$base (Commons/Version.qml)" >&2; exit 1; }
-          [ "$dev" = "false" ] || { echo "isDevelopment=$dev on tagged commit — tag the release commit, not the reopen" >&2; exit 1; }
-          [ "$scm" = "$base" ] || { echo "nosdshell.scm version $scm != $base" >&2; exit 1; }
-          [ "$flake" = "$base" ] || { echo "flake.nix version $flake != $base" >&2; exit 1; }
-          [ "$nixpkg" = "$base" ] || { echo "nix/package.nix version $nixpkg != $base" >&2; exit 1; }
-          [ "$wrap" = "$base" ] || { echo "nosdshell.scm --version line $wrap != $base" >&2; exit 1; }
+          for c in $(python3 tools/release/build.py --list | awk '{print $1}'); do
+            if [[ "$TAG" == "$c"-v* ]]; then echo "component=$c" >> "$GITHUB_OUTPUT"; exit 0; fi
+          done
+          echo "::error::tag $TAG 不匹配任何组件（应为 <component>-v<version>）" >&2
+          exit 1
 
-      - name: Create release archive
+      # 同时校验 tag 版本与包内版本一致、CHANGELOG 有对应段落。
+      - name: 构建产物 + 校验版本
+        run: python3 tools/release/build.py --component "${{ steps.sel.outputs.component }}" --tag "$TAG"
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist-${{ steps.sel.outputs.component }}
+          path: dist/${{ steps.sel.outputs.component }}/
+          retention-days: 7
+
+  # ── 2. 系统包（有打包物料的组件：deb / rpm / pkg.tar）────────
+  packaging:
+    needs: build
+    if: needs.build.outputs.component == 'nosd-gtk-theme' || needs.build.outputs.component == 'fcitx5-theme-nosd'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ env.TAG }}
+
+      - name: install build deps
+        run: sudo apt-get update && sudo apt-get install -y dpkg-dev devscripts debhelper fakeroot rpm
+
+      - name: build deb + rpm
         env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          COMPONENT: ${{ needs.build.outputs.component }}
+          VERSION: ${{ env.TAG }}
         run: |
           set -euo pipefail
-          mkdir -p ../nosdshell-release
-          rsync -a \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='.agents' \
-            --exclude='references' \
-            --exclude='docs' \
-            --exclude='nix' \
-            --exclude='flake.nix' \
-            --exclude='flake.lock' \
-            --exclude='result*' \
-            ./ ../nosdshell-release/
-          tar -C .. -czf "nosdshell-${RELEASE_TAG}.tar.gz" nosdshell-release/
-          cp "nosdshell-${RELEASE_TAG}.tar.gz" nosdshell-latest.tar.gz
-          tar -tzf "nosdshell-${RELEASE_TAG}.tar.gz" | wc -l | xargs echo "archive entries:"
-
-      - name: Generate release notes
-        env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
-        run: |
-          set -euo pipefail
-          ver="${RELEASE_TAG#v}"
-          # CHANGELOG section for this version is the release body (docs/RELEASE.md);
-          # fall back to a commit list if the entry is missing.
-          notes=$(awk -v v="$ver" '
-            $0 ~ "^## \\[" v "\\]" { f=1; next }
-            /^## \[/ { f=0 }
-            f' CHANGELOG.md)
-          if [ -n "$notes" ]; then
-            printf '# nosDshell %s\n\n' "$RELEASE_TAG" > release_notes.md
-            printf '%s\n' "$notes" >> release_notes.md
-          else
-            prev_tag=$(git describe --tags --abbrev=0 "${RELEASE_TAG}^" 2>/dev/null \
-              || git tag --sort=-version:refname | grep -vxF "$RELEASE_TAG" | head -n1 || true)
-            range="${prev_tag:-$(git rev-list --max-parents=0 HEAD)}..${RELEASE_TAG}"
-            printf '# nosDshell %s\n\n## Changes since %s\n\n' "$RELEASE_TAG" "${prev_tag:-project start}" > release_notes.md
-            git log "$range" --pretty=format:"- %s ([%h](https://github.com/${GITHUB_REPOSITORY}/commit/%H))" >> release_notes.md
-            printf '\n' >> release_notes.md
+          cd "packages/$COMPONENT"
+          VER="${VERSION#"$COMPONENT"-v}"
+          if [ -d debian ]; then
+            dch -v "${VER}-1" "CI build ${VERSION}" || true
+            dpkg-buildpackage -us -uc -b
+            mkdir -p "$GITHUB_WORKSPACE/dist/$COMPONENT"
+            mv ../*.deb "$GITHUB_WORKSPACE/dist/$COMPONENT/" || true
           fi
-          head -20 release_notes.md
+          if [ -f "rpm/$COMPONENT.spec" ]; then
+            : # TODO: rpmbuild 需要源码包布局，见 build-deb；首版先只出 deb/tar
+          fi
 
-      - name: Create GitHub release
+      - uses: actions/upload-artifact@v7
+        with:
+          name: pkg-${{ needs.build.outputs.component }}
+          path: dist/${{ needs.build.outputs.component }}/
+          retention-days: 7
+
+  # ── 3. GitHub Release（全部组件）────────────────────────────
+  github-release:
+    needs: [build, packaging]
+    if: always() && needs.build.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: dist-${{ needs.build.outputs.component }}
+          path: dist
+      - uses: actions/download-artifact@v7
+        with:
+          pattern: pkg-${{ needs.build.outputs.component }}
+          path: dist
+        continue-on-error: true
+
+      - name: 创建 / 更新 GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          GH_REPO: ${{ github.repository }}
         run: |
           set -euo pipefail
-          assets=("nosdshell-${RELEASE_TAG}.tar.gz" nosdshell-latest.tar.gz)
-          if gh release view "$RELEASE_TAG" > /dev/null 2>&1; then
-            printf 'Release %s exists; refreshing notes and assets.\n' "$RELEASE_TAG"
-            gh release edit "$RELEASE_TAG" --notes-file release_notes.md
-            gh release upload "$RELEASE_TAG" "${assets[@]}" --clobber
-            exit 0
+          COMPONENT="${{ needs.build.outputs.component }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/* --clobber
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file "dist/release_notes.md" \
+              dist/*
           fi
-          gh release create "$RELEASE_TAG" --verify-tag --notes-file release_notes.md "${assets[@]}"
+          echo "::notice::组件 $COMPONENT 发布完成：$TAG"
 
-  # The tag is the only thing a release needs from a human: everything below is
-  # mechanical bookkeeping that used to sit in Scripts/dev/release.sh and ran on
-  # whichever machine cut the release.  Both jobs are idempotent — re-running
-  # this workflow for an existing tag (workflow_dispatch) is a no-op.
+  # ── 4. reopen development（仅 nosdshell：isDevelopment 回 true）──
   reopen:
-    name: Reopen development
-    needs: release
+    needs: [build, github-release]
+    if: needs.build.outputs.component == 'nosdshell'
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out main
-        uses: actions/checkout@v6
+      - uses: actions/checkout@v6
         with:
           ref: main
-          fetch-depth: 1
-
-      - name: Flip isDevelopment back on
-        env:
-          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+      - name: isDevelopment 改回 true 并推送
         run: |
           set -euo pipefail
-          if grep -q 'isDevelopment: true' Commons/Version.qml; then
-            echo "isDevelopment already true — nothing to reopen."
-            exit 0
-          fi
-          sed -i 's/isDevelopment: false/isDevelopment: true/' Commons/Version.qml
-          git config user.name  'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add Commons/Version.qml
-          git commit -m "chore(release): reopen development after ${RELEASE_TAG}"
+          sed -i 's/isDevelopment: false/isDevelopment: true/' \
+            packages/nosdshell/Commons/Version.qml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/nosdshell/Commons/Version.qml
+          git commit -m "chore(release): reopen development after $TAG"
           git push origin main
-

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""tokens.toml 三方一致性检查（nosd-app-themes）
+"""spec/tokens.toml 三方一致性检查（nosd monorepo）
 
 检查项：
 1. GTK CSS 的圆角字面值必须落在 tokens.toml [radius] 集合内。
@@ -16,9 +16,9 @@
    polish(QPalette&) 只做 standardPalette()，而 standardPalette() 只填这里
    出现过的角色；漏掉的角色回落到 QPalette 默认构造值（Window = #efefef），
    表现为菜单栏/工具栏/页签栏露出的浅灰带。
-5. nosDshell Commons/Style.qml 的 radius 家族与 tokens.toml 一致（若仓库存在）。
+5. packages/nosdshell/Commons/Style.qml 的 radius 家族与 tokens.toml 一致。
 
-用法: scripts/check-tokens.py [--stats] [nosd-app-themes 根目录]
+用法: tools/check-tokens.py [--stats] [nosd 仓根目录]
 退出码: 0 = 全部通过；1 = 存在漂移（打印每一项）。
 """
 import re
@@ -26,6 +26,9 @@ import sys
 import tomllib
 from pathlib import Path
 
+GTK_PKG = Path("packages") / "nosd-gtk-theme"
+KVANTUM_PKG = Path("packages") / "nosd-kvantum-theme"
+SHELL_PKG = Path("packages") / "nosdshell"
 THEME_DIRS = ("deepin", "deepin-dark")
 GTK_SUBDIRS = ("gtk-3.0", "gtk-4.0")
 
@@ -173,7 +176,7 @@ def main() -> int:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     want_stats = "--stats" in sys.argv[1:]
     root = Path(args[0]) if args else Path(__file__).resolve().parent.parent
-    tokens = tomllib.loads((root / "tokens.toml").read_text())
+    tokens = tomllib.loads((root / "spec" / "tokens.toml").read_text())
     # [radius] 下除令牌外还有 exempt/outline 子表，只取整数项。
     allowed_radii = {v for v in tokens["radius"].values() if isinstance(v, int)}
     exempt = tokens["radius"].get("exempt", {})
@@ -184,7 +187,7 @@ def main() -> int:
     hex_re = re.compile(r"(?<![\w-])#[0-9a-fA-F]{3,8}\b")
     for theme in THEME_DIRS:
         for sub in GTK_SUBDIRS:
-            css_dir = root / theme / sub
+            css_dir = root / GTK_PKG / theme / sub
             if not css_dir.is_dir():
                 continue
             for css in sorted(css_dir.rglob("*.css")):
@@ -285,7 +288,7 @@ def main() -> int:
     at_re = re.compile(r"@([\w-]+)")
     for theme in THEME_DIRS:
         for sub in ST_SUBDIRS:
-            css_dir = root / theme / sub
+            css_dir = root / GTK_PKG / theme / sub
             if not css_dir.is_dir():
                 continue
             for css in sorted(css_dir.rglob("*.css")):
@@ -304,7 +307,7 @@ def main() -> int:
                         break
 
     # 4. kvconfig 必须给出 [GeneralColors] 全套角色
-    kvcfg = root / "kvantum" / "nosd" / "nosd.kvconfig"
+    kvcfg = root / KVANTUM_PKG / "nosd" / "nosd.kvconfig"
     if kvcfg.exists():
         text = kvcfg.read_text()
         rel = kvcfg.relative_to(root)
@@ -322,9 +325,11 @@ def main() -> int:
                     f"{rel} 的 [GeneralColors] 缺角色：" + ", ".join(sorted(missing))
                 )
 
-    # 4. nosDshell Style.qml 半径
-    style_qml = root.parent / "nosDshell" / "Commons" / "Style.qml"
-    if style_qml.exists():
+    # 5. nosdshell Style.qml 半径——monorepo 内是硬依赖，缺失即漂移
+    style_qml = root / SHELL_PKG / "Commons" / "Style.qml"
+    if not style_qml.exists():
+        failures.append(f"{style_qml.relative_to(root)} 不存在")
+    else:
         style = style_qml.read_text()
         mapping = {
             "radiusXS": "radiusRow",

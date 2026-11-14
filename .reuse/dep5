@@ -1,0 +1,59 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: nosd
+Upstream-Contact: nosDshell <https://github.com/nosDshell/nosd>
+Source: https://github.com/nosDshell/nosd
+
+# gitignore
+Files: .gitignore
+Copyright: None
+License: CC0-1.0
+
+# xml toml json conf yaml
+Files: packages/nosd-gtk-theme/deepin-dark/*.xpm packages/nosd-gtk-theme/deepin-dark/*.css
+	packages/nosd-gtk-theme/deepin-dark/*.rc packages/nosd-gtk-theme/deepin-dark/*.xml
+	packages/nosd-gtk-theme/deepin/*.xpm packages/nosd-gtk-theme/deepin/*.css
+	packages/nosd-gtk-theme/deepin/*.rc packages/nosd-gtk-theme/deepin/*.xml
+Copyright: None
+License: CC0-1.0
+
+# rpm
+Files: packages/nosd-gtk-theme/rpm/*
+Copyright: None
+License: CC0-1.0
+
+# debian
+Files: packages/*/debian/*
+Copyright: None
+License: GPL-3.0-or-later
+
+# Arch
+Files: packages/*/arch/*
+Copyright: None
+License: CC0-1.0
+
+# theme
+Files: *.theme *gtkrc *themerc
+Copyright: None
+License: CC0-1.0
+
+# README&DOC
+Files: packages/nosd-gtk-theme/README.md packages/nosd-gtk-theme/README.zh_CN.md
+	packages/nosd-gtk-theme/CHANGELOG.md
+Copyright: UnionTech Software Technology Co., Ltd.
+License: CC-BY-4.0
+
+# Project file
+Files: packages/*/Makefile
+Copyright: None
+License: CC0-1.0
+
+#example svg
+Files: packages/nosd-gtk-theme/deepin-dark/*.svg packages/nosd-gtk-theme/deepin/*.svg
+Copyright: UnionTech Software Technology Co., Ltd.
+License: GPL-3.0-or-later
+
+#example png
+Files: packages/nosd-gtk-theme/deepin-dark/*.png packages/nosd-gtk-theme/deepin/*.png
+	packages/fcitx5-theme-nosd/img/*.png packages/fcitx5-theme-nosd/*/*.png
+Copyright: UnionTech Software Technology Co., Ltd.
+License: GPL-3.0-or-later

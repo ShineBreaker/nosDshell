@@ -88,30 +88,31 @@ Wayland 平铺与滚动合成器（Niri、Hyprland、Sway 等）轻快高效，�
 
 #### Guix
 
-本仓库即 Guix channel（`.guix-channel`）。在 `~/.config/guix/channels.scm` 中加入：
+分发设施在独立的 [nosd-pkgs](https://github.com/nosDshell/nosd-pkgs) 仓库——它同时是 Guix channel 与 Nix flake，提供 nosdshell、quickshell-nosd fork、Rust 辅助工具与全部主题包。在 `~/.config/guix/channels.scm` 中加入：
 
 ```scheme
 (cons* (channel
-        (name 'nosdshell)
-        (url "https://github.com/nosDshell/nosDshell")
-        ;; 跟踪 main；要装某个发行版可改为 (branch "v1.7.0")
+        (name 'nosd)
+        (url "https://github.com/nosDshell/nosd-pkgs")
         (branch "main"))
        %default-channels)
 ```
 
-然后 `guix pull` 并安装：`guix install nosdshell`。channel 的每个提交打包其自身源码树，所以 pin 到 tag 得到的就是对应版本。
+然后 `guix pull` 并安装：`guix install nosdshell`。
 
-开发态构建（打包当前工作区而非远端提交）：`guix build -f nosdshell.scm`。
+开发态构建（打包当前工作区而非远端提交）：在本目录跑
+`guix build -L ../../../nosd-pkgs/guix -f guix.scm`（nosd-pkgs 已加进
+channels 时可省 `-L`）。
 
 #### Nix / NixOS
 
-`flake.nix` 提供软件包 `packages.<system>.default`、overlay `overlays.default`、Home Manager 模块 `homeModules.default`（`programs.nosdshell`）与 NixOS 模块 `nixosModules.default`（`services.nosdshell`）。
+`nosd-pkgs` 的 flake 提供软件包 `packages.<system>.nosdshell`、overlay `overlays.default`、Home Manager 模块 `homeModules.default`（`programs.nosdshell`）与 NixOS 模块 `nixosModules.default`（`services.nosdshell`）。
 
 NixOS（在你的 flake 里）：
 
 ```nix
 {
-  inputs.nosdshell.url = "github:nosDshell/nosDshell";
+  inputs.nosdshell.url = "github:nosDshell/nosd-pkgs";
 
   outputs = { nixpkgs, nosdshell, ... }: {
     nixosConfigurations.<主机名> = nixpkgs.lib.nixosSystem {
@@ -128,7 +129,7 @@ Home Manager：
 
 ```nix
 {
-  inputs.nosdshell.url = "github:nosDshell/nosDshell";
+  inputs.nosdshell.url = "github:nosDshell/nosd-pkgs";
 
   outputs = { home-manager, nosdshell, ... }: {
     homeConfigurations.<用户名> = home-manager.lib.homeManagerConfiguration {

@@ -88,8 +88,8 @@ Wayland compositors like Niri, Hyprland, and Sway handle windows fast, but turni
 
 | Distribution | Method |
 |---|---|
-| Guix | `nosdshell.scm` at the repository root |
-| Nix / NixOS | `flake.nix` (includes package, Home Manager module, and NixOS module) |
+| Guix | [nosd-pkgs](https://github.com/nosDshell/nosd-pkgs) channel (`guix install nosdshell`) |
+| Nix / NixOS | [nosd-pkgs](https://github.com/nosDshell/nosd-pkgs) flake (package, Home Manager module, and NixOS module) |
 | Other | Clone this repository and run `qs -p <path-to-repo>` |
 
 Run `nosdshell --version` to print the shell and Quickshell versions. Shell completions for `bash`, `zsh`, and `fish` install to standard paths and load automatically in new terminal sessions.

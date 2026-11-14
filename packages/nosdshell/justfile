@@ -54,9 +54,9 @@ build:
     set -euo pipefail
     channel_lock="${GUIX_CHANNEL_LOCK:-$HOME/.config/guix/trusted-channels.scm}"
     if [ -f "$channel_lock" ]; then
-      guix time-machine -C "$channel_lock" -- build -f nosdshell.scm
+      guix time-machine -C "$channel_lock" -- build -f guix.scm
     else
-      guix build -f nosdshell.scm
+      guix build -f guix.scm
     fi
 
 #   Stops the shepherd `nosdshell` service and any previous manual instance,
@@ -76,9 +76,9 @@ run:
     set -euo pipefail
     channel_lock="${GUIX_CHANNEL_LOCK:-$HOME/.config/guix/trusted-channels.scm}"
     if [ -f "$channel_lock" ]; then
-      store=$(guix time-machine -C "$channel_lock" -- build -f nosdshell.scm | tail -n1)
+      store=$(guix time-machine -C "$channel_lock" -- build -f guix.scm | tail -n1)
     else
-      store=$(guix build -f nosdshell.scm | tail -n1)
+      store=$(guix build -f guix.scm | tail -n1)
     fi
     echo "built: $store"
     herd stop nosdshell 2>/dev/null || true

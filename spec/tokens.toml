@@ -1,9 +1,10 @@
-# nosd-app-themes 形状令牌（规范声明）
+# nosd monorepo 形状令牌（规范声明）
 #
-# 三方消费方：GTK CSS（deepin/、deepin-dark/）、Kvantum SVG/kvconfig、
-# nosDshell 的 Commons/Style.qml。数值的唯一权威来源是
-# nosDshell/DESIGN.md §1.4、§1.2；本文件只是把权威值抄成机器可读形式，
-# scripts/check-tokens.py 负责发现三处之间的漂移。
+# 消费方：GTK CSS（packages/nosd-gtk-theme/deepin{,-dark}）、Kvantum
+# SVG/kvconfig（packages/nosd-kvantum-theme）、packages/nosdshell 的
+# Commons/Style.qml。数值的唯一权威来源是
+# packages/nosdshell/DESIGN.md §1.4、§1.2；本文件只是把权威值抄成机器
+# 可读形式，tools/check-tokens.py 负责发现各处之间的漂移。
 #
 # 改这里 ≠ 改各处实现。改这里之前先改 DESIGN.md，再逐处对齐。
 

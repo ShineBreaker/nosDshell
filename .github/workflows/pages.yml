@@ -1,0 +1,35 @@
+name: Pages
+
+# nosdshell 的 docs/（Jekyll，含 vendored legacy 文档）发布到 GitHub Pages。
+# monorepo 后源目录不再是仓根 /docs，改用 Actions 部署路径。
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/nosdshell/docs/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: packages/nosdshell/docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

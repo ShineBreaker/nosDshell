@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: archlinux:latest
+    defaults:
+      run:
+        working-directory: packages/nosdshell
     steps:
       - name: Install tools
         run: |
@@ -45,6 +48,9 @@ jobs:
   scripts:
     name: scripts
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/nosdshell
     steps:
       - uses: actions/checkout@v6
 
@@ -68,26 +74,38 @@ jobs:
           python3 Scripts/dev/check-settings-keys.py
           python3 Scripts/dev/check-translations.py
 
-  # Nix packaging is only exercised by users of the flake, so a syntax error
-  # there (e.g. a `//` comment, which Nix reads as the update operator)
-  # ships silently. Parse every .nix file and evaluate the package name.
-  nix-eval:
-    name: nix-eval
+  # 跨组件令牌一致性：spec/tokens.toml 与 GTK CSS / Kvantum / Style.qml
+  # 的漂移检查。monorepo 前这一步只能在本机跑（靠 sibling 目录约定），
+  # 现在全部消费方都在仓内，必须进 CI。
+  tokens:
+    name: tokens
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: cachix/install-nix-action@v31
-      - name: Parse and evaluate the flake
+      - name: check tokens
+        run: python3 tools/check-tokens.py .
+
+  # 仓库级工具链（release build.py 等）的语法自检。
+  repo-tools:
+    name: repo-tools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: py_compile repo tools
         run: |
           set -euo pipefail
-          git ls-files '*.nix' | xargs -n1 nix-instantiate --parse > /dev/null
-          nix eval .#packages.x86_64-linux.default.name
+          find tools -name "*.py" -print0 | xargs -0 -n1 python3 -m py_compile
+      - name: build.py --list
+        run: python3 tools/release/build.py --list
 
   # docs/legacy/ is generated — fail if it drifts from the vendored source
   # or the converter itself (catches both hand edits and stale output).
   docs-sync:
     name: docs-sync
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/nosdshell
     steps:
       - uses: actions/checkout@v6
 
