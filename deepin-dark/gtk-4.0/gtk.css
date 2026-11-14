@@ -85,6 +85,8 @@
 
 @define-color borders shade(@base_color,
 0.7);
+@define-color switch_trough_color #4d5364;
+@define-color switch_knob_color #0e0e0e;
 @define-color unfocused_borders shade(@base_color,
 0.8);
 @define-color warning_color @warning_color;
@@ -2816,286 +2818,214 @@ scrollbar.horizontal slider {
 scrollbar.vertical slider {
     min-height: 40px;
 }
+/* nosd: 复选/单选/开关改为 CSS 盒体 + -gtk-recolor 字形，颜色全部走变量，
+   由 shell 模板注入的 nosd.css 驱动 accent，不再使用烘焙死颜色的 PNG。
+   造型对齐 deepin 原版素材：中性盒体 + accent 对勾/圆点；开关为灰轨 + 深/白滑块。 */
 switch {
     min-width: 36px;
     min-height: 20px;
-    background-size: 36px 20px;
-    background-repeat: no-repeat;
-    background-position: center center;
-}
-switch slider {
-    min-width: 1px;
-    min-height: 1px;
-}
-switch,
-switch slider {
+    padding: 0;
+    border: none;
+    border-radius: 10px;
     outline-color: transparent;
     color: transparent;
-    border: none;
     box-shadow: none;
+    background-color: @switch_trough_color;
 }
-switch {
-    background-image: -gtk-scaled(url("assets/switch-dark.png"), url("assets/switch-dark@2x.png"));
-}
-menuitem:hover switch,
-row:selected switch,
-infobar switch {
-    background-image: -gtk-scaled(url("assets/switch-selected.png"));
-}
-headerbar switch,
-.primary-toolbar switch {
-    background-image: -gtk-scaled(url("assets/switch-header-dark.png"), url("assets/switch-header-dark@2x.png"));
+switch slider {
+    min-width: 14px;
+    min-height: 14px;
+    margin: 3px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: none;
+    background-color: @switch_knob_color;
 }
 switch:checked {
-    background-image: -gtk-scaled(url("assets/switch-active-dark.png"), url("assets/switch-active-dark@2x.png"));
-}
-menuitem:hover switch:checked,
-row:selected switch:checked,
-infobar switch:checked {
-    background-image: -gtk-scaled(url("assets/switch-active-selected.png"));
-}
-headerbar switch:checked,
-.primary-toolbar switch:checked {
-    background-image: -gtk-scaled(url("assets/switch-active-header-dark.png"), url("assets/switch-active-header-dark@2x.png"));
+    background-color: @accent_bg_color;
 }
 switch:disabled {
-    background-image: -gtk-scaled(url("assets/switch-insensitive-dark.png"), url("assets/switch-insensitive-dark@2x.png"));
-}
-menuitem:hover switch:disabled,
-row:selected switch:disabled,
-infobar switch:disabled {
-    background-image: -gtk-scaled(url("assets/switch-insensitive-selected.png"));
-}
-headerbar switch:disabled,
-.primary-toolbar switch:disabled {
-    background-image: -gtk-scaled(url("assets/switch-insensitive-header-dark.png"), url("assets/switch-insensitive-header-dark@2x.png"));
+    background-color: alpha(@switch_trough_color, 0.5);
 }
 switch:checked:disabled {
-    background-image: -gtk-scaled(url("assets/switch-active-insensitive-dark.png"), url("assets/switch-active-insensitive-dark@2x.png"));
+    background-color: alpha(@accent_bg_color, 0.4);
 }
-menuitem:hover switch:checked:disabled,
-row:selected switch:checked:disabled,
-infobar switch:checked:disabled {
-    background-image: -gtk-scaled(url("assets/switch-active-insensitive-selected.png"));
+switch:disabled slider {
+    background-color: alpha(@switch_knob_color, 0.55);
 }
-headerbar switch:checked:disabled,
-.primary-toolbar switch:checked:disabled {
-    background-image: -gtk-scaled(url("assets/switch-active-insensitive-header-dark.png"), url("assets/switch-active-insensitive-header-dark@2x.png"));
+menuitem:hover switch,
+modelbutton:hover switch,
+row:selected switch,
+infobar switch {
+    background-color: alpha(@accent_fg_color, 0.45);
+}
+menuitem:hover switch slider,
+modelbutton:hover switch slider,
+row:selected switch slider,
+infobar switch slider {
+    background-color: @accent_fg_color;
+}
+menuitem:hover switch:checked,
+modelbutton:hover switch:checked,
+row:selected switch:checked,
+infobar switch:checked {
+    background-color: @accent_fg_color;
+}
+menuitem:hover switch:checked slider,
+modelbutton:hover switch:checked slider,
+row:selected switch:checked slider,
+infobar switch:checked slider {
+    background-color: @accent_bg_color;
+}
+menuitem:hover switch:disabled,
+modelbutton:hover switch:disabled,
+row:selected switch:disabled,
+infobar switch:disabled {
+    background-color: alpha(@accent_fg_color, 0.25);
+}
+menuitem:hover switch:disabled slider,
+modelbutton:hover switch:disabled slider,
+row:selected switch:disabled slider,
+infobar switch:disabled slider {
+    background-color: alpha(@accent_fg_color, 0.5);
 }
 .check,
 check,
 treeview.check {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-unchecked-dark.png"), url("assets/checkbox-unchecked-dark@2x.png"));
-}
-.osd check,
-filechooser actionbar check {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-unchecked-dark.png"), url("assets/checkbox-unchecked-dark@2x.png"));
-}
-menuitem check:hover,
-.view check:selected,
-iconview check:selected,
-treeview.check:selected,
-row:selected check,
-infobar check {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-unchecked-selected-dark.png"), url("assets/checkbox-unchecked-selected-dark@2x.png"));
-}
-.check:disabled,
-check:disabled,
-treeview.check:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-unchecked-insensitive-dark.png"), url("assets/checkbox-unchecked-insensitive-dark@2x.png"));
-}
-.osd check:disabled,
-filechooser actionbar check:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-unchecked-insensitive-dark.png"), url("assets/checkbox-unchecked-insensitive-dark@2x.png"));
-}
-menuitem check:disabled:hover,
-.view check:disabled:selected,
-iconview check:disabled:selected,
-treeview.check:disabled:selected,
-row:selected check:disabled,
-infobar check:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-unchecked-insensitive-selected-dark.png"), url("assets/checkbox-unchecked-insensitive-selected-dark@2x.png"));
-}
-.check:indeterminate,
-check:indeterminate,
-treeview.check:indeterminate {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-mixed-dark.png"), url("assets/checkbox-mixed-dark@2x.png"));
-}
-.osd check:indeterminate,
-filechooser actionbar check:indeterminate {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-mixed-dark.png"), url("assets/checkbox-mixed-dark@2x.png"));
-}
-menuitem check:indeterminate:hover,
-.view check:indeterminate:selected,
-iconview check:indeterminate:selected,
-treeview.check:indeterminate:selected,
-row:selected check:indeterminate,
-infobar check:indeterminate {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-mixed-selected-dark.png"), url("assets/checkbox-mixed-selected-dark@2x.png"));
-}
-.check:indeterminate:disabled,
-check:indeterminate:disabled,
-treeview.check:indeterminate:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-mixed-insensitive-dark.png"), url("assets/checkbox-mixed-insensitive-dark@2x.png"));
-}
-.osd check:indeterminate:disabled,
-filechooser actionbar check:indeterminate:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-mixed-insensitive-dark.png"), url("assets/checkbox-mixed-insensitive-dark@2x.png"));
-}
-menuitem check:indeterminate:disabled:hover,
-.view check:indeterminate:disabled:selected,
-iconview check:indeterminate:disabled:selected,
-treeview.check:indeterminate:disabled:selected,
-row:selected check:indeterminate:disabled,
-infobar check:indeterminate:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-mixed-insensitive-selected-dark.png"), url("assets/checkbox-mixed-insensitive-selected-dark@2x.png"));
-}
-.check:checked,
-check:checked,
-treeview.check:checked {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-dark.png"), url("assets/checkbox-checked-dark@2x.png"));
-}
-.osd check:checked,
-filechooser actionbar check:checked {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-dark.png"), url("assets/checkbox-checked-dark@2x.png"));
-}
-menuitem check:checked:hover,
-.view check:checked:selected,
-iconview check:checked:selected,
-treeview.check:checked:selected,
-row:selected check:checked,
-infobar check:checked {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-selected-dark.png"), url("assets/checkbox-checked-selected-dark@2x.png"));
-}
-.check:checked:disabled,
-check:checked:disabled,
-treeview.check:checked:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-insensitive-dark.png"), url("assets/checkbox-checked-insensitive-dark@2x.png"));
-}
-.osd check:checked:disabled,
-filechooser actionbar check:checked:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-insensitive-dark.png"), url("assets/checkbox-checked-insensitive-dark@2x.png"));
-}
-menuitem check:checked:disabled:hover,
-.view check:checked:disabled:selected,
-iconview check:checked:disabled:selected,
-treeview.check:checked:disabled:selected,
-row:selected check:checked:disabled,
-infobar check:checked:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-insensitive-selected-dark.png"), url("assets/checkbox-checked-insensitive-selected-dark@2x.png"));
+    min-width: 14px;
+    min-height: 14px;
+    margin: 0 2px;
+    padding: 0;
+    -gtk-icon-source: none;
+    background-color: @theme_base_color;
+    border: 1px solid @borders;
+    border-radius: 4px;
 }
 .radio,
 radio,
 treeview.radio {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-unchecked-dark.png"), url("assets/radio-unchecked-dark@2x.png"));
+    min-width: 14px;
+    min-height: 14px;
+    margin: 0 2px;
+    padding: 0;
+    -gtk-icon-source: none;
+    background-color: @theme_base_color;
+    border: 1px solid @borders;
+    border-radius: 50%;
 }
-.osd radio,
-filechooser actionbar radio {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-unchecked-dark.png"), url("assets/radio-unchecked-dark@2x.png"));
+check:hover,
+radio:hover {
+    border-color: @accent_border_color;
 }
-menuitem radio:hover,
-.view radio:selected,
-iconview radio:selected,
-treeview.radio:selected,
-row:selected radio,
-infobar radio {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-unchecked-selected-dark.png"));
+check:active,
+radio:active {
+    background-color: shade(@theme_base_color, 0.8);
 }
-.radio:disabled,
-radio:disabled,
-treeview.radio:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-unchecked-insensitive-dark.png"), url("assets/radio-unchecked-insensitive-dark@2x.png"));
+.check:checked,
+check:checked,
+treeview.check:checked {
+    -gtk-icon-source: -gtk-recolor(url("assets/check-symbolic.svg"));
+    color: @accent_bg_color;
 }
-.osd radio:disabled,
-filechooser actionbar radio:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-unchecked-insensitive-dark.png"), url("assets/radio-unchecked-insensitive-dark@2x.png"));
-}
-menuitem radio:disabled:hover,
-.view radio:disabled:selected,
-iconview radio:disabled:selected,
-treeview.radio:disabled:selected,
-row:selected radio:disabled,
-infobar radio:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-unchecked-insensitive-selected-dark.png"));
-}
+.check:indeterminate,
+check:indeterminate,
+treeview.check:indeterminate,
 .radio:indeterminate,
 radio:indeterminate,
 treeview.radio:indeterminate {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-mixed-dark.png"), url("assets/radio-mixed-dark@2x.png"));
-}
-.osd radio:indeterminate,
-filechooser actionbar radio:indeterminate {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-mixed-dark.png"), url("assets/radio-mixed-dark@2x.png"));
-}
-menuitem radio:indeterminate:hover,
-.view radio:indeterminate:selected,
-iconview radio:indeterminate:selected,
-treeview.radio:indeterminate:selected,
-row:selected radio:indeterminate,
-infobar radio:indeterminate {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-mixed-selected-dark.png"));
-}
-.radio:indeterminate:disabled,
-radio:indeterminate:disabled,
-treeview.radio:indeterminate:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-mixed-insensitive-dark.png"), url("assets/radio-mixed-insensitive-dark@2x.png"));
-}
-.osd radio:indeterminate:disabled,
-filechooser actionbar radio:indeterminate:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-mixed-insensitive-dark.png"), url("assets/radio-mixed-insensitive-dark@2x.png"));
-}
-menuitem radio:indeterminate:disabled:hover,
-.view radio:indeterminate:disabled:selected,
-iconview radio:indeterminate:disabled:selected,
-treeview.radio:indeterminate:disabled:selected,
-row:selected radio:indeterminate:disabled,
-infobar radio:indeterminate:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-mixed-insensitive-selected-dark.png"), url("assets/radio-mixed-insensitive-selected-dark@2x.png"));
+    -gtk-icon-source: -gtk-recolor(url("assets/dash-symbolic.svg"));
+    color: @accent_bg_color;
 }
 .radio:checked,
 radio:checked,
 treeview.radio:checked {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-checked-dark.png"), url("assets/radio-checked-dark@2x.png"));
+    -gtk-icon-source: -gtk-recolor(url("assets/radio-dot-symbolic.svg"));
+    color: @accent_bg_color;
 }
-.osd radio:checked,
-filechooser actionbar radio:checked {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-checked-dark.png"), url("assets/radio-checked-dark@2x.png"));
+.check:disabled,
+check:disabled,
+treeview.check:disabled,
+.radio:disabled,
+radio:disabled,
+treeview.radio:disabled {
+    background-color: @insensitive_base_color;
+    border-color: @unfocused_borders;
 }
+.check:checked:disabled,
+check:checked:disabled,
+treeview.check:checked:disabled,
+.check:indeterminate:disabled,
+check:indeterminate:disabled,
+treeview.check:indeterminate:disabled,
+.radio:checked:disabled,
+radio:checked:disabled,
+treeview.radio:checked:disabled,
+.radio:indeterminate:disabled,
+radio:indeterminate:disabled,
+treeview.radio:indeterminate:disabled {
+    color: alpha(@accent_bg_color, 0.45);
+}
+menuitem check:hover,
+modelbutton:hover check,
+menuitem radio:hover,
+modelbutton:hover radio,
+.view check:selected,
+iconview check:selected,
+treeview.check:selected,
+.view radio:selected,
+iconview radio:selected,
+treeview.radio:selected,
+row:selected check,
+row:selected radio,
+infobar check,
+infobar radio {
+    background-color: transparent;
+    border-color: alpha(@accent_fg_color, 0.9);
+}
+menuitem check:checked:hover,
+modelbutton:hover check:checked,
+menuitem check:indeterminate:hover,
+modelbutton:hover check:indeterminate,
 menuitem radio:checked:hover,
+modelbutton:hover radio:checked,
+menuitem radio:indeterminate:hover,
+modelbutton:hover radio:indeterminate,
+.view check:checked:selected,
+iconview check:checked:selected,
+treeview.check:checked:selected,
+.view check:indeterminate:selected,
+iconview check:indeterminate:selected,
+treeview.check:indeterminate:selected,
 .view radio:checked:selected,
 iconview radio:checked:selected,
 treeview.radio:checked:selected,
+.view radio:indeterminate:selected,
+iconview radio:indeterminate:selected,
+treeview.radio:indeterminate:selected,
+row:selected check:checked,
+row:selected check:indeterminate,
 row:selected radio:checked,
-infobar radio:checked {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-checked-selected-dark.png"));
-}
-.radio:checked:disabled,
-radio:checked:disabled,
-treeview.radio:checked:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-checked-insensitive-dark.png"), url("assets/radio-checked-insensitive-dark@2x.png"));
-}
-.osd radio:checked:disabled,
-filechooser actionbar radio:checked:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-checked-insensitive-dark.png"), url("assets/radio-checked-insensitive-dark@2x.png"));
-}
-menuitem radio:checked:disabled:hover,
-.view radio:checked:disabled:selected,
-iconview radio:checked:disabled:selected,
-treeview.radio:checked:disabled:selected,
-row:selected radio:checked:disabled,
-infobar radio:checked:disabled {
-    -gtk-icon-source: -gtk-scaled(url("assets/radio-checked-insensitive-selected-dark.png"));
+row:selected radio:indeterminate,
+infobar check:checked,
+infobar check:indeterminate,
+infobar radio:checked,
+infobar radio:indeterminate {
+    color: @accent_fg_color;
 }
 .view.content-view.check:not(list),
 iconview.content-view.check:not(list) {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-selectionmode-dark.png"));
+    -gtk-icon-source: none;
     background-color: transparent;
+    border-color: @borders;
 }
 .view.content-view.check:checked:not(list),
 iconview.content-view.check:checked:not(list) {
-    -gtk-icon-source: -gtk-scaled(url("assets/checkbox-checked-selectionmode-dark.png"));
-    background-color: transparent;
+    -gtk-icon-source: -gtk-recolor(url("assets/check-symbolic.svg"));
+    background-color: @accent_bg_color;
+    border-color: @accent_bg_color;
+    color: @accent_fg_color;
 }
+
 checkbutton.text-button,
 radiobutton.text-button {
     padding: 2px 0;
@@ -5708,4 +5638,6 @@ headerbar.default-decoration:backdrop {
 headerbar .title {
     font-weight: bold;
 }
+
+
 

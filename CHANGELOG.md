@@ -8,6 +8,27 @@
 
 版本号遵循[语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [Unreleased]
+
+### 变更
+
+- *GTK 复选/单选/开关改为调色板跟随的矢量实现*：GTK 3/4 全部皮肤（`deepin`、
+  `deepin-dark` 的 `gtk.css` 与 `gtk-dark.css`）不再引用烘焙了旧蓝色 accent 的 PNG
+  素材（`checkbox-*`、`radio-*`、`switch-*`）。指示器改为 CSS 盒体几何
+  （`background-color` + `border`）配 `-gtk-recolor` 字形（新增
+  `check-symbolic.svg`、`dash-symbolic.svg`、`radio-dot-symbolic.svg`），颜色全部走
+  `@define-color` 变量，随 shell 模板注入的 `nosd.css` 动态跟随 accent。选中/悬停
+  （`menuitem`、`modelbutton`、`row:selected`、`.view:selected`、`infobar`）与禁用态
+  一并覆盖；`.view.content-view` 选择角标改为 accent 底 + `accent_fg` 对勾。
+- *开关改 CSS 绘制*：`switch` 的灰轨与滑块用 `background-color`/`border-radius`
+  画成，新增 `switch_trough_color`、`switch_knob_color` 两个可覆盖变量；`:checked`
+  走 `accent_bg_color` 轨道 + 深色滑块，对齐 deepin 原版素材与 Kvantum 侧样式。
+- *Kvantum 复选/单选与 GTK 收敛到同一形态*：`nosd.svg(.tpl)` 中
+  `checkbox-checked-normal`、`checkbox-tristate-{normal,focused}`、
+  `radio-checked-normal` 由「accent 实心底 + 反白字形」改为「中性描边框 +
+  accent 字形」，与 GTK 侧（及 deepin 原素材的深色版）一致；`item-checkbox` 等
+  菜单指示器保持「面底 + accent 字形」不变。
+
 ## [0.1.0] - 2026-11-13
 
 首个以 `nosd-app-themes` 名义发布的版本，替代 `deepin-gtk-theme`。

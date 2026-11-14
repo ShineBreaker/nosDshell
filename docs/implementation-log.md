@@ -205,6 +205,42 @@
 - **旧假设作废**：`tokens.toml` 里「kvconfig 省略 `[GeneralColors]` 走 QPalette」不成立——省略得到的是 Qt 默认调色板，不是 DE 的。给了 `[GeneralColors]` 之后 Kvantum 完全接管 Qt 配色，这正是统一风格要的。
 - **验证**（同一份 SVG、同一个 style，只差 kvconfig）：深色 `页签栏/菜单栏/工具栏/内容底` 全部 `(30,35,41)`、按钮 `(45,51,58)`、切换态 `(16,109,170)`；浅色对应 `(249,252,255)` / `(230,232,235)` / `(44,167,248)`。修复前深色页签栏是 `(239,239,239)`。
 
+### 阶段 6 · 复选/单选/开关指示器去烘焙色、与 Kvantum 收敛（完成）
+
+真机实测（Kanagawa 调色板，`pcmanfm-qt` + `gtk4/3-widget-factory`）暴露的最大问题：
+GTK 的 `checkbox-*`/`radio-*`/`switch-*` PNG 把旧默认蓝 `#2ca7f8` 烘死在像素里，
+无法跟随 `nosd.css` 注入的 accent。
+
+- **根因**：指示器整枚是 `-gtk-icon-source` / `background-image` 的 PNG，颜色是
+  素材自身像素，CSS 变量管不到。与 Qt 侧（Kvantum SVG 占位符随模板渲染）形成
+  结构性落差——同一 accent 下 GTK 出蓝、Qt 出绿。
+- **方案**：盒体几何回 CSS（`background-color`/`border`/`border-radius`），字形走
+  `-gtk-recolor` + 黑色 SVG（`check-symbolic`/`dash-symbolic`/`radio-dot-symbolic`，
+  自制素材，对齐 Kvantum `path5083` 同形对勾）。GTK 4.22 / 3.24 实测 `-gtk-recolor`
+  正常吃 `color`。`switch` 改 `background-color` 轨道 + `slider` 圆钮，
+  `switch_trough_color`/`switch_knob_color` 进默认值块可覆盖。
+- **状态面**：选中/悬停上下文（`menuitem:hover`、`modelbutton:hover`、
+  `row:selected`、`.view:selected`、`infobar`）盒体转透明、`accent_fg` 描边与字形，
+  对齐 deepin `-selected` 素材的「accent 底上裸字形」；禁用态盒体走
+  `insensitive_base_color`、字形 `alpha(accent,0.45)`。`modelbutton` 是 GTK4
+  popover 菜单的实际节点名，不在原主题的选择器里，已补。
+- **误报一条**：选中行上的深色对勾一度以为 `color` 没生效，实测是本调色板
+  `accent_fg_color=#1f1f28`（深底字）按设计落在 accent 行上——对照
+  `~/.config/gtk-4.0/nosd.css` 后确认行为正确。
+- **Kvantum 侧**：`checkbox-checked-normal`、`checkbox-tristate-{normal,focused}`、
+  `radio-checked-normal` 从「accent 实心底 + 反白字形」改为「`on_surface_variant`
+  描边框 + `primary` 字形」，与 GTK 新形态及 deepin 深色原素材一致；
+  `radio-checked` 顺带删掉只起蒙版作用的 `surface` 中层圆。tpl 与静态 svg 同步改。
+- **验证**：`gtk4-widget-factory`/`gtk3-widget-factory`（deepin-dark、
+  `XDG_DATA_DIRS=/tmp/gtktest` 隔离测仓版）——对勾/圆点/横线取到 `#76946a`；
+  开关 OFF `#4d5364` 轨 + `#0e0e0e` 钮、ON `#76946a` 轨；选中行深色字形可读。
+  `kvantumpreview` 复选/单选页签渲染描边框 + accent 字形与 GTK 一致；
+  `pcmanfm-qt` 菜单勾选/单选正常。`make check`（check-tokens）全部一致；
+  `border-radius` 用 `50%` 过令牌校验。
+- **遗留（如实记录）**：GTK2 的 `gtk-2.0/assets` 仍是 PNG 主题，无 recolor 机制，
+  旧蓝无法跟随，属平台限制；gtk-3.0/4.0 资产目录里旧 PNG 已无 CSS 引用，暂留
+  文件未删（包内 1.2M，去留另行决定）。
+
 ### 待办 / 开放项
 
 - 步骤 7：`build-deb` 真机验证；`icons/` 并入（deepin-icon-theme 尚未入仓，用户拍板不做）。

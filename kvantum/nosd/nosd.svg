@@ -172,13 +172,12 @@
 <path style="fill:#f9fcff" id="dock-focused" d="m 407,1170 h 30 v 30 h -30 z"/>
 <g style="color:#000">
 <g id="radio-checked-normal">
-<path style="fill:#2ca7f8" id="path1800" d="m 105.5,200 c -4.40644,0 -8,3.59356 -8,8 0,4.40644 3.59356,8 8,8 4.40643,0 8,-3.59357 8,-8 0,-4.40643 -3.59357,-8 -8,-8 z"/>
-<path style="fill:#f9fcff" id="use3869" d="m 105.5,202 c 3.32567,0 6,2.67433 6,6 0,3.32567 -2.67433,6 -6,6 -3.32568,0 -6,-2.67432 -6,-6 0,-3.32568 2.67432,-6 6,-6 z"/>
+<path style="fill:none;stroke:#5c616c;stroke-width:1.4" id="path1800" d="m 105.5,200 c -4.40644,0 -8,3.59356 -8,8 0,4.40644 3.59356,8 8,8 4.40643,0 8,-3.59357 8,-8 0,-4.40643 -3.59357,-8 -8,-8 z"/>
 <ellipse cx="105.5" cy="208" rx="4" ry="4" style="fill:#2ca7f8" id="path6309-3"/>
 </g>
 <g id="checkbox-tristate-normal" transform="translate(0,2.5)">
-<rect width="16" x="347.5" y="-213.5" rx="2" height="16" ry="2" style="fill:#2ca7f8" id="use3893" transform="scale(1,-1)"/>
-<path style="fill:#f5f8fb" id="rect7313" d="m 352.1,-207 6.8,0 c 0.8864,0 1.6,0.669 1.6,1.5 0,0.831 -0.7136,1.5 -1.6,1.5 h -6.8 c -0.8864,0 -1.6,-0.669 -1.6,-1.5 0,-0.831 0.7136,-1.5 1.6,-1.5 z " transform="scale(1,-1)"/>
+<rect width="16" x="347.5" y="-213.5" rx="2" height="16" ry="2" style="fill:none;stroke:#5c616c;stroke-width:1.4" id="use3893" transform="scale(1,-1)"/>
+<path style="fill:#2ca7f8" id="rect7313" d="m 352.1,-207 6.8,0 c 0.8864,0 1.6,0.669 1.6,1.5 0,0.831 -0.7136,1.5 -1.6,1.5 h -6.8 c -0.8864,0 -1.6,-0.669 -1.6,-1.5 0,-0.831 0.7136,-1.5 1.6,-1.5 z " transform="scale(1,-1)"/>
 </g>
 </g>
 <g style="fill-rule:evenodd">
@@ -394,12 +393,12 @@
 <use width="100%" x="0" y="0" height="100%" xlink:href="#spin-minus-disabled" id="spin-down-disabled" transform="translate(0,22)"/>
 <g style="color:#000">
 <g id="checkbox-checked-normal">
-<rect width="16" x="272.5" y="-216" rx="2" ry="2" height="16" style="fill:#2ca7f8" id="use3879" transform="scale(1,-1)"/>
-<path style="fill:#f5f8fb;fill-rule:evenodd" id="path5083" d="m 283.3102,204.1733 -3.6775,4.2767 -1.9271,-1.3649 c -1.36466,-0.96654 -2.67814,1.25767 -1.56052,2.19687 l 3.5781,3.0068 5.5538,-6.5775 c 1.16417,-1.37876 -0.95766,-2.71149 -1.96677,-1.53793 z "/>
+<rect width="16" x="272.5" y="-216" rx="2" ry="2" height="16" style="fill:none;stroke:#5c616c;stroke-width:1.4" id="use3879" transform="scale(1,-1)"/>
+<path style="fill:#2ca7f8;fill-rule:evenodd" id="path5083" d="m 283.3102,204.1733 -3.6775,4.2767 -1.9271,-1.3649 c -1.36466,-0.96654 -2.67814,1.25767 -1.56052,2.19687 l 3.5781,3.0068 5.5538,-6.5775 c 1.16417,-1.37876 -0.95766,-2.71149 -1.96677,-1.53793 z "/>
 </g>
 <g id="checkbox-tristate-focused" transform="translate(40,2.5)">
-<rect width="16" x="347.5" y="-213.5" rx="2" ry="2" height="16" style="fill:#2ca7f8" id="rect5109" transform="scale(1,-1)"/>
-<path style="fill:#f9fcff" id="path5111" d="m 352.1,-207 6.8,0 c 0.8864,0 1.6,0.669 1.6,1.5 0,0.831 -0.7136,1.5 -1.6,1.5 h -6.8 c -0.8864,0 -1.6,-0.669 -1.6,-1.5 0,-0.831 0.7136,-1.5 1.6,-1.5 z " transform="scale(1,-1)"/>
+<rect width="16" x="347.5" y="-213.5" rx="2" ry="2" height="16" ry="2" style="fill:none;stroke:#5c616c;stroke-width:1.4" id="rect5109" transform="scale(1,-1)"/>
+<path style="fill:#2ca7f8" id="path5111" d="m 352.1,-207 6.8,0 c 0.8864,0 1.6,0.669 1.6,1.5 0,0.831 -0.7136,1.5 -1.6,1.5 h -6.8 c -0.8864,0 -1.6,-0.669 -1.6,-1.5 0,-0.831 0.7136,-1.5 1.6,-1.5 z " transform="scale(1,-1)"/>
 </g>
 </g>
 <g style="fill-rule:evenodd">
