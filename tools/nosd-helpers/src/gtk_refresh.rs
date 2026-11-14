@@ -129,6 +129,27 @@ fn append_import(gtk_css: &Path, target: &Path, content: &str, label: &str) {
     println!("Appended {label} nosd.css import to gtk.css");
 }
 
+/// The GTK theme name for a mode comes from darkman's config.json, which is
+/// also what set-theme.sh and theme-common.sh read. Keeping one source means
+/// switching themes never requires touching this file. Falls back to the
+/// nosd-app-themes defaults when the file is missing or malformed, so a bare
+/// system without darkman still gets a sensible theme.
+fn theme_for_mode(mode: &str) -> String {
+    let path = config_dir().join("darkman").join("script").join("config.json");
+    if let Ok(text) = fs::read_to_string(&path) {
+        if let Ok(root) = serde_json::from_str::<serde_json::Value>(&text) {
+            if let Some(name) = root
+                .get(mode)
+                .and_then(|m| m.get("theme"))
+                .and_then(|v| v.as_str())
+            {
+                return name.to_string();
+            }
+        }
+    }
+    if mode == "light" { "deepin".to_string() } else { "deepin-dark".to_string() }
+}
+
 fn sync_system_appearance(mode: &str, update_gtk_theme: bool) {
     let has_gsettings = on_path("gsettings");
     let has_dconf = on_path("dconf");
@@ -136,8 +157,8 @@ fn sync_system_appearance(mode: &str, update_gtk_theme: bool) {
         println!("No gsettings or dconf found, skip system appearance sync");
         return;
     }
-    let target_theme = if mode == "light" { "adw-gtk3" } else { "adw-gtk3-dark" };
-    let theme_available = update_gtk_theme && theme_exists(target_theme);
+    let target_theme = theme_for_mode(mode);
+    let theme_available = update_gtk_theme && theme_exists(&target_theme);
     if update_gtk_theme && !theme_available {
         println!("Theme '{target_theme}' not found, skipping GTK theme set");
     }
@@ -151,7 +172,7 @@ fn sync_system_appearance(mode: &str, update_gtk_theme: bool) {
                 if theme_available {
                     run_cmd(
                         "gsettings",
-                        &["set", "org.gnome.desktop.interface", "gtk-theme", target_theme],
+                        &["set", "org.gnome.desktop.interface", "gtk-theme", &target_theme],
                     );
                 }
                 return;
