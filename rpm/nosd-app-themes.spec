@@ -1,5 +1,5 @@
 Name:           nosd-app-themes
-Version:        0.1.0
+Version:        0.2.0
 Release:        1
 Summary:        nosDshell GTK and Kvantum themes
 License:        GPLv3
@@ -29,5 +29,8 @@ nosd Kvantum Qt widget theme, for the nosDshell desktop environment.
 %{_datadir}/Kvantum/nosd/
 
 %changelog
+* Sat Nov 14 2026 nosDshell Theme Maintainers <noreply@nosdshell.org> - 0.2.0-1
+- palette-driven GTK indicators; fix override bypass, headerbar and popover contract drift
+
 * Thu Nov 13 2025 nosDshell Theme Maintainers <noreply@nosdshell.org> - 0.1.0-1
 - rebrand to nosd-app-themes; add Kvantum nosd theme

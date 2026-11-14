@@ -1,3 +1,10 @@
+nosd-app-themes (0.2.0-1) unstable; urgency=medium
+
+  * GTK 指示器改为调色板跟随的矢量实现；取色覆盖旁路、标题栏与
+    弹出层契约漂移修复；Kvantum 模板与 shell 恢复一致
+
+ -- nosDshell Theme Maintainers <noreply@nosdshell.org>  Sat, 14 Nov 2026 21:00:00 +0800
+
 nosd-app-themes (0.1.0-1) unstable; urgency=medium
 
   * 由 deepin-gtk-theme 更名为 nosd-app-themes，纳入 Kvantum nosd 主题
