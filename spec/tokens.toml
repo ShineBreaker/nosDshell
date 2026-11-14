@@ -1,0 +1,57 @@
+# nosd-app-themes 形状令牌（规范声明）
+#
+# 三方消费方：GTK CSS（deepin/、deepin-dark/）、Kvantum SVG/kvconfig、
+# nosDshell 的 Commons/Style.qml。数值的唯一权威来源是
+# nosDshell/DESIGN.md §1.4、§1.2；本文件只是把权威值抄成机器可读形式，
+# scripts/check-tokens.py 负责发现三处之间的漂移。
+#
+# 改这里 ≠ 改各处实现。改这里之前先改 DESIGN.md，再逐处对齐。
+
+[radius]
+# DESIGN.md §1.4。单位 px。
+radiusRow     = 4   # 列表行悬停、导航按钮、启动器按钮、暗色菜单
+radiusItem    = 5   # 控制中心格子、设置组首尾行、搜索框、登录按钮
+radiusPopup   = 6   # 带箭头弹出层、密码框、快捷开关选中块、插件悬停
+radiusWindow  = 8   # 通知气泡、对话框（dtk-window-radius）、浅色菜单
+radiusLarge   = 10  # OSD、关机按钮选中块、启动器网格悬停、托盘胶囊
+
+[radius.outline]
+# -gtk-outline-radius 是派生值，不占令牌：形状半径 + 焦点环外扩。
+# 外扩量取同一规则内的 outline-offset，缺省用此值。
+# 正圆/胶囊（50%、100%）不参与判定。
+offset = 2
+
+[radius.exempt]
+# 不在令牌集合内、但语义上确实应保留的圆角。键是选择器（逗号分隔后逐项
+# 精确相等，不做子串匹配），值是该选择器允许的圆角与理由。
+# scripts/check-tokens.py 逐条读取，匹配不到就仍报漂移。
+# 0px 由 checker 直接放行（刻意直角），无需登记。
+# 当前为空：原 .help_button 100px 是死代码，已随本轮删除。
+
+
+[border]
+# DESIGN.md §1.2 发丝描边：全部控件描边 1px；焦点环额外一圈。
+hairline      = 1   # 全部边框的统一宽度
+focus_offset  = 1   # 焦点描边相对控件外缘的偏移
+focus_width   = 1.5 # 焦点描边宽度（CDS）
+
+[controls]
+# Qt/Kvantum 侧控件几何（与 KvAdapta 默认一致即可，见 PLAN §5.2）
+scroll_width = 8
+check_size   = 14
+
+[shadow]
+# 菜单/提示框阴影深度（Kvantum menu_shadow_depth / tooltip_shadow_depth）
+menu   = 5
+tooltip = 6
+
+[color]
+# 硬编码颜色白名单之外的例外说明：
+# - GTK：所有颜色必须走 @define-color，仅允许在文件头部的 defaults 块出现字面值。
+# - Kvantum：kvconfig 必须给 [GeneralColors] 全套角色。Kvantum 的
+#   polish(QPalette&) 只做 palette = standardPalette()，而 standardPalette()
+#   只填这里出现过的角色；漏掉的角色回落到 QPalette 默认构造值（Window
+#   #efefef），表现为菜单栏/工具栏/页签栏露出浅灰带。SVG 与 kvconfig 的
+#   颜色在 nosDshell 侧由模板渲染（nosd.svg.tpl / nosd.kvconfig.tpl），
+#   仓库里的静态版使用默认 accent。
+default_accent = "#0c458e"   # 与 nosdshell.conf highlight 的静态值一致

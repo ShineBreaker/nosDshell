@@ -1,0 +1,9 @@
+/* nosd-accent.css 占位。
+ *
+ * 本文件由 nosDshell 的模板管线生成（TemplateRegistry 的 cinnamon / gnome-shell 条目）：
+ * 扫描同目录主题 css 里含 accent 字面值（#5294E2 / #5294e2 / #2679db）的声明，
+ * 原样重声明一遍、值换成当前调色板的 accent 及其派生色。
+ *
+ * 随包分发的这一份是空的——没有 nosDshell 时主题保持静态 accent，行为与上游一致。
+ * 不要手工往这里加规则：主题升级后选择器会漂移，覆盖失效且不报错。
+ */

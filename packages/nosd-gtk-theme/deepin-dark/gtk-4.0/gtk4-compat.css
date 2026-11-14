@@ -1,0 +1,110 @@
+
+*:not(.deepin-allow-global-outline) { outline-style: none; outline-width: 0; }
+window.csd {
+  margin: 0;
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 0 0 1px @border_color,
+              0 14px 18px 0 @wm_shadow;
+}
+window.csd:backdrop {
+  box-shadow: 0 0 0 1px alpha(@border_color, 0.8),
+              0 14px 18px 0 alpha(@wm_shadow, 0.3);
+  transition: 200ms ease-out;
+}
+window.csd.popup {
+  border-radius: 4px;
+  box-shadow: 0 3px 6px alpha(@wm_shadow, 0.3), 0 0 0 1px @border_color;
+}
+window.csd > headerbar,
+window.csd > .titlebar { border-radius: 4px 4px 0 0; }
+window.maximized,
+window.fullscreen,
+window.tiled,
+window.tiled-top,
+window.tiled-right,
+window.tiled-bottom,
+window.tiled-left,
+window.maximized > headerbar,
+window.fullscreen > headerbar,
+window.tiled > headerbar,
+window.tiled-top > headerbar,
+window.tiled-right > headerbar,
+window.tiled-bottom > headerbar,
+window.tiled-left > headerbar { border-radius: 0; box-shadow: none; }
+window.solid-csd { margin: 0; padding: 1px; border: 1px solid @border_color; border-radius: 0; box-shadow: none; }
+listview,
+columnview,
+gridview { color: @theme_text_color; background-color: @base_color; }
+listview > row,
+columnview > listview > row,
+gridview > child { min-height: 24px; border-radius: 4px; }
+listview > row:hover,
+columnview > listview > row:hover,
+gridview > child:hover { background-color: alpha(@active_color, 0.12); }
+listview > row:selected,
+columnview > listview > row:selected,
+gridview > child:selected { color: @theme_selected_fg_color; background-color: @active_color; }
+columnview columnheader button { border-radius: 0; border-width: 0 0 1px 1px; border-color: @borders; box-shadow: none; }
+popover.menu.background > contents,
+popover.menu > contents,
+popover.background > contents,
+popover > contents { padding: 2px 0; }
+popover.menu.background > contents { margin-top: -12px; }
+popover.menu.background > arrow,
+popover.menu > arrow,
+popover.background > arrow,
+popover > arrow { min-width: 0; min-height: 0; margin: 0; padding: 0; border: none; background: none; }
+popover.menu modelbutton,
+popover modelbutton { min-height: 24px; padding: 0 8px; border-radius: 4px; }
+popover.menu modelbutton:hover,
+popover modelbutton:hover { background-color: alpha(@active_color, 0.14); }
+popover.menu modelbutton:checked,
+popover modelbutton:checked { color: @theme_selected_fg_color; background-color: @active_color; }
+button:focus-visible,
+entry:focus-visible,
+row:focus-visible,
+tab:focus-visible { outline: 1px solid alpha(@active_color, 0.55); outline-offset: -2px; }
+scale.horizontal highlight,
+scale.horizontal fill,
+scale.vertical highlight,
+scale.vertical fill { margin: 0; }
+headerbar windowcontrols button,
+headerbar windowcontrols menubutton,
+headerbar windowcontrols menubutton > button { min-width: 40px; min-height: 40px; margin: 0; padding: 0; border: none; border-radius: 0; background-color: transparent; background-position: center; background-repeat: no-repeat; box-shadow: none; transition: none; animation: none; }
+headerbar windowcontrols.start { margin-left: -7px; }
+headerbar windowcontrols.end { margin-right: -7px; }
+headerbar windowcontrols button.close,
+headerbar windowcontrols button.maximize,
+headerbar windowcontrols button.minimize { color: transparent; }
+headerbar windowcontrols button.close:hover,
+headerbar windowcontrols button.close:hover:active,
+headerbar windowcontrols button.close:checked,
+headerbar windowcontrols button.maximize:hover,
+headerbar windowcontrols button.maximize:hover:active,
+headerbar windowcontrols button.maximize:checked,
+headerbar windowcontrols button.minimize:hover,
+headerbar windowcontrols button.minimize:hover:active,
+headerbar windowcontrols button.minimize:checked { color: transparent; border-color: transparent; background-color: transparent; box-shadow: none; }
+headerbar windowcontrols button.close:not(:hover),
+headerbar windowcontrols button.maximize:not(:hover),
+headerbar windowcontrols button.minimize:not(:hover) { color: transparent; border-color: transparent; background-color: transparent; background-image: none; box-shadow: none; }
+headerbar windowcontrols menubutton:hover,
+headerbar windowcontrols menubutton > button:hover,
+headerbar windowcontrols button.menu:hover { color: @theme_text_color; background-color: alpha(@theme_text_color, 0.08); }
+headerbar windowcontrols menubutton:active,
+headerbar windowcontrols menubutton > button:hover:active,
+headerbar windowcontrols menubutton > button:checked,
+headerbar windowcontrols button.menu:hover:active,
+headerbar windowcontrols button.menu:checked { color: @theme_selected_fg_color; background-color: @active_color; }
+headerbar windowcontrols menubutton image,
+headerbar windowcontrols button.menu image { min-width: 16px; min-height: 16px; color: @wm_icon_bg; -gtk-icon-source: -gtk-icontheme("open-menu-symbolic"); }
+headerbar windowcontrols menubutton:backdrop image,
+headerbar windowcontrols button.menu:backdrop image { color: @wm_icon_unfocused_bg; }
+headerbar windowcontrols menubutton:hover image,
+headerbar windowcontrols menubutton > button:hover image,
+headerbar windowcontrols button.menu:hover image { color: @wm_icon_hover_bg; }
+headerbar windowcontrols menubutton:active image,
+headerbar windowcontrols menubutton > button:hover:active image,
+headerbar windowcontrols menubutton > button:checked image,
+headerbar windowcontrols button.menu:hover:active image,
+headerbar windowcontrols button.menu:checked image { color: @wm_icon_active_bg; }

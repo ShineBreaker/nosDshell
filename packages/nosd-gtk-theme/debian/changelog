@@ -1,0 +1,103 @@
+nosd-app-themes (0.2.0-1) unstable; urgency=medium
+
+  * GTK 指示器改为调色板跟随的矢量实现；取色覆盖旁路、标题栏与
+    弹出层契约漂移修复；Kvantum 模板与 shell 恢复一致
+
+ -- nosDshell Theme Maintainers <noreply@nosdshell.org>  Sat, 14 Nov 2026 21:00:00 +0800
+
+nosd-app-themes (0.1.0-1) unstable; urgency=medium
+
+  * 由 deepin-gtk-theme 更名为 nosd-app-themes，纳入 Kvantum nosd 主题
+  * GTK 主题颜色全部收敛到 @define-color，供 nosDshell 覆盖
+
+ -- nosDshell Theme Maintainers <noreply@nosdshell.org>  Thu, 13 Nov 2026 20:00:00 +0800
+
+deepin-gtk-theme (26.0.0-gxde1) unstable; urgency=medium
+
+  * 新增GTK4支持
+
+ -- CharOfString <root@charofstring.cc>  Wed, 22 Jul 2026 00:08:10 +0800
+
+deepin-gtk-theme (25.3.9) unstable; urgency=medium
+
+  * chore: update gtk theme
+
+ -- zhangkun <zhangkun2@uniontech.com>  Fri, 07 Mar 2025 10:39:24 +0800
+
+deepin-gtk-theme (23.11.23) unstable; urgency=low
+
+  * new tag in 2023, fix the icon of firefox
+
+ -- chenhongtao <chenhongtao@linuxdeepin.com>  Thu, 23 Nov 2023 16:53:18 +0800
+
+deepin-gtk-theme (15.12.6) unstable; urgency=low
+
+  * Rebuild Version 15.12.6 
+
+ -- TagBuilder <tagbuilder@linuxdeepin.com>  Thu, 21 Apr 2016 16:17:57 +0000
+
+deepin-gtk-theme (15.12.6-1) stable; urgency=low
+
+  * Autobuild Tag 15.12.6 
+
+ -- TagBuilder <tagbuilder@linuxdeepin.com>  Mon, 22 Feb 2016 10:17:57 +0000
+
+deepin-gtk-theme (15.12.5-1) stable; urgency=low
+
+  * Autobuild Tag 15.12.5 
+
+ -- TagBuilder <tagbuilder@linuxdeepin.com>  Fri, 22 Jan 2016 19:06:59 +0000
+
+deepin-gtk-theme (15.12.4-1) stable; urgency=low
+
+  * Autobuild Tag 15.12.4 
+
+ -- TagBuilder <tagbuilder@linuxdeepin.com>  Tue, 12 Jan 2016 18:01:46 +0000
+
+deepin-gtk-theme (15.12.3-1) stable; urgency=low
+
+  * Autobuild Tag 15.12.3 
+
+ -- TagBuilder <tagbuilder@linuxdeepin.com>  Mon, 28 Dec 2015 21:13:12 +0000
+
+deepin-gtk-theme (15.12.2-1) stable; urgency=low
+
+  * Autobuild Tag 15.12.2 
+
+ -- TagBuilder <tabbuilder@linuxdeepin.com>  Sat, 19 Dec 2015 13:05:27 +0000
+
+deepin-gtk-theme (15.12.1-1) stable; urgency=low
+
+  * Autobuild Tag 15.12.1 
+
+ -- TagBuilder <tabbuilder@linuxdeepin.com>  Tue, 15 Dec 2015 17:35:32 +0000
+
+deepin-gtk-theme (15.06.3-2) stable; urgency=low
+
+  * Rebuild Version 15.06.3 
+
+ -- TagBuilder <tabbuilder@linuxdeepin.com>  Tue, 15 Dec 2015 17:29:07 +0000
+
+deepin-gtk-theme (15.06.3-1) stable; urgency=low
+
+  * Autobuild Tag 15.06.3 
+
+ -- TagBuilder <tabbuilder@linuxdeepin.com>  Tue, 15 Dec 2015 17:25:36 +0000
+
+deepin-gtk-theme (3.18.1-2) stable; urgency=low
+
+  * Rebuild Version 3.18.1 
+
+ -- TagBuilder <tabbuilder@linuxdeepin.com>  Tue, 15 Dec 2015 14:15:06 +0000
+
+deepin-gtk-theme (3.18.1-1) stable; urgency=low
+
+  * Autobuild Tag 3.18.1 
+
+ -- TagBuilder <tabbuilder@linuxdeepin.com>  Tue, 15 Dec 2015 14:13:58 +0000
+
+deepin-gtk-theme (0.0.0) unstable; urgency=medium
+
+  * Unstable release.
+
+ -- 宋文武 <songwenwu@linuxdeepin.com>  Thu, 18 Dec 2014 09:37:08 +0800

@@ -1,0 +1,24 @@
+# Maintainer: nosDshell Theme Maintainers
+pkgname=nosd-app-themes-git
+pkgver=0.2.0
+pkgrel=1
+pkgdesc='nosDshell GTK and Kvantum themes (deepin light/dark + nosd Kvantum)'
+arch=('any')
+url="https://github.com/nosDshell/nosd-app-themes"
+license=('GPL-3.0-or-later')
+optdepends=('kvantum: for the nosd Qt widget theme'
+            'gtk-engine-murrine: for the GTK2 theme')
+makedepends=('git')
+provides=('nosd-app-themes' 'deepin-gtk-theme')
+conflicts=('nosd-app-themes' 'deepin-gtk-theme')
+source=()
+sha512sums=()
+
+# 直接使用 PKGBUILD 所在的 git 仓库作为源码
+_srcroot() {
+  git -C "$startdir" rev-parse --show-toplevel
+}
+
+package() {
+  make -C "$(_srcroot)" DESTDIR="$pkgdir" install
+}

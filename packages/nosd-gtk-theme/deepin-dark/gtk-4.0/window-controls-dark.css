@@ -1,0 +1,85 @@
+/* nosd 覆盖层默认值：~/.config/gtk-4.0/nosd.css 中可用同名 @define-color 覆盖。 */
+@define-color wm_icon_active_bg #ffffff;
+
+headerbar windowcontrols button.close { background-image: -gtk-scaled(url("assets/titlebutton-close-dark.png"), url("assets/titlebutton-close-dark@2x.png")); }
+headerbar windowcontrols button.close:backdrop { background-image: -gtk-scaled(url("assets/titlebutton-close-backdrop-dark.png"), url("assets/titlebutton-close-backdrop-dark@2x.png")); }
+headerbar windowcontrols button.close:hover { background-image: -gtk-scaled(url("assets/titlebutton-close-hover-dark.png"), url("assets/titlebutton-close-hover-dark@2x.png")); }
+headerbar windowcontrols button.close:hover:active { background-image: -gtk-scaled(url("assets/titlebutton-close-active-dark.png"), url("assets/titlebutton-close-active-dark@2x.png")); }
+headerbar windowcontrols button.maximize { background-image: -gtk-scaled(url("assets/titlebutton-maximize-dark.png"), url("assets/titlebutton-maximize-dark@2x.png")); }
+headerbar windowcontrols button.maximize:backdrop { background-image: -gtk-scaled(url("assets/titlebutton-maximize-backdrop-dark.png"), url("assets/titlebutton-maximize-backdrop-dark@2x.png")); }
+headerbar windowcontrols button.maximize:hover { background-image: -gtk-scaled(url("assets/titlebutton-maximize-hover-dark.png"), url("assets/titlebutton-maximize-hover-dark@2x.png")); }
+headerbar windowcontrols button.maximize:hover:active { background-image: -gtk-scaled(url("assets/titlebutton-maximize-active-dark.png"), url("assets/titlebutton-maximize-active-dark@2x.png")); }
+headerbar windowcontrols button.minimize { background-image: -gtk-scaled(url("assets/titlebutton-minimize-dark.png"), url("assets/titlebutton-minimize-dark@2x.png")); }
+headerbar windowcontrols button.minimize:backdrop { background-image: -gtk-scaled(url("assets/titlebutton-minimize-backdrop-dark.png"), url("assets/titlebutton-minimize-backdrop-dark@2x.png")); }
+headerbar windowcontrols button.minimize:hover { background-image: -gtk-scaled(url("assets/titlebutton-minimize-hover-dark.png"), url("assets/titlebutton-minimize-hover-dark@2x.png")); }
+headerbar windowcontrols button.minimize:hover:active { background-image: -gtk-scaled(url("assets/titlebutton-minimize-active-dark.png"), url("assets/titlebutton-minimize-active-dark@2x.png")); }
+headerbar windowcontrols button.close:not(:hover) { background-image: -gtk-scaled(url("assets/titlebutton-close-dark.png"), url("assets/titlebutton-close-dark@2x.png")); }
+headerbar windowcontrols button.maximize:not(:hover) { background-image: -gtk-scaled(url("assets/titlebutton-maximize-dark.png"), url("assets/titlebutton-maximize-dark@2x.png")); }
+headerbar windowcontrols button.minimize:not(:hover) { background-image: -gtk-scaled(url("assets/titlebutton-minimize-dark.png"), url("assets/titlebutton-minimize-dark@2x.png")); }
+headerbar:backdrop windowcontrols button.close:not(:hover) { background-image: -gtk-scaled(url("assets/titlebutton-close-backdrop-dark.png"), url("assets/titlebutton-close-backdrop-dark@2x.png")); }
+headerbar:backdrop windowcontrols button.maximize:not(:hover) { background-image: -gtk-scaled(url("assets/titlebutton-maximize-backdrop-dark.png"), url("assets/titlebutton-maximize-backdrop-dark@2x.png")); }
+headerbar:backdrop windowcontrols button.minimize:not(:hover) { background-image: -gtk-scaled(url("assets/titlebutton-minimize-backdrop-dark.png"), url("assets/titlebutton-minimize-backdrop-dark@2x.png")); }
+window.maximized headerbar windowcontrols button.maximize { background-image: -gtk-scaled(url("assets/unmaximize_normal-dark.png"), url("assets/unmaximize_normal-dark@2x.png")); }
+window.maximized headerbar windowcontrols button.maximize:backdrop { background-image: -gtk-scaled(url("assets/unmaximize-normal-backdrop-dark.png"), url("assets/unmaximize-normal-backdrop-dark@2x.png")); }
+window.maximized headerbar windowcontrols button.maximize:hover { background-image: -gtk-scaled(url("assets/unmaximize_hover-dark.png"), url("assets/unmaximize_hover-dark@2x.png")); }
+window.maximized headerbar windowcontrols button.maximize:hover:active { background-image: -gtk-scaled(url("assets/unmaximize_press-dark.png"), url("assets/unmaximize_press-dark@2x.png")); }
+window.maximized headerbar windowcontrols button.maximize:not(:hover) { background-image: -gtk-scaled(url("assets/unmaximize_normal-dark.png"), url("assets/unmaximize_normal-dark@2x.png")); }
+window.maximized headerbar:backdrop windowcontrols button.maximize:not(:hover) { background-image: -gtk-scaled(url("assets/unmaximize-normal-backdrop-dark.png"), url("assets/unmaximize-normal-backdrop-dark@2x.png")); }
+headerbar windowcontrols menubutton:hover,
+headerbar windowcontrols menubutton > button:hover,
+headerbar windowcontrols button.menu:hover {
+  color: @wm_icon_hover_bg;
+  outline-color: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(255, 255, 255, 0.14);
+  background-image: none;
+  box-shadow: none;
+}
+headerbar windowcontrols menubutton:active,
+headerbar windowcontrols menubutton:checked,
+headerbar windowcontrols menubutton > button:hover:active,
+headerbar windowcontrols menubutton > button:checked,
+headerbar windowcontrols button.menu:hover:active,
+headerbar windowcontrols button.menu:checked {
+  color: @wm_icon_active_bg;
+  outline-color: rgba(255, 255, 255, 0.3);
+  border-color: @active_color;
+  background-color: @active_color;
+  background-image: none;
+  box-shadow: none;
+}
+
+popover.menu modelbutton:hover,
+popover modelbutton:hover,
+popover.menu modelbutton.flat:hover,
+popover modelbutton.flat:hover {
+  color: @wm_icon_active_bg;
+  background-color: @active_color;
+  background-image: none;
+}
+popover.menu modelbutton:hover image,
+popover modelbutton:hover image,
+popover.menu modelbutton:hover arrow,
+popover modelbutton:hover arrow { color: @wm_icon_active_bg; }
+headerbar windowcontrols menubutton > button,
+headerbar windowcontrols button.menu { background-color: transparent; background-image: url("assets/window-menu-normal-dark.svg"); background-position: center; background-repeat: no-repeat; }
+headerbar windowcontrols menubutton > button:hover,
+headerbar windowcontrols button.menu:hover { border-color: transparent; background-color: transparent; background-image: url("assets/window-menu-hover-dark.svg"); }
+headerbar windowcontrols menubutton:checked > button,
+headerbar windowcontrols menubutton > button:hover:active,
+headerbar windowcontrols menubutton > button:checked,
+headerbar windowcontrols button.menu:hover:active,
+headerbar windowcontrols button.menu:checked { border-color: transparent; background-color: transparent; background-image: url("assets/window-menu-press-dark.svg"); }
+headerbar windowcontrols menubutton > button:disabled,
+headerbar windowcontrols button.menu:disabled { background-color: transparent; background-image: url("assets/window-menu-disabled-dark.svg"); }
+headerbar windowcontrols menubutton image,
+headerbar windowcontrols button.menu image { opacity: 0; }
+headerbar menubutton { margin: -7px 0; padding: 0; }
+headerbar menubutton > button { min-width: 40px; min-height: 40px; margin: 0; padding: 0; border: none; border-radius: 0; background-color: transparent; background-image: url("assets/window-menu-normal-dark.svg"); background-position: center; background-repeat: no-repeat; box-shadow: none; transition: none; }
+headerbar menubutton > button:hover { background-color: transparent; background-image: url("assets/window-menu-hover-dark.svg"); }
+headerbar menubutton > button:hover:active,
+headerbar menubutton > button:checked,
+headerbar menubutton:checked > button { background-color: transparent; background-image: url("assets/window-menu-press-dark.svg"); }
+headerbar menubutton > button:disabled { background-color: transparent; background-image: url("assets/window-menu-disabled-dark.svg"); }
+headerbar menubutton image,
+headerbar menubutton > button image { opacity: 0; -gtk-icon-source: none; }
