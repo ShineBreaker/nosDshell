@@ -8,7 +8,7 @@ description: nosDshell 文档与 Noctalia v4 wiki 存档镜像 / nosDshell docs 
 remote_theme: just-the-docs/just-the-docs@v0.12.0
 
 aux_links:
-  "nosDshell on GitHub": "https://github.com/nosDshell/nosDshell"
+  "nosDshell on GitHub": "https://github.com/nosDshell/nosd"
   "Upstream Noctalia docs": "https://docs.noctalia.dev"
 aux_links_new_tab: true
 

@@ -2,12 +2,11 @@
 
 ![header](./docs/img/header.png)
 
-# nosd-app-themes
-### DDE 15 视觉的 GTK 2/3/4 与 Kvantum 主题包，与 nosDshell 共用同一套形状令牌
+# nosd-gtk-theme
+### DDE 15 视觉的 GTK 2/3/4 主题，与 nosDshell 共用同一套形状令牌
 
-[English](README.md) · [更新日志](CHANGELOG.md) · [设计规范](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md)
+[English](README.md) · [更新日志](CHANGELOG.md) · [设计规范](https://github.com/nosDshell/nosd/blob/main/packages/nosdshell/DESIGN.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd-app-themes?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd-app-themes/releases)
 
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 
@@ -21,9 +20,9 @@
 
 ## 简介
 
- *nosd-app-themes* 是 [nosDshell](https://github.com/nosDshell/nosDshell) 生态的外观包。它把 deepin 15（DDE 15）的视觉语言同时带到 GTK 与 Qt 两侧：一套 GTK 2/3/4 主题（`deepin` 浅色、`deepin-dark` 深色），加一套 Kvantum Qt 控件主题（`kvantum/nosd`）。
+ *nosd-gtk-theme* 是 [nosDshell](https://github.com/nosDshell/nosd) 生态的外观包。它把 deepin 15（DDE 15）的视觉语言带到 GTK：一套 GTK 2/3/4 主题（`deepin` 浅色、`deepin-dark` 深色）。Kvantum Qt 控件主题是兄弟组件 [`nosd-kvantum-theme`](../nosd-kvantum-theme)。
 
-主题源自 [GXDE-OS/deepin-gtk-theme](https://github.com/GXDE-OS/deepin-gtk-theme)。在此基础上做了三件事：把全部颜色字面量收敛为 GTK 的 `@define-color` 与 Kvantum 的模板占位符、按 nosDshell 的 [`DESIGN.md`](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md) 校准圆角与描边、补齐 deb/rpm/Arch 三套打包。
+主题源自 [GXDE-OS/deepin-gtk-theme](https://github.com/GXDE-OS/deepin-gtk-theme)。在此基础上做了三件事：把全部颜色字面量收敛为 GTK 的 `@define-color`、按 nosDshell 的 [`DESIGN.md`](https://github.com/nosDshell/nosd/blob/main/packages/nosdshell/DESIGN.md) 校准圆角与描边、补齐 deb/rpm/Arch 三套打包。
 
 包本身不含取色逻辑。明暗切换与壁纸取色由 nosDshell 完成：它把当前调色板渲染进覆盖层与模板产物，主题负责把颜色用在正确的位置。
 
@@ -35,9 +34,6 @@
 | ---             | ---                                                                       | ---                                |
 | `deepin/`       | GTK 2/3/4 浅色主题，附 Cinnamon、GNOME Shell、Metacity、Unity、Xfwm4 皮肤 | GTK 应用、Cinnamon、GNOME Shell    |
 | `deepin-dark/`  | 同上，深色变体                                                            | 同上                               |
-| `kvantum/nosd/` | Kvantum 主题：`nosd.kvconfig` + `nosd.svg`                                | Qt 5/6 Widgets（经 qt5ct / qt6ct） |
-
-`kvantum/nosd/` 另附两个模板源：`nosd.svg.tpl` 与 `nosd.kvconfig.tpl`。它们是 nosDshell 渲染动态配色的输入，随包分发的是同源渲染出的静态版。
 
 ---
 
@@ -47,13 +43,13 @@
 Debian/Ubuntu：
 
 ```bash
-sudo apt install ./nosd-app-themes_0.1.0-1_all.deb
+sudo apt install ./nosd-gtk-theme_0.2.0-2_all.deb
 ```
 
 Fedora/RHEL：
 
 ```bash
-sudo rpm -i nosd-app-themes-0.1.0-1.noarch.rpm
+sudo rpm -i nosd-gtk-theme-0.2.0-1.noarch.rpm
 ```
 
 Arch：
@@ -62,13 +58,13 @@ Arch：
 makepkg -si   # 在 arch/ 目录中执行
 ```
 
-三个包都提供 `deepin-gtk-theme`，安装后可直接替换原包。已验证三者落位一致：`/usr/share/themes/{deepin,deepin-dark}` 与 `/usr/share/Kvantum/nosd`。
+三个包都提供 `deepin-gtk-theme` 与 `nosd-app-themes`，安装后可直接替换原包。已验证落位一致：`/usr/share/themes/{deepin,deepin-dark}`。
 
 ### 从源码安装
 
 ```bash
-git clone https://github.com/nosDshell/nosd-app-themes
-cd nosd-app-themes
+git clone https://github.com/nosDshell/nosd
+cd nosd/packages/nosd-gtk-theme
 sudo make install        # 装到 /usr
 ```
 
@@ -91,14 +87,14 @@ gtk-theme-name=deepin
 
 深色把值改成 `deepin-dark`，或保留 `gtk-application-prefer-dark-theme=1` 让应用自行选择变体。
 
-Qt 应用需要 Kvantum 风格引擎。安装 `kvantum` 包后，把 `~/.config/qt5ct/qt5ct.conf` 与 `~/.config/qt6ct/qt6ct.conf` 的 `style` 设为 `kvantum`，并在 `~/.config/Kvantum/kvantum.kvconfig` 中指定：
+Qt 应用用兄弟组件 [`nosd-kvantum-theme`](../nosd-kvantum-theme)：安装后在 `~/.config/qt5ct/qt5ct.conf` 与 `~/.config/qt6ct/qt6ct.conf` 设 `style=kvantum`，并在 `~/.config/Kvantum/kvantum.kvconfig` 写 `theme=nosd`。
 
 ```ini
 [General]
 theme=nosd
 ```
 
-Qt 5 需要发行版额外提供 Kvantum 的 Qt5 插件。部分发行版（如 Guix）只打包 Qt6 插件，此时 Qt5 应用会退回 qt5ct 的调色板，控件形状仍是系统风格。
+Qt 5 需要发行版额外提供 Kvantum 的 Qt5 插件（见兄弟组件说明）。
 
 ### 依赖
 

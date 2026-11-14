@@ -2,13 +2,12 @@
 
 ![header](./docs/img/header.png)
 
-# nosd-app-themes
+# nosd-gtk-theme
 
-### GTK 2/3/4 and Kvantum themes in the DDE 15 visual language, sharing one shape-token source with nosDshell
+### GTK 2/3/4 themes in the DDE 15 visual language, sharing one shape-token source with nosDshell
 
-[简体中文](README.zh_CN.md) · [Changelog](CHANGELOG.md) · [Design spec](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md)
+[简体中文](README.zh_CN.md) · [Changelog](CHANGELOG.md) · [Design spec](https://github.com/nosDshell/nosd/blob/main/packages/nosdshell/DESIGN.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd-app-themes?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd-app-themes/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 [![GTK](https://img.shields.io/badge/GTK-2%20%7C%203%20%7C%204-blue?style=for-the-badge)](https://www.gtk.org)
 [![Kvantum](https://img.shields.io/badge/Qt-Kvantum-purple?style=for-the-badge)](https://github.com/tsujan/Kvantum)
@@ -19,9 +18,9 @@
 
 ## Overview
 
-**nosd-app-themes** is the appearance package for the [nosDshell](https://github.com/nosDshell/nosDshell) desktop. It brings the deepin 15 (DDE 15) visual language to both toolkit families at once: a set of GTK 2/3/4 themes (`deepin` light, `deepin-dark` dark) plus a Kvantum Qt widget theme (`kvantum/nosd`).
+**nosd-gtk-theme** is the appearance package for the [nosDshell](https://github.com/nosDshell/nosd) desktop. It brings the deepin 15 (DDE 15) visual language to GTK: a set of GTK 2/3/4 themes (`deepin` light, `deepin-dark` dark). The Kvantum Qt theme is a sibling component, [`nosd-kvantum-theme`](../nosd-kvantum-theme).
 
-The theme is derived from [GXDE-OS/deepin-gtk-theme](https://github.com/GXDE-OS/deepin-gtk-theme). On top of that base it does three things: converts every hard-coded colour into either GTK's `@define-color` or a Kvantum template placeholder, calibrates radii and hairlines against nosDshell's [`DESIGN.md`](https://github.com/nosDshell/nosDshell/blob/main/DESIGN.md), and adds deb/rpm/Arch packaging.
+The theme is derived from [GXDE-OS/deepin-gtk-theme](https://github.com/GXDE-OS/deepin-gtk-theme). On top of that base it does three things: converts every hard-coded colour into GTK's `@define-color`, calibrates radii and hairlines against nosDshell's [`DESIGN.md`](https://github.com/nosDshell/nosd/blob/main/packages/nosdshell/DESIGN.md), and adds deb/rpm/Arch packaging.
 
 The package carries no colour-extraction logic of its own. Light/dark switching and wallpaper-derived palettes belong to nosDshell, which renders the current palette into an override layer and into template output; the theme's job is to put those colours in the right places.
 
@@ -33,9 +32,6 @@ The package carries no colour-extraction logic of its own. Light/dark switching 
 | --- | --- | --- |
 | `deepin/` | GTK 2/3/4 light theme, plus Cinnamon, GNOME Shell, Metacity, Unity and Xfwm4 skins | GTK apps, Cinnamon, GNOME Shell |
 | `deepin-dark/` | Same, dark variant | Same |
-| `kvantum/nosd/` | Kvantum theme: `nosd.kvconfig` + `nosd.svg` | Qt 5/6 Widgets (via qt5ct / qt6ct) |
-
-`kvantum/nosd/` additionally ships two template sources, `nosd.svg.tpl` and `nosd.kvconfig.tpl`. Those are the inputs nosDshell fills for dynamic colouring; the static files in the package are rendered from the same sources.
 
 ---
 
@@ -46,13 +42,13 @@ The package carries no colour-extraction logic of its own. Light/dark switching 
 Debian/Ubuntu:
 
 ```bash
-sudo apt install ./nosd-app-themes_0.1.0-1_all.deb
+sudo apt install ./nosd-gtk-theme_0.2.0-2_all.deb
 ```
 
 Fedora/RHEL:
 
 ```bash
-sudo rpm -i nosd-app-themes-0.1.0-1.noarch.rpm
+sudo rpm -i nosd-gtk-theme-0.2.0-1.noarch.rpm
 ```
 
 Arch:
@@ -61,13 +57,13 @@ Arch:
 makepkg -si   # run inside arch/
 ```
 
-All three packages provide `deepin-gtk-theme`, so they replace the original package cleanly. Their file layout has been verified to match: `/usr/share/themes/{deepin,deepin-dark}` and `/usr/share/Kvantum/nosd`.
+All three packages provide `deepin-gtk-theme` and `nosd-app-themes`, so they replace the original packages cleanly. Their file layout has been verified to match: `/usr/share/themes/{deepin,deepin-dark}`.
 
 ### From source
 
 ```bash
-git clone https://github.com/nosDshell/nosd-app-themes
-cd nosd-app-themes
+git clone https://github.com/nosDshell/nosd
+cd nosd/packages/nosd-gtk-theme
 sudo make install        # installs to /usr
 ```
 
@@ -90,14 +86,7 @@ gtk-theme-name=deepin
 
 For dark, use `deepin-dark`, or keep `gtk-application-prefer-dark-theme=1` and let apps pick the variant themselves.
 
-Qt apps need the Kvantum style engine. After installing the `kvantum` package, set `style=kvantum` in `~/.config/qt5ct/qt5ct.conf` and `~/.config/qt6ct/qt6ct.conf`, then point `~/.config/Kvantum/kvantum.kvconfig` at the theme:
-
-```ini
-[General]
-theme=nosd
-```
-
-Qt 5 requires the distribution to ship Kvantum's Qt5 plugin. Some distributions (Guix, for instance) package only the Qt6 plugin; in that case Qt5 apps fall back to the qt5ct palette and keep the stock widget shapes.
+Qt apps use the sibling [`nosd-kvantum-theme`](../nosd-kvantum-theme) component: install it, set `style=kvantum` in `~/.config/qt5ct/qt5ct.conf` and `~/.config/qt6ct/qt6ct.conf`, then `theme=nosd` in `~/.config/Kvantum/kvantum.kvconfig`.
 
 ### Dependencies
 
@@ -105,7 +94,7 @@ Qt 5 requires the distribution to ship Kvantum's Qt5 plugin. Some distributions 
 | --- | --- | --- |
 | GTK 3 / GTK 4 | Yes | The bulk of the theme |
 | `gtk-engine-murrine` | Optional | Drawing engine for the GTK 2 theme |
-| `kvantum` | Optional | Required for the Kvantum theme |
+| `kvantum` | Optional | Via the sibling nosd-kvantum-theme component |
 
 ---
 
@@ -117,7 +106,7 @@ Colours reach the theme through two paths, and neither requires editing files in
 
 The contract the theme upholds: every colour goes through `@define-color`, and literal values appear only in the defaults block at the top of each file. As long as the override layer redefines those same variable names, every widget colour in both variants follows — no per-selector edits needed.
 
-**Kvantum templates.** nosDshell substitutes the palette into the placeholders in `nosd.svg.tpl` and `nosd.kvconfig.tpl`, writing the result to `~/.config/Kvantum/nosd/`. The placeholders cover 13 Material 3 roles including `primary`, `primary_container`, `surface`, `on_surface` and `error`. The `[GeneralColors]` block in `kvconfig` is templated the same way, which is what makes menu bars, toolbars and tab bars follow the theme as well.
+**Kvantum templates.** Handled by [`nosd-kvantum-theme`](../nosd-kvantum-theme): nosDshell substitutes the palette into the placeholders in `nosd.svg.tpl` and `nosd.kvconfig.tpl`, writing the result to `~/.config/Kvantum/nosd/`.
 
 **Cinnamon and GNOME Shell.** Their CSS engine (St) does not understand `@define-color` — a variable there causes the whole declaration to be dropped. So their skin files end with `@import url("nosd-accent.css");`, pulling in an override file that nosDshell writes with the current accent. Without nosDshell that file contains only comments and the theme keeps its static accent.
 

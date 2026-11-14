@@ -1,3 +1,10 @@
+nosd-gtk-theme (0.2.0-2) unstable; urgency=medium
+
+  * 由 nosd-app-themes 拆分为 nosd monorepo 的 nosd-gtk-theme 组件；
+    Kvantum 主题独立为 nosd-kvantum-theme 包
+
+ -- nosDshell Theme Maintainers <noreply@nosdshell.org>  Sat, 15 Nov 2026 00:00:00 +0800
+
 nosd-app-themes (0.2.0-1) unstable; urgency=medium
 
   * GTK 指示器改为调色板跟随的矢量实现；取色覆盖旁路、标题栏与

@@ -373,7 +373,7 @@ ColumnLayout {
                 onExited: TooltipService.hide()
                 onClicked: {
                   if (root.commitInfo) {
-                    Quickshell.execDetached(["xdg-open", "https://github.com/nosDshell/nosDshell/commit/" + root.commitInfo]);
+                    Quickshell.execDetached(["xdg-open", "https://github.com/nosDshell/nosd/commit/" + root.commitInfo]);
                   }
                 }
               }
