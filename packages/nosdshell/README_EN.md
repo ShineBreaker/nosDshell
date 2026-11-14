@@ -8,7 +8,7 @@
 
 [中文](README.md) · [Wiki](https://nosdshell.github.io/nosDshell/) · [Design spec](DESIGN.md) · [Changelog](CHANGELOG.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosDshell?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosDshell/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 [![Wayland](https://img.shields.io/badge/wayland-native-blueviolet?style=for-the-badge)](https://wayland.freedesktop.org)
 [![Quickshell](https://img.shields.io/badge/built%20on-quickshell-green?style=for-the-badge)](https://quickshell.outfoxxed.me)
@@ -90,7 +90,7 @@ Wayland compositors like Niri, Hyprland, and Sway handle windows fast, but turni
 |---|---|
 | Guix | [nosd-pkgs](https://github.com/nosDshell/nosd-pkgs) channel (`guix install nosdshell`) |
 | Nix / NixOS | [nosd-pkgs](https://github.com/nosDshell/nosd-pkgs) flake (package, Home Manager module, and NixOS module) |
-| Other | Clone this repository and run `qs -p <path-to-repo>` |
+| Other | Clone this repository and run `qs -p <path-to-repo>/packages/nosdshell` |
 
 Run `nosdshell --version` to print the shell and Quickshell versions. Shell completions for `bash`, `zsh`, and `fish` install to standard paths and load automatically in new terminal sessions.
 

@@ -8,7 +8,7 @@
 
 [English](README_EN.md) · [Wiki 文档](https://nosdshell.github.io/nosDshell/) · [设计规范](DESIGN.md) · [更新日志](CHANGELOG.md)
 
-[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosDshell?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosDshell/releases)
+[![GitHub Release](https://img.shields.io/github/v/release/nosDshell/nosd?style=for-the-badge&label=release&color=0081ff)](https://github.com/nosDshell/nosd/releases)
 [![License](https://img.shields.io/badge/license-GPL--3.0-red?style=for-the-badge)](LICENSE)
 [![Wayland](https://img.shields.io/badge/wayland-native-blueviolet?style=for-the-badge)](https://wayland.freedesktop.org)
 [![Quickshell](https://img.shields.io/badge/built%20on-quickshell-green?style=for-the-badge)](https://quickshell.outfoxxed.me)
@@ -94,7 +94,12 @@ Wayland 平铺与滚动合成器（Niri、Hyprland、Sway 等）轻快高效，�
 (cons* (channel
         (name 'nosd)
         (url "https://github.com/nosDshell/nosd-pkgs")
-        (branch "main"))
+        (branch "main")
+        (introduction
+         (make-channel-introduction
+          "ffed3941b88829b250a67ce6f8ff0fc6c5d189a0"
+          (openpgp-fingerprint
+           "62711D5E9CCDEC6907CADBF88637132222571907"))))
        %default-channels)
 ```
 
@@ -142,11 +147,11 @@ Home Manager：
 }
 ```
 
-临时试用不改配置：`nix run github:nosDshell/nosDshell`。
+临时试用不改配置：`nix run github:nosDshell/nosd-pkgs`。
 
 #### 其他发行版
 
-克隆本仓库，执行 `qs -p <仓库路径>` 启动。
+克隆本仓库，执行 `qs -p <仓库路径>/packages/nosdshell` 启动。
 
 安装完成后，可执行 `nosdshell --version` 查看当前 shell 与 Quickshell 版本。`bash`、`zsh` 与 `fish` 的命令行补全脚本随包安装至标准目录，新开终端即可生效。
 

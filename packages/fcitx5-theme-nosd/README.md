@@ -1,25 +1,27 @@
-# fcitx5-theme-deepin
+# fcitx5-theme-nosd
 
-这是一个基于 deepin 外观设计的 fcitx5 皮肤，强迫症觉得现有的皮肤并不符合 deepin 的设计风格，所以自己重新绘制了一个。
+deepin 风格的 fcitx5 输入法皮肤（`deepin-light` / `deepin-dark`），
+nosd monorepo 的组件之一。源自 [linuxdeepin/fcitx5-theme-deepin](https://github.com/linuxdeepin/fcitx5-theme-deepin)。
 
 ## 安装
 
-1. 下载皮肤包
+**Guix**（[nosd-pkgs](https://github.com/nosDshell/nosd-pkgs) channel）：
 
-```bash
-git clone https://github.com/linuxdeepin/fcitx5-theme-deepin.git
-cd fcitx5-theme-deepin
-cp -r deepin-light ~/.local/share/fcitx5/themes/
-cp -r deepin-dark ~/.local/share/fcitx5/themes/
+```sh
+guix install fcitx5-theme-nosd
 ```
 
-2. 打开 fcitx5 设置，选择 deepin-light 皮肤
+**Nix**：`github:nosDshell/nosd-pkgs` 的 `fcitx5-theme-nosd` 包。
 
-如果你使用的是 deepin 系统，可以使用软件源安装 fcitx5-theme-deepin
+**手动**：
 
-```bash
-sudo apt install fcitx5-theme-deepin
+```sh
+git clone https://github.com/nosDshell/nosd
+cd nosd/packages/fcitx5-theme-nosd
+make install          # 装到 $PREFIX/share/fcitx5/themes/{deepin-light,deepin-dark}
 ```
+
+安装后在 fcitx5 设置里选择 `deepin-light` 或 `deepin-dark` 皮肤。
 
 ## 预览
 
@@ -41,6 +43,12 @@ sudo apt install fcitx5-theme-deepin
 
 1. 皮肤内包含的左右按键存在缩放问题，因为 fcitx5 的缩放是基于 dpi 的，而不是基于屏幕缩放的，所以在高分屏下，皮肤内的图片会被拉伸，而在低分辨率下，皮肤内的图片会显得过于大，和皮肤不协调，所以在现在版本默认关闭左右按键的显示。后续有好的解决办法会更新。
 2. 如果开启了模糊背景功能，会导致输入法的四个圆角显示异常，所以关闭了模糊背景功能。
+
+## 发版
+
+独立组件发版：tag `fcitx5-theme-nosd-v<version>`，见仓根
+[`docs/adr/0001`](../../docs/adr/0001-monorepo.md) 与
+`tools/release/build.py`。
 
 ## 参考
 

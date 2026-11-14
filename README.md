@@ -22,8 +22,8 @@ nosDshell 生态 monorepo：shell 本体与周边主题集中管理，单一 UI 
 
 - **Guix**：channel `https://github.com/nosDshell/nosd-pkgs`，`guix install nosdshell`
 - **Nix / NixOS**：flake `github:nosDshell/nosd-pkgs`（package / Home Manager / NixOS 模块）
-- **手动**：各组件 Makefile（`make -C packages/<组件> install`）或
-  `qs -p packages/nosdshell`
+- **手动**：主题组件各有 Makefile（`make -C packages/<组件> install`）；
+  shell 直接用 `qs -p packages/nosdshell` 从源码运行
 
 详见各组件 README。
 
